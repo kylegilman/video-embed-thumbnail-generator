@@ -409,7 +409,7 @@ class REST_Controller extends \WP_REST_Controller {
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'show_views'    => array(
+					'views'    => array(
 						'type'              => 'boolean',
 						'default'           => false,
 						'sanitize_callback' => 'rest_sanitize_boolean',
@@ -991,14 +991,14 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 
 		$video_event = (string) $request->get_param( 'video_event' );
-		$show_views  = (bool) $request->get_param( 'show_views' );
+		$show_views  = (bool) $request->get_param( 'views' );
 
 		$attachment_meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options, $attachment_id );
 		$updated_meta            = (array) $attachment_meta_manager->increment_video_stat( $video_event );
 
 		$response_data = array( 'status' => 'success' );
 		if ( $show_views && isset( $updated_meta['starts'] ) ) {
-			$response_data['view_count'] = (string) \Videopack\Common\I18n::format_view_count( (int) $updated_meta['starts'] );
+			$response_data['views'] = (string) \Videopack\Common\I18n::format_view_count( (int) $updated_meta['starts'] );
 		}
 
 		return apply_filters( 'videopack_rest_count_play', new \WP_REST_Response( $response_data, 200 ), $request );

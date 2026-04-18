@@ -6,22 +6,25 @@
   "category": "media",
   "parent": [
     "videopack/videopack-video",
-    "videopack/video-player-engine"
+    "videopack/video-player-engine",
+    "videopack/thumbnail"
   ],
   "icon": "heading",
   "description": "Overlay title and action buttons for the video player.",
   "usesContext": [
-    "postId",
+    "videopack/postId",
     "videopack/skin",
     "videopack/title_color",
     "videopack/title_background_color",
     "videopack/overlay_title",
     "videopack/downloadlink",
-    "videopack/embeddable",
+    "videopack/embedcode",
     "videopack/showBackground",
     "videopack/textAlign",
     "videopack/position",
-    "videopack/embedlink"
+    "videopack/embedlink",
+    "videopack/isInsideThumbnail",
+    "videopack/isInsidePlayer"
   ],
   "attributes": {
     "title": {
@@ -33,8 +36,7 @@
       "default": "h3"
     },
     "isOverlay": {
-      "type": "boolean",
-      "default": true
+      "type": "boolean"
     },
     "title_color": {
       "type": "string"
@@ -43,8 +45,7 @@
       "type": "string"
     },
     "position": {
-      "type": "string",
-      "default": "top"
+      "type": "string"
     },
     "textAlign": {
       "type": "string"
@@ -52,25 +53,17 @@
     "embedlink": {
       "type": "string"
     },
-    "embeddable": {
-      "type": "boolean",
-      "default": false
+    "embedcode": {
+      "type": "boolean"
     },
     "downloadlink": {
-      "type": "boolean",
-      "default": false
+      "type": "boolean"
     },
     "overlay_title": {
-      "type": "boolean",
-      "default": true
-    },
-    "showTitle": {
-      "type": "boolean",
-      "default": true
+      "type": "boolean"
     },
     "showBackground": {
-      "type": "boolean",
-      "default": true
+      "type": "boolean"
     }
   },
   "supports": {

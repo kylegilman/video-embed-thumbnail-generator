@@ -29,6 +29,7 @@ import {
 } from '@wordpress/icons';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../utils/colors';
+import { getEffectiveValue } from '../../utils/context';
 
 /**
  * An internal component to display the video title with correct styling and data.
@@ -41,9 +42,9 @@ import { getColorFallbacks } from '../../utils/colors';
  * @param {string}   props.textAlign      Text alignment.
  * @param {boolean}  props.isOverlay      Whether in overlay mode.
  * @param {boolean}  props.downloadlink   Whether download is enabled.
- * @param {boolean}  props.embeddable     Whether sharing is enabled.
+ * @param {boolean}  props.embedcode      Whether sharing is enabled.
  * @param {string}   props.embedlink      Base embed link.
- * @param {boolean}  props.showTitle      Whether to show title text.
+ * @param {boolean}  props.overlay_title  Whether to show title text.
  * @param {boolean}  props.showBackground Whether to show bar background.
  * @param {Function} props.onTitleChange  Callback for title changes.
  * @param {Object}   props.barStyle       Styles for the inner title bar.
@@ -58,13 +59,30 @@ export function VideoTitle({
 	textAlign,
 	isOverlay,
 	downloadlink,
-	embeddable,
+	embedcode,
 	embedlink,
-	showTitle = true,
-	showBackground = true,
+	overlay_title,
+	showBackground,
 	onTitleChange,
 	barStyle = {}, // New prop for inner bar styling
+	isInsideThumbnail,
+	isInsidePlayer,
+	position: attrPosition,
+	skin,
+	title_color,
+	title_background_color,
+	context = {},
+	...attributes // Catch-all for renamed attributes
 }) {
+	const effectiveEmbedcode = getEffectiveValue('embedcode', attributes, context);
+	const effectiveOverlayTitle = getEffectiveValue('overlay_title', attributes, context);
+	const effectiveDownloadlink = getEffectiveValue('downloadlink', attributes, context);
+	const effectiveShowBackground = getEffectiveValue('showBackground', attributes, context);
+	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
+	const effectiveSkin = getEffectiveValue('skin', { skin }, context);
+	const effectiveTitleColor = getEffectiveValue('title_color', { title_color }, context);
+	const effectiveTitleBgColor = getEffectiveValue('title_background_color', { title_background_color }, context);
+
 	const { attachmentTitle, isResolving } = useSelect(
 		(select) => {
 			if (!postId) {
@@ -79,8 +97,6 @@ export function VideoTitle({
 					'postType',
 					'attachment',
 					postId,
-					'edit',
-					record?.id,
 				]),
 			};
 		},
@@ -102,7 +118,7 @@ export function VideoTitle({
 	const [currentEmbedCode, setCurrentEmbedCode] = useState(baseEmbedLink());
 
 	const displayTitle = decodeEntities(manualTitle || attachmentTitle || '');
-	const finalTextAlign = textAlign || (isOverlay ? 'left' : undefined);
+	const finalTextAlign = textAlign || (isInsideThumbnail ? 'center' : isOverlay ? 'left' : undefined);
 
 	let placeholder = __('Video Title', 'video-embed-thumbnail-generator');
 	if (postId) {
@@ -150,13 +166,21 @@ export function VideoTitle({
 		setCurrentEmbedCode(newEmbedCode);
 	}, [startAtEnabled, startAtTime, baseEmbedLink, displayTitle]);
 
-	const titleClass = isOverlay ? 'videopack-title' : 'videopack-video-title';
+	const titleClass = isInsideThumbnail ? 'videopack-thumbnail-title-text' : isOverlay ? 'videopack-title' : 'videopack-video-title';
 	const iconsClass = 'videopack-meta-icons';
 
 	const finalBlockProps = blockProps || {
-		className: `videopack-video-title-block ${
-			isOverlay ? 'video-title is-overlay' : 'video-title'
-		}`,
+		className: `videopack-video-title-block videopack-video-title-wrapper ${effectiveSkin} ${
+			isOverlay ? `is-overlay position-${position}` : ''
+		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
+			isInsidePlayer ? 'is-inside-player' : ''
+		} ${!postId && !manualTitle ? 'no-title' : ''} ${
+			effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
+		} has-text-align-${finalTextAlign}`,
+		style: {
+			'--videopack-title-color': effectiveTitleColor || undefined,
+			'--videopack-title-background-color': effectiveTitleBgColor || undefined,
+		},
 	};
 
 	if (isResolving) {
@@ -167,9 +191,11 @@ export function VideoTitle({
 		);
 	}
 
-	const barClass = `videopack-video-title${
-		!showBackground && isOverlay ? ' has-no-background' : ''
-	}`;
+	const barClass = `videopack-video-title ${
+		isOverlay ? 'is-overlay' : ''
+	} ${!showBackground && isOverlay ? 'has-no-background' : ''} ${
+		isInsideThumbnail ? 'videopack-thumbnail-title' : ''
+	} ${isInsidePlayer ? `videopack-title-${position}` : ''}`.trim();
 
 	return (
 		<div {...finalBlockProps}>
@@ -185,25 +211,19 @@ export function VideoTitle({
 					'video-embed-thumbnail-generator'
 				)}
 			/>
-			<div className={barClass} style={barStyle}>
-				{showTitle && (
+			<div className={`${barClass} has-text-align-${finalTextAlign}`}>
+				{effectiveOverlayTitle && (
 					<RichText
 						tagName={Tag}
 						className={titleClass}
 						value={displayTitle}
 						onChange={onTitleChange}
-						style={{
-							margin: 0,
-							textAlign: finalTextAlign,
-							fontSize: 'inherit',
-							color: 'inherit',
-						}}
 						placeholder={placeholder}
 					/>
 				)}
 				{isOverlay && (
 					<div className={iconsClass}>
-						{embeddable && (
+						{effectiveEmbedcode && (
 							<button
 								className={`videopack-icons ${
 									shareIsOpen ? 'close' : 'share'
@@ -227,7 +247,7 @@ export function VideoTitle({
 								/>
 							</button>
 						)}
-						{downloadlink && (
+						{effectiveDownloadlink && (
 							<button className="videopack-icons download">
 								<Icon
 									icon={downloadIcon}
@@ -238,7 +258,7 @@ export function VideoTitle({
 					</div>
 				)}
 			</div>
-			{isOverlay && embeddable && (
+			{isOverlay && effectiveEmbedcode && (
 				<div
 					className={`videopack-share-container${
 						shareIsOpen ? ' is-visible' : ''
@@ -294,75 +314,55 @@ export function VideoTitle({
 
 export default function Edit(props) {
 	const { clientId, attributes, setAttributes, context } = props;
-	const { postId } = context;
+	const postId = context['videopack/postId'];
 	const embedlink = context['videopack/embedlink'];
 	const {
 		title,
 		tagName: Tag = 'h3',
-		position = 'top',
-		textAlign,
+		position: attrPosition,
+		isOverlay: explicitIsOverlay,
+		textAlign: attrTextAlign,
 		downloadlink,
-		embeddable,
+		embedcode,
 		title_color,
 		title_background_color,
-		showTitle = true,
-		showBackground = true,
+		overlay_title,
+		showBackground,
 	} = attributes;
 
-	const { isInsideThumbnail, isInsidePlayer } = useSelect(
-		(select) => {
-			const { getBlockName, getBlockRootClientId } =
-				select('core/block-editor');
-			const rootId = getBlockRootClientId(clientId);
-			const parentName = rootId ? getBlockName(rootId) : null;
-			return {
-				isInsideThumbnail: parentName === 'videopack/thumbnail',
-				isInsidePlayer:
-					parentName === 'videopack/videopack-video' ||
-					parentName === 'videopack/video-player-engine' ||
-					!!context['videopack/skin'],
-			};
-		},
-		[clientId, context]
-	);
+	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
+	const isInsidePlayer = !!context['videopack/isInsidePlayer'];
 
+	// Derived defaults that don't fight with user saved attributes
+	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
+	const textAlign = attrTextAlign || (isInsideThumbnail ? 'center' : 'left');
+
+	// For thumbnails, we only disable share and download features
 	useEffect(() => {
-		if (isInsidePlayer && position !== 'top') {
-			setAttributes({ position: 'top' });
+		if (isInsideThumbnail) {
+			const newAttributes = {};
+			if (attributes.downloadlink) {
+				newAttributes.downloadlink = false;
+			}
+			if (attributes.embedcode) {
+				newAttributes.embedcode = false;
+			}
+			
+			if (Object.keys(newAttributes).length > 0) {
+				setAttributes(newAttributes);
+			}
 		}
-	}, [isInsidePlayer, position, setAttributes]);
+	}, [isInsideThumbnail, attributes.downloadlink, attributes.embedcode, setAttributes]);
 
-	// Auto-initialize attributes based on plugin settings if this is a new block
-	useEffect(() => {
-		if (!isInsidePlayer || !videopack_config?.options) {
-			return;
-		}
+	// Design attributes are now derived dynamically via getEffectiveValue in the render cycle.
+	// We no longer auto-initialize attributes to prevent them from becoming "stale".
 
-		const { options } = videopack_config;
-		const newAttributes = {};
+	const effectiveDownloadlink = getEffectiveValue('downloadlink', attributes, context);
+	const effectiveEmbedcode = getEffectiveValue('embedcode', attributes, context);
+	const effectiveOverlayTitle = getEffectiveValue('overlay_title', attributes, context);
+	const effectiveShowBackground = getEffectiveValue('showBackground', attributes, context);
 
-		// Only sync if they are currently at block.json defaults (indicating a fresh insert)
-		if (attributes.downloadlink === false && !!options.downloadlink) {
-			newAttributes.downloadlink = true;
-		}
-		if (attributes.embeddable === false && !!options.embedcode) {
-			newAttributes.embeddable = true;
-		}
-		// If overlay_title is explicitly false in settings, and showTitle is still at default true
-		if (
-			attributes.showTitle === true &&
-			Object.prototype.hasOwnProperty.call(options, 'overlay_title') &&
-			!options.overlay_title
-		) {
-			newAttributes.showTitle = false;
-		}
-
-		if (Object.keys(newAttributes).length > 0) {
-			setAttributes(newAttributes);
-		}
-	}, []); // Only run once on mount
-
-	const isOverlay = isInsideThumbnail || isInsidePlayer;
+	const isOverlay = explicitIsOverlay !== undefined ? explicitIsOverlay : (isInsideThumbnail || isInsidePlayer);
 	const wrapperClass = 'videopack-video-title-wrapper';
 
 	const titleColorFallback = context['videopack/title_color'];
@@ -374,45 +374,33 @@ export default function Edit(props) {
 	const colorFallbacks = useMemo(
 		() =>
 			getColorFallbacks({
-				title_color: titleColorFallback,
-				title_background_color: titleBackgroundColorFallback,
+				title_color: getEffectiveValue('title_color', {}, context),
+				title_background_color: getEffectiveValue('title_background_color', {}, context),
 			}),
-		[titleColorFallback, titleBackgroundColorFallback]
+		[context]
 	);
 
-	const skin = context['videopack/skin'] || 'default';
+	const skin = getEffectiveValue('skin', attributes, context);
+	const effectiveTitleColor = getEffectiveValue('title_color', attributes, context);
+	const effectiveTitleBgColor = getEffectiveValue('title_background_color', attributes, context);
+
 	const blockProps = useBlockProps({
 		className: `videopack-video-title-block ${wrapperClass} ${skin} ${
 			isOverlay ? `is-overlay position-${position}` : ''
 		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayer ? 'is-inside-player' : ''
 		} ${!postId && !title ? 'no-title' : ''} ${
-			title_background_color || titleBackgroundColorFallback
+			effectiveTitleBgColor
 				? 'videopack-has-title-background-color'
 				: ''
-		}`,
+		} has-text-align-${textAlign}`,
 		style: {
-			'--videopack-title-color':
-				title_color || titleColorFallback || undefined,
-			'--videopack-title-background-color':
-				title_background_color ||
-				titleBackgroundColorFallback ||
-				undefined,
-			visibility: isOverlay ? 'visible' : undefined,
-			opacity: isOverlay ? 1 : undefined,
-			zIndex: isOverlay ? 110 : undefined,
-			top: isOverlay && position === 'top' ? 0 : undefined,
-			bottom: isOverlay && position === 'bottom' ? 0 : undefined,
-			pointerEvents: isOverlay ? 'auto' : undefined,
+			'--videopack-title-color': effectiveTitleColor || undefined,
+			'--videopack-title-background-color': effectiveTitleBgColor || undefined,
 		},
 	});
 
-	const barStyle = {
-		'--videopack-title-text-align': textAlign,
-		textAlign,
-		zIndex: 102, // Explicitly higher than Share Overlay (101)
-		position: 'relative',
-	};
+	// No longer building barStyle manually
 
 	return (
 		<>
@@ -425,12 +413,12 @@ export default function Edit(props) {
 						}
 					/>
 				)}
-				{isInsideThumbnail && (
+				{isOverlay && (
 					<BlockVerticalAlignmentControl
 						value={position}
 						onChange={(nextPosition) => {
 							setAttributes({
-								position: nextPosition || 'bottom',
+								position: nextPosition || undefined,
 							});
 						}}
 					/>
@@ -446,7 +434,7 @@ export default function Edit(props) {
 						<ToolbarButton
 							icon={titleIcon}
 							label={
-								showTitle
+								effectiveOverlayTitle
 									? __(
 											'Hide Title',
 											'video-embed-thumbnail-generator'
@@ -456,9 +444,9 @@ export default function Edit(props) {
 											'video-embed-thumbnail-generator'
 									  )
 							}
-							isPressed={showTitle}
+							isPressed={effectiveOverlayTitle}
 							onClick={() =>
-								setAttributes({ showTitle: !showTitle })
+								setAttributes({ overlay_title: !effectiveOverlayTitle })
 							}
 						/>
 						<ToolbarButton
@@ -467,9 +455,9 @@ export default function Edit(props) {
 								'Embed/Share Button',
 								'video-embed-thumbnail-generator'
 							)}
-							isPressed={embeddable}
+							isPressed={effectiveEmbedcode}
 							onClick={() =>
-								setAttributes({ embeddable: !embeddable })
+								setAttributes({ embedcode: !effectiveEmbedcode })
 							}
 						/>
 						<ToolbarButton
@@ -478,15 +466,15 @@ export default function Edit(props) {
 								'Download Button',
 								'video-embed-thumbnail-generator'
 							)}
-							isPressed={downloadlink}
+							isPressed={effectiveDownloadlink}
 							onClick={() =>
-								setAttributes({ downloadlink: !downloadlink })
+								setAttributes({ downloadlink: !effectiveDownloadlink })
 							}
 						/>
 						<ToolbarButton
 							icon={backgroundIcon}
 							label={
-								showBackground
+								effectiveShowBackground
 									? __(
 											'Hide Background Bar',
 											'video-embed-thumbnail-generator'
@@ -496,10 +484,10 @@ export default function Edit(props) {
 											'video-embed-thumbnail-generator'
 									  )
 							}
-							isPressed={showBackground}
+							isPressed={effectiveShowBackground}
 							onClick={() =>
 								setAttributes({
-									showBackground: !showBackground,
+									showBackground: !effectiveShowBackground,
 								})
 							}
 						/>
@@ -559,16 +547,13 @@ export default function Edit(props) {
 				blockProps={blockProps}
 				postId={postId}
 				title={title}
-				tagName={Tag}
-				textAlign={textAlign}
+				clientId={clientId}
+				isInsideThumbnail={isInsideThumbnail}
+				isInsidePlayer={isInsidePlayer}
 				isOverlay={isOverlay}
-				downloadlink={downloadlink}
-				embeddable={embeddable}
-				embedlink={embedlink}
-				showTitle={showTitle}
-				showBackground={showBackground}
-				onTitleChange={(value) => setAttributes({ title: value })}
-				barStyle={barStyle}
+				{...attributes}
+				context={context}
+				onTitleChange={(newTitle) => setAttributes({ title: newTitle })}
 			/>
 		</>
 	);

@@ -11,12 +11,19 @@
 		"linkTo": {
 			"type": "string",
 			"default": "none"
+		},
+		"isInsideThumbnail": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"usesContext": [
-		"postId",
+		"videopack/postId",
 		"videopack/skin"
 	],
+	"providesContext": {
+		"videopack/isInsideThumbnail": "isInsideThumbnail"
+	},
 	"supports": {
 		"html": false,
 		"align": true,

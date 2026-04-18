@@ -106,9 +106,9 @@ const VideoSettings = ({
 								'video-embed-thumbnail-generator'
 							)}
 							onChange={(value) =>
-								handleSettingChange('view_count', value)
+								handleSettingChange('views', value)
 							}
-							checked={!!displayAttributes.view_count}
+							checked={!!displayAttributes.views}
 						/>
 					</PanelRow>
 				</PanelBody>
@@ -274,6 +274,23 @@ const VideoSettings = ({
 				title={__('Colors', 'video-embed-thumbnail-generator')}
 				initialOpen={false}
 			>
+				<div className="videopack-skin-section" style={{ marginBottom: '16px' }}>
+					<SelectControl
+						label={ __( 'Player Skin', 'video-embed-thumbnail-generator' ) }
+						value={ attributes.skin || options.skin || '' }
+						options={ [
+							{ label: __( 'Videopack', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-videopack' },
+							{ label: __( 'Videopack Classic', 'video-embed-thumbnail-generator' ), value: 'kg-video-js-skin' },
+							{ label: __( 'Video.js default', 'video-embed-thumbnail-generator' ), value: 'default' },
+							{ label: __( 'City', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-city' },
+							{ label: __( 'Fantasy', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-fantasy' },
+							{ label: __( 'Forest', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-forest' },
+							{ label: __( 'Sea', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-sea' },
+						] }
+						onChange={ ( value ) => handleSettingChange( 'skin', value ) }
+					/>
+				</div>
+
 				{!isBlockEditor && (
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
@@ -711,16 +728,16 @@ const VideoSettings = ({
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Allow embedding on other sites',
+							'Allow embedding / Show embed code',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={(value) =>
-							handleSettingChange('embeddable', value)
+							handleSettingChange('embedcode', value)
 						}
-						checked={!!displayAttributes.embeddable}
+						checked={!!displayAttributes.embedcode}
 					/>
 				</PanelRow>
-				{displayAttributes.embeddable && (
+				{displayAttributes.embedcode && (
 					<>
 						{!isBlockEditor && (
 							<>
@@ -740,22 +757,6 @@ const VideoSettings = ({
 										checked={
 											!!displayAttributes.downloadlink
 										}
-									/>
-								</PanelRow>
-								<PanelRow>
-									<ToggleControl
-										__nextHasNoMarginBottom
-										label={__(
-											'Embed code',
-											'video-embed-thumbnail-generator'
-										)}
-										onChange={(value) =>
-											handleSettingChange(
-												'embedcode',
-												value
-											)
-										}
-										checked={!!displayAttributes.embedcode}
 									/>
 								</PanelRow>
 							</>

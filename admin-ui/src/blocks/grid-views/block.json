@@ -12,7 +12,7 @@
 			"default": true
 		}
 	},
-	"usesContext": ["postId"],
+	"usesContext": ["videopack/postId"],
 	"supports": {
 		"html": false,
 		"typography": {

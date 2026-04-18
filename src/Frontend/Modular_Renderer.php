@@ -19,6 +19,19 @@ namespace Videopack\Frontend;
  */
 class Modular_Renderer {
 	/**
+	 * Helper to normalize boolean-like attributes from shortcodes or blocks.
+	 *
+	 * @param mixed $val The value to check.
+	 * @return bool
+	 */
+	public static function is_true( $val ) {
+		if ( true === $val || 'true' === $val || 1 === $val || '1' === $val || 'on' === $val || 'yes' === $val ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Renders the main video container wrapper.
 	 *
 	 * @param array  $atts          Block or shortcode attributes.
@@ -27,6 +40,7 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_video_container( array $atts, $inner_content, $is_block = false ) {
+		wp_enqueue_style( 'videopack-frontend' );
 		$is_modular_engine = ! empty( $atts['is_modular_engine'] );
 		$classes           = array( 'videopack-wrapper' );
 
@@ -34,7 +48,15 @@ class Modular_Renderer {
 			$classes[] = 'videopack-video-block-container';
 		}
 
-		if ( ! empty( $atts['overlay_title'] ) || ! empty( $atts['downloadlink'] ) ) {
+		if ( ! empty( $atts['wrapper_class'] ) ) {
+			$classes[] = $atts['wrapper_class'];
+		}
+
+		if ( ! empty( $atts['skin'] ) ) {
+			$classes[] = $atts['skin'];
+		}
+
+		if ( self::is_true( $atts['overlay_title'] ?? false ) || self::is_true( $atts['downloadlink'] ?? false ) ) {
 			$classes[] = 'videopack-video-title-visible';
 		}
 
@@ -52,6 +74,11 @@ class Modular_Renderer {
 			$classes[] = 'videopack-wrapper-auto-right';
 		} elseif ( 'right' === (string) ( $atts['align'] ?? '' ) ) {
 			$classes[] = 'videopack-wrapper-auto-left';
+		}
+
+		// Explicitly add Gutenberg alignment classes for blocks to support dynamic fallbacks.
+		if ( $is_block && ! empty( $atts['align'] ) ) {
+			$classes[] = 'align' . $atts['align'];
 		}
 
 		$style_vars = array();
@@ -90,6 +117,11 @@ class Modular_Renderer {
 				}
 			}
 		}
+
+		if ( ! empty( $atts['block_gap'] ) ) {
+			$style_vars[] = '--videopack-collection-gap: ' . $atts['block_gap'];
+		}
+
 		// Add MEJS controls SVG for mask coloring.
 		$style_vars[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediaelement/mejs-controls.svg' ) . ')';
 
@@ -120,26 +152,47 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_watermark( array $atts ) {
-		// Global fallback context would be passed here in $atts if needed,
-		// but Ui.php should ideally merge them or we fetch them here.
-		$url    = $atts['url'] ?? '';
-		$scale  = $atts['scale'] ?? 10;
-		$align  = $atts['align'] ?? 'right';
-		$valign = $atts['valign'] ?? 'bottom';
-		$x      = $atts['x'] ?? 5;
-		$y      = $atts['y'] ?? 7;
+		// Resolve options if needed for fallbacks.
+		$options = get_option( 'videopack_options', array() );
 
-		$link_to_type = $atts['linkToType'] ?? ( $atts['watermark_link_to'] ?? 'false' );
-		$link         = '';
-
-		if ( 'home' === $link_to_type ) {
-			$link = get_home_url();
-		} elseif ( 'custom' === $link_to_type ) {
-			$link = $atts['customLinkUrl'] ?? ( $atts['watermark_url'] ?? '' );
+		// Image Source Resolution.
+		$watermark = $atts['watermark'] ?? '';
+		if ( 'false' === $watermark || '0' === $watermark || empty( $watermark ) ) {
+			return '';
 		}
 
-		if ( ! $url ) {
+		if ( is_numeric( $watermark ) ) {
+			$watermark = wp_get_attachment_url( (int) $watermark );
+		}
+
+		if ( ! $watermark ) {
 			return '';
+		}
+
+		// Style Resolution.
+		$styles = $atts['watermark_styles'] ?? ( $options['watermark_styles'] ?? array() );
+		$scale  = $atts['watermark_scale'] ?? ( $atts['scale'] ?? ( $styles['scale'] ?? 10 ) );
+		$align  = $atts['watermark_align'] ?? ( $atts['align'] ?? ( $styles['align'] ?? 'right' ) );
+		$valign = $atts['watermark_valign'] ?? ( $atts['valign'] ?? ( $styles['valign'] ?? 'bottom' ) );
+		$x      = $atts['watermark_x'] ?? ( $atts['x'] ?? ( $styles['x'] ?? 5 ) );
+		$y      = $atts['watermark_y'] ?? ( $atts['y'] ?? ( $styles['y'] ?? 7 ) );
+
+		// Validate alignment to prevent collisions with player/container alignment (e.g. 'wide', 'full').
+		if ( ! in_array( $align, array( 'left', 'center', 'right' ), true ) ) {
+			$align = $styles['align'] ?? 'right';
+		}
+		if ( ! in_array( $valign, array( 'top', 'center', 'bottom' ), true ) ) {
+			$valign = $styles['valign'] ?? 'bottom';
+		}
+
+		// Link Resolution.
+		$link_to = $atts['watermark_link_to'] ?? ( $options['watermark_link_to'] ?? 'false' );
+		$link    = '';
+
+		if ( 'home' === $link_to ) {
+			$link = get_home_url();
+		} elseif ( 'custom' === $link_to ) {
+			$link = $atts['watermark_url'] ?? ( $options['watermark_url'] ?? '' );
 		}
 
 		$style_attrs = array(
@@ -172,14 +225,17 @@ class Modular_Renderer {
 
 		$img = sprintf(
 			'<img src="%s" alt="%s" style="display:block;width:100%%;height:auto;" />',
-			esc_url( $url ),
+			esc_url( $watermark ),
 			esc_attr__( 'Watermark', 'video-embed-thumbnail-generator' )
 		);
 
+		$skin = $atts['skin'] ?? ( $options['skin'] ?? 'default' );
+		$id   = $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() );
+
 		if ( $link ) {
-			$skin = $atts['skin'] ?? 'default';
 			return sprintf(
-				'<div class="videopack-video-watermark %s"%s><a href="%s" target="_blank" rel="noopener">%s</a></div>',
+				'<div id="video_%s_watermark" class="videopack-video-watermark %s"%s><a href="%s" target="_blank" rel="noopener">%s</a></div>',
+				esc_attr( (string) $id ),
 				esc_attr( $skin ),
 				$style,
 				esc_url( $link ),
@@ -187,8 +243,13 @@ class Modular_Renderer {
 			);
 		}
 
-		$skin = $atts['skin'] ?? 'default';
-		return '<div class="videopack-video-watermark ' . esc_attr( $skin ) . '"' . $style . '>' . $img . '</div>';
+		return sprintf(
+			'<div id="video_%s_watermark" class="videopack-video-watermark %s"%s>%s</div>',
+			esc_attr( (string) $id ),
+			esc_attr( $skin ),
+			$style,
+			$img
+		);
 	}
 
 
@@ -220,19 +281,28 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_video_title( array $atts, $source, $id ) {
-		$downloadlink = ! empty( $atts['downloadlink'] ) && 'false' !== $atts['downloadlink'] && false !== $atts['downloadlink'];
-		$embeddable   = ! empty( $atts['embeddable'] ) && 'false' !== $atts['embeddable'];
+		wp_enqueue_style( 'videopack-frontend' );
+		$options      = get_option( 'videopack_options', array() );
+		$downloadlink = self::is_true( $atts['downloadlink'] ?? ( $options['downloadlink'] ?? false ) );
+		$embedcode    = self::is_true( $atts['embedcode'] ?? ( $options['embedcode'] ?? false ) );
 		$title        = ! empty( $atts['title'] ) ? $atts['title'] : ( $source ? $source->get_title() : '' );
 		$tag          = $atts['tagName'] ?? 'h3';
-		$position     = $atts['position'] ?? 'top';
+		
+		$is_inside_thumbnail = ! empty( $atts['isInsideThumbnail'] );
+		$position            = ! empty( $atts['position'] ) ? $atts['position'] : ( $is_inside_thumbnail ? 'bottom' : 'top' );
 
-		$show_title = ! isset( $atts['showTitle'] ) || true === $atts['showTitle'] || 'true' === $atts['showTitle'];
+		$show_title = ! isset( $atts['overlay_title'] ) || self::is_true( $atts['overlay_title'] );
 		// Normalize showBackground from attributes or context.
-		$is_overlay      = ! empty( $atts['isOverlay'] );
+		$is_overlay      = self::is_true( $atts['isOverlay'] ?? false ) || self::is_true( $atts['is_overlay'] ?? false );
 		$show_background = true;
 		if ( isset( $atts['showBackground'] ) ) {
-			$val             = $atts['showBackground'];
-			$show_background = ! ( 'false' === $val || 0 === $val || '0' === $val || false === $val );
+			$show_background = self::is_true( $atts['showBackground'] );
+		}
+
+		// Resolve Embed Link.
+		$embedlink = $atts['embedlink'] ?? '';
+		if ( empty( $embedlink ) && $embedcode && $source && $source->get_id() ) {
+			$embedlink = add_query_arg( 'videopack[enable]', 'true', get_permalink( $source->get_id() ) );
 		}
 
 		if ( ! $is_overlay ) {
@@ -240,10 +310,7 @@ class Modular_Renderer {
 				return '';
 			}
 			$style_attrs = array();
-			$text_align  = $atts['textAlign'] ?? '';
-			if ( $text_align ) {
-				$style_attrs[] = 'text-align:' . $text_align;
-			}
+			$text_align  = $atts['textAlign'] ?? 'left';
 			if ( ! empty( $atts['title_color'] ) ) {
 				$style_attrs[] = 'color:' . $atts['title_color'];
 			}
@@ -251,37 +318,49 @@ class Modular_Renderer {
 				$style_attrs[] = 'background-color:' . $atts['title_background_color'];
 			}
 			$style = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', $style_attrs ) ) . '"' : '';
-			$class = 'videopack-video-title' . ( $show_background ? '' : ' has-no-background' );
+			$class = 'videopack-video-title has-text-align-' . esc_attr( $text_align ) . ( $show_background ? '' : ' has-no-background' );
 			return '<' . esc_attr( $tag ) . ' class="' . esc_attr( $class ) . '"' . $style . '>' . esc_html( (string) $title ) . '</' . esc_attr( $tag ) . '>';
 		}
 
 		// Overlay Mode (Info Bar).
-		$has_embed    = $embeddable && ( ! empty( $atts['embedcode'] ) || ! empty( $atts['embedlink'] ) );
+		$has_embed    = $embedcode && ! empty( $embedlink );
 		$share_svg    = '<svg class="videopack-icon-svg share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z" /></svg>';
 		$close_svg    = '<svg class="videopack-icon-svg close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" /></svg>';
 		$download_svg = '<svg class="videopack-icon-svg download-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" /></svg>';
 		$embed_svg    = '<svg class="videopack-icon-svg embed-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.8 10.7l-4.3-4.3-1.1 1.1 4.3 4.3c.1.1.1.3 0 .4l-4.3 4.3 1.1 1.1 4.3-4.3c.7-.8.7-1.9 0-2.6zM4.2 11.8l4.3-4.3-1-1-4.3 4.3c-.7.7-.7 1.8 0 2.5l4.3 4.3 1.1-1.1-4.3-4.3c-.2-.1-.2-.3-.1-.4z" /></svg>';
 
-		$text_align        = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : 'left';
+		$text_align        = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_inside_thumbnail ? 'center' : 'left' );
 		$title_style_attrs = array();
-		if ( $text_align ) {
-			$title_style_attrs[] = 'text-align:' . $text_align;
-		}
 		if ( ! empty( $atts['title_color'] ) ) {
 			$title_style_attrs[] = 'color:' . $atts['title_color'];
 		}
 		$title_style = ! empty( $title_style_attrs ) ? ' style="' . esc_attr( implode( ';', $title_style_attrs ) ) . '"' : '';
+		$title_classes = 'videopack-title has-text-align-' . esc_attr( $text_align );
 
-		$bg_color  = ! empty( $atts['title_background_color'] ) ? $atts['title_background_color'] : null;
-		$skin      = $atts['skin'] ?? 'default';
+		$bg_color          = ! empty( $atts['title_background_color'] ) ? $atts['title_background_color'] : null;
+		$skin              = $atts['skin'] ?? ( $options['skin'] ?? 'default' );
+		$has_custom_bg     = ! empty( $atts['title_background_color'] );
+		$has_custom_color  = ! empty( $atts['title_color'] );
+		
 		$bar_style = ( $show_background && $bg_color ) ? ' style="background-color:' . esc_attr( $bg_color ) . '"' : '';
-		$bar_class = 'videopack-video-title video-title is-overlay ' . esc_attr( $skin ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' ) . ( ! empty( $atts['title_background_color'] ) ? ' videopack-has-title-background-color' : '' );
+		$bar_class = 'videopack-video-title is-overlay ' . esc_attr( $skin ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' );
+		
+		if ( $is_inside_thumbnail ) {
+			$bar_class .= ' videopack-thumbnail-title';
+		}
+		
+		if ( $has_custom_bg ) {
+			$bar_class .= ' videopack-has-title-background-color';
+		}
+		if ( $has_custom_color ) {
+			$bar_class .= ' videopack-has-title-color';
+		}
 
 		$wrapper_style_vars = array();
-		if ( ! empty( $atts['title_color'] ) ) {
+		if ( $has_custom_color ) {
 			$wrapper_style_vars[] = '--videopack-title-color: ' . $atts['title_color'];
 		}
-		if ( ! empty( $atts['title_background_color'] ) ) {
+		if ( $has_custom_bg ) {
 			$wrapper_style_vars[] = '--videopack-title-background-color: ' . $atts['title_background_color'];
 		}
 		$wrapper_style = ! empty( $wrapper_style_vars ) ? ' style="' . esc_attr( implode( ';', $wrapper_style_vars ) ) . '"' : '';
@@ -290,15 +369,16 @@ class Modular_Renderer {
 		$html .= '<div class="' . esc_attr( $bar_class ) . '"' . $bar_style . '>' . "\n";
 
 		if ( $show_title ) {
-			$html .= '<' . esc_attr( $tag ) . ' class="videopack-title"' . $title_style . '>' . esc_html( (string) $title ) . '</' . esc_attr( $tag ) . '>' . "\n";
+			$html .= '<' . esc_attr( $tag ) . ' class="' . esc_attr( $title_classes ) . '"' . $title_style . '>' . esc_html( (string) $title ) . '</' . esc_attr( $tag ) . '>' . "\n";
 		}
 
 		$html .= '<div class="videopack-meta-icons">';
 
 		if ( $has_embed ) {
-			$html .= '<button type="button" class="videopack-meta-bar-button" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">' . "\n";
+			$html .= '<button type="button" class="videopack-meta-bar-button videopack-share-toggle" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">' . "\n";
 			$html .= '<span class="videopack-icons share">' . "\n";
-			$html .= $share_svg . "\n" . $close_svg . "\n" . '</span>' . "\n";
+			$html .= '<span class="videopack-icon-container">' . $share_svg . $close_svg . '</span>' . "\n";
+			$html .= '</span>' . "\n";
 			$html .= '</button>' . "\n";
 		}
 
@@ -324,7 +404,7 @@ class Modular_Renderer {
 
 			$embed_code = sprintf(
 				'<iframe src="%1$s" width="%2$s" height="%3$s" style="border:0; width:100%%; aspect-ratio:%2$s/%3$s;" allow="%4$s" allowfullscreen credentialless sandbox="%5$s" loading="lazy" title="%6$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
-				esc_url( $atts['embedlink'] ?? '' ),
+				esc_url( $embedlink ),
 				esc_attr( (string) ( $atts['width'] ?? 960 ) ),
 				esc_attr( (string) ( $atts['height'] ?? 540 ) ),
 				esc_attr( $allow_policy ),
@@ -371,15 +451,17 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_view_count( $source, $atts = array() ) {
+		wp_enqueue_style( 'videopack-frontend' );
 		if ( ! $source ) {
 			return '';
 		}
-		$view_count = $source->get_views();
-		$safe_views = (int) $view_count;
+		$views      = $source->get_views();
+		$safe_views = (int) $views;
 
 		$show_text  = ! isset( $atts['showText'] ) || true === $atts['showText'] || 'true' === $atts['showText'];
 		$icon_type  = $atts['iconType'] ?? 'none';
-		$text_align = $atts['textAlign'] ?? '';
+		$is_overlay = ! empty( $atts['isOverlay'] );
+		$is_thumb   = ! empty( $atts['isInsideThumbnail'] );
 
 		$display_value = '';
 		if ( $show_text ) {
@@ -393,32 +475,81 @@ class Modular_Renderer {
 		}
 
 		$icon_html   = self::get_svg_icon( $icon_type );
-		$text_align  = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : 'right';
-		$style_attrs = array( 'display:flex', 'align-items:center', 'flex-grow:1' );
+		$text_align  = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'center' : 'left' );
+		$style_attrs = array();
 
-		if ( 'center' === $text_align ) {
-			$style_attrs[] = 'justify-content:center';
-		} elseif ( 'left' === $text_align ) {
-			$style_attrs[] = 'justify-content:flex-start';
-		} elseif ( 'right' === $text_align ) {
-			$style_attrs[] = 'justify-content:flex-end';
-		}
+		$has_custom_bg    = ! empty( $atts['title_background_color'] );
+		$has_custom_color = ! empty( $atts['title_color'] );
 
-		if ( ! empty( $atts['title_color'] ) ) {
-			$style_attrs[] = 'color:' . $atts['title_color'];
+		if ( $has_custom_color ) {
+			$style_attrs[] = '--videopack-title-color:' . $atts['title_color'];
+			$style_attrs[] = 'color: var(--videopack-title-color)';
 		}
+		
 		$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
-		if ( ! empty( $atts['title_background_color'] ) && ! empty( $atts['isOverlay'] ) && $show_bg ) {
-			$style_attrs[] = 'background-color:' . $atts['title_background_color'];
+		
+		if ( $show_bg && $has_custom_bg ) {
+			$style_attrs[] = '--videopack-title-background-color:' . $atts['title_background_color'];
+			if ( $is_overlay ) {
+				$style_attrs[] = 'background-color: var(--videopack-title-background-color)';
+			}
 		}
 
-		$style = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', $style_attrs ) ) . '"' : '';
+		$style   = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', $style_attrs ) ) . '"' : '';
+		$classes = 'videopack-view-count has-text-align-' . esc_attr( $text_align ) . ( $is_overlay ? ' is-overlay is-badge' : '' );
+		
+		if ( $has_custom_bg ) {
+			$classes .= ' videopack-has-title-background-color';
+		}
+		if ( $has_custom_color ) {
+			$classes .= ' videopack-has-title-color';
+		}
 
 		return sprintf(
-			'<div class="videopack-view-count"%s>%s<span>%s</span></div>',
+			'<div class="%s"%s>%s<span>%s</span></div>',
+			esc_attr( $classes ),
 			$style,
 			$icon_html,
 			$display_value
 		);
 	}
+
+	/**
+	 * Renders the fully assembled player HTML including overlays like the title and watermark.
+	 *
+	 * @param \Videopack\Video_Players\Player $player   The player instance.
+	 * @param array                           $atts     The video attributes.
+	 * @param \Videopack\Video_Source\Source  $source   The video source object.
+	 * @param array                           $options  The global plugin options.
+	 * @return string The rendered HTML.
+	 */
+	public static function render_player_assembly( $player, $atts, $source, $options ) {
+		$player_content = '';
+
+		// Video Title / Social Bar.
+		$title_atts = array_merge( $atts, array( 'isOverlay' => true ) );
+		$player_content .= self::render_video_title( $title_atts, $source, $player->get_id() );
+
+		// Watermark.
+		$player_content .= self::render_watermark( $atts + array( 'instance_id' => $player->get_id() ) );
+
+		// Core Player.
+		$player_content .= $player->get_player_code( $atts );
+		
+		// Wrap in relative container.
+		$inner_content = sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $player_content );
+
+		// View Count.
+		if ( ! empty( $atts['views'] ) ) {
+			$inner_content .= self::render_view_count( $source, $atts );
+		}
+
+		// Caption.
+		if ( ! empty( $atts['caption'] ) ) {
+			$inner_content .= self::render_video_caption( $atts['caption'] );
+		}
+
+		return self::render_video_container( $atts, $inner_content );
+	}
+
 }

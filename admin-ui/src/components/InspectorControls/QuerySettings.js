@@ -17,7 +17,7 @@ export default function QuerySettings({
 		debouncedSetSearchString,
 		searchResults,
 		currentPost,
-		isResolving,
+		isResolvingSearch,
 	} = queryData;
 
 	const mapTermsToOptions = (terms) => {
@@ -87,9 +87,9 @@ export default function QuerySettings({
 						label: __('Tag', 'video-embed-thumbnail-generator'),
 						value: 'tag',
 					},
-					showArchiveSource && {
+					{
 						label: __(
-							'Archive Query',
+							'Inherit from Global Query',
 							'video-embed-thumbnail-generator'
 						),
 						value: 'archive',
@@ -129,7 +129,7 @@ export default function QuerySettings({
 						'video-embed-thumbnail-generator'
 					)}
 					allowReset={true}
-					isLoading={isResolving}
+					isLoading={isResolvingSearch}
 				/>
 			)}
 

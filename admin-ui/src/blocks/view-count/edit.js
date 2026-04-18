@@ -3,6 +3,7 @@ import { useMemo } from '@wordpress/element';
 import {
 	useBlockProps,
 	BlockControls,
+	BlockVerticalAlignmentControl,
 	AlignmentControl,
 	InspectorControls,
 } from '@wordpress/block-editor';
@@ -22,6 +23,8 @@ import {
 } from '../../assets/icon';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../utils/colors';
+import { getEffectiveValue } from '../../utils/context';
+import './index.css';
 
 /**
  * A internal component to display the view count with correct styling and data.
@@ -34,38 +37,70 @@ import { getColorFallbacks } from '../../utils/colors';
  * @param {number}  props.postId       The ID of the attachment to fetch meta for.
  * @param {number}  [props.count]      Optional pre-fetched count to display.
  */
-export function ViewCount({ blockProps, iconType, showText, postId, count }) {
-	const { viewCount, isResolving } = useSelect(
+export function ViewCount({
+	blockProps,
+	iconType,
+	showText,
+	postId,
+	count,
+	isInsideThumbnail,
+	isOverlay,
+	textAlign,
+	position,
+	skin,
+	title_color,
+	title_background_color,
+	context = {},
+}) {
+	const effectiveSkin = getEffectiveValue('skin', { skin }, context);
+	const effectiveTitleColor = getEffectiveValue('title_color', { title_color }, context);
+	const effectiveTitleBgColor = getEffectiveValue('title_background_color', { title_background_color }, context);
+	const { views, isResolving } = useSelect(
 		(select) => {
 			if (!postId || count !== undefined) {
-				return { viewCount: count || 0, isResolving: false };
+				return { views: count || 0, isResolving: false };
 			}
 			const { getEntityRecord, isResolving: isResolvingSelector } =
 				select('core');
 			const media = getEntityRecord('postType', 'attachment', postId);
 			return {
-				viewCount: media?.meta?.['_videopack-meta']?.starts,
+				views: media?.meta?.['_videopack-meta']?.starts,
 				isResolving: isResolvingSelector('getEntityRecord', [
 					'postType',
 					'attachment',
 					postId,
-					'starts', // specifically for the meta key
 				]),
 			};
 		},
 		[postId, count]
 	);
 
+	const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail;
+
+	const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${effectiveSkin} ${
+		actualIsOverlay ? 'is-overlay is-badge' : ''
+	} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
+		effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
+	} position-${position || 'top'} has-text-align-${textAlign || 'right'}`;
+
+	const finalBlockProps = blockProps || {
+		className: wrapperClass,
+		style: {
+			'--videopack-title-color': effectiveTitleColor || undefined,
+			'--videopack-title-background-color': effectiveTitleBgColor || undefined,
+		},
+	};
+
 	if (isResolving) {
 		return (
-			<div {...blockProps}>
+			<div {...finalBlockProps}>
 				<Spinner />
 			</div>
 		);
 	}
 
-	const safeViewCount =
-		viewCount !== undefined && viewCount !== null ? Number(viewCount) : 0;
+	const safeViews =
+		views !== undefined && views !== null ? Number(views) : 0;
 
 	const displayValue = showText
 		? sprintf(
@@ -73,23 +108,23 @@ export function ViewCount({ blockProps, iconType, showText, postId, count }) {
 			_n(
 				'%s view',
 				'%s views',
-				safeViewCount,
+				safeViews,
 				'video-embed-thumbnail-generator'
 			),
-			safeViewCount.toLocaleString()
+			safeViews.toLocaleString()
 		)
-		: safeViewCount.toLocaleString();
+		: safeViews.toLocaleString();
 
 	const renderIcon = () => {
 		switch (iconType) {
 			case 'eye':
-				return <Icon icon={seen} style={{ marginRight: '4px' }} />;
+				return <Icon icon={seen} className="videopack-icon-left-margin" />;
 			case 'play':
 				return (
 					<Icon
 						icon={playIcon}
 						size={16}
-						style={{ marginRight: '4px' }}
+						className="videopack-icon-left-margin"
 					/>
 				);
 			case 'playOutline':
@@ -97,7 +132,7 @@ export function ViewCount({ blockProps, iconType, showText, postId, count }) {
 					<Icon
 						icon={playOutlineIcon}
 						size={16}
-						style={{ marginRight: '4px' }}
+						className="videopack-icon-left-margin"
 					/>
 				);
 			default:
@@ -106,15 +141,17 @@ export function ViewCount({ blockProps, iconType, showText, postId, count }) {
 	};
 
 	return (
-		<div {...blockProps}>
-			{renderIcon()}
-			{displayValue}
+		<div {...finalBlockProps}>
+			<div className="videopack-view-count">
+				{renderIcon()}
+				{displayValue}
+			</div>
 		</div>
 	);
 }
 
 export default function Edit({ clientId, attributes, setAttributes, context }) {
-	const { postId } = context;
+	const postId = context['videopack/postId'];
 	const {
 		iconType,
 		showText,
@@ -123,65 +160,58 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 		title_background_color,
 	} = attributes;
 
-	const { isInsidePlayer } = useSelect(
-		(select) => {
-			const { getBlockName, getBlockRootClientId } =
-				select('core/block-editor');
-			const rootId = getBlockRootClientId(clientId);
-			const parentName = rootId ? getBlockName(rootId) : null;
-			return {
-				isInsidePlayer: parentName === 'videopack/videopack-video',
-			};
-		},
-		[clientId]
-	);
+	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
+	const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+	const isOverlay = isInsideThumbnail || isInsidePlayer;
 
-	const titleColorFallback = context['videopack/title_color'];
-	const titleBackgroundColorFallback =
-		context['videopack/title_background_color'];
-
-	const THEME_COLORS = videopack_config?.themeColors;
+	const effectiveTitleColor = getEffectiveValue('title_color', attributes, context);
+	const effectiveTitleBgColor = getEffectiveValue('title_background_color', attributes, context);
 
 	const colorFallbacks = useMemo(
 		() =>
 			getColorFallbacks({
-				title_color: titleColorFallback,
-				title_background_color: titleBackgroundColorFallback,
+				title_color: getEffectiveValue('title_color', {}, context),
+				title_background_color: getEffectiveValue('title_background_color', {}, context),
 			}),
-		[titleColorFallback, titleBackgroundColorFallback]
+		[context]
 	);
 
-	const finalTextAlign = textAlign || (isInsidePlayer ? 'right' : undefined);
+	const defaultAlign = isOverlay ? (isInsideThumbnail ? 'center' : 'left') : 'right';
+	const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
 
-	let justifyContent = 'flex-start';
-	if (finalTextAlign === 'center') {
-		justifyContent = 'center';
-	} else if (finalTextAlign === 'right') {
-		justifyContent = 'flex-end';
-	}
+	const position = attributes.position || context['videopack/position'] || 'top';
 
 	const blockProps = useBlockProps({
-		className: 'videopack-view-count-block',
+		className: `videopack-view-count-block videopack-view-count-wrapper ${
+			isOverlay
+				? 'is-overlay is-badge'
+				: ''
+		} position-${position} has-text-align-${finalTextAlign} ${
+			effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
+		}`,
 		style: {
-			display: 'flex',
-			alignItems: 'center',
-			textAlign: finalTextAlign,
-			'--videopack-title-color':
-				title_color || titleColorFallback || undefined,
-			'--videopack-title-background-color':
-				title_background_color ||
-				titleBackgroundColorFallback ||
-				undefined,
-			justifyContent,
-			flexGrow: 1,
+			'--videopack-title-color': effectiveTitleColor || undefined,
+			'--videopack-title-background-color': effectiveTitleBgColor || undefined,
 		},
 	});
+
+	const THEME_COLORS = videopack_config?.themeColors;
 
 	return (
 		<>
 			<BlockControls>
+				{isOverlay && (
+					<BlockVerticalAlignmentControl
+						value={position}
+						onChange={(nextPosition) => {
+							setAttributes({
+								position: nextPosition || undefined,
+							});
+						}}
+					/>
+				)}
 				<AlignmentControl
-					value={textAlign}
+					value={finalTextAlign}
 					onChange={(nextAlign) => {
 						setAttributes({ textAlign: nextAlign });
 					}}
@@ -303,6 +333,8 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 				iconType={iconType}
 				showText={showText}
 				postId={postId}
+				isInsideThumbnail={isInsideThumbnail}
+				context={context}
 			/>
 		</>
 	);

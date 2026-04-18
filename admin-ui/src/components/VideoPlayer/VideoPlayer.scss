@@ -1,4 +1,5 @@
 @use "sass:string";
+@use "../common/Overlays.scss" as *;
 @use "@wordpress/base-styles/colors";
 @use "../common/PlayButton.scss" as *;
 
@@ -6,9 +7,15 @@
 .wp-block-videopack-videopack-video {
 	width: 100%;
 	max-width: var(--wp--style--global--content-size);
+	margin-top: 1em;
+	margin-bottom: 1em;
 
 	&.alignwide {
 		max-width: var(--wp--style--global--wide-size);
+	}
+
+	.videopack-collection-item & {
+		max-width: 100%;
 	}
 
 	&.alignfull {
@@ -19,10 +26,15 @@
 		margin-left: auto;
 		margin-right: auto;
 	}
+}
 
-	.videopack-wrapper {
-		margin: 0;
-	}
+// Reset margin for video blocks inside loops/collections to defer to container spacing.
+// Also reset margin for interior wrapper when inside a Gutenberg block to avoid doubling.
+.wp-block-videopack-videopack-video .videopack-wrapper,
+.videopack-collection-item .videopack-wrapper,
+.videopack-collection-grid .videopack-wrapper,
+.videopack-video-loop .videopack-wrapper {
+	margin: 0;
 }
 
 /* Main Videopack Wrapper Component */
@@ -60,6 +72,8 @@
 		.videopack-player {
 			width: 100%;
 			position: relative;
+			height: auto;
+			min-height: 1px;
 
 			video,
 			.video-js,
@@ -86,130 +100,14 @@
 	.videopack-player {
 		position: relative;
 		width: 100%;
-		height: 100%;
-
-		// Standard Skin Background Colors
-		@at-root .videopack-wrapper {
-			&.default, &.vjs-theme-videopack {
-				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: #2b333f; }
-			}
-			&.vjs-theme-city {
-				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: var(--vjs-theme-city--primary); }
-			}
-			&.vjs-theme-fantasy {
-				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: var(--vjs-theme-fantasy--primary); }
-			}
-			&.vjs-theme-forest {
-				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: var(--vjs-theme-forest--primary); }
-			}
-			&.vjs-theme-sea {
-				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: rgb(65, 118, 188); }
-				.vjs-menu-button .vjs-menu-content { background-color: hsla(0, 0%, 100%, .4); }
-				.vjs-button:hover li {
-					color: white;
-					&.vjs-selected { color: rgba(65, 118, 188); }
-				}
-			}
-		}
+		height: auto;
+		min-height: 1px;
 	}
 
-	// Meta Bar (Title, Icons)
-	.videopack-video-title {
-		color: var(--videopack-title-color, #fff);
-		font-size: 15px;
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
+	// Standard overlay block behavior is handled in Overlays.scss
+	// We only keep player-specific extensions here.
+	.videopack-video-title:not(.videopack-thumbnail-title) {
 		justify-content: flex-end; // Anchors icons to right when title is hidden
-		align-items: center;
-		top: 0px;
-		box-sizing: border-box;
-		margin: 0px;
-		padding: 0.5em 0.6em;
-		width: 100%;
-		min-height: 2.6em;
-		background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
-		visibility: hidden;
-		opacity: 0;
-		transition: visibility 0.3s linear, opacity 0.3s linear;
-		line-height: 1.2;
-		position: relative; // Needed for z-index layering
-		z-index: 102; // Sits above Share Container (101)
-
-		.is-overlay & {
-			position: absolute;
-		}
-
-		&.is-overlay {
-			position: absolute;
-			z-index: 102;
-		}
-
-		&.no-title { background: transparent; }
-		&.has-no-background { background: transparent !important; }
-		
-		&.position-bottom {
-			top: auto;
-			bottom: 0px;
-		}
-
-		.videopack-title {
-			padding-left: 4px;
-			font-size: inherit;
-			margin: 0;
-			display: block;
-			line-height: inherit;
-			flex-grow: 1;
-			flex-shrink: 1;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-
-			h1, h2, h3, h4, h5, h6 {
-				font-size: inherit;
-				margin: 0;
-				padding: 0;
-				line-height: inherit;
-				color: inherit;
-				font-weight: inherit;
-			}
-		}
-
-		.videopack-meta-icons {
-			position: relative;
-			margin: 0 0 0 10px;
-			display: flex;
-			flex-direction: row;
-			flex-wrap: nowrap;
-			align-items: center;
-			flex-shrink: 0;
-
-			button, a {
-				background: transparent;
-				border: none;
-				box-shadow: none;
-				padding: 0;
-				margin: 0 3px;
-				color: inherit;
-				cursor: pointer;
-				text-decoration: none;
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				width: 1.6em;
-				height: 1.6em;
-				transition: opacity 0.15s ease;
-				font-size: 1em;
-				flex-shrink: 0;
-
-				&:hover { opacity: 0.8; }
-				&:focus { outline: none; }
-
-				// Avoid any global themes setting height/width
-				max-width: none !important;
-				max-height: none !important;
-			}
-		}
 	}
 
 	// Global Icon Normalization
@@ -229,93 +127,16 @@
 		&.close .share-icon { display: none !important; }
 	}
 
-	// Share Container Overlay
-	.videopack-share-container {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-wrap: wrap;
-		gap: 2em;
-		color: var(--videopack-title-color, white);
-		top: 0;
-		left: 0;
-		right: 0;
-		padding: 3em 2em;
-		width: 100%;
-		z-index: 101; // Sits behind Meta Bar (102)
-		position: absolute;
-		border-radius: 0;
-		margin: 0;
-		opacity: 0;
-		visibility: hidden;
-		transition: opacity 0.3s, visibility 0.3s;
-
-		// Allow sitting directly behind Title Bar (utilizing z-index: 101 vs 102)
-		// Targets both frontend (siblings) and block editor (nested)
-		.video-title.position-top ~ &,
-		.video-title.position-top & {
-			margin-top: 0;
-		}
-
-		background: linear-gradient(to bottom,
-			var(--videopack-title-background-color, #141414) 0%,
-			#{string.unquote("color-mix(in srgb, var(--videopack-title-background-color, #141414), transparent 40%)")} 60%,
-			transparent 100%);
-
-		&.is-visible {
-			opacity: 1;
-			visibility: visible;
-		}
-
-		.videopack-embedcode-container,
-		.videopack-start-at-container {
-			display: inline-flex;
-			align-items: center;
-			gap: 5px;
-			span { display: flex; align-items: center; }
-		}
-
-		input {
-			height: 20px;
-			min-height: auto;
-			font-size: 13px;
-			font-family: inherit;
-			background-color: var(--wp--preset--color--white, #fff);
-			border: none;
-			margin: 0;
-			color: #333;
-			padding: 2px 5px;
-			border-radius: 2px;
-
-			&.videopack-embed-code { width: 15rem; }
-			&.videopack-start-at { width: 3rem; text-align: center; }
-		}
-	}
-
-	// Click Trap
-	.videopack-click-trap {
-		width: 100%;
-		background: none;
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		z-index: 100; // Behind Share Container
-		opacity: 0;
-		visibility: hidden;
-		border: none;
-		padding: 0;
-		&.is-visible {
-			opacity: 1;
-			visibility: visible;
-			bottom: -100vh;
-		}
-	}
-
 	// Visibility Logic (Hover)
 	&.videopack-video-title-visible .videopack-video-title,
 	&:hover .videopack-video-title {
 		opacity: 1;
 		visibility: visible;
+
+		&::before {
+			opacity: 0.9;
+			visibility: visible;
+		}
 	}
 
 	// Watermark
@@ -354,24 +175,6 @@
 	--videopack-play-button-bg-color-alpha-hover: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%)")};
 
 
-	&.videopack-has-title-background-color {
-		.videopack-video-title:not(.no-title) {
-			background-color: var(--videopack-title-background-color);
-		}
-
-		.videopack-share-container {
-			background: linear-gradient(to bottom,
-				var(--videopack-title-background-color) 0%,
-				#{string.unquote("color-mix(in srgb, var(--videopack-title-background-color), transparent 50%)")} 60%,
-				#{string.unquote("color-mix(in srgb, var(--videopack-title-background-color), transparent 100%)")} 100%);
-		}
-	}
-
-	&.videopack-has-title-color {
-		.videopack-share-container {
-			color: var(--videopack-title-color);
-		}
-	}
 
 	/* Video.js Overrides */
 	&.videopack-has-control-bar-color .video-js {

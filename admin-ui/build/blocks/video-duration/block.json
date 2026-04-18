@@ -7,9 +7,19 @@
   "icon": "clock",
   "description": "Displays the video duration.",
   "usesContext": [
-    "postId",
-    "videopack/skin"
+    "videopack/postId",
+    "videopack/skin",
+    "videopack/isInsideThumbnail",
+    "videopack/isInsidePlayer"
   ],
+  "attributes": {
+    "position": {
+      "type": "string"
+    },
+    "textAlign": {
+      "type": "string"
+    }
+  },
   "supports": {
     "html": false,
     "color": {

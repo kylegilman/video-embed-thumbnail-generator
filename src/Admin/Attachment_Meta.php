@@ -163,7 +163,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'embeddable'        => (bool) ( $this->options['embeddable'] ?? false ),
 			'embedcode'         => (bool) ( $this->options['embedcode'] ?? false ),
 			'overlay_title'     => (bool) ( $this->options['overlay_title'] ?? false ),
-			'view_count'        => (bool) ( $this->options['view_count'] ?? false ),
+			'views'             => (bool) ( $this->options['views'] ?? false ),
 			'watermark'         => (string) ( $this->options['watermark'] ?? '' ),
 			'watermark_link_to' => (string) ( $this->options['watermark_link_to'] ?? 'none' ),
 			'watermark_url'     => (string) ( $this->options['watermark_url'] ?? '' ),
@@ -197,9 +197,15 @@ class Attachment_Meta implements Hook_Subscriber {
 		if ( ! is_array( $current_meta ) ) {
 			$current_meta = array();
 		}
-
 		$defaults = $this->get_defaults();
 		$migrated = false;
+
+		// Standardize terminology: Migration from view_count to views
+		if ( array_key_exists( 'view_count', $current_meta ) ) {
+			$current_meta['views'] = (bool) $current_meta['view_count'];
+			unset( $current_meta['view_count'] );
+			$migrated = true;
+		}
 
 		// Attempt to migrate from _kgvid-meta if _videopack-meta is empty.
 		if ( empty( $current_meta ) ) {
@@ -259,6 +265,7 @@ class Attachment_Meta implements Hook_Subscriber {
 		}
 
 		$current_meta['is_remote'] = ( 'true' === get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-external-remote', true ) );
+
 
 		$meta_data = array_merge( $defaults, $current_meta );
 
@@ -658,10 +665,11 @@ class Attachment_Meta implements Hook_Subscriber {
 				'description'   => (string) __( 'Videopack postmeta (new format)', 'video-embed-thumbnail-generator' ),
 				'single'        => true,
 				'show_in_rest'  => array(
-					'schema' => array(
+					'schema'          => array(
 						'type'       => 'object',
 						'properties' => $this->schema(),
 					),
+					'update_callback' => array( $this, 'merge_meta_value' ),
 				),
 				'auth_callback' => function () {
 					return current_user_can( 'edit_posts' );
@@ -759,7 +767,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'embeddable'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'embedcode'           => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'overlay_title'       => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'view_count'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'views'               => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'watermark'           => array( 'type' => array( 'string', 'null' ) ),
 			'watermark_link_to'   => array( 'type' => array( 'string', 'null' ) ),
 			'watermark_url'       => array(
@@ -816,5 +824,34 @@ class Attachment_Meta implements Hook_Subscriber {
 		}
 
 		return $check;
+	}
+
+	/**
+	 * Merges incoming metadata with existing metadata for the REST API.
+	 *
+	 * @param mixed           $value    The new value for the meta field.
+	 * @param \WP_Post        $post     The post object.
+	 * @param string          $meta_key The meta key.
+	 * @param \WP_REST_Request $request  The REST request.
+	 * @return bool True if successful, false otherwise.
+	 */
+	public function merge_meta_value( $value, $post, $meta_key, $request ) {
+		if ( '_videopack-meta' !== $meta_key ) {
+			return false;
+		}
+
+		$current_meta = get_post_meta( $post->ID, '_videopack-meta', true );
+		if ( ! is_array( $current_meta ) ) {
+			$current_meta = array();
+		}
+
+		// Merge incoming value with current meta.
+		$merged_meta = array_merge( $current_meta, (array) $value );
+
+		// Only save if it differs from the defaults (leveraging existing save logic).
+		$this->post_id = $post->ID;
+		$this->save( $merged_meta );
+
+		return true;
 	}
 }

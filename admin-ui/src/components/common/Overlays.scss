@@ -1,0 +1,580 @@
+@use "sass:string";
+@use "@wordpress/base-styles/colors";
+
+// Source of Truth for Video Overlays
+// Shared between VideoPlayer, GalleryItem, and Thumbnail blocks
+
+// ---------------------------------------------------------------------------
+// Collective Positioning and Targeting Variables
+// ---------------------------------------------------------------------------
+
+$badge-selectors: (
+	".videopack-video-duration.is-overlay",
+	".videopack-video-duration-block.is-inside-thumbnail",
+	".videopack-video-duration-block.is-badge",
+	".videopack-view-count.is-overlay",
+	".videopack-view-count-block.is-inside-thumbnail",
+	".videopack-view-count-block.is-badge",
+	".videopack-view-count-wrapper.is-inside-thumbnail"
+);
+
+// ---------------------------------------------------------------------------
+// Base Overlay Styling
+// ---------------------------------------------------------------------------
+
+.videopack-video-title {
+	color: var(--videopack-title-color, inherit);
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	position: relative;
+	white-space: pre-wrap;
+	margin: 0;
+	transition: opacity 0.3s ease, visibility 0.3s ease;
+
+	&.has-text-align-left { text-align: left; }
+	&.has-text-align-center { text-align: center; }
+	&.has-text-align-right { text-align: right; }
+
+	&.is-overlay {
+		position: absolute;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		left: 0;
+		padding: 0.5em 0.6em;
+		min-height: 2.6em;
+		line-height: 1.2;
+		color: var(--videopack-title-color, #fff);
+		font-size: 15px;
+		padding: 0;
+		z-index: 102;
+
+		&.position-top { top: 0; bottom: auto; }
+		&.position-bottom { bottom: 0; top: auto; }
+		&.position-center {
+			top: 50%;
+			bottom: auto;
+			transform: translateY(-50%);
+		}
+
+		&.has-text-align-left { justify-content: flex-start; }
+		&.has-text-align-right { justify-content: flex-end; }
+		&.has-text-align-center {
+			justify-content: center;
+			text-align: center;
+		}
+
+		&::before {
+			content: "";
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: -1;
+			transition: visibility 0.3s linear, opacity 0.3s linear;
+			background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+			opacity: var(--videopack-title-bg-alpha, 0.9);
+		}
+
+		.videopack-title {
+			padding-left: 4px;
+			font-size: inherit;
+			margin: 0;
+			display: block;
+			line-height: inherit;
+			flex-grow: 1;
+			flex-shrink: 1;
+			min-width: 0; /* Important for ellipsis in flex containers */
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap !important; /* Overrides Gutenberg inline styles */
+
+			h1, h2, h3, h4, h5, h6 {
+				font-size: inherit;
+				margin: 0;
+				padding: 0;
+				line-height: inherit;
+				color: inherit;
+				font-weight: inherit;
+			}
+		}
+
+		.videopack-thumbnail-title-text {
+			padding-left: 4px;
+			font-size: inherit;
+			margin: 0;
+			display: block;
+			line-height: inherit;
+			flex-grow: 1;
+			flex-shrink: 1;
+			white-space: pre-wrap;
+
+			h1, h2, h3, h4, h5, h6 {
+				font-size: inherit;
+				margin: 0;
+				padding: 0;
+				line-height: inherit;
+				color: inherit;
+				font-weight: inherit;
+			}
+		}
+	}
+
+	&.no-title { background: transparent; }
+	&.has-no-background { background: transparent !important; }
+
+	&.is-overlay {
+		// Hide the overlay if the parent doesn't have the visible class
+		// EXCEPT if this is a thumbnail (thumbnails don't use this class for visibility)
+		:is(.videopack-wrapper:not(.videopack-video-title-visible):not(:hover), 
+			.videopack-video-block:not(.videopack-video-title-visible):not(:hover)) &:not(.videopack-thumbnail-title) {
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+		}
+
+		// Show it on hover, even if the video is playing
+		:is(.videopack-wrapper:hover, .videopack-video-block:hover, .videopack-player:hover) &:not(.videopack-thumbnail-title) {
+			opacity: 1 !important;
+			visibility: visible !important;
+			pointer-events: auto !important;
+		}
+	}
+
+	&.is-overlay {
+		color: var(--videopack-title-color, #fff) !important;
+	}
+
+	// Standard Title Text Logic (when not an overlay)
+	:is(.videopack-title, .videopack-thumbnail-title-text) {
+		color: inherit;
+	}
+
+	// Meta Icons Logic
+	.videopack-meta-icons {
+		position: relative;
+		margin: 0 0 0 10px;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		flex-shrink: 0;
+
+		button, a {
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			padding: 0;
+			margin: 0 3px;
+			color: inherit;
+			cursor: pointer;
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 1.6em;
+			height: 1.6em;
+			transition: opacity 0.15s ease;
+			font-size: 1em;
+			flex-shrink: 0;
+
+			&:hover { opacity: 0.8; }
+			&:focus { outline: none; }
+			max-width: none !important;
+			max-height: none !important;
+
+			.videopack-icon-container {
+				display: grid;
+				width: 1.25em; /* Ensure consistent icon sizing */
+				height: 1.25em;
+				place-items: center;
+
+				svg {
+					grid-area: 1 / 1;
+					width: 100%;
+					height: 100%;
+					transition: opacity 0.2s ease, visibility 0.2s ease;
+				}
+			}
+
+			// Toggle logic based on the span class (managed by JS)
+			.videopack-icons.share {
+				.videopack-close-svg { opacity: 0; visibility: hidden; }
+				.videopack-share-svg { opacity: 1; visibility: visible; }
+
+				&.close {
+					.videopack-close-svg { opacity: 1; visibility: visible; }
+					.videopack-share-svg { opacity: 0; visibility: hidden; }
+				}
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Badge Overlay Styling (Duration, View Count)
+// ---------------------------------------------------------------------------
+
+:is(#{$badge-selectors}) {
+	position: absolute;
+	background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+	color: var(--videopack-title-color, colors.$white);
+	opacity: var(--videopack-title-bg-alpha, 0.9);
+	padding: 2px 6px;
+	font-size: 11px;
+	line-height: 1.4;
+	border-radius: 2px;
+	z-index: 105; /* Above player controls but below main overlay overlays if needed */
+	box-shadow: none;
+
+	&.position-top { top: 5px; bottom: auto; }
+	&.position-bottom { bottom: 5px; top: auto; }
+	&.has-text-align-left { left: 5px; right: auto; margin-right: auto; }
+	&.has-text-align-right { right: 5px; left: auto; margin-left: auto; }
+	&.has-text-align-center {
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+	}
+
+	&.position-center {
+		top: 50%;
+		bottom: auto;
+		transform: translateY(-50%);
+
+		&.has-text-align-center {
+			transform: translate(-50%, -50%);
+		}
+	}
+
+	// Common badge colors and positioning (when overlay)
+	.videopack-icon-svg,
+	.videopack-icons,
+	svg {
+		fill: currentColor;
+	}
+}
+
+.videopack-view-count,
+.videopack-view-count-block,
+.videopack-view-count-wrapper,
+.videopack-video-duration,
+.videopack-video-duration-block {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	width: fit-content;
+
+	&.has-text-align-left {
+		justify-content: flex-start;
+		margin-right: auto;
+	}
+	&.has-text-align-center {
+		justify-content: center;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	&.has-text-align-right {
+		justify-content: flex-end;
+		margin-left: auto;
+	}
+}
+
+:is(#{$badge-selectors}) {
+	// Disable background/borders and absolute positioning on inner elements 
+	// when they are already nested inside another badge wrapper 
+	// (common in the Block Editor template).
+	& :is(#{$badge-selectors}) {
+		background: transparent !important;
+		padding: 0 !important;
+		box-shadow: none !important;
+		position: static !important;
+		color: inherit !important;
+		transform: none !important;
+		left: auto !important;
+		top: auto !important;
+	}
+}
+
+// Alignment logic is now handled in the base badge selector above
+
+// ---------------------------------------------------------------------------
+// Skin Inheritance Logic
+// ---------------------------------------------------------------------------
+
+// Targets containers that provide the skin context
+:is(.videopack-wrapper,
+	.videopack-gallery-wrapper,
+	.videopack-gallery-item,
+	.gallery-thumbnail,
+	.videopack-player,
+	.videopack-video-block,
+	.videopack-collection,
+	.videopack-video-title-block,
+	.videopack-video-player-engine-block) {
+	--videopack-title-background-color: #141414; // Default fallback
+
+	&.default, &.vjs-theme-videopack {
+		--videopack-title-background-color: #2b333f;
+		.videopack-video-title:not(.videopack-has-title-background-color)::before,
+		& :is(#{$badge-selectors}) {
+			background-color: var(--videopack-title-background-color);
+		}
+	}
+	&.vjs-theme-city {
+		--videopack-title-background-color: var(--vjs-theme-city--primary);
+		.videopack-video-title:not(.videopack-has-title-background-color)::before,
+		& :is(#{$badge-selectors}) {
+			background-color: var(--videopack-title-background-color);
+		}
+	}
+	&.vjs-theme-fantasy {
+		--videopack-title-background-color: var(--vjs-theme-fantasy--primary);
+		.videopack-video-title:not(.videopack-has-title-background-color)::before,
+		& :is(#{$badge-selectors}) {
+			background-color: var(--videopack-title-background-color);
+		}
+	}
+	&.vjs-theme-forest {
+		--videopack-title-background-color: var(--vjs-theme-forest--primary);
+		.videopack-video-title:not(.videopack-has-title-background-color)::before,
+		& :is(#{$badge-selectors}) {
+			background-color: var(--videopack-title-background-color);
+		}
+	}
+	&.vjs-theme-sea {
+		--videopack-title-background-color: rgb(65, 118, 188);
+		.videopack-video-title:not(.videopack-has-title-background-color)::before,
+		& :is(#{$badge-selectors}) {
+			background-color: var(--videopack-title-background-color);
+		}
+
+		// Sea thumb title background often wants lower alpha
+		&.gallery-thumbnail .videopack-video-title::before,
+		&.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
+			background-color: rgba(65, 118, 188, 0.4);
+		}
+	}
+}
+
+// Custom Colors Logic
+:is(.videopack-wrapper,
+	.videopack-gallery-wrapper,
+	.gallery-thumbnail,
+	.videopack-video-title-block).videopack-has-title-background-color {
+	.videopack-video-title:not(.no-title)::before,
+	& :is(#{$badge-selectors}) {
+		background-color: var(--videopack-title-background-color) !important;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Block Editor Wrappers Logic
+// ---------------------------------------------------------------------------
+
+.videopack-video-title-block.is-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0 !important;
+	z-index: 110;
+	visibility: visible;
+	opacity: 1;
+	pointer-events: none;
+
+	display: flex;
+	flex-direction: column;
+
+	&.position-top { justify-content: flex-start; }
+	&.position-bottom { justify-content: flex-end; }
+	&.position-center { justify-content: center; }
+
+	.videopack-video-title {
+		pointer-events: auto;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Thumbnail Specific Overrides
+// ---------------------------------------------------------------------------
+
+.videopack-video-title.videopack-thumbnail-title.is-overlay {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	padding: 4px;
+	z-index: 102;
+	--videopack-title-bg-alpha: 0.5;
+
+	:is(&.position-bottom, .videopack-video-title-block.position-bottom &) {
+		bottom: 5%;
+		top: auto;
+	}
+
+	:is(&.position-top, .videopack-video-title-block.position-top &) {
+		top: 5%;
+		bottom: auto;
+	}
+
+	:is(&.position-center, .videopack-video-title-block.position-center &) {
+		top: 50%;
+		bottom: auto;
+		transform: translateY(-50%);
+	}
+}
+
+
+// ---------------------------------------------------------------------------
+// Watermark Styling
+// ---------------------------------------------------------------------------
+
+.videopack-video-watermark-block {
+	&.is-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0 !important;
+		z-index: 110;
+		pointer-events: none;
+		visibility: visible;
+		opacity: 1;
+	}
+}
+
+.videopack-video-watermark {
+	position: absolute;
+	z-index: 111;
+	pointer-events: auto;
+	display: block;
+
+	img {
+		display: block;
+		width: 100%;
+		height: auto;
+		margin: 0;
+	}
+}
+
+.videopack-player {
+	position: relative;
+	width: 100%;
+	height: auto; // Let aspect-ratio or content define height
+	min-height: 1px; // Prevent collapse
+}
+
+// ---------------------------------------------------------------------------
+// Frontend Container Parity
+// ---------------------------------------------------------------------------
+
+.videopack-thumbnail-wrapper {
+	position: relative;
+	display: block;
+	overflow: hidden;
+
+	.videopack-inner-blocks-container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 10;
+		& > * {
+			pointer-events: auto;
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Share UI (Modals & Click Traps)
+// ---------------------------------------------------------------------------
+
+.videopack-share-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 2em;
+	color: var(--videopack-title-color, white);
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: 3em 2em;
+	width: 100%;
+	z-index: 101; // Sits behind Meta Bar (102)
+	position: absolute;
+	border-radius: 0;
+	margin: 0;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.3s, visibility 0.3s;
+
+	// Inherited background color from skin or custom block override
+	background: linear-gradient(to bottom,
+		var(--videopack-title-background-color) 0%,
+		#{string.unquote("color-mix(in srgb, var(--videopack-title-background-color), transparent 40%)")} 60%,
+		transparent 100%);
+
+	// Allow sitting directly behind Title Bar (utilizing z-index: 101 vs 102)
+	.videopack-thumbnail-title.position-top ~ &,
+	.videopack-thumbnail-title.position-top & {
+		margin-top: 0;
+	}
+
+	&.is-visible {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.videopack-embedcode-container,
+	.videopack-start-at-container {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		span { display: flex; align-items: center; }
+	}
+
+	input {
+		height: 20px;
+		min-height: auto;
+		font-size: 13px;
+		font-family: inherit;
+		background-color: var(--wp--preset--color--white, #fff);
+		border: none;
+		margin: 0;
+		color: #333;
+		padding: 2px 5px;
+		border-radius: 2px;
+
+		&.videopack-embed-code { width: 15rem; }
+		&.videopack-start-at { width: 3rem; text-align: center; }
+	}
+}
+
+.videopack-click-trap {
+	width: 100%;
+	background: none;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	z-index: 100; // Behind Share Container
+	opacity: 0;
+	visibility: hidden;
+	border: none;
+	padding: 0;
+	&.is-visible {
+		opacity: 1;
+		visibility: visible;
+		bottom: -100vh;
+	}
+}

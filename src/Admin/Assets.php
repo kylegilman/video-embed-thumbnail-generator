@@ -92,8 +92,7 @@ class Assets implements Hook_Subscriber {
 			'videopack-admin-screens'  => 'admin-screens',
 			'videopack-media-library'  => 'media-library',
 			'videopack-classic-editor' => 'classic-editor',
-			'videopack-frontend'       => 'videopack',
-			'videopack-player'         => 'videopack-player',
+			'videopack-frontend' => 'videopack-frontend',
 		);
 
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );

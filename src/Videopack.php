@@ -32,7 +32,6 @@ use Videopack\Admin\REST\Process_Controller;
 use Videopack\Admin\REST\Public_Controller;
 use Videopack\Admin\Screens;
 use Videopack\Admin\Ui;
-use Videopack\Admin\Patterns;
 use Videopack\Frontend\Metadata;
 use Videopack\Frontend\Shortcode;
 use Videopack\Frontend\Schema;
@@ -151,7 +150,6 @@ class Videopack {
 		$this->loader->add_subscriber( new Screens( $options, $format_registry ) );
 		$this->loader->add_subscriber( new Blocks( $options, $format_registry ) );
 		$this->loader->add_subscriber( new Ui( $options, $format_registry ) );
-		$this->loader->add_subscriber( new Patterns() );
 
 		if ( Multisite::is_videopack_active_for_network() ) {
 			$this->loader->add_subscriber( new Multisite( $options ) );

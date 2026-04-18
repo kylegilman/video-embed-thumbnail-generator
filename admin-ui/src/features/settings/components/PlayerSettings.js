@@ -57,7 +57,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		embedcode,
 		downloadlink,
 		inline,
-		view_count,
+		views,
 		autoplay,
 		loop,
 		muted,
@@ -93,7 +93,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				controls: false,
 				embeddable: false,
 				overlay_title: false,
-				view_count: false,
+				views: false,
 				playsinline: true,
 			}));
 		} else {
@@ -501,8 +501,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								'View count',
 								'video-embed-thumbnail-generator'
 							)}
-							onChange={changeHandlerFactory.view_count}
-							checked={!!view_count}
+							onChange={changeHandlerFactory.views}
+							checked={!!views}
 						/>
 					</PanelRow>
 				</div>

@@ -13,7 +13,7 @@
 		"inserter": false
 	},
 	"usesContext": [
-		"postId",
+		"videopack/postId",
 		"videopack/skin",
 		"videopack/layout",
 		"videopack/columns",

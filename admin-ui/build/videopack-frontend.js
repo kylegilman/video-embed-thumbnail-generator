@@ -17,12 +17,12 @@
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-/*!***********************************!*\
-  !*** ./src/videopack-player.scss ***!
-  \***********************************/
+/*!*************************************!*\
+  !*** ./src/videopack-frontend.scss ***!
+  \*************************************/
 __webpack_require__.r(__webpack_exports__);
 // extracted by mini-css-extract-plugin
 
 /******/ })()
 ;
-//# sourceMappingURL=videopack-player.js.map
+//# sourceMappingURL=videopack-frontend.js.map

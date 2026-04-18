@@ -648,7 +648,7 @@ class Screens implements Hook_Subscriber {
 	<li><code>title="Video Title"</code> ' . sprintf( /* translators: %s is the word 'false' in code tags */ (string) esc_html__( 'or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
 	<li><code>embeddable="true/false"</code> ' . (string) esc_html__( 'enable or disable video embedding and sharing icons.', 'video-embed-thumbnail-generator' ) . '</li>
 	<li><code>embedcode="html code"</code> ' . sprintf( /* translators: %s is the word 'false' in code tags */ (string) esc_html__( 'changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
-	<li><code>view_count="true/false"</code> ' . (string) esc_html__( 'turns the view count on or off.', 'video-embed-thumbnail-generator' ) . '</li>
+	<li><code>views="true/false"</code> ' . (string) esc_html__( 'turns the view count on or off.', 'video-embed-thumbnail-generator' ) . '</li>
 	<li><code>count_views="quarters/start_complete/start/false"</code> ' . (string) esc_html__( 'sets the level of video view counting.', 'video-embed-thumbnail-generator' ) . '</li>
 	<li><code>caption="Caption"</code> ' . (string) esc_html__( 'text that is displayed below the video (not subtitles or closed captioning)', 'video-embed-thumbnail-generator' ) . '</li>
 	<li><code>description="Description"</code> ' . (string) esc_html__( 'Used for metadata only.', 'video-embed-thumbnail-generator' ) . '</li>

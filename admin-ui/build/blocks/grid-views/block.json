@@ -13,7 +13,7 @@
     }
   },
   "usesContext": [
-    "postId"
+    "videopack/postId"
   ],
   "supports": {
     "html": false,

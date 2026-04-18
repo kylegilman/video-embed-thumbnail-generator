@@ -8267,9 +8267,6 @@ const VideoPlayer = ({
     source_groups = {},
     text_tracks = [],
     playback_rate,
-    watermark,
-    watermark_styles,
-    watermark_link_to,
     default_ratio,
     play_button_color,
     play_button_icon_color,
@@ -8501,52 +8498,6 @@ const VideoPlayer = ({
   if (!renderReady) {
     return null; // Or a loading spinner
   }
-  const getWatermarkStyle = () => {
-    const defaults = {
-      scale: 10,
-      align: 'right',
-      valign: 'bottom',
-      x: 5,
-      y: 7
-    };
-    const styles = {
-      ...defaults,
-      ...watermark_styles
-    };
-
-    // Check if styles differ from defaults
-    if (Number(styles.scale) === defaults.scale && styles.align === defaults.align && styles.valign === defaults.valign && Number(styles.x) === defaults.x && Number(styles.y) === defaults.y) {
-      return null;
-    }
-    const css = {
-      maxWidth: `${styles.scale}%`,
-      width: '100%',
-      height: 'auto',
-      position: 'absolute'
-    };
-    const x = styles.x || 0;
-    const y = styles.y || 0;
-    if (styles.align === 'left') {
-      css.left = `${x}%`;
-    } else if (styles.align === 'right') {
-      css.right = `${x}%`;
-    } else {
-      css.left = '50%';
-      css.transform = 'translateX(-50%)';
-      css.marginLeft = `${-x}%`;
-    }
-    if (styles.valign === 'top') {
-      css.top = `${y}%`;
-    } else if (styles.valign === 'bottom') {
-      css.bottom = `${y}%`;
-    } else {
-      css.top = '50%';
-      css.transform = css.transform ? 'translate(-50%, -50%)' : 'translateY(-50%)';
-      css.marginTop = `${-y}%`;
-    }
-    return css;
-  };
-  const watermarkStyle = getWatermarkStyle();
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
     className: wrapperClasses,
     ref: wrapperRef,
@@ -8629,23 +8580,7 @@ const VideoPlayer = ({
           onReady: handleVideoPlayerReady,
           onMetadataLoaded: onMetadataLoaded
         }, `${embed_method}-${src}`);
-      })(), !hideStaticOverlays && watermark && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
-        className: "videopack-watermark",
-        children: watermark_link_to && watermark_link_to !== 'false' && watermark_link_to !== 'None' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("a", {
-          href: "#videopack-watermark-link",
-          className: "videopack-watermark-link",
-          onClick: e => e.preventDefault(),
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("img", {
-            src: watermark,
-            alt: "watermark",
-            style: watermarkStyle
-          })
-        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("img", {
-          src: watermark,
-          alt: "watermark",
-          style: watermarkStyle
-        })
-      }), children]
+      })(), children]
     })
   });
 };
@@ -11148,7 +11083,7 @@ const PlayerSettings = ({
     embedcode,
     downloadlink,
     inline,
-    view_count,
+    views,
     autoplay,
     loop,
     muted,
@@ -11179,7 +11114,7 @@ const PlayerSettings = ({
         controls: false,
         embeddable: false,
         overlay_title: false,
-        view_count: false,
+        views: false,
         playsinline: true
       }));
     } else {
@@ -11445,8 +11380,8 @@ const PlayerSettings = ({
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
             __nextHasNoMarginBottom: true,
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('View count', 'video-embed-thumbnail-generator'),
-            onChange: changeHandlerFactory.view_count,
-            checked: !!view_count
+            onChange: changeHandlerFactory.views,
+            checked: !!views
           })
         })]
       })
@@ -20244,490 +20179,6 @@ var Combobox = (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.forwardRef)(f
 
 /***/ },
 
-/***/ "./node_modules/@base-ui/react/esm/merge-props/mergeProps.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@base-ui/react/esm/merge-props/mergeProps.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   makeEventPreventable: () => (/* binding */ makeEventPreventable),
-/* harmony export */   mergeClassNames: () => (/* binding */ mergeClassNames),
-/* harmony export */   mergeProps: () => (/* binding */ mergeProps),
-/* harmony export */   mergePropsN: () => (/* binding */ mergePropsN)
-/* harmony export */ });
-/* harmony import */ var _base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @base-ui/utils/mergeObjects */ "./node_modules/@base-ui/utils/esm/mergeObjects.js");
-
-const EMPTY_PROPS = {};
-
-/* eslint-disable id-denylist */
-/**
- * Merges multiple sets of React props. It follows the Object.assign pattern where the rightmost object's fields overwrite
- * the conflicting ones from others. This doesn't apply to event handlers, `className` and `style` props.
- *
- * Event handlers are merged and called in right-to-left order (rightmost handler executes first, leftmost last).
- * For React synthetic events, the rightmost handler can prevent prior (left-positioned) handlers from executing
- * by calling `event.preventBaseUIHandler()`. For non-synthetic events (custom events with primitive/object values),
- * all handlers always execute without prevention capability.
- *
- * The `className` prop is merged by concatenating classes in right-to-left order (rightmost class appears first in the string).
- * The `style` prop is merged with rightmost styles overwriting the prior ones.
- *
- * Props can either be provided as objects or as functions that take the previous props as an argument.
- * The function will receive the merged props up to that point (going from left to right):
- * so in the case of `(obj1, obj2, fn, obj3)`, `fn` will receive the merged props of `obj1` and `obj2`.
- * The function is responsible for chaining event handlers if needed (i.e. we don't run the merge logic).
- *
- * Event handlers returned by the functions are not automatically prevented when `preventBaseUIHandler` is called.
- * They must check `event.baseUIHandlerPrevented` themselves and bail out if it's true.
- *
- * @important **`ref` is not merged.**
- * @param a Props object to merge.
- * @param b Props object to merge. The function will overwrite conflicting props from `a`.
- * @param c Props object to merge. The function will overwrite conflicting props from previous parameters.
- * @param d Props object to merge. The function will overwrite conflicting props from previous parameters.
- * @param e Props object to merge. The function will overwrite conflicting props from previous parameters.
- * @returns The merged props.
- * @public
- */
-
-function mergeProps(a, b, c, d, e) {
-  // We need to mutably own `merged`
-  let merged = {
-    ...resolvePropsGetter(a, EMPTY_PROPS)
-  };
-  if (b) {
-    merged = mergeOne(merged, b);
-  }
-  if (c) {
-    merged = mergeOne(merged, c);
-  }
-  if (d) {
-    merged = mergeOne(merged, d);
-  }
-  if (e) {
-    merged = mergeOne(merged, e);
-  }
-  return merged;
-}
-/* eslint-enable id-denylist */
-
-/**
- * Merges an arbitrary number of React props using the same logic as {@link mergeProps}.
- * This function accepts an array of props instead of individual arguments.
- *
- * This has slightly lower performance than {@link mergeProps} due to accepting an array
- * instead of a fixed number of arguments. Prefer {@link mergeProps} when merging 5 or
- * fewer prop sets for better performance.
- *
- * @param props Array of props to merge.
- * @returns The merged props.
- * @see mergeProps
- * @public
- */
-function mergePropsN(props) {
-  if (props.length === 0) {
-    return EMPTY_PROPS;
-  }
-  if (props.length === 1) {
-    return resolvePropsGetter(props[0], EMPTY_PROPS);
-  }
-
-  // We need to mutably own `merged`
-  let merged = {
-    ...resolvePropsGetter(props[0], EMPTY_PROPS)
-  };
-  for (let i = 1; i < props.length; i += 1) {
-    merged = mergeOne(merged, props[i]);
-  }
-  return merged;
-}
-function mergeOne(merged, inputProps) {
-  if (isPropsGetter(inputProps)) {
-    return inputProps(merged);
-  }
-  return mutablyMergeInto(merged, inputProps);
-}
-
-/**
- * Merges two sets of props. In case of conflicts, the external props take precedence.
- */
-function mutablyMergeInto(mergedProps, externalProps) {
-  if (!externalProps) {
-    return mergedProps;
-  }
-
-  // eslint-disable-next-line guard-for-in
-  for (const propName in externalProps) {
-    const externalPropValue = externalProps[propName];
-    switch (propName) {
-      case 'style':
-        {
-          mergedProps[propName] = (0,_base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_0__.mergeObjects)(mergedProps.style, externalPropValue);
-          break;
-        }
-      case 'className':
-        {
-          mergedProps[propName] = mergeClassNames(mergedProps.className, externalPropValue);
-          break;
-        }
-      default:
-        {
-          if (isEventHandler(propName, externalPropValue)) {
-            mergedProps[propName] = mergeEventHandlers(mergedProps[propName], externalPropValue);
-          } else {
-            mergedProps[propName] = externalPropValue;
-          }
-        }
-    }
-  }
-  return mergedProps;
-}
-function isEventHandler(key, value) {
-  // This approach is more efficient than using a regex.
-  const code0 = key.charCodeAt(0);
-  const code1 = key.charCodeAt(1);
-  const code2 = key.charCodeAt(2);
-  return code0 === 111 /* o */ && code1 === 110 /* n */ && code2 >= 65 /* A */ && code2 <= 90 /* Z */ && (typeof value === 'function' || typeof value === 'undefined');
-}
-function isPropsGetter(inputProps) {
-  return typeof inputProps === 'function';
-}
-function resolvePropsGetter(inputProps, previousProps) {
-  if (isPropsGetter(inputProps)) {
-    return inputProps(previousProps);
-  }
-  return inputProps ?? EMPTY_PROPS;
-}
-function mergeEventHandlers(ourHandler, theirHandler) {
-  if (!theirHandler) {
-    return ourHandler;
-  }
-  if (!ourHandler) {
-    return theirHandler;
-  }
-  return event => {
-    if (isSyntheticEvent(event)) {
-      const baseUIEvent = event;
-      makeEventPreventable(baseUIEvent);
-      const result = theirHandler(baseUIEvent);
-      if (!baseUIEvent.baseUIHandlerPrevented) {
-        ourHandler?.(baseUIEvent);
-      }
-      return result;
-    }
-    const result = theirHandler(event);
-    ourHandler?.(event);
-    return result;
-  };
-}
-function makeEventPreventable(event) {
-  event.preventBaseUIHandler = () => {
-    event.baseUIHandlerPrevented = true;
-  };
-  return event;
-}
-function mergeClassNames(ourClassName, theirClassName) {
-  if (theirClassName) {
-    if (ourClassName) {
-      // eslint-disable-next-line prefer-template
-      return theirClassName + ' ' + ourClassName;
-    }
-    return theirClassName;
-  }
-  return ourClassName;
-}
-function isSyntheticEvent(event) {
-  return event != null && typeof event === 'object' && 'nativeEvent' in event;
-}
-
-/***/ },
-
-/***/ "./node_modules/@base-ui/react/esm/use-render/useRender.js"
-/*!*****************************************************************!*\
-  !*** ./node_modules/@base-ui/react/esm/use-render/useRender.js ***!
-  \*****************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useRender: () => (/* binding */ useRender)
-/* harmony export */ });
-/* harmony import */ var _utils_useRenderElement_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/useRenderElement.js */ "./node_modules/@base-ui/react/esm/utils/useRenderElement.js");
-
-/**
- * Renders a Base UI element.
- *
- * @public
- */
-function useRender(params) {
-  return (0,_utils_useRenderElement_js__WEBPACK_IMPORTED_MODULE_0__.useRenderElement)(params.defaultTagName ?? 'div', params, params);
-}
-
-/***/ },
-
-/***/ "./node_modules/@base-ui/react/esm/utils/getStateAttributesProps.js"
-/*!**************************************************************************!*\
-  !*** ./node_modules/@base-ui/react/esm/utils/getStateAttributesProps.js ***!
-  \**************************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   getStateAttributesProps: () => (/* binding */ getStateAttributesProps)
-/* harmony export */ });
-function getStateAttributesProps(state, customMapping) {
-  const props = {};
-
-  /* eslint-disable-next-line guard-for-in */
-  for (const key in state) {
-    const value = state[key];
-    if (customMapping?.hasOwnProperty(key)) {
-      const customProps = customMapping[key](value);
-      if (customProps != null) {
-        Object.assign(props, customProps);
-      }
-      continue;
-    }
-    if (value === true) {
-      props[`data-${key.toLowerCase()}`] = '';
-    } else if (value) {
-      props[`data-${key.toLowerCase()}`] = value.toString();
-    }
-  }
-  return props;
-}
-
-/***/ },
-
-/***/ "./node_modules/@base-ui/react/esm/utils/resolveClassName.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@base-ui/react/esm/utils/resolveClassName.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   resolveClassName: () => (/* binding */ resolveClassName)
-/* harmony export */ });
-/**
- * If the provided className is a string, it will be returned as is.
- * Otherwise, the function will call the className function with the state as the first argument.
- *
- * @param className
- * @param state
- */
-function resolveClassName(className, state) {
-  return typeof className === 'function' ? className(state) : className;
-}
-
-/***/ },
-
-/***/ "./node_modules/@base-ui/react/esm/utils/resolveStyle.js"
-/*!***************************************************************!*\
-  !*** ./node_modules/@base-ui/react/esm/utils/resolveStyle.js ***!
-  \***************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   resolveStyle: () => (/* binding */ resolveStyle)
-/* harmony export */ });
-/**
- * If the provided style is an object, it will be returned as is.
- * Otherwise, the function will call the style function with the state as the first argument.
- *
- * @param style
- * @param state
- */
-function resolveStyle(style, state) {
-  return typeof style === 'function' ? style(state) : style;
-}
-
-/***/ },
-
-/***/ "./node_modules/@base-ui/react/esm/utils/useRenderElement.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@base-ui/react/esm/utils/useRenderElement.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useRenderElement: () => (/* binding */ useRenderElement)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var _base_ui_utils_useMergedRefs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @base-ui/utils/useMergedRefs */ "./node_modules/@base-ui/utils/esm/useMergedRefs.js");
-/* harmony import */ var _base_ui_utils_getReactElementRef__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @base-ui/utils/getReactElementRef */ "./node_modules/@base-ui/utils/esm/getReactElementRef.js");
-/* harmony import */ var _base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @base-ui/utils/mergeObjects */ "./node_modules/@base-ui/utils/esm/mergeObjects.js");
-/* harmony import */ var _base_ui_utils_warn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @base-ui/utils/warn */ "./node_modules/@base-ui/utils/esm/warn.js");
-/* harmony import */ var _getStateAttributesProps_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./getStateAttributesProps.js */ "./node_modules/@base-ui/react/esm/utils/getStateAttributesProps.js");
-/* harmony import */ var _resolveClassName_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./resolveClassName.js */ "./node_modules/@base-ui/react/esm/utils/resolveClassName.js");
-/* harmony import */ var _resolveStyle_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./resolveStyle.js */ "./node_modules/@base-ui/react/esm/utils/resolveStyle.js");
-/* harmony import */ var _merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../merge-props/index.js */ "./node_modules/@base-ui/react/esm/merge-props/mergeProps.js");
-/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./constants.js */ "./node_modules/@base-ui/utils/esm/empty.js");
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * Renders a Base UI element.
- *
- * @param element The default HTML element to render. Can be overridden by the `render` prop.
- * @param componentProps An object containing the `render` and `className` props to be used for element customization. Other props are ignored.
- * @param params Additional parameters for rendering the element.
- */
-function useRenderElement(element, componentProps, params = {}) {
-  const renderProp = componentProps.render;
-  const outProps = useRenderElementProps(componentProps, params);
-  if (params.enabled === false) {
-    return null;
-  }
-  const state = params.state ?? _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT;
-  return evaluateRenderProp(element, renderProp, outProps, state);
-}
-
-/**
- * Computes render element final props.
- */
-function useRenderElementProps(componentProps, params = {}) {
-  const {
-    className: classNameProp,
-    style: styleProp,
-    render: renderProp
-  } = componentProps;
-  const {
-    state = _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT,
-    ref,
-    props,
-    stateAttributesMapping,
-    enabled = true
-  } = params;
-  const className = enabled ? (0,_resolveClassName_js__WEBPACK_IMPORTED_MODULE_6__.resolveClassName)(classNameProp, state) : undefined;
-  const style = enabled ? (0,_resolveStyle_js__WEBPACK_IMPORTED_MODULE_7__.resolveStyle)(styleProp, state) : undefined;
-  const stateProps = enabled ? (0,_getStateAttributesProps_js__WEBPACK_IMPORTED_MODULE_5__.getStateAttributesProps)(state, stateAttributesMapping) : _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT;
-  const outProps = enabled ? (0,_base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_3__.mergeObjects)(stateProps, Array.isArray(props) ? (0,_merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__.mergePropsN)(props) : props) ?? _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT : _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT;
-
-  // SAFETY: The `useMergedRefs` functions use a single hook to store the same value,
-  // switching between them at runtime is safe. If this assertion fails, React will
-  // throw at runtime anyway.
-  // This also skips the `useMergedRefs` call on the server, which is fine because
-  // refs are not used on the server side.
-  /* eslint-disable react-hooks/rules-of-hooks */
-  if (typeof document !== 'undefined') {
-    if (!enabled) {
-      (0,_base_ui_utils_useMergedRefs__WEBPACK_IMPORTED_MODULE_1__.useMergedRefs)(null, null);
-    } else if (Array.isArray(ref)) {
-      outProps.ref = (0,_base_ui_utils_useMergedRefs__WEBPACK_IMPORTED_MODULE_1__.useMergedRefsN)([outProps.ref, (0,_base_ui_utils_getReactElementRef__WEBPACK_IMPORTED_MODULE_2__.getReactElementRef)(renderProp), ...ref]);
-    } else {
-      outProps.ref = (0,_base_ui_utils_useMergedRefs__WEBPACK_IMPORTED_MODULE_1__.useMergedRefs)(outProps.ref, (0,_base_ui_utils_getReactElementRef__WEBPACK_IMPORTED_MODULE_2__.getReactElementRef)(renderProp), ref);
-    }
-  }
-  if (!enabled) {
-    return _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT;
-  }
-  if (className !== undefined) {
-    outProps.className = (0,_merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__.mergeClassNames)(outProps.className, className);
-  }
-  if (style !== undefined) {
-    outProps.style = (0,_base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_3__.mergeObjects)(outProps.style, style);
-  }
-  return outProps;
-}
-
-// The symbol React uses internally for lazy components
-// https://github.com/facebook/react/blob/a0566250b210499b4c5677f5ac2eedbd71d51a1b/packages/shared/ReactSymbols.js#L31
-//
-// TODO delete once https://github.com/facebook/react/issues/32392 is fixed
-const REACT_LAZY_TYPE = Symbol.for('react.lazy');
-function evaluateRenderProp(element, render, props, state) {
-  if (render) {
-    if (typeof render === 'function') {
-      if (true) {
-        warnIfRenderPropLooksLikeComponent(render);
-      }
-      return render(props, state);
-    }
-    const mergedProps = (0,_merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__.mergeProps)(props, render.props);
-    mergedProps.ref = props.ref;
-    let newElement = render;
-
-    // Workaround for https://github.com/facebook/react/issues/32392
-    // This works because the toArray() logic unwrap lazy element type in
-    // https://github.com/facebook/react/blob/a0566250b210499b4c5677f5ac2eedbd71d51a1b/packages/react/src/ReactChildren.js#L186
-    if (newElement?.$$typeof === REACT_LAZY_TYPE) {
-      const children = react__WEBPACK_IMPORTED_MODULE_0__.Children.toArray(render);
-      newElement = children[0];
-    }
-
-    // There is a high number of indirections, the error message thrown by React.cloneElement() is
-    // hard to use for developers, this logic provides a better context.
-    //
-    // Our general guideline is to never change the control flow depending on the environment.
-    // However, React.cloneElement() throws if React.isValidElement() is false,
-    // so we can throw before with custom message.
-    if (true) {
-      if (! /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.isValidElement(newElement)) {
-        throw new Error(['Base UI: The `render` prop was provided an invalid React element as `React.isValidElement(render)` is `false`.', 'A valid React element must be provided to the `render` prop because it is cloned with props to replace the default element.', 'https://base-ui.com/r/invalid-render-prop'].join('\n'));
-      }
-    }
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.cloneElement(newElement, mergedProps);
-  }
-  if (element) {
-    if (typeof element === 'string') {
-      return renderTag(element, props);
-    }
-  }
-  // Unreachable, but the typings on `useRenderElement` need to be reworked
-  // to annotate it correctly.
-  throw new Error( true ? 'Base UI: Render element or function are not defined.' : 0);
-}
-function warnIfRenderPropLooksLikeComponent(renderFn) {
-  const functionName = renderFn.name;
-  if (functionName.length === 0) {
-    return;
-  }
-  const firstCharacterCode = functionName.charCodeAt(0);
-  if (firstCharacterCode < 65 || firstCharacterCode > 90) {
-    return;
-  }
-  (0,_base_ui_utils_warn__WEBPACK_IMPORTED_MODULE_4__.warn)(`The \`render\` prop received a function named \`${functionName}\` that starts with an uppercase letter.`, 'This usually means a React component was passed directly as `render={Component}`.', 'Base UI calls `render` as a plain function, which can break the Rules of Hooks during reconciliation.', 'If this is an intentional render callback, rename it to start with a lowercase letter.', 'Use `render={<Component />}` or `render={(props) => <Component {...props} />}` instead.', 'https://base-ui.com/r/invalid-render-prop');
-}
-function renderTag(Tag, props) {
-  if (Tag === 'button') {
-    return /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-      type: "button",
-      ...props,
-      key: props.key
-    });
-  }
-  if (Tag === 'img') {
-    return /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
-      alt: "",
-      ...props,
-      key: props.key
-    });
-  }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Tag, props);
-}
-
-/***/ },
-
 /***/ "./node_modules/@base-ui/utils/esm/empty.js"
 /*!**************************************************!*\
   !*** ./node_modules/@base-ui/utils/esm/empty.js ***!
@@ -22105,8 +21556,10 @@ function CalendarDateTimeControl({
   onChange,
   hideLabelFromVision,
   markWhenOptional,
-  validity
+  validity,
+  config
 }) {
+  const { compact } = config || {};
   const { id, label, description, setValue, getValue, isValid } = field;
   const fieldValue = getValue({ item: data });
   const value = typeof fieldValue === "string" ? fieldValue : void 0;
@@ -22210,7 +21663,7 @@ function CalendarDateTimeControl({
             onChange: handleManualDateTimeChange
           }
         ),
-        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
+        !compact && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
           DateCalendar,
           {
             style: { width: "100%" },
@@ -22233,7 +21686,8 @@ function DateTime({
   hideLabelFromVision,
   markWhenOptional,
   operator,
-  validity
+  validity,
+  config
 }) {
   if (operator === _constants_mjs__WEBPACK_IMPORTED_MODULE_5__.OPERATOR_IN_THE_PAST || operator === _constants_mjs__WEBPACK_IMPORTED_MODULE_5__.OPERATOR_OVER) {
     return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
@@ -22256,7 +21710,8 @@ function DateTime({
       onChange,
       hideLabelFromVision,
       markWhenOptional,
-      validity
+      validity,
+      config
     }
   );
 }
@@ -23509,7 +22964,8 @@ function BulkSelectionCheckbox({
   onChangeSelection,
   data,
   actions,
-  getItemId
+  getItemId,
+  disableSelectAll = false
 }) {
   const selectableItems = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => {
     return data.filter((item) => {
@@ -23521,7 +22977,22 @@ function BulkSelectionCheckbox({
   const selectedItems = data.filter(
     (item) => selection.includes(getItemId(item)) && selectableItems.includes(item)
   );
+  const hasSelection = selection.length > 0;
   const areAllSelected = selectedItems.length === selectableItems.length;
+  if (disableSelectAll) {
+    return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
+      _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.CheckboxControl,
+      {
+        className: "dataviews-view-table-selection-checkbox",
+        checked: hasSelection,
+        disabled: !hasSelection,
+        onChange: () => {
+          onChangeSelection([]);
+        },
+        "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)("Deselect all")
+      }
+    );
+  }
   return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.CheckboxControl,
     {
@@ -23616,11 +23087,12 @@ function ActionButton({
     action.id
   );
 }
-function renderFooterContent(data, actions, getItemId, selection, actionsToShow, selectedItems, actionInProgress, setActionInProgress, onChangeSelection, paginationInfo) {
+function renderFooterContent(data, actions, getItemId, isInfiniteScroll, selection, actionsToShow, selectedItems, actionInProgress, setActionInProgress, onChangeSelection, paginationInfo) {
   const message = (0,_utils_get_footer_message_mjs__WEBPACK_IMPORTED_MODULE_9__["default"])(
     selection.length,
     data.length,
-    paginationInfo.totalItems
+    paginationInfo.totalItems,
+    isInfiniteScroll
   );
   return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(
     _wordpress_ui__WEBPACK_IMPORTED_MODULE_6__.Stack,
@@ -23637,7 +23109,8 @@ function renderFooterContent(data, actions, getItemId, selection, actionsToShow,
             onChangeSelection,
             data,
             actions,
-            getItemId
+            getItemId,
+            disableSelectAll: isInfiniteScroll
           }
         ),
         /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", { className: "dataviews-bulk-actions-footer__item-count", children: message }),
@@ -23688,6 +23161,7 @@ function FooterContent({
   onChangeSelection,
   data,
   getItemId,
+  isInfiniteScroll,
   paginationInfo
 }) {
   const [actionInProgress, setActionInProgress] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(
@@ -23727,6 +23201,7 @@ function FooterContent({
       data,
       actions,
       getItemId,
+      isInfiniteScroll,
       selection,
       actionsToShow,
       selectedItems,
@@ -23740,6 +23215,7 @@ function FooterContent({
       data,
       actions,
       getItemId,
+      isInfiniteScroll,
       selection,
       actionsToShow,
       selectedItems,
@@ -23758,7 +23234,8 @@ function BulkActionsFooter() {
     actions = EMPTY_ARRAY,
     onChangeSelection,
     getItemId,
-    paginationInfo
+    paginationInfo,
+    view
   } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useContext)(_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_7__["default"]);
   return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
     FooterContent,
@@ -23768,6 +23245,7 @@ function BulkActionsFooter() {
       data,
       actions,
       getItemId,
+      isInfiniteScroll: !!view.infiniteScrollEnabled,
       paginationInfo
     }
   );
@@ -23823,10 +23301,10 @@ var DataViewsContext = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.create
   setIsShowingFilter: () => {
   },
   hasInitiallyLoaded: false,
-  hasInfiniteScrollHandler: false,
   config: {
     perPageSizes: []
-  }
+  },
+  intersectionObserver: null
 });
 DataViewsContext.displayName = "DataViewsContext";
 var dataviews_context_default = DataViewsContext;
@@ -25147,10 +24625,9 @@ function DataViewsFooter() {
     data,
     actions = EMPTY_ARRAY,
     isLoading,
-    hasInitiallyLoaded,
-    hasInfiniteScrollHandler
+    hasInitiallyLoaded
   } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useContext)(_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_3__["default"]);
-  const isRefreshing = !!isLoading && hasInitiallyLoaded && !hasInfiniteScrollHandler && !!data?.length;
+  const isRefreshing = !!isLoading && hasInitiallyLoaded && !!data?.length;
   const isDelayedRefreshing = (0,_hooks_use_delayed_loading_mjs__WEBPACK_IMPORTED_MODULE_7__.useDelayedLoading)(!!isRefreshing);
   const hasBulkActions = (0,_dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_5__.useSomeItemHasAPossibleBulkAction)(actions, data) && [_constants_mjs__WEBPACK_IMPORTED_MODULE_6__.LAYOUT_TABLE, _constants_mjs__WEBPACK_IMPORTED_MODULE_6__.LAYOUT_GRID].includes(view.type);
   if (!isRefreshing && (!totalItems || !totalPages || totalPages <= 1 && !hasBulkActions)) {
@@ -25987,8 +25464,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../dataviews-bulk-actions/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-bulk-actions/index.mjs");
 /* harmony import */ var _utils_item_click_wrapper_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../utils/item-click-wrapper.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/item-click-wrapper.mjs");
 /* harmony import */ var _preview_size_picker_mjs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./preview-size-picker.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/grid/preview-size-picker.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var _utils_grid_items_mjs__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../utils/grid-items.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/grid-items.mjs");
+/* harmony import */ var _utils_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../utils/use-infinite-scroll.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/use-infinite-scroll.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 // packages/dataviews/src/components/dataviews-layouts/grid/composite-grid.tsx
+
+
 
 
 
@@ -26012,206 +25493,238 @@ function chunk(array, size) {
   }
   return chunks;
 }
-var GridItem = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.forwardRef)(function GridItem2({
-  view,
-  selection,
-  onChangeSelection,
-  onClickItem,
-  isItemClickable,
-  renderItemLink,
-  getItemId,
-  item,
-  actions,
-  mediaField,
-  titleField,
-  descriptionField,
-  regularFields,
-  badgeFields,
-  hasBulkActions,
-  config,
-  ...props
-}, ref) {
-  const { showTitle = true, showMedia = true, showDescription = true } = view;
-  const hasBulkAction = (0,_dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_11__.useHasAPossibleBulkAction)(actions, item);
-  const id = getItemId(item);
-  const instanceId = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_4__.useInstanceId)(GridItem2);
-  const isSelected = selection.includes(id);
-  const mediaPlaceholder = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("span", { className: "dataviews-view-grid__media-placeholder" });
-  const rendersMediaField = showMedia && mediaField?.render;
-  const renderedMediaField = rendersMediaField ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-    mediaField.render,
-    {
-      item,
-      field: mediaField,
-      config
-    }
-  ) : mediaPlaceholder;
-  const renderedTitleField = showTitle && titleField?.render ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(titleField.render, { item, field: titleField }) : null;
-  let mediaA11yProps;
-  let titleA11yProps;
-  if (isItemClickable(item) && onClickItem) {
-    if (renderedTitleField) {
-      mediaA11yProps = {
-        "aria-labelledby": `dataviews-view-grid__title-field-${instanceId}`
-      };
-      titleA11yProps = {
-        id: `dataviews-view-grid__title-field-${instanceId}`
-      };
-    } else {
-      mediaA11yProps = {
-        "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("Navigate to item")
-      };
-    }
-  }
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(
-    _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
-    {
-      direction: "column",
-      ...props,
-      ref,
-      className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
-        props.className,
-        "dataviews-view-grid__row__gridcell",
-        "dataviews-view-grid__card",
-        {
-          "is-selected": hasBulkAction && isSelected
-        }
-      ),
-      onClickCapture: (event) => {
-        props.onClickCapture?.(event);
-        if ((0,_wordpress_keycodes__WEBPACK_IMPORTED_MODULE_5__.isAppleOS)() ? event.metaKey : event.ctrlKey) {
-          event.stopPropagation();
-          event.preventDefault();
-          if (!hasBulkAction) {
-            return;
-          }
-          onChangeSelection(
-            selection.includes(id) ? selection.filter((itemId) => id !== itemId) : [...selection, id]
-          );
+var GridItem = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.forwardRef)(
+  function GridItem2({
+    view,
+    selection,
+    onChangeSelection,
+    onClickItem,
+    isItemClickable,
+    renderItemLink,
+    getItemId,
+    item,
+    actions,
+    mediaField,
+    titleField,
+    descriptionField,
+    regularFields,
+    badgeFields,
+    hasBulkActions,
+    config,
+    posinset,
+    setsize,
+    ...props
+  }, forwardedRef) {
+    const {
+      showTitle = true,
+      showMedia = true,
+      showDescription = true
+    } = view;
+    const hasBulkAction = (0,_dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_11__.useHasAPossibleBulkAction)(actions, item);
+    const id = getItemId(item);
+    const elementRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useRef)(null);
+    const setRefs = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_6__.useCallback)(
+      (node) => {
+        elementRef.current = node;
+        if (typeof forwardedRef === "function") {
+          forwardedRef(node);
+        } else if (forwardedRef) {
+          forwardedRef.current = node;
         }
       },
-      children: [
-        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-          _utils_item_click_wrapper_mjs__WEBPACK_IMPORTED_MODULE_12__.ItemClickWrapper,
+      [forwardedRef]
+    );
+    (0,_utils_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_15__.useIntersectionObserver)(elementRef, posinset);
+    const instanceId = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_4__.useInstanceId)(GridItem2);
+    const isSelected = selection.includes(id);
+    const mediaPlaceholder = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("span", { className: "dataviews-view-grid__media-placeholder" });
+    const rendersMediaField = showMedia && mediaField?.render;
+    const renderedMediaField = rendersMediaField ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+      mediaField.render,
+      {
+        item,
+        field: mediaField,
+        config
+      }
+    ) : mediaPlaceholder;
+    const renderedTitleField = showTitle && titleField?.render ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(titleField.render, { item, field: titleField }) : null;
+    let mediaA11yProps;
+    let titleA11yProps;
+    if (isItemClickable(item) && onClickItem) {
+      if (renderedTitleField) {
+        mediaA11yProps = {
+          "aria-labelledby": `dataviews-view-grid__title-field-${instanceId}`
+        };
+        titleA11yProps = {
+          id: `dataviews-view-grid__title-field-${instanceId}`
+        };
+      } else {
+        mediaA11yProps = {
+          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("Navigate to item")
+        };
+      }
+    }
+    return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(
+      _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
+      {
+        direction: "column",
+        ...props,
+        ref: setRefs,
+        "aria-setsize": setsize,
+        "aria-posinset": posinset,
+        className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
+          props.className,
+          "dataviews-view-grid__row__gridcell",
+          "dataviews-view-grid__card",
           {
-            item,
-            isItemClickable,
-            onClickItem,
-            renderItemLink,
-            className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])("dataviews-view-grid__media", {
-              "dataviews-view-grid__media--placeholder": !rendersMediaField
-            }),
-            ...mediaA11yProps,
-            children: renderedMediaField
+            "is-selected": hasBulkAction && isSelected
           }
         ),
-        hasBulkActions && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-          _dataviews_selection_checkbox_index_mjs__WEBPACK_IMPORTED_MODULE_9__["default"],
-          {
-            item,
-            selection,
-            onChangeSelection,
-            getItemId,
-            titleField,
-            disabled: !hasBulkAction
+        onClickCapture: (event) => {
+          props.onClickCapture?.(event);
+          if ((0,_wordpress_keycodes__WEBPACK_IMPORTED_MODULE_5__.isAppleOS)() ? event.metaKey : event.ctrlKey) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (!hasBulkAction) {
+              return;
+            }
+            onChangeSelection(
+              isSelected ? selection.filter(
+                (itemId) => id !== itemId
+              ) : [...selection, id]
+            );
           }
-        ),
-        !!actions?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", { className: "dataviews-view-grid__media-actions", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_dataviews_item_actions_index_mjs__WEBPACK_IMPORTED_MODULE_8__["default"], { item, actions, isCompact: true }) }),
-        showTitle && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", { className: "dataviews-view-grid__title", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-          _utils_item_click_wrapper_mjs__WEBPACK_IMPORTED_MODULE_12__.ItemClickWrapper,
-          {
-            item,
-            isItemClickable,
-            onClickItem,
-            renderItemLink,
-            className: "dataviews-view-grid__title-field dataviews-title-field",
-            ...titleA11yProps,
-            title: titleField?.getValueFormatted({
-              item,
-              field: titleField
-            }) || void 0,
-            children: renderedTitleField
-          }
-        ) }),
-        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack, { direction: "column", gap: "xs", children: [
-          showDescription && descriptionField?.render && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-            descriptionField.render,
+        },
+        children: [
+          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+            _utils_item_click_wrapper_mjs__WEBPACK_IMPORTED_MODULE_12__.ItemClickWrapper,
             {
               item,
-              field: descriptionField
+              isItemClickable,
+              onClickItem,
+              renderItemLink,
+              className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])("dataviews-view-grid__media", {
+                "dataviews-view-grid__media--placeholder": !rendersMediaField
+              }),
+              ...mediaA11yProps,
+              children: renderedMediaField
             }
           ),
-          !!badgeFields?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-            _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
+          hasBulkActions && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+            _dataviews_selection_checkbox_index_mjs__WEBPACK_IMPORTED_MODULE_9__["default"],
             {
-              direction: "row",
-              className: "dataviews-view-grid__badge-fields",
-              gap: "sm",
-              wrap: "wrap",
-              align: "top",
-              justify: "flex-start",
-              children: badgeFields.map((field) => {
-                return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-                  Badge,
-                  {
-                    className: "dataviews-view-grid__field-value",
-                    children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-                      field.render,
-                      {
-                        item,
-                        field
-                      }
-                    )
-                  },
-                  field.id
-                );
-              })
+              item,
+              selection,
+              onChangeSelection,
+              getItemId,
+              titleField,
+              disabled: !hasBulkAction
             }
           ),
-          !!regularFields?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-            _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
+          !!actions?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("div", { className: "dataviews-view-grid__media-actions", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+            _dataviews_item_actions_index_mjs__WEBPACK_IMPORTED_MODULE_8__["default"],
             {
-              direction: "column",
-              className: "dataviews-view-grid__fields",
-              gap: "xs",
-              children: regularFields.map((field) => {
-                return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-                  _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Flex,
-                  {
-                    className: "dataviews-view-grid__field",
-                    gap: 1,
-                    justify: "flex-start",
-                    expanded: true,
-                    style: { height: "auto" },
-                    direction: "row",
-                    children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.Fragment, { children: [
-                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Tooltip, { text: field.label, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FlexItem, { className: "dataviews-view-grid__field-name", children: field.header }) }),
-                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-                        _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FlexItem,
+              item,
+              actions,
+              isCompact: true
+            }
+          ) }),
+          showTitle && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("div", { className: "dataviews-view-grid__title", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+            _utils_item_click_wrapper_mjs__WEBPACK_IMPORTED_MODULE_12__.ItemClickWrapper,
+            {
+              item,
+              isItemClickable,
+              onClickItem,
+              renderItemLink,
+              className: "dataviews-view-grid__title-field dataviews-title-field",
+              ...titleA11yProps,
+              title: titleField?.getValueFormatted({
+                item,
+                field: titleField
+              }) || void 0,
+              children: renderedTitleField
+            }
+          ) }),
+          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack, { direction: "column", gap: "xs", children: [
+            showDescription && descriptionField?.render && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+              descriptionField.render,
+              {
+                item,
+                field: descriptionField
+              }
+            ),
+            !!badgeFields?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+              _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
+              {
+                direction: "row",
+                className: "dataviews-view-grid__badge-fields",
+                gap: "sm",
+                wrap: "wrap",
+                align: "top",
+                justify: "flex-start",
+                children: badgeFields.map((field) => {
+                  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                    Badge,
+                    {
+                      className: "dataviews-view-grid__field-value",
+                      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                        field.render,
                         {
-                          className: "dataviews-view-grid__field-value",
-                          style: { maxHeight: "none" },
-                          children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-                            field.render,
-                            {
-                              item,
-                              field
-                            }
-                          )
+                          item,
+                          field
                         }
                       )
-                    ] })
-                  },
-                  field.id
-                );
-              })
-            }
-          )
-        ] })
-      ]
-    }
-  );
-});
+                    },
+                    field.id
+                  );
+                })
+              }
+            ),
+            !!regularFields?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+              _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
+              {
+                direction: "column",
+                className: "dataviews-view-grid__fields",
+                gap: "xs",
+                children: regularFields.map((field) => {
+                  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                    _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Flex,
+                    {
+                      className: "dataviews-view-grid__field",
+                      gap: 1,
+                      justify: "flex-start",
+                      expanded: true,
+                      style: { height: "auto" },
+                      direction: "row",
+                      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.Fragment, { children: [
+                        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Tooltip, { text: field.label, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FlexItem, { className: "dataviews-view-grid__field-name", children: field.header }) }),
+                        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                          _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FlexItem,
+                          {
+                            className: "dataviews-view-grid__field-value",
+                            style: { maxHeight: "none" },
+                            children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                              field.render,
+                              {
+                                item,
+                                field
+                              }
+                            )
+                          }
+                        )
+                      ] })
+                    },
+                    field.id
+                  );
+                })
+              }
+            )
+          ] })
+        ]
+      }
+    );
+  }
+);
 function CompositeGrid({
   data,
   isInfiniteScroll,
@@ -26255,80 +25768,175 @@ function CompositeGrid({
   );
   const size = "900px";
   const totalRows = Math.ceil(data.length / gridColumns);
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-    _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite,
-    {
-      role: isInfiniteScroll ? "feed" : "grid",
-      className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])("dataviews-view-grid", className, {
-        [`has-${view.layout?.density}-density`]: view.layout?.density && ["compact", "comfortable"].includes(
-          view.layout.density
-        )
-      }),
-      focusWrap: true,
-      "aria-busy": isLoading,
-      "aria-rowcount": isInfiniteScroll ? void 0 : totalRows,
-      ref: resizeObserverRef,
-      inert,
-      children: chunk(data, gridColumns).map((row, i) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-        _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite.Row,
+  const placeholdersNeeded = (0,_utils_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_15__.usePlaceholdersNeeded)(
+    data,
+    isInfiniteScroll,
+    gridColumns
+  );
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.Fragment, {
+    // Render infinite scroll layout (no rows, feed semantics)
+    children: [
+      isInfiniteScroll && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(
+        _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite,
         {
-          render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-            "div",
+          render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+            _utils_grid_items_mjs__WEBPACK_IMPORTED_MODULE_14__.GridItems,
             {
-              role: "row",
-              "aria-rowindex": i + 1,
-              "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.sprintf)(
-                /* translators: %d: The row number in the grid */
-                (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("Row %d"),
-                i + 1
+              className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
+                "dataviews-view-grid-infinite-scroll",
+                className,
+                {
+                  [`has-${view.layout?.density}-density`]: view.layout?.density && [
+                    "compact",
+                    "comfortable"
+                  ].includes(view.layout.density)
+                }
               ),
-              className: "dataviews-view-grid__row",
-              style: {
-                gridTemplateColumns: `repeat( ${gridColumns}, minmax(0, 1fr) )`
-              }
+              previewSize: view.layout?.previewSize,
+              "aria-busy": isLoading,
+              ref: resizeObserverRef
             }
           ),
-          children: row.map((item, indexInRow) => {
-            const index = i * gridColumns + indexInRow;
-            return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-              _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite.Item,
-              {
-                render: (props) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
-                  GridItem,
-                  {
-                    ...props,
-                    role: isInfiniteScroll ? "article" : "gridcell",
-                    "aria-setsize": isInfiniteScroll ? paginationInfo.totalItems : void 0,
-                    "aria-posinset": isInfiniteScroll ? index + 1 : void 0,
-                    view,
-                    selection,
-                    onChangeSelection,
-                    onClickItem,
-                    isItemClickable,
-                    renderItemLink,
-                    getItemId,
-                    item,
-                    actions,
-                    mediaField,
-                    titleField,
-                    descriptionField,
-                    regularFields,
-                    badgeFields,
-                    hasBulkActions,
-                    config: {
-                      sizes: size
+          role: "feed",
+          focusWrap: true,
+          inert,
+          children: [
+            Array.from({ length: placeholdersNeeded }).map(
+              (_, index) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite.Item,
+                {
+                  render: (props) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                    _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
+                    {
+                      ...props,
+                      direction: "column",
+                      role: "article",
+                      className: "dataviews-view-grid__row__gridcell dataviews-view-grid__card dataviews-view-grid__placeholder"
                     }
+                  ),
+                  "aria-hidden": true,
+                  tabIndex: -1
+                },
+                `placeholder-${index}`
+              )
+            ),
+            data.map((item) => {
+              const itemId = getItemId(item);
+              const stablePosition = item.position;
+              return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite.Item,
+                {
+                  render: (props) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                    GridItem,
+                    {
+                      ...props,
+                      id: itemId,
+                      role: "article",
+                      view,
+                      selection,
+                      onChangeSelection,
+                      onClickItem,
+                      isItemClickable,
+                      renderItemLink,
+                      getItemId,
+                      item,
+                      actions,
+                      mediaField,
+                      titleField,
+                      descriptionField,
+                      regularFields,
+                      badgeFields,
+                      hasBulkActions,
+                      posinset: stablePosition,
+                      setsize: paginationInfo.totalItems,
+                      config: {
+                        sizes: size
+                      }
+                    }
+                  )
+                },
+                itemId
+              );
+            })
+          ]
+        }
+      ),
+      // Render standard grid layout (with rows, grid semantics)
+      !isInfiniteScroll && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+        _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite,
+        {
+          role: "grid",
+          className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])("dataviews-view-grid", className, {
+            [`has-${view.layout?.density}-density`]: view.layout?.density && ["compact", "comfortable"].includes(
+              view.layout.density
+            )
+          }),
+          focusWrap: true,
+          "aria-busy": isLoading,
+          "aria-rowcount": totalRows,
+          ref: resizeObserverRef,
+          inert,
+          children: chunk(data, gridColumns).map((row, i) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+            _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite.Row,
+            {
+              render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                "div",
+                {
+                  role: "row",
+                  "aria-rowindex": i + 1,
+                  "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.sprintf)(
+                    /* translators: %d: The row number in the grid */
+                    (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("Row %d"),
+                    i + 1
+                  ),
+                  className: "dataviews-view-grid__row",
+                  style: {
+                    gridTemplateColumns: `repeat( ${gridColumns}, minmax(0, 1fr) )`
                   }
-                )
-              },
-              getItemId(item)
-            );
-          })
-        },
-        i
-      ))
-    }
-  );
+                }
+              ),
+              children: row.map((item) => {
+                const itemId = getItemId(item);
+                return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                  _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite.Item,
+                  {
+                    render: (props) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                      GridItem,
+                      {
+                        ...props,
+                        id: itemId,
+                        role: "gridcell",
+                        view,
+                        selection,
+                        onChangeSelection,
+                        onClickItem,
+                        isItemClickable,
+                        renderItemLink,
+                        getItemId,
+                        item,
+                        actions,
+                        mediaField,
+                        titleField,
+                        descriptionField,
+                        regularFields,
+                        badgeFields,
+                        hasBulkActions,
+                        config: {
+                          sizes: size
+                        }
+                      }
+                    )
+                  },
+                  itemId
+                );
+              })
+            },
+            i
+          ))
+        }
+      )
+    ]
+  });
 }
 
 //# sourceMappingURL=composite-grid.mjs.map
@@ -27261,8 +26869,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dataviews_picker_footer_index_mjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../dataviews-picker-footer/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-picker-footer/index.mjs");
 /* harmony import */ var _utils_grid_items_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../utils/grid-items.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/grid-items.mjs");
 /* harmony import */ var _utils_get_data_by_group_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../utils/get-data-by-group.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/get-data-by-group.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var _grid_preview_size_picker_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../grid/preview-size-picker.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/grid/preview-size-picker.mjs");
+/* harmony import */ var _utils_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../utils/use-infinite-scroll.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/use-infinite-scroll.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 // packages/dataviews/src/components/dataviews-layouts/picker-grid/index.tsx
+
+
 
 
 
@@ -27295,8 +26907,13 @@ function GridItem({
 }) {
   const { showTitle = true, showMedia = true, showDescription = true } = view;
   const id = getItemId(item);
+  const elementRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useRef)(null);
   const isSelected = selection.includes(id);
-  const renderedMediaField = mediaField?.render ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+  const setElementRef = (element) => {
+    elementRef.current = element;
+  };
+  (0,_utils_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_13__.useIntersectionObserver)(elementRef, posinset);
+  const renderedMediaField = mediaField?.render ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
     mediaField.render,
     {
       item,
@@ -27304,12 +26921,13 @@ function GridItem({
       config
     }
   ) : null;
-  const renderedTitleField = showTitle && titleField?.render ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(titleField.render, { item, field: titleField }) : null;
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
+  const renderedTitleField = showTitle && titleField?.render ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(titleField.render, { item, field: titleField }) : null;
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite.Item,
     {
+      ref: setElementRef,
       "aria-label": titleField ? titleField.getValue({ item }) || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)("(no title)") : void 0,
-      render: ({ children, ...props }) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack, { direction: "column", children, ...props }),
+      render: ({ children, ...props }) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack, { direction: "column", children, ...props }),
       role: "option",
       "aria-posinset": posinset,
       "aria-setsize": setsize,
@@ -27328,8 +26946,8 @@ function GridItem({
         }
       },
       children: [
-        showMedia && renderedMediaField && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", { className: "dataviews-view-picker-grid__media", children: renderedMediaField }),
-        showMedia && renderedMediaField && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+        showMedia && renderedMediaField && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", { className: "dataviews-view-picker-grid__media", children: renderedMediaField }),
+        showMedia && renderedMediaField && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
           _dataviews_selection_checkbox_index_mjs__WEBPACK_IMPORTED_MODULE_7__["default"],
           {
             item,
@@ -27342,24 +26960,24 @@ function GridItem({
             tabIndex: -1
           }
         ),
-        showTitle && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+        showTitle && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
           _wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack,
           {
             direction: "row",
             justify: "space-between",
             className: "dataviews-view-picker-grid__title-actions",
-            children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", { className: "dataviews-view-picker-grid__title-field dataviews-title-field", children: renderedTitleField })
+            children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", { className: "dataviews-view-picker-grid__title-field dataviews-title-field", children: renderedTitleField })
           }
         ),
-        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack, { direction: "column", gap: "xs", children: [
-          showDescription && descriptionField?.render && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack, { direction: "column", gap: "xs", children: [
+          showDescription && descriptionField?.render && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
             descriptionField.render,
             {
               item,
               field: descriptionField
             }
           ),
-          !!badgeFields?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+          !!badgeFields?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
             _wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack,
             {
               direction: "row",
@@ -27369,11 +26987,11 @@ function GridItem({
               align: "top",
               justify: "flex-start",
               children: badgeFields.map((field) => {
-                return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
                   Badge,
                   {
                     className: "dataviews-view-picker-grid__field-value",
-                    children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                    children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
                       field.render,
                       {
                         item,
@@ -27386,14 +27004,14 @@ function GridItem({
               })
             }
           ),
-          !!regularFields?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+          !!regularFields?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
             _wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack,
             {
               direction: "column",
               className: "dataviews-view-picker-grid__fields",
               gap: "xs",
               children: regularFields.map((field) => {
-                return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
                   _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Flex,
                   {
                     className: "dataviews-view-picker-grid__field",
@@ -27402,14 +27020,14 @@ function GridItem({
                     expanded: true,
                     style: { height: "auto" },
                     direction: "row",
-                    children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.Fragment, { children: [
-                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FlexItem, { className: "dataviews-view-picker-grid__field-name", children: field.header }),
-                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                    children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.Fragment, { children: [
+                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FlexItem, { className: "dataviews-view-picker-grid__field-name", children: field.header }),
+                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
                         _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FlexItem,
                         {
                           className: "dataviews-view-picker-grid__field-value",
                           style: { maxHeight: "none" },
-                          children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                          children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
                             field.render,
                             {
                               item,
@@ -27441,7 +27059,7 @@ function GridGroup({
     GridGroup,
     "dataviews-view-picker-grid-group__header"
   );
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(
     _wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack,
     {
       direction: "column",
@@ -27449,7 +27067,7 @@ function GridGroup({
       role: "group",
       "aria-labelledby": headerId,
       children: [
-        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
           "h3",
           {
             className: "dataviews-view-picker-grid-group__header",
@@ -27509,14 +27127,20 @@ function ViewPickerGrid({
   const size = "900px";
   const groupField = view.groupBy?.field ? fields.find((f) => f.id === view.groupBy?.field) : null;
   const dataByGroup = groupField ? (0,_utils_get_data_by_group_mjs__WEBPACK_IMPORTED_MODULE_11__["default"])(data, groupField) : null;
-  const isInfiniteScroll = view.infiniteScrollEnabled && !dataByGroup;
+  const isInfiniteScroll = (view.infiniteScrollEnabled && !dataByGroup) ?? false;
   const currentPage = view?.page ?? 1;
   const perPage = view?.perPage ?? 0;
   const setSize = isInfiniteScroll ? paginationInfo?.totalItems : void 0;
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.Fragment, {
+  const gridColumns = (0,_grid_preview_size_picker_mjs__WEBPACK_IMPORTED_MODULE_12__.useGridColumns)();
+  const placeholdersNeeded = (0,_utils_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_13__.usePlaceholdersNeeded)(
+    data,
+    isInfiniteScroll,
+    gridColumns
+  );
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.Fragment, {
     // Render multiple groups.
     children: [
-      hasData && groupField && dataByGroup && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+      hasData && groupField && dataByGroup && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
         _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite,
         {
           virtualFocus: true,
@@ -27533,7 +27157,7 @@ function ViewPickerGrid({
             }
           ),
           "aria-label": itemListLabel,
-          render: ({ children, ...props }) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+          render: ({ children, ...props }) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
             _wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack,
             {
               direction: "column",
@@ -27543,13 +27167,13 @@ function ViewPickerGrid({
             }
           ),
           children: Array.from(dataByGroup.entries()).map(
-            ([groupName, groupItems]) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+            ([groupName, groupItems]) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
               GridGroup,
               {
                 groupName,
                 groupField,
                 showLabel: view.groupBy?.showLabel !== false,
-                children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
                   _utils_grid_items_mjs__WEBPACK_IMPORTED_MODULE_10__.GridItems,
                   {
                     previewSize: usedPreviewSize,
@@ -27559,8 +27183,8 @@ function ViewPickerGrid({
                     "aria-busy": isLoading,
                     ref: resizeObserverRef,
                     children: groupItems.map((item) => {
-                      const posInSet = (currentPage - 1) * perPage + data.indexOf(item) + 1;
-                      return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                      const posInSet = item.position ?? (currentPage - 1) * perPage + data.indexOf(item) + 1;
+                      return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
                         GridItem,
                         {
                           view,
@@ -27592,10 +27216,10 @@ function ViewPickerGrid({
         }
       ),
       // Render a single grid with all data.
-      hasData && !dataByGroup && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+      hasData && !dataByGroup && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(
         _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite,
         {
-          render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+          render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
             _utils_grid_items_mjs__WEBPACK_IMPORTED_MODULE_10__.GridItems,
             {
               className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
@@ -27618,48 +27242,67 @@ function ViewPickerGrid({
           role: "listbox",
           "aria-multiselectable": isMultiselect,
           "aria-label": itemListLabel,
-          children: data.map((item, index) => {
-            let posinset = isInfiniteScroll ? index + 1 : void 0;
-            if (!isInfiniteScroll) {
-              posinset = (currentPage - 1) * perPage + index + 1;
-            }
-            return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
-              GridItem,
-              {
-                view,
-                multiselect: isMultiselect,
-                selection,
-                onChangeSelection,
-                getItemId,
-                item,
-                mediaField,
-                titleField,
-                descriptionField,
-                regularFields,
-                badgeFields,
-                config: {
-                  sizes: size
+          children: [
+            Array.from({ length: placeholdersNeeded }).map(
+              (_, index) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
+                _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite.Item,
+                {
+                  render: ({ children, ...props }) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
+                    _wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack,
+                    {
+                      direction: "column",
+                      children,
+                      ...props
+                    }
+                  ),
+                  role: "option",
+                  "aria-hidden": true,
+                  tabIndex: -1,
+                  className: "dataviews-view-picker-grid__card dataviews-view-picker-grid__placeholder"
                 },
-                posinset,
-                setsize: setSize
-              },
-              getItemId(item)
-            );
-          })
+                `placeholder-${index}`
+              )
+            ),
+            data.map((item) => {
+              const posinset = item.position;
+              return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
+                GridItem,
+                {
+                  view,
+                  multiselect: isMultiselect,
+                  selection,
+                  onChangeSelection,
+                  getItemId,
+                  item,
+                  mediaField,
+                  titleField,
+                  descriptionField,
+                  regularFields,
+                  badgeFields,
+                  config: {
+                    sizes: size
+                  },
+                  posinset,
+                  setsize: setSize
+                },
+                getItemId(item)
+              );
+            })
+          ]
         }
       ),
       // Render empty state.
-      !hasData && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+      !hasData && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(
         "div",
         {
           className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])({
             "dataviews-loading": isLoading,
             "dataviews-no-results": !isLoading
           }),
-          children: isLoading ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", { children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}) }) : empty
+          children: isLoading ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("p", { children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}) }) : empty
         }
       ),
-      hasData && isLoading && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", { className: "dataviews-loading-more", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}) })
+      hasData && isLoading && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("p", { className: "dataviews-loading-more", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}) })
     ]
   });
 }
@@ -27693,8 +27336,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _table_column_header_menu_mjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../table/column-header-menu.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/column-header-menu.mjs");
 /* harmony import */ var _table_column_primary_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../table/column-primary.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/column-primary.mjs");
 /* harmony import */ var _utils_get_data_by_group_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../utils/get-data-by-group.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/get-data-by-group.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var _utils_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../utils/use-infinite-scroll.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/use-infinite-scroll.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 // packages/dataviews/src/components/dataviews-layouts/picker-table/index.tsx
+
 
 
 
@@ -27722,7 +27367,7 @@ function TableColumnField({
     "dataviews-view-table__cell-align-end": align === "end",
     "dataviews-view-table__cell-align-center": align === "center"
   });
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", { className, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(field.render, { item, field }) });
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("div", { className, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(field.render, { item, field }) });
 }
 function TableRow({
   item,
@@ -27741,6 +27386,11 @@ function TableRow({
   const { paginationInfo } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useContext)(_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_4__["default"]);
   const isSelected = selection.includes(id);
   const [isHovered, setIsHovered] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(false);
+  const elementRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useRef)(null);
+  const setElementRef = (element) => {
+    elementRef.current = element;
+  };
+  (0,_utils_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_12__.useIntersectionObserver)(elementRef, posinset);
   const {
     showTitle = true,
     showMedia = true,
@@ -27755,10 +27405,11 @@ function TableRow({
   };
   const columns = view.fields ?? [];
   const hasPrimaryColumn = titleField && showTitle || mediaField && showMedia || descriptionField && showDescription;
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Composite.Item,
     {
-      render: ({ children, ...props }) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+      ref: setElementRef,
+      render: ({ children, ...props }) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
         "tr",
         {
           className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])("dataviews-view-table__row", {
@@ -27786,12 +27437,12 @@ function TableRow({
         }
       },
       children: [
-        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
           "td",
           {
             className: "dataviews-view-table__checkbox-column",
             role: "presentation",
-            children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", { className: "dataviews-view-table__cell-content-wrapper", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+            children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("div", { className: "dataviews-view-table__cell-content-wrapper", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
               _dataviews_selection_checkbox_index_mjs__WEBPACK_IMPORTED_MODULE_5__["default"],
               {
                 item,
@@ -27806,7 +27457,7 @@ function TableRow({
             ) })
           }
         ),
-        hasPrimaryColumn && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("td", { role: "presentation", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+        hasPrimaryColumn && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("td", { role: "presentation", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
           _table_column_primary_mjs__WEBPACK_IMPORTED_MODULE_10__["default"],
           {
             item,
@@ -27818,7 +27469,7 @@ function TableRow({
         ) }),
         columns.map((column) => {
           const { width, maxWidth, minWidth, align } = view.layout?.styles?.[column] ?? {};
-          return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+          return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
             "td",
             {
               style: {
@@ -27827,7 +27478,7 @@ function TableRow({
                 minWidth
               },
               role: "presentation",
-              children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+              children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
                 TableColumnField,
                 {
                   fields,
@@ -27869,6 +27520,9 @@ function ViewPickerTable({
       headerMenuToFocusRef.current = void 0;
     }
   });
+  const groupField = view.groupBy?.field ? fields.find((f) => f.id === view.groupBy?.field) : null;
+  const dataByGroup = groupField ? (0,_utils_get_data_by_group_mjs__WEBPACK_IMPORTED_MODULE_11__["default"])(data, groupField) : null;
+  const isInfiniteScroll = view.infiniteScrollEnabled && !dataByGroup;
   const tableNoticeId = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useId)();
   if (nextHeaderMenuToFocus) {
     headerMenuToFocusRef.current = nextHeaderMenuToFocus;
@@ -27886,8 +27540,6 @@ function ViewPickerTable({
   const descriptionField = fields.find(
     (field) => field.id === view.descriptionField
   );
-  const groupField = view.groupBy?.field ? fields.find((f) => f.id === view.groupBy?.field) : null;
-  const dataByGroup = groupField ? (0,_utils_get_data_by_group_mjs__WEBPACK_IMPORTED_MODULE_11__["default"])(data, groupField) : null;
   const { showTitle = true, showMedia = true, showDescription = true } = view;
   const hasPrimaryColumn = titleField && showTitle || mediaField && showMedia || descriptionField && showDescription;
   const columns = view.fields ?? [];
@@ -27901,9 +27553,8 @@ function ViewPickerTable({
       headerMenuRefs.current.delete(column);
     }
   };
-  const isInfiniteScroll = view.infiniteScrollEnabled && !dataByGroup;
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.Fragment, { children: [
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.Fragment, { children: [
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(
       "table",
       {
         className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
@@ -27920,23 +27571,24 @@ function ViewPickerTable({
         "aria-describedby": tableNoticeId,
         role: isInfiniteScroll ? "feed" : "listbox",
         children: [
-          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("thead", { role: "presentation", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
+          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("thead", { role: "presentation", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(
             "tr",
             {
               className: "dataviews-view-table__row",
               role: "presentation",
               children: [
-                /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("th", { className: "dataviews-view-table__checkbox-column", children: isMultiselect && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("th", { className: "dataviews-view-table__checkbox-column", children: isMultiselect && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
                   _dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_7__.BulkSelectionCheckbox,
                   {
                     selection,
                     onChangeSelection,
                     data,
                     actions,
-                    getItemId
+                    getItemId,
+                    disableSelectAll: isInfiniteScroll
                   }
                 ) }),
-                hasPrimaryColumn && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("th", { children: titleField && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                hasPrimaryColumn && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("th", { children: titleField && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
                   _table_column_header_menu_mjs__WEBPACK_IMPORTED_MODULE_9__["default"],
                   {
                     ref: headerMenuRef(
@@ -27954,7 +27606,7 @@ function ViewPickerTable({
                 ) }),
                 columns.map((column, index) => {
                   const { width, maxWidth, minWidth, align } = view.layout?.styles?.[column] ?? {};
-                  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
                     "th",
                     {
                       style: {
@@ -27965,7 +27617,7 @@ function ViewPickerTable({
                       },
                       "aria-sort": view.sort?.direction && view.sort?.field === column ? _constants_mjs__WEBPACK_IMPORTED_MODULE_8__.sortValues[view.sort.direction] : void 0,
                       scope: "col",
-                      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
                         _table_column_header_menu_mjs__WEBPACK_IMPORTED_MODULE_9__["default"],
                         {
                           ref: headerMenuRef(column, index),
@@ -27986,19 +27638,19 @@ function ViewPickerTable({
             }
           ) }),
           hasData && groupField && dataByGroup ? Array.from(dataByGroup.entries()).map(
-            ([groupName, groupItems]) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
+            ([groupName, groupItems]) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(
               _wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Composite,
               {
                 virtualFocus: true,
                 orientation: "vertical",
-                render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("tbody", { role: "group" }),
+                render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("tbody", { role: "group" }),
                 children: [
-                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
                     "tr",
                     {
                       className: "dataviews-view-table__group-header-row",
                       role: "presentation",
-                      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
                         "td",
                         {
                           colSpan: columns.length + (hasPrimaryColumn ? 1 : 0) + 1,
@@ -28014,7 +27666,7 @@ function ViewPickerTable({
                       )
                     }
                   ),
-                  groupItems.map((item, index) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+                  groupItems.map((item, index) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
                     TableRow,
                     {
                       item,
@@ -28035,36 +27687,40 @@ function ViewPickerTable({
               },
               `group-${groupName}`
             )
-          ) : /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
+          ) : /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
             _wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Composite,
             {
-              render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("tbody", { role: "presentation" }),
+              render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("tbody", { role: "presentation" }),
               virtualFocus: true,
               orientation: "vertical",
-              children: hasData && data.map((item, index) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
-                TableRow,
-                {
-                  item,
-                  fields,
-                  id: getItemId(item) || index.toString(),
-                  view,
-                  titleField,
-                  mediaField,
-                  descriptionField,
-                  selection,
-                  getItemId,
-                  onChangeSelection,
-                  multiselect: isMultiselect,
-                  posinset: index + 1
-                },
-                getItemId(item)
-              ))
+              children: hasData && data.map((item, index) => {
+                const itemId = getItemId(item);
+                const posinset = item.position;
+                return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+                  TableRow,
+                  {
+                    item,
+                    fields,
+                    id: itemId || index.toString(),
+                    view,
+                    titleField,
+                    mediaField,
+                    descriptionField,
+                    selection,
+                    getItemId,
+                    onChangeSelection,
+                    multiselect: isMultiselect,
+                    posinset
+                  },
+                  itemId
+                );
+              })
             }
           )
         ]
       }
     ),
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(
       "div",
       {
         className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])({
@@ -28073,8 +27729,8 @@ function ViewPickerTable({
         }),
         id: tableNoticeId,
         children: [
-          !hasData && (isLoading ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", { children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {}) }) : empty),
-          hasData && isLoading && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", { className: "dataviews-loading-more", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {}) })
+          !hasData && (isLoading ? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("p", { children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {}) }) : empty),
+          hasData && isLoading && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("p", { className: "dataviews-loading-more", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {}) })
         ]
       }
     )
@@ -29399,6 +29055,47 @@ function PreviewSizePicker() {
 
 /***/ },
 
+/***/ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/use-infinite-scroll.mjs"
+/*!*******************************************************************************************************************!*\
+  !*** ./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/use-infinite-scroll.mjs ***!
+  \*******************************************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useIntersectionObserver: () => (/* binding */ useIntersectionObserver),
+/* harmony export */   usePlaceholdersNeeded: () => (/* binding */ usePlaceholdersNeeded)
+/* harmony export */ });
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../dataviews-context/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-context/index.mjs");
+// packages/dataviews/src/components/dataviews-layouts/utils/use-infinite-scroll.ts
+
+
+function useIntersectionObserver(elementRef, posinset) {
+  const { intersectionObserver } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useContext)(_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_1__["default"]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    const element = elementRef.current;
+    if (!element || posinset === void 0 || !intersectionObserver) {
+      return;
+    }
+    intersectionObserver.observe(element);
+    return () => {
+      intersectionObserver.unobserve(element);
+    };
+  }, [elementRef, intersectionObserver, posinset]);
+}
+function usePlaceholdersNeeded(data, isInfiniteScroll, gridColumns) {
+  const hasData = !!data?.length;
+  const firstItemPosition = hasData && isInfiniteScroll ? data[0].position : void 0;
+  return firstItemPosition && gridColumns ? (firstItemPosition - 1) % gridColumns : 0;
+}
+
+//# sourceMappingURL=use-infinite-scroll.mjs.map
+
+
+/***/ },
+
 /***/ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-pagination/index.mjs"
 /*!**************************************************************************************************!*\
   !*** ./node_modules/@wordpress/dataviews/build-module/components/dataviews-pagination/index.mjs ***!
@@ -29585,9 +29282,25 @@ function BulkSelectionCheckbox({
   selectedItems,
   onChangeSelection,
   data,
-  getItemId
+  getItemId,
+  disableSelectAll = false
 }) {
+  const hasSelection = selection.length > 0;
   const areAllSelected = selectedItems.length === data.length;
+  if (disableSelectAll) {
+    return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(
+      _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.CheckboxControl,
+      {
+        className: "dataviews-view-table-selection-checkbox",
+        checked: hasSelection,
+        disabled: !hasSelection,
+        onChange: () => {
+          onChangeSelection([]);
+        },
+        "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)("Deselect all")
+      }
+    );
+  }
   return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.CheckboxControl,
     {
@@ -29661,13 +29374,15 @@ function DataViewsPickerFooter() {
     onChangeSelection,
     getItemId,
     actions = EMPTY_ARRAY,
-    paginationInfo
+    paginationInfo,
+    view
   } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useContext)(_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_6__["default"]);
   const isMultiselect = useIsMultiselectPicker(actions);
   const message = (0,_utils_get_footer_message_mjs__WEBPACK_IMPORTED_MODULE_7__["default"])(
     selection.length,
     data.length,
-    paginationInfo.totalItems
+    paginationInfo.totalItems,
+    !!view.infiniteScrollEnabled
   );
   const selectedItems = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(
     () => data.filter((item) => selection.includes(getItemId(item))),
@@ -29697,7 +29412,8 @@ function DataViewsPickerFooter() {
                   selectedItems,
                   onChangeSelection,
                   data,
-                  getItemId
+                  getItemId,
+                  disableSelectAll: !!view.infiniteScrollEnabled
                 }
               ),
               /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", { className: "dataviews-bulk-actions-footer__item-count", children: message })
@@ -29767,7 +29483,8 @@ var DataViewsSearch = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.memo)(f
     if (debouncedSearch !== viewRef.current?.search) {
       onChangeViewRef.current({
         ...viewRef.current,
-        page: 1,
+        page: view.page ? 1 : void 0,
+        startPosition: view.startPosition ? 1 : void 0,
         search: debouncedSearch
       });
     }
@@ -29820,7 +29537,8 @@ function DataViewsSelectionCheckbox({
   ...extraProps
 }) {
   const id = getItemId(item);
-  const checked = !disabled && selection.includes(id);
+  const isInSelectionArray = selection.includes(id);
+  const checked = !disabled && isInSelectionArray;
   const selectionLabel = titleField?.getValue?.({ item }) || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)("(no title)");
   return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.CheckboxControl,
@@ -29834,7 +29552,7 @@ function DataViewsSelectionCheckbox({
           return;
         }
         onChangeSelection(
-          selection.includes(id) ? selection.filter((itemId) => id !== itemId) : [...selection, id]
+          isInSelectionArray ? selection.filter((itemId) => id !== itemId) : [...selection, id]
         );
       },
       ...extraProps
@@ -29870,10 +29588,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _constants_mjs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../constants.mjs */ "./node_modules/@wordpress/dataviews/build-module/constants.mjs");
 /* harmony import */ var _dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../dataviews-layouts/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/index.mjs");
 /* harmony import */ var _dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../dataviews-context/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-context/index.mjs");
-/* harmony import */ var _infinite_scroll_toggle_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./infinite-scroll-toggle.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-view-config/infinite-scroll-toggle.mjs");
-/* harmony import */ var _properties_section_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./properties-section.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-view-config/properties-section.mjs");
-/* harmony import */ var _lock_unlock_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../lock-unlock.mjs */ "./node_modules/@wordpress/dataviews/build-module/lock-unlock.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var _properties_section_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./properties-section.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-view-config/properties-section.mjs");
+/* harmony import */ var _lock_unlock_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../lock-unlock.mjs */ "./node_modules/@wordpress/dataviews/build-module/lock-unlock.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 // packages/dataviews/src/components/dataviews-view-config/index.tsx
 
 
@@ -29888,8 +29605,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-var { Menu } = (0,_lock_unlock_mjs__WEBPACK_IMPORTED_MODULE_12__.unlock)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.privateApis);
+var { Menu } = (0,_lock_unlock_mjs__WEBPACK_IMPORTED_MODULE_11__.unlock)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.privateApis);
 var DATAVIEWS_CONFIG_POPOVER_PROPS = {
   className: "dataviews-config__popover",
   placement: "bottom-end",
@@ -29902,11 +29618,11 @@ function ViewTypeMenu() {
     return null;
   }
   const activeView = _dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_8__.VIEW_LAYOUTS.find((v) => view.type === v.type);
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(Menu, { children: [
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(Menu, { children: [
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
       Menu.TriggerButton,
       {
-        render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+        render: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
           _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button,
           {
             size: "compact",
@@ -29916,14 +29632,14 @@ function ViewTypeMenu() {
         )
       }
     ),
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(Menu.Popover, { children: availableLayouts.map((layout) => {
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(Menu.Popover, { children: availableLayouts.map((layout) => {
       const config = _dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_8__.VIEW_LAYOUTS.find(
         (v) => v.type === layout
       );
       if (!config) {
         return null;
       }
-      return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+      return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
         Menu.RadioItem,
         {
           value: layout,
@@ -29950,7 +29666,7 @@ function ViewTypeMenu() {
             }
             _wordpress_warning__WEBPACK_IMPORTED_MODULE_4__("Invalid dataview");
           },
-          children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(Menu.ItemLabel, { children: config.label })
+          children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(Menu.ItemLabel, { children: config.label })
         },
         layout
       );
@@ -29970,7 +29686,7 @@ function SortFieldControl() {
       };
     });
   }, [fields]);
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.SelectControl,
     {
       __next40pxDefaultSize: true,
@@ -30002,7 +29718,7 @@ function SortDirectionControl() {
   if (!value && view.sort?.field) {
     value = "desc";
   }
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.__experimentalToggleGroupControl,
     {
       className: "dataviews-view-config__sort-direction",
@@ -30028,7 +29744,7 @@ function SortDirectionControl() {
         _wordpress_warning__WEBPACK_IMPORTED_MODULE_4__("Invalid direction");
       },
       children: _constants_mjs__WEBPACK_IMPORTED_MODULE_7__.SORTING_DIRECTIONS.map((direction) => {
-        return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+        return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
           _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.__experimentalToggleGroupControlOptionIcon,
           {
             value: direction,
@@ -30047,7 +29763,7 @@ function ItemsPerPageControl() {
   if (!config || !config.perPageSizes || config.perPageSizes.length < 2 || config.perPageSizes.length > 6 || infiniteScrollEnabled) {
     return null;
   }
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.__experimentalToggleGroupControl,
     {
       __next40pxDefaultSize: true,
@@ -30064,7 +29780,7 @@ function ItemsPerPageControl() {
         });
       },
       children: config.perPageSizes.map((value) => {
-        return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+        return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
           _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.__experimentalToggleGroupControlOption,
           {
             value,
@@ -30082,7 +29798,7 @@ function ResetViewButton() {
     return null;
   }
   const isDisabled = onReset === false;
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button,
     {
       variant: "tertiary",
@@ -30109,7 +29825,7 @@ function DataviewsViewConfigDropdown() {
     (layout) => layout.type === view.type
   );
   const isModified = typeof onReset === "function";
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
     _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Dropdown,
     {
       expandOnMobile: true,
@@ -30118,8 +29834,8 @@ function DataviewsViewConfigDropdown() {
         id: popoverId
       },
       renderToggle: ({ onToggle, isOpen }) => {
-        return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)("div", { className: "dataviews-view-config__toggle-wrapper", children: [
-          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+        return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", { className: "dataviews-view-config__toggle-wrapper", children: [
+          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
             _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button,
             {
               size: "compact",
@@ -30133,22 +29849,22 @@ function DataviewsViewConfigDropdown() {
               "aria-controls": popoverId
             }
           ),
-          isModified && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)("span", { className: "dataviews-view-config__modified-indicator" })
+          isModified && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("span", { className: "dataviews-view-config__modified-indicator" })
         ] });
       },
-      renderContent: () => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+      renderContent: () => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
         _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.__experimentalDropdownContentWrapper,
         {
           paddingSize: "medium",
           className: "dataviews-config__popover-content-wrapper",
-          children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(
+          children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
             _wordpress_ui__WEBPACK_IMPORTED_MODULE_6__.Stack,
             {
               direction: "column",
               className: "dataviews-view-config",
               gap: "xl",
               children: [
-                /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(
+                /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
                   _wordpress_ui__WEBPACK_IMPORTED_MODULE_6__.Stack,
                   {
                     direction: "row",
@@ -30156,7 +29872,7 @@ function DataviewsViewConfigDropdown() {
                     align: "center",
                     className: "dataviews-view-config__header",
                     children: [
-                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(
+                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
                         _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.__experimentalHeading,
                         {
                           level: 2,
@@ -30164,27 +29880,26 @@ function DataviewsViewConfigDropdown() {
                           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)("Appearance")
                         }
                       ),
-                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(ResetViewButton, {})
+                      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(ResetViewButton, {})
                     ]
                   }
                 ),
-                /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_6__.Stack, { direction: "column", gap: "lg", children: [
-                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(
+                /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_6__.Stack, { direction: "column", gap: "lg", children: [
+                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(
                     _wordpress_ui__WEBPACK_IMPORTED_MODULE_6__.Stack,
                     {
                       direction: "row",
                       gap: "sm",
                       className: "dataviews-view-config__sort-controls",
                       children: [
-                        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(SortFieldControl, {}),
-                        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(SortDirectionControl, {})
+                        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(SortFieldControl, {}),
+                        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(SortDirectionControl, {})
                       ]
                     }
                   ),
-                  !!activeLayout?.viewConfigOptions && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(activeLayout.viewConfigOptions, {}),
-                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_infinite_scroll_toggle_mjs__WEBPACK_IMPORTED_MODULE_10__["default"], {}),
-                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(ItemsPerPageControl, {}),
-                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_properties_section_mjs__WEBPACK_IMPORTED_MODULE_11__.PropertiesSection, {})
+                  !!activeLayout?.viewConfigOptions && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(activeLayout.viewConfigOptions, {}),
+                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(ItemsPerPageControl, {}),
+                  /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_properties_section_mjs__WEBPACK_IMPORTED_MODULE_10__.PropertiesSection, {})
                 ] })
               ]
             }
@@ -30195,67 +29910,15 @@ function DataviewsViewConfigDropdown() {
   );
 }
 function _DataViewsViewConfig() {
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.Fragment, { children: [
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(ViewTypeMenu, {}),
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(DataviewsViewConfigDropdown, {})
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.Fragment, { children: [
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(ViewTypeMenu, {}),
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(DataviewsViewConfigDropdown, {})
   ] });
 }
 var DataViewsViewConfig = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.memo)(_DataViewsViewConfig);
 var dataviews_view_config_default = DataViewsViewConfig;
 
 //# sourceMappingURL=index.mjs.map
-
-
-/***/ },
-
-/***/ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-view-config/infinite-scroll-toggle.mjs"
-/*!********************************************************************************************************************!*\
-  !*** ./node_modules/@wordpress/dataviews/build-module/components/dataviews-view-config/infinite-scroll-toggle.mjs ***!
-  \********************************************************************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ InfiniteScrollToggle)
-/* harmony export */ });
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../dataviews-context/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-context/index.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-// packages/dataviews/src/components/dataviews-view-config/infinite-scroll-toggle.tsx
-
-
-
-
-
-function InfiniteScrollToggle() {
-  const context = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useContext)(_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_3__["default"]);
-  const { view, onChangeView } = context;
-  const infiniteScrollEnabled = view.infiniteScrollEnabled ?? false;
-  if (!context.hasInfiniteScrollHandler) {
-    return null;
-  }
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(
-    _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl,
-    {
-      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)("Enable infinite scroll"),
-      help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)(
-        "Automatically load more content as you scroll, instead of showing pagination links."
-      ),
-      checked: infiniteScrollEnabled,
-      onChange: (newValue) => {
-        onChangeView({
-          ...view,
-          infiniteScrollEnabled: newValue
-        });
-      }
-    }
-  );
-}
-
-//# sourceMappingURL=infinite-scroll-toggle.mjs.map
 
 
 /***/ },
@@ -30504,25 +30167,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ dataviews_default)
 /* harmony export */ });
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/compose */ "@wordpress/compose");
-/* harmony import */ var _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/ui */ "./node_modules/@wordpress/ui/build-module/stack/stack.mjs");
-/* harmony import */ var _components_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/dataviews-context/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-context/index.mjs");
-/* harmony import */ var _components_dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/dataviews-layouts/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/index.mjs");
-/* harmony import */ var _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/dataviews-filters/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/filters.mjs");
-/* harmony import */ var _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/dataviews-filters/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/toggle.mjs");
-/* harmony import */ var _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/dataviews-filters/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/use-filters.mjs");
-/* harmony import */ var _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../components/dataviews-filters/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/filters-toggled.mjs");
-/* harmony import */ var _components_dataviews_layout_index_mjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../components/dataviews-layout/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layout/index.mjs");
-/* harmony import */ var _components_dataviews_footer_index_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../components/dataviews-footer/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-footer/index.mjs");
-/* harmony import */ var _components_dataviews_search_index_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../components/dataviews-search/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-search/index.mjs");
-/* harmony import */ var _components_dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../components/dataviews-bulk-actions/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-bulk-actions/index.mjs");
-/* harmony import */ var _components_dataviews_pagination_index_mjs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../components/dataviews-pagination/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-pagination/index.mjs");
-/* harmony import */ var _components_dataviews_view_config_index_mjs__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../components/dataviews-view-config/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-view-config/index.mjs");
-/* harmony import */ var _field_types_index_mjs__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../field-types/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/field-types/index.mjs");
-/* harmony import */ var _hooks_use_data_mjs__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../hooks/use-data.mjs */ "./node_modules/@wordpress/dataviews/build-module/hooks/use-data.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var clsx__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! clsx */ "./node_modules/clsx/dist/clsx.mjs");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/compose */ "@wordpress/compose");
+/* harmony import */ var _wordpress_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/ui */ "./node_modules/@wordpress/ui/build-module/stack/stack.mjs");
+/* harmony import */ var _components_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/dataviews-context/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-context/index.mjs");
+/* harmony import */ var _components_dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/dataviews-layouts/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/index.mjs");
+/* harmony import */ var _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/dataviews-filters/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/filters.mjs");
+/* harmony import */ var _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/dataviews-filters/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/toggle.mjs");
+/* harmony import */ var _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../components/dataviews-filters/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/use-filters.mjs");
+/* harmony import */ var _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../components/dataviews-filters/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/filters-toggled.mjs");
+/* harmony import */ var _components_dataviews_layout_index_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../components/dataviews-layout/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layout/index.mjs");
+/* harmony import */ var _components_dataviews_footer_index_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../components/dataviews-footer/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-footer/index.mjs");
+/* harmony import */ var _components_dataviews_search_index_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../components/dataviews-search/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-search/index.mjs");
+/* harmony import */ var _components_dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../components/dataviews-bulk-actions/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-bulk-actions/index.mjs");
+/* harmony import */ var _components_dataviews_pagination_index_mjs__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../components/dataviews-pagination/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-pagination/index.mjs");
+/* harmony import */ var _components_dataviews_view_config_index_mjs__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../components/dataviews-view-config/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-view-config/index.mjs");
+/* harmony import */ var _field_types_index_mjs__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../field-types/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/field-types/index.mjs");
+/* harmony import */ var _hooks_use_data_mjs__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../hooks/use-data.mjs */ "./node_modules/@wordpress/dataviews/build-module/hooks/use-data.mjs");
+/* harmony import */ var _hooks_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../hooks/use-infinite-scroll.mjs */ "./node_modules/@wordpress/dataviews/build-module/hooks/use-infinite-scroll.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 // packages/dataviews/src/dataviews/index.tsx
+
+
 
 
 
@@ -30541,7 +30208,7 @@ __webpack_require__.r(__webpack_exports__);
 var defaultGetItemId = (item) => item.id;
 var defaultIsItemClickable = () => true;
 var EMPTY_ARRAY = [];
-var dataViewsLayouts = _components_dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_4__.VIEW_LAYOUTS.filter(
+var dataViewsLayouts = _components_dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_5__.VIEW_LAYOUTS.filter(
   (viewLayout) => !viewLayout.isPicker
 );
 function DefaultUI({
@@ -30549,39 +30216,43 @@ function DefaultUI({
   search = true,
   searchLabel = void 0
 }) {
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.Fragment, { children: [
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)(
-      _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
+  const { view } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useContext)(_components_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_4__["default"]);
+  const isInfiniteScroll = view.infiniteScrollEnabled;
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.Fragment, { children: [
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxs)(
+      _wordpress_ui__WEBPACK_IMPORTED_MODULE_3__.Stack,
       {
         direction: "row",
         align: "top",
         justify: "space-between",
-        className: "dataviews__view-actions",
+        className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])("dataviews__view-actions", {
+          "dataviews__view-actions--infinite-scroll": isInfiniteScroll
+        }),
         gap: "xs",
         children: [
-          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)(
-            _wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack,
+          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxs)(
+            _wordpress_ui__WEBPACK_IMPORTED_MODULE_3__.Stack,
             {
               direction: "row",
               justify: "start",
               gap: "sm",
               className: "dataviews__search",
               children: [
-                search && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_dataviews_search_index_mjs__WEBPACK_IMPORTED_MODULE_11__["default"], { label: searchLabel }),
-                /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_6__["default"], {})
+                search && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_components_dataviews_search_index_mjs__WEBPACK_IMPORTED_MODULE_12__["default"], { label: searchLabel }),
+                /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_7__["default"], {})
               ]
             }
           ),
-          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_2__.Stack, { direction: "row", gap: "xs", style: { flexShrink: 0 }, children: [
-            /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_dataviews_view_config_index_mjs__WEBPACK_IMPORTED_MODULE_14__["default"], {}),
+          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_3__.Stack, { direction: "row", gap: "xs", style: { flexShrink: 0 }, children: [
+            /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_components_dataviews_view_config_index_mjs__WEBPACK_IMPORTED_MODULE_15__["default"], {}),
             header
           ] })
         ]
       }
     ),
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_8__["default"], { className: "dataviews-filters__container" }),
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_dataviews_layout_index_mjs__WEBPACK_IMPORTED_MODULE_9__["default"], {}),
-    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_dataviews_footer_index_mjs__WEBPACK_IMPORTED_MODULE_10__["default"], {})
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_9__["default"], { className: "dataviews-filters__container" }),
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_components_dataviews_layout_index_mjs__WEBPACK_IMPORTED_MODULE_10__["default"], {}),
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_components_dataviews_footer_index_mjs__WEBPACK_IMPORTED_MODULE_11__["default"], {})
   ] });
 }
 function DataViews({
@@ -30608,10 +30279,25 @@ function DataViews({
   empty,
   onReset
 }) {
-  const { infiniteScrollHandler } = paginationInfo;
-  const containerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
-  const [containerWidth, setContainerWidth] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
-  const resizeObserverRef = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_1__.useResizeObserver)(
+  const [selectionState, setSelectionState] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)([]);
+  const isUncontrolled = selectionProperty === void 0 || onChangeSelection === void 0;
+  const selection = isUncontrolled ? selectionState : selectionProperty;
+  const {
+    data: displayData,
+    paginationInfo: displayPaginationInfo,
+    hasInitiallyLoaded,
+    setVisibleEntries
+  } = (0,_hooks_use_data_mjs__WEBPACK_IMPORTED_MODULE_17__["default"])({
+    view,
+    data,
+    getItemId,
+    isLoading,
+    selection,
+    paginationInfo
+  });
+  const containerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
+  const [containerWidth, setContainerWidth] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(0);
+  const resizeObserverRef = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_2__.useResizeObserver)(
     (resizeObserverEntries) => {
       setContainerWidth(
         resizeObserverEntries[0].borderBoxSize[0].inlineSize
@@ -30619,10 +30305,7 @@ function DataViews({
     },
     { box: "border-box" }
   );
-  const [selectionState, setSelectionState] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
-  const isUncontrolled = selectionProperty === void 0 || onChangeSelection === void 0;
-  const selection = isUncontrolled ? selectionState : selectionProperty;
-  const [openedFilter, setOpenedFilter] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const [openedFilter, setOpenedFilter] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
   function setSelectionWithChange(value) {
     const newValue = typeof value === "function" ? value(selection) : value;
     if (isUncontrolled) {
@@ -30632,57 +30315,39 @@ function DataViews({
       onChangeSelection(newValue);
     }
   }
-  const _fields = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => (0,_field_types_index_mjs__WEBPACK_IMPORTED_MODULE_15__["default"])(fields), [fields]);
-  const _selection = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+  const _fields = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => (0,_field_types_index_mjs__WEBPACK_IMPORTED_MODULE_16__["default"])(fields), [fields]);
+  const _selection = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
+    if (view.infiniteScrollEnabled) {
+      return selection;
+    }
     return selection.filter(
       (id) => data.some((item) => getItemId(item) === id)
     );
-  }, [selection, data, getItemId]);
-  const filters = (0,_components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_7__["default"])(_fields, view);
-  const hasPrimaryOrLockedFilters = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(
+  }, [selection, data, getItemId, view.infiniteScrollEnabled]);
+  const filters = (0,_components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_8__["default"])(_fields, view);
+  const hasPrimaryOrLockedFilters = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(
     () => (filters || []).some(
       (filter) => filter.isPrimary || filter.isLocked
     ),
     [filters]
   );
-  const [isShowingFilter, setIsShowingFilter] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(
+  const [isShowingFilter, setIsShowingFilter] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(
     hasPrimaryOrLockedFilters
   );
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+  const { intersectionObserver } = (0,_hooks_use_infinite_scroll_mjs__WEBPACK_IMPORTED_MODULE_18__.useInfiniteScroll)({
+    view,
+    onChangeView,
+    isLoading,
+    paginationInfo,
+    containerRef,
+    setVisibleEntries
+  });
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     if (hasPrimaryOrLockedFilters && !isShowingFilter) {
       setIsShowingFilter(true);
     }
   }, [hasPrimaryOrLockedFilters, isShowingFilter]);
-  const {
-    data: displayData,
-    paginationInfo: displayPaginationInfo,
-    hasInitiallyLoaded
-  } = (0,_hooks_use_data_mjs__WEBPACK_IMPORTED_MODULE_16__["default"])(data, isLoading, paginationInfo);
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    if (!hasInitiallyLoaded || !view.infiniteScrollEnabled || !containerRef.current) {
-      return;
-    }
-    const handleScroll = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_1__.throttle)((event) => {
-      const target = event.target;
-      const scrollTop = target.scrollTop;
-      const scrollHeight = target.scrollHeight;
-      const clientHeight = target.clientHeight;
-      if (scrollTop + clientHeight >= scrollHeight - 100) {
-        infiniteScrollHandler?.();
-      }
-    }, 100);
-    const container = containerRef.current;
-    container.addEventListener("scroll", handleScroll);
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-      handleScroll.cancel();
-    };
-  }, [
-    hasInitiallyLoaded,
-    infiniteScrollHandler,
-    view.infiniteScrollEnabled
-  ]);
-  const defaultLayouts = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(
+  const defaultLayouts = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(
     () => Object.fromEntries(
       Object.entries(defaultLayoutsProperty).filter(
         ([layoutType]) => {
@@ -30697,8 +30362,8 @@ function DataViews({
   if (!defaultLayouts[view.type]) {
     return null;
   }
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(
-    _components_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_3__["default"].Provider,
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(
+    _components_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_4__["default"].Provider,
     {
       value: {
         view,
@@ -30727,10 +30392,10 @@ function DataViews({
         config,
         empty,
         hasInitiallyLoaded,
-        hasInfiniteScrollHandler: !!infiniteScrollHandler,
-        onReset
+        onReset,
+        intersectionObserver
       },
-      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", { className: "dataviews-wrapper", children: children ?? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(
+      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)("div", { className: "dataviews-wrapper", children: children ?? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(
         DefaultUI,
         {
           header,
@@ -30742,16 +30407,16 @@ function DataViews({
   );
 }
 var DataViewsSubComponents = DataViews;
-DataViewsSubComponents.BulkActionToolbar = _components_dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_12__.BulkActionsFooter;
-DataViewsSubComponents.Filters = _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_5__["default"];
-DataViewsSubComponents.FiltersToggled = _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_8__["default"];
-DataViewsSubComponents.FiltersToggle = _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_6__["default"];
-DataViewsSubComponents.Layout = _components_dataviews_layout_index_mjs__WEBPACK_IMPORTED_MODULE_9__["default"];
-DataViewsSubComponents.LayoutSwitcher = _components_dataviews_view_config_index_mjs__WEBPACK_IMPORTED_MODULE_14__.ViewTypeMenu;
-DataViewsSubComponents.Pagination = _components_dataviews_pagination_index_mjs__WEBPACK_IMPORTED_MODULE_13__.DataViewsPagination;
-DataViewsSubComponents.Search = _components_dataviews_search_index_mjs__WEBPACK_IMPORTED_MODULE_11__["default"];
-DataViewsSubComponents.ViewConfig = _components_dataviews_view_config_index_mjs__WEBPACK_IMPORTED_MODULE_14__.DataviewsViewConfigDropdown;
-DataViewsSubComponents.Footer = _components_dataviews_footer_index_mjs__WEBPACK_IMPORTED_MODULE_10__["default"];
+DataViewsSubComponents.BulkActionToolbar = _components_dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_13__.BulkActionsFooter;
+DataViewsSubComponents.Filters = _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_6__["default"];
+DataViewsSubComponents.FiltersToggled = _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_9__["default"];
+DataViewsSubComponents.FiltersToggle = _components_dataviews_filters_index_mjs__WEBPACK_IMPORTED_MODULE_7__["default"];
+DataViewsSubComponents.Layout = _components_dataviews_layout_index_mjs__WEBPACK_IMPORTED_MODULE_10__["default"];
+DataViewsSubComponents.LayoutSwitcher = _components_dataviews_view_config_index_mjs__WEBPACK_IMPORTED_MODULE_15__.ViewTypeMenu;
+DataViewsSubComponents.Pagination = _components_dataviews_pagination_index_mjs__WEBPACK_IMPORTED_MODULE_14__.DataViewsPagination;
+DataViewsSubComponents.Search = _components_dataviews_search_index_mjs__WEBPACK_IMPORTED_MODULE_12__["default"];
+DataViewsSubComponents.ViewConfig = _components_dataviews_view_config_index_mjs__WEBPACK_IMPORTED_MODULE_15__.DataviewsViewConfigDropdown;
+DataViewsSubComponents.Footer = _components_dataviews_footer_index_mjs__WEBPACK_IMPORTED_MODULE_11__["default"];
 var dataviews_default = DataViewsSubComponents;
 
 //# sourceMappingURL=index.mjs.map
@@ -32645,23 +32310,160 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 // packages/dataviews/src/hooks/use-data.ts
 
-function useData(data, isLoading, paginationInfo) {
-  const previousDataRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(data);
-  const previousPaginationInfoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(paginationInfo);
+function useData({
+  view,
+  data: shownData,
+  getItemId,
+  isLoading,
+  paginationInfo,
+  selection
+}) {
+  const isInfiniteScrollEnabled = view.infiniteScrollEnabled;
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(
     !isLoading
   );
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     if (!isLoading) {
-      previousDataRef.current = data;
-      previousPaginationInfoRef.current = paginationInfo;
       setHasInitiallyLoaded(true);
     }
-  }, [data, isLoading, paginationInfo]);
+  }, [isLoading]);
+  const previousDataRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(shownData);
+  const previousPaginationInfoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(paginationInfo);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (!isLoading) {
+      previousDataRef.current = shownData;
+      previousPaginationInfoRef.current = paginationInfo;
+    }
+  }, [shownData, isLoading, paginationInfo]);
+  const [visibleEntries, setVisibleEntries] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const positionMapRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(/* @__PURE__ */ new Map());
+  const allLoadedRecordsRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)([]);
+  const prevViewParamsRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)({
+    search: void 0,
+    filters: void 0,
+    perPage: void 0
+  });
+  const scrollDirectionRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(void 0);
+  const prevStartPositionRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(void 0);
+  const hasInitializedRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
+  const allLoadedRecords = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    if (view.startPosition !== void 0 && prevStartPositionRef.current !== void 0) {
+      if (view.startPosition < prevStartPositionRef.current) {
+        scrollDirectionRef.current = "up";
+      } else if (view.startPosition > prevStartPositionRef.current) {
+        scrollDirectionRef.current = "down";
+      }
+    }
+    prevStartPositionRef.current = view.startPosition;
+    const currentFiltersKey = JSON.stringify(view.filters ?? []);
+    const prevFiltersKey = prevViewParamsRef.current.filters;
+    const shouldReset = !hasInitializedRef.current || !view.infiniteScrollEnabled || view.search !== prevViewParamsRef.current.search || currentFiltersKey !== prevFiltersKey || view.perPage !== prevViewParamsRef.current.perPage;
+    hasInitializedRef.current = true;
+    prevViewParamsRef.current = {
+      search: view.search,
+      filters: currentFiltersKey,
+      perPage: view.perPage
+    };
+    if (shouldReset) {
+      positionMapRef.current.clear();
+      scrollDirectionRef.current = void 0;
+      const startPosition = view.search ? 1 : view.startPosition ?? 1;
+      const records = shownData.map((record, index) => {
+        const position = startPosition + index;
+        positionMapRef.current.set(getItemId(record), position);
+        return {
+          ...record,
+          position
+        };
+      });
+      allLoadedRecordsRef.current = records;
+      return records;
+    }
+    const prev = allLoadedRecordsRef.current;
+    const shownDataIds = new Set(shownData.map(getItemId));
+    const scrollDirection = scrollDirectionRef.current;
+    const basePosition = view.search ? 1 : view.startPosition ?? 1;
+    const newRecords = shownData.map((record, index) => {
+      const itemId = getItemId(record);
+      const position = view.infiniteScrollEnabled ? basePosition + index : void 0;
+      if (position !== void 0) {
+        positionMapRef.current.set(itemId, position);
+      }
+      return {
+        ...record,
+        position
+      };
+    });
+    if (newRecords.length === 0) {
+      return prev;
+    }
+    const prevWithoutDuplicates = prev.filter(
+      (record) => !shownDataIds.has(getItemId(record))
+    );
+    const allRecords = scrollDirection === "up" ? [...newRecords, ...prevWithoutDuplicates] : [...prevWithoutDuplicates, ...newRecords];
+    allRecords.sort((a, b) => {
+      const posA = a.position;
+      const posB = b.position;
+      return posA - posB;
+    });
+    let result = allRecords;
+    if (visibleEntries.length > 0) {
+      const visibleMin = Math.min(...visibleEntries);
+      const visibleMax = Math.max(...visibleEntries);
+      const buffer = 20;
+      const recordPositions = allRecords.map(
+        (r) => r.position
+      );
+      const minRecordPos = Math.min(...recordPositions);
+      const maxRecordPos = Math.max(...recordPositions);
+      const hasOverlap = !(maxRecordPos < visibleMin - buffer || minRecordPos > visibleMax + buffer);
+      if (hasOverlap) {
+        result = allRecords.filter((record) => {
+          const itemId = getItemId(record);
+          const isSelected = selection?.includes(itemId);
+          if (isSelected) {
+            return true;
+          }
+          const itemPosition = record.position;
+          if (scrollDirection === "up") {
+            return itemPosition <= visibleMax + buffer;
+          } else if (scrollDirection === "down") {
+            return itemPosition >= visibleMin - buffer;
+          }
+          return itemPosition >= visibleMin - buffer && itemPosition <= visibleMax + buffer;
+        });
+      }
+    }
+    allLoadedRecordsRef.current = result;
+    return result;
+  }, [
+    shownData,
+    view.search,
+    view.filters,
+    view.perPage,
+    view.startPosition,
+    view.infiniteScrollEnabled,
+    visibleEntries,
+    selection,
+    getItemId
+  ]);
+  if (!isInfiniteScrollEnabled) {
+    const dataToReturn = isLoading && previousDataRef.current?.length ? previousDataRef.current : shownData;
+    return {
+      data: dataToReturn.map((item) => ({
+        ...item,
+        position: void 0
+      })),
+      paginationInfo: isLoading && previousDataRef.current?.length ? previousPaginationInfoRef.current : paginationInfo,
+      hasInitiallyLoaded,
+      setVisibleEntries: void 0
+    };
+  }
   return {
-    data: isLoading && previousDataRef.current?.length ? previousDataRef.current : data,
-    paginationInfo: isLoading && previousDataRef.current?.length ? previousPaginationInfoRef.current : paginationInfo,
-    hasInitiallyLoaded
+    data: allLoadedRecords,
+    paginationInfo,
+    hasInitiallyLoaded,
+    setVisibleEntries
   };
 }
 
@@ -32760,6 +32562,204 @@ function useElements({
 }
 
 //# sourceMappingURL=use-elements.mjs.map
+
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/dataviews/build-module/hooks/use-infinite-scroll.mjs"
+/*!**************************************************************************************!*\
+  !*** ./node_modules/@wordpress/dataviews/build-module/hooks/use-infinite-scroll.mjs ***!
+  \**************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useInfiniteScroll: () => (/* binding */ useInfiniteScroll)
+/* harmony export */ });
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/compose */ "@wordpress/compose");
+// packages/dataviews/src/hooks/use-infinite-scroll.ts
+
+
+function captureAnchorElement(container, anchorElementRef, direction) {
+  const containerRect = container.getBoundingClientRect();
+  const centerY = containerRect.top + containerRect.height / 2;
+  const items = Array.from(container.querySelectorAll("[aria-posinset]"));
+  if (items.length === 0) {
+    return false;
+  }
+  const bestAnchor = items.reduce((best, item) => {
+    const itemRect = item.getBoundingClientRect();
+    const itemCenterY = itemRect.top + itemRect.height / 2;
+    const distance = Math.abs(itemCenterY - centerY);
+    const bestRect = best.getBoundingClientRect();
+    const bestCenterY = bestRect.top + bestRect.height / 2;
+    const bestDistance = Math.abs(bestCenterY - centerY);
+    return distance < bestDistance ? item : best;
+  });
+  const posinset = Number(bestAnchor.getAttribute("aria-posinset"));
+  const anchorRect = bestAnchor.getBoundingClientRect();
+  anchorElementRef.current = {
+    posinset,
+    viewportOffset: anchorRect.top - containerRect.top,
+    direction
+  };
+  return true;
+}
+function useInfiniteScroll({
+  view,
+  onChangeView,
+  isLoading,
+  paginationInfo,
+  containerRef,
+  setVisibleEntries
+}) {
+  const anchorElementRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  const viewRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(view);
+  const isLoadingRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(isLoading);
+  const onChangeViewRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(onChangeView);
+  const totalItemsRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(paginationInfo.totalItems);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect)(() => {
+    viewRef.current = view;
+    isLoadingRef.current = isLoading;
+    onChangeViewRef.current = onChangeView;
+    totalItemsRef.current = paginationInfo.totalItems;
+  }, [view, isLoading, onChangeView, paginationInfo.totalItems]);
+  const intersectionObserverCallback = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(
+    (entries) => {
+      if (!setVisibleEntries) {
+        return;
+      }
+      setVisibleEntries((prev) => {
+        const newVisibleEntries = new Set(prev);
+        let hasChanged = false;
+        entries.forEach((entry) => {
+          const posInSet = Number(
+            entry.target?.attributes?.getNamedItem(
+              "aria-posinset"
+            )?.value
+          );
+          if (isNaN(posInSet)) {
+            return;
+          }
+          if (entry.isIntersecting) {
+            if (!newVisibleEntries.has(posInSet)) {
+              newVisibleEntries.add(posInSet);
+              hasChanged = true;
+            }
+          } else if (newVisibleEntries.has(posInSet)) {
+            newVisibleEntries.delete(posInSet);
+            hasChanged = true;
+          }
+        });
+        return hasChanged ? Array.from(newVisibleEntries).sort() : prev;
+      });
+    },
+    [setVisibleEntries]
+  );
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect)(() => {
+    const container = containerRef.current;
+    const anchor = anchorElementRef.current;
+    if (!container || !view.infiniteScrollEnabled || !anchor || isLoading) {
+      return;
+    }
+    const anchorElement = container.querySelector(
+      `[aria-posinset="${anchor.posinset}"]`
+    );
+    if (anchorElement) {
+      const containerRect = container.getBoundingClientRect();
+      const anchorRect = anchorElement.getBoundingClientRect();
+      const currentOffset = anchorRect.top - containerRect.top;
+      const scrollAdjustment = currentOffset - anchor.viewportOffset;
+      if (Math.abs(scrollAdjustment) > 1) {
+        container.scrollTop += scrollAdjustment;
+      }
+    }
+    anchorElementRef.current = null;
+  }, [containerRef, isLoading, view.infiniteScrollEnabled]);
+  const intersectionObserverRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(
+    null
+  );
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (!view.infiniteScrollEnabled || !intersectionObserverCallback) {
+      if (intersectionObserverRef.current) {
+        intersectionObserverRef.current.disconnect();
+        intersectionObserverRef.current = null;
+      }
+      return;
+    }
+    intersectionObserverRef.current = new IntersectionObserver(
+      intersectionObserverCallback,
+      { root: null, rootMargin: "0px", threshold: 0.1 }
+    );
+    return () => {
+      if (intersectionObserverRef.current) {
+        intersectionObserverRef.current.disconnect();
+        intersectionObserverRef.current = null;
+      }
+    };
+  }, [view.infiniteScrollEnabled, intersectionObserverCallback]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (!view.infiniteScrollEnabled || !containerRef.current) {
+      return;
+    }
+    let lastScrollTop = 0;
+    const BOTTOM_THRESHOLD = 600;
+    const TOP_THRESHOLD = 800;
+    const handleScroll = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_1__.throttle)((event) => {
+      const currentView = viewRef.current;
+      const totalItems = totalItemsRef.current;
+      const target = event.target;
+      const scrollTop = target.scrollTop;
+      const scrollHeight = target.scrollHeight;
+      const clientHeight = target.clientHeight;
+      const scrollDirection = scrollTop > lastScrollTop ? "down" : "up";
+      lastScrollTop = scrollTop;
+      if (isLoadingRef.current) {
+        return;
+      }
+      const currentStartPosition = currentView.startPosition || 1;
+      const batchSize = currentView.perPage || 10;
+      const currentEndPosition = Math.min(
+        currentStartPosition + batchSize,
+        totalItems
+      );
+      if (scrollDirection === "down" && scrollTop + clientHeight >= scrollHeight - BOTTOM_THRESHOLD) {
+        if (currentEndPosition < totalItems) {
+          const newStartPosition = currentEndPosition;
+          captureAnchorElement(target, anchorElementRef, "down");
+          onChangeViewRef.current({
+            ...currentView,
+            startPosition: newStartPosition
+          });
+        }
+      }
+      if (scrollDirection === "up" && scrollTop <= TOP_THRESHOLD) {
+        if (currentStartPosition > 1) {
+          const calculatedStartPosition = currentStartPosition - batchSize;
+          const newStartPosition = calculatedStartPosition < 6 ? 1 : calculatedStartPosition;
+          captureAnchorElement(target, anchorElementRef, "up");
+          onChangeViewRef.current({
+            ...currentView,
+            startPosition: newStartPosition
+          });
+        }
+      }
+    }, 50);
+    const container = containerRef.current;
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      handleScroll.cancel();
+    };
+  }, [containerRef, view.infiniteScrollEnabled]);
+  return {
+    intersectionObserver: intersectionObserverRef.current
+  };
+}
+
+//# sourceMappingURL=use-infinite-scroll.mjs.map
 
 
 /***/ },
@@ -32883,7 +32883,11 @@ function filterSortAndPaginate(data, view, fields) {
   }
   let totalItems = filteredData.length;
   let totalPages = 1;
-  if (view.page !== void 0 && view.perPage !== void 0) {
+  if (view.infiniteScrollEnabled && view.startPosition !== void 0 && view.perPage !== void 0) {
+    const start = view.startPosition - 1;
+    const end = Math.min(start + view.perPage, totalItems);
+    filteredData = filteredData?.slice(start, end);
+  } else if (view.page !== void 0 && view.perPage !== void 0) {
     const start = (view.page - 1) * view.perPage;
     totalItems = filteredData?.length || 0;
     totalPages = Math.ceil(totalItems / view.perPage);
@@ -32917,7 +32921,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 // packages/dataviews/src/utils/get-footer-message.ts
 
-function getFooterMessage(selectionCount, itemsCount, totalItems) {
+function getFooterMessage(selectionCount, itemsCount, totalItems, onlyTotalCount = false) {
   if (selectionCount > 0) {
     return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(
       /* translators: %d: number of items. */
@@ -32925,18 +32929,18 @@ function getFooterMessage(selectionCount, itemsCount, totalItems) {
       selectionCount
     );
   }
-  if (totalItems > itemsCount) {
+  if (onlyTotalCount || totalItems <= itemsCount) {
     return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(
-      /* translators: %1$d: number of items. %2$d: total number of items. */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)("%1$d of %2$d Item", "%1$d of %2$d Items", totalItems),
-      itemsCount,
+      /* translators: %d: number of items. */
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)("%d Item", "%d Items", totalItems),
       totalItems
     );
   }
   return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(
-    /* translators: %d: number of items. */
-    (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)("%d Item", "%d Items", itemsCount),
-    itemsCount
+    /* translators: %1$d: number of items. %2$d: total number of items. */
+    (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)("%1$d of %2$d Item", "%1$d of %2$d Items", totalItems),
+    itemsCount,
+    totalItems
   );
 }
 
@@ -38527,17 +38531,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Stack: () => (/* binding */ Stack)
 /* harmony export */ });
-/* harmony import */ var _base_ui_react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @base-ui/react */ "./node_modules/@base-ui/react/esm/use-render/useRender.js");
-/* harmony import */ var _base_ui_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @base-ui/react */ "./node_modules/@base-ui/react/esm/merge-props/mergeProps.js");
+/* harmony import */ var _base_ui_react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @base-ui/react */ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/use-render/useRender.js");
+/* harmony import */ var _base_ui_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @base-ui/react */ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/merge-props/mergeProps.js");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 // packages/ui/src/stack/stack.tsx
 
 
 
 // packages/ui/src/stack/style.module.css
-if (typeof document !== "undefined" && "development" !== "test" && !document.head.querySelector("style[data-wp-hash='71d20935c2']")) {
+if (typeof document !== "undefined" && "development" !== "test" && !document.head.querySelector("style[data-wp-hash='b51ff41489']")) {
   const style = document.createElement("style");
-  style.setAttribute("data-wp-hash", "71d20935c2");
+  style.setAttribute("data-wp-hash", "b51ff41489");
   style.appendChild(document.createTextNode("@layer wp-ui-utilities, wp-ui-components, wp-ui-compositions, wp-ui-overrides;@layer wp-ui-components{._19ce0419607e1896__stack{display:flex}}"));
   document.head.appendChild(style);
 }
@@ -38571,6 +38575,540 @@ var Stack = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.forwardRef)(funct
 
 //# sourceMappingURL=stack.mjs.map
 
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/merge-props/mergeProps.js"
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/merge-props/mergeProps.js ***!
+  \**********************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   makeEventPreventable: () => (/* binding */ makeEventPreventable),
+/* harmony export */   mergeClassNames: () => (/* binding */ mergeClassNames),
+/* harmony export */   mergeProps: () => (/* binding */ mergeProps),
+/* harmony export */   mergePropsN: () => (/* binding */ mergePropsN)
+/* harmony export */ });
+/* harmony import */ var _base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @base-ui/utils/mergeObjects */ "./node_modules/@base-ui/utils/esm/mergeObjects.js");
+
+const EMPTY_PROPS = {};
+
+/* eslint-disable id-denylist */
+/**
+ * Merges multiple sets of React props. It follows the Object.assign pattern where the rightmost object's fields overwrite
+ * the conflicting ones from others. This doesn't apply to event handlers, `className` and `style` props.
+ *
+ * Event handlers are merged and called in right-to-left order (rightmost handler executes first, leftmost last).
+ * For React synthetic events, the rightmost handler can prevent prior (left-positioned) handlers from executing
+ * by calling `event.preventBaseUIHandler()`. For non-synthetic events (custom events with primitive/object values),
+ * all handlers always execute without prevention capability.
+ *
+ * The `className` prop is merged by concatenating classes in right-to-left order (rightmost class appears first in the string).
+ * The `style` prop is merged with rightmost styles overwriting the prior ones.
+ *
+ * Props can either be provided as objects or as functions that take the previous props as an argument.
+ * The function will receive the merged props up to that point (going from left to right):
+ * so in the case of `(obj1, obj2, fn, obj3)`, `fn` will receive the merged props of `obj1` and `obj2`.
+ * The function is responsible for chaining event handlers if needed (that is, we don't run the merge logic).
+ *
+ * Event handlers returned by the functions are not automatically prevented when `preventBaseUIHandler` is called.
+ * They must check `event.baseUIHandlerPrevented` themselves and bail out if it's true.
+ *
+ * @important **`ref` is not merged.**
+ * @param a Props object to merge.
+ * @param b Props object to merge. The function will overwrite conflicting props from `a`.
+ * @param c Props object to merge. The function will overwrite conflicting props from previous parameters.
+ * @param d Props object to merge. The function will overwrite conflicting props from previous parameters.
+ * @param e Props object to merge. The function will overwrite conflicting props from previous parameters.
+ * @returns The merged props.
+ * @public
+ */
+
+function mergeProps(a, b, c, d, e) {
+  if (!c && !d && !e && !a) {
+    return createInitialMergedProps(b);
+  }
+
+  // We need to mutably own `merged`.
+  let merged = createInitialMergedProps(a);
+  if (b) {
+    merged = mergeInto(merged, b);
+  }
+  if (c) {
+    merged = mergeInto(merged, c);
+  }
+  if (d) {
+    merged = mergeInto(merged, d);
+  }
+  if (e) {
+    merged = mergeInto(merged, e);
+  }
+  return merged;
+}
+/* eslint-enable id-denylist */
+
+/**
+ * Merges an arbitrary number of React props using the same logic as {@link mergeProps}.
+ * This function accepts an array of props instead of individual arguments.
+ *
+ * This has slightly lower performance than {@link mergeProps} due to accepting an array
+ * instead of a fixed number of arguments. Prefer {@link mergeProps} when merging 5 or
+ * fewer prop sets for better performance.
+ *
+ * @param props Array of props to merge.
+ * @returns The merged props.
+ * @see mergeProps
+ * @public
+ */
+function mergePropsN(props) {
+  if (props.length === 0) {
+    return EMPTY_PROPS;
+  }
+  if (props.length === 1) {
+    return createInitialMergedProps(props[0]);
+  }
+
+  // We need to mutably own `merged`.
+  let merged = createInitialMergedProps(props[0]);
+  for (let i = 1; i < props.length; i += 1) {
+    merged = mergeInto(merged, props[i]);
+  }
+  return merged;
+}
+function createInitialMergedProps(inputProps) {
+  if (isPropsGetter(inputProps)) {
+    // Getter-returned handlers intentionally keep their existing semantics.
+    return {
+      ...resolvePropsGetter(inputProps, EMPTY_PROPS)
+    };
+  }
+  return copyInitialProps(inputProps);
+}
+function mergeInto(merged, inputProps) {
+  if (isPropsGetter(inputProps)) {
+    return resolvePropsGetter(inputProps, merged);
+  }
+  return mutablyMergeInto(merged, inputProps);
+}
+function copyInitialProps(inputProps) {
+  const copiedProps = {
+    ...inputProps
+  };
+
+  // `copiedProps` is our fresh own-object copy, so iterating with `for...in` is safe here.
+  // eslint-disable-next-line guard-for-in
+  for (const propName in copiedProps) {
+    const propValue = copiedProps[propName];
+    if (isEventHandler(propName, propValue)) {
+      copiedProps[propName] = wrapEventHandler(propValue);
+    }
+  }
+  return copiedProps;
+}
+
+/**
+ * Merges two sets of props. In case of conflicts, the external props take precedence.
+ */
+function mutablyMergeInto(mergedProps, externalProps) {
+  if (!externalProps) {
+    return mergedProps;
+  }
+
+  // eslint-disable-next-line guard-for-in
+  for (const propName in externalProps) {
+    const externalPropValue = externalProps[propName];
+    switch (propName) {
+      case 'style':
+        {
+          mergedProps[propName] = (0,_base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_0__.mergeObjects)(mergedProps.style, externalPropValue);
+          break;
+        }
+      case 'className':
+        {
+          mergedProps[propName] = mergeClassNames(mergedProps.className, externalPropValue);
+          break;
+        }
+      default:
+        {
+          if (isEventHandler(propName, externalPropValue)) {
+            mergedProps[propName] = mergeEventHandlers(mergedProps[propName], externalPropValue);
+          } else {
+            mergedProps[propName] = externalPropValue;
+          }
+        }
+    }
+  }
+  return mergedProps;
+}
+function isEventHandler(key, value) {
+  // This approach is more efficient than using a regex.
+  const code0 = key.charCodeAt(0);
+  const code1 = key.charCodeAt(1);
+  const code2 = key.charCodeAt(2);
+  return code0 === 111 /* o */ && code1 === 110 /* n */ && code2 >= 65 /* A */ && code2 <= 90 /* Z */ && (typeof value === 'function' || typeof value === 'undefined');
+}
+function isPropsGetter(inputProps) {
+  return typeof inputProps === 'function';
+}
+function resolvePropsGetter(inputProps, previousProps) {
+  if (isPropsGetter(inputProps)) {
+    return inputProps(previousProps);
+  }
+  return inputProps ?? EMPTY_PROPS;
+}
+function mergeEventHandlers(ourHandler, theirHandler) {
+  if (!theirHandler) {
+    return ourHandler;
+  }
+  if (!ourHandler) {
+    return wrapEventHandler(theirHandler);
+  }
+  return event => {
+    if (isSyntheticEvent(event)) {
+      const baseUIEvent = event;
+      makeEventPreventable(baseUIEvent);
+      const result = theirHandler(baseUIEvent);
+      if (!baseUIEvent.baseUIHandlerPrevented) {
+        ourHandler?.(baseUIEvent);
+      }
+      return result;
+    }
+    const result = theirHandler(event);
+    ourHandler?.(event);
+    return result;
+  };
+}
+function wrapEventHandler(handler) {
+  if (!handler) {
+    return handler;
+  }
+  return event => {
+    if (isSyntheticEvent(event)) {
+      makeEventPreventable(event);
+    }
+    return handler(event);
+  };
+}
+function makeEventPreventable(event) {
+  event.preventBaseUIHandler = () => {
+    event.baseUIHandlerPrevented = true;
+  };
+  return event;
+}
+function mergeClassNames(ourClassName, theirClassName) {
+  if (theirClassName) {
+    if (ourClassName) {
+      // eslint-disable-next-line prefer-template
+      return theirClassName + ' ' + ourClassName;
+    }
+    return theirClassName;
+  }
+  return ourClassName;
+}
+function isSyntheticEvent(event) {
+  return event != null && typeof event === 'object' && 'nativeEvent' in event;
+}
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/use-render/useRender.js"
+/*!********************************************************************************************!*\
+  !*** ./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/use-render/useRender.js ***!
+  \********************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useRender: () => (/* binding */ useRender)
+/* harmony export */ });
+/* harmony import */ var _utils_useRenderElement_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/useRenderElement.js */ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/useRenderElement.js");
+
+/**
+ * Renders a Base UI element.
+ *
+ * @public
+ */
+function useRender(params) {
+  return (0,_utils_useRenderElement_js__WEBPACK_IMPORTED_MODULE_0__.useRenderElement)(params.defaultTagName ?? 'div', params, params);
+}
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/getStateAttributesProps.js"
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/getStateAttributesProps.js ***!
+  \*****************************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getStateAttributesProps: () => (/* binding */ getStateAttributesProps)
+/* harmony export */ });
+function getStateAttributesProps(state, customMapping) {
+  const props = {};
+
+  /* eslint-disable-next-line guard-for-in */
+  for (const key in state) {
+    const value = state[key];
+    if (customMapping?.hasOwnProperty(key)) {
+      const customProps = customMapping[key](value);
+      if (customProps != null) {
+        Object.assign(props, customProps);
+      }
+      continue;
+    }
+    if (value === true) {
+      props[`data-${key.toLowerCase()}`] = '';
+    } else if (value) {
+      props[`data-${key.toLowerCase()}`] = value.toString();
+    }
+  }
+  return props;
+}
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/resolveClassName.js"
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/resolveClassName.js ***!
+  \**********************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   resolveClassName: () => (/* binding */ resolveClassName)
+/* harmony export */ });
+/**
+ * If the provided className is a string, it will be returned as is.
+ * Otherwise, the function will call the className function with the state as the first argument.
+ *
+ * @param className
+ * @param state
+ */
+function resolveClassName(className, state) {
+  return typeof className === 'function' ? className(state) : className;
+}
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/resolveStyle.js"
+/*!******************************************************************************************!*\
+  !*** ./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/resolveStyle.js ***!
+  \******************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   resolveStyle: () => (/* binding */ resolveStyle)
+/* harmony export */ });
+/**
+ * If the provided style is an object, it will be returned as is.
+ * Otherwise, the function will call the style function with the state as the first argument.
+ *
+ * @param style
+ * @param state
+ */
+function resolveStyle(style, state) {
+  return typeof style === 'function' ? style(state) : style;
+}
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/useRenderElement.js"
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/useRenderElement.js ***!
+  \**********************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useRenderElement: () => (/* binding */ useRenderElement)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _base_ui_utils_useMergedRefs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @base-ui/utils/useMergedRefs */ "./node_modules/@base-ui/utils/esm/useMergedRefs.js");
+/* harmony import */ var _base_ui_utils_getReactElementRef__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @base-ui/utils/getReactElementRef */ "./node_modules/@base-ui/utils/esm/getReactElementRef.js");
+/* harmony import */ var _base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @base-ui/utils/mergeObjects */ "./node_modules/@base-ui/utils/esm/mergeObjects.js");
+/* harmony import */ var _base_ui_utils_warn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @base-ui/utils/warn */ "./node_modules/@base-ui/utils/esm/warn.js");
+/* harmony import */ var _getStateAttributesProps_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./getStateAttributesProps.js */ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/getStateAttributesProps.js");
+/* harmony import */ var _resolveClassName_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./resolveClassName.js */ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/resolveClassName.js");
+/* harmony import */ var _resolveStyle_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./resolveStyle.js */ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/utils/resolveStyle.js");
+/* harmony import */ var _merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../merge-props/index.js */ "./node_modules/@wordpress/ui/node_modules/@base-ui/react/esm/merge-props/mergeProps.js");
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./constants.js */ "./node_modules/@base-ui/utils/esm/empty.js");
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Renders a Base UI element.
+ *
+ * @param element The default HTML element to render. Can be overridden by the `render` prop.
+ * @param componentProps An object containing the `render` and `className` props to be used for element customization. Other props are ignored.
+ * @param params Additional parameters for rendering the element.
+ */
+function useRenderElement(element, componentProps, params = {}) {
+  const renderProp = componentProps.render;
+  const outProps = useRenderElementProps(componentProps, params);
+  if (params.enabled === false) {
+    return null;
+  }
+  const state = params.state ?? _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT;
+  return evaluateRenderProp(element, renderProp, outProps, state);
+}
+
+/**
+ * Computes render element final props.
+ */
+function useRenderElementProps(componentProps, params = {}) {
+  const {
+    className: classNameProp,
+    style: styleProp,
+    render: renderProp
+  } = componentProps;
+  const {
+    state = _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT,
+    ref,
+    props,
+    stateAttributesMapping,
+    enabled = true
+  } = params;
+  const className = enabled ? (0,_resolveClassName_js__WEBPACK_IMPORTED_MODULE_6__.resolveClassName)(classNameProp, state) : undefined;
+  const style = enabled ? (0,_resolveStyle_js__WEBPACK_IMPORTED_MODULE_7__.resolveStyle)(styleProp, state) : undefined;
+  const stateProps = enabled ? (0,_getStateAttributesProps_js__WEBPACK_IMPORTED_MODULE_5__.getStateAttributesProps)(state, stateAttributesMapping) : _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT;
+  const resolvedProps = enabled && props ? resolveRenderFunctionProps(props) : undefined;
+
+  // Ensure outProps is always a new mutable object when enabled, never EMPTY_OBJECT.
+  // This prevents potential TypeError when setting ref, className, or style properties,
+  // since EMPTY_OBJECT is frozen and mutations would fail in strict mode.
+  const outProps = enabled ? (0,_base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_3__.mergeObjects)(stateProps, resolvedProps) ?? {} : _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT;
+
+  // SAFETY: The `useMergedRefs` functions use a single hook to store the same value,
+  // switching between them at runtime is safe. If this assertion fails, React will
+  // throw at runtime anyway.
+  // This also skips the `useMergedRefs` call on the server, which is fine because
+  // refs are not used on the server side.
+  /* eslint-disable react-hooks/rules-of-hooks */
+  if (typeof document !== 'undefined') {
+    if (!enabled) {
+      (0,_base_ui_utils_useMergedRefs__WEBPACK_IMPORTED_MODULE_1__.useMergedRefs)(null, null);
+    } else if (Array.isArray(ref)) {
+      outProps.ref = (0,_base_ui_utils_useMergedRefs__WEBPACK_IMPORTED_MODULE_1__.useMergedRefsN)([outProps.ref, (0,_base_ui_utils_getReactElementRef__WEBPACK_IMPORTED_MODULE_2__.getReactElementRef)(renderProp), ...ref]);
+    } else {
+      outProps.ref = (0,_base_ui_utils_useMergedRefs__WEBPACK_IMPORTED_MODULE_1__.useMergedRefs)(outProps.ref, (0,_base_ui_utils_getReactElementRef__WEBPACK_IMPORTED_MODULE_2__.getReactElementRef)(renderProp), ref);
+    }
+  }
+  if (!enabled) {
+    return _constants_js__WEBPACK_IMPORTED_MODULE_9__.EMPTY_OBJECT;
+  }
+  if (className !== undefined) {
+    outProps.className = (0,_merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__.mergeClassNames)(outProps.className, className);
+  }
+  if (style !== undefined) {
+    outProps.style = (0,_base_ui_utils_mergeObjects__WEBPACK_IMPORTED_MODULE_3__.mergeObjects)(outProps.style, style);
+  }
+  return outProps;
+}
+function resolveRenderFunctionProps(props) {
+  if (Array.isArray(props)) {
+    return (0,_merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__.mergePropsN)(props);
+  }
+  return (0,_merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__.mergeProps)(undefined, props);
+}
+
+// The symbol React uses internally for lazy components
+// https://github.com/facebook/react/blob/a0566250b210499b4c5677f5ac2eedbd71d51a1b/packages/shared/ReactSymbols.js#L31
+//
+// TODO delete once https://github.com/facebook/react/issues/32392 is fixed
+const REACT_LAZY_TYPE = Symbol.for('react.lazy');
+const COMPONENT_IDENTIFIER_PATTERN = /^[A-Z][A-Za-z0-9$]*$/;
+const LOWERCASE_CHARACTER_PATTERN = /[a-z]/;
+function evaluateRenderProp(element, render, props, state) {
+  if (render) {
+    if (typeof render === 'function') {
+      if (true) {
+        warnIfRenderPropLooksLikeComponent(render);
+      }
+      return render(props, state);
+    }
+    const mergedProps = (0,_merge_props_index_js__WEBPACK_IMPORTED_MODULE_8__.mergeProps)(props, render.props);
+    mergedProps.ref = props.ref;
+    let newElement = render;
+
+    // Workaround for https://github.com/facebook/react/issues/32392
+    // This works because the toArray() logic unwrap lazy element type in
+    // https://github.com/facebook/react/blob/a0566250b210499b4c5677f5ac2eedbd71d51a1b/packages/react/src/ReactChildren.js#L186
+    if (newElement?.$$typeof === REACT_LAZY_TYPE) {
+      const children = react__WEBPACK_IMPORTED_MODULE_0__.Children.toArray(render);
+      newElement = children[0];
+    }
+
+    // There is a high number of indirections, the error message thrown by React.cloneElement() is
+    // hard to use for developers, this logic provides a better context.
+    //
+    // Our general guideline is to never change the control flow depending on the environment.
+    // However, React.cloneElement() throws if React.isValidElement() is false,
+    // so we can throw before with custom message.
+    if (true) {
+      if (! /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.isValidElement(newElement)) {
+        throw new Error(['Base UI: The `render` prop was provided an invalid React element as `React.isValidElement(render)` is `false`.', 'A valid React element must be provided to the `render` prop because it is cloned with props to replace the default element.', 'https://base-ui.com/r/invalid-render-prop'].join('\n'));
+      }
+    }
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.cloneElement(newElement, mergedProps);
+  }
+  if (element) {
+    if (typeof element === 'string') {
+      return renderTag(element, props);
+    }
+  }
+  // Unreachable, but the typings on `useRenderElement` need to be reworked
+  // to annotate it correctly.
+  throw new Error( true ? 'Base UI: Render element or function are not defined.' : 0);
+}
+function warnIfRenderPropLooksLikeComponent(renderFn) {
+  const functionName = renderFn.name;
+  if (functionName.length === 0) {
+    return;
+  }
+  if (!COMPONENT_IDENTIFIER_PATTERN.test(functionName)) {
+    return;
+  }
+  if (!LOWERCASE_CHARACTER_PATTERN.test(functionName)) {
+    return;
+  }
+  (0,_base_ui_utils_warn__WEBPACK_IMPORTED_MODULE_4__.warn)(`The \`render\` prop received a function named \`${functionName}\` that starts with an uppercase letter.`, 'This usually means a React component was passed directly as `render={Component}`.', 'Base UI calls `render` as a plain function, which can break the Rules of Hooks during reconciliation.', 'If this is an intentional render callback, rename it to start with a lowercase letter.', 'Use `render={<Component />}` or `render={(props) => <Component {...props} />}` instead.', 'https://base-ui.com/r/invalid-render-prop');
+}
+function renderTag(Tag, props) {
+  if (Tag === 'button') {
+    return /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+      type: "button",
+      ...props,
+      key: props.key
+    });
+  }
+  if (Tag === 'img') {
+    return /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+      alt: "",
+      ...props,
+      key: props.key
+    });
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(Tag, props);
+}
 
 /***/ },
 

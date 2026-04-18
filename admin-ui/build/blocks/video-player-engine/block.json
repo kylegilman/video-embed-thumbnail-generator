@@ -14,7 +14,7 @@
   ],
   "editorStyle": "file:./index.css",
   "usesContext": [
-    "postId",
+    "videopack/postId",
     "videopack/skin",
     "videopack/autoplay",
     "videopack/controls",
@@ -43,8 +43,17 @@
     "videopack/control_bar_color",
     "videopack/title_color",
     "videopack/title_background_color",
-    "videopack/embed_method"
+    "videopack/embed_method",
+    "videopack/isInsidePlayer",
+    "videopack/downloadlink",
+    "videopack/embedcode"
   ],
+  "attributes": {
+    "isInsidePlayer": {
+      "type": "boolean",
+      "default": true
+    }
+  },
   "supports": {
     "html": false,
     "reusable": false,

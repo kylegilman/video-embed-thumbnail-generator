@@ -180,14 +180,14 @@ class Public_Controller extends Controller {
 		}
 
 		$video_event = (string) $request->get_param( 'video_event' );
-		$show_views  = (bool) $request->get_param( 'show_views' );
+		$show_views  = (bool) $request->get_param( 'views' );
 
 		$meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options, $attachment_id );
 		$updated_meta = $meta_manager->increment_video_stat( $video_event );
 
 		$response = array( 'status' => 'success' );
 		if ( $show_views && isset( $updated_meta['starts'] ) ) {
-			$response['view_count'] = \Videopack\Common\I18n::format_view_count( (int) $updated_meta['starts'] );
+			$response['views'] = \Videopack\Common\I18n::format_view_count( (int) $updated_meta['starts'] );
 		}
 		return apply_filters( 'videopack_rest_count_play', new \WP_REST_Response( $response, 200 ), $request );
 	}

@@ -69,3 +69,21 @@
   padding: 12px;
   width: 280px;
 }
+/*!*************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[2].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[2].use[2]!./src/blocks/view-count/index.css ***!
+  \*************************************************************************************************************************************************************************************/
+.videopack-view-count-block {
+    font-size: 0.8em;
+    width: 100%;
+}
+
+.videopack-view-count-block:not(.is-overlay) {
+    margin-bottom: 0.5em;
+}
+
+/* Specific styling for the view count component itself if needed */
+
+.videopack-view-count {
+    white-space: nowrap;
+}
+

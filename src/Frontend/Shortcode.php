@@ -158,6 +158,11 @@ class Shortcode implements Hook_Subscriber {
 				'watermark',
 				'watermark_link_to',
 				'watermark_url',
+				'watermark_align',
+				'watermark_valign',
+				'watermark_scale',
+				'watermark_x',
+				'watermark_y',
 				'endofvideooverlay',
 				'endofvideooverlaysame',
 				'loop',
@@ -239,6 +244,8 @@ class Shortcode implements Hook_Subscriber {
 				'skip_buttons',
 				'gallery',
 				'enable_collection_video_limit',
+				'collection_video_limit',
+				'gallery_per_page',
 			),
 		);
 	}
@@ -476,7 +483,7 @@ class Shortcode implements Hook_Subscriber {
 			$query_atts['track_default'] = 'default';
 		}
 		if ( (string) ( $query_atts['count_views'] ?? '' ) === 'false' ) {
-			$query_atts['view_count'] = 'false';
+			$query_atts['views'] = 'false';
 		}
 
 		/**
@@ -499,6 +506,7 @@ class Shortcode implements Hook_Subscriber {
 	 */
 	public function get_final_atts( $atts, \Videopack\Video_Source\Source $source ): array {
 		$query_atts = (array) $this->atts( $atts );
+		$post_id    = (int) $source->get_id();
 
 		// Apply per-video overrides from _videopack-meta.
 		// These override the global option defaults but NOT values explicitly
@@ -588,7 +596,7 @@ class Shortcode implements Hook_Subscriber {
 				'embeddable'   => false,
 				'downloadlink' => false,
 				'playsinline'  => true,
-				'view_count'   => false,
+				'views'        => false,
 			);
 			/**
 			 * Filter the GIF mode attributes.
@@ -672,10 +680,8 @@ class Shortcode implements Hook_Subscriber {
 		$player->set_source( $source );
 		$player->set_atts( $final_atts );
 
-		// Sync Player ID if passed.
-		if ( ! empty( $final_atts['id'] ) ) {
-			$player->set_id( $final_atts['id'] );
-		}
+		// Data integrity: do NOT sync HTML IDs from attachment IDs to avoid DOM collisions in loops.
+		// The player handles its own unique instance counting.
 
 		// Enqueue player-specific scripts and styles.
 		$player->enqueue_scripts();
@@ -742,6 +748,23 @@ class Shortcode implements Hook_Subscriber {
 
 			$result = (array) $gallery->collection_page( $page, $query_atts, $layout );
 			$code   = (string) $result['html'];
+
+			if ( ! empty( $result['videos'] ) ) {
+				$shortcode_players = array();
+				foreach ( $result['videos'] as $video_data ) {
+					if ( ! empty( $video_data['player_vars']['id'] ) ) {
+						$shortcode_players[ $video_data['player_vars']['id'] ] = $video_data['player_vars'];
+					}
+				}
+				if ( ! empty( $shortcode_players ) ) {
+					$script = sprintf(
+						'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; Object.assign(window.videopack.player_data, %s);',
+						wp_json_encode( $shortcode_players )
+					);
+					wp_add_inline_script( 'videopack-frontend', $script );
+				}
+			}
+
 			$final_atts = $query_atts;
 		} else {
 			// VIDEO PART
@@ -764,49 +787,16 @@ class Shortcode implements Hook_Subscriber {
 			$inner_content = '';
 
 			if ( empty( $content ) ) {
-				$player_content = '';
-
-				if ( ! empty( $final_atts['overlay_title'] ) || ! empty( $final_atts['downloadlink'] ) ) {
-					$player_content .= Modular_Renderer::render_video_title( $final_atts, $source, $player->get_id() );
-				}
-
-				if ( ! empty( $this->options['watermark'] ) ) {
-					$watermark_atts = array(
-						'url'    => $this->options['watermark_url'] ?? '',
-						'linkTo' => $this->options['watermark_link_to'] ?? '',
-						'scale'  => $this->options['watermark_scale'] ?? 10,
-						'align'  => $this->options['watermark_align'] ?? 'right',
-						'valign' => $this->options['watermark_valign'] ?? 'bottom',
-						'x'      => $this->options['watermark_x'] ?? 5,
-						'y'      => $this->options['watermark_y'] ?? 7,
-						'skin'   => (string) ( $final_atts['skin'] ?? 'default' ),
-					);
-					$player_content .= Modular_Renderer::render_watermark( $watermark_atts );
-				}
-
-				$player_content .= $player->get_player_code( $final_atts );
-
-				$inner_content .= sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $player_content );
-
-				if ( ! empty( $final_atts['view_count'] ) ) {
-					$inner_content .= Modular_Renderer::render_view_count( $source );
-				}
-
-				if ( ! empty( $final_atts['caption'] ) ) {
-					$inner_content .= Modular_Renderer::render_video_caption( $final_atts['caption'] );
-				}
+				$code = Modular_Renderer::render_player_assembly( $player, $final_atts, $source, $this->options );
 			} else {
-				$inner_content = $content;
+				$code = Modular_Renderer::render_video_container( $final_atts, $content );
 			}
-
-			// Wrap the inner content.
-			$code = Modular_Renderer::render_video_container( $final_atts, $inner_content );
 		}
 
 		$code = (string) wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
 
 		if ( ! is_admin() ) {
-			wp_enqueue_style( 'videopack-player' );
+			wp_enqueue_style( 'videopack-frontend' );
 		}
 
 		return (string) apply_filters( 'videopack_shortcode', $code, $final_atts, $content );

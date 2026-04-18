@@ -7,61 +7,20 @@
 	"icon": "format-video",
 	"description": "Embed a single video with Videopack features.",
 	"usesContext": [
-		"postId",
+		"videopack/postId",
 		"videopack/skin",
-		"videopack/view_count",
+		"videopack/views",
 		"videopack/overlay_title",
 		"videopack/title_color",
 		"videopack/title_background_color",
 		"videopack/overlay_title",
 		"videopack/downloadlink",
-		"videopack/embeddable",
+		"videopack/embedcode",
 		"videopack/play_button_color",
 		"videopack/play_button_icon_color",
 		"videopack/control_bar_bg_color",
 		"videopack/control_bar_color"
 	],
-	"providesContext": {
-		"postId": "id",
-		"videopack/skin": "skin",
-		"videopack/autoplay": "autoplay",
-		"videopack/controls": "controls",
-		"videopack/loop": "loop",
-		"videopack/muted": "muted",
-		"videopack/playsinline": "playsinline",
-		"videopack/poster": "poster",
-		"videopack/preload": "preload",
-		"videopack/src": "src",
-		"videopack/volume": "volume",
-		"videopack/auto_res": "auto_res",
-		"videopack/auto_codec": "auto_codec",
-		"videopack/sources": "sources",
-		"videopack/source_groups": "source_groups",
-		"videopack/text_tracks": "text_tracks",
-		"videopack/playback_rate": "playback_rate",
-		"videopack/watermark": "watermark",
-		"videopack/watermark_styles": "watermark_styles",
-		"videopack/watermark_link_to": "watermark_link_to",
-		"videopack/default_ratio": "default_ratio",
-		"videopack/fixed_aspect": "fixed_aspect",
-		"videopack/fullwidth": "fullwidth",
-		"videopack/play_button_color": "play_button_color",
-		"videopack/play_button_icon_color": "play_button_icon_color",
-		"videopack/control_bar_bg_color": "control_bar_bg_color",
-		"videopack/control_bar_color": "control_bar_color",
-		"videopack/title_color": "title_color",
-		"videopack/title_background_color": "title_background_color",
-		"videopack/overlay_title": "overlay_title",
-		"videopack/view_count": "view_count",
-		"videopack/downloadlink": "downloadlink",
-		"videopack/embeddable": "embeddable",
-		"videopack/showCaption": "showCaption",
-		"videopack/showBackground": "showBackground",
-		"videopack/textAlign": "textAlign",
-		"videopack/embed_method": "embed_method",
-		"videopack/position": "title_position",
-		"videopack/embedlink": "embedlink"
-	},
 	"supports": {
 		"html": false,
 		"align": true,
@@ -217,11 +176,11 @@
 			"type": "boolean",
 			"default": true
 		},
-		"view_count": {
+		"views": {
 			"type": "boolean",
 			"default": false
 		},
-		"embeddable": {
+		"embedcode": {
 			"type": "boolean",
 			"default": false
 		},
@@ -243,6 +202,10 @@
 		"title_position": {
 			"type": "string",
 			"default": "top"
+		},
+		"isInsidePlayer": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",
