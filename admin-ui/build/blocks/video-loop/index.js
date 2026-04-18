@@ -6165,9 +6165,10 @@ __webpack_require__.r(__webpack_exports__);
 
 const PREVIEW_COMPONENTS = {
   'videopack/videopack-video': ({
-    children
+    children,
+    resolvedDuotoneClass
   }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_22__.jsx)("div", {
-    className: "videopack-video-block-container videopack-wrapper",
+    className: `videopack-video-block-container videopack-wrapper ${resolvedDuotoneClass || ''}`.trim(),
     children: children
   }),
   'videopack/thumbnail': _thumbnail_VideoThumbnailPreview__WEBPACK_IMPORTED_MODULE_13__.VideoThumbnailPreview,
@@ -6625,6 +6626,7 @@ function Edit({
           postId: video.attachment_id,
           isOverlay: isOverlay,
           ...currentFlags,
+          resolvedDuotoneClass: resolvedDuotoneClass,
           context: {
             ...previewContext,
             ...currentFlags,

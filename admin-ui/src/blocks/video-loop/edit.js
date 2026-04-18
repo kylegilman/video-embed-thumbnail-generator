@@ -45,8 +45,12 @@ import { getSettings } from '../../api/settings';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
 
 const PREVIEW_COMPONENTS = {
-	'videopack/videopack-video': ({ children }) => (
-		<div className="videopack-video-block-container videopack-wrapper">
+	'videopack/videopack-video': ({ children, resolvedDuotoneClass }) => (
+		<div
+			className={`videopack-video-block-container videopack-wrapper ${
+				resolvedDuotoneClass || ''
+			}`.trim()}
+		>
 			{children}
 		</div>
 	),
@@ -620,6 +624,7 @@ export default function Edit({ context, clientId }) {
 						postId={video.attachment_id}
 						isOverlay={isOverlay}
 						{...currentFlags}
+						resolvedDuotoneClass={resolvedDuotoneClass}
 						context={{
 							...previewContext,
 							...currentFlags,

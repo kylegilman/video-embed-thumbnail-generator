@@ -223,7 +223,7 @@ class Blocks implements Hook_Subscriber {
 				'block_gap'     => $block_gap,
 				'wrapper_class' => 'videopack-collection-wrapper',
 			) ),
-			'<div class="videopack-collection-inner ' . esc_attr( "layout-{$layout} columns-{$columns} {$skin}" ) . '">' . $inner_content . '</div>',
+			'<div class="videopack-collection-inner ' . esc_attr( "layout-{$layout} columns-{$columns}" ) . '">' . $inner_content . '</div>',
 			true
 		);
 
@@ -361,13 +361,16 @@ class Blocks implements Hook_Subscriber {
 			$inner_content .= $cloned_inner->render();
 		}
 
-		$html = sprintf(
-			'<div class="videopack-thumbnail-wrapper gallery-thumbnail videopack-gallery-item %s" data-attachment-id="%d" data-videopack-id="%s" data-videopack-lightbox="%s">',
-			esc_attr( $skin ),
-			(int) $post_id,
-			esc_attr( $block->context['videopack/videopackId'] ?? '' ),
-			( 'lightbox' === $link_to ? 'true' : 'false' )
+		$wrapper_attributes = get_block_wrapper_attributes(
+			array(
+				'class'                   => 'videopack-thumbnail-wrapper gallery-thumbnail videopack-gallery-item ' . esc_attr( $skin ),
+				'data-attachment-id'      => (int) $post_id,
+				'data-videopack-id'       => esc_attr( $block->context['videopack/videopackId'] ?? '' ),
+				'data-videopack-lightbox' => ( 'lightbox' === $link_to ? 'true' : 'false' ),
+			)
 		);
+
+		$html = sprintf( '<div %s>', $wrapper_attributes );
 
 		if ( 'none' !== $link_to ) {
 			$url   = ( 'lightbox' === $link_to ) ? '#' : get_permalink( $post_id );

@@ -1822,14 +1822,6 @@
 .videopack-wrapper .videopack-icons.close .share-icon {
   display: none !important;
 }
-.videopack-wrapper.videopack-video-title-visible .videopack-video-title, .videopack-wrapper:hover .videopack-video-title {
-  opacity: 1;
-  visibility: visible;
-}
-.videopack-wrapper.videopack-video-title-visible .videopack-video-title::before, .videopack-wrapper:hover .videopack-video-title::before {
-  opacity: 0.9;
-  visibility: visible;
-}
 .videopack-wrapper .videopack-watermark img {
   display: block;
   position: absolute;
