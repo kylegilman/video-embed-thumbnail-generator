@@ -40,7 +40,7 @@
 	},
 	"selectors": {
 		"filter": {
-			"duotone": ".wp-block-videopack-videopack-video .videopack-wrapper .vjs-poster img, .wp-block-videopack-videopack-video .videopack-wrapper .mejs-poster"
+			"duotone": ".wp-block-videopack-videopack-video .vjs-poster img, .wp-block-videopack-videopack-video .mejs-poster img, .wp-block-videopack-videopack-video .mejs-poster"
 		}
 	},
 	"example": {

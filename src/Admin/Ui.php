@@ -364,9 +364,15 @@ class Ui implements Hook_Subscriber {
 			$wrapper_classes[] = $atts['skin'];
 		}
 		
+		$wrapper_attributes = get_block_wrapper_attributes(
+			array(
+				'class' => implode( ' ', $wrapper_classes ),
+			)
+		);
+		
 		return sprintf(
-			'<div class="%s">%s%s</div>',
-			implode( ' ', $wrapper_classes ),
+			'<div %s>%s%s</div>',
+			$wrapper_attributes,
 			$prepared['player']->get_player_code( $prepared['final_atts'] ),
 			$this->get_inner_blocks_content( $block )
 		);
