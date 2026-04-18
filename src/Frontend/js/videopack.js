@@ -23,6 +23,7 @@
 		 */
 		init: function () {
 			this.initPlayers();
+			this.initModularBlocks();
 
 			// Initialize collections (Gallery, Grid, List) with pagination
 			document.querySelectorAll('.videopack-collection-wrapper').forEach((element) => {
@@ -70,6 +71,20 @@
 		initPlayers: function (container = document) {
 			container.querySelectorAll('.videopack-player').forEach((element) => {
 				this.initPlayer(element);
+			});
+		},
+
+		/**
+		 * Initialize standalone modular blocks (title overlays on thumbnails, etc.)
+		 *
+		 * @since 5.3.0
+		 * @param {HTMLElement|Document} container The container to search.
+		 */
+		initModularBlocks: function (container = document) {
+			container.querySelectorAll('.videopack-meta-wrapper, .videopack-thumbnail-wrapper').forEach((element) => {
+				if (element.querySelector('.videopack-share-toggle')) {
+					this.setupMetaBar(element);
+				}
 			});
 		},
 
@@ -259,41 +274,15 @@
 			}
 
 			const meta = document.getElementById(`video_${playerId}_meta`);
-			console.log(`Videopack Debug - Looking for meta: video_${playerId}_meta`, meta);
 			if (meta) {
-				console.log(`Videopack Debug - Moving meta into playerWrapper`, playerWrapper);
 				playerWrapper.prepend(meta);
 				meta.style.display = 'block';
 			}
 
-			// Setup share functionality.
-			const shareIcon = playerWrapper.querySelector('.videopack-icons.share');
-			if (shareIcon) {
-				shareIcon.addEventListener('click', () => this.toggleShare(playerWrapper));
-				playerWrapper.querySelector('.videopack-click-trap').addEventListener('click', () => this.toggleShare(playerWrapper));
-			}
+			this.setupMetaBar(playerWrapper, videoVars);
 
 			if (true !== videoVars.right_click) {
 				playerWrapper.addEventListener('contextmenu', (e) => e.preventDefault());
-			}
-
-			// Setup "start at" functionality.
-			const embedWrapper = playerWrapper.querySelector('.videopack-share-container');
-			if (embedWrapper) {
-				embedWrapper.querySelector('.videopack-start-at-enable').addEventListener('change', () => this.setStartAt(playerWrapper));
-				embedWrapper.querySelector('.videopack-start-at').addEventListener('change', () => this.changeStartAt(playerWrapper));
-				const embedInput = embedWrapper.querySelector('.videopack-embed-code');
-				if (embedInput) {
-					embedInput.addEventListener('click', () => embedInput.select());
-				}
-			}
-
-			const downloadLink = playerWrapper.querySelector('.videopack-download-link');
-			if (downloadLink && downloadLink.hasAttribute('download') && downloadLink.dataset.alt_link) {
-				downloadLink.addEventListener('click', (e) => {
-					e.preventDefault();
-					this.checkDownloadLink(downloadLink);
-				});
 			}
 
 			if ('vertical' === videoVars.fixed_aspect) {
@@ -349,32 +338,73 @@
 
 				const target = playerWrapper.parentElement;
 
-				if (!target) {
-					return;
+				if (target) {
+					const resizeObserver = new ResizeObserver(() => {
+						this.resizeVideo(playerId);
+					});
+					resizeObserver.observe(target);
 				}
-
-				let resizeId;
-				const debouncedResize = () => {
-					clearTimeout(resizeId);
-					resizeId = setTimeout(() => this.resizeVideo(playerId), 200);
-				};
-
-				const resizeObserver = new ResizeObserver(debouncedResize);
-				resizeObserver.observe(target);
-
-				// Cleanup observer on player disposal.
-				if (videoVars.embed_method === 'Video.js') {
-					const player = videojs.getPlayer('videopack_video_' + playerId);
-					if (player) {
-						player.on('dispose', () => {
-							resizeObserver.disconnect();
-						});
-					}
-				}
-				// Note: MediaElement.js cleanup is not added to avoid complexity without a clear dispose event.
 			}
 
-			playerWrapper.dataset.videopackInitialized = true;
+			playerWrapper.dataset.videopackInitialized = 'true';
+		},
+
+		/**
+		 * Set up the meta bar (share toggle, embed code copying, etc.)
+		 *
+		 * @since 5.3.0
+		 * @param {HTMLElement} wrapper The wrapper containing the icons.
+		 * @param {object} videoVars Optional video variables.
+		 */
+		setupMetaBar: function (wrapper, videoVars) {
+			if (wrapper.dataset.videopackMetaInitialized) {
+				return;
+			}
+
+			const shareToggle = wrapper.querySelector('.videopack-share-toggle');
+			if (shareToggle) {
+				shareToggle.addEventListener('click', (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					this.toggleShare(wrapper);
+				});
+
+				const clickTrap = wrapper.querySelector('.videopack-click-trap');
+				if (clickTrap) {
+					clickTrap.addEventListener('click', (e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						this.toggleShare(wrapper);
+					});
+				}
+			}
+
+			// Setup "start at" functionality.
+			const embedWrapper = wrapper.querySelector('.videopack-share-container');
+			if (embedWrapper) {
+				const startAtEnable = embedWrapper.querySelector('.videopack-start-at-enable');
+				if (startAtEnable) {
+					startAtEnable.addEventListener('change', () => this.setStartAt(wrapper));
+				}
+				const startAtInput = embedWrapper.querySelector('.videopack-start-at');
+				if (startAtInput) {
+					startAtInput.addEventListener('change', () => this.changeStartAt(wrapper));
+				}
+				const embedInput = embedWrapper.querySelector('.videopack-embed-code');
+				if (embedInput) {
+					embedInput.addEventListener('click', () => embedInput.select());
+				}
+			}
+
+			const downloadLink = wrapper.querySelector('.videopack-download-link');
+			if (downloadLink && downloadLink.hasAttribute('download') && downloadLink.dataset.alt_link) {
+				downloadLink.addEventListener('click', (e) => {
+					e.preventDefault();
+					this.checkDownloadLink(downloadLink);
+				});
+			}
+
+			wrapper.dataset.videopackMetaInitialized = 'true';
 		},
 
 		/**
@@ -934,7 +964,7 @@
 						body: JSON.stringify({
 							attachment_id: videoVars.attachment_id,
 							video_event: event,
-							show_views: !!viewCountElement,
+							views: !!viewCountElement,
 						}),
 					})
 						.then((response) => {
@@ -944,12 +974,12 @@
 							return response.json();
 						})
 						.then((data) => {
-							if ('play' === event && data.view_count && viewCountElement) {
+							if ('play' === event && data.views && viewCountElement) {
 								const span = viewCountElement.tagName === 'SPAN' ? viewCountElement : viewCountElement.querySelector('span');
 								if (span) {
-									span.innerHTML = data.view_count;
+									span.innerHTML = data.views;
 								} else {
-									viewCountElement.innerHTML = data.view_count;
+									viewCountElement.innerHTML = data.views;
 								}
 							}
 						})
@@ -1010,7 +1040,9 @@
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
 		toggleShare: function (playerWrapper) {
-			const videoVars = this.player_data[`videopack_player_${playerWrapper.dataset.id}`];
+			const playerId = playerWrapper.dataset.id || playerWrapper.dataset.postId;
+			const videoVars =
+				(window.videopack.player_data && window.videopack.player_data[`videopack_player_${playerId}`]) || {};
 			const shareIcon = playerWrapper.querySelector('.videopack-icons.share, .videopack-icons.close');
 			const embedWrapper = playerWrapper.querySelector('.videopack-share-container');
 			const clickTrap = playerWrapper.querySelector('.videopack-click-trap');
@@ -1264,6 +1296,9 @@
 				skinClass = 'vjs-default-skin';
 			}
 
+			// Store a reference to the original wrapper for pagination if needed.
+			popup.videopackSourceWrapper = galleryWrapper.videopackSourceWrapper || galleryWrapper;
+
 			// Clean up any previous player.
 			this.destroyCurrentGalleryPlayer();
 			playerContainer.innerHTML = '';
@@ -1326,9 +1361,31 @@
 				return;
 			}
 
-			const videoElement = playerWrapper.querySelector('video');
+			// Ensure IDs are unique for the lightbox to prevent DOM clashes with standalone players
+			let originalId = playerWrapper.dataset.id;
+			// Strip prefix if present, as initPlayer will add it back when looking up data
+			let cleanId = originalId.replace('videopack_player_', '');
+			const newId = cleanId + '_lightbox';
+			playerWrapper.dataset.id = newId;
+
+			const metaWrapper = playerContainer.querySelector(`[id="video_${originalId}_meta"]`);
+			if (metaWrapper) {
+				metaWrapper.id = `video_${newId}_meta`;
+			}
+
+			const watermark = playerContainer.querySelector(`[id="video_${originalId}_watermark"]`);
+			if (watermark) {
+				watermark.id = `video_${newId}_watermark`;
+			}
+
+			const videoElement = playerWrapper.querySelector('video, audio');
 			if (videoElement) {
 				videoElement.setAttribute('autoplay', 'autoplay');
+				if (videoElement.id) {
+					videoElement.id = videoElement.id + '_lightbox';
+				} else {
+					videoElement.id = newId;
+				}
 				if (skinClass && skinClass !== 'default') {
 					videoElement.classList.add(skinClass);
 					playerWrapper.classList.add(skinClass);
@@ -1338,14 +1395,12 @@
 				}
 			}
 
-			// Preserve the original instance ID that the server provided.
-			const originalId = playerWrapper.dataset.id;
-			const videoElementId = videoElement ? videoElement.id : originalId;
+			const videoElementId = videoElement ? videoElement.id : newId;
 
 			// Map the configuration data to this specific instance ID so initPlayer can find it.
+			// initPlayer expects the key to be prefixed with 'videopack_player_'
 			window.videopack.player_data = window.videopack.player_data || {};
-			// Use originalId directly as the server already provided it with the prefix.
-			window.videopack.player_data[originalId] = videoData.player_vars || videoData;
+			window.videopack.player_data['videopack_player_' + newId] = videoData.player_vars || videoData;
 
 			if (videoData.embed_method && videoData.embed_method.startsWith('Video.js')) {
 				this.currentGalleryPlayer = this.initPlayer(playerWrapper);
@@ -1507,6 +1562,7 @@
 		},
 
 		navigateGalleryPopup: function (direction, galleryWrapper) {
+			const sourceWrapper = galleryWrapper.videopackSourceWrapper || galleryWrapper;
 			const currentIndex = parseInt(galleryWrapper.dataset.currentGalleryVideoIndex, 10);
 			const videoOrder = JSON.parse(galleryWrapper.dataset.currentVideosOrder);
 			const currentPage = parseInt(galleryWrapper.dataset.currentPage, 10);
@@ -1515,9 +1571,9 @@
 			let nextIndex = currentIndex + direction;
 
 			if (nextIndex >= videoOrder.length && currentPage < totalPages) {
-				this.loadGalleryPage(currentPage + 1, galleryWrapper, 0); // Load next page and open first video
+				this.loadCollectionPage(currentPage + 1, sourceWrapper, 0); // Load next page and open first video
 			} else if (nextIndex < 0 && currentPage > 1) {
-				this.loadGalleryPage(currentPage - 1, galleryWrapper, -1); // Load prev page and open last video
+				this.loadCollectionPage(currentPage - 1, sourceWrapper, -1); // Load prev page and open last video
 			} else if (nextIndex >= 0 && nextIndex < videoOrder.length) {
 				// Navigate within the current page
 				const nextVideoId = videoOrder[nextIndex];
@@ -1608,6 +1664,9 @@
 					modal.dataset.currentVideosOrder = JSON.stringify(videoOrder);
 					modal.dataset.currentGalleryVideoIndex = clickedIndex;
 
+					// Store source collection for pagination sync
+					modal.videopackSourceWrapper = collectionWrapper;
+
 					// Call the standard gallery popup logic.
 					this.openGalleryPopup(videoData, modal, clickedIndex);
 				}
@@ -1686,6 +1745,24 @@
 
 						const newCollectionWrapper = tempDiv.querySelector('.videopack-collection-wrapper');
 						if (newCollectionWrapper) {
+							// Sync datasets back to the modal if it's currently open and linked to this collection
+							const modal = document.getElementById('videopack-global-modal');
+							if (modal && modal.videopackSourceWrapper === collectionWrapper) {
+								modal.dataset.currentPage = page;
+								// Re-sync video order for the lightbox
+								const newVideoOrder = [];
+								const newGrid = newCollectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
+								if (newGrid) {
+									newGrid.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
+										newVideoOrder.push(String(thumb.dataset.attachmentId));
+									});
+									modal.dataset.currentVideosOrder = JSON.stringify(newVideoOrder);
+								}
+								if (data.max_num_pages) {
+									modal.dataset.totalPages = data.max_num_pages;
+								}
+							}
+
 							const newGrid = newCollectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
 							const newPagination = newCollectionWrapper.querySelector('.videopack-pagination');
 
@@ -1714,7 +1791,8 @@
 							// Update global state if it's a gallery
 							if (layout === 'gallery') {
 								const newVideoOrder = [];
-								newGrid.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
+								const currentGrid = collectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
+								currentGrid.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
 									newVideoOrder.push(String(thumb.dataset.attachmentId));
 								});
 								collectionWrapper.dataset.currentVideosOrder = JSON.stringify(newVideoOrder);
@@ -1732,7 +1810,8 @@
 									const nextAttachmentId = newVideoOrder[actualIndex];
 									const videoToOpen = window.videopack.player_data && window.videopack.player_data[`videopack_player_gallery_${nextAttachmentId}`];
 									if (videoToOpen) {
-										this.openGalleryPopup(videoToOpen, collectionWrapper, actualIndex);
+										const targetForPopup = (modal && modal.videopackSourceWrapper === collectionWrapper) ? modal : collectionWrapper;
+										this.openGalleryPopup(videoToOpen, targetForPopup, actualIndex);
 									}
 								}
 							}

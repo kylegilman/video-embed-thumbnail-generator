@@ -1,5 +1,6 @@
 import { useSelect } from '@wordpress/data';
 import { Spinner } from '@wordpress/components';
+import { getEffectiveValue } from '../../utils/context';
 
 /**
  * Shared Video Thumbnail Component for Edit/Preview
@@ -13,10 +14,11 @@ import { Spinner } from '@wordpress/components';
  */
 export function VideoThumbnailPreview({
 	postId,
-	skin,
 	children,
 	resolvedDuotoneClass,
+	context = {},
 }) {
+	const effectiveSkin = getEffectiveValue('skin', {}, context);
 	const { thumbnailMedia, posterUrl, isResolving } = useSelect(
 		(select) => {
 			const { getEntityRecord, getMedia } = select('core');
@@ -56,7 +58,7 @@ export function VideoThumbnailPreview({
 		defaultNoThumb;
 
 	const containerClass = `gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${
-		skin || ''
+		effectiveSkin
 	} ${resolvedDuotoneClass || ''}`.trim();
 	const imgStyle = resolvedDuotoneClass
 		? { filter: `url(#${resolvedDuotoneClass})` }

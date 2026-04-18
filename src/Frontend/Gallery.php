@@ -325,7 +325,7 @@ class Gallery {
 
 		$player_vars                     = (array) $player->prepare_video_vars();
 		$player->enqueue_scripts();
-		$player_vars['full_player_html'] = $player->get_player_code( $player->get_atts() );
+		$player_vars['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_player_assembly( $player, $player->get_atts(), $source, $this->options );
 		$player_vars['sources']          = (array) $player->get_flat_sources();
 		$player_vars['poster']           = $poster_url;
 		$player_vars['attachment']       = (int) $data['id'];
@@ -376,7 +376,7 @@ class Gallery {
 			}
 		}
 
-		wp_enqueue_style( 'videopack-player' );
+		wp_enqueue_style( 'videopack-frontend' );
 		ob_start();
 		include __DIR__ . '/partials/collection.php';
 		$html = (string) ob_get_clean();

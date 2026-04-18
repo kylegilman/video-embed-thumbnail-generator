@@ -798,11 +798,5 @@ picture.vjs-poster {
 .videopack-video-title-block.is-overlay.is-selected, .videopack-video-title-block.is-overlay:focus-within {
   pointer-events: auto;
 }
-.videopack-video-title-block.is-overlay.videopack-video-title, .videopack-video-title-block.is-overlay.video-title {
-  font-size: 15px;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto;
-}
 
 /*# sourceMappingURL=index.css.map*/

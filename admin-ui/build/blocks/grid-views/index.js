@@ -32,9 +32,7 @@ function Edit({
   setAttributes,
   context
 }) {
-  const {
-    postId
-  } = context;
+  const postId = context['videopack/postId'];
   const {
     showLabel
   } = attributes;
@@ -207,7 +205,7 @@ module.exports = window["wp"]["i18n"];
   \******************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/grid-views","title":"Videopack Video Views","category":"media","icon":"visibility","description":"Display the number of views for a video. Optimized for Query Loops.","attributes":{"showLabel":{"type":"boolean","default":true}},"usesContext":["postId"],"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"color":{"text":true,"background":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","style":"file:./style-index.css"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/grid-views","title":"Videopack Video Views","category":"media","icon":"visibility","description":"Display the number of views for a video. Optimized for Query Loops.","attributes":{"showLabel":{"type":"boolean","default":true}},"usesContext":["videopack/postId"],"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"color":{"text":true,"background":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","style":"file:./style-index.css"}');
 
 /***/ }
 

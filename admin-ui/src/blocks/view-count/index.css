@@ -1,0 +1,13 @@
+.videopack-view-count-block {
+    font-size: 0.8em;
+    width: 100%;
+}
+
+.videopack-view-count-block:not(.is-overlay) {
+    margin-bottom: 0.5em;
+}
+
+/* Specific styling for the view count component itself if needed */
+.videopack-view-count {
+    white-space: nowrap;
+}

@@ -23,6 +23,8 @@ export default function useVideoQuery(attributes, previewPostId) {
 		gallery_pagination,
 		gallery_per_page = 12,
 		page_number = 1,
+		enable_collection_video_limit = false,
+		collection_video_limit = 12,
 	} = attributes;
 
 	const { categories, tags } = useSelect((select) => {
@@ -43,6 +45,17 @@ export default function useVideoQuery(attributes, previewPostId) {
 		[]
 	);
 
+	const { isSaving, isAutosaving } = useSelect(
+		(select) => {
+			const { isSavingPost, isAutosavingPost } = select('core/editor');
+			return {
+				isSaving: isSavingPost ? isSavingPost() : false,
+				isAutosaving: isAutosavingPost ? isAutosavingPost() : false,
+			};
+		},
+		[]
+	);
+
 	const searchableTypes = useMemo(() => {
 		if (!postTypes) {
 			return ['post', 'page'];
@@ -58,12 +71,18 @@ export default function useVideoQuery(attributes, previewPostId) {
 	const [isResolvingVideos, setIsResolvingVideos] = useState(false);
 
 	useEffect(() => {
+		if (isSaving || isAutosaving) {
+			return;
+		}
+
 		const args = {
-			gallery_orderby,
-			gallery_order,
-			gallery_per_page: gallery_pagination ? parseInt(gallery_per_page, 10) || 12 : 100,
+			gallery_orderby: gallery_orderby || 'post_date',
+			gallery_order: gallery_order || 'DESC',
+			gallery_per_page: gallery_pagination 
+				? (parseInt(gallery_per_page, 10) || 12) 
+				: (enable_collection_video_limit ? (parseInt(collection_video_limit, 10) || 12) : -1),
 			page_number: parseInt(page_number, 10) || 1,
-			gallery_id,
+			gallery_id: gallery_id ? parseInt(gallery_id, 10) : undefined,
 			gallery_include,
 			gallery_exclude,
 			gallery_source,
@@ -120,7 +139,7 @@ export default function useVideoQuery(attributes, previewPostId) {
 
 	const { searchResults, currentPost, isResolvingSearch } = useSelect(
 		(select) => {
-			const { getEntityRecords, isResolving: checkResolving } = select('core');
+			const { getEntityRecord, getEntityRecords, isResolving: checkResolving } = select('core');
 			const results = [];
 			let resolving = false;
 
@@ -155,11 +174,21 @@ export default function useVideoQuery(attributes, previewPostId) {
 
 			let current = null;
 			if (gallery_id) {
-				const query = { include: [gallery_id], per_page: 1 };
+				// Use a plural query with a dummy ID (-1) to "force" the REST API to return an empty array 
+				// instead of a 404 error if the ID doesn't exist for the specific post type.
+				// We also use context="view" and _fields for better performance and silence.
+				const query = { 
+					include: [gallery_id, -1], 
+					per_page: 2, 
+					context: 'view', 
+					_fields: 'id,title,type' 
+				};
+
 				searchableTypes.forEach((type) => {
+					if (current) return;
 					const records = getEntityRecords('postType', type, query);
 					if (records && records.length > 0) {
-						current = records[0];
+						current = records.find((r) => r.id === gallery_id);
 					}
 				});
 			}
@@ -209,7 +238,8 @@ export default function useVideoQuery(attributes, previewPostId) {
 		currentPost,
 		totalResults,
 		maxNumPages,
-		isResolving: isResolvingVideos || isResolvingSearch,
+		isResolving: isResolvingVideos,
+		isResolvingSearch,
 		excludedIds,
 		excludedVideos,
 	};

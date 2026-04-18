@@ -105,7 +105,8 @@ class Player {
 		$this->format_registry = $format_registry;
 
 		++self::$video_player_id_counter;
-		$this->player_id = (string) ( $this->options['id'] ?? self::$video_player_id_counter );
+		// Ensure every player instance has a unique counter-based ID for HTML/JS consistency.
+		$this->player_id = (string) self::$video_player_id_counter;
 
 		$this->register_hooks();
 	}
@@ -532,7 +533,7 @@ class Player {
 			'pagination_background_color' => (string) ( $this->atts['pagination_background_color'] ?? '' ),
 			'pagination_active_bg_color'  => (string) ( $this->atts['pagination_active_bg_color'] ?? '' ),
 			'caption'                     => (string) ( $this->atts['caption'] ?? '' ),
-			'view_count'                  => (bool) ( $this->atts['view_count'] ?? false ),
+			'views'                       => (bool) ( $this->atts['views'] ?? false ),
 			'view_count_text'             => $this->get_source() ? \Videopack\Common\I18n::format_view_count( $this->get_source()->get_views() ) : '',
 			'rotate'                      => (int) ( $this->get_source() ? $this->get_source()->get_rotate() : 0 ),
 			'skin'                        => (string) ( $this->atts['skin'] ?? ( $this->options['skin'] ?? 'vjs-theme-videopack' ) ),

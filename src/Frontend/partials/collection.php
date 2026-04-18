@@ -112,30 +112,4 @@ if ( 'WordPress Default' === $embed_method ) {
 	<?php if ( ! empty( $query_atts['gallery_pagination'] ) && $max_num_pages > 1 ) : ?>
 		<?php echo $this->render_pagination_html( $max_num_pages, $page_number ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	<?php endif; ?>
-
-	<?php if ( 'gallery' === $layout ) : ?>
-		<!-- Gallery Popup Modal -->
-		<div class="videopack-modal-overlay" style="display: none;">
-			<div class="videopack-modal-container">
-				<button type="button" class="modal-navigation modal-close" title="<?php esc_attr_e( 'Close', 'video-embed-thumbnail-generator' ); ?>">
-					<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-						<path d="M13 11.8l6.1-6.1-1.2-1.2-6.1 6.1-6.1-6.1-1.2 1.2 6.1 6.1-6.1 6.1 1.2 1.2 6.1-6.1 6.1 6.1 1.2-1.2-6.1-6.1z"></path>
-					</svg>
-				</button>
-				<button type="button" class="modal-navigation modal-next" title="<?php esc_attr_e( 'Next', 'video-embed-thumbnail-generator' ); ?>">
-					<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-						<path d="M4 11h12.2l-5.6-5.6L12 4l8 8-8 8-1.4-1.4 5.6-5.6H4v-2z"></path>
-					</svg>
-				</button>
-				<button type="button" class="modal-navigation modal-previous" title="<?php esc_attr_e( 'Previous', 'video-embed-thumbnail-generator' ); ?>">
-					<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-						<path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20v-2z"></path>
-					</svg>
-				</button>
-				<div class="modal-content">
-					<!-- Player will be inserted here by JS -->
-				</div>
-			</div>
-		</div>
-	<?php endif; ?>
 </div>

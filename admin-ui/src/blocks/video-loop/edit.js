@@ -2,19 +2,61 @@ import {
 	useBlockProps,
 	InnerBlocks,
 	BlockContextProvider,
+	InspectorControls,
+	__experimentalBlockPreview as BlockPreview,
 } from '@wordpress/block-editor';
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { Spinner } from '@wordpress/components';
-import { useMemo, useState, useEffect } from '@wordpress/element';
+import {
+	Spinner,
+	Button,
+	Icon,
+	PanelBody,
+	SelectControl,
+	RangeControl,
+} from '@wordpress/components';
+import { useMemo, useState, useEffect, useCallback } from '@wordpress/element';
+import { pencil, close, dragHandle, create } from '@wordpress/icons';
+import {
+	DndContext,
+	closestCenter,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from '@dnd-kit/core';
+import {
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	rectSortingStrategy,
+	useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import { VideoThumbnailPreview } from '../thumbnail/VideoThumbnailPreview';
 import { VideoTitle } from '../video-title/edit';
 import { VideoDuration } from '../video-duration/edit';
 import { ViewCount } from '../view-count/edit';
 import { PlayButton } from '../play-button/edit';
+import { VideoWatermark } from '../video-watermark/edit';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 import { getSettings } from '../../api/settings';
+import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
+
+const PREVIEW_COMPONENTS = {
+	'videopack/videopack-video': ({ children }) => (
+		<div className="videopack-video-block-container videopack-wrapper">
+			{children}
+		</div>
+	),
+	'videopack/thumbnail': VideoThumbnailPreview,
+	'videopack/video-title': VideoTitle,
+	'videopack/video-duration': VideoDuration,
+	'videopack/view-count': ViewCount,
+	'videopack/play-button': PlayButton,
+	'videopack/video-watermark': VideoWatermark,
+};
 
 /**
  * Helper component to render a custom SVG duotone filter.
@@ -119,6 +161,96 @@ const CustomDuotoneFilter = ({ colors, id }) => {
 };
 
 /**
+ * A internal component to wrap collection items with drag-and-drop and action functionality.
+ */
+function SortableItem({
+	id,
+	isEditableTemplate,
+	isHoveringGallery,
+	onRemove,
+	onEdit,
+	onAddVideo,
+	children,
+}) {
+	const {
+		attributes: sortableAttributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id });
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		zIndex: isDragging ? 200 : undefined,
+	};
+
+	return (
+		<div
+			ref={setNodeRef}
+			style={style}
+			{...sortableAttributes}
+			className={`videopack-collection-item ${
+				isEditableTemplate ? 'is-editable' : 'is-preview'
+			} ${isDragging ? 'is-dragging' : ''}`}
+		>
+			{children}
+			<button
+				className="videopack-drag-handle"
+				{...listeners}
+				title={__(
+					'Drag to reorder',
+					'video-embed-thumbnail-generator'
+				)}
+			>
+				<Icon icon={dragHandle} />
+			</button>
+			{!isEditableTemplate && (
+				<div
+					className="gallery-item-edit"
+					onClick={(e) => {
+						e.stopPropagation();
+						onEdit(id);
+					}}
+					tabIndex="0"
+					role="button"
+					title={__('Edit', 'video-embed-thumbnail-generator')}
+				>
+					<button type="button" className="videopack-edit-item">
+						<Icon icon={pencil} />
+					</button>
+				</div>
+			)}
+			<div
+				className="gallery-item-remove"
+				onClick={(e) => {
+					e.stopPropagation();
+					onRemove(id);
+				}}
+				tabIndex="0"
+				role="button"
+				title={__('Remove', 'video-embed-thumbnail-generator')}
+			>
+				<button type="button" className="videopack-remove-item">
+					<Icon icon={close} />
+				</button>
+			</div>
+			{!isEditableTemplate && isHoveringGallery && (
+				<button
+					className="gallery-add-button"
+					onClick={onAddVideo}
+					title={__('Add video', 'video-embed-thumbnail-generator')}
+				>
+					<Icon icon={create} />
+				</button>
+			)}
+		</div>
+	);
+}
+
+/**
  * The Edit component for the Video Loop block.
  *
  * @param {Object} props          Component props.
@@ -126,8 +258,19 @@ const CustomDuotoneFilter = ({ colors, id }) => {
  * @param {string} props.clientId Block client ID.
  * @return {Element}              The rendered component.
  */
-export default function Edit( { context, clientId } ) {
+export default function Edit({ context, clientId }) {
 	const [options, setOptions] = useState({});
+	const [isHovering, setIsHovering] = useState(false);
+	const { updateBlockAttributes } = useDispatch('core/block-editor');
+
+	const { parentClientId } = useSelect(
+		(select) => ({
+			parentClientId: select('core/block-editor').getBlockRootClientId(
+				clientId
+			),
+		}),
+		[clientId]
+	);
 
 	useEffect(() => {
 		getSettings().then((response) => {
@@ -146,7 +289,7 @@ export default function Edit( { context, clientId } ) {
 		gallery_include: context['videopack/gallery_include'],
 		gallery_exclude: context['videopack/gallery_exclude'],
 		gallery_pagination: context['videopack/gallery_pagination'],
-		gallery_per_page: context['videopack/gallery_per_page'] || 12,
+		gallery_per_page: context['videopack/gallery_per_page'],
 		page_number: context['videopack/currentPage'] || 1,
 	};
 
@@ -155,10 +298,26 @@ export default function Edit( { context, clientId } ) {
 		customDuotoneColors,
 		thumbClientId,
 		previewPostId,
+		isSaving,
+		isAutosaving,
+		parentAttributes,
+		hasPaginationBlock,
 	} = useSelect(
 		(select) => {
-			const { getBlocks } = select('core/block-editor');
+			const { getBlocks, getBlockAttributes } = select('core/block-editor');
+			const { isSavingPost, isAutosavingPost } = select('core/editor');
 			const blocks = getBlocks(clientId) || [];
+
+			const parentAttrs = parentClientId
+				? getBlockAttributes(parentClientId)
+				: {};
+
+			const parentBlocks = parentClientId
+				? getBlocks(parentClientId)
+				: [];
+			const hasPagination = parentBlocks.some(
+				(b) => b.name === 'videopack/pagination'
+			);
 
 			// Helper to find a block by name recursively in the inner blocks tree
 			const findBlockRecursive = (blockList, name) => {
@@ -179,6 +338,9 @@ export default function Edit( { context, clientId } ) {
 				return null;
 			};
 
+			const isSaving = isSavingPost ? isSavingPost() : false;
+			const isAutosaving = isAutosavingPost ? isAutosavingPost() : false;
+
 			const thumb = findBlockRecursive(blocks, 'videopack/thumbnail');
 			const duotone = thumb?.attributes?.style?.color?.duotone;
 			let presetClass = '';
@@ -198,9 +360,13 @@ export default function Edit( { context, clientId } ) {
 				customDuotoneColors: customColors,
 				thumbClientId: thumb?.clientId,
 				previewPostId: select('core/editor').getCurrentPostId(),
+				isSaving,
+				isAutosaving,
+				parentAttributes: parentAttrs,
+				hasPaginationBlock: hasPagination,
 			};
 		},
-		[clientId]
+		[clientId, parentClientId]
 	);
 
 	const templateBlocks = useSelect(
@@ -223,27 +389,208 @@ export default function Edit( { context, clientId } ) {
 		presetDuotoneClass || ( customDuotoneColors ? customFilterId : '' );
 
 	// We fetch query data to power the live preview template
-	const { videoResults, isResolving } = useVideoQuery(
+	const queryData = useVideoQuery(
 		queryAttributes,
 		previewPostId
 	);
+	const { videoResults, isResolving } = queryData;
 
 	const layout = context['videopack/layout'] || 'grid';
 	const columns = context['videopack/columns'] || 3;
 
 	const blockProps = useBlockProps({
-		className: `videopack-video-loop layout-${layout} columns-${columns}`,
+		className: `videopack-video-loop layout-${layout} columns-${columns} ${
+			isResolving && !isSaving && !isAutosaving ? 'is-loading' : ''
+		}`,
+		onMouseEnter: () => setIsHovering(true),
+		onMouseLeave: () => setIsHovering(false),
 	});
+
+	const sensors = useSensors(
+		useSensor(PointerSensor),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		})
+	);
+
+	const handleRemoveItem = useCallback(
+		(idToRemove) => {
+			const currentExclude = queryAttributes.gallery_exclude
+				? queryAttributes.gallery_exclude
+						.split(',')
+						.map((id) => id.trim())
+				: [];
+			if (!currentExclude.includes(idToRemove.toString())) {
+				currentExclude.push(idToRemove.toString());
+			}
+
+			const currentInclude = queryAttributes.gallery_include
+				? queryAttributes.gallery_include
+						.split(',')
+						.map((id) => id.trim())
+				: [];
+			const newInclude = currentInclude
+				.filter((id) => id !== idToRemove.toString())
+				.join(',');
+
+			updateBlockAttributes(parentClientId, {
+				gallery_exclude: currentExclude.join(','),
+				gallery_include: newInclude,
+			});
+		},
+		[queryAttributes, parentClientId, updateBlockAttributes]
+	);
+
+	const handleEditItem = useCallback(
+		(oldId) => {
+			const frame = window.wp.media({
+				title: __('Edit Video', 'video-embed-thumbnail-generator'),
+				button: {
+					text: __('Update', 'video-embed-thumbnail-generator'),
+				},
+				multiple: false,
+				library: { type: 'video' },
+			});
+
+			frame.on('open', () => {
+				const selection = frame.state().get('selection');
+				const attachment = window.wp.media.attachment(oldId);
+				attachment.fetch().done(() => selection.add(attachment));
+			});
+
+			frame.on('select', () => {
+				const newAttachment = frame
+					.state()
+					.get('selection')
+					.first()
+					.toJSON();
+				const currentInclude = queryAttributes.gallery_include
+					? queryAttributes.gallery_include
+							.split(',')
+							.map((id) => id.trim())
+					: (videoResults || []).map((v) =>
+							v.attachment_id.toString()
+					  );
+
+				const newInclude = currentInclude
+					.map((id) =>
+						parseInt(id, 10) === oldId
+							? newAttachment.id.toString()
+							: id
+					)
+					.join(',');
+
+				updateBlockAttributes(parentClientId, {
+					gallery_include: newInclude,
+					gallery_orderby: 'include',
+					gallery_source: 'manual',
+				});
+			});
+
+			frame.open();
+		},
+		[
+			queryAttributes.gallery_include,
+			videoResults,
+			parentClientId,
+			updateBlockAttributes,
+		]
+	);
+
+	const handleAddVideo = useCallback(() => {
+		const frame = window.wp.media({
+			title: __(
+				'Add Videos to Collection',
+				'video-embed-thumbnail-generator'
+			),
+			button: {
+				text: __(
+					'Add to Collection',
+					'video-embed-thumbnail-generator'
+				),
+			},
+			multiple: 'add',
+			library: { type: 'video' },
+		});
+
+		frame.on('select', () => {
+			const selection = frame.state().get('selection');
+			const newIds = selection.map((attachment) =>
+				attachment.id.toString()
+			);
+			const currentInclude = queryAttributes.gallery_include
+				? queryAttributes.gallery_include
+						.split(',')
+						.map((id) => id.trim())
+				: (videoResults || []).map((v) => v.attachment_id.toString());
+
+			const combinedInclude = [
+				...new Set([...currentInclude, ...newIds]),
+			].join(',');
+
+			updateBlockAttributes(parentClientId, {
+				gallery_include: combinedInclude,
+				gallery_source: 'manual',
+				gallery_orderby: 'include',
+			});
+		});
+
+		frame.open();
+	}, [
+		queryAttributes.gallery_include,
+		videoResults,
+		parentClientId,
+		updateBlockAttributes,
+	]);
+
+	const handleDragEnd = useCallback(
+		(event) => {
+			const { active, over } = event;
+			if (active && over && active.id !== over.id) {
+				const currentVideos = videoResults || [];
+				const oldIndex = currentVideos.findIndex(
+					(v) => v.attachment_id === active.id
+				);
+				const newIndex = currentVideos.findIndex(
+					(v) => v.attachment_id === over.id
+				);
+
+				if (oldIndex !== -1 && newIndex !== -1) {
+					const newVideos = arrayMove(
+						currentVideos,
+						oldIndex,
+						newIndex
+					);
+					const newInclude = newVideos
+						.map((v) => v.attachment_id)
+						.join(',');
+
+					updateBlockAttributes(parentClientId, {
+						gallery_include: newInclude,
+						gallery_orderby: 'include',
+						gallery_source: 'manual',
+					});
+				}
+			}
+		},
+		[videoResults, parentClientId, updateBlockAttributes]
+	);
 
 	/**
 	 * Helper to render a high-fidelity preview of the template blocks
 	 *
-	 * @param {Array}  previewBlocks Template blocks to render
-	 * @param {Object} video         Video data
-	 * @param {string} skinName      Selected skin
-	 * @return {Array}               The rendered blocks.
+	 * @param {Array}  previewBlocks  Template blocks to render
+	 * @param {Object} video          Video data
+	 * @param {Object} previewContext Design context (skin, colors, etc)
+	 * @param {Object} parentFlags    Flags for parentage (isInsideThumbnail, etc)
+	 * @return {Array}                The rendered blocks.
 	 */
-	const renderBlockPreview = (previewBlocks, video, skinName) => {
+	const renderBlockPreview = (
+		previewBlocks,
+		video,
+		previewContext,
+		parentFlags = {}
+	) => {
 		return previewBlocks.map((block) => {
 			const {
 				name,
@@ -251,165 +598,239 @@ export default function Edit( { context, clientId } ) {
 				innerBlocks,
 				clientId: blockClientId,
 			} = block;
-			const itemKey = `${video.id}-${blockClientId}`;
+			const itemKey = `${video.attachment_id || video.id}-${blockClientId}`;
 
-			switch (name) {
-				case 'videopack/thumbnail':
-					return (
-						<VideoThumbnailPreview
-							{...blockAttrs}
-							postId={video.attachment_id}
-							skin={skinName}
-							resolvedDuotoneClass={resolvedDuotoneClass}
-							key={ itemKey }
+			// If it's a Videopack block we have in our registry, use the high-perf visual component.
+			const Component = PREVIEW_COMPONENTS[name];
+			if (Component) {
+				const currentFlags = { ...parentFlags };
+				if (name === 'videopack/thumbnail') {
+					currentFlags.isInsideThumbnail = true;
+					currentFlags.downloadlink = false;
+					currentFlags.embedcode = false;
+				}
+				// Standardized overlay detection for display components
+				const isOverlay = !!currentFlags.isInsideThumbnail || !!currentFlags.isInsidePlayer;
+
+				return (
+					<Component
+						key={itemKey}
+						{...blockAttrs}
+						attributes={blockAttrs}
+						postId={video.attachment_id}
+						isOverlay={isOverlay}
+						{...currentFlags}
+						context={{
+							...previewContext,
+							...currentFlags,
+							'videopack/isInsideThumbnail': currentFlags.isInsideThumbnail,
+							'videopack/isInsidePlayer': currentFlags.isInsidePlayer,
+							'videopack/downloadlink': currentFlags.downloadlink,
+							'videopack/embedcode': currentFlags.embedcode,
+							'videopack/postId': video.attachment_id,
+						}}
+					>
+						{innerBlocks?.length > 0 &&
+							renderBlockPreview(
+								innerBlocks,
+								video,
+								previewContext,
+								currentFlags
+							)}
+					</Component>
+				);
+			}
+
+			// Core/Player engine fallback
+			if (name === 'videopack/video-player-engine') {
+				return (
+					<div key={itemKey} className="videopack-video-preview">
+						<VideoPlayer
+							attributes={{
+								...options,
+								...blockAttrs,
+								id: video.attachment_id,
+								title: video.title,
+								sources: video.player_vars?.sources,
+								poster: video.poster_url,
+								starts: video.player_vars?.starts,
+								'videopack/isInsidePlayer': true,
+							}}
+							isSelected={false}
 						>
-							{ innerBlocks?.length > 0 &&
+							{innerBlocks?.length > 0 &&
 								renderBlockPreview(
 									innerBlocks,
 									video,
-									skinName
-								) }
-						</VideoThumbnailPreview>
-					);
-				case 'videopack/video-title':
-					return (
-						<div key={itemKey} className="videopack-video-title">
-							<VideoTitle
-								{...blockAttrs}
-								postId={video.attachment_id}
-								isInsideThumbnail={true}
-							/>
-						</div>
-					);
-				case 'videopack/video-duration':
-					return (
-						<div key={itemKey} className="videopack-video-duration">
-							<VideoDuration postId={video.attachment_id} />
-						</div>
-					);
-				case 'videopack/view-count':
-					return (
-						<div key={itemKey} className="videopack-view-count">
-							<ViewCount
-								{...blockAttrs}
-								postId={video.attachment_id}
-								count={video.player_vars?.starts}
-							/>
-						</div>
-					);
-				case 'videopack/play-button':
-					return <PlayButton key={itemKey} skin={skinName} />;
-				case 'videopack/videopack-video':
-					return (
-						<div key={itemKey} className="videopack-video-preview">
-							<VideoPlayer
-								attributes={{
-									...options,
-									...blockAttrs,
-									id: video.attachment_id,
-									title: video.title,
-									skin: skinName,
-									sources: video.player_vars?.sources,
-									poster: video.poster_url,
-									starts: video.player_vars?.starts,
-								}}
-							/>
-						</div>
-					);
-				default:
-					return null;
+									previewContext,
+									{ isInsidePlayer: true }
+								)}
+						</VideoPlayer>
+					</div>
+				);
 			}
+
+			// Fallback for any other block (Core blocks, 3rd party, etc)
+			if (!BlockPreview) {
+				return null;
+			}
+
+			return (
+				<BlockPreview
+					key={itemKey}
+					blocks={[block]}
+					context={{
+						...previewContext,
+						'videopack/postId': video.attachment_id,
+					}}
+				/>
+			);
 		});
 	};
 
 	const videos = videoResults || [];
 
-	if (isResolving && videos.length === 0) {
-		return (
-			<div {...blockProps}>
-				<div className="videopack-collection-loading">
-					<Spinner />
-				</div>
-			</div>
-		);
-	}
-
-	if (!isResolving && videos.length === 0) {
-		return (
-			<div {...blockProps}>
-				<div className="videopack-no-videos">
-					{__(
-						'No videos found for this source.',
+	return (
+		<>
+			<InspectorControls>
+				<PanelBody
+					title={__(
+						'Layout Settings',
 						'video-embed-thumbnail-generator'
 					)}
-				</div>
-			</div>
-		);
-	}
+				>
+					<SelectControl
+						label={__('Layout', 'video-embed-thumbnail-generator')}
+						value={layout}
+						options={[
+							{
+								label: __('Grid', 'video-embed-thumbnail-generator'),
+								value: 'grid',
+							},
+							{
+								label: __('List', 'video-embed-thumbnail-generator'),
+								value: 'list',
+							},
+						]}
+						onChange={(value) =>
+							updateBlockAttributes(parentClientId, {
+								layout: value,
+							})
+						}
+					/>
+					{layout === 'grid' && (
+						<RangeControl
+							label={__('Columns', 'video-embed-thumbnail-generator')}
+							value={columns}
+							onChange={(value) =>
+								updateBlockAttributes(parentClientId, {
+									columns: value,
+								})
+							}
+							min={1}
+							max={6}
+						/>
+					)}
+				</PanelBody>
 
-	return (
-		<div { ...blockProps }>
-			<CustomDuotoneFilter
-				colors={ customDuotoneColors }
-				id={ customFilterId }
-			/>
-			<div className="videopack-collection-grid">
-				{videos.map((video, index) => {
-					const isEditableTemplate = index === 0;
+				<CollectionSettingsPanel
+					attributes={parentAttributes}
+					setAttributes={(newAttrs) =>
+						updateBlockAttributes(parentClientId, newAttrs)
+					}
+					queryData={{ ...queryData, totalPages: context['videopack/totalPages'] }}
+					options={options}
+					showGalleryOptions={true}
+					showPaginationToggle={false}
+					showLayoutSettings={false}
+					showPaginationSettings={true}
+					hasPaginationBlock={hasPaginationBlock}
+				/>
+			</InspectorControls>
 
-					return (
-						<div
-							key={`${video.attachment_id || index}-${index}`}
-							className={`videopack-collection-item ${
-								isEditableTemplate
-									? 'is-editable'
-									: 'is-preview'
-							}`}
+			<div {...blockProps}>
+				<CustomDuotoneFilter
+					colors={customDuotoneColors}
+					id={customFilterId}
+				/>
+
+				{isResolving && videos.length === 0 && (
+					<div className="videopack-collection-loading">
+						<Spinner />
+					</div>
+				)}
+
+				{!isResolving && videos.length === 0 && (
+					<div className="videopack-no-videos">
+						{__(
+							'No videos found for this source.',
+							'video-embed-thumbnail-generator'
+						)}
+					</div>
+				)}
+
+				{isResolving && !isSaving && !isAutosaving && videos.length > 0 && (
+					<div className="videopack-loop-loading-overlay">
+						<Spinner />
+					</div>
+				)}
+
+				{videos.length > 0 && (
+					<DndContext
+						sensors={sensors}
+						collisionDetection={closestCenter}
+						onDragEnd={handleDragEnd}
+					>
+						<SortableContext
+							items={videos.map((v) => v.attachment_id)}
+							strategy={rectSortingStrategy}
 						>
-							<BlockContextProvider
-								value={{
-									postId: video.attachment_id,
-									'videopack/skin': context['videopack/skin'],
-									'videopack/title_color':
-										context['videopack/title_color'],
-									'videopack/title_background_color':
-										context[
-											'videopack/title_background_color'
-										],
-									'videopack/play_button_color':
-										context['videopack/play_button_color'],
-									'videopack/play_button_icon_color':
-										context[
-											'videopack/play_button_icon_color'
-										],
-									'videopack/control_bar_bg_color':
-										context[
-											'videopack/control_bar_bg_color'
-										],
-									'videopack/control_bar_color':
-										context['videopack/control_bar_color'],
-								}}
-							>
-								{isEditableTemplate ? (
-									<InnerBlocks
-										templateLock={false}
-										renderAppender={
-											InnerBlocks.ButtonBlockAppender
-										}
-									/>
-								) : (
-									renderBlockPreview(
-										templateBlocks,
-										video,
-										context['videopack/skin'],
-										options
-									)
-								)}
-							</BlockContextProvider>
-						</div>
-					);
-				})}
+							<div className="videopack-collection-grid">
+								{videos.map((video, index) => {
+									const isEditableTemplate = index === 0;
+
+									return (
+										<SortableItem
+											key={video.attachment_id || `temp-${index}`}
+											id={video.attachment_id}
+											isEditableTemplate={isEditableTemplate}
+											isHoveringGallery={
+												isHovering &&
+												index === videos.length - 1
+											}
+											onRemove={handleRemoveItem}
+											onEdit={handleEditItem}
+											onAddVideo={handleAddVideo}
+										>
+											<BlockContextProvider
+												value={{
+													...context,
+													'videopack/postId': video.attachment_id,
+												}}
+											>
+												{isEditableTemplate ? (
+													<InnerBlocks
+														templateLock={false}
+														renderAppender={
+															InnerBlocks.ButtonBlockAppender
+														}
+													/>
+												) : (
+													renderBlockPreview(
+														templateBlocks,
+														video,
+														context
+													)
+												)}
+											</BlockContextProvider>
+										</SortableItem>
+									);
+								})}
+							</div>
+						</SortableContext>
+					</DndContext>
+				)}
 			</div>
-		</div>
+		</>
 	);
 }

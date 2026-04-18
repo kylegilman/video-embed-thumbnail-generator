@@ -156,101 +156,139 @@
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/collection/editor.scss ***!
   \**********************************************************************************************************************************************************************************************************************************************************/
 .videopack-collection {
-  border: 1px dashed #ccc;
-  padding: 20px;
   margin-bottom: 20px;
-  background: #fdfdfd;
+  background: transparent;
 }
-.videopack-collection .videopack-collection-grid {
-  display: grid;
-  gap: 20px;
+.videopack-collection .videopack-collection-item {
+  width: 100% !important;
+  position: relative;
+  transition: all 0.2s ease;
+  padding: 5px;
 }
-.videopack-collection.layout-grid.columns-1 .videopack-collection-grid {
-  grid-template-columns: repeat(1, 1fr);
-}
-.videopack-collection.layout-grid.columns-2 .videopack-collection-grid {
-  grid-template-columns: repeat(2, 1fr);
-}
-.videopack-collection.layout-grid.columns-3 .videopack-collection-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
-.videopack-collection.layout-grid.columns-4 .videopack-collection-grid {
-  grid-template-columns: repeat(4, 1fr);
-}
-.videopack-collection.layout-grid.columns-5 .videopack-collection-grid {
-  grid-template-columns: repeat(5, 1fr);
-}
-.videopack-collection.layout-grid.columns-6 .videopack-collection-grid {
-  grid-template-columns: repeat(6, 1fr);
-}
-.videopack-collection.layout-list .videopack-collection-grid {
-  grid-template-columns: 1fr;
-}
-.videopack-collection.layout-list .videopack-collection-item {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
+.videopack-collection .videopack-collection-item.layout-list {
+  display: block;
   border-bottom: 1px solid #eee;
   padding-bottom: 15px;
   margin-bottom: 15px;
-  flex-wrap: wrap;
 }
-.videopack-collection.layout-list .videopack-collection-item .wp-block-videopack-videopack-video,
-.videopack-collection.layout-list .videopack-collection-item .videopack-video-preview,
-.videopack-collection.layout-list .videopack-collection-item .videopack-thumbnail-container,
-.videopack-collection.layout-list .videopack-collection-item .videopack-thumbnail-placeholder,
-.videopack-collection.layout-list .videopack-collection-item .videopack-thumbnail-wrapper {
-  flex: 1 1 300px;
-  min-width: 0;
+.videopack-collection .videopack-collection-item.layout-list .wp-block-videopack-videopack-video,
+.videopack-collection .videopack-collection-item.layout-list .videopack-video-block-container,
+.videopack-collection .videopack-collection-item.layout-list .videopack-video-preview,
+.videopack-collection .videopack-collection-item.layout-list .videopack-thumbnail-container,
+.videopack-collection .videopack-collection-item.layout-list .videopack-thumbnail-placeholder,
+.videopack-collection .videopack-collection-item.layout-list .videopack-thumbnail-wrapper {
+  min-width: 100%;
+  width: 100%;
 }
-.videopack-collection.layout-list .videopack-collection-item .wp-block-videopack-video-title,
-.videopack-collection.layout-list .videopack-collection-item .videopack-video-title,
-.videopack-collection.layout-list .videopack-collection-item .wp-block-videopack-video-duration,
-.videopack-collection.layout-list .videopack-collection-item .videopack-video-duration,
-.videopack-collection.layout-list .videopack-collection-item .wp-block-videopack-view-count,
-.videopack-collection.layout-list .videopack-collection-item .videopack-view-count {
-  flex: 1 1 200px;
-  margin-top: 0;
-}
-.videopack-collection.layout-list .videopack-collection-item .block-editor-inner-blocks,
-.videopack-collection.layout-list .videopack-collection-item .block-editor-block-list__layout {
-  flex: 1 1 100%;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  min-width: 0;
-}
-.videopack-collection.layout-list .videopack-collection-item:last-child {
+.videopack-collection .videopack-collection-item.layout-list:last-child {
   border-bottom: none;
 }
-.videopack-collection .videopack-collection-item {
-  position: relative;
-  transition: all 0.2s ease;
-}
 .videopack-collection .videopack-collection-item.is-editable {
-  border: 2px solid #3858e9;
-  padding: 5px;
-  border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(56, 88, 233, 0.1);
-}
-.videopack-collection .videopack-collection-item.is-editable::before {
-  content: "Template";
-  position: absolute;
-  top: -10px;
-  right: 10px;
-  background: #3858e9;
-  color: #fff;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 2px;
-  text-transform: uppercase;
-  z-index: 10;
+  border: 2px solid transparent;
 }
 .videopack-collection .videopack-collection-item.is-preview {
-  opacity: 0.85;
-  filter: grayscale(0.2);
+  pointer-events: auto;
+}
+.videopack-collection .videopack-collection-item.is-preview > div:not([class*=gallery-item]):not([class*=videopack-drag-handle]):not([class*=gallery-add-button]) {
   pointer-events: none;
+}
+.videopack-collection .videopack-collection-item.is-preview {
+  border: 2px solid transparent;
+}
+.videopack-collection .videopack-collection-item.is-dragging {
+  opacity: 0.5;
+  border: 2px dashed #999;
+}
+.videopack-collection .videopack-collection-item .gallery-item-remove,
+.videopack-collection .videopack-collection-item .gallery-item-edit,
+.videopack-collection .videopack-collection-item .videopack-drag-handle,
+.videopack-collection .videopack-collection-item .gallery-add-button,
+.videopack-collection .videopack-collection-item .videopack-edit-item,
+.videopack-collection .videopack-collection-item .videopack-remove-item {
+  position: absolute;
+  z-index: 150;
+  background: rgba(0, 0, 0, 0.7) !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 26px !important;
+  height: 26px !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff !important;
+  padding: 0;
+  transition: background-color 0.2s ease;
+  pointer-events: all;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.videopack-collection .videopack-collection-item .gallery-item-remove svg,
+.videopack-collection .videopack-collection-item .gallery-item-edit svg,
+.videopack-collection .videopack-collection-item .videopack-drag-handle svg,
+.videopack-collection .videopack-collection-item .gallery-add-button svg,
+.videopack-collection .videopack-collection-item .videopack-edit-item svg,
+.videopack-collection .videopack-collection-item .videopack-remove-item svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+.videopack-collection .videopack-collection-item .gallery-item-remove,
+.videopack-collection .videopack-collection-item .gallery-item-edit,
+.videopack-collection .videopack-collection-item .videopack-drag-handle {
+  top: 10px;
+  display: none;
+}
+.videopack-collection .videopack-collection-item .gallery-add-button {
+  bottom: 10px;
+  left: 10px;
+  display: none;
+}
+.videopack-collection .videopack-collection-item .videopack-drag-handle {
+  right: 10px;
+  cursor: grab;
+}
+.videopack-collection .videopack-collection-item .videopack-drag-handle:active {
+  cursor: grabbing;
+}
+.videopack-collection .videopack-collection-item .videopack-drag-handle:hover {
+  background: var(--wp-admin-theme-color) !important;
+}
+.videopack-collection .videopack-collection-item .gallery-item-remove {
+  left: 10px;
+}
+.videopack-collection .videopack-collection-item .gallery-item-remove .videopack-remove-item {
+  position: static;
+  display: flex;
+  background: transparent !important;
+  box-shadow: none;
+}
+.videopack-collection .videopack-collection-item .gallery-item-remove:hover {
+  background: rgba(220, 30, 30, 0.9) !important;
+}
+.videopack-collection .videopack-collection-item .gallery-item-edit {
+  left: 43px;
+}
+.videopack-collection .videopack-collection-item .gallery-item-edit .videopack-edit-item {
+  position: static;
+  display: flex;
+  background: transparent !important;
+  box-shadow: none;
+}
+.videopack-collection .videopack-collection-item .gallery-item-edit:hover {
+  background: var(--wp-admin-theme-color) !important;
+}
+.videopack-collection .videopack-collection-item .gallery-add-button {
+  background: var(--wp-admin-theme-color) !important;
+  opacity: 0.8;
+}
+.videopack-collection .videopack-collection-item .gallery-add-button:hover {
+  opacity: 1;
+}
+.videopack-collection .videopack-collection-item:hover .gallery-item-remove,
+.videopack-collection .videopack-collection-item:hover .gallery-item-edit,
+.videopack-collection .videopack-collection-item:hover .gallery-add-button,
+.videopack-collection .videopack-collection-item:hover .videopack-drag-handle {
+  display: flex;
 }
 .videopack-collection .videopack-thumbnail-container,
 .videopack-collection .videopack-thumbnail-placeholder,
@@ -264,13 +302,6 @@
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 4px;
-}
-.videopack-collection .videopack-video-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-top: 10px;
-  color: #1e1e1e;
 }
 .videopack-collection .videopack-collection-preview-placeholder,
 .videopack-collection .videopack-collection-loading {
@@ -283,4 +314,37 @@
   font-style: italic;
   text-align: center;
   width: 100%;
+}
+.videopack-collection .videopack-video-loop {
+  position: relative;
+  min-height: 200px;
+  transition: opacity 0.3s ease;
+}
+.videopack-collection .videopack-video-loop.is-loading .videopack-collection-item {
+  opacity: 0.4;
+  filter: grayscale(0.3);
+  pointer-events: none;
+}
+.videopack-collection .videopack-video-loop .videopack-loop-loading-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(1px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  border-radius: 4px;
+}
+.videopack-collection .videopack-video-loop .videopack-loop-loading-overlay .components-spinner {
+  width: 32px;
+  height: 32px;
+}
+.videopack-collection .videopack-wrapper {
+  margin: 0 !important;
 }

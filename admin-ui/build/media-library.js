@@ -3660,9 +3660,6 @@ const VideoPlayer = ({
     source_groups = {},
     text_tracks = [],
     playback_rate,
-    watermark,
-    watermark_styles,
-    watermark_link_to,
     default_ratio,
     play_button_color,
     play_button_icon_color,
@@ -3894,52 +3891,6 @@ const VideoPlayer = ({
   if (!renderReady) {
     return null; // Or a loading spinner
   }
-  const getWatermarkStyle = () => {
-    const defaults = {
-      scale: 10,
-      align: 'right',
-      valign: 'bottom',
-      x: 5,
-      y: 7
-    };
-    const styles = {
-      ...defaults,
-      ...watermark_styles
-    };
-
-    // Check if styles differ from defaults
-    if (Number(styles.scale) === defaults.scale && styles.align === defaults.align && styles.valign === defaults.valign && Number(styles.x) === defaults.x && Number(styles.y) === defaults.y) {
-      return null;
-    }
-    const css = {
-      maxWidth: `${styles.scale}%`,
-      width: '100%',
-      height: 'auto',
-      position: 'absolute'
-    };
-    const x = styles.x || 0;
-    const y = styles.y || 0;
-    if (styles.align === 'left') {
-      css.left = `${x}%`;
-    } else if (styles.align === 'right') {
-      css.right = `${x}%`;
-    } else {
-      css.left = '50%';
-      css.transform = 'translateX(-50%)';
-      css.marginLeft = `${-x}%`;
-    }
-    if (styles.valign === 'top') {
-      css.top = `${y}%`;
-    } else if (styles.valign === 'bottom') {
-      css.bottom = `${y}%`;
-    } else {
-      css.top = '50%';
-      css.transform = css.transform ? 'translate(-50%, -50%)' : 'translateY(-50%)';
-      css.marginTop = `${-y}%`;
-    }
-    return css;
-  };
-  const watermarkStyle = getWatermarkStyle();
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
     className: wrapperClasses,
     ref: wrapperRef,
@@ -4022,23 +3973,7 @@ const VideoPlayer = ({
           onReady: handleVideoPlayerReady,
           onMetadataLoaded: onMetadataLoaded
         }, `${embed_method}-${src}`);
-      })(), !hideStaticOverlays && watermark && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
-        className: "videopack-watermark",
-        children: watermark_link_to && watermark_link_to !== 'false' && watermark_link_to !== 'None' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("a", {
-          href: "#videopack-watermark-link",
-          className: "videopack-watermark-link",
-          onClick: e => e.preventDefault(),
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("img", {
-            src: watermark,
-            alt: "watermark",
-            style: watermarkStyle
-          })
-        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("img", {
-          src: watermark,
-          alt: "watermark",
-          style: watermarkStyle
-        })
-      }), children]
+      })(), children]
     })
   });
 };
@@ -4457,8 +4392,8 @@ const VideoSettings = ({
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('View count', 'video-embed-thumbnail-generator'),
-          onChange: value => handleSettingChange('view_count', value),
-          checked: !!displayAttributes.view_count
+          onChange: value => handleSettingChange('views', value),
+          checked: !!displayAttributes.views
         })
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelBody, {
@@ -4543,7 +4478,39 @@ const VideoSettings = ({
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Colors', 'video-embed-thumbnail-generator'),
       initialOpen: false,
-      children: [!isBlockEditor && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
+        className: "videopack-skin-section",
+        style: {
+          marginBottom: '16px'
+        },
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.SelectControl, {
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Player Skin', 'video-embed-thumbnail-generator'),
+          value: attributes.skin || options.skin || '',
+          options: [{
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack', 'video-embed-thumbnail-generator'),
+            value: 'vjs-theme-videopack'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack Classic', 'video-embed-thumbnail-generator'),
+            value: 'kg-video-js-skin'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Video.js default', 'video-embed-thumbnail-generator'),
+            value: 'default'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('City', 'video-embed-thumbnail-generator'),
+            value: 'vjs-theme-city'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Fantasy', 'video-embed-thumbnail-generator'),
+            value: 'vjs-theme-fantasy'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Forest', 'video-embed-thumbnail-generator'),
+            value: 'vjs-theme-forest'
+          }, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Sea', 'video-embed-thumbnail-generator'),
+            value: 'vjs-theme-sea'
+          }],
+          onChange: value => handleSettingChange('skin', value)
+        })
+      }), !isBlockEditor && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
         className: "videopack-color-section",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
           className: "videopack-settings-section-title",
@@ -4762,27 +4729,20 @@ const VideoSettings = ({
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelRow, {
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Allow embedding on other sites', 'video-embed-thumbnail-generator'),
-          onChange: value => handleSettingChange('embeddable', value),
-          checked: !!displayAttributes.embeddable
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Allow embedding / Show embed code', 'video-embed-thumbnail-generator'),
+          onChange: value => handleSettingChange('embedcode', value),
+          checked: !!displayAttributes.embedcode
         })
-      }), displayAttributes.embeddable && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.Fragment, {
-        children: !isBlockEditor && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.Fragment, {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelRow, {
+      }), displayAttributes.embedcode && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.Fragment, {
+        children: !isBlockEditor && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.Fragment, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelRow, {
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
               __nextHasNoMarginBottom: true,
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Download link', 'video-embed-thumbnail-generator'),
               onChange: value => handleSettingChange('downloadlink', value),
               checked: !!displayAttributes.downloadlink
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelRow, {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
-              __nextHasNoMarginBottom: true,
-              label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Embed code', 'video-embed-thumbnail-generator'),
-              onChange: value => handleSettingChange('embedcode', value),
-              checked: !!displayAttributes.embedcode
-            })
-          })]
+          })
         })
       })]
     })]
@@ -6249,7 +6209,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // Settings that can be stored per-video in _videopack-meta.
-const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted', 'controls', 'volume', 'preload', 'playback_rate', 'playsinline', 'right_click', 'gifmode', 'fixed_aspect', 'align', 'legacy_dimensions', 'resize', 'fullwidth', 'embeddable', 'embedcode', 'overlay_title', 'view_count', 'watermark', 'watermark_link_to', 'watermark_url', 'poster', 'poster_id', 'total_thumbnails', 'track', 'title_color', 'title_background_color', 'play_button_color', 'play_button_icon_color', 'control_bar_bg_color', 'control_bar_color'];
+const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted', 'controls', 'volume', 'preload', 'playback_rate', 'playsinline', 'right_click', 'gifmode', 'fixed_aspect', 'align', 'legacy_dimensions', 'resize', 'fullwidth', 'embeddable', 'embedcode', 'overlay_title', 'views', 'starts', 'play_25', 'play_50', 'play_75', 'completeviews', 'watermark', 'watermark_link_to', 'watermark_url', 'poster', 'poster_id', 'total_thumbnails', 'track', 'title_color', 'title_background_color', 'play_button_color', 'play_button_icon_color', 'control_bar_bg_color', 'control_bar_color'];
 
 /**
  * Hook to manage video settings and synchronize them with attachment metadata.

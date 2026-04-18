@@ -22,9 +22,9 @@ module.exports = {
 		...defaultEntries,
 		...blockEntries,
 
-		'videopack-player': path.resolve(
+		'videopack-frontend': path.resolve(
 			process.cwd(),
-			'src/videopack-player.scss'
+			'src/videopack-frontend.scss'
 		),
 
 		// Admin screens bundle

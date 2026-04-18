@@ -17,27 +17,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/play-button/editor.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/play-button/editor.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
 
 
 
 
-/**
- * A internal component to display a play button with correct styling.
- * This can be reused in previews (e.g. video loops).
- */
 
 function PlayButton({
-  skin
+  context = {}
 }) {
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const embed_method = typeof config !== 'undefined' ? config.embed_method : 'Video.js';
   if ('WordPress Default' === embed_method) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "videopack-play-button mejs-overlay mejs-layer mejs-overlay-play",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
         className: "mejs-overlay-button",
         role: "button",
         tabIndex: "0",
@@ -51,34 +48,42 @@ function PlayButton({
     });
   }
   if ('None' === embed_method) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
       className: "play-button-container videopack-none",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
         className: "videopack-none-play-button",
         viewBox: "0 0 100 100",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
           className: "play-button-circle",
           cx: "50",
           cy: "50",
           r: "45"
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("polygon", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("polygon", {
           className: "play-button-triangle",
           points: "40,30 70,50 40,70"
         })]
       })
     });
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
-    className: `play-button-container video-js ${skin} vjs-big-play-centered vjs-paused vjs-controls-enabled`,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("button", {
+  const effectiveSkin = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('skin', {}, context);
+  const effectivePlayColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('play_button_color', {}, context);
+  const effectivePlayIconColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('play_button_icon_color', {}, context);
+  const styles = {
+    '--videopack-play-button-color': effectivePlayColor || undefined,
+    '--videopack-play-button-icon-color': effectivePlayIconColor || undefined
+  };
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+    className: `play-button-container video-js ${effectiveSkin} vjs-big-play-centered vjs-paused vjs-controls-enabled ${effectivePlayColor ? 'videopack-has-play-button-color' : ''} ${effectivePlayIconColor ? 'videopack-has-play-button-icon-color' : ''}`,
+    style: styles,
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("button", {
       className: "vjs-big-play-button",
       type: "button",
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Video', 'video-embed-thumbnail-generator'),
       "aria-disabled": "false",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
         className: "vjs-icon-placeholder",
         "aria-hidden": "true"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
         className: "vjs-control-text",
         "aria-live": "polite",
         children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Video', 'video-embed-thumbnail-generator')
@@ -93,10 +98,10 @@ function Edit({
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({
     className: 'videopack-play-button-block'
   });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
     ...blockProps,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(PlayButton, {
-      skin: skin
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(PlayButton, {
+      context: context
     })
   });
 }
@@ -113,17 +118,57 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ save)
 /* harmony export */ });
-/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
-/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__);
-
-
 function save() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-    ..._wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps.save()
-  });
+  return null;
 }
+
+/***/ },
+
+/***/ "./src/utils/context.js"
+/*!******************************!*\
+  !*** ./src/utils/context.js ***!
+  \******************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getEffectiveValue: () => (/* binding */ getEffectiveValue)
+/* harmony export */ });
+/* global videopack_config */
+
+/**
+ * Resolves an effective design value by checking local overrides, inherited context,
+ * and finally global plugin defaults.
+ *
+ * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {Object} attributes The block's own attributes.
+ * @param {Object} context    The inherited block context.
+ * @return {*} The resolved value.
+ */
+const getEffectiveValue = (key, attributes = {}, context = {}) => {
+  const contextKey = key.includes('/') ? key : `videopack/${key}`;
+  const attrKey = key.includes('/') ? key.split('/')[1] : key;
+
+  // 1. Check local attribute override
+  if (attributes[attrKey] !== undefined && attributes[attrKey] !== null && attributes[attrKey] !== '') {
+    return attributes[attrKey];
+  }
+
+  // 2. Check inherited context (from Collection or Video block)
+  if (context[contextKey] !== undefined && context[contextKey] !== null && context[contextKey] !== '') {
+    return context[contextKey];
+  }
+
+  // 3. Fallback to global plugin defaults
+  const globalOptions = videopack_config?.options || {};
+  const globalDefaults = videopack_config?.defaults || {};
+
+  // Skin has special handling in some places, but we'll try to find it in options or defaults
+  if (attrKey === 'skin') {
+    return globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
+  }
+  return globalOptions[attrKey] ?? globalDefaults[attrKey];
+};
 
 /***/ },
 
@@ -185,7 +230,7 @@ module.exports = window["wp"]["i18n"];
   \*******************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/play-button","title":"Play Button","category":"media","icon":"controls-play","description":"Displays a play button overlay.","usesContext":["postId","videopack/skin","videopack/play_button_color","videopack/play_button_icon_color"],"supports":{"html":false,"color":{"text":true,"background":true}},"editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/play-button","title":"Play Button","category":"media","icon":"controls-play","description":"Displays a play button overlay.","usesContext":["videopack/postId","videopack/skin","videopack/play_button_color","videopack/play_button_icon_color","videopack/isInsideThumbnail","videopack/isInsidePlayer"],"supports":{"html":false,"color":{"text":true,"background":true}},"editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 
 /***/ }
 

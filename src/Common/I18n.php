@@ -40,14 +40,14 @@ class I18n {
 	/**
 	 * Format the view count with internationalization.
 	 *
-	 * @param int|string $view_count The number of views.
+	 * @param int|string $views The number of views.
 	 * @return string The formatted view count.
 	 */
-	public static function format_view_count( $view_count ) {
+	public static function format_view_count( $views ) {
 		return (string) sprintf(
 			/* translators: %s is the number of views. */
-			(string) _n( '%s view', '%s views', (int) $view_count, 'video-embed-thumbnail-generator' ),
-			(string) number_format_i18n( (int) $view_count )
+			(string) _n( '%s view', '%s views', (int) $views, 'video-embed-thumbnail-generator' ),
+			(string) number_format_i18n( (int) $views )
 		);
 	}
 }

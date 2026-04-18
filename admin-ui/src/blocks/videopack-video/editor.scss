@@ -45,17 +45,10 @@
 
 
 
+// Standard overlay behavior handled in Overlays.scss
 .videopack-video-title-block {
 	&.is-overlay {
 		pointer-events: auto;
 		&.is-selected, &:focus-within { pointer-events: auto; }
-
-		// Standardize 15px base in editor to match frontend font normalization
-		&.videopack-video-title, &.video-title {
-			font-size: 15px; 
-			visibility: visible !important;
-			opacity: 1 !important;
-			pointer-events: auto;
-		}
 	}
 }

@@ -23,9 +23,34 @@
 	}
 }
 
-/* Gallery container */
+/* Gallery & Collection containers (Frontend & Editor) */
+.videopack-collection-inner,
+.videopack-collection-grid,
 .videopack-gallery-wrapper {
+	width: 100%;
 	max-width: 100%;
+	gap: var( --videopack-collection-gap, var( --wp--style--block-gap, var( --wp--style--spacing--block-gap, 20px ) ) );
+
+	// Default layout logic (handle classes on self OR on parent)
+	.layout-grid &, &.layout-grid {
+		display: grid;
+		grid-template-columns: repeat(var(--videopack-collection-columns, 3), 1fr);
+
+		.columns-1 &, &.columns-1 { grid-template-columns: 1fr; }
+		.columns-2 &, &.columns-2 { grid-template-columns: repeat(2, 1fr); }
+		.columns-3 &, &.columns-3 { grid-template-columns: repeat(3, 1fr); }
+		.columns-4 &, &.columns-4 { grid-template-columns: repeat(4, 1fr); }
+		.columns-5 &, &.columns-5 { grid-template-columns: repeat(5, 1fr); }
+		.columns-6 &, &.columns-6 { grid-template-columns: repeat(6, 1fr); }
+	}
+
+	.layout-list &, &.layout-list {
+		display: flex;
+		flex-direction: column;
+	}
+}
+
+.videopack-gallery-items {
 
 	.videopack-gallery-items {
 		display: grid;

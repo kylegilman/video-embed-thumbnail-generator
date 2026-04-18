@@ -4,7 +4,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
 
 export default function Edit({ attributes, setAttributes, context }) {
-	const { postId } = context;
+	const postId = context['videopack/postId'];
 	const { showLabel } = attributes;
 
 	const { videoMeta, isResolving } = useSelect(

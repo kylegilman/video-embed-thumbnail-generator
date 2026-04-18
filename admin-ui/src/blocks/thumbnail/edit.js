@@ -21,7 +21,7 @@ import './editor.scss';
  * @return {Element} Thumbnail edit component
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
-	const { postId } = context;
+	const postId = context['videopack/postId'];
 	const { linkTo, style } = attributes;
 
 	const blockProps = useBlockProps({
@@ -43,24 +43,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		// For custom duotones in the template, we'll let Gutenberg's native block-item class handle the filter.
 		// However, we use a stable prefix for previews to match VideoLoop's custom filter logic.
 		resolvedDuotoneClass = `videopack-custom-duotone-${clientId.split('-')[0]}`;
-	}
-
-	if (!postId) {
-		return (
-			<div {...blockProps}>
-				<Placeholder
-					icon="format-video"
-					label={__(
-						'Video Thumbnail',
-						'video-embed-thumbnail-generator'
-					)}
-					instructions={__(
-						'This block displays the video thumbnail when placed inside a Videopack Collection.',
-						'video-embed-thumbnail-generator'
-					)}
-				/>
-			</div>
-		);
 	}
 
 	return (
@@ -110,25 +92,58 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				</PanelBody>
 			</InspectorControls>
 			<div {...blockProps}>
-				<BlockContextProvider
-					value={{
-						postId,
-						'videopack/skin': context['videopack/skin'],
-						'videopack/play_button_color': context['videopack/play_button_color'],
-						'videopack/play_button_icon_color': context['videopack/play_button_icon_color'],
-					}}
-				>
+				{!postId ? (
+					<Placeholder
+						icon="format-video"
+						label={__(
+							'Video Thumbnail',
+							'video-embed-thumbnail-generator'
+						)}
+						instructions={__(
+							'This block displays the video thumbnail when placed inside a Videopack Collection.',
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				) : (
 					<VideoThumbnailPreview
 						postId={postId}
-						skin={context?.['videopack/skin']}
 						resolvedDuotoneClass={resolvedDuotoneClass}
+						context={context}
 					>
-						<InnerBlocks
-							templateLock={false}
-							renderAppender={InnerBlocks.ButtonBlockAppender}
-						/>
+						<BlockContextProvider
+							value={{
+								...context,
+								'videopack/isInsideThumbnail': true,
+								'videopack/downloadlink': false,
+								'videopack/embedcode': false,
+							}}
+						>
+							<InnerBlocks
+								templateLock={false}
+								renderAppender={InnerBlocks.ButtonBlockAppender}
+							/>
+						</BlockContextProvider>
 					</VideoThumbnailPreview>
-				</BlockContextProvider>
+				)}
+
+				{/* Ensure InnerBlocks is always present for Gutenberg validation, even if visually hidden. */}
+				{!postId && (
+					<div style={{ display: 'none' }}>
+						<BlockContextProvider
+							value={{
+								...context,
+								'videopack/isInsideThumbnail': true,
+								'videopack/downloadlink': false,
+								'videopack/embedcode': false,
+							}}
+						>
+							<InnerBlocks
+								templateLock={false}
+								renderAppender={InnerBlocks.ButtonBlockAppender}
+							/>
+						</BlockContextProvider>
+					</div>
+				)}
 			</div>
 		</>
 	);

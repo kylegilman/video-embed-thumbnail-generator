@@ -188,7 +188,7 @@ class Options implements Hook_Subscriber {
 			'embedcode'                     => false,
 			'downloadlink'                  => false,
 			'click_download'                => true,
-			'view_count'                    => false,
+			'views'                         => false,
 			'count_views'                   => 'start_complete',
 			'embeddable'                    => true,
 			'inline'                        => false,

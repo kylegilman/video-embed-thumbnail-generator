@@ -11,42 +11,41 @@
     "videopack/video-player-engine"
   ],
   "usesContext": [
-    "postId",
+    "videopack/postId",
     "videopack/watermark",
     "videopack/watermark_link_to",
-    "videopack/watermark_styles"
+    "videopack/watermark_styles",
+    "videopack/isInsideThumbnail",
+    "videopack/isInsidePlayer"
   ],
   "attributes": {
-    "url": {
+    "watermark": {
       "type": "string"
     },
-    "linkToType": {
+    "watermark_link_to": {
       "type": "string",
       "default": "false"
     },
-    "customLinkUrl": {
+    "watermark_url": {
       "type": "string"
     },
-    "linkTo": {
-      "type": "string"
-    },
-    "align": {
+    "watermark_align": {
       "type": "string",
       "default": "right"
     },
-    "valign": {
+    "watermark_valign": {
       "type": "string",
       "default": "bottom"
     },
-    "scale": {
+    "watermark_scale": {
       "type": "number",
       "default": 10
     },
-    "x": {
+    "watermark_x": {
       "type": "number",
       "default": 5
     },
-    "y": {
+    "watermark_y": {
       "type": "number",
       "default": 7
     }

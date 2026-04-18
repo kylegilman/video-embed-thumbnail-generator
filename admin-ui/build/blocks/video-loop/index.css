@@ -69,6 +69,24 @@
   padding: 12px;
   width: 280px;
 }
+/*!*************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[2].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[2].use[2]!./src/blocks/view-count/index.css ***!
+  \*************************************************************************************************************************************************************************************/
+.videopack-view-count-block {
+    font-size: 0.8em;
+    width: 100%;
+}
+
+.videopack-view-count-block:not(.is-overlay) {
+    margin-bottom: 0.5em;
+}
+
+/* Specific styling for the view count component itself if needed */
+
+.videopack-view-count {
+    white-space: nowrap;
+}
+
 /*!***********************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/play-button/editor.scss ***!
   \***********************************************************************************************************************************************************************************************************************************************************/
@@ -108,6 +126,681 @@
 /**
  * Colors
  */
+.videopack-video-title {
+  color: var(--videopack-title-color, inherit);
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  white-space: pre-wrap;
+  margin: 0;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.videopack-video-title.has-text-align-left {
+  text-align: left;
+}
+.videopack-video-title.has-text-align-center {
+  text-align: center;
+}
+.videopack-video-title.has-text-align-right {
+  text-align: right;
+}
+.videopack-video-title.is-overlay {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  left: 0;
+  padding: 0.5em 0.6em;
+  min-height: 2.6em;
+  line-height: 1.2;
+  color: var(--videopack-title-color, #fff);
+  font-size: 15px;
+  padding: 0;
+  z-index: 102;
+}
+.videopack-video-title.is-overlay.position-top {
+  top: 0;
+  bottom: auto;
+}
+.videopack-video-title.is-overlay.position-bottom {
+  bottom: 0;
+  top: auto;
+}
+.videopack-video-title.is-overlay.position-center {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+.videopack-video-title.is-overlay.has-text-align-left {
+  justify-content: flex-start;
+}
+.videopack-video-title.is-overlay.has-text-align-right {
+  justify-content: flex-end;
+}
+.videopack-video-title.is-overlay.has-text-align-center {
+  justify-content: center;
+  text-align: center;
+}
+.videopack-video-title.is-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  transition: visibility 0.3s linear, opacity 0.3s linear;
+  background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+  opacity: var(--videopack-title-bg-alpha, 0.9);
+}
+.videopack-video-title.is-overlay .videopack-title {
+  padding-left: 4px;
+  font-size: inherit;
+  margin: 0;
+  display: block;
+  line-height: inherit;
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0; /* Important for ellipsis in flex containers */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap !important; /* Overrides Gutenberg inline styles */
+}
+.videopack-video-title.is-overlay .videopack-title h1, .videopack-video-title.is-overlay .videopack-title h2, .videopack-video-title.is-overlay .videopack-title h3, .videopack-video-title.is-overlay .videopack-title h4, .videopack-video-title.is-overlay .videopack-title h5, .videopack-video-title.is-overlay .videopack-title h6 {
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
+}
+.videopack-video-title.is-overlay .videopack-thumbnail-title-text {
+  padding-left: 4px;
+  font-size: inherit;
+  margin: 0;
+  display: block;
+  line-height: inherit;
+  flex-grow: 1;
+  flex-shrink: 1;
+  white-space: pre-wrap;
+}
+.videopack-video-title.is-overlay .videopack-thumbnail-title-text h1, .videopack-video-title.is-overlay .videopack-thumbnail-title-text h2, .videopack-video-title.is-overlay .videopack-thumbnail-title-text h3, .videopack-video-title.is-overlay .videopack-thumbnail-title-text h4, .videopack-video-title.is-overlay .videopack-thumbnail-title-text h5, .videopack-video-title.is-overlay .videopack-thumbnail-title-text h6 {
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
+}
+.videopack-video-title.no-title {
+  background: transparent;
+}
+.videopack-video-title.has-no-background {
+  background: transparent !important;
+}
+:is(.videopack-wrapper:not(.videopack-video-title-visible):not(:hover),
+.videopack-video-block:not(.videopack-video-title-visible):not(:hover)) .videopack-video-title.is-overlay:not(.videopack-thumbnail-title) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+:is(.videopack-wrapper:hover, .videopack-video-block:hover, .videopack-player:hover) .videopack-video-title.is-overlay:not(.videopack-thumbnail-title) {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+.videopack-video-title.is-overlay {
+  color: var(--videopack-title-color, #fff) !important;
+}
+.videopack-video-title :is(.videopack-title, .videopack-thumbnail-title-text) {
+  color: inherit;
+}
+.videopack-video-title .videopack-meta-icons {
+  position: relative;
+  margin: 0 0 0 10px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  flex-shrink: 0;
+}
+.videopack-video-title .videopack-meta-icons button, .videopack-video-title .videopack-meta-icons a {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 3px;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  transition: opacity 0.15s ease;
+  font-size: 1em;
+  flex-shrink: 0;
+}
+.videopack-video-title .videopack-meta-icons button:hover, .videopack-video-title .videopack-meta-icons a:hover {
+  opacity: 0.8;
+}
+.videopack-video-title .videopack-meta-icons button:focus, .videopack-video-title .videopack-meta-icons a:focus {
+  outline: none;
+}
+.videopack-video-title .videopack-meta-icons button, .videopack-video-title .videopack-meta-icons a {
+  max-width: none !important;
+  max-height: none !important;
+}
+.videopack-video-title .videopack-meta-icons button .videopack-icon-container, .videopack-video-title .videopack-meta-icons a .videopack-icon-container {
+  display: grid;
+  width: 1.25em; /* Ensure consistent icon sizing */
+  height: 1.25em;
+  place-items: center;
+}
+.videopack-video-title .videopack-meta-icons button .videopack-icon-container svg, .videopack-video-title .videopack-meta-icons a .videopack-icon-container svg {
+  grid-area: 1/1;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.videopack-video-title .videopack-meta-icons button .videopack-icons.share .videopack-close-svg, .videopack-video-title .videopack-meta-icons a .videopack-icons.share .videopack-close-svg {
+  opacity: 0;
+  visibility: hidden;
+}
+.videopack-video-title .videopack-meta-icons button .videopack-icons.share .videopack-share-svg, .videopack-video-title .videopack-meta-icons a .videopack-icons.share .videopack-share-svg {
+  opacity: 1;
+  visibility: visible;
+}
+.videopack-video-title .videopack-meta-icons button .videopack-icons.share.close .videopack-close-svg, .videopack-video-title .videopack-meta-icons a .videopack-icons.share.close .videopack-close-svg {
+  opacity: 1;
+  visibility: visible;
+}
+.videopack-video-title .videopack-meta-icons button .videopack-icons.share.close .videopack-share-svg, .videopack-video-title .videopack-meta-icons a .videopack-icons.share.close .videopack-share-svg {
+  opacity: 0;
+  visibility: hidden;
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  position: absolute;
+  background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+  color: var(--videopack-title-color, #fff);
+  opacity: var(--videopack-title-bg-alpha, 0.9);
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  border-radius: 2px;
+  z-index: 105; /* Above player controls but below main overlay overlays if needed */
+  box-shadow: none;
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).position-top {
+  top: 5px;
+  bottom: auto;
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).position-bottom {
+  bottom: 5px;
+  top: auto;
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).has-text-align-left {
+  left: 5px;
+  right: auto;
+  margin-right: auto;
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).has-text-align-right {
+  right: 5px;
+  left: auto;
+  margin-left: auto;
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).has-text-align-center {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).position-center {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).position-center.has-text-align-center {
+  transform: translate(-50%, -50%);
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) .videopack-icon-svg,
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) .videopack-icons,
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) svg {
+  fill: currentColor;
+}
+.videopack-view-count,
+.videopack-view-count-block,
+.videopack-view-count-wrapper,
+.videopack-video-duration,
+.videopack-video-duration-block {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: -moz-fit-content;
+  width: fit-content;
+}
+.videopack-view-count.has-text-align-left,
+.videopack-view-count-block.has-text-align-left,
+.videopack-view-count-wrapper.has-text-align-left,
+.videopack-video-duration.has-text-align-left,
+.videopack-video-duration-block.has-text-align-left {
+  justify-content: flex-start;
+  margin-right: auto;
+}
+.videopack-view-count.has-text-align-center,
+.videopack-view-count-block.has-text-align-center,
+.videopack-view-count-wrapper.has-text-align-center,
+.videopack-video-duration.has-text-align-center,
+.videopack-video-duration-block.has-text-align-center {
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.videopack-view-count.has-text-align-right,
+.videopack-view-count-block.has-text-align-right,
+.videopack-view-count-wrapper.has-text-align-right,
+.videopack-video-duration.has-text-align-right,
+.videopack-video-duration-block.has-text-align-right {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  position: static !important;
+  color: inherit !important;
+  transform: none !important;
+  left: auto !important;
+  top: auto !important;
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block) {
+  --videopack-title-background-color: #141414;
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).default, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-videopack {
+  --videopack-title-background-color: #2b333f;
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).default .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).default :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail), :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-videopack .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-videopack :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background-color: var(--videopack-title-background-color);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-city {
+  --videopack-title-background-color: var(--vjs-theme-city--primary);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-city .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-city :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background-color: var(--videopack-title-background-color);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-fantasy {
+  --videopack-title-background-color: var(--vjs-theme-fantasy--primary);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-fantasy .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-fantasy :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background-color: var(--videopack-title-background-color);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-forest {
+  --videopack-title-background-color: var(--vjs-theme-forest--primary);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-forest .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-forest :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background-color: var(--videopack-title-background-color);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-sea {
+  --videopack-title-background-color: rgb(65, 118, 188);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-sea .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-sea :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background-color: var(--videopack-title-background-color);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-sea.gallery-thumbnail .videopack-video-title::before, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block).vjs-theme-sea.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
+  background-color: rgba(65, 118, 188, 0.4);
+}
+:is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.gallery-thumbnail,
+.videopack-video-title-block).videopack-has-title-background-color .videopack-video-title:not(.no-title)::before, :is(.videopack-wrapper,
+.videopack-gallery-wrapper,
+.gallery-thumbnail,
+.videopack-video-title-block).videopack-has-title-background-color :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background-color: var(--videopack-title-background-color) !important;
+}
+.videopack-video-title-block.is-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0 !important;
+  z-index: 110;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+}
+.videopack-video-title-block.is-overlay.position-top {
+  justify-content: flex-start;
+}
+.videopack-video-title-block.is-overlay.position-bottom {
+  justify-content: flex-end;
+}
+.videopack-video-title-block.is-overlay.position-center {
+  justify-content: center;
+}
+.videopack-video-title-block.is-overlay .videopack-video-title {
+  pointer-events: auto;
+}
+.videopack-video-title.videopack-thumbnail-title.is-overlay {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  padding: 4px;
+  z-index: 102;
+  --videopack-title-bg-alpha: 0.5;
+}
+:is(.videopack-video-title.videopack-thumbnail-title.is-overlay.position-bottom, .videopack-video-title-block.position-bottom .videopack-video-title.videopack-thumbnail-title.is-overlay) {
+  bottom: 5%;
+  top: auto;
+}
+:is(.videopack-video-title.videopack-thumbnail-title.is-overlay.position-top, .videopack-video-title-block.position-top .videopack-video-title.videopack-thumbnail-title.is-overlay) {
+  top: 5%;
+  bottom: auto;
+}
+:is(.videopack-video-title.videopack-thumbnail-title.is-overlay.position-center, .videopack-video-title-block.position-center .videopack-video-title.videopack-thumbnail-title.is-overlay) {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+.videopack-video-watermark-block.is-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0 !important;
+  z-index: 110;
+  pointer-events: none;
+  visibility: visible;
+  opacity: 1;
+}
+.videopack-video-watermark {
+  position: absolute;
+  z-index: 111;
+  pointer-events: auto;
+  display: block;
+}
+.videopack-video-watermark img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+}
+.videopack-player {
+  position: relative;
+  width: 100%;
+  height: auto;
+  min-height: 1px;
+}
+.videopack-thumbnail-wrapper {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.videopack-thumbnail-wrapper .videopack-inner-blocks-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+.videopack-thumbnail-wrapper .videopack-inner-blocks-container > * {
+  pointer-events: auto;
+}
+.videopack-share-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2em;
+  color: var(--videopack-title-color, white);
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 3em 2em;
+  width: 100%;
+  z-index: 101;
+  position: absolute;
+  border-radius: 0;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+  background: linear-gradient(to bottom, var(--videopack-title-background-color) 0%, color-mix(in srgb, var(--videopack-title-background-color), transparent 40%) 60%, transparent 100%);
+}
+.videopack-thumbnail-title.position-top ~ .videopack-share-container, .videopack-thumbnail-title.position-top .videopack-share-container {
+  margin-top: 0;
+}
+.videopack-share-container.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+.videopack-share-container .videopack-embedcode-container,
+.videopack-share-container .videopack-start-at-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.videopack-share-container .videopack-embedcode-container span,
+.videopack-share-container .videopack-start-at-container span {
+  display: flex;
+  align-items: center;
+}
+.videopack-share-container input {
+  height: 20px;
+  min-height: auto;
+  font-size: 13px;
+  font-family: inherit;
+  background-color: var(--wp--preset--color--white, #fff);
+  border: none;
+  margin: 0;
+  color: #333;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+.videopack-share-container input.videopack-embed-code {
+  width: 15rem;
+}
+.videopack-share-container input.videopack-start-at {
+  width: 3rem;
+  text-align: center;
+}
+.videopack-click-trap {
+  width: 100%;
+  background: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  border: none;
+  padding: 0;
+}
+.videopack-click-trap.is-visible {
+  opacity: 1;
+  visibility: visible;
+  bottom: -100vh;
+}
 /* Shared Play Button Styles and Alpha Calculations */
 .videopack-wrapper,
 .videopack-gallery-wrapper,
@@ -126,6 +819,10 @@
   left: 50%;
   transform: translate(-50%, -50%);
   margin: 0;
+  z-index: 2;
+}
+/* Video.js Big Play Button Base */
+.vjs-big-play-button {
   z-index: 2;
 }
 /* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
@@ -233,9 +930,14 @@
 .wp-block-videopack-videopack-video {
   width: 100%;
   max-width: var(--wp--style--global--content-size);
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 .wp-block-videopack-videopack-video.alignwide {
   max-width: var(--wp--style--global--wide-size);
+}
+.videopack-collection-item .wp-block-videopack-videopack-video {
+  max-width: 100%;
 }
 .wp-block-videopack-videopack-video.alignfull {
   max-width: none;
@@ -244,7 +946,10 @@
   margin-left: auto;
   margin-right: auto;
 }
-.wp-block-videopack-videopack-video .videopack-wrapper {
+.wp-block-videopack-videopack-video .videopack-wrapper,
+.videopack-collection-item .videopack-wrapper,
+.videopack-collection-grid .videopack-wrapper,
+.videopack-video-loop .videopack-wrapper {
   margin: 0;
 }
 /* Main Videopack Wrapper Component */
@@ -293,6 +998,8 @@
 .videopack-wrapper.videopack-has-aspect-ratio .videopack-player {
   width: 100%;
   position: relative;
+  height: auto;
+  min-height: 1px;
 }
 .videopack-wrapper.videopack-has-aspect-ratio .videopack-player video,
 .videopack-wrapper.videopack-has-aspect-ratio .videopack-player .video-js,
@@ -313,127 +1020,11 @@
 .videopack-wrapper .videopack-player {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: auto;
+  min-height: 1px;
 }
-.videopack-wrapper.default .videopack-video-title:not(.videopack-has-title-background-color), .videopack-wrapper.vjs-theme-videopack .videopack-video-title:not(.videopack-has-title-background-color) {
-  background-color: #2b333f;
-}
-.videopack-wrapper.vjs-theme-city .videopack-video-title:not(.videopack-has-title-background-color) {
-  background-color: var(--vjs-theme-city--primary);
-}
-.videopack-wrapper.vjs-theme-fantasy .videopack-video-title:not(.videopack-has-title-background-color) {
-  background-color: var(--vjs-theme-fantasy--primary);
-}
-.videopack-wrapper.vjs-theme-forest .videopack-video-title:not(.videopack-has-title-background-color) {
-  background-color: var(--vjs-theme-forest--primary);
-}
-.videopack-wrapper.vjs-theme-sea .videopack-video-title:not(.videopack-has-title-background-color) {
-  background-color: rgb(65, 118, 188);
-}
-.videopack-wrapper.vjs-theme-sea .vjs-menu-button .vjs-menu-content {
-  background-color: hsla(0, 0%, 100%, 0.4);
-}
-.videopack-wrapper.vjs-theme-sea .vjs-button:hover li {
-  color: white;
-}
-.videopack-wrapper.vjs-theme-sea .vjs-button:hover li.vjs-selected {
-  color: rgb(65, 118, 188);
-}
-.videopack-wrapper .videopack-video-title {
-  color: var(--videopack-title-color, #fff);
-  font-size: 15px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
+.videopack-wrapper .videopack-video-title:not(.videopack-thumbnail-title) {
   justify-content: flex-end;
-  align-items: center;
-  top: 0px;
-  box-sizing: border-box;
-  margin: 0px;
-  padding: 0.5em 0.6em;
-  width: 100%;
-  min-height: 2.6em;
-  background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0.3s linear, opacity 0.3s linear;
-  line-height: 1.2;
-  position: relative;
-  z-index: 102;
-}
-.is-overlay .videopack-wrapper .videopack-video-title {
-  position: absolute;
-}
-.videopack-wrapper .videopack-video-title.is-overlay {
-  position: absolute;
-  z-index: 102;
-}
-.videopack-wrapper .videopack-video-title.no-title {
-  background: transparent;
-}
-.videopack-wrapper .videopack-video-title.has-no-background {
-  background: transparent !important;
-}
-.videopack-wrapper .videopack-video-title.position-bottom {
-  top: auto;
-  bottom: 0px;
-}
-.videopack-wrapper .videopack-video-title .videopack-title {
-  padding-left: 4px;
-  font-size: inherit;
-  margin: 0;
-  display: block;
-  line-height: inherit;
-  flex-grow: 1;
-  flex-shrink: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.videopack-wrapper .videopack-video-title .videopack-title h1, .videopack-wrapper .videopack-video-title .videopack-title h2, .videopack-wrapper .videopack-video-title .videopack-title h3, .videopack-wrapper .videopack-video-title .videopack-title h4, .videopack-wrapper .videopack-video-title .videopack-title h5, .videopack-wrapper .videopack-video-title .videopack-title h6 {
-  font-size: inherit;
-  margin: 0;
-  padding: 0;
-  line-height: inherit;
-  color: inherit;
-  font-weight: inherit;
-}
-.videopack-wrapper .videopack-video-title .videopack-meta-icons {
-  position: relative;
-  margin: 0 0 0 10px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  flex-shrink: 0;
-}
-.videopack-wrapper .videopack-video-title .videopack-meta-icons button, .videopack-wrapper .videopack-video-title .videopack-meta-icons a {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  margin: 0 3px;
-  color: inherit;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.6em;
-  height: 1.6em;
-  transition: opacity 0.15s ease;
-  font-size: 1em;
-  flex-shrink: 0;
-}
-.videopack-wrapper .videopack-video-title .videopack-meta-icons button:hover, .videopack-wrapper .videopack-video-title .videopack-meta-icons a:hover {
-  opacity: 0.8;
-}
-.videopack-wrapper .videopack-video-title .videopack-meta-icons button:focus, .videopack-wrapper .videopack-video-title .videopack-meta-icons a:focus {
-  outline: none;
-}
-.videopack-wrapper .videopack-video-title .videopack-meta-icons button, .videopack-wrapper .videopack-video-title .videopack-meta-icons a {
-  max-width: none !important;
-  max-height: none !important;
 }
 .videopack-wrapper .videopack-icon-svg,
 .videopack-wrapper .videopack-icons svg,
@@ -450,85 +1041,12 @@
 .videopack-wrapper .videopack-icons.close .share-icon {
   display: none !important;
 }
-.videopack-wrapper .videopack-share-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 2em;
-  color: var(--videopack-title-color, white);
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 3em 2em;
-  width: 100%;
-  z-index: 101;
-  position: absolute;
-  border-radius: 0;
-  margin: 0;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
-}
-.video-title.position-top ~ .videopack-wrapper .videopack-share-container, .video-title.position-top .videopack-wrapper .videopack-share-container {
-  margin-top: 0;
-}
-.videopack-wrapper .videopack-share-container {
-  background: linear-gradient(to bottom, var(--videopack-title-background-color, #141414) 0%, color-mix(in srgb, var(--videopack-title-background-color, #141414), transparent 40%) 60%, transparent 100%);
-}
-.videopack-wrapper .videopack-share-container.is-visible {
-  opacity: 1;
-  visibility: visible;
-}
-.videopack-wrapper .videopack-share-container .videopack-embedcode-container,
-.videopack-wrapper .videopack-share-container .videopack-start-at-container {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.videopack-wrapper .videopack-share-container .videopack-embedcode-container span,
-.videopack-wrapper .videopack-share-container .videopack-start-at-container span {
-  display: flex;
-  align-items: center;
-}
-.videopack-wrapper .videopack-share-container input {
-  height: 20px;
-  min-height: auto;
-  font-size: 13px;
-  font-family: inherit;
-  background-color: var(--wp--preset--color--white, #fff);
-  border: none;
-  margin: 0;
-  color: #333;
-  padding: 2px 5px;
-  border-radius: 2px;
-}
-.videopack-wrapper .videopack-share-container input.videopack-embed-code {
-  width: 15rem;
-}
-.videopack-wrapper .videopack-share-container input.videopack-start-at {
-  width: 3rem;
-  text-align: center;
-}
-.videopack-wrapper .videopack-click-trap {
-  width: 100%;
-  background: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  z-index: 100;
-  opacity: 0;
-  visibility: hidden;
-  border: none;
-  padding: 0;
-}
-.videopack-wrapper .videopack-click-trap.is-visible {
-  opacity: 1;
-  visibility: visible;
-  bottom: -100vh;
-}
 .videopack-wrapper.videopack-video-title-visible .videopack-video-title, .videopack-wrapper:hover .videopack-video-title {
   opacity: 1;
+  visibility: visible;
+}
+.videopack-wrapper.videopack-video-title-visible .videopack-video-title::before, .videopack-wrapper:hover .videopack-video-title::before {
+  opacity: 0.9;
   visibility: visible;
 }
 .videopack-wrapper .videopack-watermark img {
@@ -573,17 +1091,6 @@
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
   --videopack-play-button-bg-color-alpha: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%);
   --videopack-play-button-bg-color-alpha-hover: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%);
-}
-.videopack-wrapper.videopack-has-title-background-color .videopack-video-title:not(.no-title) {
-  background-color: var(--videopack-title-background-color);
-}
-.videopack-wrapper.videopack-has-title-background-color .videopack-share-container {
-  background: linear-gradient(to bottom, var(--videopack-title-background-color) 0%, color-mix(in srgb, var(--videopack-title-background-color), transparent 50%) 60%, color-mix(in srgb, var(--videopack-title-background-color), transparent 100%) 100%);
-}
-.videopack-wrapper.videopack-has-title-color .videopack-share-container {
-  color: var(--videopack-title-color);
-}
-.videopack-wrapper {
   /* Video.js Overrides */
 }
 .videopack-wrapper.videopack-has-control-bar-color .video-js {
@@ -710,6 +1217,89 @@
 .videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-volume-current,
 .videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-volume-handle {
   background: var(--videopack-control-bar-color);
+}
+/*!**************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/InspectorControls/CollectionSettingsPanel.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-sort-control-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.videopack-sort-control-wrapper .components-base-control {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+.videopack-sort-control-wrapper .components-button.has-icon {
+  margin-bottom: 14px;
+}
+.videopack-excluded-videos {
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+.videopack-excluded-videos p {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.videopack-excluded-videos .videopack-excluded-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.videopack-excluded-videos .videopack-excluded-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f0f0;
+  padding: 5px;
+  border-radius: 4px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail {
+  width: 60px;
+  background: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail svg {
+  width: 16px;
+  height: 16px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-title {
+  flex-grow: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item {
+  min-width: 24px;
+  padding: 0;
+  color: #949494;
+  background: transparent;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item:hover {
+  color: #cc1818;
+  background: #e0e0e0;
+}
+.components-base-control:has(.components-text-control__input),
+.components-base-control:has(.components-select-control__input),
+.components-base-control.components-toggle-control:where(:not(:last-child)) {
+  margin-bottom: 16px;
 }
 
 /*# sourceMappingURL=index.css.map*/

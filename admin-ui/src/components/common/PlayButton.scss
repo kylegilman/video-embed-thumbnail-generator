@@ -25,6 +25,11 @@
 	z-index: 2;
 }
 
+/* Video.js Big Play Button Base */
+.vjs-big-play-button {
+	z-index: 2;
+}
+
 /* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
 :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail) {
 	&.videopack-has-play-button-color,

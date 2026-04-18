@@ -13,18 +13,18 @@ import { RichText } from '@wordpress/block-editor';
  * @return {Element|null} The rendered component.
  */
 const BelowVideo = ({ attributes, setAttributes, isSelected }) => {
-	const { view_count, caption } = attributes;
+	const { views, caption } = attributes;
 	const isEditing = isSelected; // Usually driven by selection in the block editor
 
 	let viewStarts = 0;
-	if ((attributes?.starts && view_count) || caption) {
+	if ((attributes?.starts && views) || caption) {
 		if (attributes?.starts) {
 			viewStarts = Number(attributes?.starts);
 		}
 		return (
 			<>
 				<div className="videopack-below-video">
-					{view_count && viewStarts > 0 && (
+					{views && viewStarts > 0 && (
 						<div className="videopack-viewcount">
 							{sprintf(
 								/* translators: %d is number of views */

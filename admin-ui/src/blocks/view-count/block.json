@@ -8,11 +8,13 @@
 	"editorStyle": "file:./index.css",
 	"description": "Displays the view count of the video.",
 	"usesContext": [
-		"postId",
+		"videopack/postId",
 		"videopack/skin",
 		"videopack/title_color",
 		"videopack/title_background_color",
-		"videopack/textAlign"
+		"videopack/textAlign",
+		"videopack/isInsideThumbnail",
+		"videopack/isInsidePlayer"
 	],
 	"attributes": {
 		"iconType": {

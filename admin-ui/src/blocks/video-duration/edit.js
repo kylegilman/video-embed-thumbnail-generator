@@ -1,11 +1,19 @@
-import { useBlockProps, Spinner } from '@wordpress/block-editor';
+import { 
+	useBlockProps, 
+	BlockControls, 
+	BlockVerticalAlignmentControl, 
+	AlignmentControl, 
+	Spinner 
+} from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
+import { getEffectiveValue } from '../../utils/context';
 
 /**
  * A internal component to display the video duration with correct formatting and data.
  * This can be reused in previews (e.g. video loops).
  */
-export function VideoDuration({ postId }) {
+export function VideoDuration({ postId, isOverlay, isInsideThumbnail, textAlign, position }) {
+	const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail;
 	const { duration, isResolving } = useSelect(
 		(select) => {
 			if (!postId) {
@@ -27,7 +35,11 @@ export function VideoDuration({ postId }) {
 	);
 
 	if (isResolving) {
-		return <Spinner />;
+		return (
+			<div className={`videopack-video-duration ${actualIsOverlay ? 'is-overlay' : ''}`}>
+				<Spinner />
+			</div>
+		);
 	}
 
 	const formatDuration = (seconds) => {
@@ -47,34 +59,62 @@ export function VideoDuration({ postId }) {
 	};
 
 	return (
-		<div className="videopack-video-duration">
+		<div className={`videopack-video-duration-block videopack-video-duration ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${position || 'top'} has-text-align-${textAlign || 'right'}`}>
 			{duration ? formatDuration(duration) : '0:00'}
 		</div>
 	);
 }
 
-export default function Edit({ clientId, context }) {
-	const { postId } = context;
+export default function Edit({ clientId, attributes, setAttributes, context }) {
+	const postId = context['videopack/postId'];
+	const { textAlign, position: attrPosition } = attributes;
 
-	const { isInsideThumbnail } = useSelect(
-		(select) => {
-			const { getBlockName, getBlockRootClientId } = select('core/block-editor');
-			const rootId = getBlockRootClientId(clientId);
-			const parentName = rootId ? getBlockName(rootId) : null;
-			return {
-				isInsideThumbnail: parentName === 'videopack/thumbnail',
-			};
-		},
-		[clientId]
-	);
+	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
+	const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+	const isOverlay = isInsideThumbnail || isInsidePlayer;
+	const effectiveTitleBgColor = getEffectiveValue('title_background_color', attributes, context);
+
+	const defaultAlign = isOverlay ? (isInsideThumbnail ? 'center' : 'left') : 'right';
+	const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
+	const position = attrPosition || context['videopack/position'] || 'top';
 
 	const blockProps = useBlockProps({
-		className: `videopack-video-duration-block ${isInsideThumbnail ? 'is-inside-thumbnail' : ''}`,
+		className: `videopack-video-duration-block ${
+			isOverlay ? 'is-inside-thumbnail is-overlay is-badge' : ''
+		} position-${position} has-text-align-${finalTextAlign} ${
+			effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
+		}`,
 	});
 
 	return (
-		<div {...blockProps}>
-			<VideoDuration postId={postId} />
-		</div>
+		<>
+			<BlockControls>
+				{isOverlay && (
+					<BlockVerticalAlignmentControl
+						value={position}
+						onChange={(nextPosition) => {
+							setAttributes({
+								position: nextPosition || undefined,
+							});
+						}}
+					/>
+				)}
+				<AlignmentControl
+					value={finalTextAlign}
+					onChange={(nextAlign) => {
+						setAttributes({ textAlign: nextAlign });
+					}}
+				/>
+			</BlockControls>
+			<div {...blockProps}>
+				<VideoDuration 
+					postId={postId} 
+					isOverlay={isOverlay} 
+					isInsideThumbnail={isInsideThumbnail}
+					textAlign={finalTextAlign}
+					position={position}
+				/>
+			</div>
+		</>
 	);
 }

@@ -31,19 +31,23 @@
   height: 100%;
 }
 .videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-title-block.is-inside-thumbnail,
-.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-duration-block.is-inside-thumbnail {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-duration-block.is-inside-thumbnail,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-view-count-block.is-inside-thumbnail {
   pointer-events: none;
-  z-index: 5;
+  z-index: 20;
 }
-.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-title-block.is-inside-thumbnail .video-title,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-title-block.is-inside-thumbnail .videopack-thumbnail-title,
 .videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-title-block.is-inside-thumbnail .videopack-video-duration,
-.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-duration-block.is-inside-thumbnail .video-title,
-.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-duration-block.is-inside-thumbnail .videopack-video-duration {
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-title-block.is-inside-thumbnail .videopack-view-count,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-title-block.is-inside-thumbnail .videopack-view-count-wrapper,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-duration-block.is-inside-thumbnail .videopack-thumbnail-title,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-duration-block.is-inside-thumbnail .videopack-video-duration,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-duration-block.is-inside-thumbnail .videopack-view-count,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-video-duration-block.is-inside-thumbnail .videopack-view-count-wrapper,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-view-count-block.is-inside-thumbnail .videopack-thumbnail-title,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-view-count-block.is-inside-thumbnail .videopack-video-duration,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-view-count-block.is-inside-thumbnail .videopack-view-count,
+.videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .videopack-view-count-block.is-inside-thumbnail .videopack-view-count-wrapper {
   pointer-events: all;
 }
 .videopack-thumbnail-block .gallery-thumbnail .videopack-inner-blocks-container .block-list-appender {

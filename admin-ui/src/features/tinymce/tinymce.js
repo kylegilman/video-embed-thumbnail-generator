@@ -316,41 +316,35 @@ import './tinymce.scss';
 		}
 
 		let type = 'Video';
-		if (tag === 'videopack_gallery') {
+		// [videopack] or legacy aliases
+		const isGallery =
+			attrs.gallery === 'true' || attrs.gallery === true;
+		if (isGallery) {
 			type = 'Gallery';
-		} else if (tag === 'videopack_list') {
-			type = 'List';
 		} else {
-			// [videopack] or legacy aliases
-			const isGallery =
-				attrs.gallery === 'true' || attrs.gallery === true;
-			if (isGallery) {
-				type = 'Gallery';
-			} else {
-				// Detect if it should be a list
-				const hasMultipleIds = attrs.id && attrs.id.includes(',');
-				const hasQuerySource =
-					attrs.gallery_source ||
-					attrs.gallery_category ||
-					attrs.gallery_tag;
-				const isEmptyAndNotUrl =
-					!attrs.id && !attrs.url && !shortcode.content;
-				const hasGalleryIdOnly =
-					attrs.gallery_id &&
-					!attrs.id &&
-					!attrs.url &&
-					!shortcode.content;
+			// Detect if it should be a list
+			const hasMultipleIds = attrs.id && attrs.id.includes(',');
+			const hasQuerySource =
+				attrs.gallery_source ||
+				attrs.gallery_category ||
+				attrs.gallery_tag;
+			const isEmptyAndNotUrl =
+				!attrs.id && !attrs.url && !shortcode.content;
+			const hasGalleryIdOnly =
+				attrs.gallery_id &&
+				!attrs.id &&
+				!attrs.url &&
+				!shortcode.content;
 
-				if (
-					hasMultipleIds ||
-					hasQuerySource ||
-					isEmptyAndNotUrl ||
-					hasGalleryIdOnly
-				) {
-					type = 'List';
-				} else {
-					type = 'Video';
-				}
+			if (
+				hasMultipleIds ||
+				hasQuerySource ||
+				isEmptyAndNotUrl ||
+				hasGalleryIdOnly
+			) {
+				type = 'List';
+			} else {
+				type = 'Video';
 			}
 		}
 
@@ -395,7 +389,7 @@ import './tinymce.scss';
 
 			// Find all WP Views for Videopack in this editor
 			const views = editor.dom.select(
-				'.wpview-wrap[data-wpview-type="videopack"], .wpview-wrap[data-wpview-type="KGVID"], .wpview-wrap[data-wpview-type="VIDEOPACK"], .wpview-wrap[data-wpview-type="FMP"], .wpview-wrap[data-wpview-type="videopack_gallery"], .wpview-wrap[data-wpview-type="videopack_list"]'
+				'.wpview-wrap[data-wpview-type="videopack"], .wpview-wrap[data-wpview-type="KGVID"], .wpview-wrap[data-wpview-type="VIDEOPACK"], .wpview-wrap[data-wpview-type="FMP"]'
 			);
 
 			views.forEach((container) => {
@@ -411,8 +405,6 @@ import './tinymce.scss';
 						'KGVID',
 						'VIDEOPACK',
 						'FMP',
-						'videopack_gallery',
-						'videopack_list',
 					];
 
 					let shortcodeMatch = null;
@@ -739,8 +731,6 @@ import './tinymce.scss';
 			'VIDEOPACK',
 			'KGVID',
 			'FMP',
-			'videopack_gallery',
-			'videopack_list',
 		];
 		tags.forEach((tag) => {
 			if (window.wp.mce.views.get(tag)) {

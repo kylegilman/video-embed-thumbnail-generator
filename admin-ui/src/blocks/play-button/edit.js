@@ -1,12 +1,9 @@
 import { useBlockProps } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
+import { getEffectiveValue } from '../../utils/context';
 import './editor.scss';
 
-/**
- * A internal component to display a play button with correct styling.
- * This can be reused in previews (e.g. video loops).
- */
-export function PlayButton({ skin }) {
+export function PlayButton({ context = {} }) {
 	const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const embed_method = typeof config !== 'undefined' ? config.embed_method : 'Video.js';
 
@@ -36,8 +33,24 @@ export function PlayButton({ skin }) {
 		);
 	}
 
+	const effectiveSkin = getEffectiveValue('skin', {}, context);
+	const effectivePlayColor = getEffectiveValue('play_button_color', {}, context);
+	const effectivePlayIconColor = getEffectiveValue('play_button_icon_color', {}, context);
+
+	const styles = {
+		'--videopack-play-button-color': effectivePlayColor || undefined,
+		'--videopack-play-button-icon-color': effectivePlayIconColor || undefined,
+	};
+
 	return (
-		<div className={`play-button-container video-js ${skin} vjs-big-play-centered vjs-paused vjs-controls-enabled`}>
+		<div 
+			className={`play-button-container video-js ${effectiveSkin} vjs-big-play-centered vjs-paused vjs-controls-enabled ${
+				effectivePlayColor ? 'videopack-has-play-button-color' : ''
+			} ${
+				effectivePlayIconColor ? 'videopack-has-play-button-icon-color' : ''
+			}`}
+			style={styles}
+		>
 			<button
 				className="vjs-big-play-button"
 				type="button"
@@ -62,7 +75,7 @@ export default function Edit({ context }) {
 
 	return (
 		<div {...blockProps}>
-			<PlayButton skin={skin} />
+			<PlayButton context={context} />
 		</div>
 	);
 }

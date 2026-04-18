@@ -1,104 +1,167 @@
 .videopack-collection {
-	border: 1px dashed #ccc;
-	padding: 20px;
 	margin-bottom: 20px;
-	background: #fdfdfd;
+	background: transparent;
 
-	.videopack-collection-grid {
-		display: grid;
-		gap: 20px;
-	}
+	// Layout-grid and layout-list core grid/flex rules are handled in VideoGallery.scss
+	// to ensure unified behavior between frontend and editor.
 
-	&.layout-grid {
-		@for $i from 1 through 6 {
-			&.columns-#{$i} .videopack-collection-grid {
-				grid-template-columns: repeat(#{$i}, 1fr);
-			}
-		}
-	}
+	.videopack-collection-item {
+		width: 100% !important;
+		position: relative;
+		transition: all 0.2s ease;
+		padding: 5px; // Keep padding to ensure consistent spacing with editable state
 
-	&.layout-list {
-		.videopack-collection-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.videopack-collection-item {
-			display: flex;
-			gap: 20px;
-			align-items: flex-start;
+		&.layout-list {
+			display: block; // Simplified vertical list stack
 			border-bottom: 1px solid #eee;
 			padding-bottom: 15px;
 			margin-bottom: 15px;
-			flex-wrap: wrap;
 
-			// Ensure video and thumbnail blocks have a responsive base size in list view
+			// Ensure video and thumbnail blocks have a stable full width in list view
 			.wp-block-videopack-videopack-video,
+			.videopack-video-block-container,
 			.videopack-video-preview,
 			.videopack-thumbnail-container,
 			.videopack-thumbnail-placeholder,
 			.videopack-thumbnail-wrapper {
-				flex: 1 1 300px; // Grow to fill container, shrink if needed, 300px base
-				min-width: 0;
-			}
-
-			// Allow text and other blocks to take up remaining space or wrap
-			.wp-block-videopack-video-title,
-			.videopack-video-title,
-			.wp-block-videopack-video-duration,
-			.videopack-video-duration,
-			.wp-block-videopack-view-count,
-			.videopack-view-count {
-				flex: 1 1 200px;
-				margin-top: 0;
-			}
-
-			// Special handling for InnerBlocks wrapper in editor to ensure it fills the width
-			// and its internal layout also behaves as a flex container.
-			.block-editor-inner-blocks,
-			.block-editor-block-list__layout {
-				flex: 1 1 100%;
-				display: flex;
-				flex-wrap: wrap;
-				gap: 20px;
-				min-width: 0;
+				min-width: 100%;
+				width: 100%;
 			}
 
 			&:last-child {
 				border-bottom: none;
 			}
 		}
+
+	&.is-editable {
+		// Transparent border to maintain alignment with other items
+		border: 2px solid transparent; 
 	}
 
-	.videopack-collection-item {
-		position: relative;
-		transition: all 0.2s ease;
+		&.is-preview {
+			pointer-events: auto; // Must be auto to detect hover for manual refinement actions
 
-		&.is-editable {
-			border: 2px solid #3858e9;
-			padding: 5px;
-			border-radius: 4px;
-			background: #fff;
-			box-shadow: 0 4px 12px rgba(56, 88, 233, 0.1);
+			// Keep the inner block preview content inert to prevent selection/accidental clicks
+			// while allowing the parent card to respond to mouse moves.
+			> div:not([class*="gallery-item"]):not([class*="videopack-drag-handle"]):not([class*="gallery-add-button"]) {
+				pointer-events: none;
+			}
 
-			&::before {
-				content: "Template";
-				position: absolute;
-				top: -10px;
-				left: 10px;
-				background: #3858e9;
-				color: #fff;
-				font-size: 10px;
-				padding: 2px 6px;
-				border-radius: 2px;
-				text-transform: uppercase;
-				z-index: 10;
+			border: 2px solid transparent;
+		}
+
+		&.is-dragging {
+			opacity: 0.5;
+			border: 2px dashed #999;
+		}
+
+		// Actions
+		.gallery-item-remove,
+		.gallery-item-edit,
+		.videopack-drag-handle,
+		.gallery-add-button,
+		.videopack-edit-item,
+		.videopack-remove-item {
+			position: absolute;
+			z-index: 150; // Higher than all title and watermark overlays (max 111)
+			background: rgba(0, 0, 0, 0.7) !important;
+			border: none !important;
+			border-radius: 50% !important;
+			width: 26px !important;
+			height: 26px !important;
+			display: none;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			color: #fff !important;
+			padding: 0;
+			transition: background-color 0.2s ease;
+			pointer-events: all;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+
+			svg {
+				width: 16px;
+				height: 16px;
+				fill: currentColor;
 			}
 		}
 
-		&.is-preview {
-			opacity: 0.85;
-			filter: grayscale(0.2);
-			pointer-events: none; // Prevent accidental editing of fake cards
+		// Positional wrappers
+		.gallery-item-remove,
+		.gallery-item-edit,
+		.videopack-drag-handle {
+			top: 10px;
+			display: none;
+		}
+
+		.gallery-add-button {
+			bottom: 10px;
+			right: 10px;
+			display: none;
+		}
+
+		.videopack-drag-handle {
+			left: 10px;
+			cursor: grab;
+
+			&:active {
+				cursor: grabbing;
+			}
+
+			&:hover {
+				background: var(--wp-admin-theme-color) !important;
+			}
+		}
+
+		.gallery-item-remove {
+			right: 10px;
+
+			// Ensure the inner button doesn't have its own background if we style the wrapper
+			.videopack-remove-item {
+				position: static;
+				display: flex;
+				background: transparent !important;
+				box-shadow: none;
+			}
+
+			&:hover {
+				background: rgba(220, 30, 30, 0.9) !important;
+			}
+		}
+
+		.gallery-item-edit {
+			right: 43px;
+
+			.videopack-edit-item {
+				position: static;
+				display: flex;
+				background: transparent !important;
+				box-shadow: none;
+			}
+
+			&:hover {
+				background: var(--wp-admin-theme-color) !important;
+			}
+		}
+
+		.gallery-add-button {
+			// Background and color are handled by the general rule above
+			background: var(--wp-admin-theme-color) !important;
+			opacity: 0.8;
+
+			&:hover {
+				opacity: 1;
+			}
+		}
+
+		// Show actions on hover (only for is-preview items)
+		&:hover {
+			.gallery-item-remove,
+			.gallery-item-edit,
+			.gallery-add-button,
+			.videopack-drag-handle {
+				display: flex;
+			}
 		}
 	}
 
@@ -113,16 +176,10 @@
 			width: 100%;
 			height: auto;
 			display: block;
-			border-radius: 4px;
 		}
 	}
 
-	.videopack-video-title {
-		font-size: 16px;
-		font-weight: 600;
-		margin-top: 10px;
-		color: #1e1e1e;
-	}
+
 
 	.videopack-collection-preview-placeholder,
 	.videopack-collection-loading {
@@ -135,5 +192,46 @@
 		font-style: italic;
 		text-align: center;
 		width: 100%;
+	}
+
+	.videopack-video-loop {
+		position: relative;
+		min-height: 200px;
+		transition: opacity 0.3s ease;
+
+		&.is-loading {
+			.videopack-collection-item {
+				opacity: 0.4;
+				filter: grayscale(0.3);
+				pointer-events: none;
+			}
+		}
+
+		.videopack-loop-loading-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(255, 255, 255, 0.4);
+			backdrop-filter: blur(1px);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 200; // Above actions and items
+			border-radius: 4px;
+
+			.components-spinner {
+				width: 32px;
+				height: 32px;
+			}
+		}
+	}
+
+	// Override legacy margins from other stylesheets to ensure accurate grid alignment
+	.videopack-wrapper {
+		margin: 0 !important;
 	}
 }

@@ -115,9 +115,6 @@ const VideoPlayer = ({
 		source_groups = {},
 		text_tracks = [],
 		playback_rate,
-		watermark,
-		watermark_styles,
-		watermark_link_to,
 		default_ratio,
 		play_button_color,
 		play_button_icon_color,
@@ -462,63 +459,6 @@ const VideoPlayer = ({
 		return null; // Or a loading spinner
 	}
 
-	const getWatermarkStyle = () => {
-		const defaults = {
-			scale: 10,
-			align: 'right',
-			valign: 'bottom',
-			x: 5,
-			y: 7,
-		};
-
-		const styles = { ...defaults, ...watermark_styles };
-
-		// Check if styles differ from defaults
-		if (
-			Number(styles.scale) === defaults.scale &&
-			styles.align === defaults.align &&
-			styles.valign === defaults.valign &&
-			Number(styles.x) === defaults.x &&
-			Number(styles.y) === defaults.y
-		) {
-			return null;
-		}
-
-		const css = {
-			maxWidth: `${styles.scale}%`,
-			width: '100%',
-			height: 'auto',
-			position: 'absolute',
-		};
-
-		const x = styles.x || 0;
-		const y = styles.y || 0;
-
-		if (styles.align === 'left') {
-			css.left = `${x}%`;
-		} else if (styles.align === 'right') {
-			css.right = `${x}%`;
-		} else {
-			css.left = '50%';
-			css.transform = 'translateX(-50%)';
-			css.marginLeft = `${-x}%`;
-		}
-
-		if (styles.valign === 'top') {
-			css.top = `${y}%`;
-		} else if (styles.valign === 'bottom') {
-			css.bottom = `${y}%`;
-		} else {
-			css.top = '50%';
-			css.transform = css.transform
-				? 'translate(-50%, -50%)'
-				: 'translateY(-50%)';
-			css.marginTop = `${-y}%`;
-		}
-		return css;
-	};
-
-	const watermarkStyle = getWatermarkStyle();
 
 	return (
 		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles}>
@@ -639,31 +579,6 @@ const VideoPlayer = ({
 						/>
 					);
 				})()}
-				{!hideStaticOverlays && watermark && (
-					<div className="videopack-watermark">
-						{watermark_link_to &&
-						watermark_link_to !== 'false' &&
-						watermark_link_to !== 'None' ? (
-							<a
-								href="#videopack-watermark-link"
-								className="videopack-watermark-link"
-								onClick={(e) => e.preventDefault()}
-							>
-								<img
-									src={watermark}
-									alt="watermark"
-									style={watermarkStyle}
-								/>
-							</a>
-						) : (
-							<img
-								src={watermark}
-								alt="watermark"
-								style={watermarkStyle}
-							/>
-						)}
-					</div>
-				)}
 				{children}
 			</div>
 		</div>

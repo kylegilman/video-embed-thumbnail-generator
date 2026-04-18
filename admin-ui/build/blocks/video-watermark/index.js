@@ -10,6 +10,7 @@
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   VideoWatermark: () => (/* binding */ VideoWatermark),
 /* harmony export */   "default": () => (/* binding */ Edit)
 /* harmony export */ });
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
@@ -21,14 +22,115 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/image.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
 /* global videopack_config */
 
 
 
 
 
+
+
+/**
+ * Internal component to display the watermark with correct positioning and fallback.
+ *
+ * @param {Object} props         Component props.
+ * @param {Object} props.context Block context.
+ * @return {Object} The rendered component.
+ */
+
+function VideoWatermark({
+  watermark,
+  watermark_scale,
+  watermark_align,
+  watermark_valign,
+  watermark_x,
+  watermark_y,
+  context = {}
+}) {
+  const effectiveUrl = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark', {
+    watermark
+  }, context);
+  const effectiveScale = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', {
+    scale: watermark_scale
+  }, context)?.scale ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_scale', {
+    watermark_scale
+  }, context);
+  const effectiveAlign = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', {
+    align: watermark_align
+  }, context)?.align ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_align', {
+    watermark_align
+  }, context);
+  const effectiveValign = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', {
+    valign: watermark_valign
+  }, context)?.valign ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_valign', {
+    watermark_valign
+  }, context);
+  const effectiveX = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', {
+    x: watermark_x
+  }, context)?.x ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_x', {
+    watermark_x
+  }, context);
+  const effectiveY = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', {
+    y: watermark_y
+  }, context)?.y ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_y', {
+    watermark_y
+  }, context);
+  const skin = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('skin', {}, context);
+  const actualAlign = effectiveAlign || 'right';
+  const actualValign = effectiveValign || 'bottom';
+  const actualX = effectiveX !== undefined && effectiveX !== '' ? effectiveX : 5;
+  const actualY = effectiveY !== undefined && effectiveY !== '' ? effectiveY : 7;
+  const actualScale = effectiveScale !== undefined && effectiveScale !== '' ? effectiveScale : 10;
+  const style = {
+    position: 'absolute',
+    maxWidth: '90%',
+    width: effectiveUrl ? `${actualScale}%` : '260px',
+    height: 'auto',
+    zIndex: 111,
+    pointerEvents: 'auto',
+    transform: ''
+  };
+
+  // X Positioning
+  if (actualAlign === 'center') {
+    style.left = '50%';
+    style.transform += 'translateX(-50%) ';
+    style.marginLeft = `${-actualX}%`;
+  } else {
+    style[actualAlign] = `${actualX}%`;
+  }
+
+  // Y Positioning
+  if (actualValign === 'center') {
+    style.top = '50%';
+    style.transform += 'translateY(-50%) ';
+    style.marginTop = `${-actualY}%`;
+  } else {
+    style[actualValign] = `${actualY}%`;
+  }
+  if (!style.transform) {
+    delete style.transform;
+  }
+  if (!effectiveUrl) {
+    return null;
+  }
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+    className: `videopack-video-watermark ${skin}`,
+    style: style,
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("img", {
+      src: effectiveUrl,
+      alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark', 'video-embed-thumbnail-generator'),
+      style: {
+        display: 'block',
+        width: '100%',
+        height: 'auto'
+      }
+    })
+  });
+}
 
 /**
  * Edit component for the Video Watermark block.
@@ -40,131 +142,85 @@ __webpack_require__.r(__webpack_exports__);
  *
  * @return {Object} The component.
  */
-
 function Edit({
   attributes,
   setAttributes,
   context
 }) {
   const {
-    url,
-    scale = 10,
-    align = 'right',
-    valign = 'bottom',
-    x = 5,
-    y = 7
+    watermark,
+    watermark_scale = 10,
+    watermark_align = 'right',
+    watermark_valign = 'bottom',
+    watermark_x = 5,
+    watermark_y = 7,
+    watermark_link_to = 'false',
+    watermark_url = ''
   } = attributes;
 
-  // Auto-initialize attributes based on plugin settings if this is a new block
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
-    if (!videopack_config?.options) {
-      return;
-    }
-    const {
-      options
-    } = videopack_config;
-    const newAttributes = {};
+  // Design attributes are now derived dynamically via getEffectiveValue in the render cycle.
+  // We no longer auto-initialize attributes to prevent them from becoming "stale".
 
-    // Only initialize if we don't have a URL set yet (indicating a fresh block)
-    if (!url && options.watermark) {
-      newAttributes.url = options.watermark;
-      if (options.watermark_link_to) {
-        newAttributes.linkToType = options.watermark_link_to;
-      }
-      if (options.watermark_url) {
-        newAttributes.customLinkUrl = options.watermark_url;
-      }
-      if (options.watermark_styles) {
-        const styles = options.watermark_styles;
-        if (styles.scale) {
-          newAttributes.scale = Number(styles.scale);
-        }
-        if (styles.align) {
-          newAttributes.align = styles.align;
-        }
-        if (styles.valign) {
-          newAttributes.valign = styles.valign;
-        }
-        if (styles.x) {
-          newAttributes.x = Number(styles.x);
-        }
-        if (styles.y) {
-          newAttributes.y = Number(styles.y);
-        }
-      }
-    }
-    if (Object.keys(newAttributes).length > 0) {
-      setAttributes(newAttributes);
-    }
-  }, [url, setAttributes]); // Dependency array included to satisfy lint but we only act if url is empty
-
-  // Fallback to global setting if no local URL exists.
-  const globalWatermarkUrl = context['videopack/watermark'];
-  const effectiveUrl = url || globalWatermarkUrl;
-
-  // Use context fallback for link if needed (for rendering preview)
-  const effectiveLinkToType = attributes.linkToType || context['videopack/watermark_link_to'] || 'false';
-  const effectiveCustomLinkUrl = attributes.customLinkUrl || context['videopack/watermark_url'] || '';
-  const skin = context['videopack/skin'] || 'default';
+  const effectiveUrl = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark', attributes, context);
+  const effectiveScale = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', attributes, context)?.scale ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_scale', attributes, context) ?? 10;
+  const effectiveAlign = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', attributes, context)?.align ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_align', attributes, context) ?? 'right';
+  const effectiveValign = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', attributes, context)?.valign ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_valign', attributes, context) ?? 'bottom';
+  const effectiveX = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', attributes, context)?.x ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_x', attributes, context) ?? 5;
+  const effectiveY = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_styles', attributes, context)?.y ?? (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_y', attributes, context) ?? 7;
+  const effectiveLinkToType = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_link_to', attributes, context) || 'false';
+  const effectiveCustomLinkUrl = (0,_utils_context__WEBPACK_IMPORTED_MODULE_5__.getEffectiveValue)('watermark_url', attributes, context) || '';
+  const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
+  const isInsidePlayer = !!context['videopack/isInsidePlayer'];
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)({
-    className: `videopack-video-watermark ${skin}`,
-    style: {
-      position: 'absolute',
-      maxWidth: '90%',
-      width: effectiveUrl ? `${scale}%` : '260px',
-      height: 'auto',
-      zIndex: 111,
-      // One level higher than title bar (110)
-      pointerEvents: 'auto',
-      // Always allow interaction in the editor
-      [align]: effectiveUrl ? `${x}%` : '5%',
-      [valign]: effectiveUrl ? `${y}%` : '7%'
-    }
+    className: `videopack-video-watermark-block ${isInsideThumbnail || isInsidePlayer ? 'is-overlay' : ''}`
   });
-  if (!effectiveUrl) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+  if (!watermark && !context['videopack/watermark']) {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
       ...blockProps,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaPlaceholder, {
+      className: "videopack-video-watermark-placeholder",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaPlaceholder, {
         icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark Image', 'video-embed-thumbnail-generator'),
         onSelect: media => setAttributes({
-          url: media.url
+          watermark: media.url
         }),
         accept: "image/*",
         allowedTypes: ['image']
       })
     });
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.BlockControls, {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaReplaceFlow, {
-        mediaURL: url,
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+    ...blockProps,
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.BlockControls, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaReplaceFlow, {
+        mediaURL: watermark,
         allowedTypes: ['image'],
         accept: "image/*",
         onSelect: media => setAttributes({
-          url: media.url
+          watermark: media.url
         }),
         name: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace Watermark', 'video-embed-thumbnail-generator')
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.InspectorControls, {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.InspectorControls, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
         title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark Settings', 'video-embed-thumbnail-generator'),
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
+        initialOpen: true,
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Scale (%)', 'video-embed-thumbnail-generator'),
-          value: scale,
+          value: effectiveScale,
           onChange: value => setAttributes({
-            scale: value
+            watermark_scale: value
           }),
           min: 1,
           max: 100
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
           style: {
             display: 'flex',
             gap: '10px'
           },
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Horizontal Align', 'video-embed-thumbnail-generator'),
-            value: align,
+            value: effectiveAlign,
             options: [{
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Left', 'video-embed-thumbnail-generator'),
               value: 'left'
@@ -176,14 +232,14 @@ function Edit({
               value: 'right'
             }],
             onChange: value => setAttributes({
-              align: value
+              watermark_align: value
             }),
             style: {
               flex: 1
             }
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Vertical Align', 'video-embed-thumbnail-generator'),
-            value: valign,
+            value: effectiveValign,
             options: [{
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Top', 'video-embed-thumbnail-generator'),
               value: 'top'
@@ -195,37 +251,37 @@ function Edit({
               value: 'bottom'
             }],
             onChange: value => setAttributes({
-              valign: value
+              watermark_valign: value
             }),
             style: {
               flex: 1
             }
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Horizontal Offset (%)', 'video-embed-thumbnail-generator'),
-          value: x,
+          value: effectiveX,
           onChange: value => setAttributes({
-            x: value
+            watermark_x: value
           }),
           min: 0,
           max: 100,
           step: 0.01
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Vertical Offset (%)', 'video-embed-thumbnail-generator'),
-          value: y,
+          value: effectiveY,
           onChange: value => setAttributes({
-            y: value
+            watermark_y: value
           }),
           min: 0,
           max: 100,
           step: 0.01
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link to', 'video-embed-thumbnail-generator'),
           value: effectiveLinkToType,
           onChange: value => setAttributes({
-            linkToType: value
+            watermark_link_to: value
           }),
           options: [{
             value: 'false',
@@ -237,27 +293,24 @@ function Edit({
             value: 'custom',
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Custom URL', 'video-embed-thumbnail-generator')
           }]
-        }), effectiveLinkToType === 'custom' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
+        }), effectiveLinkToType === 'custom' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark URL', 'video-embed-thumbnail-generator'),
           value: effectiveCustomLinkUrl,
           onChange: value => setAttributes({
-            customLinkUrl: value
+            watermark_url: value
           })
         })]
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-      ...blockProps,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("img", {
-        src: effectiveUrl,
-        alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark', 'video-embed-thumbnail-generator'),
-        style: {
-          display: 'block',
-          width: '100%',
-          height: 'auto'
-        }
-      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(VideoWatermark, {
+      watermark: watermark,
+      watermark_scale: watermark_scale,
+      watermark_align: watermark_align,
+      watermark_valign: watermark_valign,
+      watermark_x: watermark_x,
+      watermark_y: watermark_y,
+      context: context
     })]
   });
 }
@@ -277,6 +330,54 @@ __webpack_require__.r(__webpack_exports__);
 function save() {
   return null;
 }
+
+/***/ },
+
+/***/ "./src/utils/context.js"
+/*!******************************!*\
+  !*** ./src/utils/context.js ***!
+  \******************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getEffectiveValue: () => (/* binding */ getEffectiveValue)
+/* harmony export */ });
+/* global videopack_config */
+
+/**
+ * Resolves an effective design value by checking local overrides, inherited context,
+ * and finally global plugin defaults.
+ *
+ * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {Object} attributes The block's own attributes.
+ * @param {Object} context    The inherited block context.
+ * @return {*} The resolved value.
+ */
+const getEffectiveValue = (key, attributes = {}, context = {}) => {
+  const contextKey = key.includes('/') ? key : `videopack/${key}`;
+  const attrKey = key.includes('/') ? key.split('/')[1] : key;
+
+  // 1. Check local attribute override
+  if (attributes[attrKey] !== undefined && attributes[attrKey] !== null && attributes[attrKey] !== '') {
+    return attributes[attrKey];
+  }
+
+  // 2. Check inherited context (from Collection or Video block)
+  if (context[contextKey] !== undefined && context[contextKey] !== null && context[contextKey] !== '') {
+    return context[contextKey];
+  }
+
+  // 3. Fallback to global plugin defaults
+  const globalOptions = videopack_config?.options || {};
+  const globalDefaults = videopack_config?.defaults || {};
+
+  // Skin has special handling in some places, but we'll try to find it in options or defaults
+  if (attrKey === 'skin') {
+    return globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
+  }
+  return globalOptions[attrKey] ?? globalDefaults[attrKey];
+};
 
 /***/ },
 
@@ -378,7 +479,7 @@ var image_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODUL
   \***********************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/video-watermark","title":"Video Watermark","category":"media","icon":"art","description":"Displays a watermark overlay on the video.","parent":["videopack/videopack-video","videopack/video-player-engine"],"usesContext":["postId","videopack/watermark","videopack/watermark_link_to","videopack/watermark_styles"],"attributes":{"url":{"type":"string"},"linkToType":{"type":"string","default":"false"},"customLinkUrl":{"type":"string"},"linkTo":{"type":"string"},"align":{"type":"string","default":"right"},"valign":{"type":"string","default":"bottom"},"scale":{"type":"number","default":10},"x":{"type":"number","default":5},"y":{"type":"number","default":7}},"supports":{"html":false,"reusable":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/video-watermark","title":"Video Watermark","category":"media","icon":"art","description":"Displays a watermark overlay on the video.","parent":["videopack/videopack-video","videopack/video-player-engine"],"usesContext":["videopack/postId","videopack/watermark","videopack/watermark_link_to","videopack/watermark_styles","videopack/isInsideThumbnail","videopack/isInsidePlayer"],"attributes":{"watermark":{"type":"string"},"watermark_link_to":{"type":"string","default":"false"},"watermark_url":{"type":"string"},"watermark_align":{"type":"string","default":"right"},"watermark_valign":{"type":"string","default":"bottom"},"watermark_scale":{"type":"number","default":10},"watermark_x":{"type":"number","default":5},"watermark_y":{"type":"number","default":7}},"supports":{"html":false,"reusable":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 
 /***/ }
 
