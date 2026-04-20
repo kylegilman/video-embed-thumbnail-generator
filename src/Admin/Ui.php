@@ -169,6 +169,7 @@ class Ui implements Hook_Subscriber {
 			'pagination',
 			'video-player-engine',
 			'video-watermark',
+			'video-caption',
 		);
 
 		foreach ( $modular_blocks as $block_name ) {
@@ -188,6 +189,8 @@ class Ui implements Hook_Subscriber {
 				$args['render_callback'] = array( $this, 'render_pagination_block' );
 			} elseif ( 'videopack/video-watermark' === $name ) {
 				$args['render_callback'] = array( $this, 'render_video_watermark_block' );
+			} elseif ( 'videopack/video-caption' === $name ) {
+				$args['render_callback'] = array( $this, 'render_video_caption_block' );
 			}
 			register_block_type( (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/' . (string) $block_name, $args );
 		}
@@ -222,7 +225,8 @@ class Ui implements Hook_Subscriber {
 	public function render_videopack_block( $attributes, $content, $block ) {
 		self::$instance_counter++;
 		$instance_id = 'vp_' . self::$instance_counter;
-		$block->context['videopack/instanceId'] = $instance_id;
+		$block->context['videopack/instanceId']      = $instance_id;
+		$block->context['videopack/isInsidePlayerBlock'] = true;
 
 		// 1. Resolve Identity Hierarchy:
 		$context_post_id = $block->context['videopack/postId'] ?? null;
@@ -455,6 +459,23 @@ class Ui implements Hook_Subscriber {
 
 
 	/**
+	 * Server-side rendering callback for the videopack/video-caption block.
+	 *
+	 * @param array $attributes The block attributes.
+	 * @return string The rendered HTML.
+	 */
+	public function render_video_caption_block( $attributes, $content, $block ) {
+		// Priority: Block Attribute > Context inheritance.
+		$caption = $attributes['caption'] ?? ( $block->context['videopack/caption'] ?? '' );
+
+		if ( empty( $caption ) ) {
+			return '';
+		}
+
+		return \Videopack\Frontend\Modular_Renderer::render_video_caption( $caption );
+	}
+
+	/**
 	 * Server-side rendering callback for the videopack/view-count block.
 	 *
 	 * @param array     $attributes The block attributes.
@@ -470,17 +491,16 @@ class Ui implements Hook_Subscriber {
 			$source = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options );
 		}
 
-		// Merge context into attributes for the renderer.
-		$merged_attributes = array_merge(
-			array(
-				'isOverlay'              => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayer'] ) ),
-				'title_color'            => $block->context['videopack/title_color'] ?? '',
-				'title_background_color' => $block->context['videopack/title_background_color'] ?? '',
-				'skin'                   => $block->context['videopack/skin'] ?? '',
-				'textAlign'              => ! empty( $block->context['videopack/textAlign'] ) ? $block->context['videopack/textAlign'] : 'left', // Default to left for view count when standalone
-			),
-			$attributes
-		);
+		// Resolve attributes with context-aware defaults.
+		$merged_attributes = array_merge( (array) $attributes, array(
+			'isOverlay'              => $attributes['isOverlay'] ?? ! empty( $block->context['videopack/isInsideThumbnail'] ),
+			'isInsideThumbnail'      => ! empty( $block->context['videopack/isInsideThumbnail'] ),
+			'isInsidePlayerBlock'    => ! empty( $block->context['videopack/isInsidePlayerBlock'] ),
+			'textAlign'              => $attributes['textAlign'] ?? ( $block->context['videopack/textAlign'] ?? null ),
+			'title_color'            => $block->context['videopack/title_color'] ?? $attributes['title_color'] ?? '',
+			'title_background_color' => $block->context['videopack/title_background_color'] ?? $attributes['title_background_color'] ?? '',
+			'skin'                   => $block->context['videopack/skin'] ?? $attributes['skin'] ?? '',
+		) );
 
 		return \Videopack\Frontend\Modular_Renderer::render_view_count( $source, $merged_attributes );
 	}
@@ -659,7 +679,19 @@ class Ui implements Hook_Subscriber {
 			}
 
 			// Also propagate common boolean/styling flags that children need for rendering.
-			$flags = array( 'skin', 'title_color', 'title_background_color', 'overlay_title', 'downloadlink', 'embeddable', 'showBackground', 'textAlign' );
+			$flags = array(
+				'skin',
+				'title_color',
+				'title_background_color',
+				'overlay_title',
+				'downloadlink',
+				'embeddable',
+				'showBackground',
+				'textAlign',
+				'caption',
+				'isInsideThumbnail',
+				'isInsidePlayerBlock',
+			);
 			foreach ( $flags as $flag ) {
 				if ( isset( $attributes[ $flag ] ) ) {
 					$cloned_inner->context[ "videopack/{$flag}" ] = $attributes[ $flag ];

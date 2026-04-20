@@ -192,7 +192,7 @@ function SortableItem({
 	};
 
 	return (
-		<div
+		<figure
 			ref={setNodeRef}
 			style={style}
 			{...sortableAttributes}
@@ -250,7 +250,7 @@ function SortableItem({
 					<Icon icon={create} />
 				</button>
 			)}
-		</div>
+		</figure>
 	);
 }
 
@@ -753,7 +753,7 @@ export default function Edit({ context, clientId }) {
 				/>
 			</InspectorControls>
 
-			<div {...blockProps}>
+			<figure {...blockProps}>
 				<CustomDuotoneFilter
 					colors={customDuotoneColors}
 					id={customFilterId}
@@ -835,7 +835,7 @@ export default function Edit({ context, clientId }) {
 						</SortableContext>
 					</DndContext>
 				)}
-			</div>
+			</figure>
 		</>
 	);
 }

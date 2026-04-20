@@ -13,7 +13,6 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
-	RichText,
 	BlockContextProvider,
 	store as blockEditorStore,
 } from '@wordpress/block-editor';
@@ -28,7 +27,11 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
-import { caption as captionIcon } from '@wordpress/icons';
+import {
+	caption as captionIcon,
+	undo as resetIcon,
+} from '@wordpress/icons';
+import { createBlock } from '@wordpress/blocks';
 import apiFetch from '@wordpress/api-fetch';
 
 import { getSettings } from '../../api/settings';
@@ -44,6 +47,7 @@ const ALLOWED_MEDIA_TYPES = ['video'];
 const ALLOWED_BLOCKS = [
 	'videopack/video-player-engine',
 	'videopack/view-count',
+	'videopack/video-caption',
 ];
 
 /**
@@ -69,25 +73,6 @@ const SingleVideoBlock = ({
 	resolvedAttributes = attributes,
 }) => {
 	const { src } = resolvedAttributes;
-
-	const { hasSelectedInnerBlock: innerBlockSelected } = useSelect(
-		(select) => {
-			const { hasSelectedInnerBlock: checkInnerSelection } =
-				select(blockEditorStore);
-			return {
-				hasSelectedInnerBlock: checkInnerSelection(clientId, true),
-			};
-		},
-		[clientId]
-	);
-
-	const [showOverlay, setShowOverlay] = useState(
-		!isSelected && !innerBlockSelected
-	);
-
-	useEffect(() => {
-		setShowOverlay(!isSelected && !innerBlockSelected);
-	}, [isSelected, innerBlockSelected]);
 
 	const { record: attachment } = videoData;
 	const editorPostId = useSelect(
@@ -150,6 +135,7 @@ const SingleVideoBlock = ({
 	const contextValue = useMemo(() => {
 		const result = {
 			'videopack/postId': resolvedPostId,
+			'videopack/isInsidePlayerBlock': true,
 		};
 
 		// Map all resolved attributes to videopack/ prefixed keys
@@ -159,12 +145,15 @@ const SingleVideoBlock = ({
 				result.id = val;
 				result['videopack/postId'] = val;
 			} else {
-				result[`videopack/${key}`] = val;
+				const contextKey = `videopack/${key}`;
+				if (val !== undefined && val !== null) {
+					result[contextKey] = val;
+				}
 			}
 		});
 
 		return result;
-	}, [resolvedAttributes, resolvedPostId]);
+	}, [resolvedPostId, resolvedAttributes]);
 
 	return (
 		<>
@@ -196,7 +185,7 @@ const SingleVideoBlock = ({
 					probedMetadata={effectiveMetadata}
 				/>
 			</InspectorControls>
-			<div
+			<figure
 				className={`videopack-video-block-container videopack-wrapper${
 					attributes.title_background_color
 						? ' videopack-has-title-background-color'
@@ -214,20 +203,7 @@ const SingleVideoBlock = ({
 						allowedBlocks={ALLOWED_BLOCKS}
 					/>
 				</BlockContextProvider>
-				{showOverlay && <div className="videopack-block-overlay" />}
-				{(attributes.caption || attributes.showCaption) && (
-					<RichText
-						tagName="p"
-						className="wp-element-caption videopack-video-caption"
-						value={attributes.caption}
-						onChange={(value) => setAttributes({ caption: value })}
-						placeholder={__(
-							'Write caption…',
-							'video-embed-thumbnail-generator'
-						)}
-					/>
-				)}
-			</div>
+			</figure>
 		</>
 	);
 };
@@ -250,7 +226,8 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	const blockProps = useBlockProps();
 	const hasAttemptedInitialUpload = useRef(false);
 	const { createErrorNotice } = useDispatch(noticesStore);
-	const { mediaUpload, isSiteEditor, editorPostId } = useSelect((select) => {
+	const { insertBlock } = useDispatch(blockEditorStore);
+	const { mediaUpload, isSiteEditor, editorPostId, innerBlocks } = useSelect((select) => {
 		const editorStore = select(blockEditorStore);
 		const editor = select('core/editor');
 		const postType = editor?.getCurrentPostType();
@@ -259,8 +236,9 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			isSiteEditor:
 				postType === 'wp_template' || postType === 'wp_template_part',
 			editorPostId: editor?.getCurrentPostId(),
+			innerBlocks: editorStore.getBlocks(clientId),
 		};
-	}, []);
+	}, [clientId]);
 
 	const isContextual = postId && (Number(postId) !== Number(editorPostId) || isSiteEditor);
 	const resolvedPostId = isContextual ? postId : (id || undefined);
@@ -628,7 +606,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	};
 
 	return (
-		<div {...blockProps}>
+		<figure {...blockProps}>
 			{(!src && !effectiveId) ? (
 				<MediaPlaceholder
 					icon={<BlockIcon icon={icon} />}
@@ -675,33 +653,40 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 							onSelectURL={onSelectURL}
 							onError={onUploadError}
 						/>
+						<ToolbarButton
+							icon={resetIcon}
+							label={__('Restart Video', 'video-embed-thumbnail-generator')}
+							onClick={() =>
+								setAttributes({
+									restartCount: (attributes.restartCount || 0) + 1,
+								})
+							}
+						/>
 					</BlockControls>
 					<BlockControls>
 						<ToolbarButton
 							icon={captionIcon}
-							label={
-								attributes.showCaption
-									? __(
-											'Remove caption',
-											'video-embed-thumbnail-generator'
-									  )
-									: __(
-											'Add caption',
-											'video-embed-thumbnail-generator'
-									  )
-							}
-							isPressed={attributes.showCaption}
-							onClick={() =>
-								setAttributes({
-									showCaption: !attributes.showCaption,
-								})
-							}
+							label={__('Add caption', 'video-embed-thumbnail-generator')}
+							onClick={() => {
+								const hasCaption = innerBlocks.some(
+									(block) => block.name === 'videopack/video-caption'
+								);
+								if (!hasCaption) {
+									insertBlock(
+										createBlock('videopack/video-caption', {
+											caption: attributes.caption || '',
+										}),
+										innerBlocks.length,
+										clientId
+									);
+								}
+							}}
 						/>
 					</BlockControls>
 				</>
 			)}
 
-			<div 
+			<figure 
 				style={{ display: (src || effectiveId) ? 'block' : 'none' }}
 				aria-hidden={!(src || effectiveId)}
 			>
@@ -715,8 +700,8 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					resolvedPostId={resolvedPostId}
 					resolvedAttributes={resolvedAttributes}
 				/>
-			</div>
-		</div>
+			</figure>
+		</figure>
 	);
 };
 
