@@ -20,10 +20,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @var array                        $videos_data  Prepared video data for display.
  */
 
-$classes       = array( 'videopack-collection-wrapper' );
-$classes[]     = 'gallery' === $layout ? 'videopack-gallery-wrapper' : 'videopack-list-wrapper';
+$classes      = array( 'videopack-collection-wrapper' );
+$classes[]    = 'gallery' === $layout ? 'videopack-gallery-wrapper' : 'videopack-list-wrapper';
 $embed_method = $this->options['embed_method'] ?? 'Video.js';
-$style_vars    = array();
+$style_vars   = array();
 
 if ( 'gallery' === $layout && ! empty( $query_atts['gallery_columns'] ) && (int) $query_atts['gallery_columns'] > 0 ) {
 	$style_vars[] = '--gallery-columns: ' . esc_attr( (string) $query_atts['gallery_columns'] );
@@ -103,13 +103,13 @@ if ( 'WordPress Default' === $embed_method ) {
 		<div class="videopack-video-list">
 			<?php foreach ( (array) $videos_data as $video ) : ?>
 				<div class="videopack-list-item">
-					<?php echo $video['player_vars']['full_player_html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo wp_kses( $video['player_vars']['full_player_html'], ( new \Videopack\Common\Validate() )->allowed_html() ); ?>
 				</div>
 			<?php endforeach; ?>
 		</div>
 	<?php endif; ?>
 
 	<?php if ( ! empty( $query_atts['gallery_pagination'] ) && $max_num_pages > 1 ) : ?>
-		<?php echo $this->render_pagination_html( $max_num_pages, $page_number ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<?php echo wp_kses( $this->render_pagination_html( $max_num_pages, $page_number ), ( new \Videopack\Common\Validate() )->allowed_html() ); ?>
 	<?php endif; ?>
 </div>
