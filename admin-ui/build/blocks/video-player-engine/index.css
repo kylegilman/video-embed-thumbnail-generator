@@ -507,34 +507,6 @@
 .videopack-video-title-block).videopack-has-title-background-color :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
   background-color: var(--videopack-title-background-color) !important;
 }
-.videopack-video-title-block.is-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0 !important;
-  z-index: 110;
-  visibility: visible;
-  opacity: 1;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-}
-.videopack-video-title-block.is-overlay.position-top {
-  justify-content: flex-start;
-}
-.videopack-video-title-block.is-overlay.position-bottom {
-  justify-content: flex-end;
-}
-.videopack-video-title-block.is-overlay.position-center {
-  justify-content: center;
-}
-.videopack-video-title-block.is-overlay .videopack-video-title {
-  pointer-events: auto;
-}
 .videopack-video-title.videopack-thumbnail-title.is-overlay {
   position: absolute;
   left: 0;
@@ -543,32 +515,18 @@
   z-index: 102;
   --videopack-title-bg-alpha: 0.5;
 }
-:is(.videopack-video-title.videopack-thumbnail-title.is-overlay.position-bottom, .videopack-video-title-block.position-bottom .videopack-video-title.videopack-thumbnail-title.is-overlay) {
-  bottom: 5%;
-  top: auto;
-}
 :is(.videopack-video-title.videopack-thumbnail-title.is-overlay.position-top, .videopack-video-title-block.position-top .videopack-video-title.videopack-thumbnail-title.is-overlay) {
   top: 5%;
   bottom: auto;
+}
+:is(.videopack-video-title.videopack-thumbnail-title.is-overlay.position-bottom, .videopack-video-title-block.position-bottom .videopack-video-title.videopack-thumbnail-title.is-overlay) {
+  bottom: 5%;
+  top: auto;
 }
 :is(.videopack-video-title.videopack-thumbnail-title.is-overlay.position-center, .videopack-video-title-block.position-center .videopack-video-title.videopack-thumbnail-title.is-overlay) {
   top: 50%;
   bottom: auto;
   transform: translateY(-50%);
-}
-.videopack-video-watermark-block.is-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0 !important;
-  z-index: 110;
-  pointer-events: none;
-  visibility: visible;
-  opacity: 1;
 }
 .videopack-video-watermark {
   position: absolute;
@@ -1159,6 +1117,79 @@
   padding: 12px;
   width: 280px;
 }
+/*!************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/WatermarkPositioner/WatermarkPositioner.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-watermark-positioner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  container-type: inline-size;
+}
+.videopack-watermark-positioner .videopack-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border: 1px solid #1e1e1e;
+  z-index: 10;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle {
+    width: 6px;
+    height: 6px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.nw {
+    top: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.ne {
+    top: -3px;
+    right: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.sw {
+    bottom: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.se {
+    bottom: -3px;
+    right: -3px;
+  }
+}
 /*!******************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss ***!
   \******************************************************************************************************************************************************************************************************************************************************************************************/
@@ -1198,64 +1229,6 @@
 }
 .videopack-watermark-settings .videopack-offset-control .components-text-control__input {
   width: 100px;
-}
-.videopack-watermark-settings .videopack-resize-handle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background-color: #fff;
-  border: 1px solid #1e1e1e;
-  z-index: 10;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle {
-    width: 6px;
-    height: 6px;
-  }
-}
-.videopack-watermark-settings .videopack-resize-handle.nw {
-  top: -5px;
-  left: -5px;
-  cursor: nw-resize;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle.nw {
-    top: -3px;
-    left: -3px;
-  }
-}
-.videopack-watermark-settings .videopack-resize-handle.ne {
-  top: -5px;
-  right: -5px;
-  cursor: ne-resize;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle.ne {
-    top: -3px;
-    right: -3px;
-  }
-}
-.videopack-watermark-settings .videopack-resize-handle.sw {
-  bottom: -5px;
-  left: -5px;
-  cursor: sw-resize;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle.sw {
-    bottom: -3px;
-    left: -3px;
-  }
-}
-.videopack-watermark-settings .videopack-resize-handle.se {
-  bottom: -5px;
-  right: -5px;
-  cursor: se-resize;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle.se {
-    bottom: -3px;
-    right: -3px;
-  }
 }
 /*!******************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/TextTracks/TextTracks.scss ***!
@@ -1813,28 +1786,19 @@ picture.vjs-poster {
   height: 100%;
 }
 .videopack-inner-blocks-overlay .block-list-appender {
-  position: relative !important;
-}
-.videopack-overlay-appender-container {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 20px;
+  right: 20px;
+  width: auto;
+  height: auto;
+  margin: 0;
   z-index: 130;
   pointer-events: auto;
-  transition: top 0.2s ease-in-out;
 }
-.videopack-overlay-appender-container .block-editor-button-block-appender {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(2px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+.videopack-inner-blocks-overlay.videopack-has-title-block .block-list-appender {
+  top: 50px;
 }
-.videopack-overlay-appender-container .block-editor-button-block-appender:hover {
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-.videopack-engine-selection-overlay {
+.videopack-block-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -1843,6 +1807,9 @@ picture.vjs-poster {
   z-index: 90;
   cursor: pointer;
   background: transparent;
+}
+.videopack-video-player-engine-block.is-selected {
+  outline: 2px dashed var(--wp-admin-theme-color);
 }
 
 /*# sourceMappingURL=index.css.map*/

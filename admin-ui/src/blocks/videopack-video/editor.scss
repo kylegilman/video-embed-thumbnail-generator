@@ -52,3 +52,24 @@
 		&.is-selected, &:focus-within { pointer-events: auto; }
 	}
 }
+
+// Fix for internal block appender being blocked or tiny
+.videopack-video-block-container {
+	// Only target the appender for THIS block's immediate inner blocks, 
+	// not nested appenders inside the player engine overlay.
+	& > .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
+		position: relative;
+		z-index: 150; // Sit above the Player Engine selection overlay (z-index: 90)
+		pointer-events: auto;
+		margin: 10px 0;
+		min-height: 40px; // Ensure there's a clickable area even if empty
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.block-editor-button-block-appender {
+		}
+	}
+}
+
+

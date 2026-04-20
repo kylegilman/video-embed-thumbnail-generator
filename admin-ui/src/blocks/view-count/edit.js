@@ -162,6 +162,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+	const isInsidePlayerBlock = !!context['videopack/isInsidePlayerBlock'];
 	const isOverlay = isInsideThumbnail || isInsidePlayer;
 
 	const effectiveTitleColor = getEffectiveValue('title_color', attributes, context);
@@ -176,7 +177,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 		[context]
 	);
 
-	const defaultAlign = isOverlay ? (isInsideThumbnail ? 'center' : 'left') : 'right';
+	const defaultAlign = isInsideThumbnail ? 'center' : ( ( isInsidePlayer || isInsidePlayerBlock ) ? 'right' : 'left' );
 	const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
 
 	const position = attributes.position || context['videopack/position'] || 'top';

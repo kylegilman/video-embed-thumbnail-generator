@@ -75,5 +75,6 @@
     }
   },
   "textdomain": "video-embed-thumbnail-generator",
-  "editorScript": "file:./index.js"
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css"
 }

@@ -8,6 +8,7 @@ import {
 import { useMemo, useCallback, useState, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { getSettings } from '../../api/settings';
+import { __ } from '@wordpress/i18n';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
 import VideoSettings from '../../components/VideoSettings/VideoSettings.js';
 import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
@@ -16,12 +17,6 @@ import { getEffectiveValue } from '../../utils/context';
 import './editor.scss';
 
 const ALLOWED_BLOCKS = ['videopack/video-watermark', 'videopack/video-title'];
-
-const PlayerOverlayAppender = () => (
-	<div className="videopack-overlay-appender-container">
-		<InnerBlocks.ButtonBlockAppender />
-	</div>
-);
 
 /**
  * Edit component for the video player block.
@@ -39,36 +34,32 @@ export default function Edit(props) {
 		getSettings().then(setOptions);
 	}, []);
 
-	const {
-		parentClientId,
-		parentAttributes,
-		hasTitleBlock,
-		isAnySelected,
-	} = useSelect(
-		(select) => {
-			const {
-				getBlockRootClientId,
-				getBlockAttributes,
-				getBlocks,
-				isBlockSelected,
-				hasSelectedInnerBlock,
-			} = select(blockEditorStore);
-			const rootId = getBlockRootClientId(clientId);
-			const blocks = getBlocks(clientId);
+	const { parentClientId, parentAttributes, hasTitleBlock, isAnySelected } =
+		useSelect(
+			(select) => {
+				const {
+					getBlockRootClientId,
+					getBlockAttributes,
+					getBlocks,
+					isBlockSelected,
+					hasSelectedInnerBlock,
+				} = select(blockEditorStore);
+				const rootId = getBlockRootClientId(clientId);
+				const blocks = getBlocks(clientId);
 
-			return {
-				parentClientId: rootId,
-				parentAttributes: rootId ? getBlockAttributes(rootId) : {},
-				hasTitleBlock: blocks.some(
-					(block) => block.name === 'videopack/video-title'
-				),
-				isAnySelected:
-					isBlockSelected(clientId) ||
-					hasSelectedInnerBlock(clientId, true),
-			};
-		},
-		[clientId]
-	);
+				return {
+					parentClientId: rootId,
+					parentAttributes: rootId ? getBlockAttributes(rootId) : {},
+					hasTitleBlock: blocks.some(
+						(block) => block.name === 'videopack/video-title'
+					),
+					isAnySelected:
+						isBlockSelected(clientId) ||
+						hasSelectedInnerBlock(clientId, true),
+				};
+			},
+			[clientId]
+		);
 
 	const { updateBlockAttributes } = useDispatch(blockEditorStore);
 
@@ -97,14 +88,20 @@ export default function Edit(props) {
 		[]
 	);
 
-	const editorPostId = useSelect( ( select ) => select( 'core/editor' )?.getCurrentPostId(), [] );
-	const isSiteEditor = useSelect( ( select ) => {
-		const postType = select( 'core/editor' )?.getCurrentPostType();
+	const editorPostId = useSelect(
+		(select) => select('core/editor')?.getCurrentPostId(),
+		[]
+	);
+	const isSiteEditor = useSelect((select) => {
+		const postType = select('core/editor')?.getCurrentPostType();
 		return postType === 'wp_template' || postType === 'wp_template_part';
-	}, [] );
+	}, []);
 	const postId = context['videopack/postId'];
-	const isContextual = postId && ( Number( postId ) !== Number( editorPostId ) || isSiteEditor );
-	const resolvedPostId = isContextual ? postId : ( parentAttributes.id || undefined );
+	const isContextual =
+		postId && (Number(postId) !== Number(editorPostId) || isSiteEditor);
+	const resolvedPostId = isContextual
+		? postId
+		: parentAttributes.id || undefined;
 
 	// Merge parent attributes with global options for mirroring panels
 	const effectiveAttributes = useMemo(() => {
@@ -137,7 +134,11 @@ export default function Edit(props) {
 		return result;
 	}, [options, parentAttributes, resolvedPostId, context, isContextual]);
 
-	const hasTitleFeatures = !!(effectiveAttributes.overlay_title || effectiveAttributes.downloadlink || effectiveAttributes.embedcode);
+	const hasTitleFeatures = !!(
+		effectiveAttributes.overlay_title ||
+		effectiveAttributes.downloadlink ||
+		effectiveAttributes.embedcode
+	);
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${
@@ -192,14 +193,35 @@ export default function Edit(props) {
 			default_ratio: contextValue['videopack/default_ratio'],
 			fixed_aspect: contextValue['videopack/fixed_aspect'],
 			fullwidth: contextValue['videopack/fullwidth'],
-			play_button_color: getEffectiveValue('play_button_color', {}, contextValue),
-			play_button_icon_color: getEffectiveValue('play_button_icon_color', {}, contextValue),
-			control_bar_bg_color: getEffectiveValue('control_bar_bg_color', {}, contextValue),
-			control_bar_color: getEffectiveValue('control_bar_color', {}, contextValue),
+			play_button_color: getEffectiveValue(
+				'play_button_color',
+				{},
+				contextValue
+			),
+			play_button_icon_color: getEffectiveValue(
+				'play_button_icon_color',
+				{},
+				contextValue
+			),
+			control_bar_bg_color: getEffectiveValue(
+				'control_bar_bg_color',
+				{},
+				contextValue
+			),
+			control_bar_color: getEffectiveValue(
+				'control_bar_color',
+				{},
+				contextValue
+			),
 			title_color: getEffectiveValue('title_color', {}, contextValue),
-			title_background_color: getEffectiveValue('title_background_color', {}, contextValue),
+			title_background_color: getEffectiveValue(
+				'title_background_color',
+				{},
+				contextValue
+			),
 			downloadlink: contextValue['videopack/downloadlink'],
 			embedcode: contextValue['videopack/embedcode'],
+			restartCount: contextValue['videopack/restartCount'],
 		};
 	}, [contextValue, resolvedPostId]);
 
@@ -244,13 +266,15 @@ export default function Edit(props) {
 							allowedBlocks={filteredAllowedBlocks}
 							templateLock={false}
 							renderAppender={
-								isSelected ? PlayerOverlayAppender : undefined
+								isSelected
+									? InnerBlocks.ButtonBlockAppender
+									: undefined
 							}
 						/>
 					</BlockContextProvider>
 				</div>
 				{!isAnySelected && (
-					<div className="videopack-engine-selection-overlay" />
+					<div className="videopack-block-overlay" />
 				)}
 			</VideoPlayer>
 		</div>

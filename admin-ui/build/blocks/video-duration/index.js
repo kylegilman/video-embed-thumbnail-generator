@@ -94,9 +94,10 @@ function Edit({
   } = attributes;
   const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
   const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+  const isInsidePlayerBlock = !!context['videopack/isInsidePlayerBlock'];
   const isOverlay = isInsideThumbnail || isInsidePlayer;
   const effectiveTitleBgColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('title_background_color', attributes, context);
-  const defaultAlign = isOverlay ? isInsideThumbnail ? 'center' : 'left' : 'right';
+  const defaultAlign = isOverlay ? isInsideThumbnail ? 'center' : 'left' : isInsidePlayerBlock ? 'right' : 'left';
   const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
   const position = attrPosition || context['videopack/position'] || 'top';
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({

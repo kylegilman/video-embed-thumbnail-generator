@@ -10,12 +10,14 @@ import {
 	useState,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { BlockControls } from '@wordpress/block-editor';
 import {
 	share as shareIcon,
 	download as downloadIcon,
 	heading as titleIcon,
+	undo as resetIcon,
 } from '@wordpress/icons';
-import { ToolbarButton } from '@wordpress/components';
+import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import { decodeEntities } from '@wordpress/html-entities';
 import { applyFilters } from '@wordpress/hooks';
 import GenericPlayer from './GenericPlayer.js';
@@ -57,6 +59,12 @@ const VideoPlayer = ({
 		height: null,
 		src: null, // Track which src these dimensions are for
 	});
+
+	const [resetKey, setResetKey] = useState(0);
+
+	const resetPlayer = useCallback(() => {
+		setResetKey((prev) => prev + 1);
+	}, []);
 
 	// Reset dimensions when src changes
 	useEffect(() => {
@@ -462,6 +470,15 @@ const VideoPlayer = ({
 
 	return (
 		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles}>
+			<BlockControls group="other">
+				<ToolbarGroup>
+					<ToolbarButton
+						icon={resetIcon}
+						label={__('Restart Video', 'video-embed-thumbnail-generator')}
+						onClick={resetPlayer}
+					/>
+				</ToolbarGroup>
+			</BlockControls>
 			<div
 				className={`videopack-player ${skin || ''}`}
 				style={{ ...innerPlayerStyles, position: 'relative' }}
@@ -474,7 +491,9 @@ const VideoPlayer = ({
 					if (embed_method === 'Video.js' && videoJsOptions) {
 						return (
 							<PlayerComponent
-								key={`videojs-${src}`}
+								key={`videojs-${src}-${resetKey}-${
+									attributes.restartCount || 0
+								}`}
 								options={videoJsOptions}
 								skin={skin}
 								onPlay={handlePlay}
@@ -488,7 +507,9 @@ const VideoPlayer = ({
 					if (embed_method === 'WordPress Default') {
 						return (
 							<PlayerComponent
-								key={`wpvideo-${src}`}
+								key={`wpvideo-${src}-${resetKey}-${
+									attributes.restartCount || 0
+								}`}
 								options={genericPlayerOptions}
 								controls={controls}
 								actualAutoplay={actualAutoplay}
@@ -505,6 +526,9 @@ const VideoPlayer = ({
 						return (
 							<PlayerComponent
 								{...genericPlayerOptions}
+								key={`generic-${src}-${resetKey}-${
+									attributes.restartCount || 0
+								}`}
 								ref={videoRef}
 							/>
 						);
@@ -559,7 +583,9 @@ const VideoPlayer = ({
 									</>
 								)}
 								<PlayerComponent
-									key={`${embed_method}-fallback-${src}`}
+									key={`${embed_method}-fallback-${src}-${resetKey}-${
+										attributes.restartCount || 0
+									}`}
 									{...genericPlayerOptions}
 									ref={videoRef}
 								/>
@@ -568,7 +594,9 @@ const VideoPlayer = ({
 					}
 					return (
 						<PlayerComponent
-							key={`${embed_method}-${src}`}
+							key={`${embed_method}-${src}-${resetKey}-${
+								attributes.restartCount || 0
+							}`}
 							options={videoJsOptions || genericPlayerOptions}
 							skin={skin}
 							attributes={decodedAttributes}

@@ -321,6 +321,7 @@ function Edit({
   } = attributes;
   const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
   const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+  const isInsidePlayerBlock = !!context['videopack/isInsidePlayerBlock'];
   const isOverlay = isInsideThumbnail || isInsidePlayer;
   const effectiveTitleColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_11__.getEffectiveValue)('title_color', attributes, context);
   const effectiveTitleBgColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_11__.getEffectiveValue)('title_background_color', attributes, context);
@@ -328,7 +329,7 @@ function Edit({
     title_color: (0,_utils_context__WEBPACK_IMPORTED_MODULE_11__.getEffectiveValue)('title_color', {}, context),
     title_background_color: (0,_utils_context__WEBPACK_IMPORTED_MODULE_11__.getEffectiveValue)('title_background_color', {}, context)
   }), [context]);
-  const defaultAlign = isOverlay ? isInsideThumbnail ? 'center' : 'left' : 'right';
+  const defaultAlign = isInsideThumbnail ? 'center' : isInsidePlayer || isInsidePlayerBlock ? 'right' : 'left';
   const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
   const position = attributes.position || context['videopack/position'] || 'top';
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)({
@@ -855,7 +856,7 @@ var seen_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE
   \******************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/view-count","title":"View Count","category":"media","icon":"visibility","editorStyle":"file:./index.css","description":"Displays the view count of the video.","usesContext":["videopack/postId","videopack/skin","videopack/title_color","videopack/title_background_color","videopack/textAlign","videopack/isInsideThumbnail","videopack/isInsidePlayer"],"attributes":{"iconType":{"type":"string","default":"none"},"showText":{"type":"boolean","default":true},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"}},"supports":{"html":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/view-count","title":"View Count","category":"media","icon":"visibility","editorStyle":"file:./index.css","description":"Displays the view count of the video.","usesContext":["videopack/postId","videopack/skin","videopack/title_color","videopack/title_background_color","videopack/textAlign","videopack/isInsideThumbnail","videopack/isInsidePlayer","videopack/isInsidePlayerBlock"],"attributes":{"iconType":{"type":"string","default":"none"},"showText":{"type":"boolean","default":true},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"}},"supports":{"html":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 
 /***/ }
 

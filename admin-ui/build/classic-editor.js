@@ -10418,21 +10418,26 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/download.mjs");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/heading.mjs");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/share.mjs");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @wordpress/html-entities */ "@wordpress/html-entities");
-/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
-/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./GenericPlayer.js */ "./src/components/VideoPlayer/GenericPlayer.js");
-/* harmony import */ var _VideoJs_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./VideoJs.js */ "./src/components/VideoPlayer/VideoJs.js");
-/* harmony import */ var _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./WpMejsPlayer.js */ "./src/components/VideoPlayer/WpMejsPlayer.js");
-/* harmony import */ var _VideoPlayer_scss__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./VideoPlayer.scss */ "./src/components/VideoPlayer/VideoPlayer.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__);
+/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
+/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/download.mjs");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/heading.mjs");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/share.mjs");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/undo.mjs");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @wordpress/html-entities */ "@wordpress/html-entities");
+/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./GenericPlayer.js */ "./src/components/VideoPlayer/GenericPlayer.js");
+/* harmony import */ var _VideoJs_js__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./VideoJs.js */ "./src/components/VideoPlayer/VideoJs.js");
+/* harmony import */ var _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./WpMejsPlayer.js */ "./src/components/VideoPlayer/WpMejsPlayer.js");
+/* harmony import */ var _VideoPlayer_scss__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./VideoPlayer.scss */ "./src/components/VideoPlayer/VideoPlayer.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_15__);
 /**
  * Main VideoPlayer component that orchestrates different player engines and UI overlays.
  */
@@ -10446,14 +10451,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 const DEFAULT_PLAYERS = {
-  'Video.js': _VideoJs_js__WEBPACK_IMPORTED_MODULE_9__["default"],
-  'WordPress Default': _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_10__["default"],
-  None: _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_8__["default"]
+  'Video.js': _VideoJs_js__WEBPACK_IMPORTED_MODULE_11__["default"],
+  'WordPress Default': _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_12__["default"],
+  None: _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_10__["default"]
 };
 
 
 // Make sure to pass isSelected from the block's edit component.
+
 
 const noop = () => {};
 
@@ -10482,6 +10489,10 @@ const VideoPlayer = ({
     height: null,
     src: null // Track which src these dimensions are for
   });
+  const [resetKey, setResetKey] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
+  const resetPlayer = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
+    setResetKey(prev => prev + 1);
+  }, []);
 
   // Reset dimensions when src changes
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
@@ -10507,7 +10518,7 @@ const VideoPlayer = ({
   }, [detectedDimensions, attributes.src, setDetectedDimensions]);
   const decodedAttributes = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => ({
     ...attributes,
-    title: attributes.title ? (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(attributes.title) : attributes.title
+    title: attributes.title ? (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_8__.decodeEntities)(attributes.title) : attributes.title
   }), [attributes]);
   const {
     embed_method,
@@ -10538,7 +10549,7 @@ const VideoPlayer = ({
     embeddable,
     downloadlink
   } = decodedAttributes;
-  const players = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_7__.applyFilters)('videopack_admin_players', DEFAULT_PLAYERS), []);
+  const players = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_9__.applyFilters)('videopack_admin_players', DEFAULT_PLAYERS), []);
   const isVertical = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     let vertical = false;
     // Use browser-detected dimensions if available
@@ -10671,7 +10682,7 @@ const VideoPlayer = ({
   }), [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, embed_method] // eslint-disable-line react-hooks/exhaustive-deps
   );
   const videoJsOptions = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
-    const isVjs = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_7__.applyFilters)('videopack_is_videojs_player', embed_method === 'Video.js', embed_method);
+    const isVjs = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_9__.applyFilters)('videopack_is_videojs_player', embed_method === 'Video.js', embed_method);
     if (!isVjs) {
       return null;
     }
@@ -10758,11 +10769,20 @@ const VideoPlayer = ({
   if (!renderReady) {
     return null; // Or a loading spinner
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)("div", {
     className: wrapperClasses,
     ref: wrapperRef,
     style: playerStyles,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockControls, {
+      group: "other",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.ToolbarGroup, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.ToolbarButton, {
+          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_6__["default"],
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Restart Video', 'video-embed-thumbnail-generator'),
+          onClick: resetPlayer
+        })
+      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)("div", {
       className: `videopack-player ${skin || ''}`,
       style: {
         ...innerPlayerStyles,
@@ -10771,17 +10791,17 @@ const VideoPlayer = ({
       children: [(() => {
         const PlayerComponent = players[embed_method] || players.None;
         if (embed_method === 'Video.js' && videoJsOptions) {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(PlayerComponent, {
             options: videoJsOptions,
             skin: skin,
             onPlay: handlePlay,
             onPause: handlePause,
             onReady: handleVideoPlayerReady,
             onMetadataLoaded: onMetadataLoaded
-          }, `videojs-${src}`);
+          }, `videojs-${src}-${resetKey}-${attributes.restartCount || 0}`);
         }
         if (embed_method === 'WordPress Default') {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(PlayerComponent, {
             options: genericPlayerOptions,
             controls: controls,
             actualAutoplay: actualAutoplay,
@@ -10790,48 +10810,49 @@ const VideoPlayer = ({
             playback_rate: playback_rate,
             aspectRatio: aspectRatio,
             onMetadataLoaded: onMetadataLoaded
-          }, `wpvideo-${src}`);
+          }, `wpvideo-${src}-${resetKey}-${attributes.restartCount || 0}`);
         }
         if (embed_method === 'None') {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_15__.createElement)(PlayerComponent, {
             ...genericPlayerOptions,
+            key: `generic-${src}-${resetKey}-${attributes.restartCount || 0}`,
             ref: videoRef
           });
         }
 
         // Fallback for custom players
-        if (PlayerComponent === _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_8__["default"]) {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.Fragment, {
-            children: [!isSelected && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.Fragment, {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_5__.ToolbarButton, {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__["default"],
+        if (PlayerComponent === _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_10__["default"]) {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.Fragment, {
+            children: [!isSelected && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.Fragment, {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.ToolbarButton, {
+                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
                 label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Toggle Title Overlay', 'video-embed-thumbnail-generator'),
                 isPressed: overlay_title,
                 onClick: () => setAttributes({
                   overlay_title: !overlay_title
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_5__.ToolbarButton, {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.ToolbarButton, {
+                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_5__["default"],
                 label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Toggle Share Button', 'video-embed-thumbnail-generator'),
                 isPressed: embeddable,
                 onClick: () => setAttributes({
                   embeddable: !embeddable
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_5__.ToolbarButton, {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_2__["default"],
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.ToolbarButton, {
+                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__["default"],
                 label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Toggle Download Button', 'video-embed-thumbnail-generator'),
                 isPressed: downloadlink,
                 onClick: () => setAttributes({
                   downloadlink: !downloadlink
                 })
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(PlayerComponent, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(PlayerComponent, {
               ...genericPlayerOptions,
               ref: videoRef
-            }, `${embed_method}-fallback-${src}`)]
+            }, `${embed_method}-fallback-${src}-${resetKey}-${attributes.restartCount || 0}`)]
           });
         }
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(PlayerComponent, {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(PlayerComponent, {
           options: videoJsOptions || genericPlayerOptions,
           skin: skin,
           attributes: decodedAttributes,
@@ -10839,9 +10860,9 @@ const VideoPlayer = ({
           onPause: handlePause,
           onReady: handleVideoPlayerReady,
           onMetadataLoaded: onMetadataLoaded
-        }, `${embed_method}-${src}`);
+        }, `${embed_method}-${src}-${resetKey}-${attributes.restartCount || 0}`);
       })(), children]
-    })
+    })]
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (VideoPlayer);
@@ -11619,6 +11640,587 @@ const VideoSettings = ({
 
 /***/ },
 
+/***/ "./src/components/WatermarkPositioner/WatermarkPositioner.js"
+/*!*******************************************************************!*\
+  !*** ./src/components/WatermarkPositioner/WatermarkPositioner.js ***!
+  \*******************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _WatermarkPositioner_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./WatermarkPositioner.scss */ "./src/components/WatermarkPositioner/WatermarkPositioner.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__);
+/* global Image */
+
+
+
+
+const WatermarkPositioner = ({
+  containerDimensions,
+  settings,
+  onChange,
+  isSelected = true,
+  showBackground = false,
+  backgroundDataUrl = null,
+  imageUrl = '',
+  aspectRatio: propAspectRatio = null,
+  children
+}) => {
+  const containerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
+  const watermarkRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
+  const [watermarkImage, setWatermarkImage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  const [isDragging, setIsDragging] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+  const [isResizing, setIsResizing] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+  const [transientScale, setTransientScale] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  const [transientPercentages, setTransientPercentages] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null); // { x, y } in percentages
+  const [isFocused, setIsFocused] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+  const lastAspectRatioRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(propAspectRatio || 1);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    if (watermarkImage) {
+      lastAspectRatioRef.current = watermarkImage.width / watermarkImage.height;
+    } else if (propAspectRatio) {
+      lastAspectRatioRef.current = propAspectRatio;
+    }
+  }, [watermarkImage, propAspectRatio]);
+  const dragStartRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)({
+    x: 0,
+    y: 0,
+    initialLeft: 0,
+    initialTop: 0
+  });
+  const stateRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)({});
+  const effectiveImageUrl = imageUrl || settings?.url || settings?.watermark;
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    if (effectiveImageUrl) {
+      const img = new Image();
+      img.onload = () => setWatermarkImage(img);
+      img.src = effectiveImageUrl;
+    } else {
+      setWatermarkImage(null);
+    }
+  }, [effectiveImageUrl]);
+  const {
+    wmStyle,
+    wmWidth,
+    wmHeight,
+    x,
+    y,
+    scale,
+    alignment,
+    valign,
+    aspectRatio
+  } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
+    if (!containerDimensions) {
+      return {
+        wmStyle: {},
+        wmWidth: 0,
+        wmHeight: 0,
+        x: 0,
+        y: 0,
+        scale: 10,
+        alignment: 'center',
+        valign: 'center',
+        aspectRatio: 1
+      };
+    }
+    const containerWidth = containerDimensions.width;
+
+    // Use transientScale if available, else settings.scale
+    const currentScale = transientScale !== null ? transientScale : Number(settings.scale || settings.watermark_scale || 10);
+    const currentX = transientPercentages?.x !== undefined && transientPercentages !== null ? transientPercentages.x : Number(settings.x || settings.watermark_x || 0);
+    const currentY = transientPercentages?.y !== undefined && transientPercentages !== null ? transientPercentages.y : Number(settings.y || settings.watermark_y || 0);
+    const currentAlign = settings.align || settings.watermark_align || 'center';
+    const currentValign = settings.valign || settings.watermark_valign || 'center';
+    const style = {
+      position: 'absolute',
+      width: `${currentScale}%`,
+      height: 'auto',
+      zIndex: 100,
+      transform: ''
+    };
+    if (currentAlign === 'center') {
+      style.left = '50%';
+      style.transform += 'translateX(-50%) ';
+      style.marginLeft = `${-currentX}%`;
+    } else {
+      style[currentAlign] = `${currentX}%`;
+    }
+    if (currentValign === 'center') {
+      style.top = '50%';
+      style.transform += 'translateY(-50%) ';
+      style.marginTop = `${-currentY}%`;
+    } else {
+      style[currentValign] = `${currentY}%`;
+    }
+    if (!style.transform) {
+      delete style.transform;
+    }
+    const w = containerWidth * currentScale / 100;
+    const ratio = watermarkImage ? watermarkImage.width / watermarkImage.height : lastAspectRatioRef.current || 1;
+    const h = w / ratio;
+    return {
+      wmStyle: style,
+      wmWidth: w,
+      wmHeight: h,
+      x: currentX,
+      y: currentY,
+      scale: currentScale,
+      alignment: currentAlign,
+      valign: currentValign,
+      aspectRatio: ratio
+    };
+  }, [containerDimensions, watermarkImage, settings, transientScale, transientPercentages]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    stateRef.current = {
+      transientPercentages,
+      transientScale,
+      isDragging,
+      isResizing,
+      settings,
+      containerDimensions,
+      watermarkImage,
+      wmWidth,
+      wmHeight,
+      aspectRatio,
+      baseDeltaX: x,
+      baseDeltaY: y
+    };
+  }, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, x, y, aspectRatio]);
+  const onChangeRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(onChange);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+  const handleMouseDown = e => {
+    if (!isSelected) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (watermarkRef.current) {
+      watermarkRef.current.focus();
+    }
+    const initialX = Number(settings.x || settings.watermark_x || 0);
+    const initialY = Number(settings.y || settings.watermark_y || 0);
+    setIsDragging(true);
+    setTransientPercentages({
+      x: initialX,
+      y: initialY
+    });
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      initialX,
+      initialY
+    };
+  };
+  const handleResizeStart = (e, handle) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (watermarkRef.current) {
+      watermarkRef.current.focus();
+    }
+    setIsResizing(true);
+    const currentScale = transientScale !== null ? transientScale : Number(settings.scale || settings.watermark_scale || 10);
+    const initialX = Number(settings.x || settings.watermark_x || 0);
+    const initialY = Number(settings.y || settings.watermark_y || 0);
+    setTransientScale(currentScale);
+    setTransientPercentages({
+      x: initialX,
+      y: initialY
+    });
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      initialX,
+      initialY,
+      initialScale: currentScale,
+      handle,
+      aspectRatio: wmWidth / wmHeight
+    };
+  };
+  const finalizeInteraction = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(() => {
+    const s = stateRef.current;
+    if (!s.isDragging && !s.isResizing) {
+      return;
+    }
+    const wasResizing = s.isResizing;
+    if (!s.containerDimensions || !s.transientPercentages) {
+      setTransientPercentages(null);
+      setTransientScale(null);
+      setIsDragging(false);
+      setIsResizing(false);
+      return;
+    }
+    setIsDragging(false);
+    setIsResizing(false);
+    const finalX = s.transientPercentages.x;
+    const finalY = s.transientPercentages.y;
+    const finalScale = wasResizing && s.transientScale !== null ? s.transientScale : Number(s.settings.scale || s.settings.watermark_scale || 10);
+    const aspectRatio = s.aspectRatio;
+    const {
+      width: containerWidth,
+      height: containerHeight
+    } = s.containerDimensions;
+
+    // Preserve attributes based on what's being used (settings vs block-editor styles)
+    const isBlock = s.settings.hasOwnProperty('watermark_scale') || s.settings.hasOwnProperty('watermark');
+    const currentAlign = s.settings.align || s.settings.watermark_align || 'center';
+    const currentValign = s.settings.valign || s.settings.watermark_valign || 'bottom';
+
+    // 1. Calculate absolute top-left percentage (L, T)
+    let L = finalX;
+    if (currentAlign === 'right') {
+      L = 100 - finalScale - finalX;
+    } else if (currentAlign === 'center') {
+      L = 50 - finalScale / 2 - finalX;
+    }
+    const vScale = finalScale * (containerWidth / containerHeight) / aspectRatio;
+    let T = finalY;
+    if (currentValign === 'bottom') {
+      T = 100 - vScale - finalY;
+    } else if (currentValign === 'center') {
+      T = 50 - vScale / 2 - finalY;
+    }
+
+    // 2. Decide best new anchors based on center of mass
+    let newAlign = 'center';
+    const centerX = L + finalScale / 2;
+    if (centerX < 33) {
+      newAlign = 'left';
+    } else if (centerX > 66) {
+      newAlign = 'right';
+    }
+    let newValign = 'center';
+    const centerY = T + vScale / 2;
+    if (centerY < 33) {
+      newValign = 'top';
+    } else if (centerY > 66) {
+      newValign = 'bottom';
+    }
+
+    // 3. Calculate new offsets relative to these new anchors
+    let newX = L;
+    if (newAlign === 'right') {
+      newX = 100 - finalScale - L;
+    } else if (newAlign === 'center') {
+      newX = 50 - finalScale / 2 - L;
+    }
+    let newY = T;
+    if (newValign === 'bottom') {
+      newY = 100 - vScale - T;
+    } else if (newValign === 'center') {
+      newY = 50 - vScale / 2 - T;
+    }
+    const newSettings = isBlock ? {
+      watermark_scale: Math.round(finalScale * 100) / 100,
+      watermark_align: newAlign,
+      watermark_valign: newValign,
+      watermark_x: Math.round(newX * 100) / 100,
+      watermark_y: Math.round(newY * 100) / 100
+    } : {
+      scale: Math.round(finalScale * 100) / 100,
+      align: newAlign,
+      valign: newValign,
+      x: Math.round(newX * 100) / 100,
+      y: Math.round(newY * 100) / 100
+    };
+    onChangeRef.current(newSettings);
+    setTransientPercentages(null);
+    setTransientScale(null);
+
+    // Remove global listeners
+    window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Finalize interaction when selection is lost while dragging/resizing
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    if (!isSelected && (isDragging || isResizing)) {
+      finalizeInteraction();
+    }
+  }, [isSelected, isDragging, isResizing, finalizeInteraction]);
+
+  // Finalize interaction on unmount if anything was pending
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    return () => {
+      const s = stateRef.current;
+      if (s.isDragging || s.isResizing) {
+        // We can't call finalizeInteraction here because of closure issues,
+        // but the stateRef should have what we need.
+        // However, finalizeInteraction is already memoized with its dependencies.
+        // For now, the 'isSelected' effect above handles most cases.
+      }
+    };
+  }, []);
+  const handleFocus = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(() => {
+    setIsFocused(true);
+  }, []);
+  const handleBlur = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(e => {
+    if (e.currentTarget.contains(e.relatedTarget)) {
+      return;
+    }
+    setIsFocused(false);
+    finalizeInteraction();
+  }, [finalizeInteraction]);
+  const handleDragKeyDown = e => {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      return;
+    }
+    e.preventDefault();
+    const {
+      x: currentX,
+      y: currentY
+    } = {
+      x: stateRef.current.baseDeltaX,
+      y: stateRef.current.baseDeltaY
+    };
+    let newX = currentX;
+    let newY = currentY;
+    const stepPx = e.shiftKey ? 10 : 1;
+    const stepXPct = stepPx / containerDimensions.width * 100;
+    const stepYPct = stepPx / containerDimensions.height * 100;
+    const alignment = settings.align || settings.watermark_align || 'center';
+    const verticalAlignment = settings.valign || settings.watermark_valign || 'center';
+    switch (e.key) {
+      case 'ArrowUp':
+        newY += verticalAlignment === 'top' ? -stepYPct : stepYPct;
+        break;
+      case 'ArrowDown':
+        newY += verticalAlignment === 'top' ? stepYPct : -stepYPct;
+        break;
+      case 'ArrowLeft':
+        newX += alignment === 'left' ? -stepXPct : stepXPct;
+        break;
+      case 'ArrowRight':
+        newX += alignment === 'left' ? stepXPct : -stepXPct;
+        break;
+    }
+    setTransientPercentages({
+      x: newX,
+      y: newY
+    });
+  };
+  const handleResizeKeyDown = (e, handle) => {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Keyboard resizing is temporarily disabled during percentage refactor for stability
+  };
+  const handleMouseMove = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(e => {
+    const s = stateRef.current;
+    if (!s.isDragging && !s.isResizing) {
+      return;
+    }
+    // console.log('[Videopack] mousemove');
+    const dragStart = dragStartRef.current;
+    const containerWidth = s.containerDimensions.width;
+    const containerHeight = s.containerDimensions.height;
+    const rect = containerRef.current.getBoundingClientRect();
+    const scaleX = containerWidth / rect.width;
+    const scaleY = containerHeight / rect.height;
+    const dxCanvas = (e.clientX - dragStart.x) * scaleX;
+    const dyCanvas = (e.clientY - dragStart.y) * scaleY;
+    const dxPct = dxCanvas / containerWidth * 100;
+    const dyPct = dyCanvas / containerHeight * 100;
+    if (s.isDragging) {
+      const alignment = s.settings.align || s.settings.watermark_align || 'center';
+      const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'bottom';
+      let newX = dragStart.initialX;
+      let newY = dragStart.initialY;
+      if (alignment === 'left') {
+        newX = dragStart.initialX + dxPct;
+      } else {
+        // right or center offsets increase as we move left (negative dx)
+        newX = dragStart.initialX - dxPct;
+      }
+      if (verticalAlignment === 'top') {
+        newY = dragStart.initialY + dyPct;
+      } else {
+        // bottom or center offsets increase as we move up (negative dy)
+        newY = dragStart.initialY - dyPct;
+      }
+      setTransientPercentages({
+        x: newX,
+        y: newY
+      });
+    } else if (s.isResizing) {
+      const {
+        initialScale,
+        initialLeft,
+        initialTop,
+        aspectRatio,
+        handle
+      } = dragStart;
+      const initialWidth = containerWidth * initialScale / 100;
+      const initialHeight = initialWidth / aspectRatio;
+      let newWidth = initialWidth;
+      if (handle === 'se' || handle === 'ne') {
+        newWidth = initialWidth + dxCanvas;
+      } else {
+        newWidth = initialWidth - dxCanvas;
+      }
+      let newScale = newWidth / containerWidth * 100;
+      newScale = Math.round(newScale * 100) / 100;
+      newScale = Math.max(1, Math.min(100, newScale));
+      const alignment = s.settings.align || s.settings.watermark_align || 'center';
+      const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
+      let newX = dragStart.initialX;
+      let newY = dragStart.initialY;
+      const scaleDiff = newScale - initialScale;
+      const vScaleFactor = containerWidth / containerHeight / aspectRatio;
+      const vScaleDiff = scaleDiff * vScaleFactor;
+
+      // Horizontal anchoring
+      if (handle === 'se' || handle === 'ne') {
+        // Dragging Right side -> NW or SW corner fixed
+        if (alignment === 'left') {
+          // Left anchored -> X is fixed
+        } else if (alignment === 'right') {
+          newX = dragStart.initialX - scaleDiff;
+        } else {
+          newX = dragStart.initialX - scaleDiff / 2;
+        }
+      } else {
+        // Dragging Left side -> NE or SE corner fixed
+        if (alignment === 'left') {
+          newX = dragStart.initialX + scaleDiff;
+        } else if (alignment === 'right') {
+          // Right anchored -> X is fixed
+        } else {
+          newX = dragStart.initialX + scaleDiff / 2;
+        }
+      }
+
+      // Vertical anchoring
+      if (handle === 'se' || handle === 'sw') {
+        // Dragging Bottom side -> NW or NE corner fixed
+        if (verticalAlignment === 'top') {
+          // Top anchored -> Y is fixed
+        } else if (verticalAlignment === 'bottom') {
+          newY = dragStart.initialY - vScaleDiff;
+        } else {
+          newY = dragStart.initialY - vScaleDiff / 2;
+        }
+      } else {
+        // Dragging Top side -> SW or SE corner fixed
+        if (verticalAlignment === 'top') {
+          newY = dragStart.initialY + vScaleDiff;
+        } else if (verticalAlignment === 'bottom') {
+          // Bottom anchored -> Y is fixed
+        } else {
+          newY = dragStart.initialY + vScaleDiff / 2;
+        }
+      }
+      setTransientScale(newScale);
+      setTransientPercentages({
+        x: newX,
+        y: newY
+      });
+    }
+  }, []);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    // Clean logs and ensure no leaking listeners
+    return () => {};
+  }, []);
+  if (!containerDimensions) {
+    return children || null;
+  }
+  const containerWidth = containerDimensions.width;
+  const containerHeight = containerDimensions.height;
+  const showHandles = isSelected || isFocused;
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+    ref: containerRef,
+    className: "videopack-watermark-positioner",
+    style: {
+      width: `${containerWidth}px`,
+      height: `${containerHeight}px`,
+      backgroundImage: showBackground && backgroundDataUrl ? `url(${backgroundDataUrl})` : 'none',
+      backgroundSize: 'contain',
+      backgroundRepeat: 'no-repeat'
+    },
+    children: [(isDragging || isResizing) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+      className: "videopack-interaction-overlay",
+      style: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 999999,
+        cursor: isDragging ? 'grabbing' : 'crosshair',
+        pointerEvents: 'auto'
+      },
+      onMouseMove: handleMouseMove,
+      onMouseUp: finalizeInteraction
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+      ref: watermarkRef,
+      style: {
+        ...wmStyle,
+        outline: showHandles ? '1px dashed #757575' : 'none',
+        cursor: isDragging ? 'grabbing' : isSelected ? 'move' : 'default'
+      },
+      role: "button",
+      tabIndex: isSelected ? "0" : "-1",
+      "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Move watermark', 'video-embed-thumbnail-generator'),
+      onMouseDown: handleMouseDown,
+      onKeyDown: handleDragKeyDown,
+      onFocus: handleFocus,
+      onBlur: handleBlur,
+      children: [children ? children : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("img", {
+        src: effectiveImageUrl,
+        alt: "Watermark",
+        style: {
+          width: '100%',
+          height: '100%',
+          userSelect: 'none',
+          display: 'block'
+        },
+        draggable: false
+      }), showHandles && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          role: "slider",
+          tabIndex: "0",
+          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resize watermark from top left', 'video-embed-thumbnail-generator'),
+          className: "videopack-resize-handle nw",
+          onMouseDown: e => handleResizeStart(e, 'nw'),
+          onKeyDown: e => handleResizeKeyDown(e, 'nw')
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          role: "slider",
+          tabIndex: "0",
+          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resize watermark from top right', 'video-embed-thumbnail-generator'),
+          className: "videopack-resize-handle ne",
+          onMouseDown: e => handleResizeStart(e, 'ne'),
+          onKeyDown: e => handleResizeKeyDown(e, 'ne')
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          role: "slider",
+          tabIndex: "0",
+          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resize watermark from bottom left', 'video-embed-thumbnail-generator'),
+          className: "videopack-resize-handle sw",
+          onMouseDown: e => handleResizeStart(e, 'sw'),
+          onKeyDown: e => handleResizeKeyDown(e, 'sw')
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+          role: "slider",
+          tabIndex: "0",
+          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resize watermark from bottom right', 'video-embed-thumbnail-generator'),
+          className: "videopack-resize-handle se",
+          onMouseDown: e => handleResizeStart(e, 'se'),
+          onKeyDown: e => handleResizeKeyDown(e, 'se')
+        })]
+      })]
+    })]
+  });
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (WatermarkPositioner);
+
+/***/ },
+
 /***/ "./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.js"
 /*!*************************************************************************!*\
   !*** ./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.js ***!
@@ -11637,7 +12239,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _utils_video_capture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../utils/video-capture */ "./src/utils/video-capture.js");
 /* harmony import */ var _features_settings_components_SelectFromLibrary__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../features/settings/components/SelectFromLibrary */ "./src/features/settings/components/SelectFromLibrary.js");
-/* harmony import */ var _components_WatermarkPositioner__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/WatermarkPositioner */ "./src/components/WatermarkSettingsPanel/components/WatermarkPositioner.js");
+/* harmony import */ var _WatermarkPositioner_WatermarkPositioner__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../WatermarkPositioner/WatermarkPositioner */ "./src/components/WatermarkPositioner/WatermarkPositioner.js");
 /* harmony import */ var _WatermarkSettingsPanel_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./WatermarkSettingsPanel.scss */ "./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__);
@@ -11711,10 +12313,16 @@ const WatermarkSettingsPanel = ({
       onToggle: () => setSettingsPanelOpen(!settingsPanelOpen),
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
         className: "videopack-watermark-settings",
-        children: [baseFrame && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_WatermarkPositioner__WEBPACK_IMPORTED_MODULE_5__["default"], {
-          baseFrame: baseFrame,
+        children: [baseFrame && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_WatermarkPositioner_WatermarkPositioner__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          containerDimensions: {
+            width: baseFrame.width,
+            height: baseFrame.height
+          },
           settings: watermarkSettings,
-          onChange: onChange
+          onChange: onChange,
+          isSelected: true,
+          showBackground: true,
+          backgroundDataUrl: baseFrame.toDataURL()
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Scale (%)', 'video-embed-thumbnail-generator'),
           value: Number(watermarkSettings.scale || 50),
@@ -11809,503 +12417,6 @@ const WatermarkSettingsPanel = ({
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (WatermarkSettingsPanel);
-
-/***/ },
-
-/***/ "./src/components/WatermarkSettingsPanel/components/WatermarkPositioner.js"
-/*!*********************************************************************************!*\
-  !*** ./src/components/WatermarkSettingsPanel/components/WatermarkPositioner.js ***!
-  \*********************************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
-/* global Image */
-
-
-
-const WatermarkPositioner = ({
-  baseFrame,
-  settings,
-  onChange
-}) => {
-  const containerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
-  const watermarkRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
-  const [watermarkImage, setWatermarkImage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
-  const [isDragging, setIsDragging] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
-  const [isResizing, setIsResizing] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
-  const [transientScale, setTransientScale] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
-  const [transientPosition, setTransientPosition] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null); // { left, top } in pixels
-  const [isFocused, setIsFocused] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(true);
-  const dragStartRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)({
-    x: 0,
-    y: 0,
-    initialLeft: 0,
-    initialTop: 0
-  });
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    if (settings.url) {
-      const img = new Image();
-      img.onload = () => setWatermarkImage(img);
-      img.src = settings.url;
-    }
-  }, [settings.url]);
-  const {
-    left: propLeft,
-    top: propTop,
-    width: wmWidth,
-    height: wmHeight
-  } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
-    if (!baseFrame || !watermarkImage) {
-      return {
-        left: 0,
-        top: 0,
-        width: 0,
-        height: 0,
-        aspectRatio: 1
-      };
-    }
-    const containerWidth = baseFrame.width;
-    const containerHeight = baseFrame.height;
-
-    // Use transientScale if available, else settings.scale
-    const scale = transientScale !== null ? transientScale : Number(settings.scale || 50);
-    const w = containerWidth * scale / 100;
-    const aspectRatio = watermarkImage.width / watermarkImage.height;
-    const h = w / aspectRatio;
-    const xOffset = Number(settings.x || 0);
-    const yOffset = Number(settings.y || 0);
-    const hOffsetPx = containerWidth * xOffset / 100;
-    const vOffsetPx = containerHeight * yOffset / 100;
-    let l = 0;
-    let t = 0;
-    switch (settings.align) {
-      case 'left':
-        l = hOffsetPx;
-        break;
-      case 'right':
-        l = containerWidth - w - hOffsetPx;
-        break;
-      case 'center':
-      default:
-        l = (containerWidth - w) / 2 - hOffsetPx;
-        break;
-    }
-    switch (settings.valign) {
-      case 'top':
-        t = vOffsetPx;
-        break;
-      case 'bottom':
-        t = containerHeight - h - vOffsetPx;
-        break;
-      case 'center':
-      default:
-        t = (containerHeight - h) / 2 - vOffsetPx;
-        break;
-    }
-    return {
-      left: l,
-      top: t,
-      width: w,
-      height: h,
-      aspectRatio
-    };
-  }, [baseFrame, watermarkImage, settings, transientScale]);
-  const handleMouseDown = e => {
-    e.preventDefault();
-    if (watermarkRef.current) {
-      watermarkRef.current.focus();
-    }
-    setIsDragging(true);
-    // Initialize transient position with the current position derived from props
-    setTransientPosition({
-      left: propLeft,
-      top: propTop
-    });
-    dragStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      initialLeft: propLeft,
-      initialTop: propTop
-    };
-  };
-  const handleResizeStart = (e, handle) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (watermarkRef.current) {
-      watermarkRef.current.focus();
-    }
-    setIsResizing(true);
-    const currentScale = transientScale !== null ? transientScale : Number(settings.scale || 50);
-    setTransientScale(currentScale);
-    setTransientPosition({
-      left: propLeft,
-      top: propTop
-    });
-    dragStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      initialLeft: propLeft,
-      initialTop: propTop,
-      initialScale: currentScale,
-      handle,
-      aspectRatio: wmWidth / wmHeight
-    };
-  };
-  const finalizeInteraction = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(() => {
-    if (!isDragging && !isResizing) {
-      return;
-    }
-    const wasResizing = isResizing;
-
-    // The transient state is not set until a drag/resize starts.
-    // If the user just clicks without moving, there's nothing to finalize.
-    if (!baseFrame || !watermarkImage || !transientPosition) {
-      setTransientPosition(null);
-      setTransientScale(null);
-      return;
-    }
-    setIsDragging(false);
-    setIsResizing(false);
-    const finalLeft = transientPosition.left;
-    const finalTop = transientPosition.top;
-    const containerWidth = baseFrame.width;
-    const containerHeight = baseFrame.height;
-    const finalScale = wasResizing && transientScale !== null ? transientScale : Number(settings.scale || 50);
-
-    // Recalculate dimensions based on finalScale for alignment logic
-    const w = containerWidth * finalScale / 100;
-    const aspectRatio = watermarkImage.width / watermarkImage.height;
-    const h = w / aspectRatio;
-
-    // Determine Horizontal Alignment and Offset
-    let newAlign = 'center';
-    let newX = 0;
-    const centerPosH = (containerWidth - w) / 2;
-    if (finalLeft > centerPosH) {
-      newAlign = 'right';
-      newX = (containerWidth - w - finalLeft) / containerWidth * 100;
-    } else {
-      const distToLeft = finalLeft;
-      const distToCenter = centerPosH - finalLeft;
-      if (distToLeft < distToCenter) {
-        newAlign = 'left';
-        newX = finalLeft / containerWidth * 100;
-      } else {
-        newAlign = 'center';
-        newX = distToCenter / containerWidth * 100;
-      }
-    }
-
-    // Determine Vertical Alignment and Offset
-    let newValign = 'center';
-    let newY = 0;
-    const centerPosV = (containerHeight - h) / 2;
-    if (finalTop > centerPosV) {
-      newValign = 'bottom';
-      newY = (containerHeight - h - finalTop) / containerHeight * 100;
-    } else {
-      const distToTop = finalTop;
-      const distToCenter = centerPosV - finalTop;
-      if (distToTop < distToCenter) {
-        newValign = 'top';
-        newY = finalTop / containerHeight * 100;
-      } else {
-        newValign = 'center';
-        newY = distToCenter / containerHeight * 100;
-      }
-    }
-    onChange({
-      ...settings,
-      scale: Math.round(finalScale * 100) / 100,
-      align: newAlign,
-      valign: newValign,
-      x: Math.round(newX * 100) / 100,
-      y: Math.round(newY * 100) / 100
-    });
-    setTransientPosition(null);
-    setTransientScale(null);
-  }, [isDragging, isResizing, baseFrame, watermarkImage, transientPosition, transientScale, settings, onChange]);
-  const handleFocus = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(() => {
-    setIsFocused(true);
-  }, []);
-  const handleBlur = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(e => {
-    if (e.currentTarget.contains(e.relatedTarget)) {
-      return;
-    }
-    setIsFocused(false);
-    finalizeInteraction();
-  }, [finalizeInteraction]);
-  const handleDragKeyDown = e => {
-    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      return;
-    }
-    e.preventDefault();
-    const currentLeft = transientPosition ? transientPosition.left : propLeft;
-    const currentTop = transientPosition ? transientPosition.top : propTop;
-    let newLeft = currentLeft;
-    let newTop = currentTop;
-    const step = e.shiftKey ? 10 : 1; // Pixel-based step
-
-    switch (e.key) {
-      case 'ArrowUp':
-        newTop -= step;
-        break;
-      case 'ArrowDown':
-        newTop += step;
-        break;
-      case 'ArrowLeft':
-        newLeft -= step;
-        break;
-      case 'ArrowRight':
-        newLeft += step;
-        break;
-    }
-
-    // Constrain
-    const containerWidth = baseFrame.width;
-    const containerHeight = baseFrame.height;
-    newLeft = Math.max(0, Math.min(newLeft, containerWidth - wmWidth));
-    newTop = Math.max(0, Math.min(newTop, containerHeight - wmHeight));
-    setTransientPosition({
-      left: newLeft,
-      top: newTop
-    });
-  };
-  const handleResizeKeyDown = (e, handle) => {
-    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      return;
-    }
-    e.preventDefault();
-    e.stopPropagation();
-    const currentScale = transientScale !== null ? transientScale : Number(settings.scale || 50);
-    const {
-      left: currentLeft,
-      top: currentTop
-    } = transientPosition || {
-      left: propLeft,
-      top: propTop
-    };
-    const step = e.shiftKey ? 5 : 1; // Scale step
-    let scaleDelta = 0;
-    const containerWidth = baseFrame.width;
-
-    // For SE and NW handles, right/down increases size.
-    if (handle === 'se' || handle === 'nw') {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        scaleDelta = handle === 'se' ? step : -step;
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        scaleDelta = -step;
-      }
-    }
-    // For SW and NE handles, right/up increases size.
-    else if (handle === 'sw' || handle === 'ne') {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-        scaleDelta = step;
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-        scaleDelta = -step;
-      }
-    }
-    let newScale = currentScale + scaleDelta;
-    newScale = Math.round(newScale * 100) / 100;
-    newScale = Math.max(1, Math.min(100, newScale));
-    if (newScale === currentScale) {
-      return;
-    }
-    const aspectRatio = wmWidth / wmHeight;
-    const oldWidth = containerWidth * currentScale / 100;
-    const oldHeight = oldWidth / aspectRatio;
-    const newWidth = containerWidth * newScale / 100;
-    const newHeight = newWidth / aspectRatio;
-    let newLeft = currentLeft;
-    let newTop = currentTop;
-    if (handle === 'sw' || handle === 'nw') {
-      newLeft = currentLeft + (oldWidth - newWidth);
-    }
-    if (handle === 'ne' || handle === 'nw') {
-      newTop = currentTop + (oldHeight - newHeight);
-    }
-    setTransientScale(newScale);
-    setTransientPosition({
-      left: newLeft,
-      top: newTop
-    });
-  };
-  const handleMouseMove = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(e => {
-    if (!isDragging && !isResizing || !baseFrame || !containerRef.current) {
-      return;
-    }
-    const dragStart = dragStartRef.current;
-    const containerWidth = baseFrame.width;
-    const containerHeight = baseFrame.height;
-
-    // Get the on-screen dimensions of the container
-    const rect = containerRef.current.getBoundingClientRect();
-
-    // Calculate the scaling factor between the on-screen container and the base canvas
-    const scaleX = containerWidth / rect.width;
-    const scaleY = containerHeight / rect.height;
-    const dxCanvas = (e.clientX - dragStart.x) * scaleX;
-    const dyCanvas = (e.clientY - dragStart.y) * scaleY;
-    if (isDragging) {
-      let newLeft = dragStart.initialLeft + dxCanvas;
-      let newTop = dragStart.initialTop + dyCanvas;
-
-      // Constrain to container
-      newLeft = Math.max(0, Math.min(newLeft, containerWidth - wmWidth));
-      newTop = Math.max(0, Math.min(newTop, containerHeight - wmHeight));
-      setTransientPosition({
-        left: newLeft,
-        top: newTop
-      });
-    } else if (isResizing) {
-      const {
-        initialScale,
-        initialLeft,
-        initialTop,
-        aspectRatio,
-        handle
-      } = dragStart;
-      const initialWidth = containerWidth * initialScale / 100;
-      const initialHeight = initialWidth / aspectRatio;
-      let newWidth = initialWidth;
-      if (handle === 'se' || handle === 'ne') {
-        newWidth = initialWidth + dxCanvas;
-      } else {
-        newWidth = initialWidth - dxCanvas;
-      }
-      let newScale = newWidth / containerWidth * 100;
-      newScale = Math.round(newScale * 100) / 100;
-      // Constrain scale
-      newScale = Math.max(1, Math.min(100, newScale));
-
-      // Recalculate dimensions based on constrained scale
-      newWidth = containerWidth * newScale / 100;
-      const newHeight = newWidth / aspectRatio;
-      let newLeft = initialLeft;
-      let newTop = initialTop;
-      if (handle === 'sw') {
-        newLeft = initialLeft + (initialWidth - newWidth);
-      } else if (handle === 'ne') {
-        newTop = initialTop + (initialHeight - newHeight);
-      } else if (handle === 'nw') {
-        newLeft = initialLeft + (initialWidth - newWidth);
-        newTop = initialTop + (initialHeight - newHeight);
-      }
-      setTransientScale(newScale);
-      setTransientPosition({
-        left: newLeft,
-        top: newTop
-      });
-    }
-  }, [isDragging, isResizing, baseFrame, wmWidth, wmHeight]);
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    if (isDragging || isResizing) {
-      window.addEventListener('mousemove', handleMouseMove, {
-        passive: true
-      });
-      window.addEventListener('mouseup', finalizeInteraction, {
-        once: true
-      });
-    }
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', finalizeInteraction);
-    };
-  }, [isDragging, isResizing, handleMouseMove, finalizeInteraction]);
-  if (!baseFrame || !watermarkImage) {
-    return null;
-  }
-  const containerWidth = baseFrame.width;
-  const containerHeight = baseFrame.height;
-
-  // Use transient position if dragging, otherwise use position derived from props
-  const currentLeft = transientPosition ? transientPosition.left : propLeft;
-  const currentTop = transientPosition ? transientPosition.top : propTop;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-    ref: containerRef,
-    style: {
-      position: 'relative',
-      width: '100%',
-      aspectRatio: `${containerWidth} / ${containerHeight}`,
-      backgroundImage: `url(${baseFrame.toDataURL()})`,
-      backgroundSize: 'contain',
-      backgroundRepeat: 'no-repeat',
-      border: '1px solid #ddd',
-      marginBottom: '1em',
-      overflow: 'hidden',
-      userSelect: 'none'
-    },
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
-      ref: watermarkRef,
-      style: {
-        position: 'absolute',
-        left: `${currentLeft / containerWidth * 100}%`,
-        top: `${currentTop / containerHeight * 100}%`,
-        width: `${wmWidth / containerWidth * 100}%`,
-        height: `${wmHeight / containerHeight * 100}%`
-      },
-      role: "button",
-      tabIndex: "0",
-      "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Move watermark', 'video-embed-thumbnail-generator'),
-      onMouseDown: handleMouseDown,
-      onKeyDown: handleDragKeyDown,
-      onFocus: handleFocus,
-      onBlur: handleBlur,
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("img", {
-        src: settings.url,
-        alt: "Watermark",
-        style: {
-          width: '100%',
-          height: '100%',
-          cursor: isDragging ? 'grabbing' : 'move',
-          userSelect: 'none',
-          display: 'block'
-        },
-        draggable: false
-      }), isFocused && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-          role: "slider",
-          tabIndex: "0",
-          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resize watermark from top left', 'video-embed-thumbnail-generator'),
-          className: "videopack-resize-handle nw",
-          onMouseDown: e => handleResizeStart(e, 'nw'),
-          onKeyDown: e => handleResizeKeyDown(e, 'nw')
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-          role: "slider",
-          tabIndex: "0",
-          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resize watermark from top right', 'video-embed-thumbnail-generator'),
-          className: "videopack-resize-handle ne",
-          onMouseDown: e => handleResizeStart(e, 'ne'),
-          onKeyDown: e => handleResizeKeyDown(e, 'ne')
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-          role: "slider",
-          tabIndex: "0",
-          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resize watermark from bottom left', 'video-embed-thumbnail-generator'),
-          className: "videopack-resize-handle sw",
-          onMouseDown: e => handleResizeStart(e, 'sw'),
-          onKeyDown: e => handleResizeKeyDown(e, 'sw')
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-          role: "slider",
-          tabIndex: "0",
-          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resize watermark from bottom right', 'video-embed-thumbnail-generator'),
-          className: "videopack-resize-handle se",
-          onMouseDown: e => handleResizeStart(e, 'se'),
-          onKeyDown: e => handleResizeKeyDown(e, 'se')
-        })]
-      })]
-    })
-  });
-};
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (WatermarkPositioner);
 
 /***/ },
 
@@ -14154,6 +14265,18 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ },
 
+/***/ "./src/components/WatermarkPositioner/WatermarkPositioner.scss"
+/*!*********************************************************************!*\
+  !*** ./src/components/WatermarkPositioner/WatermarkPositioner.scss ***!
+  \*********************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ },
+
 /***/ "./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss"
 /*!***************************************************************************!*\
   !*** ./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss ***!
@@ -14227,6 +14350,16 @@ module.exports = window["ReactJSXRuntime"];
 (module) {
 
 module.exports = window["wp"]["apiFetch"];
+
+/***/ },
+
+/***/ "@wordpress/block-editor"
+/*!*************************************!*\
+  !*** external ["wp","blockEditor"] ***!
+  \*************************************/
+(module) {
+
+module.exports = window["wp"]["blockEditor"];
 
 /***/ },
 
@@ -14644,6 +14777,28 @@ __webpack_require__.r(__webpack_exports__);
 var share_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.Path, { d: "M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z" }) });
 
 //# sourceMappingURL=share.mjs.map
+
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/icons/build-module/library/undo.mjs"
+/*!*********************************************************************!*\
+  !*** ./node_modules/@wordpress/icons/build-module/library/undo.mjs ***!
+  \*********************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ undo_default)
+/* harmony export */ });
+/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/primitives */ "@wordpress/primitives");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+// packages/icons/src/library/undo.tsx
+
+
+var undo_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.Path, { d: "M18.3 11.7c-.6-.6-1.4-.9-2.3-.9H6.7l2.9-3.3-1.1-1-4.5 5L8.5 16l1-1-2.7-2.7H16c.5 0 .9.2 1.3.5 1 1 1 3.4 1 4.5v.3h1.5v-.2c0-1.5 0-4.3-1.5-5.7z" }) });
+
+//# sourceMappingURL=undo.mjs.map
 
 
 /***/ }

@@ -9,6 +9,7 @@ import {
 	RichText,
 	InspectorControls,
 } from '@wordpress/block-editor';
+import './editor.scss';
 import {
 	Spinner,
 	ToolbarGroup,
@@ -32,6 +33,7 @@ import { getColorFallbacks } from '../../utils/colors';
 import { getEffectiveValue } from '../../utils/context';
 
 /**
+ * An internal component to display the video title with correct styling and data.
  * An internal component to display the video title with correct styling and data.
  *
  * @param {Object}   props                Component props.
@@ -166,7 +168,11 @@ export function VideoTitle({
 		setCurrentEmbedCode(newEmbedCode);
 	}, [startAtEnabled, startAtTime, baseEmbedLink, displayTitle]);
 
-	const titleClass = isInsideThumbnail ? 'videopack-thumbnail-title-text' : isOverlay ? 'videopack-title' : 'videopack-video-title';
+	const titleClass = isInsideThumbnail
+		? 'videopack-thumbnail-title-text'
+		: isOverlay
+		? 'videopack-title'
+		: 'videopack-video-title';
 	const iconsClass = 'videopack-meta-icons';
 
 	const finalBlockProps = blockProps || {
@@ -179,7 +185,8 @@ export function VideoTitle({
 		} has-text-align-${finalTextAlign}`,
 		style: {
 			'--videopack-title-color': effectiveTitleColor || undefined,
-			'--videopack-title-background-color': effectiveTitleBgColor || undefined,
+			'--videopack-title-background-color':
+				effectiveTitleBgColor || undefined,
 		},
 	};
 
