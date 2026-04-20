@@ -10,7 +10,7 @@ import {
 } from '@wordpress/components';
 import { captureVideoFrame } from '../../utils/video-capture';
 import SelectFromLibrary from '../../features/settings/components/SelectFromLibrary';
-import WatermarkPositioner from './components/WatermarkPositioner';
+import WatermarkPositioner from '../WatermarkPositioner/WatermarkPositioner';
 import './WatermarkSettingsPanel.scss';
 
 const WatermarkSettingsPanel = ({
@@ -96,9 +96,15 @@ const WatermarkSettingsPanel = ({
 					<div className="videopack-watermark-settings">
 						{baseFrame && (
 							<WatermarkPositioner
-								baseFrame={baseFrame}
+								containerDimensions={{
+									width: baseFrame.width,
+									height: baseFrame.height,
+								}}
 								settings={watermarkSettings}
 								onChange={onChange}
+								isSelected={true}
+								showBackground={true}
+								backgroundDataUrl={baseFrame.toDataURL()}
 							/>
 						)}
 						<RangeControl
