@@ -50,16 +50,19 @@ if ( ! empty( $video['wrapper_style'] ) ) {
 $extra_attrs = ! empty( $item_wrapper_attributes ) ? $item_wrapper_attributes : '';
 
 ?>
-<div <?php
-	foreach ( $wrapper_attrs as $key => $val ) {
-		// Only print if the attribute isn't already in $extra_attrs (very simple check for class)
-		if ( 'class' === $key && strpos( $extra_attrs, 'class="' ) !== false ) {
-			continue; 
-		}
-		printf( '%s="%s" ', esc_attr( $key ), esc_attr( (string) $val ) );
+<?php
+$opening_tag = '<div ';
+foreach ( $wrapper_attrs as $key => $val ) {
+	// Only print if the attribute isn't already in $extra_attrs (very simple check for class)
+	if ( 'class' === $key && strpos( $extra_attrs, 'class="' ) !== false ) {
+		continue; 
 	}
-	echo $extra_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-?>>
+	$opening_tag .= sprintf( '%s="%s" ', esc_attr( (string) $key ), esc_attr( (string) $val ) );
+}
+$opening_tag .= (string) $extra_attrs . '>';
+
+echo wp_kses( $opening_tag, ( new \Videopack\Common\Validate() )->allowed_html() );
+?>
 	<div class="gallery-item-clickable-area">
 		<img src="<?php echo esc_url( (string) $video['poster_url'] ); ?>"
 			<?php
