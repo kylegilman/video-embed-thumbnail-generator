@@ -13,9 +13,12 @@ import {
 	SelectControl,
 	TextControl,
 } from '@wordpress/components';
-import { useEffect, useMemo } from '@wordpress/element';
+import { useState, useEffect, useMemo, useRef, useCallback } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
+import WatermarkPositioner from '../../components/WatermarkPositioner/WatermarkPositioner';
 import { image as imageIcon } from '@wordpress/icons';
 import { getEffectiveValue } from '../../utils/context';
+import './editor.scss';
 
 /**
  * Internal component to display the watermark with correct positioning and fallback.
@@ -32,13 +35,28 @@ export function VideoWatermark({
 	watermark_x,
 	watermark_y,
 	context = {},
+	isBlockEditor = false,
+	onDimensions = null,
 }) {
+	const watermarkProps = { watermark, watermark_scale, watermark_align, watermark_valign, watermark_x, watermark_y };
 	const effectiveUrl = getEffectiveValue('watermark', { watermark }, context);
-	const effectiveScale = getEffectiveValue('watermark_styles', { scale: watermark_scale }, context)?.scale ?? getEffectiveValue('watermark_scale', { watermark_scale }, context);
-	const effectiveAlign = getEffectiveValue('watermark_styles', { align: watermark_align }, context)?.align ?? getEffectiveValue('watermark_align', { watermark_align }, context);
-	const effectiveValign = getEffectiveValue('watermark_styles', { valign: watermark_valign }, context)?.valign ?? getEffectiveValue('watermark_valign', { watermark_valign }, context);
-	const effectiveX = getEffectiveValue('watermark_styles', { x: watermark_x }, context)?.x ?? getEffectiveValue('watermark_x', { watermark_x }, context);
-	const effectiveY = getEffectiveValue('watermark_styles', { y: watermark_y }, context)?.y ?? getEffectiveValue('watermark_y', { watermark_y }, context);
+
+	const getEffective = (attrKey, contextKey, fallback) => {
+		if (watermarkProps[attrKey] !== undefined && watermarkProps[attrKey] !== null && watermarkProps[attrKey] !== '') {
+			return watermarkProps[attrKey];
+		}
+		const styles = getEffectiveValue('watermark_styles', {}, context);
+		if (styles && typeof styles === 'object' && styles[contextKey] !== undefined) {
+			return styles[contextKey];
+		}
+		return getEffectiveValue(`watermark_${contextKey}`, {}, context) ?? fallback;
+	};
+
+	const effectiveScale = getEffective('watermark_scale', 'scale', 10);
+	const effectiveAlign = getEffective('watermark_align', 'align', 'right');
+	const effectiveValign = getEffective('watermark_valign', 'valign', 'bottom');
+	const effectiveX = getEffective('watermark_x', 'x', 5);
+	const effectiveY = getEffective('watermark_y', 'y', 7);
 
 	const skin = getEffectiveValue('skin', {}, context);
 
@@ -49,11 +67,11 @@ export function VideoWatermark({
 	const actualScale = effectiveScale !== undefined && effectiveScale !== '' ? effectiveScale : 10;
 
 	const style = {
-		position: 'absolute',
+		position: isBlockEditor ? 'relative' : 'absolute',
 		maxWidth: '90%',
 		width: effectiveUrl ? `${actualScale}%` : '260px',
 		height: 'auto',
-		zIndex: 111,
+		zIndex: isBlockEditor ? undefined : 111,
 		pointerEvents: 'auto',
 		transform: '',
 	};
@@ -76,8 +94,18 @@ export function VideoWatermark({
 		style[actualValign] = `${actualY}%`;
 	}
 
-	if (!style.transform) {
+	if (!style.transform || isBlockEditor) {
 		delete style.transform;
+	}
+
+	if (isBlockEditor) {
+		delete style.left;
+		delete style.right;
+		delete style.top;
+		delete style.bottom;
+		delete style.marginLeft;
+		delete style.marginTop;
+		style.width = '100%'; // Inner container fills the outer block
 	}
 
 	if (!effectiveUrl) {
@@ -90,9 +118,74 @@ export function VideoWatermark({
 				src={effectiveUrl}
 				alt={__('Watermark', 'video-embed-thumbnail-generator')}
 				style={{ display: 'block', width: '100%', height: 'auto' }}
+				onLoad={(e) => {
+					if (onDimensions && e.target.naturalWidth && e.target.naturalHeight) {
+						const ratio = e.target.naturalWidth / e.target.naturalHeight;
+						onDimensions(ratio);
+					}
+				}}
 			/>
 		</div>
 	);
+}
+
+/**
+ * Helper to calculate watermark positioning styles for the block wrapper.
+ */
+export function getWatermarkBlockStyles(attributes, context) {
+	const watermark = attributes.watermark;
+	const contextWatermark = context['videopack/watermark'];
+	
+	const effectiveUrl = getEffectiveValue('watermark', attributes, context);
+	if (!effectiveUrl) return {};
+
+	const getEffective = (attrKey, contextKey, fallback) => {
+		if (attributes[attrKey] !== undefined && attributes[attrKey] !== null && attributes[attrKey] !== '') {
+			return attributes[attrKey];
+		}
+		const styles = getEffectiveValue('watermark_styles', attributes, context);
+		if (styles && typeof styles === 'object' && styles[contextKey] !== undefined) {
+			return styles[contextKey];
+		}
+		return getEffectiveValue(`watermark_${contextKey}`, attributes, context) ?? fallback;
+	};
+
+	const effectiveScale = getEffective('watermark_scale', 'scale', 10);
+	const effectiveAlign = getEffective('watermark_align', 'align', 'right');
+	const effectiveValign = getEffective('watermark_valign', 'valign', 'bottom');
+	const effectiveX = getEffective('watermark_x', 'x', 5);
+	const effectiveY = getEffective('watermark_y', 'y', 7);
+
+	const style = {
+		position: 'absolute',
+		maxWidth: '90%',
+		width: `${effectiveScale}%`,
+		minWidth: '20px', // Prevent total collapse
+		minHeight: '20px',
+		height: 'auto',
+		zIndex: 115,
+		transform: '',
+	};
+
+	if (effectiveAlign === 'center') {
+		style.left = '50%';
+		style.transform += 'translateX(-50%) ';
+		style.marginLeft = `${-effectiveX}%`;
+	} else {
+		style[effectiveAlign] = `${effectiveX}%`;
+	}
+
+	if (effectiveValign === 'center') {
+		style.top = '50%';
+		style.transform += 'translateY(-50%) ';
+		style.marginTop = `${-effectiveY}%`;
+	} else {
+		style[effectiveValign] = `${effectiveY}%`;
+	}
+
+	if (!style.transform) delete style.transform;
+
+	return style;
 }
 
 /**
@@ -105,7 +198,43 @@ export function VideoWatermark({
  *
  * @return {Object} The component.
  */
-export default function Edit({ attributes, setAttributes, context }) {
+export default function Edit({ attributes, setAttributes, context, isSelected }) {
+	const containerRef = useRef(null);
+	const [containerDimensions, setContainerDimensions] = useState(null);
+	const [detectedAspectRatio, setDetectedAspectRatio] = useState(null);
+
+	// Measure the parent container dimensions for accurate positioning.
+	useEffect(() => {
+		if (!containerRef.current) return;
+
+		const updateDimensions = () => {
+			if (!containerRef.current) return;
+			const element = containerRef.current;
+			
+			// Find the most specific media container to ensure accurate pixel calculations
+			const container = element.closest('.videopack-player, .videopack-video-thumbnail-preview, .videopack-wrapper');
+			if (container) {
+				const rect = container.getBoundingClientRect();
+				if (rect.width > 0 && rect.height > 0) {
+					setContainerDimensions({
+						width: rect.width,
+						height: rect.height,
+					});
+				}
+			}
+		};
+
+		updateDimensions();
+
+		const observer = new ResizeObserver(updateDimensions);
+		const container = containerRef.current.closest('.videopack-player, .videopack-video-thumbnail-preview, .videopack-wrapper');
+		if (container) {
+			observer.observe(container);
+		}
+
+		return () => observer.disconnect();
+	}, []);
+
 	const {
 		watermark,
 		watermark_scale = 10,
@@ -120,12 +249,28 @@ export default function Edit({ attributes, setAttributes, context }) {
 	// Design attributes are now derived dynamically via getEffectiveValue in the render cycle.
 	// We no longer auto-initialize attributes to prevent them from becoming "stale".
 
+	// Resolve effective values with correct priority: 
+	// Individual attribute -> Composite context object -> Individual context key -> Default
+	const getEffective = (attrKey, contextKey, fallback) => {
+		// 1. Local attribute ALWAYS wins if it's explicitly set (and not just defaulting)
+		if (attributes[attrKey] !== undefined && attributes[attrKey] !== null && attributes[attrKey] !== '') {
+			return attributes[attrKey];
+		}
+		// 2. Try the composite styles object from context
+		const styles = getEffectiveValue('watermark_styles', attributes, context);
+		if (styles && typeof styles === 'object' && styles[contextKey] !== undefined) {
+			return styles[contextKey];
+		}
+		// 3. Try individual context key
+		return getEffectiveValue(`watermark_${contextKey}`, attributes, context) ?? fallback;
+	};
+
 	const effectiveUrl = getEffectiveValue('watermark', attributes, context);
-	const effectiveScale = getEffectiveValue('watermark_styles', attributes, context)?.scale ?? getEffectiveValue('watermark_scale', attributes, context) ?? 10;
-	const effectiveAlign = getEffectiveValue('watermark_styles', attributes, context)?.align ?? getEffectiveValue('watermark_align', attributes, context) ?? 'right';
-	const effectiveValign = getEffectiveValue('watermark_styles', attributes, context)?.valign ?? getEffectiveValue('watermark_valign', attributes, context) ?? 'bottom';
-	const effectiveX = getEffectiveValue('watermark_styles', attributes, context)?.x ?? getEffectiveValue('watermark_x', attributes, context) ?? 5;
-	const effectiveY = getEffectiveValue('watermark_styles', attributes, context)?.y ?? getEffectiveValue('watermark_y', attributes, context) ?? 7;
+	const effectiveScale = getEffective('watermark_scale', 'scale', 10);
+	const effectiveAlign = getEffective('watermark_align', 'align', 'right');
+	const effectiveValign = getEffective('watermark_valign', 'valign', 'bottom');
+	const effectiveX = getEffective('watermark_x', 'x', 5);
+	const effectiveY = getEffective('watermark_y', 'y', 7);
 
 	const effectiveLinkToType = getEffectiveValue('watermark_link_to', attributes, context) || 'false';
 	const effectiveCustomLinkUrl = getEffectiveValue('watermark_url', attributes, context) || '';
@@ -133,11 +278,31 @@ export default function Edit({ attributes, setAttributes, context }) {
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+	const isOverlay = isInsideThumbnail || isInsidePlayer;
+
+	const overlayStyles = isOverlay ? getWatermarkBlockStyles(attributes, context) : {};
+
+	// Implementation of Full-Frame Selection mode:
+	// When selected, the block expands to fill the entire container to allow dragging everywhere.
+	const activeOverlayStyles = isOverlay && isSelected ? {
+		...overlayStyles,
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		width: '100%',
+		height: '100%',
+		maxWidth: 'none',
+		marginLeft: 0,
+		marginTop: 0,
+		transform: 'none',
+	} : overlayStyles;
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-watermark-block ${
-			isInsideThumbnail || isInsidePlayer ? 'is-overlay' : ''
-		}`,
+			isOverlay ? 'is-overlay' : ''
+		} ${isSelected ? 'is-selected' : ''}`,
+		style: activeOverlayStyles,
 	});
 
 	if (!watermark && !context['videopack/watermark']) {
@@ -329,15 +494,44 @@ export default function Edit({ attributes, setAttributes, context }) {
 					)}
 				</PanelBody>
 			</InspectorControls>
-			<VideoWatermark
-				watermark={watermark}
-				watermark_scale={watermark_scale}
-				watermark_align={watermark_align}
-				watermark_valign={watermark_valign}
-				watermark_x={watermark_x}
-				watermark_y={watermark_y}
-				context={context}
-			/>
+			{isOverlay && containerDimensions && isSelected ? (
+				<div ref={containerRef} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, pointerEvents: 'auto' }}>
+					<WatermarkPositioner
+						containerDimensions={containerDimensions}
+						settings={attributes}
+						onChange={(newAttrs) => setAttributes(newAttrs)}
+						isSelected={isSelected}
+						showBackground={false}
+						aspectRatio={detectedAspectRatio}
+					>
+						<VideoWatermark
+							watermark={watermark}
+							watermark_scale={watermark_scale}
+							watermark_align={watermark_align}
+							watermark_valign={watermark_valign}
+							watermark_x={watermark_x}
+							watermark_y={watermark_y}
+							context={context}
+							isBlockEditor={true}
+							onDimensions={setDetectedAspectRatio}
+						/>
+					</WatermarkPositioner>
+				</div>
+			) : (
+				<div ref={containerRef} style={{ ... (isOverlay ? { width: '100%', height: '100%', position: 'relative' } : {}) }}>
+					<VideoWatermark
+						watermark={watermark}
+						watermark_scale={watermark_scale}
+						watermark_align={watermark_align}
+						watermark_valign={watermark_valign}
+						watermark_x={watermark_x}
+						watermark_y={watermark_y}
+						context={context}
+						isBlockEditor={isOverlay}
+						onDimensions={setDetectedAspectRatio}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }

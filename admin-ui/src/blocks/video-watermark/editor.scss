@@ -1,0 +1,17 @@
+@use "../../components/common/Overlays";
+
+.videopack-video-watermark-block {
+	&.is-overlay {
+		z-index: 110;
+		pointer-events: none;
+		visibility: visible;
+		opacity: 1;
+
+		&.is-selected {
+			// Reset the default Gutenberg selection outline since we have internal handles
+			outline: none;
+			background: transparent;
+			pointer-events: auto;
+		}
+	}
+}
