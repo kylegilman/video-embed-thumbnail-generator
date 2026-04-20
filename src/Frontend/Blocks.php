@@ -86,6 +86,7 @@ class Blocks implements Hook_Subscriber {
 			'play-button'    => 'render_play_button',
 			'pagination'     => 'render_pagination',
 			'video-loop'     => 'render_video_loop',
+			'video-caption'  => 'render_video_caption',
 		);
 
 		foreach ( $blocks as $name => $callback ) {
@@ -317,7 +318,7 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		return sprintf(
-			'<div class="videopack-video-loop">%s</div>',
+			'<figure class="videopack-video-loop">%s</figure>',
 			$inner_content
 		);
 	}
@@ -483,7 +484,9 @@ class Blocks implements Hook_Subscriber {
 		$is_overlay         = $is_inside_thumb || ( ! empty( $block->context['videopack/postId'] ) && ! empty( $block->context['videopack/skin'] ) );
 		
 		$position           = $attributes['position'] ?? ( $block->context['videopack/position'] ?? ( $is_inside_thumb ? 'top' : 'bottom' ) );
-		$text_align         = $attributes['textAlign'] ?? ( $block->context['videopack/textAlign'] ?? ( $is_inside_thumb ? 'center' : 'left' ) );
+		$is_inside_thumb    = ! empty( $block->context['videopack/isInsideThumbnail'] );
+		$is_inside_player   = ! empty( $block->context['videopack/isInsidePlayerBlock'] );
+		$text_align         = ! empty( $attributes['textAlign'] ) ? $attributes['textAlign'] : ( $is_inside_thumb ? 'center' : ( $is_inside_player ? 'right' : 'left' ) );
 
 		$class              = 'videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
 		$class             .= ' position-' . esc_attr( $position );
@@ -547,18 +550,16 @@ class Blocks implements Hook_Subscriber {
 			$this->format_registry
 		);
 
-		// Merge context into attributes for the renderer.
-		$merged_attributes = array_merge(
-			array(
-				'isOverlay'              => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayer'] ) ),
-				'title_color'            => $block->context['videopack/title_color'] ?? '',
-				'title_background_color' => $block->context['videopack/title_background_color'] ?? '',
-				'skin'                   => $block->context['videopack/skin'] ?? '',
-				'textAlign'              => ! empty( $block->context['videopack/textAlign'] ) ? $block->context['videopack/textAlign'] : null,
-				'isInsideThumbnail'      => ! empty( $block->context['videopack/isInsideThumbnail'] ),
-			),
-			$attributes
-		);
+		// Resolve attributes with context-aware defaults.
+		$merged_attributes = array_merge( (array) $attributes, array(
+			'isOverlay'              => $attributes['isOverlay'] ?? ! empty( $block->context['videopack/isInsideThumbnail'] ),
+			'isInsideThumbnail'      => ! empty( $block->context['videopack/isInsideThumbnail'] ),
+			'isInsidePlayerBlock'    => ! empty( $block->context['videopack/isInsidePlayerBlock'] ),
+			'textAlign'              => $attributes['textAlign'] ?? ( $block->context['videopack/textAlign'] ?? null ),
+			'title_color'            => $block->context['videopack/title_color'] ?? $attributes['title_color'] ?? '',
+			'title_background_color' => $block->context['videopack/title_background_color'] ?? $attributes['title_background_color'] ?? '',
+			'skin'                   => $block->context['videopack/skin'] ?? $attributes['skin'] ?? '',
+		) );
 
 		return Modular_Renderer::render_view_count( $source, $merged_attributes );
 	}
@@ -599,6 +600,20 @@ class Blocks implements Hook_Subscriber {
 		$html .= '</ul></nav>';
 
 		return $html;
+	}
+
+	/**
+	 * Renders the Video Caption block.
+	 *
+	 * @param array     $attributes Block attributes.
+	 * @param string    $content    Block inner content.
+	 * @param \WP_Block $block      Block instance.
+	 * @return string Rendered HTML.
+	 */
+	public function render_video_caption( $attributes, $content, $block ) {
+		// Priority: Block Attribute > Context inheritance.
+		$caption = $attributes['caption'] ?? ( $block->context['videopack/caption'] ?? '' );
+		return Modular_Renderer::render_video_caption( $caption );
 	}
 
 	/**

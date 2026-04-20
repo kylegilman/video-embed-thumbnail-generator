@@ -5,18 +5,20 @@
 	"title": "Video Caption",
 	"category": "media",
 	"parent": ["videopack/videopack-video"],
-	"icon": "editor-alignleft",
-	"description": "Caption field for the video player.",
+	"icon": "text",
+	"description": "Add a caption to your video.",
 	"attributes": {
 		"caption": {
-			"type": "string",
-			"default": ""
+			"type": "string"
 		}
 	},
 	"supports": {
 		"html": false,
 		"reusable": false,
-		"multiple": false
+		"multiple": true,
+		"interactivity": {
+			"clientNavigation": true
+		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",
 	"editorScript": "file:./index.js"

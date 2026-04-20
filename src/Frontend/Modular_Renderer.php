@@ -139,7 +139,7 @@ class Modular_Renderer {
 		}
 
 		return sprintf(
-			'<div %s>%s</div>',
+			'<figure %s>%s</figure>',
 			$wrapper_attrs,
 			$inner_content
 		);
@@ -430,17 +430,14 @@ class Modular_Renderer {
 		return $html;
 	}
 
-	/**
-	 * Renders the video caption HTML.
-	 *
-	 * @param string $caption The caption text.
-	 * @return string The rendered HTML.
-	 */
 	public static function render_video_caption( $caption ) {
 		if ( empty( $caption ) ) {
 			return '';
 		}
-		return '<p class="wp-element-caption">' . esc_html( (string) $caption ) . '</p>';
+		return sprintf(
+			'<figcaption class="wp-element-caption videopack-video-caption">%s</figcaption>',
+			wp_kses_post( (string) $caption )
+		);
 	}
 
 	/**
@@ -474,9 +471,11 @@ class Modular_Renderer {
 			$display_value = number_format_i18n( $safe_views );
 		}
 
-		$icon_html   = self::get_svg_icon( $icon_type );
-		$text_align  = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'center' : 'left' );
-		$style_attrs = array();
+		$is_thumb      = ! empty( $atts['isInsideThumbnail'] );
+		$is_player     = ! empty( $atts['isInsidePlayerBlock'] ) || ! empty( $atts['isInsidePlayer'] );
+		$icon_html     = self::get_svg_icon( $icon_type );
+		$text_align    = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'center' : ( $is_player ? 'right' : 'left' ) );
+		$style_attrs   = array();
 
 		$has_custom_bg    = ! empty( $atts['title_background_color'] );
 		$has_custom_color = ! empty( $atts['title_color'] );
