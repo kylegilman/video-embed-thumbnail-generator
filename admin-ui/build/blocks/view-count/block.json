@@ -14,7 +14,8 @@
     "videopack/title_background_color",
     "videopack/textAlign",
     "videopack/isInsideThumbnail",
-    "videopack/isInsidePlayer"
+    "videopack/isInsidePlayer",
+    "videopack/isInsidePlayerBlock"
   ],
   "attributes": {
     "iconType": {

@@ -13,7 +13,6 @@
     "videopack/overlay_title",
     "videopack/title_color",
     "videopack/title_background_color",
-    "videopack/overlay_title",
     "videopack/downloadlink",
     "videopack/embedcode",
     "videopack/play_button_color",
@@ -21,6 +20,9 @@
     "videopack/control_bar_bg_color",
     "videopack/control_bar_color"
   ],
+  "providesContext": {
+    "videopack/postId": "id"
+  },
   "supports": {
     "html": false,
     "align": true,
@@ -165,8 +167,7 @@
       "type": "string"
     },
     "textAlign": {
-      "type": "string",
-      "default": "left"
+      "type": "string"
     },
     "downloadlink": {
       "type": "boolean",
@@ -204,6 +205,14 @@
       "default": "top"
     },
     "isInsidePlayer": {
+      "type": "boolean",
+      "default": true
+    },
+    "restartCount": {
+      "type": "number",
+      "default": 0
+    },
+    "isInsidePlayerBlock": {
       "type": "boolean",
       "default": true
     }

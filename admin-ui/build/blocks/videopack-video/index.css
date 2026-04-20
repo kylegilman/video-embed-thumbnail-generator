@@ -69,6 +69,79 @@
   padding: 12px;
   width: 280px;
 }
+/*!************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/WatermarkPositioner/WatermarkPositioner.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-watermark-positioner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  container-type: inline-size;
+}
+.videopack-watermark-positioner .videopack-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border: 1px solid #1e1e1e;
+  z-index: 10;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle {
+    width: 6px;
+    height: 6px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.nw {
+    top: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.ne {
+    top: -3px;
+    right: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.sw {
+    bottom: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.se {
+    bottom: -3px;
+    right: -3px;
+  }
+}
 /*!******************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss ***!
   \******************************************************************************************************************************************************************************************************************************************************************************************/
@@ -108,64 +181,6 @@
 }
 .videopack-watermark-settings .videopack-offset-control .components-text-control__input {
   width: 100px;
-}
-.videopack-watermark-settings .videopack-resize-handle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background-color: #fff;
-  border: 1px solid #1e1e1e;
-  z-index: 10;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle {
-    width: 6px;
-    height: 6px;
-  }
-}
-.videopack-watermark-settings .videopack-resize-handle.nw {
-  top: -5px;
-  left: -5px;
-  cursor: nw-resize;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle.nw {
-    top: -3px;
-    left: -3px;
-  }
-}
-.videopack-watermark-settings .videopack-resize-handle.ne {
-  top: -5px;
-  right: -5px;
-  cursor: ne-resize;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle.ne {
-    top: -3px;
-    right: -3px;
-  }
-}
-.videopack-watermark-settings .videopack-resize-handle.sw {
-  bottom: -5px;
-  left: -5px;
-  cursor: sw-resize;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle.sw {
-    bottom: -3px;
-    left: -3px;
-  }
-}
-.videopack-watermark-settings .videopack-resize-handle.se {
-  bottom: -5px;
-  right: -5px;
-  cursor: se-resize;
-}
-@container (max-width: 600px) {
-  .videopack-watermark-settings .videopack-resize-handle.se {
-    bottom: -3px;
-    right: -3px;
-  }
 }
 /*!******************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/TextTracks/TextTracks.scss ***!
@@ -797,6 +812,16 @@ picture.vjs-poster {
 }
 .videopack-video-title-block.is-overlay.is-selected, .videopack-video-title-block.is-overlay:focus-within {
   pointer-events: auto;
+}
+.videopack-video-block-container > .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
+  position: relative;
+  z-index: 150;
+  pointer-events: auto;
+  margin: 10px 0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /*# sourceMappingURL=index.css.map*/

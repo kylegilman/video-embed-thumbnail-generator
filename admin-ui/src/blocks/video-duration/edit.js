@@ -71,10 +71,11 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+	const isInsidePlayerBlock = !!context['videopack/isInsidePlayerBlock'];
 	const isOverlay = isInsideThumbnail || isInsidePlayer;
 	const effectiveTitleBgColor = getEffectiveValue('title_background_color', attributes, context);
 
-	const defaultAlign = isOverlay ? (isInsideThumbnail ? 'center' : 'left') : 'right';
+	const defaultAlign = isOverlay ? (isInsideThumbnail ? 'center' : 'left') : (isInsidePlayerBlock ? 'right' : 'left');
 	const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
 	const position = attrPosition || context['videopack/position'] || 'top';
 

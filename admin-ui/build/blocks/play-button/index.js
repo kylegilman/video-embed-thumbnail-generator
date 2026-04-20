@@ -95,8 +95,21 @@ function Edit({
   context
 }) {
   const skin = context?.['videopack/skin'] || '';
+  const isInsideThumbnail = !!context?.['videopack/isInsideThumbnail'];
+  const isInsidePlayer = !!context?.['videopack/isInsidePlayer'];
+  const overlayStyles = {};
+  if (isInsidePlayer || isInsideThumbnail) {
+    overlayStyles.position = 'absolute';
+    overlayStyles.top = '50%';
+    overlayStyles.left = '50%';
+    overlayStyles.transform = 'translate(-50%, -50%)';
+    overlayStyles.zIndex = 115;
+    overlayStyles.width = 'auto';
+    overlayStyles.height = 'auto';
+  }
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({
-    className: 'videopack-play-button-block'
+    className: `videopack-play-button-block ${isInsidePlayer ? 'is-overlay' : ''}`,
+    style: overlayStyles
   });
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
     ...blockProps,
@@ -230,7 +243,7 @@ module.exports = window["wp"]["i18n"];
   \*******************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/play-button","title":"Play Button","category":"media","icon":"controls-play","description":"Displays a play button overlay.","usesContext":["videopack/postId","videopack/skin","videopack/play_button_color","videopack/play_button_icon_color","videopack/isInsideThumbnail","videopack/isInsidePlayer"],"supports":{"html":false,"color":{"text":true,"background":true}},"editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/play-button","title":"Play Button","category":"media","icon":"controls-play","description":"Displays a play button overlay.","usesContext":["videopack/postId","videopack/skin","videopack/play_button_color","videopack/play_button_icon_color","videopack/isInsideThumbnail","videopack/isInsidePlayer"],"supports":{"html":false,"color":{"text":true,"background":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 
 /***/ }
 

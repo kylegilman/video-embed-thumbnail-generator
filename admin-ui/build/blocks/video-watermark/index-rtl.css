@@ -1,6 +1,79 @@
-/*!***********************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/play-button/editor.scss ***!
-  \***********************************************************************************************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/WatermarkPositioner/WatermarkPositioner.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-watermark-positioner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  container-type: inline-size;
+}
+.videopack-watermark-positioner .videopack-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border: 1px solid #1e1e1e;
+  z-index: 10;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle {
+    width: 6px;
+    height: 6px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.nw {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.nw {
+    top: -3px;
+    right: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.ne {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.ne {
+    top: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.sw {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.sw {
+    bottom: -3px;
+    right: -3px;
+  }
+}
+.videopack-watermark-positioner .videopack-resize-handle.se {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-positioner .videopack-resize-handle.se {
+    bottom: -3px;
+    left: -3px;
+  }
+}
+/*!***************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/video-watermark/editor.scss ***!
+  \***************************************************************************************************************************************************************************************************************************************************************/
 /**
  * Colors
  */
@@ -15,13 +88,13 @@
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 .videopack-video-title.has-text-align-left {
-  text-align: left;
+  text-align: right;
 }
 .videopack-video-title.has-text-align-center {
   text-align: center;
 }
 .videopack-video-title.has-text-align-right {
-  text-align: right;
+  text-align: left;
 }
 .videopack-video-title.is-overlay {
   position: absolute;
@@ -29,7 +102,7 @@
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-  left: 0;
+  right: 0;
   padding: 0.5em 0.6em;
   min-height: 2.6em;
   line-height: 1.2;
@@ -65,8 +138,8 @@
   content: "";
   position: absolute;
   top: 0;
-  left: 0;
   right: 0;
+  left: 0;
   bottom: 0;
   z-index: -1;
   transition: visibility 0.3s linear, opacity 0.3s linear;
@@ -74,7 +147,7 @@
   opacity: var(--videopack-title-bg-alpha, 0.9);
 }
 .videopack-video-title.is-overlay .videopack-title {
-  padding-left: 4px;
+  padding-right: 4px;
   font-size: inherit;
   margin: 0;
   display: block;
@@ -95,7 +168,7 @@
   font-weight: inherit;
 }
 .videopack-video-title.is-overlay .videopack-thumbnail-title-text {
-  padding-left: 4px;
+  padding-right: 4px;
   font-size: inherit;
   margin: 0;
   display: block;
@@ -137,7 +210,7 @@
 }
 .videopack-video-title .videopack-meta-icons {
   position: relative;
-  margin: 0 0 0 10px;
+  margin: 0 10px 0 0;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -221,19 +294,19 @@
   top: auto;
 }
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).has-text-align-left {
-  left: 5px;
-  right: auto;
-  margin-right: auto;
-}
-:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).has-text-align-right {
   right: 5px;
   left: auto;
   margin-left: auto;
 }
-:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).has-text-align-center {
-  left: 50%;
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).has-text-align-right {
+  left: 5px;
   right: auto;
-  transform: translateX(-50%);
+  margin-right: auto;
+}
+:is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).has-text-align-center {
+  right: 50%;
+  left: auto;
+  transform: translateX(50%);
 }
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).position-center {
   top: 50%;
@@ -241,7 +314,7 @@
   transform: translateY(-50%);
 }
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail).position-center.has-text-align-center {
-  transform: translate(-50%, -50%);
+  transform: translate(50%, -50%);
 }
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) .videopack-icon-svg,
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) .videopack-icons,
@@ -265,7 +338,7 @@
 .videopack-video-duration.has-text-align-left,
 .videopack-video-duration-block.has-text-align-left {
   justify-content: flex-start;
-  margin-right: auto;
+  margin-left: auto;
 }
 .videopack-view-count.has-text-align-center,
 .videopack-view-count-block.has-text-align-center,
@@ -273,8 +346,8 @@
 .videopack-video-duration.has-text-align-center,
 .videopack-video-duration-block.has-text-align-center {
   justify-content: center;
-  margin-left: auto;
   margin-right: auto;
+  margin-left: auto;
 }
 .videopack-view-count.has-text-align-right,
 .videopack-view-count-block.has-text-align-right,
@@ -282,7 +355,7 @@
 .videopack-video-duration.has-text-align-right,
 .videopack-video-duration-block.has-text-align-right {
   justify-content: flex-end;
-  margin-left: auto;
+  margin-right: auto;
 }
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
   background: transparent !important;
@@ -291,7 +364,7 @@
   position: static !important;
   color: inherit !important;
   transform: none !important;
-  left: auto !important;
+  right: auto !important;
   top: auto !important;
 }
 :is(.videopack-wrapper,
@@ -509,7 +582,7 @@
 }
 .videopack-video-title.videopack-thumbnail-title.is-overlay {
   position: absolute;
-  left: 0;
+  right: 0;
   width: 100%;
   padding: 4px;
   z-index: 102;
@@ -554,7 +627,7 @@
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container {
   position: absolute;
   top: 0;
-  left: 0;
+  right: 0;
   width: 100%;
   height: 100%;
   z-index: 10;
@@ -570,8 +643,8 @@
   gap: 2em;
   color: var(--videopack-title-color, white);
   top: 0;
-  left: 0;
   right: 0;
+  left: 0;
   padding: 3em 2em;
   width: 100%;
   z-index: 101;
@@ -637,21 +710,14 @@
   visibility: visible;
   bottom: -100vh;
 }
-.videopack-play-button-block.is-overlay {
+.videopack-video-watermark-block.is-overlay {
   z-index: 110;
+  pointer-events: none;
+  visibility: visible;
+  opacity: 1;
 }
-.videopack-play-button-block.is-selected {
-  outline: 2px dashed var(--wp-admin-theme-color);
-  outline-offset: 4px;
-  background: rgba(var(--wp-admin-theme-color-rgb), 0.05);
-  border-radius: 50%;
+.videopack-video-watermark-block.is-overlay.is-selected {
+  outline: none;
+  background: transparent;
+  pointer-events: auto;
 }
-.videopack-play-button .vjs-big-play-button,
-.videopack-play-button .mejs-overlay-button,
-.videopack-play-button .videopack-none-play-button {
-  pointer-events: all;
-  cursor: pointer;
-  display: block !important;
-}
-
-/*# sourceMappingURL=index.css.map*/

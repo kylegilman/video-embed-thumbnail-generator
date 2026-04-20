@@ -27,6 +27,7 @@
 	}
 
 	// Responsive layout: collapse to single column if less than 300px
+	// Responsive layout: collapse to single column if less than 300px
 	@container videopack-settings (max-width: 400px) {
 		.videopack-player-settings-flex {
 			flex-direction: column;

@@ -68,9 +68,23 @@ export function PlayButton({ context = {} }) {
 
 export default function Edit({ context }) {
 	const skin = context?.['videopack/skin'] || '';
+	const isInsideThumbnail = !!context?.['videopack/isInsideThumbnail'];
+	const isInsidePlayer = !!context?.['videopack/isInsidePlayer'];
+
+	const overlayStyles = {};
+	if (isInsidePlayer || isInsideThumbnail) {
+		overlayStyles.position = 'absolute';
+		overlayStyles.top = '50%';
+		overlayStyles.left = '50%';
+		overlayStyles.transform = 'translate(-50%, -50%)';
+		overlayStyles.zIndex = 115;
+		overlayStyles.width = 'auto';
+		overlayStyles.height = 'auto';
+	}
 
 	const blockProps = useBlockProps({
-		className: 'videopack-play-button-block',
+		className: `videopack-play-button-block ${isInsidePlayer ? 'is-overlay' : ''}`,
+		style: overlayStyles,
 	});
 
 	return (

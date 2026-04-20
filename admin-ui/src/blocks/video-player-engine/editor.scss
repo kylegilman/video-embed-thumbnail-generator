@@ -18,35 +18,24 @@
 	}
 
 	// Fix for Gutenberg appender being absolute/0-height (user suggested)
+	// Standard Gutenberg appender positioned at the top for overlays
 	.block-list-appender {
-		position: relative !important;
+		position: absolute;
+		top: 20px;
+		right: 20px;
+		width: auto;
+		height: auto;
+		margin: 0;
+		z-index: 130;
+		pointer-events: auto;
+	}
+
+	&.videopack-has-title-block .block-list-appender {
+		top: 50px;
 	}
 }
 
-.videopack-overlay-appender-container {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	z-index: 130;
-	pointer-events: auto;
-	transition: top 0.2s ease-in-out;
-
-	// Improved visibility
-	.block-editor-button-block-appender {
-		background: rgba(255, 255, 255, 0.8);
-		border-radius: 4px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-		backdrop-filter: blur(2px);
-		border: 1px solid rgba(0, 0, 0, 0.1);
-
-		&:hover {
-			background: #fff;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-		}
-	}
-}
-
-.videopack-engine-selection-overlay {
+.videopack-block-overlay {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -55,4 +44,10 @@
 	z-index: 90;
 	cursor: pointer;
 	background: transparent;
+}
+
+.videopack-video-player-engine-block {
+	&.is-selected {
+		outline: 2px dashed var(--wp-admin-theme-color);
+	}
 }
