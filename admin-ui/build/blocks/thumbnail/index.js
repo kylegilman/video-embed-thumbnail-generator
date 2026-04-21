@@ -38,7 +38,8 @@ function VideoThumbnailPreview({
   postId,
   children,
   resolvedDuotoneClass,
-  context = {}
+  context = {},
+  video = {}
 }) {
   const effectiveSkin = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('skin', {}, context);
   const {
@@ -46,6 +47,13 @@ function VideoThumbnailPreview({
     posterUrl,
     isResolving
   } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_0__.useSelect)(select => {
+    if (!postId || postId < 1) {
+      return {
+        thumbnailMedia: null,
+        posterUrl: null,
+        isResolving: false
+      };
+    }
     const {
       getEntityRecord,
       getMedia
@@ -64,14 +72,14 @@ function VideoThumbnailPreview({
       isResolving: select('core/data').isResolving('core', 'getEntityRecord', ['postType', 'attachment', postId])
     };
   }, [postId]);
-  if (isResolving) {
+  if (isResolving && !video.poster_url) {
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {});
   }
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const defaultNoThumb = config ? `${config.url}/src/images/nothumbnail.jpg` : '';
 
-  // Priority: 1. Direct poster URL from meta, 2. WordPress media object, 3. Default "no thumbnail"
-  const thumbnailUrl = posterUrl || thumbnailMedia?.source_url || defaultNoThumb;
+  // Priority: 1. Manual video data (previews), 2. Direct poster URL from meta, 3. WordPress media object, 4. Default "no thumbnail"
+  const thumbnailUrl = video.poster_url || posterUrl || thumbnailMedia?.source_url || defaultNoThumb;
   const containerClass = `gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${effectiveSkin} ${resolvedDuotoneClass || ''}`.trim();
   const imgStyle = resolvedDuotoneClass ? {
     filter: `url(#${resolvedDuotoneClass})`

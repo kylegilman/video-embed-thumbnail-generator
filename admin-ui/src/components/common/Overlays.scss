@@ -317,6 +317,7 @@ $badge-selectors: (
 	.videopack-video-title-block,
 	.videopack-video-player-engine-block) {
 	--videopack-title-background-color: #141414; // Default fallback
+	--videopack-control-bar-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%)")};
 
 	&.default, &.vjs-theme-videopack {
 		--videopack-title-background-color: #2b333f;
@@ -460,6 +461,7 @@ $badge-selectors: (
 
 .videopack-share-container {
 	display: flex;
+	box-sizing: border-box;
 	align-items: center;
 	justify-content: center;
 	flex-wrap: wrap;

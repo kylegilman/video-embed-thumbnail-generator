@@ -177,7 +177,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'pagination_active_bg_color'  => null,
 			'pagination_active_color'     => null,
 			'play_button_color'           => null,
-			'play_button_icon_color'      => null,
+			'play_button_secondary_color' => null,
 			'control_bar_bg_color'        => null,
 			'control_bar_color'           => null,
 		);
@@ -787,7 +787,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'pagination_active_bg_color'  => array( 'type' => array( 'string', 'null' ) ),
 			'pagination_active_color'     => array( 'type' => array( 'string', 'null' ) ),
 			'play_button_color'           => array( 'type' => array( 'string', 'null' ) ),
-			'play_button_icon_color'      => array( 'type' => array( 'string', 'null' ) ),
+			'play_button_secondary_color' => array( 'type' => array( 'string', 'null' ) ),
 			'control_bar_bg_color'        => array( 'type' => array( 'string', 'null' ) ),
 			'control_bar_color'           => array( 'type' => array( 'string', 'null' ) ),
 		);

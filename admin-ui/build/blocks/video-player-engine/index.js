@@ -1163,9 +1163,14 @@ function Edit(props) {
     });
     return result;
   }, [options, parentAttributes, resolvedPostId, context, isContextual]);
+  const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
+  const mejsSvgPath = config?.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
   const hasTitleFeatures = !!(effectiveAttributes.overlay_title || effectiveAttributes.downloadlink || effectiveAttributes.embedcode);
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({
-    className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${hasTitleFeatures ? 'videopack-video-title-visible' : ''}`
+    className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${hasTitleFeatures ? 'videopack-video-title-visible' : ''}`,
+    style: {
+      '--videopack-mejs-controls-svg': mejsSvgPath ? `url("${mejsSvgPath}")` : undefined
+    }
   });
   const contextValue = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
     const result = {
@@ -3732,7 +3737,7 @@ const VideoPlayer = ({
     playback_rate,
     default_ratio,
     play_button_color,
-    play_button_icon_color,
+    play_button_secondary_color,
     control_bar_bg_color,
     control_bar_color,
     title_color,
@@ -3773,14 +3778,15 @@ const VideoPlayer = ({
   const playerStyles = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const styles = {};
     const config = window.videopack_config || {};
-    if (config.mejs_controls_svg) {
-      styles['--videopack-mejs-controls-svg'] = `url(${config.mejs_controls_svg})`;
+    const mejsSvgPath = config.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
+    if (embed_method === 'WordPress Default' && mejsSvgPath) {
+      styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
     }
     if (play_button_color) {
       styles['--videopack-play-button-color'] = play_button_color;
     }
-    if (play_button_icon_color) {
-      styles['--videopack-play-button-icon-color'] = play_button_icon_color;
+    if (play_button_secondary_color) {
+      styles['--videopack-play-button-secondary-color'] = play_button_secondary_color;
     }
     if (control_bar_bg_color) {
       styles['--videopack-control-bar-bg-color'] = control_bar_bg_color;
@@ -3795,7 +3801,7 @@ const VideoPlayer = ({
       styles['--videopack-title-background-color'] = title_background_color;
     }
     return styles;
-  }, [play_button_color, play_button_icon_color, control_bar_bg_color, control_bar_color, title_color, title_background_color]);
+  }, [play_button_color, play_button_secondary_color, control_bar_bg_color, control_bar_color, title_color, title_background_color]);
   const innerPlayerStyles = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const styles = {};
     // Apply aspect ratio to the inner player if we know it (fixed or native)
@@ -3807,7 +3813,7 @@ const VideoPlayer = ({
     return styles;
   }, [isFixedAspect, default_ratio, aspectRatio]);
   const wrapperClasses = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
-    const classes = ['videopack-wrapper', 'videopack-video-title-visible'];
+    const classes = ['videopack-video-block-container', 'videopack-wrapper', 'videopack-video-title-visible'];
     if (isFixedAspect || aspectRatio) {
       classes.push('videopack-has-aspect-ratio');
       if (isFixedAspect) {
@@ -3817,8 +3823,8 @@ const VideoPlayer = ({
     if (play_button_color) {
       classes.push('videopack-has-play-button-color');
     }
-    if (play_button_icon_color) {
-      classes.push('videopack-has-play-button-icon-color');
+    if (play_button_secondary_color) {
+      classes.push('videopack-has-play-button-secondary-color');
     }
     if (control_bar_bg_color) {
       classes.push('videopack-has-control-bar-bg-color');
@@ -3833,7 +3839,7 @@ const VideoPlayer = ({
       classes.push('videopack-has-title-background-color');
     }
     return classes.join(' ');
-  }, [play_button_color, play_button_icon_color, control_bar_bg_color, control_bar_color, title_color, title_background_color, isFixedAspect, aspectRatio]);
+  }, [play_button_color, play_button_secondary_color, control_bar_bg_color, control_bar_color, title_color, title_background_color, isFixedAspect, aspectRatio]);
   const actualAutoplay = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     return autoplay;
   }, [autoplay]);
@@ -5768,7 +5774,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // Settings that can be stored per-video in _videopack-meta.
-const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted', 'controls', 'volume', 'preload', 'playback_rate', 'playsinline', 'right_click', 'gifmode', 'fixed_aspect', 'align', 'legacy_dimensions', 'resize', 'fullwidth', 'embeddable', 'embedcode', 'overlay_title', 'views', 'starts', 'play_25', 'play_50', 'play_75', 'completeviews', 'watermark', 'watermark_link_to', 'watermark_url', 'poster', 'poster_id', 'total_thumbnails', 'track', 'title_color', 'title_background_color', 'play_button_color', 'play_button_icon_color', 'control_bar_bg_color', 'control_bar_color'];
+const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted', 'controls', 'volume', 'preload', 'playback_rate', 'playsinline', 'right_click', 'gifmode', 'fixed_aspect', 'align', 'legacy_dimensions', 'resize', 'fullwidth', 'embeddable', 'embedcode', 'overlay_title', 'views', 'starts', 'play_25', 'play_50', 'play_75', 'completeviews', 'watermark', 'watermark_link_to', 'watermark_url', 'poster', 'poster_id', 'total_thumbnails', 'track', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color'];
 
 /**
  * Hook to manage video settings and synchronize them with attachment metadata.
@@ -5932,7 +5938,7 @@ const getColorFallbacks = settings => {
     title_color: settings?.title_color || '#ffffff',
     title_background_color: settings?.title_background_color || '#2b333f',
     play_button_color: settings?.play_button_color || '#ffffff',
-    play_button_icon_color: settings?.play_button_icon_color || '#ffffff',
+    play_button_secondary_color: settings?.play_button_secondary_color || '#ffffff',
     control_bar_bg_color: settings?.control_bar_bg_color || '#2b333f',
     control_bar_color: settings?.control_bar_color || '#ffffff',
     pagination_color: settings?.pagination_color || '#1e1e1e',
@@ -5944,36 +5950,34 @@ const getColorFallbacks = settings => {
     fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
     fallbacks.control_bar_bg_color = 'rgba(0, 0, 0, 0.35)';
     fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_icon_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#ffffff';
   } else if (embed_method?.startsWith('Video.js')) {
     // Default skin (vjs-theme-videopack) defaults
-    fallbacks.play_button_color = '#2b333f'; // Videopack Grey accent
+    fallbacks.play_button_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
 
     switch (skin) {
       case 'vjs-theme-city':
         fallbacks.title_background_color = '#bf3b4d';
-        fallbacks.play_button_color = '#bf3b4d';
         fallbacks.control_bar_bg_color = '#000000';
         break;
       case 'vjs-theme-fantasy':
         fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_color = '#9f44b4';
-        fallbacks.play_button_icon_color = '#9f44b4';
+        fallbacks.play_button_secondary_color = '#9f44b4';
         break;
       case 'vjs-theme-forest':
         fallbacks.title_background_color = '#6fb04e';
-        fallbacks.play_button_color = '#6fb04e';
+        fallbacks.play_button_secondary_color = '#6fb04e';
         fallbacks.control_bar_bg_color = 'transparent';
         break;
       case 'vjs-theme-sea':
         fallbacks.title_background_color = '#4176bc';
-        fallbacks.play_button_color = '#4176bc';
-        fallbacks.play_button_icon_color = '#ffffff';
+        fallbacks.play_button_secondary_color = '#4176bc';
         fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
         break;
       case 'kg-video-js-skin':
         fallbacks.title_background_color = '#000000';
-        fallbacks.play_button_color = '#000000';
+        fallbacks.play_button_secondary_color = '#000000';
         fallbacks.control_bar_bg_color = '#000000';
         break;
     }
@@ -6960,7 +6964,7 @@ var undo_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE
   \***************************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/video-player-engine","title":"Video Player Overlays","category":"media","icon":"format-video","parent":["videopack/videopack-video"],"allowedBlocks":["videopack/video-watermark","videopack/video-title"],"editorStyle":"file:./index.css","usesContext":["videopack/postId","videopack/skin","videopack/autoplay","videopack/controls","videopack/loop","videopack/muted","videopack/playsinline","videopack/poster","videopack/preload","videopack/src","videopack/volume","videopack/auto_res","videopack/auto_codec","videopack/sources","videopack/source_groups","videopack/text_tracks","videopack/playback_rate","videopack/watermark","videopack/watermark_styles","videopack/watermark_link_to","videopack/default_ratio","videopack/fixed_aspect","videopack/fullwidth","videopack/play_button_color","videopack/play_button_icon_color","videopack/control_bar_bg_color","videopack/control_bar_color","videopack/title_color","videopack/title_background_color","videopack/embed_method","videopack/isInsidePlayer","videopack/downloadlink","videopack/embedcode"],"attributes":{"isInsidePlayer":{"type":"boolean","default":true}},"supports":{"html":false,"reusable":false,"lock":true},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/video-player-engine","title":"Video Player Overlays","category":"media","icon":"format-video","parent":["videopack/videopack-video"],"allowedBlocks":["videopack/video-watermark","videopack/video-title"],"editorStyle":"file:./index.css","usesContext":["videopack/postId","videopack/skin","videopack/autoplay","videopack/controls","videopack/loop","videopack/muted","videopack/playsinline","videopack/poster","videopack/preload","videopack/src","videopack/volume","videopack/auto_res","videopack/auto_codec","videopack/sources","videopack/source_groups","videopack/text_tracks","videopack/playback_rate","videopack/watermark","videopack/watermark_styles","videopack/watermark_link_to","videopack/default_ratio","videopack/fixed_aspect","videopack/fullwidth","videopack/play_button_color","videopack/play_button_secondary_color","videopack/control_bar_bg_color","videopack/control_bar_color","videopack/title_color","videopack/title_background_color","videopack/embed_method","videopack/isInsidePlayer","videopack/downloadlink","videopack/embedcode"],"attributes":{"isInsidePlayer":{"type":"boolean","default":true}},"supports":{"html":false,"reusable":false,"lock":true},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 
 /***/ }
 

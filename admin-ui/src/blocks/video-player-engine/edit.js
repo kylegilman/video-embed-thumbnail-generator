@@ -134,6 +134,13 @@ export default function Edit(props) {
 		return result;
 	}, [options, parentAttributes, resolvedPostId, context, isContextual]);
 
+	const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
+	const mejsSvgPath =
+		config?.mejs_controls_svg ||
+		(typeof window !== 'undefined'
+			? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
+			: '');
+
 	const hasTitleFeatures = !!(
 		effectiveAttributes.overlay_title ||
 		effectiveAttributes.downloadlink ||
@@ -144,6 +151,11 @@ export default function Edit(props) {
 		className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${
 			hasTitleFeatures ? 'videopack-video-title-visible' : ''
 		}`,
+		style: {
+			'--videopack-mejs-controls-svg': mejsSvgPath
+				? `url("${mejsSvgPath}")`
+				: undefined,
+		},
 	});
 
 	const contextValue = useMemo(() => {

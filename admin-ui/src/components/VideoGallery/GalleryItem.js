@@ -43,7 +43,12 @@ const GalleryItem = ({
 	onAddVideo,
 	isHoveringGallery,
 }) => {
-	const { skin, gallery_title } = attributes;
+	const {
+		skin,
+		gallery_title,
+		play_button_color,
+		play_button_icon_color,
+	} = attributes;
 	const embed_method =
 		attributes.embed_method || videopack_config.embed_method;
 
@@ -149,7 +154,13 @@ const GalleryItem = ({
 			ref={setNodeRef}
 			style={style}
 			{...sortableAttributes}
-			className={`gallery-thumbnail videopack-gallery-item ${skin || ''}`}
+			className={`gallery-thumbnail videopack-gallery-item ${skin || ''} ${
+				play_button_color ? 'videopack-has-play-button-color' : ''
+			} ${
+				play_button_icon_color
+					? 'videopack-has-play-button-icon-color'
+					: ''
+			}`}
 		>
 			<div
 				className="gallery-item-clickable-area"
@@ -190,6 +201,18 @@ const GalleryItem = ({
 								'video-embed-thumbnail-generator'
 							)}
 							aria-pressed="false"
+							style={{
+								width: '80px',
+								height: '80px',
+								'--videopack-play-button-color': play_button_color,
+								'--videopack-play-button-icon-color': play_button_icon_color,
+								'--videopack-mejs-controls-svg': `url("${
+									videopack_config?.mejs_controls_svg ||
+									(typeof window !== 'undefined'
+										? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
+										: '')
+								}")`,
+							}}
 						></div>
 					</div>
 				) : (

@@ -173,7 +173,7 @@ class Shortcode implements Hook_Subscriber {
 				'title_color',
 				'title_background_color',
 				'play_button_color',
-				'play_button_icon_color',
+				'play_button_secondary_color',
 				'control_bar_bg_color',
 				'control_bar_color',
 				'pagination_color',

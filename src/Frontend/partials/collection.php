@@ -44,13 +44,12 @@ if ( ! empty( $title_bg_color ) ) {
 $play_button_color = ! empty( $query_atts['play_button_color'] ) ? $query_atts['play_button_color'] : ( $this->options['play_button_color'] ?? '' );
 if ( ! empty( $play_button_color ) ) {
 	$style_vars[] = '--videopack-play-button-color: ' . esc_attr( (string) $play_button_color );
-	$classes[]    = 'videopack-has-play-button-color';
 }
 
-$play_button_icon_color = ! empty( $query_atts['play_button_icon_color'] ) ? $query_atts['play_button_icon_color'] : ( $this->options['play_button_icon_color'] ?? '' );
-if ( ! empty( $play_button_icon_color ) ) {
-	$style_vars[] = '--videopack-play-button-icon-color: ' . esc_attr( (string) $play_button_icon_color );
-	$classes[]    = 'videopack-has-play-button-icon-color';
+$play_button_secondary_color = ! empty( $query_atts['play_button_secondary_color'] ) ? $query_atts['play_button_secondary_color'] : ( $this->options['play_button_secondary_color'] ?? '' );
+if ( ! empty( $play_button_secondary_color ) ) {
+	$style_vars[] = '--videopack-play-button-secondary-color: ' . esc_attr( (string) $play_button_secondary_color );
+	$classes[]    = 'videopack-has-play-button-secondary-color';
 }
 
 $pagination_color = ! empty( $query_atts['pagination_color'] ) ? $query_atts['pagination_color'] : ( $this->options['pagination_color'] ?? '' );

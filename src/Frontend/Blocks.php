@@ -169,7 +169,7 @@ class Blocks implements Hook_Subscriber {
 						'title_color',
 						'title_background_color',
 						'play_button_color',
-						'play_button_icon_color',
+						'play_button_secondary_color',
 						'control_bar_bg_color',
 						'control_bar_color',
 					);
@@ -219,7 +219,7 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		$output = Modular_Renderer::render_video_container(
-			array_merge( $attributes, array( 
+			array_merge( $this->options, $attributes, array( 
 				'align'         => $attributes['align'] ?? ( $this->options['gallery_align'] ?? 'wide' ),
 				'block_gap'     => $block_gap,
 				'wrapper_class' => 'videopack-collection-wrapper',
@@ -278,7 +278,7 @@ class Blocks implements Hook_Subscriber {
 				'title_color',
 				'title_background_color',
 				'play_button_color',
-				'play_button_icon_color',
+				'play_button_secondary_color',
 				'control_bar_bg_color',
 				'control_bar_color',
 			);
@@ -353,18 +353,54 @@ class Blocks implements Hook_Subscriber {
 			// shared block objects in memory (which causes the "Sticky Poster" leak).
 			$cloned_inner = clone $inner_block;
 
-			$cloned_inner->context['videopack/postId']                         = $post_id;
-			$cloned_inner->context['videopack/skin']                 = $skin;
-			$cloned_inner->context['videopack/isInsideThumbnail']    = true;
-			$cloned_inner->context['videopack/title_color']          = $block->context['videopack/title_color'] ?? '';
-			$cloned_inner->context['videopack/title_background_color'] = $block->context['videopack/title_background_color'] ?? '';
+			$cloned_inner->context['videopack/postId']            = $post_id;
+			$cloned_inner->context['videopack/skin']              = $skin;
+			$cloned_inner->context['videopack/isInsideThumbnail'] = true;
+
+			// Propagate all style attributes down to inner blocks.
+			$propagated_atts = array(
+				'title_color',
+				'title_background_color',
+				'play_button_color',
+				'play_button_secondary_color',
+				'control_bar_bg_color',
+				'control_bar_color',
+			);
+
+			foreach ( $propagated_atts as $att ) {
+				$cloned_inner->context[ "videopack/{$att}" ] = $block->context[ "videopack/{$att}" ] ?? '';
+			}
 			
 			$inner_content .= $cloned_inner->render();
 		}
 
+		$effective_atts = array_merge( $this->options, $block->context, $attributes );
+		$style_vars     = array();
+		$classes        = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item', $skin );
+
+		$colors = array(
+			'title-color'            => 'title_color',
+			'title-background-color' => 'title_background_color',
+			'play-button-color'           => 'play_button_color',
+			'play-button-secondary-color' => 'play_button_secondary_color',
+			'control-bar-bg-color'        => 'control_bar_bg_color',
+			'control-bar-color'           => 'control_bar_color',
+		);
+
+		foreach ( $colors as $variable => $attribute ) {
+			if ( ! empty( $effective_atts[ $attribute ] ) ) {
+				$style_vars[] = "--videopack-{$variable}: " . $effective_atts[ $attribute ];
+				$classes[]    = "videopack-has-{$variable}";
+			}
+		}
+
+		// Inject MEJS controls SVG for mask coloring.
+		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+
 		$wrapper_attributes = get_block_wrapper_attributes(
 			array(
-				'class'                   => 'videopack-thumbnail-wrapper gallery-thumbnail videopack-gallery-item ' . esc_attr( $skin ),
+				'class'                   => implode( ' ', array_unique( array_filter( $classes ) ) ),
+				'style'                   => implode( ';', $style_vars ),
 				'data-attachment-id'      => (int) $post_id,
 				'data-videopack-id'       => esc_attr( $block->context['videopack/videopackId'] ?? '' ),
 				'data-videopack-lightbox' => ( 'lightbox' === $link_to ? 'true' : 'false' ),
@@ -519,13 +555,42 @@ class Blocks implements Hook_Subscriber {
 		$skin         = $block->context['videopack/skin'] ?? '';
 		$embed_method = $this->options['embed_method'] ?? 'Video.js';
 
-		if ( 'WordPress Default' === $embed_method ) {
-			return '<div class="videopack-play-button mejs-overlay mejs-layer mejs-overlay-play"><div class="mejs-overlay-button" style="width: 80px; height: 80px;"></div></div>';
+		// Resolve effective colors by checking attributes (leaf override) -> context (container override) -> options (global default).
+		$play_button_color           = $attributes['play_button_color'] ?? ( $block->context['videopack/play_button_color'] ?? ( $this->options['play_button_color'] ?? '' ) );
+		$play_button_secondary_color = $attributes['play_button_secondary_color'] ?? ( $block->context['videopack/play_button_secondary_color'] ?? ( $this->options['play_button_secondary_color'] ?? '' ) );
+
+		$classes    = array( 'videopack-play-button' );
+		$style_vars = array();
+
+		if ( ! empty( $play_button_color ) ) {
+			$classes[]    = 'videopack-has-play-button-color';
+			$style_vars[] = '--videopack-play-button-color: ' . $play_button_color;
+		}
+		if ( ! empty( $play_button_secondary_color ) ) {
+			$classes[]    = 'videopack-has-play-button-secondary-color';
+			$style_vars[] = '--videopack-play-button-secondary-color: ' . $play_button_secondary_color;
 		}
 
+		if ( 'WordPress Default' === $embed_method ) {
+			$classes[]    = 'mejs-overlay mejs-layer mejs-overlay-play';
+			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+
+			$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
+
+			return sprintf(
+				'<div class="%s"%s><div class="mejs-overlay-button" style="width: 80px; height: 80px;"></div></div>',
+				esc_attr( implode( ' ', $classes ) ),
+				$style
+			);
+		}
+
+		$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
+
 		return sprintf(
-			'<div class="videopack-play-button play-button-container video-js %s vjs-big-play-centered vjs-paused vjs-controls-enabled"><button class="vjs-big-play-button" type="button" aria-disabled="false"><span class="vjs-icon-placeholder" aria-hidden="true"></span><span class="vjs-control-text" aria-live="polite">%s</span></button></div>',
+			'<div class="%1$s play-button-container video-js %2$s vjs-big-play-centered vjs-paused vjs-controls-enabled"%3$s><button class="vjs-big-play-button" type="button" aria-disabled="false"><span class="vjs-icon-placeholder" aria-hidden="true"></span><span class="vjs-control-text" aria-live="polite">%4$s</span></button></div>',
+			esc_attr( implode( ' ', $classes ) ),
 			esc_attr( $skin ),
+			$style,
 			esc_html__( 'Play Video', 'video-embed-thumbnail-generator' )
 		);
 	}

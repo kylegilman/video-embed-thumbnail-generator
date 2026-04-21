@@ -25,6 +25,7 @@ import { getColorFallbacks } from '../../../utils/colors';
 import VideopackTooltip from './VideopackTooltip';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import useResolutions from '../../../hooks/useResolutions';
+import VideopackBlockPreview from '../../../components/common/VideopackBlockPreview';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
@@ -67,7 +68,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		right_click,
 		click_download,
 		play_button_color,
-		play_button_icon_color,
+		play_button_secondary_color,
 		control_bar_bg_color,
 		control_bar_color,
 		title_color,
@@ -363,6 +364,14 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		[settings]
 	);
 
+	const previewContext = useMemo(() => {
+		const ctx = {};
+		Object.keys(settings).forEach((key) => {
+			ctx[`videopack/${key}`] = settings[key];
+		});
+		return ctx;
+	}, [settings]);
+
 	return (
 		<>
 			<PanelBody>
@@ -490,7 +499,44 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 									),
 								}}
 								onReady={handleVideoPlayerReady}
-							/>
+							>
+								{(overlay_title ||
+									downloadlink ||
+									(embeddable && embedcode)) && (
+									<VideopackBlockPreview
+										name="videopack/video-title"
+										attributes={{ 
+											title: 'Sample Video',
+											overlay_title: !!overlay_title,
+											downloadlink: !!downloadlink,
+											embedcode: !!(embeddable && embedcode),
+											showBackground: true
+										}}
+										isInsidePlayer={true}
+										isOverlay={true}
+										context={previewContext}
+									/>
+								)}
+								{watermark && (
+									<VideopackBlockPreview
+										name="videopack/video-watermark"
+										isInsidePlayer={true}
+										isOverlay={true}
+										context={previewContext}
+									/>
+								)}
+							</VideoPlayer>
+							{views && (
+								<VideopackBlockPreview
+									name="videopack/view-count"
+									attributes={{ 
+										count: 1234, 
+										showText: true,
+										iconType: 'none'
+									}}
+									context={previewContext}
+								/>
+							)}
 						</div>
 					</PreviewIframe>
 
@@ -569,10 +615,11 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<div className="videopack-color-flex-row">
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
-									'Play Button (Accent)',
-									'video-embed-thumbnail-generator'
-								)}
+								label={
+									embed_method === 'WordPress Default'
+										? __('Play Button Color', 'video-embed-thumbnail-generator')
+										: __('Play Button Icon', 'video-embed-thumbnail-generator')
+								}
 								value={play_button_color}
 								onChange={
 									changeHandlerFactory.play_button_color
@@ -585,17 +632,18 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
-									'Play Button Icon',
-									'video-embed-thumbnail-generator'
-								)}
-								value={play_button_icon_color}
+								label={
+									embed_method === 'WordPress Default'
+										? __('Play Button Hover', 'video-embed-thumbnail-generator')
+										: __('Play Button Accent', 'video-embed-thumbnail-generator')
+								}
+								value={play_button_secondary_color}
 								onChange={
-									changeHandlerFactory.play_button_icon_color
+									changeHandlerFactory.play_button_secondary_color
 								}
 								colors={videopack_config.themeColors}
 								fallbackValue={
-									PLAYER_COLOR_FALLBACKS.play_button_icon_color
+									PLAYER_COLOR_FALLBACKS.play_button_secondary_color
 								}
 							/>
 						</div>

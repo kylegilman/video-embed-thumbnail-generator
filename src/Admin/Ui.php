@@ -260,7 +260,7 @@ class Ui implements Hook_Subscriber {
 			'videopack/title_color'            => 'title_color',
 			'videopack/title_background_color' => 'title_background_color',
 			'videopack/play_button_color'      => 'play_button_color',
-			'videopack/play_button_icon_color' => 'play_button_icon_color',
+			'videopack/play_button_secondary_color' => 'play_button_secondary_color',
 			'videopack/control_bar_bg_color'   => 'control_bar_bg_color',
 			'videopack/control_bar_color'      => 'control_bar_color',
 			'videopack/downloadlink'           => 'downloadlink',
@@ -337,7 +337,7 @@ class Ui implements Hook_Subscriber {
 			'videopack/fixed_aspect'          => 'fixed_aspect',
 			'videopack/fullwidth'             => 'fullwidth',
 			'videopack/play_button_color'      => 'play_button_color',
-			'videopack/play_button_icon_color' => 'play_button_icon_color',
+			'videopack/play_button_secondary_color' => 'play_button_secondary_color',
 			'videopack/control_bar_bg_color'   => 'control_bar_bg_color',
 			'videopack/control_bar_color'      => 'control_bar_color',
 			'videopack/title_color'            => 'title_color',
@@ -362,15 +362,38 @@ class Ui implements Hook_Subscriber {
 			return '';
 		}
 
-		// Pass skin down the relative wrapper to ensure modular children (like titles) inherit styling variables.
-		$wrapper_classes = array( 'videopack-player-relative-wrapper' );
+		// Resolve effective colors by merging global options, context, and manual attributes.
+		$effective_atts = array_merge( $this->options, $atts );
+		$style_vars     = array();
+		$classes        = array( 'videopack-player-relative-wrapper' );
+
 		if ( ! empty( $atts['skin'] ) ) {
-			$wrapper_classes[] = $atts['skin'];
+			$classes[] = $atts['skin'];
 		}
-		
+
+		$colors = array(
+			'title-color'            => 'title_color',
+			'title-background-color' => 'title_background_color',
+			'play-button-color'      => 'play_button_color',
+			'play-button-secondary-color' => 'play_button_secondary_color',
+			'control-bar-bg-color'   => 'control_bar_bg_color',
+			'control-bar-color'      => 'control_bar_color',
+		);
+
+		foreach ( $colors as $variable => $attribute ) {
+			if ( ! empty( $effective_atts[ $attribute ] ) ) {
+				$style_vars[] = "--videopack-{$variable}: " . $effective_atts[ $attribute ];
+				$classes[]    = "videopack-has-{$variable}";
+			}
+		}
+
+		// Inject MEJS controls SVG for mask coloring.
+		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+
 		$wrapper_attributes = get_block_wrapper_attributes(
 			array(
-				'class' => implode( ' ', $wrapper_classes ),
+				'class' => implode( ' ', array_unique( array_filter( $classes ) ) ),
+				'style' => implode( ';', $style_vars ),
 			)
 		);
 		
@@ -531,7 +554,7 @@ class Ui implements Hook_Subscriber {
 			'title_color',
 			'title_background_color',
 			'play_button_color',
-			'play_button_icon_color',
+			'play_button_secondary_color',
 			'control_bar_bg_color',
 			'control_bar_color',
 		);
@@ -798,7 +821,7 @@ class Ui implements Hook_Subscriber {
 					'pagination_active_bg_color'  => (string) ( $options['pagination_active_bg_color'] ?? '' ),
 					'pagination_active_color'     => (string) ( $options['pagination_active_color'] ?? '' ),
 					'play_button_color'           => (string) ( $options['play_button_color'] ?? '' ),
-					'play_button_icon_color'      => (string) ( $options['play_button_icon_color'] ?? '' ),
+					'play_button_secondary_color'      => (string) ( $options['play_button_secondary_color'] ?? '' ),
 					'control_bar_bg_color'        => (string) ( $options['control_bar_bg_color'] ?? '' ),
 					'control_bar_color'           => (string) ( $options['control_bar_color'] ?? '' ),
 					'width'                       => (int) ( $options['width'] ?? 960 ),

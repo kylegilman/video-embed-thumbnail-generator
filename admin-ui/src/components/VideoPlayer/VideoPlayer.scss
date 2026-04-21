@@ -156,14 +156,6 @@
 		.vjs-menu .vjs-menu-content { overflow: visible; bottom: 0; }
 	}
 
-	// Custom Theming Overrides
-	/* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
-	--videopack-control-bar-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%)")};
-	--videopack-play-button-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%)")};
-	--videopack-play-button-bg-color-alpha-hover: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%)")};
-
-
-
 	/* Video.js Overrides */
 	&.videopack-has-control-bar-color .video-js {
 		color: var(--videopack-control-bar-color);
@@ -215,7 +207,6 @@
 		&.vjs-theme-videopack {
 			.vjs-control:not(.vjs-progress-control),
 			.vjs-time-control,
-			.vjs-big-play-button,
 			.vjs-menu-button .vjs-menu-content {
 				background-color: var(--videopack-control-bar-bg-color-alpha);
 			}
@@ -229,17 +220,6 @@
 		}
 	}
 
-	&.videopack-has-play-button-color .video-js.vjs-theme-videopack {
-		.vjs-big-play-button {
-			background-color: var(--videopack-play-button-bg-color-alpha);
-		}
-
-		&:hover .vjs-big-play-button,
-		.vjs-big-play-button:hover,
-		.vjs-big-play-button:focus {
-			background-color: var(--videopack-play-button-bg-color-alpha-hover);
-		}
-	}
 
 	&.videopack-has-control-bar-bg-color .video-js {
 		&:not(.vjs-theme-videopack):not(.vjs-theme-city) .vjs-control-bar {

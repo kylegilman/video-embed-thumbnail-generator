@@ -17,10 +17,18 @@ export function VideoThumbnailPreview({
 	children,
 	resolvedDuotoneClass,
 	context = {},
+	video = {},
 }) {
 	const effectiveSkin = getEffectiveValue('skin', {}, context);
 	const { thumbnailMedia, posterUrl, isResolving } = useSelect(
 		(select) => {
+			if (!postId || postId < 1) {
+				return {
+					thumbnailMedia: null,
+					posterUrl: null,
+					isResolving: false,
+				};
+			}
 			const { getEntityRecord, getMedia } = select('core');
 			
 			// Fetch the attachment record for the video
@@ -44,15 +52,16 @@ export function VideoThumbnailPreview({
 		[postId]
 	);
 
-	if (isResolving) {
+	if (isResolving && !video.poster_url) {
 		return <Spinner />;
 	}
 
 	const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const defaultNoThumb = config ? `${config.url}/src/images/nothumbnail.jpg` : '';
 
-	// Priority: 1. Direct poster URL from meta, 2. WordPress media object, 3. Default "no thumbnail"
+	// Priority: 1. Manual video data (previews), 2. Direct poster URL from meta, 3. WordPress media object, 4. Default "no thumbnail"
 	const thumbnailUrl =
+		video.poster_url ||
 		posterUrl ||
 		thumbnailMedia?.source_url ||
 		defaultNoThumb;

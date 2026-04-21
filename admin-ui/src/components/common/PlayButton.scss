@@ -7,10 +7,11 @@
 .videopack-gallery-wrapper,
 .gallery-thumbnail {
 	/* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
-	--videopack-play-button-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%)")};
-	--videopack-play-button-bg-color-alpha-hover: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%)")};
+	--videopack-play-button-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-secondary-color, var(--videopack-play-button-color, transparent)), transparent 30%)")};
+	--videopack-play-button-bg-color-alpha-hover: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-secondary-color, var(--videopack-play-button-color, transparent)), transparent 50%)")};
+
 	/* Combined Foreground Color: Icon color takes precedence over Accent color for symbols */
-	--videopack-play-button-foreground-color: var(--videopack-play-button-icon-color, var(--videopack-play-button-color));
+	--videopack-play-button-foreground-color: var(--videopack-play-button-color, #fff);
 }
 
 /* Video.js Big Play Button and Gallery Overlays */
@@ -31,9 +32,9 @@
 }
 
 /* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail) {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item) {
 	&.videopack-has-play-button-color,
-	&.videopack-has-play-button-icon-color {
+	&.videopack-has-play-button-secondary-color {
 		/* The symbol (icon) should always use the foreground color (Icon || Accent) */
 		.vjs-big-play-button::before,
 		.vjs-big-play-button .vjs-icon-placeholder::before {
@@ -42,7 +43,7 @@
 
 		/* The border should always use the accent color if set */
 		.vjs-big-play-button {
-			border-color: var(--videopack-play-button-color, inherit);
+			border-color: var(--videopack-play-button-secondary-color, inherit);
 			transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 		}
 
@@ -62,14 +63,14 @@
 
 			&:hover,
 			&:focus {
-				background-color: var(--videopack-play-button-color);
+				background-color: var(--videopack-play-button-secondary-color);
 				opacity: 0.8;
 			}
 		}
 	}
 
 	&.videopack-has-play-button-color,
-	&.videopack-has-play-button-icon-color {
+	&.videopack-has-play-button-secondary-color {
 		/* 2. Accent Color Only Logic: Semi-transparent backgrounds for traditional skins */
 		:is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) {
 			.vjs-big-play-button {
@@ -94,7 +95,8 @@
 				left: 0;
 				right: 0;
 				bottom: 0;
-				background-color: var(--videopack-play-button-color, transparent);
+				/* Base state uses 'Play Button Color' (Primary) */
+				background-color: var(--videopack-play-button-color, #fff);
 				mask-image: var(--videopack-mejs-controls-svg);
 				-webkit-mask-image: var(--videopack-mejs-controls-svg);
 				mask-position: 0 -39px;
@@ -106,8 +108,8 @@
 			}
 
 			&:hover::after {
-				// Use play-button-icon-color (labeled hover for MEJS) if set, otherwise fallback to derived alpha.
-				background-color: var(--videopack-play-button-icon-color, var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color)));
+				/* Hover state uses 'Play Button Hover' (Secondary) or falls back to Primary/Derived Alpha */
+				background-color: var(--videopack-play-button-secondary-color, var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color)));
 				mask-position: -80px -39px;
 				-webkit-mask-position: -80px -39px;
 			}

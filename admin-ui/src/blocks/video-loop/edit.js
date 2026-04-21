@@ -35,32 +35,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import { VideoThumbnailPreview } from '../thumbnail/VideoThumbnailPreview';
-import { VideoTitle } from '../video-title/edit';
-import { VideoDuration } from '../video-duration/edit';
-import { ViewCount } from '../view-count/edit';
-import { PlayButton } from '../play-button/edit';
-import { VideoWatermark } from '../video-watermark/edit';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 import { getSettings } from '../../api/settings';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
+import VideopackBlockPreview from '../../components/common/VideopackBlockPreview';
 
-const PREVIEW_COMPONENTS = {
-	'videopack/videopack-video': ({ children, resolvedDuotoneClass }) => (
-		<div
-			className={`videopack-video-block-container videopack-wrapper ${
-				resolvedDuotoneClass || ''
-			}`.trim()}
-		>
-			{children}
-		</div>
-	),
-	'videopack/thumbnail': VideoThumbnailPreview,
-	'videopack/video-title': VideoTitle,
-	'videopack/video-duration': VideoDuration,
-	'videopack/view-count': ViewCount,
-	'videopack/play-button': PlayButton,
-	'videopack/video-watermark': VideoWatermark,
-};
+
 
 /**
  * Helper component to render a custom SVG duotone filter.
@@ -605,8 +585,7 @@ export default function Edit({ context, clientId }) {
 			const itemKey = `${video.attachment_id || video.id}-${blockClientId}`;
 
 			// If it's a Videopack block we have in our registry, use the high-perf visual component.
-			const Component = PREVIEW_COMPONENTS[name];
-			if (Component) {
+			if (name.startsWith('videopack/')) {
 				const currentFlags = { ...parentFlags };
 				if (name === 'videopack/thumbnail') {
 					currentFlags.isInsideThumbnail = true;
@@ -617,9 +596,9 @@ export default function Edit({ context, clientId }) {
 				const isOverlay = !!currentFlags.isInsideThumbnail || !!currentFlags.isInsidePlayer;
 
 				return (
-					<Component
+					<VideopackBlockPreview
 						key={itemKey}
-						{...blockAttrs}
+						name={name}
 						attributes={blockAttrs}
 						postId={video.attachment_id}
 						isOverlay={isOverlay}
@@ -642,7 +621,7 @@ export default function Edit({ context, clientId }) {
 								previewContext,
 								currentFlags
 							)}
-					</Component>
+					</VideopackBlockPreview>
 				);
 			}
 

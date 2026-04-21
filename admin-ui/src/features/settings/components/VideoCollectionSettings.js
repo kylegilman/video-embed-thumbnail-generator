@@ -8,11 +8,14 @@ import {
 	Button,
 	Flex,
 	FlexItem,
+	Spinner,
 } from '@wordpress/components';
 import { sortAscending, sortDescending } from '../../../assets/icon';
-import VideoGallery from '../../../components/VideoGallery/VideoGallery';
+import useVideoQuery from '../../../hooks/useVideoQuery';
+import VideopackBlockPreview, {
+	VideopackTemplatePreview,
+} from '../../../components/common/VideopackBlockPreview';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe';
-import Pagination from '../../../components/Pagination/Pagination';
 import CompactColorPicker from '../../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../../utils/colors';
 
@@ -21,12 +24,16 @@ import { getColorFallbacks } from '../../../utils/colors';
 // Color fallbacks are now handled by getColorFallbacks utility.
 
 const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
+	const config =
+		typeof window !== 'undefined' ? window.videopack_config : undefined;
+	const embed_method =
+		typeof config !== 'undefined' ? config.embed_method : 'Video.js';
+
 	const colorFallbacks = useMemo(
 		() => getColorFallbacks(settings),
 		[settings]
 	);
 	const [currentPage, setCurrentPage] = useState(1);
-	const [totalPages, setTotalPages] = useState(1);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const {
@@ -43,30 +50,108 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		title_color,
 		title_background_color,
 		play_button_color,
-		play_button_icon_color,
+		play_button_secondary_color,
 		pagination_color,
 		pagination_background_color,
 		pagination_active_bg_color,
 		pagination_active_color,
 	} = settings;
 
-	const limit = useMemo(() => {
-		const parsedLimit = parseInt(collection_video_limit, 10);
-		if (isNaN(parsedLimit) || parsedLimit <= 0) {
-			return 12;
-		}
-		return parsedLimit;
-	}, [collection_video_limit]);
+	const previewQueryAttributes = useMemo(() => {
+		const isPaginationEnabled =
+			gallery_pagination === true ||
+			gallery_pagination === 1 ||
+			gallery_pagination === '1';
 
-	const galleryAttributes = useMemo(() => {
-		return {
+		const attrs = {
 			...settings,
-			gallery_source: '',
-			gallery_id: '',
-			videos: limit,
-			gallery_include: '',
+			gallery_pagination: isPaginationEnabled,
+			gallery_source: 'all', // Pull videos from the whole site for the preview
+			page_number: currentPage,
 		};
-	}, [settings, limit]);
+
+		// Safety restriction for the preview: if pagination is disabled, force a limit of 12
+		if (!isPaginationEnabled) {
+			attrs.enable_collection_video_limit = true;
+			attrs.collection_video_limit = 12;
+		}
+
+		return attrs;
+	}, [settings, currentPage, gallery_pagination]);
+
+	const { videoResults, maxNumPages, isResolving } = useVideoQuery(
+		previewQueryAttributes,
+		0
+	);
+
+	// Sync total pages from the query results
+	// This is now derived directly in previewContext from maxNumPages
+
+	const galleryTemplate = useMemo(() => {
+		const template = [
+			[
+				'videopack/video-loop',
+				{},
+				[
+					[
+						'videopack/thumbnail',
+						{ linkTo: 'none' },
+						[
+							['videopack/play-button', {}],
+							gallery_title
+								? ['videopack/video-title', {}]
+								: null,
+						].filter(Boolean),
+					],
+				],
+			],
+		];
+
+		if (gallery_pagination) {
+			template.push(['videopack/pagination', {}]);
+		}
+
+		return template;
+	}, [gallery_title, gallery_pagination]);
+
+	const previewContext = useMemo(() => {
+		return {
+			'videopack/layout': 'grid',
+			'videopack/columns': gallery_columns,
+			'videopack/videos': videoResults,
+			'videopack/gallery_pagination': !!gallery_pagination,
+			'videopack/gallery_per_page': gallery_per_page,
+			'videopack/currentPage': currentPage,
+			'videopack/totalPages': maxNumPages,
+			'videopack/onPageChange': (page) => setCurrentPage(page),
+			'videopack/title_color': title_color || colorFallbacks.title_color,
+			'videopack/title_background_color':
+				title_background_color || colorFallbacks.title_background_color,
+			'videopack/play_button_color':
+				play_button_color || colorFallbacks.play_button_color,
+			'videopack/play_button_secondary_color':
+				play_button_secondary_color ||
+				colorFallbacks.play_button_secondary_color,
+			'videopack/pagination_color':
+				pagination_color || colorFallbacks.pagination_color,
+			'videopack/pagination_background_color':
+				pagination_background_color ||
+				colorFallbacks.pagination_background_color,
+			'videopack/pagination_active_bg_color':
+				pagination_active_bg_color ||
+				colorFallbacks.pagination_active_bg_color,
+			'videopack/pagination_active_color':
+				pagination_active_color ||
+				colorFallbacks.pagination_active_color,
+		};
+	}, [
+		settings,
+		gallery_columns,
+		videoResults,
+		maxNumPages,
+		currentPage,
+		colorFallbacks,
+	]);
 
 	const galleryEndOptions = [
 		{
@@ -166,8 +251,9 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			title_background_color || colorFallbacks.title_background_color,
 		'--videopack-play-button-color':
 			play_button_color || colorFallbacks.play_button_color,
-		'--videopack-play-button-icon-color':
-			play_button_icon_color || colorFallbacks.play_button_icon_color,
+		'--videopack-play-button-secondary-color':
+			play_button_secondary_color ||
+			colorFallbacks.play_button_secondary_color,
 		'--videopack-pagination-color':
 			pagination_color || colorFallbacks.pagination_color,
 		'--videopack-pagination-bg':
@@ -389,10 +475,17 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						<div className="videopack-color-flex-row">
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
-										'Play Button (Accent)',
-										'video-embed-thumbnail-generator'
-									)}
+									label={
+										embed_method === 'WordPress Default'
+											? __(
+													'Play Button Color',
+													'video-embed-thumbnail-generator'
+												)
+											: __(
+													'Play Button Icon',
+													'video-embed-thumbnail-generator'
+												)
+									}
 									value={play_button_color}
 									onChange={
 										changeHandlerFactory.play_button_color
@@ -405,17 +498,24 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							</div>
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
-										'Play Button Icon',
-										'video-embed-thumbnail-generator'
-									)}
-									value={play_button_icon_color}
+									label={
+										embed_method === 'WordPress Default'
+											? __(
+													'Play Button Hover',
+													'video-embed-thumbnail-generator'
+												)
+											: __(
+													'Play Button Accent',
+													'video-embed-thumbnail-generator'
+												)
+									}
+									value={play_button_secondary_color}
 									onChange={
-										changeHandlerFactory.play_button_icon_color
+										changeHandlerFactory.play_button_secondary_color
 									}
 									colors={videopack_config.themeColors}
 									fallbackValue={
-										colorFallbacks.play_button_icon_color
+										colorFallbacks.play_button_secondary_color
 									}
 								/>
 							</div>
@@ -497,7 +597,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						</div>
 					</div>
 				</PanelBody>
-				{galleryAttributes && (
+				{previewContext && (
 					<div className="videopack-sample-gallery">
 						<div
 							className={`videopack-sample-gallery-wrapper align${
@@ -524,29 +624,22 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 								resizeDependencies={[gallery_align]}
 								fullScreen={isModalOpen}
 							>
-								<div
-									className={`wp-block-videopack-videopack-gallery${
-										gallery_align
-											? ` align${gallery_align}`
-											: ''
-									}`}
-									style={customStyles}
-								>
-									<VideoGallery
-										attributes={galleryAttributes}
-										galleryPage={currentPage}
-										setGalleryPage={setCurrentPage}
-										totalPages={totalPages}
-										setTotalPages={setTotalPages}
-										onModalToggle={setIsModalOpen}
-									/>
-									{gallery_pagination && totalPages > 1 && (
-										<Pagination
-											currentPage={currentPage}
-											totalPages={totalPages}
-											onPageChange={setCurrentPage}
-										/>
+								<div className="videopack-preview-content-container">
+									{isResolving && (
+										<div className="videopack-preview-loader">
+											<Spinner />
+										</div>
 									)}
+									<VideopackBlockPreview
+										name="videopack/collection"
+										attributes={settings}
+										context={previewContext}
+									>
+										<VideopackTemplatePreview
+											template={galleryTemplate}
+											context={previewContext}
+										/>
+									</VideopackBlockPreview>
 								</div>
 							</PreviewIframe>
 						</div>
