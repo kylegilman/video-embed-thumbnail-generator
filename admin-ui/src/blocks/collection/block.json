@@ -99,7 +99,7 @@
 		"play_button_color": {
 			"type": "string"
 		},
-		"play_button_icon_color": {
+		"play_button_secondary_color": {
 			"type": "string"
 		},
 		"control_bar_bg_color": {
@@ -149,7 +149,7 @@
 		"videopack/title_color": "title_color",
 		"videopack/title_background_color": "title_background_color",
 		"videopack/play_button_color": "play_button_color",
-		"videopack/play_button_icon_color": "play_button_icon_color",
+		"videopack/play_button_secondary_color": "play_button_secondary_color",
 		"videopack/control_bar_bg_color": "control_bar_bg_color",
 		"videopack/control_bar_color": "control_bar_color",
 		"videopack/views": "views",

@@ -191,6 +191,14 @@ const SingleVideoBlock = ({
 						? ' videopack-has-title-background-color'
 						: ''
 				}${
+					attributes.play_button_color
+						? ' videopack-has-play-button-color'
+						: ''
+				}${
+					attributes.play_button_secondary_color
+						? ' videopack-has-play-button-secondary-color'
+						: ''
+				}${
 					attributes.overlay_title || attributes.downloadlink || attributes.embedcode
 						? ' videopack-video-title-visible'
 						: ''
@@ -235,6 +243,8 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			'--videopack-mejs-controls-svg': mejsSvgPath
 				? `url("${mejsSvgPath}")`
 				: undefined,
+			'--videopack-play-button-color': attributes.play_button_color,
+			'--videopack-play-button-secondary-color': attributes.play_button_secondary_color,
 		},
 	});
 	const hasAttemptedInitialUpload = useRef(false);

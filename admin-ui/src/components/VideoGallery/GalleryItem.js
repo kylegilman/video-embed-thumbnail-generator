@@ -5,6 +5,7 @@
 /* global videopack_config, ResizeObserver */
 
 import { useEffect, useState, useRef } from '@wordpress/element';
+import { getEffectiveValue } from '../../utils/context';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 import { pencil, close, dragHandle, create } from '@wordpress/icons';
@@ -42,13 +43,12 @@ const GalleryItem = ({
 	isLastItem,
 	onAddVideo,
 	isHoveringGallery,
+	context = {},
 }) => {
-	const {
-		skin,
-		gallery_title,
-		play_button_color,
-		play_button_icon_color,
-	} = attributes;
+	const skin = getEffectiveValue('skin', attributes, context);
+	const gallery_title = getEffectiveValue('gallery_title', attributes, context);
+	const play_button_color = getEffectiveValue('play_button_color', attributes, context);
+	const play_button_secondary_color = getEffectiveValue('play_button_secondary_color', attributes, context);
 	const embed_method =
 		attributes.embed_method || videopack_config.embed_method;
 
@@ -157,8 +157,8 @@ const GalleryItem = ({
 			className={`gallery-thumbnail videopack-gallery-item ${skin || ''} ${
 				play_button_color ? 'videopack-has-play-button-color' : ''
 			} ${
-				play_button_icon_color
-					? 'videopack-has-play-button-icon-color'
+				play_button_secondary_color
+					? 'videopack-has-play-button-secondary-color'
 					: ''
 			}`}
 		>
@@ -205,7 +205,7 @@ const GalleryItem = ({
 								width: '80px',
 								height: '80px',
 								'--videopack-play-button-color': play_button_color,
-								'--videopack-play-button-icon-color': play_button_icon_color,
+								'--videopack-play-button-secondary-color': play_button_secondary_color,
 								'--videopack-mejs-controls-svg': `url("${
 									videopack_config?.mejs_controls_svg ||
 									(typeof window !== 'undefined'
