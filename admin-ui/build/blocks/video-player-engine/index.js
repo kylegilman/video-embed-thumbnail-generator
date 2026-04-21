@@ -1166,12 +1166,6 @@ function Edit(props) {
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const mejsSvgPath = config?.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
   const hasTitleFeatures = !!(effectiveAttributes.overlay_title || effectiveAttributes.downloadlink || effectiveAttributes.embedcode);
-  const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({
-    className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${hasTitleFeatures ? 'videopack-video-title-visible' : ''}`,
-    style: {
-      '--videopack-mejs-controls-svg': mejsSvgPath ? `url("${mejsSvgPath}")` : undefined
-    }
-  });
   const contextValue = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
     const result = {
       ...context,
@@ -1190,6 +1184,14 @@ function Edit(props) {
     });
     return result;
   }, [context, effectiveAttributes, resolvedPostId, isContextual]);
+  const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({
+    className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${hasTitleFeatures ? 'videopack-video-title-visible' : ''} ${(0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('play_button_color', {}, contextValue) ? 'videopack-has-play-button-color' : ''} ${(0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('play_button_secondary_color', {}, contextValue) ? 'videopack-has-play-button-secondary-color' : ''}`,
+    style: {
+      '--videopack-mejs-controls-svg': mejsSvgPath ? `url("${mejsSvgPath}")` : undefined,
+      '--videopack-play-button-color': (0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('play_button_color', {}, contextValue),
+      '--videopack-play-button-secondary-color': (0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('play_button_secondary_color', {}, contextValue)
+    }
+  });
 
   // Map context back to attributes for the VideoPlayer component
   const attributes = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
@@ -1219,7 +1221,7 @@ function Edit(props) {
       fixed_aspect: contextValue['videopack/fixed_aspect'],
       fullwidth: contextValue['videopack/fullwidth'],
       play_button_color: (0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('play_button_color', {}, contextValue),
-      play_button_icon_color: (0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('play_button_icon_color', {}, contextValue),
+      play_button_secondary_color: (0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('play_button_secondary_color', {}, contextValue),
       control_bar_bg_color: (0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('control_bar_bg_color', {}, contextValue),
       control_bar_color: (0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('control_bar_color', {}, contextValue),
       title_color: (0,_utils_context__WEBPACK_IMPORTED_MODULE_9__.getEffectiveValue)('title_color', {}, contextValue),
@@ -4633,7 +4635,7 @@ const VideoSettings = ({
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
             className: "videopack-color-flex-item",
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_CompactColorPicker_CompactColorPicker__WEBPACK_IMPORTED_MODULE_5__["default"], {
-              label: displayAttributes.embed_method === 'WordPress Default' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button (Accent)', 'video-embed-thumbnail-generator'),
+              label: displayAttributes.embed_method === 'WordPress Default' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
               value: displayAttributes.play_button_color,
               onChange: value => handleSettingChange('play_button_color', value),
               colors: THEME_COLORS,
@@ -4642,11 +4644,11 @@ const VideoSettings = ({
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
             className: "videopack-color-flex-item",
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_CompactColorPicker_CompactColorPicker__WEBPACK_IMPORTED_MODULE_5__["default"], {
-              label: displayAttributes.embed_method === 'WordPress Default' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button (hover)', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
-              value: displayAttributes.play_button_icon_color,
-              onChange: value => handleSettingChange('play_button_icon_color', value),
+              label: displayAttributes.embed_method === 'WordPress Default' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
+              value: displayAttributes.play_button_secondary_color,
+              onChange: value => handleSettingChange('play_button_secondary_color', value),
               colors: THEME_COLORS,
-              fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_icon_color
+              fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_secondary_color
             })
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
             className: "videopack-color-flex-item",

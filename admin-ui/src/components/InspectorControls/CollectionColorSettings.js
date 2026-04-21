@@ -18,7 +18,7 @@ export default function CollectionColorSettings({
 		title_color,
 		title_background_color,
 		play_button_color,
-		play_button_icon_color,
+		play_button_secondary_color,
 		control_bar_bg_color,
 		control_bar_color,
 		pagination_color,
@@ -98,7 +98,7 @@ export default function CollectionColorSettings({
 					<div className="videopack-color-flex-row">
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__('Play Button (Accent)', 'video-embed-thumbnail-generator')}
+								label={__('Play Button Icon', 'video-embed-thumbnail-generator')}
 								value={play_button_color}
 								onChange={(value) => setAttributes({ play_button_color: value })}
 								colors={THEME_COLORS}
@@ -107,11 +107,11 @@ export default function CollectionColorSettings({
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__('Play Button Icon', 'video-embed-thumbnail-generator')}
-								value={play_button_icon_color}
-								onChange={(value) => setAttributes({ play_button_icon_color: value })}
+								label={__('Play Button Accent', 'video-embed-thumbnail-generator')}
+								value={play_button_secondary_color}
+								onChange={(value) => setAttributes({ play_button_secondary_color: value })}
 								colors={THEME_COLORS}
-								fallbackValue={colorFallbacks.play_button_icon_color}
+								fallbackValue={colorFallbacks.play_button_secondary_color}
 							/>
 						</div>
 						<div className="videopack-color-flex-item">

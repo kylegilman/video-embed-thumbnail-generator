@@ -585,7 +585,7 @@ function Edit({
 
   // Resolve Effective Values for design and pagination (these follow global settings)
   const effectiveValues = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => {
-    const keys = ['skin', 'align', 'gallery_pagination', 'gallery_per_page', 'enable_collection_video_limit', 'collection_video_limit', 'title_color', 'title_background_color', 'play_button_color', 'play_button_icon_color', 'control_bar_bg_color', 'control_bar_color', 'views', 'overlay_title'];
+    const keys = ['skin', 'align', 'gallery_pagination', 'gallery_per_page', 'enable_collection_video_limit', 'collection_video_limit', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'views', 'overlay_title'];
     const resolved = {};
     keys.forEach(key => {
       resolved[key] = (0,_utils_context__WEBPACK_IMPORTED_MODULE_8__.getEffectiveValue)(key, attributes, context);
@@ -660,12 +660,12 @@ function Edit({
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({
     className: ['videopack-collection', 'videopack-wrapper', `layout-${layout}`, `columns-${columns}`,
     // If no explicit align is set, apply the effective (global) align class
-    !attributes.align && effectiveValues.align ? `align${effectiveValues.align}` : '', effectiveValues.title_color ? 'videopack-has-title-color' : '', effectiveValues.title_background_color ? 'videopack-has-title-background-color' : '', effectiveValues.play_button_color ? 'videopack-has-play-button-color' : '', effectiveValues.play_button_icon_color ? 'videopack-has-play-button-icon-color' : '', effectiveValues.control_bar_bg_color ? 'videopack-has-control-bar-bg-color' : '', effectiveValues.control_bar_color ? 'videopack-has-control-bar-color' : ''].filter(Boolean).join(' '),
+    !attributes.align && effectiveValues.align ? `align${effectiveValues.align}` : '', effectiveValues.title_color ? 'videopack-has-title-color' : '', effectiveValues.title_background_color ? 'videopack-has-title-background-color' : '', effectiveValues.play_button_color ? 'videopack-has-play-button-color' : '', effectiveValues.play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : '', effectiveValues.control_bar_bg_color ? 'videopack-has-control-bar-bg-color' : '', effectiveValues.control_bar_color ? 'videopack-has-control-bar-color' : ''].filter(Boolean).join(' '),
     style: {
       '--videopack-title-color': effectiveValues.title_color,
       '--videopack-title-background-color': effectiveValues.title_background_color,
       '--videopack-play-button-color': effectiveValues.play_button_color,
-      '--videopack-play-button-icon-color': effectiveValues.play_button_icon_color,
+      '--videopack-play-button-secondary-color': effectiveValues.play_button_secondary_color,
       '--videopack-control-bar-bg-color': effectiveValues.control_bar_bg_color,
       '--videopack-control-bar-color': effectiveValues.control_bar_color,
       '--videopack-collection-columns': columns,
@@ -736,7 +736,7 @@ function Edit({
           'videopack/title_color': effectiveValues.title_color,
           'videopack/title_background_color': effectiveValues.title_background_color,
           'videopack/play_button_color': effectiveValues.play_button_color,
-          'videopack/play_button_icon_color': effectiveValues.play_button_icon_color,
+          'videopack/play_button_secondary_color': effectiveValues.play_button_secondary_color,
           'videopack/control_bar_bg_color': effectiveValues.control_bar_bg_color,
           'videopack/control_bar_color': effectiveValues.control_bar_color,
           'videopack/views': effectiveValues.views,
@@ -914,7 +914,7 @@ function CollectionColorSettings({
     title_color,
     title_background_color,
     play_button_color,
-    play_button_icon_color,
+    play_button_secondary_color,
     control_bar_bg_color,
     control_bar_color,
     pagination_color,
@@ -1005,7 +1005,7 @@ function CollectionColorSettings({
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
           className: "videopack-color-flex-item",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_CompactColorPicker_CompactColorPicker__WEBPACK_IMPORTED_MODULE_3__["default"], {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button (Accent)', 'video-embed-thumbnail-generator'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
             value: play_button_color,
             onChange: value => setAttributes({
               play_button_color: value
@@ -1016,13 +1016,13 @@ function CollectionColorSettings({
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
           className: "videopack-color-flex-item",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_CompactColorPicker_CompactColorPicker__WEBPACK_IMPORTED_MODULE_3__["default"], {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
-            value: play_button_icon_color,
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
+            value: play_button_secondary_color,
             onChange: value => setAttributes({
-              play_button_icon_color: value
+              play_button_secondary_color: value
             }),
             colors: THEME_COLORS,
-            fallbackValue: colorFallbacks.play_button_icon_color
+            fallbackValue: colorFallbacks.play_button_secondary_color
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
           className: "videopack-color-flex-item",
@@ -2180,7 +2180,7 @@ var close_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODUL
   \******************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/collection","title":"Videopack Collection","category":"media","icon":"grid-view","description":"A composable grid or list layout for displaying videos.","supports":{"html":false,"align":["left","right","center","wide","full"],"color":{"background":true,"text":true,"link":true},"spacing":{"margin":true,"padding":true,"blockGap":true}},"attributes":{"skin":{"type":"string"},"layout":{"type":"string","default":"grid"},"columns":{"type":"number","default":3},"gallery_source":{"type":"string","default":"current"},"gallery_id":{"type":"number","default":0},"gallery_category":{"type":"string","default":""},"gallery_tag":{"type":"string","default":""},"gallery_orderby":{"type":"string","default":"post_date"},"gallery_order":{"type":"string","default":"DESC"},"gallery_include":{"type":"string","default":""},"gallery_exclude":{"type":"string","default":""},"gallery_pagination":{"type":"boolean"},"gallery_per_page":{"type":"number"},"currentPage":{"type":"number","default":1},"totalPages":{"type":"number","default":1},"pagination_color":{"type":"string"},"pagination_background_color":{"type":"string"},"pagination_active_bg_color":{"type":"string"},"pagination_active_color":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"play_button_color":{"type":"string"},"play_button_icon_color":{"type":"string"},"control_bar_bg_color":{"type":"string"},"control_bar_color":{"type":"string"},"views":{"type":"boolean"},"overlay_title":{"type":"boolean"},"gallery_align":{"type":"string"},"enable_collection_video_limit":{"type":"boolean"},"collection_video_limit":{"type":"number"}},"providesContext":{"videopack/skin":"skin","videopack/layout":"layout","videopack/columns":"columns","videopack/gallery_source":"gallery_source","videopack/gallery_id":"gallery_id","videopack/gallery_category":"gallery_category","videopack/gallery_tag":"gallery_tag","videopack/gallery_orderby":"gallery_orderby","videopack/gallery_order":"gallery_order","videopack/gallery_include":"gallery_include","videopack/gallery_exclude":"gallery_exclude","videopack/gallery_pagination":"gallery_pagination","videopack/gallery_per_page":"gallery_per_page","videopack/enable_collection_video_limit":"enable_collection_video_limit","videopack/collection_video_limit":"collection_video_limit","videopack/currentPage":"currentPage","videopack/totalPages":"totalPages","videopack/pagination_color":"pagination_color","videopack/pagination_background_color":"pagination_background_color","videopack/pagination_active_bg_color":"pagination_active_bg_color","videopack/pagination_active_color":"pagination_active_color","videopack/title_color":"title_color","videopack/title_background_color":"title_background_color","videopack/play_button_color":"play_button_color","videopack/play_button_icon_color":"play_button_icon_color","videopack/control_bar_bg_color":"control_bar_bg_color","videopack/control_bar_color":"control_bar_color","videopack/views":"views","videopack/overlay_title":"overlay_title"},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","style":"file:./style.scss","editorStyle":"file:./index.css"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/collection","title":"Videopack Collection","category":"media","icon":"grid-view","description":"A composable grid or list layout for displaying videos.","supports":{"html":false,"align":["left","right","center","wide","full"],"color":{"background":true,"text":true,"link":true},"spacing":{"margin":true,"padding":true,"blockGap":true}},"attributes":{"skin":{"type":"string"},"layout":{"type":"string","default":"grid"},"columns":{"type":"number","default":3},"gallery_source":{"type":"string","default":"current"},"gallery_id":{"type":"number","default":0},"gallery_category":{"type":"string","default":""},"gallery_tag":{"type":"string","default":""},"gallery_orderby":{"type":"string","default":"post_date"},"gallery_order":{"type":"string","default":"DESC"},"gallery_include":{"type":"string","default":""},"gallery_exclude":{"type":"string","default":""},"gallery_pagination":{"type":"boolean"},"gallery_per_page":{"type":"number"},"currentPage":{"type":"number","default":1},"totalPages":{"type":"number","default":1},"pagination_color":{"type":"string"},"pagination_background_color":{"type":"string"},"pagination_active_bg_color":{"type":"string"},"pagination_active_color":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"play_button_color":{"type":"string"},"play_button_secondary_color":{"type":"string"},"control_bar_bg_color":{"type":"string"},"control_bar_color":{"type":"string"},"views":{"type":"boolean"},"overlay_title":{"type":"boolean"},"gallery_align":{"type":"string"},"enable_collection_video_limit":{"type":"boolean"},"collection_video_limit":{"type":"number"}},"providesContext":{"videopack/skin":"skin","videopack/layout":"layout","videopack/columns":"columns","videopack/gallery_source":"gallery_source","videopack/gallery_id":"gallery_id","videopack/gallery_category":"gallery_category","videopack/gallery_tag":"gallery_tag","videopack/gallery_orderby":"gallery_orderby","videopack/gallery_order":"gallery_order","videopack/gallery_include":"gallery_include","videopack/gallery_exclude":"gallery_exclude","videopack/gallery_pagination":"gallery_pagination","videopack/gallery_per_page":"gallery_per_page","videopack/enable_collection_video_limit":"enable_collection_video_limit","videopack/collection_video_limit":"collection_video_limit","videopack/currentPage":"currentPage","videopack/totalPages":"totalPages","videopack/pagination_color":"pagination_color","videopack/pagination_background_color":"pagination_background_color","videopack/pagination_active_bg_color":"pagination_active_bg_color","videopack/pagination_active_color":"pagination_active_color","videopack/title_color":"title_color","videopack/title_background_color":"title_background_color","videopack/play_button_color":"play_button_color","videopack/play_button_secondary_color":"play_button_secondary_color","videopack/control_bar_bg_color":"control_bar_bg_color","videopack/control_bar_color":"control_bar_color","videopack/views":"views","videopack/overlay_title":"overlay_title"},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","style":"file:./style.scss","editorStyle":"file:./index.css"}');
 
 /***/ }
 

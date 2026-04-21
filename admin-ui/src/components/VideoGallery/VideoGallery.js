@@ -3,6 +3,7 @@
  */
 
 import { getVideoGallery } from '../../api/gallery';
+import { getEffectiveValue } from '../../utils/context';
 import { useEffect, useState, useCallback, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Placeholder, Spinner, Icon } from '@wordpress/components';
@@ -54,6 +55,7 @@ const VideoGallery = ({
 	totalPages = 1,
 	setTotalPages = noop,
 	onModalToggle = noop,
+	context = {},
 }) => {
 	const {
 		gallery_id,
@@ -70,11 +72,14 @@ const VideoGallery = ({
 		gallery_tag,
 		videos,
 		collection_video_limit,
-		play_button_color,
-		play_button_icon_color,
-		title_color,
-		title_background_color,
 	} = attributes;
+
+	const skin = getEffectiveValue('skin', attributes, context);
+	const play_button_color = getEffectiveValue('play_button_color', attributes, context);
+	const play_button_secondary_color = getEffectiveValue('play_button_secondary_color', attributes, context);
+	const title_color = getEffectiveValue('title_color', attributes, context);
+	const title_background_color = getEffectiveValue('title_background_color', attributes, context);
+	const gallery_title = getEffectiveValue('gallery_title', attributes, context);
 
 	const [galleryVideos, setGalleryVideos] = useState([]);
 	const [openVideo, setOpenVideo] = useState(null);
@@ -393,6 +398,7 @@ const VideoGallery = ({
 					isLastItem={index === galleryVideos.length - 1}
 					onAddVideo={openMediaModalForNewVideos}
 					isHoveringGallery={isHovering}
+					context={context}
 				/>
 			));
 		}
@@ -422,8 +428,8 @@ const VideoGallery = ({
 		if (play_button_color) {
 			classes.push('videopack-has-play-button-color');
 		}
-		if (play_button_icon_color) {
-			classes.push('videopack-has-play-button-icon-color');
+		if (play_button_secondary_color) {
+			classes.push('videopack-has-play-button-secondary-color');
 		}
 		if (title_color) {
 			classes.push('videopack-has-title-color');
@@ -434,7 +440,7 @@ const VideoGallery = ({
 		return classes.join(' ');
 	}, [
 		play_button_color,
-		play_button_icon_color,
+		play_button_secondary_color,
 		title_color,
 		title_background_color,
 	]);
@@ -462,9 +468,8 @@ const VideoGallery = ({
 		if (play_button_color) {
 			styles['--videopack-play-button-color'] = play_button_color;
 		}
-		if (play_button_icon_color) {
-			styles['--videopack-play-button-icon-color'] =
-				play_button_icon_color;
+		if (play_button_secondary_color) {
+			styles['--videopack-play-button-secondary-color'] = play_button_secondary_color;
 		}
 		if (title_color) {
 			styles['--videopack-title-color'] = title_color;
@@ -477,7 +482,7 @@ const VideoGallery = ({
 	}, [
 		gallery_columns,
 		play_button_color,
-		play_button_icon_color,
+		play_button_secondary_color,
 		title_color,
 		title_background_color,
 	]);

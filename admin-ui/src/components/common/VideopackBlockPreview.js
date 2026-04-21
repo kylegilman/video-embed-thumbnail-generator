@@ -12,10 +12,22 @@ const CollectionPreview = ({ children, attributes = {}, context = {} }) => {
 	const columns = attributes.columns || context['videopack/columns'] || 3;
 	const align = attributes.align || context['videopack/align'] || '';
 
+	const play_button_color =
+		attributes.play_button_color || context['videopack/play_button_color'];
+	const play_button_secondary_color =
+		attributes.play_button_secondary_color ||
+		context['videopack/play_button_secondary_color'];
+
 	return (
 		<div
 			className={`videopack-collection videopack-wrapper layout-${layout} columns-${columns}${
 				align ? ` align${align}` : ''
+			} ${
+				play_button_color ? 'videopack-has-play-button-color' : ''
+			} ${
+				play_button_secondary_color
+					? 'videopack-has-play-button-secondary-color'
+					: ''
 			}`}
 			style={{
 				'--videopack-collection-columns': columns,
@@ -27,9 +39,9 @@ const CollectionPreview = ({ children, attributes = {}, context = {} }) => {
 				'--videopack-play-button-color':
 					attributes.play_button_color ||
 					context['videopack/play_button_color'],
-				'--videopack-play-button-icon-color':
-					attributes.play_button_icon_color ||
-					context['videopack/play_button_icon_color'],
+				'--videopack-play-button-secondary-color':
+					attributes.play_button_secondary_color ||
+					context['videopack/play_button_secondary_color'],
 			}}
 		>
 			{children}
@@ -47,9 +59,16 @@ const VideoLoopPreview = ({
 	const layout = context['videopack/layout'] || 'grid';
 	const columns = context['videopack/columns'] || 3;
 
+	const play_button_color = attributes.play_button_color || context['videopack/play_button_color'];
+	const play_button_secondary_color = attributes.play_button_secondary_color || context['videopack/play_button_secondary_color'];
+
 	return (
 		<div
-			className={`videopack-video-loop layout-${layout} columns-${columns}`}
+			className={`videopack-video-loop videopack-wrapper layout-${layout} columns-${columns} ${
+				play_button_color ? 'videopack-has-play-button-color' : ''
+			} ${
+				play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : ''
+			}`}
 		>
 			<div className="videopack-collection-grid">
 				{videos.map((video, index) => (

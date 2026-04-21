@@ -346,11 +346,8 @@ const VideoSettings = ({
 								label={
 									displayAttributes.embed_method ===
 									'WordPress Default'
-										? __('Play Button', 'video-embed-thumbnail-generator')
-										: __(
-												'Play Button (Accent)',
-												'video-embed-thumbnail-generator'
-										  )
+										? __('Play Button Color', 'video-embed-thumbnail-generator')
+										: __('Play Button Icon', 'video-embed-thumbnail-generator')
 								}
 								value={displayAttributes.play_button_color}
 								onChange={(value) =>
@@ -370,25 +367,19 @@ const VideoSettings = ({
 								label={
 									displayAttributes.embed_method ===
 									'WordPress Default'
-										? __(
-												'Play Button (hover)',
-												'video-embed-thumbnail-generator'
-										  )
-										: __(
-												'Play Button Icon',
-												'video-embed-thumbnail-generator'
-										  )
+										? __('Play Button Hover', 'video-embed-thumbnail-generator')
+										: __('Play Button Accent', 'video-embed-thumbnail-generator')
 								}
-								value={displayAttributes.play_button_icon_color}
+								value={displayAttributes.play_button_secondary_color}
 								onChange={(value) =>
 									handleSettingChange(
-										'play_button_icon_color',
+										'play_button_secondary_color',
 										value
 									)
 								}
 								colors={THEME_COLORS}
 								fallbackValue={
-									PLAYER_COLOR_FALLBACKS.play_button_icon_color
+									PLAYER_COLOR_FALLBACKS.play_button_secondary_color
 								}
 							/>
 						</div>

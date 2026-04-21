@@ -147,17 +147,6 @@ export default function Edit(props) {
 		effectiveAttributes.embedcode
 	);
 
-	const blockProps = useBlockProps({
-		className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${
-			hasTitleFeatures ? 'videopack-video-title-visible' : ''
-		}`,
-		style: {
-			'--videopack-mejs-controls-svg': mejsSvgPath
-				? `url("${mejsSvgPath}")`
-				: undefined,
-		},
-	});
-
 	const contextValue = useMemo(() => {
 		const result = {
 			...context,
@@ -177,6 +166,23 @@ export default function Edit(props) {
 
 		return result;
 	}, [context, effectiveAttributes, resolvedPostId, isContextual]);
+
+	const blockProps = useBlockProps({
+		className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${
+			hasTitleFeatures ? 'videopack-video-title-visible' : ''
+		} ${
+			getEffectiveValue('play_button_color', {}, contextValue) ? 'videopack-has-play-button-color' : ''
+		} ${
+			getEffectiveValue('play_button_secondary_color', {}, contextValue) ? 'videopack-has-play-button-secondary-color' : ''
+		}`,
+		style: {
+			'--videopack-mejs-controls-svg': mejsSvgPath
+				? `url("${mejsSvgPath}")`
+				: undefined,
+			'--videopack-play-button-color': getEffectiveValue('play_button_color', {}, contextValue),
+			'--videopack-play-button-secondary-color': getEffectiveValue('play_button_secondary_color', {}, contextValue),
+		},
+	});
 
 	// Map context back to attributes for the VideoPlayer component
 	const attributes = useMemo(() => {
@@ -210,8 +216,8 @@ export default function Edit(props) {
 				{},
 				contextValue
 			),
-			play_button_icon_color: getEffectiveValue(
-				'play_button_icon_color',
+			play_button_secondary_color: getEffectiveValue(
+				'play_button_secondary_color',
 				{},
 				contextValue
 			),
