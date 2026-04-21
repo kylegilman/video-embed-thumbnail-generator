@@ -78,12 +78,12 @@ function VideoTitle({
   title: manualTitle,
   tagName: Tag = 'h3',
   textAlign,
-  isOverlay,
-  downloadlink,
-  embedcode,
+  isOverlay = false,
+  downloadlink = false,
+  embedcode = false,
   embedlink,
-  overlay_title,
-  showBackground,
+  overlay_title = true,
+  showBackground = true,
   onTitleChange,
   barStyle = {},
   // New prop for inner bar styling
@@ -93,28 +93,14 @@ function VideoTitle({
   skin,
   title_color,
   title_background_color,
-  context = {},
-  ...attributes // Catch-all for renamed attributes
+  attributes = {},
+  context = {}
 }) {
-  const effectiveEmbedcode = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('embedcode', attributes, context);
-  const effectiveOverlayTitle = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('overlay_title', attributes, context);
-  const effectiveDownloadlink = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('downloadlink', attributes, context);
-  const effectiveShowBackground = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('showBackground', attributes, context);
-  const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
-  const effectiveSkin = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('skin', {
-    skin
-  }, context);
-  const effectiveTitleColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('title_color', {
-    title_color
-  }, context);
-  const effectiveTitleBgColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('title_background_color', {
-    title_background_color
-  }, context);
   const {
     attachmentTitle,
     isResolving
   } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_4__.useSelect)(select => {
-    if (!postId) {
+    if (!postId || postId < 1) {
       return {
         attachmentTitle: '',
         isResolving: false
@@ -141,12 +127,8 @@ function VideoTitle({
     return '';
   }, [embedlink]);
   const [currentEmbedCode, setCurrentEmbedCode] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(baseEmbedLink());
-  const displayTitle = (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(manualTitle || attachmentTitle || '');
-  const finalTextAlign = textAlign || (isInsideThumbnail ? 'center' : isOverlay ? 'left' : undefined);
-  let placeholder = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Video Title', 'video-embed-thumbnail-generator');
-  if (postId) {
-    placeholder = attachmentTitle ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('(Untitled Video)', 'video-embed-thumbnail-generator') : '';
-  }
+  const titleFromContext = context['videopack/title'];
+  const displayTitle = (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(manualTitle || titleFromContext || attachmentTitle || '');
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     const originalEmbedLink = baseEmbedLink();
     if (!originalEmbedLink) {
@@ -174,21 +156,31 @@ function VideoTitle({
     const newEmbedCode = `<iframe src="${src}" width="960" height="540" style="border:0; width:100%; aspect-ratio:16/9;" allow="${allowPolicy}" allowfullscreen credentialless sandbox="${sandboxPolicy}" loading="lazy" title="${iframeTitle}" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
     setCurrentEmbedCode(newEmbedCode);
   }, [startAtEnabled, startAtTime, baseEmbedLink, displayTitle]);
+  if (isResolving && !displayTitle) {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Spinner, {});
+  }
+  const effectiveEmbedcode = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('embedcode', attributes, context);
+  const effectiveOverlayTitle = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('overlay_title', attributes, context);
+  const effectiveDownloadlink = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('downloadlink', attributes, context);
+  const effectiveShowBackground = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('showBackground', attributes, context);
+  const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
+  const effectiveSkin = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('skin', attributes, context);
+  const effectiveTitleColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('title_color', attributes, context);
+  const effectiveTitleBgColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('title_background_color', attributes, context);
+  const finalTextAlign = textAlign || (isInsideThumbnail ? 'center' : isOverlay ? 'left' : undefined);
+  let placeholder = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Video Title', 'video-embed-thumbnail-generator');
+  if (postId) {
+    placeholder = attachmentTitle ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('(Untitled Video)', 'video-embed-thumbnail-generator') : '';
+  }
   const titleClass = isInsideThumbnail ? 'videopack-thumbnail-title-text' : isOverlay ? 'videopack-title' : 'videopack-video-title';
   const iconsClass = 'videopack-meta-icons';
   const finalBlockProps = blockProps || {
-    className: `videopack-video-title-block videopack-video-title-wrapper ${effectiveSkin} ${isOverlay ? `is-overlay position-${position}` : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayer ? 'is-inside-player' : ''} ${!postId && !manualTitle ? 'no-title' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} has-text-align-${finalTextAlign}`,
+    className: `videopack-video-title-block videopack-video-title-wrapper ${isOverlay ? effectiveSkin : ''} ${isOverlay ? `is-overlay position-${position}` : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayer ? 'is-inside-player' : ''} ${!postId && !manualTitle ? 'no-title' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} has-text-align-${finalTextAlign}`,
     style: {
       '--videopack-title-color': effectiveTitleColor || undefined,
       '--videopack-title-background-color': effectiveTitleBgColor || undefined
     }
   };
-  if (isResolving) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("div", {
-      ...finalBlockProps,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Spinner, {})
-    });
-  }
   const barClass = `videopack-video-title ${isOverlay ? 'is-overlay' : ''} ${!showBackground && isOverlay ? 'has-no-background' : ''} ${isInsideThumbnail ? 'videopack-thumbnail-title' : ''} ${isInsidePlayer ? `videopack-title-${position}` : ''}`.trim();
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)("div", {
     ...finalBlockProps,
@@ -395,7 +387,7 @@ function Edit(props) {
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.InspectorControls, {
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Videopack: Design', 'video-embed-thumbnail-generator'),
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Colors', 'video-embed-thumbnail-generator'),
         initialOpen: true,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)("div", {
           className: "videopack-color-section",
@@ -432,6 +424,7 @@ function Edit(props) {
       })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(VideoTitle, {
       blockProps: blockProps,
+      attributes: attributes,
       postId: postId,
       title: title,
       clientId: clientId,
@@ -566,7 +559,7 @@ const getColorFallbacks = settings => {
     title_color: settings?.title_color || '#ffffff',
     title_background_color: settings?.title_background_color || '#2b333f',
     play_button_color: settings?.play_button_color || '#ffffff',
-    play_button_icon_color: settings?.play_button_icon_color || '#ffffff',
+    play_button_secondary_color: settings?.play_button_secondary_color || '#ffffff',
     control_bar_bg_color: settings?.control_bar_bg_color || '#2b333f',
     control_bar_color: settings?.control_bar_color || '#ffffff',
     pagination_color: settings?.pagination_color || '#1e1e1e',
@@ -578,36 +571,34 @@ const getColorFallbacks = settings => {
     fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
     fallbacks.control_bar_bg_color = 'rgba(0, 0, 0, 0.35)';
     fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_icon_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#ffffff';
   } else if (embed_method?.startsWith('Video.js')) {
     // Default skin (vjs-theme-videopack) defaults
-    fallbacks.play_button_color = '#2b333f'; // Videopack Grey accent
+    fallbacks.play_button_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
 
     switch (skin) {
       case 'vjs-theme-city':
         fallbacks.title_background_color = '#bf3b4d';
-        fallbacks.play_button_color = '#bf3b4d';
         fallbacks.control_bar_bg_color = '#000000';
         break;
       case 'vjs-theme-fantasy':
         fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_color = '#9f44b4';
-        fallbacks.play_button_icon_color = '#9f44b4';
+        fallbacks.play_button_secondary_color = '#9f44b4';
         break;
       case 'vjs-theme-forest':
         fallbacks.title_background_color = '#6fb04e';
-        fallbacks.play_button_color = '#6fb04e';
+        fallbacks.play_button_secondary_color = '#6fb04e';
         fallbacks.control_bar_bg_color = 'transparent';
         break;
       case 'vjs-theme-sea':
         fallbacks.title_background_color = '#4176bc';
-        fallbacks.play_button_color = '#4176bc';
-        fallbacks.play_button_icon_color = '#ffffff';
+        fallbacks.play_button_secondary_color = '#4176bc';
         fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
         break;
       case 'kg-video-js-skin':
         fallbacks.title_background_color = '#000000';
-        fallbacks.play_button_color = '#000000';
+        fallbacks.play_button_secondary_color = '#000000';
         fallbacks.control_bar_bg_color = '#000000';
         break;
     }

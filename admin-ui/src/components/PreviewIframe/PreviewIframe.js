@@ -153,6 +153,13 @@ const PreviewIframe = ({
 				head.appendChild(style);
 			}
 
+			// Replicate global configuration context into the iframe.
+			if (window.videopack_config) {
+				contentRef.contentWindow.videopack_config = {
+					...window.videopack_config,
+				};
+			}
+
 			// Inject theme styles from WordPress global styles.
 			if (!doc.getElementById('videopack-global-styles')) {
 				const globalStyles =

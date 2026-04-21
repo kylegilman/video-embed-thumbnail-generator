@@ -526,7 +526,7 @@ class Player {
 			'title_color'                 => (string) ( $this->atts['title_color'] ?? '' ),
 			'title_background_color'      => (string) ( $this->atts['title_background_color'] ?? '' ),
 			'play_button_color'           => (string) ( $this->atts['play_button_color'] ?? '' ),
-			'play_button_icon_color'      => (string) ( $this->atts['play_button_icon_color'] ?? '' ),
+			'play_button_secondary_color' => (string) ( $this->atts['play_button_secondary_color'] ?? '' ),
 			'control_bar_bg_color'        => (string) ( $this->atts['control_bar_bg_color'] ?? '' ),
 			'control_bar_color'           => (string) ( $this->atts['control_bar_color'] ?? '' ),
 			'pagination_color'            => (string) ( $this->atts['pagination_color'] ?? '' ),

@@ -38,7 +38,7 @@
     "videopack/fixed_aspect",
     "videopack/fullwidth",
     "videopack/play_button_color",
-    "videopack/play_button_icon_color",
+    "videopack/play_button_secondary_color",
     "videopack/control_bar_bg_color",
     "videopack/control_bar_color",
     "videopack/title_color",

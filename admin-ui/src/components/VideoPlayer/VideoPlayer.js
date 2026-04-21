@@ -125,7 +125,7 @@ const VideoPlayer = ({
 		playback_rate,
 		default_ratio,
 		play_button_color,
-		play_button_icon_color,
+		play_button_secondary_color,
 		control_bar_bg_color,
 		control_bar_color,
 		title_color,
@@ -201,16 +201,17 @@ const VideoPlayer = ({
 	const playerStyles = useMemo(() => {
 		const styles = {};
 		const config = window.videopack_config || {};
-		if (config.mejs_controls_svg) {
-			styles['--videopack-mejs-controls-svg'] =
-				`url(${config.mejs_controls_svg})`;
+		const mejsSvgPath = config.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
+
+		if (embed_method === 'WordPress Default' && mejsSvgPath) {
+			styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
 		}
 		if (play_button_color) {
 			styles['--videopack-play-button-color'] = play_button_color;
 		}
-		if (play_button_icon_color) {
-			styles['--videopack-play-button-icon-color'] =
-				play_button_icon_color;
+		if (play_button_secondary_color) {
+			styles['--videopack-play-button-secondary-color'] =
+				play_button_secondary_color;
 		}
 		if (control_bar_bg_color) {
 			styles['--videopack-control-bar-bg-color'] = control_bar_bg_color;
@@ -229,7 +230,7 @@ const VideoPlayer = ({
 		return styles;
 	}, [
 		play_button_color,
-		play_button_icon_color,
+		play_button_secondary_color,
 		control_bar_bg_color,
 		control_bar_color,
 		title_color,
@@ -248,7 +249,7 @@ const VideoPlayer = ({
 	}, [isFixedAspect, default_ratio, aspectRatio]);
 
 	const wrapperClasses = useMemo(() => {
-		const classes = ['videopack-wrapper', 'videopack-video-title-visible'];
+		const classes = ['videopack-video-block-container', 'videopack-wrapper', 'videopack-video-title-visible'];
 		if (isFixedAspect || aspectRatio) {
 			classes.push('videopack-has-aspect-ratio');
 			if (isFixedAspect) {
@@ -258,8 +259,8 @@ const VideoPlayer = ({
 		if (play_button_color) {
 			classes.push('videopack-has-play-button-color');
 		}
-		if (play_button_icon_color) {
-			classes.push('videopack-has-play-button-icon-color');
+		if (play_button_secondary_color) {
+			classes.push('videopack-has-play-button-secondary-color');
 		}
 		if (control_bar_bg_color) {
 			classes.push('videopack-has-control-bar-bg-color');
@@ -276,7 +277,7 @@ const VideoPlayer = ({
 		return classes.join(' ');
 	}, [
 		play_button_color,
-		play_button_icon_color,
+		play_button_secondary_color,
 		control_bar_bg_color,
 		control_bar_color,
 		title_color,

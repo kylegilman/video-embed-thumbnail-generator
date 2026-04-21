@@ -85,10 +85,10 @@ class Modular_Renderer {
 		$colors     = array(
 			'title-color'            => 'title_color',
 			'title-background-color' => 'title_background_color',
-			'play-button-color'      => 'play_button_color',
-			'play-button-icon-color' => 'play_button_icon_color',
-			'control-bar-bg-color'   => 'control_bar_bg_color',
-			'control-bar-color'      => 'control_bar_color',
+			'play-button-color'           => 'play_button_color',
+			'play-button-secondary-color' => 'play_button_secondary_color',
+			'control-bar-bg-color'        => 'control_bar_bg_color',
+			'control-bar-color'           => 'control_bar_color',
 		);
 
 		foreach ( $colors as $variable => $attribute ) {
@@ -108,8 +108,8 @@ class Modular_Renderer {
 					$classes[] = 'videopack-has-title-color';
 				} elseif ( 'play-button-color' === $variable ) {
 					$classes[] = 'videopack-has-play-button-color';
-				} elseif ( 'play-button-icon-color' === $variable ) {
-					$classes[] = 'videopack-has-play-button-icon-color';
+				} elseif ( 'play-button-secondary-color' === $variable ) {
+					$classes[] = 'videopack-has-play-button-secondary-color';
 				} elseif ( 'control-bar-bg-color' === $variable ) {
 					$classes[] = 'videopack-has-control-bar-bg-color';
 				} elseif ( 'control-bar-color' === $variable ) {
@@ -123,7 +123,7 @@ class Modular_Renderer {
 		}
 
 		// Add MEJS controls SVG for mask coloring.
-		$style_vars[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediaelement/mejs-controls.svg' ) . ')';
+		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
 
 		$wrapper_attrs = '';
 		if ( $is_block ) {

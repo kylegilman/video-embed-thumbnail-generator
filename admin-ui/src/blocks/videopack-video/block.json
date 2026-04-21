@@ -16,7 +16,7 @@
 		"videopack/downloadlink",
 		"videopack/embedcode",
 		"videopack/play_button_color",
-		"videopack/play_button_icon_color",
+		"videopack/play_button_secondary_color",
 		"videopack/control_bar_bg_color",
 		"videopack/control_bar_color"
 	],
@@ -151,7 +151,7 @@
 		"play_button_color": {
 			"type": "string"
 		},
-		"play_button_icon_color": {
+		"play_button_secondary_color": {
 			"type": "string"
 		},
 		"control_bar_bg_color": {

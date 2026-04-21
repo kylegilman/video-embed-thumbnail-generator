@@ -10,16 +10,20 @@
 		"videopack/postId",
 		"videopack/skin",
 		"videopack/play_button_color",
-		"videopack/play_button_icon_color",
+		"videopack/play_button_secondary_color",
 		"videopack/isInsideThumbnail",
 		"videopack/isInsidePlayer"
 	],
-	"supports": {
-		"html": false,
-		"color": {
-			"text": true,
-			"background": true
+	"attributes": {
+		"play_button_color": {
+			"type": "string"
+		},
+		"play_button_secondary_color": {
+			"type": "string"
 		}
+	},
+	"supports": {
+		"html": false
 	},
 	"textdomain": "video-embed-thumbnail-generator",
 	"editorScript": "file:./index.js",

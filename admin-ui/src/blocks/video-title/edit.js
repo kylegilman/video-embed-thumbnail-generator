@@ -59,12 +59,12 @@ export function VideoTitle({
 	title: manualTitle,
 	tagName: Tag = 'h3',
 	textAlign,
-	isOverlay,
-	downloadlink,
-	embedcode,
+	isOverlay = false,
+	downloadlink = false,
+	embedcode = false,
 	embedlink,
-	overlay_title,
-	showBackground,
+	overlay_title = true,
+	showBackground = true,
 	onTitleChange,
 	barStyle = {}, // New prop for inner bar styling
 	isInsideThumbnail,
@@ -73,21 +73,12 @@ export function VideoTitle({
 	skin,
 	title_color,
 	title_background_color,
-	context = {},
-	...attributes // Catch-all for renamed attributes
+	attributes = {},
+	context = {}
 }) {
-	const effectiveEmbedcode = getEffectiveValue('embedcode', attributes, context);
-	const effectiveOverlayTitle = getEffectiveValue('overlay_title', attributes, context);
-	const effectiveDownloadlink = getEffectiveValue('downloadlink', attributes, context);
-	const effectiveShowBackground = getEffectiveValue('showBackground', attributes, context);
-	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
-	const effectiveSkin = getEffectiveValue('skin', { skin }, context);
-	const effectiveTitleColor = getEffectiveValue('title_color', { title_color }, context);
-	const effectiveTitleBgColor = getEffectiveValue('title_background_color', { title_background_color }, context);
-
 	const { attachmentTitle, isResolving } = useSelect(
 		(select) => {
-			if (!postId) {
+			if (!postId || postId < 1) {
 				return { attachmentTitle: '', isResolving: false };
 			}
 			const { getEntityRecord, isResolving: isResolvingSelector } =
@@ -119,15 +110,10 @@ export function VideoTitle({
 
 	const [currentEmbedCode, setCurrentEmbedCode] = useState(baseEmbedLink());
 
-	const displayTitle = decodeEntities(manualTitle || attachmentTitle || '');
-	const finalTextAlign = textAlign || (isInsideThumbnail ? 'center' : isOverlay ? 'left' : undefined);
-
-	let placeholder = __('Video Title', 'video-embed-thumbnail-generator');
-	if (postId) {
-		placeholder = attachmentTitle
-			? __('(Untitled Video)', 'video-embed-thumbnail-generator')
-			: '';
-	}
+	const titleFromContext = context['videopack/title'];
+	const displayTitle = decodeEntities(
+		manualTitle || titleFromContext || attachmentTitle || ''
+	);
 
 	useEffect(() => {
 		const originalEmbedLink = baseEmbedLink();
@@ -168,6 +154,27 @@ export function VideoTitle({
 		setCurrentEmbedCode(newEmbedCode);
 	}, [startAtEnabled, startAtTime, baseEmbedLink, displayTitle]);
 
+	if (isResolving && !displayTitle) {
+		return <Spinner />;
+	}
+
+	const effectiveEmbedcode = getEffectiveValue('embedcode', attributes, context);
+	const effectiveOverlayTitle = getEffectiveValue('overlay_title', attributes, context);
+	const effectiveDownloadlink = getEffectiveValue('downloadlink', attributes, context);
+	const effectiveShowBackground = getEffectiveValue('showBackground', attributes, context);
+	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
+	const effectiveSkin = getEffectiveValue('skin', attributes, context);
+	const effectiveTitleColor = getEffectiveValue('title_color', attributes, context);
+	const effectiveTitleBgColor = getEffectiveValue('title_background_color', attributes, context);
+
+	const finalTextAlign = textAlign || (isInsideThumbnail ? 'center' : isOverlay ? 'left' : undefined);
+
+	let placeholder = __('Video Title', 'video-embed-thumbnail-generator');
+	if (postId) {
+		placeholder = attachmentTitle
+			? __('(Untitled Video)', 'video-embed-thumbnail-generator')
+			: '';
+	}
 	const titleClass = isInsideThumbnail
 		? 'videopack-thumbnail-title-text'
 		: isOverlay
@@ -176,11 +183,13 @@ export function VideoTitle({
 	const iconsClass = 'videopack-meta-icons';
 
 	const finalBlockProps = blockProps || {
-		className: `videopack-video-title-block videopack-video-title-wrapper ${effectiveSkin} ${
-			isOverlay ? `is-overlay position-${position}` : ''
-		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
-			isInsidePlayer ? 'is-inside-player' : ''
-		} ${!postId && !manualTitle ? 'no-title' : ''} ${
+		className: `videopack-video-title-block videopack-video-title-wrapper ${
+			isOverlay ? effectiveSkin : ''
+		} ${isOverlay ? `is-overlay position-${position}` : ''} ${
+			isInsideThumbnail ? 'is-inside-thumbnail' : ''
+		} ${isInsidePlayer ? 'is-inside-player' : ''} ${
+			!postId && !manualTitle ? 'no-title' : ''
+		} ${
 			effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
 		} has-text-align-${finalTextAlign}`,
 		style: {
@@ -190,13 +199,6 @@ export function VideoTitle({
 		},
 	};
 
-	if (isResolving) {
-		return (
-			<div {...finalBlockProps}>
-				<Spinner />
-			</div>
-		);
-	}
 
 	const barClass = `videopack-video-title ${
 		isOverlay ? 'is-overlay' : ''
@@ -504,7 +506,7 @@ export default function Edit(props) {
 			<InspectorControls>
 				<PanelBody
 					title={__(
-						'Videopack: Design',
+						'Colors',
 						'video-embed-thumbnail-generator'
 					)}
 					initialOpen={true}
@@ -552,6 +554,7 @@ export default function Edit(props) {
 			</InspectorControls>
 			<VideoTitle
 				blockProps={blockProps}
+				attributes={attributes}
 				postId={postId}
 				title={title}
 				clientId={clientId}

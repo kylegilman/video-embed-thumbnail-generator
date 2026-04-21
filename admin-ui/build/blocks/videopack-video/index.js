@@ -1244,7 +1244,13 @@ const Edit = ({
   } = attributes;
   const postId = context['videopack/postId'];
   const [options, setOptions] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)();
-  const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)();
+  const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
+  const mejsSvgPath = config?.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
+  const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)({
+    style: {
+      '--videopack-mejs-controls-svg': mejsSvgPath ? `url("${mejsSvgPath}")` : undefined
+    }
+  });
   const hasAttemptedInitialUpload = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useRef)(false);
   const {
     createErrorNotice
@@ -5120,7 +5126,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // Settings that can be stored per-video in _videopack-meta.
-const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted', 'controls', 'volume', 'preload', 'playback_rate', 'playsinline', 'right_click', 'gifmode', 'fixed_aspect', 'align', 'legacy_dimensions', 'resize', 'fullwidth', 'embeddable', 'embedcode', 'overlay_title', 'views', 'starts', 'play_25', 'play_50', 'play_75', 'completeviews', 'watermark', 'watermark_link_to', 'watermark_url', 'poster', 'poster_id', 'total_thumbnails', 'track', 'title_color', 'title_background_color', 'play_button_color', 'play_button_icon_color', 'control_bar_bg_color', 'control_bar_color'];
+const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted', 'controls', 'volume', 'preload', 'playback_rate', 'playsinline', 'right_click', 'gifmode', 'fixed_aspect', 'align', 'legacy_dimensions', 'resize', 'fullwidth', 'embeddable', 'embedcode', 'overlay_title', 'views', 'starts', 'play_25', 'play_50', 'play_75', 'completeviews', 'watermark', 'watermark_link_to', 'watermark_url', 'poster', 'poster_id', 'total_thumbnails', 'track', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color'];
 
 /**
  * Hook to manage video settings and synchronize them with attachment metadata.
@@ -5284,7 +5290,7 @@ const getColorFallbacks = settings => {
     title_color: settings?.title_color || '#ffffff',
     title_background_color: settings?.title_background_color || '#2b333f',
     play_button_color: settings?.play_button_color || '#ffffff',
-    play_button_icon_color: settings?.play_button_icon_color || '#ffffff',
+    play_button_secondary_color: settings?.play_button_secondary_color || '#ffffff',
     control_bar_bg_color: settings?.control_bar_bg_color || '#2b333f',
     control_bar_color: settings?.control_bar_color || '#ffffff',
     pagination_color: settings?.pagination_color || '#1e1e1e',
@@ -5296,36 +5302,34 @@ const getColorFallbacks = settings => {
     fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
     fallbacks.control_bar_bg_color = 'rgba(0, 0, 0, 0.35)';
     fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_icon_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#ffffff';
   } else if (embed_method?.startsWith('Video.js')) {
     // Default skin (vjs-theme-videopack) defaults
-    fallbacks.play_button_color = '#2b333f'; // Videopack Grey accent
+    fallbacks.play_button_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
 
     switch (skin) {
       case 'vjs-theme-city':
         fallbacks.title_background_color = '#bf3b4d';
-        fallbacks.play_button_color = '#bf3b4d';
         fallbacks.control_bar_bg_color = '#000000';
         break;
       case 'vjs-theme-fantasy':
         fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_color = '#9f44b4';
-        fallbacks.play_button_icon_color = '#9f44b4';
+        fallbacks.play_button_secondary_color = '#9f44b4';
         break;
       case 'vjs-theme-forest':
         fallbacks.title_background_color = '#6fb04e';
-        fallbacks.play_button_color = '#6fb04e';
+        fallbacks.play_button_secondary_color = '#6fb04e';
         fallbacks.control_bar_bg_color = 'transparent';
         break;
       case 'vjs-theme-sea':
         fallbacks.title_background_color = '#4176bc';
-        fallbacks.play_button_color = '#4176bc';
-        fallbacks.play_button_icon_color = '#ffffff';
+        fallbacks.play_button_secondary_color = '#4176bc';
         fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
         break;
       case 'kg-video-js-skin':
         fallbacks.title_background_color = '#000000';
-        fallbacks.play_button_color = '#000000';
+        fallbacks.play_button_secondary_color = '#000000';
         fallbacks.control_bar_bg_color = '#000000';
         break;
     }
@@ -6220,7 +6224,7 @@ var undo_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE
   \***********************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/videopack-video","title":"Videopack Video Player","category":"media","icon":"format-video","description":"Embed a single video with Videopack features.","usesContext":["videopack/postId","videopack/skin","videopack/views","videopack/overlay_title","videopack/title_color","videopack/title_background_color","videopack/downloadlink","videopack/embedcode","videopack/play_button_color","videopack/play_button_icon_color","videopack/control_bar_bg_color","videopack/control_bar_color"],"providesContext":{"videopack/postId":"id"},"supports":{"html":false,"align":true,"dimensions":{"aspectRatio":false,"height":false,"minHeight":false,"width":false},"spacing":{"margin":true,"padding":true},"filter":{"duotone":true}},"selectors":{"filter":{"duotone":".wp-block-videopack-videopack-video .vjs-poster img, .wp-block-videopack-videopack-video .mejs-poster img, .wp-block-videopack-videopack-video .mejs-poster"}},"example":{"attributes":{"src":"videopack-preview-video","title":"Sample Video","overlay_title":true}},"attributes":{"id":{"type":"number"},"src":{"type":"string"},"poster":{"type":"string"},"title":{"type":"string"},"caption":{"type":"string"},"width":{"type":"number"},"height":{"type":"number"},"skin":{"type":"string"},"autoplay":{"type":"boolean","default":false},"controls":{"type":"boolean","default":true},"loop":{"type":"boolean","default":false},"muted":{"type":"boolean","default":false},"playsinline":{"type":"boolean","default":false},"preload":{"type":"string","default":"metadata"},"volume":{"type":"number","default":1},"auto_res":{"type":"string"},"auto_codec":{"type":"string"},"sources":{"type":"array","default":[]},"source_groups":{"type":"object","default":{}},"text_tracks":{"type":"array","default":[]},"playback_rate":{"type":"boolean","default":false},"watermark":{"type":"string"},"watermark_styles":{"type":"object"},"watermark_link_to":{"type":"string"},"default_ratio":{"type":"string","default":"16 / 9"},"fixed_aspect":{"type":"string","default":"false"},"fullwidth":{"type":"boolean","default":false},"play_button_color":{"type":"string"},"play_button_icon_color":{"type":"string"},"control_bar_bg_color":{"type":"string"},"control_bar_color":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"textAlign":{"type":"string"},"downloadlink":{"type":"boolean","default":false},"overlay_title":{"type":"boolean","default":true},"views":{"type":"boolean","default":false},"embedcode":{"type":"boolean","default":false},"embedlink":{"type":"string"},"embed_method":{"type":"string","default":"Video.js"},"showCaption":{"type":"boolean","default":false},"showBackground":{"type":"boolean","default":true},"title_position":{"type":"string","default":"top"},"isInsidePlayer":{"type":"boolean","default":true},"restartCount":{"type":"number","default":0},"isInsidePlayerBlock":{"type":"boolean","default":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/videopack-video","title":"Videopack Video Player","category":"media","icon":"format-video","description":"Embed a single video with Videopack features.","usesContext":["videopack/postId","videopack/skin","videopack/views","videopack/overlay_title","videopack/title_color","videopack/title_background_color","videopack/downloadlink","videopack/embedcode","videopack/play_button_color","videopack/play_button_secondary_color","videopack/control_bar_bg_color","videopack/control_bar_color"],"providesContext":{"videopack/postId":"id"},"supports":{"html":false,"align":true,"dimensions":{"aspectRatio":false,"height":false,"minHeight":false,"width":false},"spacing":{"margin":true,"padding":true},"filter":{"duotone":true}},"selectors":{"filter":{"duotone":".wp-block-videopack-videopack-video .vjs-poster img, .wp-block-videopack-videopack-video .mejs-poster img, .wp-block-videopack-videopack-video .mejs-poster"}},"example":{"attributes":{"src":"videopack-preview-video","title":"Sample Video","overlay_title":true}},"attributes":{"id":{"type":"number"},"src":{"type":"string"},"poster":{"type":"string"},"title":{"type":"string"},"caption":{"type":"string"},"width":{"type":"number"},"height":{"type":"number"},"skin":{"type":"string"},"autoplay":{"type":"boolean","default":false},"controls":{"type":"boolean","default":true},"loop":{"type":"boolean","default":false},"muted":{"type":"boolean","default":false},"playsinline":{"type":"boolean","default":false},"preload":{"type":"string","default":"metadata"},"volume":{"type":"number","default":1},"auto_res":{"type":"string"},"auto_codec":{"type":"string"},"sources":{"type":"array","default":[]},"source_groups":{"type":"object","default":{}},"text_tracks":{"type":"array","default":[]},"playback_rate":{"type":"boolean","default":false},"watermark":{"type":"string"},"watermark_styles":{"type":"object"},"watermark_link_to":{"type":"string"},"default_ratio":{"type":"string","default":"16 / 9"},"fixed_aspect":{"type":"string","default":"false"},"fullwidth":{"type":"boolean","default":false},"play_button_color":{"type":"string"},"play_button_secondary_color":{"type":"string"},"control_bar_bg_color":{"type":"string"},"control_bar_color":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"textAlign":{"type":"string"},"downloadlink":{"type":"boolean","default":false},"overlay_title":{"type":"boolean","default":true},"views":{"type":"boolean","default":false},"embedcode":{"type":"boolean","default":false},"embedlink":{"type":"string"},"embed_method":{"type":"string","default":"Video.js"},"showCaption":{"type":"boolean","default":false},"showBackground":{"type":"boolean","default":true},"title_position":{"type":"string","default":"top"},"isInsidePlayer":{"type":"boolean","default":true},"restartCount":{"type":"number","default":0},"isInsidePlayerBlock":{"type":"boolean","default":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css"}');
 
 /***/ }
 

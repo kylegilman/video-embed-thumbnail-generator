@@ -586,7 +586,7 @@ import './tinymce.scss';
 							'downloadlink',
 							'overlay_title',
 							'play_button_color',
-							'play_button_icon_color',
+							'play_button_secondary_color',
 							'title_color',
 							'title_background_color',
 						];

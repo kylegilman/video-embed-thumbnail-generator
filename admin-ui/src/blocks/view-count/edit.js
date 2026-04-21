@@ -39,15 +39,15 @@ import './index.css';
  */
 export function ViewCount({
 	blockProps,
-	iconType,
-	showText,
+	iconType = 'none',
+	showText = true,
 	postId,
 	count,
-	isInsideThumbnail,
-	isOverlay,
-	textAlign,
-	position,
-	skin,
+	isInsideThumbnail = false,
+	isOverlay = false,
+	textAlign = 'right',
+	position = 'top',
+	skin = 'default',
 	title_color,
 	title_background_color,
 	context = {},
@@ -77,7 +77,7 @@ export function ViewCount({
 
 	const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail;
 
-	const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${effectiveSkin} ${
+	const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${actualIsOverlay ? effectiveSkin : ''} ${
 		actualIsOverlay ? 'is-overlay is-badge' : ''
 	} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 		effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
@@ -183,13 +183,13 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 	const position = attributes.position || context['videopack/position'] || 'top';
 
 	const blockProps = useBlockProps({
-		className: `videopack-view-count-block videopack-view-count-wrapper ${
-			isOverlay
-				? 'is-overlay is-badge'
-				: ''
-		} position-${position} has-text-align-${finalTextAlign} ${
+		className: `videopack-video-title-block videopack-video-title-wrapper ${isOverlay ? effectiveSkin : ''} ${
+			isOverlay ? `is-overlay position-${position}` : ''
+		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
+			isInsidePlayer ? 'is-inside-player' : ''
+		} ${!postId && !manualTitle ? 'no-title' : ''} ${
 			effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
-		}`,
+		} has-text-align-${finalTextAlign}`,
 		style: {
 			'--videopack-title-color': effectiveTitleColor || undefined,
 			'--videopack-title-background-color': effectiveTitleBgColor || undefined,
@@ -283,7 +283,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 			<InspectorControls>
 				<PanelBody
 					title={__(
-						'Videopack: Design',
+						'Colors',
 						'video-embed-thumbnail-generator'
 					)}
 					initialOpen={true}

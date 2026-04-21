@@ -18,14 +18,16 @@
 		},
 		"textAlign": {
 			"type": "string"
+		},
+		"title_color": {
+			"type": "string"
+		},
+		"title_background_color": {
+			"type": "string"
 		}
 	},
 	"supports": {
-		"html": false,
-		"color": {
-			"text": true,
-			"background": true
-		}
+		"html": false
 	},
 	"textdomain": "video-embed-thumbnail-generator",
 	"editorScript": "file:./index.js"

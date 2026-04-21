@@ -223,7 +223,20 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	const { id, src } = attributes;
 	const postId = context['videopack/postId'];
 	const [options, setOptions] = useState();
-	const blockProps = useBlockProps();
+	const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
+	const mejsSvgPath =
+		config?.mejs_controls_svg ||
+		(typeof window !== 'undefined'
+			? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
+			: '');
+
+	const blockProps = useBlockProps({
+		style: {
+			'--videopack-mejs-controls-svg': mejsSvgPath
+				? `url("${mejsSvgPath}")`
+				: undefined,
+		},
+	});
 	const hasAttemptedInitialUpload = useRef(false);
 	const { createErrorNotice } = useDispatch(noticesStore);
 	const { insertBlock } = useDispatch(blockEditorStore);

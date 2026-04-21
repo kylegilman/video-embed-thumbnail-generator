@@ -304,6 +304,7 @@
 .videopack-video-title-block,
 .videopack-video-player-engine-block) {
   --videopack-title-background-color: #141414;
+  --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
 :is(.videopack-wrapper,
 .videopack-gallery-wrapper,
@@ -564,6 +565,7 @@
 }
 .videopack-share-container {
   display: flex;
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
@@ -642,10 +644,10 @@
 .videopack-gallery-wrapper,
 .gallery-thumbnail {
   /* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
-  --videopack-play-button-bg-color-alpha: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%);
-  --videopack-play-button-bg-color-alpha-hover: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%);
+  --videopack-play-button-bg-color-alpha: color-mix(in srgb, var(--videopack-play-button-secondary-color, var(--videopack-play-button-color, transparent)), transparent 30%);
+  --videopack-play-button-bg-color-alpha-hover: color-mix(in srgb, var(--videopack-play-button-secondary-color, var(--videopack-play-button-color, transparent)), transparent 50%);
   /* Combined Foreground Color: Icon color takes precedence over Accent color for symbols */
-  --videopack-play-button-foreground-color: var(--videopack-play-button-icon-color, var(--videopack-play-button-color));
+  --videopack-play-button-foreground-color: var(--videopack-play-button-color, #fff);
 }
 /* Video.js Big Play Button and Gallery Overlays */
 /* MEJS Overlay Button Base */
@@ -662,26 +664,26 @@
   z-index: 2;
 }
 /* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color {
   /* The symbol (icon) should always use the foreground color (Icon || Accent) */
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-big-play-button::before,
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-big-play-button .vjs-icon-placeholder::before, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-big-play-button::before,
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-big-play-button .vjs-icon-placeholder::before {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .vjs-big-play-button::before,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .vjs-big-play-button .vjs-icon-placeholder::before, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .vjs-big-play-button::before,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .vjs-big-play-button .vjs-icon-placeholder::before {
   color: var(--videopack-play-button-foreground-color);
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color {
   /* The border should always use the accent color if set */
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-big-play-button {
-  border-color: var(--videopack-play-button-color, inherit);
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .vjs-big-play-button {
+  border-color: var(--videopack-play-button-secondary-color, inherit);
   transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color {
   /* Forest theme special handling (Uses solid mask instead of standard symbol) */
   /* Increased specificity to override skin defaults in players and galleries without !important */
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-theme-forest .vjs-big-play-button {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .vjs-theme-forest .vjs-big-play-button {
   background: none;
   background-color: var(--videopack-play-button-foreground-color);
   mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2788%27 height=%2788%27 fill=%27%23000%27%3E%3Cpath fill-rule=%27evenodd%27 d=%27M44 88C19.738 88 0 68.262 0 44S19.738 0 44 0s44 19.738 44 44-19.738 44-44 44zm0-85C21.393 3 3 21.393 3 44c0 22.608 18.393 41 41 41s41-18.392 41-41C85 21.393 66.607 3 44 3zm16.063 43.898L39.629 60.741a3.496 3.496 0 01-3.604.194 3.492 3.492 0 01-1.859-3.092V30.158c0-1.299.712-2.483 1.859-3.092a3.487 3.487 0 013.604.194l20.433 13.843a3.497 3.497 0 01.001 5.795zm-1.683-3.311L37.946 29.744a.49.49 0 00-.276-.09.51.51 0 00-.239.062.483.483 0 00-.265.442v27.685c0 .262.166.389.265.442.1.053.299.118.515-.028L58.38 44.414A.489.489 0 0058.6 44a.49.49 0 00-.22-.413z%27/%3E%3C/svg%3E");
@@ -693,37 +695,38 @@
   mask-position: center;
   -webkit-mask-position: center;
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button:hover, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button:focus, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-theme-forest .vjs-big-play-button:hover, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-theme-forest .vjs-big-play-button:focus {
-  background-color: var(--videopack-play-button-color);
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button:hover, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button:focus, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .vjs-theme-forest .vjs-big-play-button:hover, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .vjs-theme-forest .vjs-big-play-button:focus {
+  background-color: var(--videopack-play-button-secondary-color);
   opacity: 0.8;
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color {
   /* 2. Accent Color Only Logic: Semi-transparent backgrounds for traditional skins */
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button {
   background-color: var(--videopack-play-button-bg-color-alpha);
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default):hover .vjs-big-play-button,
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:hover,
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:focus, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default):hover .vjs-big-play-button,
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:hover,
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:focus {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default):hover .vjs-big-play-button,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:hover,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:focus, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default):hover .vjs-big-play-button,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:hover,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:focus {
   background-color: var(--videopack-play-button-bg-color-alpha-hover);
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color {
   /* MEJS Overlay Button Color/Mask */
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .mejs-overlay-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .mejs-overlay-button {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .mejs-overlay-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .mejs-overlay-button {
   background-image: none;
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .mejs-overlay-button::after, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .mejs-overlay-button::after {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .mejs-overlay-button::after, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .mejs-overlay-button::after {
   content: "";
   position: absolute;
   top: 0;
   right: 0;
   left: 0;
   bottom: 0;
-  background-color: var(--videopack-play-button-color, transparent);
+  /* Base state uses 'Play Button Color' (Primary) */
+  background-color: var(--videopack-play-button-color, #fff);
   mask-image: var(--videopack-mejs-controls-svg);
   -webkit-mask-image: var(--videopack-mejs-controls-svg);
   mask-position: 0 -39px;
@@ -733,8 +736,9 @@
   pointer-events: none;
   transition: background-color 0.15s ease;
 }
-:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .mejs-overlay-button:hover::after, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .mejs-overlay-button:hover::after {
-  background-color: var(--videopack-play-button-icon-color, var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color)));
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color .mejs-overlay-button:hover::after, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color .mejs-overlay-button:hover::after {
+  /* Hover state uses 'Play Button Hover' (Secondary) or falls back to Primary/Derived Alpha */
+  background-color: var(--videopack-play-button-secondary-color, var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color)));
   mask-position: -80px -39px;
   -webkit-mask-position: -80px -39px;
 }
@@ -915,10 +919,6 @@
   bottom: 0;
 }
 .videopack-wrapper {
-  /* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
-  --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
-  --videopack-play-button-bg-color-alpha: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%);
-  --videopack-play-button-bg-color-alpha-hover: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%);
   /* Video.js Overrides */
 }
 .videopack-wrapper.videopack-has-control-bar-color .video-js {
@@ -954,21 +954,12 @@
 }
 .videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-control:not(.vjs-progress-control),
 .videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-time-control,
-.videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-big-play-button,
 .videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-menu-button .vjs-menu-content {
   background-color: var(--videopack-control-bar-bg-color-alpha);
 }
 .videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-control.vjs-volume-panel-horizontal .vjs-mute-control,
 .videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-control.vjs-volume-panel-horizontal .vjs-volume-control {
   background-color: transparent;
-}
-.videopack-wrapper.videopack-has-play-button-color .video-js.vjs-theme-videopack .vjs-big-play-button {
-  background-color: var(--videopack-play-button-bg-color-alpha);
-}
-.videopack-wrapper.videopack-has-play-button-color .video-js.vjs-theme-videopack:hover .vjs-big-play-button,
-.videopack-wrapper.videopack-has-play-button-color .video-js.vjs-theme-videopack .vjs-big-play-button:hover,
-.videopack-wrapper.videopack-has-play-button-color .video-js.vjs-theme-videopack .vjs-big-play-button:focus {
-  background-color: var(--videopack-play-button-bg-color-alpha-hover);
 }
 .videopack-wrapper.videopack-has-control-bar-bg-color .video-js:not(.vjs-theme-videopack):not(.vjs-theme-city) .vjs-control-bar {
   background-color: var(--videopack-control-bar-bg-color-alpha);

@@ -47,7 +47,11 @@ export default function useVideoQuery(attributes, previewPostId) {
 
 	const { isSaving, isAutosaving } = useSelect(
 		(select) => {
-			const { isSavingPost, isAutosavingPost } = select('core/editor');
+			const editorStore = select('core/editor');
+			if (!editorStore) {
+				return { isSaving: false, isAutosaving: false };
+			}
+			const { isSavingPost, isAutosavingPost } = editorStore;
 			return {
 				isSaving: isSavingPost ? isSavingPost() : false,
 				isAutosaving: isAutosavingPost ? isAutosavingPost() : false,

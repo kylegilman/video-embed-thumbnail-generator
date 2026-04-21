@@ -377,6 +377,7 @@
 .videopack-video-title-block,
 .videopack-video-player-engine-block) {
   --videopack-title-background-color: #141414;
+  --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
 :is(.videopack-wrapper,
 .videopack-gallery-wrapper,
@@ -637,6 +638,7 @@
 }
 .videopack-share-container {
   display: flex;
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;

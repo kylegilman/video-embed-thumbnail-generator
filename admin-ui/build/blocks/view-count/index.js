@@ -214,15 +214,15 @@ __webpack_require__.r(__webpack_exports__);
 
 function ViewCount({
   blockProps,
-  iconType,
-  showText,
+  iconType = 'none',
+  showText = true,
   postId,
   count,
-  isInsideThumbnail,
-  isOverlay,
-  textAlign,
-  position,
-  skin,
+  isInsideThumbnail = false,
+  isOverlay = false,
+  textAlign = 'right',
+  position = 'top',
+  skin = 'default',
   title_color,
   title_background_color,
   context = {}
@@ -257,7 +257,7 @@ function ViewCount({
     };
   }, [postId, count]);
   const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail;
-  const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${effectiveSkin} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} position-${position || 'top'} has-text-align-${textAlign || 'right'}`;
+  const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${actualIsOverlay ? effectiveSkin : ''} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} position-${position || 'top'} has-text-align-${textAlign || 'right'}`;
   const finalBlockProps = blockProps || {
     className: wrapperClass,
     style: {
@@ -333,7 +333,7 @@ function Edit({
   const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
   const position = attributes.position || context['videopack/position'] || 'top';
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)({
-    className: `videopack-view-count-block videopack-view-count-wrapper ${isOverlay ? 'is-overlay is-badge' : ''} position-${position} has-text-align-${finalTextAlign} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''}`,
+    className: `videopack-video-title-block videopack-video-title-wrapper ${isOverlay ? effectiveSkin : ''} ${isOverlay ? `is-overlay position-${position}` : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayer ? 'is-inside-player' : ''} ${!postId && !manualTitle ? 'no-title' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} has-text-align-${finalTextAlign}`,
     style: {
       '--videopack-title-color': effectiveTitleColor || undefined,
       '--videopack-title-background-color': effectiveTitleBgColor || undefined
@@ -400,7 +400,7 @@ function Edit({
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.InspectorControls, {
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__.__)('Videopack: Design', 'video-embed-thumbnail-generator'),
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__.__)('Colors', 'video-embed-thumbnail-generator'),
         initialOpen: true,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)("div", {
           className: "videopack-color-section",
@@ -581,7 +581,7 @@ const getColorFallbacks = settings => {
     title_color: settings?.title_color || '#ffffff',
     title_background_color: settings?.title_background_color || '#2b333f',
     play_button_color: settings?.play_button_color || '#ffffff',
-    play_button_icon_color: settings?.play_button_icon_color || '#ffffff',
+    play_button_secondary_color: settings?.play_button_secondary_color || '#ffffff',
     control_bar_bg_color: settings?.control_bar_bg_color || '#2b333f',
     control_bar_color: settings?.control_bar_color || '#ffffff',
     pagination_color: settings?.pagination_color || '#1e1e1e',
@@ -593,36 +593,34 @@ const getColorFallbacks = settings => {
     fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
     fallbacks.control_bar_bg_color = 'rgba(0, 0, 0, 0.35)';
     fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_icon_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#ffffff';
   } else if (embed_method?.startsWith('Video.js')) {
     // Default skin (vjs-theme-videopack) defaults
-    fallbacks.play_button_color = '#2b333f'; // Videopack Grey accent
+    fallbacks.play_button_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
 
     switch (skin) {
       case 'vjs-theme-city':
         fallbacks.title_background_color = '#bf3b4d';
-        fallbacks.play_button_color = '#bf3b4d';
         fallbacks.control_bar_bg_color = '#000000';
         break;
       case 'vjs-theme-fantasy':
         fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_color = '#9f44b4';
-        fallbacks.play_button_icon_color = '#9f44b4';
+        fallbacks.play_button_secondary_color = '#9f44b4';
         break;
       case 'vjs-theme-forest':
         fallbacks.title_background_color = '#6fb04e';
-        fallbacks.play_button_color = '#6fb04e';
+        fallbacks.play_button_secondary_color = '#6fb04e';
         fallbacks.control_bar_bg_color = 'transparent';
         break;
       case 'vjs-theme-sea':
         fallbacks.title_background_color = '#4176bc';
-        fallbacks.play_button_color = '#4176bc';
-        fallbacks.play_button_icon_color = '#ffffff';
+        fallbacks.play_button_secondary_color = '#4176bc';
         fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
         break;
       case 'kg-video-js-skin':
         fallbacks.title_background_color = '#000000';
-        fallbacks.play_button_color = '#000000';
+        fallbacks.play_button_secondary_color = '#000000';
         fallbacks.control_bar_bg_color = '#000000';
         break;
     }

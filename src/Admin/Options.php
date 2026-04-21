@@ -202,7 +202,7 @@ class Options implements Hook_Subscriber {
 			'right_click'                   => true,
 			'resize'                        => true,
 			'play_button_color'             => '',
-			'play_button_icon_color'        => '',
+			'play_button_secondary_color'   => '',
 			'control_bar_bg_color'          => '',
 			'control_bar_color'             => '',
 

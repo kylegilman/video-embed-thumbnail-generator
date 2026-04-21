@@ -443,9 +443,17 @@ const VideoGallery = ({
 		const styles = {};
 		const config = window.videopack_config || {};
 
-		if (config.mejs_controls_svg) {
-			styles['--videopack-mejs-controls-svg'] =
-				`url(${config.mejs_controls_svg})`;
+		const mejsSvgPath =
+			config.mejs_controls_svg ||
+			(typeof window !== 'undefined'
+				? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
+				: '');
+
+		if (
+			videopack_config.embed_method === 'WordPress Default' &&
+			mejsSvgPath
+		) {
+			styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
 		}
 
 		if (gallery_columns > 0) {

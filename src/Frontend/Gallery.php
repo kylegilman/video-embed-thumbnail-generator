@@ -76,7 +76,9 @@ class Gallery {
 			$query_atts['gallery_orderby'] = 'menu_order ID';
 		}
 		if ( (bool) ( $query_atts['gallery_pagination'] ?? false ) !== true ) {
-			$query_atts['gallery_per_page'] = (int) ( $query_atts['collection_video_limit'] ?? ( $query_atts['videos'] ?? -1 ) );
+			if ( ! isset( $query_atts['gallery_per_page'] ) || -1 === (int) $query_atts['gallery_per_page'] ) {
+				$query_atts['gallery_per_page'] = (int) ( $query_atts['collection_video_limit'] ?? ( $query_atts['videos'] ?? -1 ) );
+			}
 		} elseif ( (string) ( $query_atts['gallery_per_page'] ?? '' ) === 'false' ) {
 			$query_atts['gallery_per_page'] = -1;
 		}
