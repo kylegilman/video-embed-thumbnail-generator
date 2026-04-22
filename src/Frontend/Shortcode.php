@@ -694,112 +694,129 @@ class Shortcode implements Hook_Subscriber {
 	}
 
 	/**
-	 * Renders the shortcode output.
+	 * Renders the shortcode output by simulating a block structure.
 	 *
 	 * @param array  $atts    The shortcode attributes.
 	 * @param string $content The shortcode content (video URL).
-	 * @return string The rendered player or gallery HTML.
+	 * @return string The rendered output.
 	 */
 	public function do( $atts, $content = '' ) {
 		$query_atts = $this->atts( $atts );
-
-		// Handle gallery_source logic to ensure correct gallery_id.
-		if ( isset( $query_atts['gallery_source'] ) ) {
-			if ( 'current' === $query_atts['gallery_source'] && empty( $query_atts['gallery_id'] ) ) {
-				$query_atts['gallery_id'] = get_the_ID();
-				if ( ! $query_atts['gallery_id'] && ! is_admin() ) {
-					$query_atts['gallery_id'] = get_queried_object_id();
-				}
-			} elseif ( in_array( $query_atts['gallery_source'], array( 'category', 'tag' ), true ) && empty( $query_atts['gallery_id'] ) ) {
-				$query_atts['gallery_id'] = '';
-			}
-		}
-
 		if ( is_feed() ) {
 			return '';
 		}
 
-		$is_gallery = isset( $query_atts['gallery'] ) && true === $query_atts['gallery'];
+		// Handle legacy ID vs content.
+		$src = ! empty( $query_atts['id'] ) ? $query_atts['id'] : $content;
+
+		// 1. Check if this is a collection (gallery, list, or query).
+		$is_gallery = ! empty( $query_atts['gallery'] ) && true === $query_atts['gallery'];
 		$is_list    = ! $is_gallery && ( ! empty( $query_atts['id'] ) && strpos( (string) $query_atts['id'], ',' ) !== false );
 		$is_query   = ! $is_gallery && empty( $query_atts['id'] ) && empty( $content );
 
-		if ( $is_list || $is_query ) {
-			$query_atts['gallery'] = false;
-		}
-
 		if ( $is_gallery || $is_list || $is_query ) {
-			if ( $is_gallery && isset( $query_atts['gallery_orderby'] ) && 'rand' === (string) $query_atts['gallery_orderby'] ) {
-				$query_atts['gallery_orderby'] = 'RAND(' . (string) wp_rand() . ')';
-			}
-
-			// If it's a list based on 'id', we map it to 'gallery_include' for the Gallery class.
-			if ( $is_list ) {
-				$query_atts['gallery_include'] = $query_atts['id'];
-			}
-
-			$gallery = new Gallery( $this->options, $this->format_registry );
-			$layout  = ( $is_gallery && true === $query_atts['gallery'] ) ? 'gallery' : 'list';
-			$page    = 1;
-			if ( get_query_var( 'paged' ) ) {
-				$page = (int) get_query_var( 'paged' );
-			} elseif ( get_query_var( 'page' ) ) {
-				$page = (int) get_query_var( 'page' );
-			}
-
-			$result = (array) $gallery->collection_page( $page, $query_atts, $layout );
-			$code   = (string) $result['html'];
-
-			if ( ! empty( $result['videos'] ) ) {
-				$shortcode_players = array();
-				foreach ( $result['videos'] as $video_data ) {
-					if ( ! empty( $video_data['player_vars']['id'] ) ) {
-						$shortcode_players[ $video_data['player_vars']['id'] ] = $video_data['player_vars'];
-					}
-				}
-				if ( ! empty( $shortcode_players ) ) {
-					$script = sprintf(
-						'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; Object.assign(window.videopack.player_data, %s);',
-						wp_json_encode( $shortcode_players )
-					);
-					wp_add_inline_script( 'videopack-frontend', $script );
-				}
-			}
-
-			$final_atts = $query_atts;
-		} else {
-			// VIDEO PART
-			$prepared = $this->prepare_player( $atts );
-
-			if ( ! $prepared ) {
-				return '';
-			}
-
-			$player     = $prepared['player'];
-			$final_atts = $prepared['final_atts'];
-			$source     = $prepared['source'];
-
-			// If it's a modular request (from a block), we just return the player code.
-			if ( ! empty( $final_atts['is_modular_engine'] ) ) {
-				return $player->get_player_code( $final_atts );
-			}
-
-			// Otherwise, full legacy assembly.
-			$inner_content = '';
-
-			if ( empty( $content ) ) {
-				$code = Modular_Renderer::render_player_assembly( $player, $final_atts, $source, $this->options );
-			} else {
-				$code = Modular_Renderer::render_video_container( $final_atts, $content );
-			}
+			return $this->simulate_collection_block( $query_atts, $is_list );
 		}
 
-		$code = (string) wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
+		// 2. Otherwise, simulate a single video player block.
+		return $this->simulate_player_block( $query_atts, (string) $src );
+	}
 
-		if ( ! is_admin() ) {
-			wp_enqueue_style( 'videopack-frontend' );
+	/**
+	 * Simulates a videopack/collection block.
+	 */
+	private function simulate_collection_block( $query_atts, $is_list = false ) {
+		// Force layout to 'grid' or 'list' for collection simulation, ignoring the 'player' default.
+		$layout = ( ! empty( $query_atts['gallery'] ) && true === $query_atts['gallery'] ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
+		if ( 'player' === $layout ) {
+			$layout = 'grid';
+		}
+		
+		// Map shortcode to block attributes.
+		$block_atts = array_merge( $query_atts, array(
+			'layout'  => $layout,
+			'columns' => (int) ( $query_atts['gallery_columns'] ?? 3 ),
+		) );
+
+		if ( $is_list ) {
+			$block_atts['gallery_include'] = $query_atts['id'];
 		}
 
-		return (string) apply_filters( 'videopack_shortcode', $code, $final_atts, $content );
+		// Special case: gallery_source might need current page ID.
+		if ( 'current' === ( $block_atts['gallery_source'] ?? '' ) && empty( $block_atts['gallery_id'] ) ) {
+			$block_atts['gallery_id'] = get_the_ID() ?: get_queried_object_id();
+		}
+
+		// Build serialized block string using correctly nested structure.
+		$inner_blocks = '';
+		$inner_blocks .= '<!-- wp:videopack/video-loop -->';
+		$inner_blocks .= '<!-- wp:videopack/thumbnail -->';
+		$inner_blocks .= '<div class="wp-block-videopack-thumbnail">';
+		$inner_blocks .= '<!-- wp:videopack/play-button /-->';
+		$inner_blocks .= '<!-- wp:videopack/video-title {"isOverlay":true} /-->';
+		
+		if ( ! empty( $query_atts['showDuration'] ) ) {
+			$inner_blocks .= '<!-- wp:videopack/video-duration /-->';
+		}
+		
+		$inner_blocks .= '</div>';
+		$inner_blocks .= '<!-- /wp:videopack/thumbnail -->';
+		$inner_blocks .= '<!-- /wp:videopack/video-loop -->';
+
+		if ( ! empty( $query_atts['gallery_pagination'] ) ) {
+			$inner_blocks .= '<!-- wp:videopack/pagination /-->';
+		}
+
+		$serialized = sprintf(
+			'<!-- wp:videopack/collection %s -->%s<!-- /wp:videopack/collection -->',
+			wp_json_encode( $block_atts ),
+			$inner_blocks
+		);
+
+		return do_blocks( $serialized );
+	}
+
+	/**
+	 * Simulates a videopack/player block.
+	 */
+	/**
+	 * Simulates a videopack/videopack-video block for a single video.
+	 *
+	 * @param array  $query_atts The shortcode attributes.
+	 * @param string $src        The video source (ID or URL).
+	 * @return string The rendered block output.
+	 */
+	private function simulate_player_block( $query_atts, $src ) {
+		// Detect if this is already a modular request.
+		if ( ! empty( $query_atts['is_modular_engine'] ) ) {
+			$prepared = $this->prepare_player( $query_atts );
+			return $prepared ? $prepared['player']->get_player_code( $this->get_final_atts( $query_atts, $prepared['source'] ) ) : '';
+		}
+
+		$block_atts = array_merge( $query_atts, array(
+			'id'  => $src,
+			'src' => $src,
+		) );
+
+		// Build nested structure matching the block editor's output for standard alignment support.
+		$inner_blocks  = '<!-- wp:videopack/video-player-engine {"lock":{"remove":true,"move":false}} -->';
+		$inner_blocks .= '<!-- wp:videopack/video-title /-->';
+		if ( ! empty( $query_atts['watermark'] ) ) {
+			$inner_blocks .= '<!-- wp:videopack/video-watermark /-->';
+		}
+		$inner_blocks .= '<!-- /wp:videopack/video-player-engine -->';
+
+		if ( ! empty( $query_atts['view_count'] ) ) {
+			$inner_blocks .= '<!-- wp:videopack/view-count /-->';
+		}
+
+		$serialized = sprintf(
+			'<!-- wp:videopack/videopack-video %s -->%s<!-- /wp:videopack/videopack-video -->',
+			wp_json_encode( $block_atts ),
+			$inner_blocks
+		);
+
+		return do_blocks( $serialized );
 	}
 
 	/**

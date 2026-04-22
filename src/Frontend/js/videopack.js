@@ -82,7 +82,8 @@
 		 */
 		initModularBlocks: function (container = document) {
 			container.querySelectorAll('.videopack-meta-wrapper, .videopack-thumbnail-wrapper').forEach((element) => {
-				if (element.querySelector('.videopack-share-toggle')) {
+				const shareToggle = element.querySelector('.videopack-share-toggle');
+				if (shareToggle) {
 					this.setupMetaBar(element);
 				}
 			});
@@ -279,6 +280,13 @@
 				meta.style.display = 'block';
 			}
 
+			// If there's a meta bar, it might have been initialized by initModularBlocks.
+			// However, we want the player instance to be the authoritative wrapper for sharing.
+			const metaBar = playerWrapper.querySelector('.videopack-meta-wrapper');
+			if (metaBar) {
+				// Clear the initialization from the meta bar and let the player handle it.
+				delete metaBar.dataset.videopackMetaInitialized;
+			}
 			this.setupMetaBar(playerWrapper, videoVars);
 
 			if (true !== videoVars.right_click) {
@@ -362,12 +370,13 @@
 			}
 
 			const shareToggle = wrapper.querySelector('.videopack-share-toggle');
-			if (shareToggle) {
+			if (shareToggle && !shareToggle.dataset.videopackInitialized) {
 				shareToggle.addEventListener('click', (e) => {
 					e.preventDefault();
 					e.stopPropagation();
 					this.toggleShare(wrapper);
 				});
+				shareToggle.dataset.videopackInitialized = 'true';
 
 				const clickTrap = wrapper.querySelector('.videopack-click-trap');
 				if (clickTrap) {
@@ -1047,6 +1056,10 @@
 			const embedWrapper = playerWrapper.querySelector('.videopack-share-container');
 			const clickTrap = playerWrapper.querySelector('.videopack-click-trap');
 
+			if (!shareIcon || !embedWrapper) {
+				return;
+			}
+
 			const isShareActive = shareIcon.classList.contains('close');
 
 			if (isShareActive) {
@@ -1711,7 +1724,7 @@
 		loadCollectionPage: function (page, collectionWrapper, openVideoAtIndex = null) {
 			const settings = JSON.parse(collectionWrapper.dataset.settingsCache);
 			const layout = collectionWrapper.dataset.layout;
-			const grid = collectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
+			const grid = collectionWrapper.querySelector('.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
 			const pagination = collectionWrapper.querySelector('.videopack-pagination');
 
 			if (grid) {
@@ -1751,7 +1764,7 @@
 								modal.dataset.currentPage = page;
 								// Re-sync video order for the lightbox
 								const newVideoOrder = [];
-								const newGrid = newCollectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
+								const newGrid = newCollectionWrapper.querySelector('.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
 								if (newGrid) {
 									newGrid.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
 										newVideoOrder.push(String(thumb.dataset.attachmentId));
@@ -1763,7 +1776,7 @@
 								}
 							}
 
-							const newGrid = newCollectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
+							const newGrid = newCollectionWrapper.querySelector('.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
 							const newPagination = newCollectionWrapper.querySelector('.videopack-pagination');
 
 							if (grid && newGrid) {
@@ -1791,7 +1804,7 @@
 							// Update global state if it's a gallery
 							if (layout === 'gallery') {
 								const newVideoOrder = [];
-								const currentGrid = collectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
+								const currentGrid = collectionWrapper.querySelector('.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
 								currentGrid.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
 									newVideoOrder.push(String(thumb.dataset.attachmentId));
 								});

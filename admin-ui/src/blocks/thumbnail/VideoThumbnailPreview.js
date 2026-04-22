@@ -66,16 +66,39 @@ export function VideoThumbnailPreview({
 		thumbnailMedia?.source_url ||
 		defaultNoThumb;
 
+	const play_button_color = getEffectiveValue(
+		'play_button_color',
+		{},
+		context
+	);
+	const play_button_secondary_color = getEffectiveValue(
+		'play_button_secondary_color',
+		{},
+		context
+	);
+
 	const containerClass = `gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${
 		effectiveSkin
-	} ${resolvedDuotoneClass || ''}`.trim();
+	} ${resolvedDuotoneClass || ''} ${
+		play_button_color ? 'videopack-has-play-button-color' : ''
+	} ${
+		play_button_secondary_color
+			? 'videopack-has-play-button-secondary-color'
+			: ''
+	}`.trim();
 	const imgStyle = resolvedDuotoneClass
 		? { filter: `url(#${resolvedDuotoneClass})` }
 		: {};
 
+	const containerStyle = {
+		...imgStyle,
+		'--videopack-play-button-color': play_button_color,
+		'--videopack-play-button-secondary-color': play_button_secondary_color,
+	};
+
 
 	return (
-		<div className={containerClass}>
+		<div className={containerClass} style={containerStyle}>
 			<img
 				src={thumbnailUrl}
 				alt={thumbnailMedia?.alt_text || ''}

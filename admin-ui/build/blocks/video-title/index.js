@@ -282,6 +282,7 @@ function Edit(props) {
   } = attributes;
   const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
   const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+  const isInsidePlayerBlock = !!context['videopack/isInsidePlayerBlock'];
 
   // Derived defaults that don't fight with user saved attributes
   const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
@@ -310,7 +311,7 @@ function Edit(props) {
   const effectiveEmbedcode = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('embedcode', attributes, context);
   const effectiveOverlayTitle = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('overlay_title', attributes, context);
   const effectiveShowBackground = (0,_utils_context__WEBPACK_IMPORTED_MODULE_15__.getEffectiveValue)('showBackground', attributes, context);
-  const isOverlay = explicitIsOverlay !== undefined ? explicitIsOverlay : isInsideThumbnail || isInsidePlayer;
+  const isOverlay = explicitIsOverlay !== undefined ? explicitIsOverlay : isInsideThumbnail || isInsidePlayer || isInsidePlayerBlock;
   const wrapperClass = 'videopack-video-title-wrapper';
   const titleColorFallback = context['videopack/title_color'];
   const titleBackgroundColorFallback = context['videopack/title_background_color'];
@@ -354,7 +355,7 @@ function Edit(props) {
             textAlign: nextAlign
           });
         }
-      }), isInsidePlayer && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToolbarGroup, {
+      }), (isInsidePlayer || isInsidePlayerBlock) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToolbarGroup, {
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToolbarButton, {
           icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_12__["default"],
           label: effectiveOverlayTitle ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Hide Title', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Show Title', 'video-embed-thumbnail-generator'),

@@ -307,15 +307,21 @@ $badge-selectors: (
 // ---------------------------------------------------------------------------
 
 // Targets containers that provide the skin context
+// 1. Broad Anchor Context (Needs relative and container sizing for children)
 :is(.videopack-wrapper,
 	.videopack-gallery-wrapper,
 	.videopack-gallery-item,
 	.gallery-thumbnail,
 	.videopack-player,
+	.videopack-thumbnail-wrapper,
+	.videopack-thumbnail-block,
 	.videopack-video-block,
 	.videopack-collection,
 	.videopack-video-title-block,
 	.videopack-video-player-engine-block) {
+	position: relative; // Ensure children overlays can anchor correctly
+	container-type: inline-size;
+
 	--videopack-title-background-color: #141414; // Default fallback
 	--videopack-control-bar-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%)")};
 
@@ -360,6 +366,19 @@ $badge-selectors: (
 			background-color: rgba(65, 118, 188, 0.4);
 		}
 	}
+}
+
+// 2. Focused Thumbnail Layout (Needs explicit 16:9 box logic)
+:is(.gallery-thumbnail, 
+	.videopack-thumbnail-wrapper, 
+	.videopack-thumbnail-holder, 
+	.videopack-thumbnail-block:not(.is-full-width)) {
+	width: 100%;
+	padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+	height: 0;
+	cursor: pointer;
+	overflow: hidden;
+	background: #000;
 }
 
 // Custom Colors Logic
@@ -422,9 +441,6 @@ $badge-selectors: (
 	}
 }
 
-.videopack-play-button-block {
-	// Gutenberg wrapper positioning is now in play-button/editor.scss
-}
 
 .videopack-player {
 	position: relative;
@@ -440,7 +456,11 @@ $badge-selectors: (
 .videopack-thumbnail-wrapper {
 	position: relative;
 	display: block;
+	width: 100%;
+	padding-bottom: 56.25%; /* 16:9 Aspect Ratio parity */
+	height: 0;
 	overflow: hidden;
+	container-type: inline-size;
 
 	.videopack-inner-blocks-container {
 		position: absolute;
@@ -453,6 +473,16 @@ $badge-selectors: (
 			pointer-events: auto;
 		}
 	}
+}
+
+.gallery-item-clickable-area,
+.videopack-thumbnail-holder {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
 }
 
 // ---------------------------------------------------------------------------

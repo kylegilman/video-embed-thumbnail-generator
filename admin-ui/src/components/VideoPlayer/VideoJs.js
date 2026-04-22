@@ -84,13 +84,22 @@ export const VideoJS = (props) => {
 					videoRef.current.removeChild(videoRef.current.firstChild);
 				}
 
-				const videoElement = document.createElement('video');
+				const doc = videoRef.current ? videoRef.current.ownerDocument : document;
+				const win = doc.defaultView || window;
+				const vjs = win.videojs || videojs;
+
+				const videoElement = doc.createElement('video');
 				videoElement.className = `video-js ${skin || ''} vjs-big-play-centered`;
 				videoElement.setAttribute('playsinline', '');
 
 				videoRef.current.appendChild(videoElement);
 
-				playerRef.current = videojs(videoElement, options, function () {
+				const playerOptions = {
+					...options,
+					fluid: options.fluid !== undefined ? options.fluid : true,
+				};
+
+				playerRef.current = vjs(videoElement, playerOptions, function () {
 					if (onReady) {
 						onReady(this);
 					}

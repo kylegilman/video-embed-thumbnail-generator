@@ -81,7 +81,7 @@ export function ViewCount({
 		actualIsOverlay ? 'is-overlay is-badge' : ''
 	} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 		effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
-	} position-${position || 'top'} has-text-align-${textAlign || 'right'}`;
+	} ${actualIsOverlay ? `position-${position || 'top'}` : ''} has-text-align-${textAlign || (actualIsOverlay ? 'right' : 'left')}`;
 
 	const finalBlockProps = blockProps || {
 		className: wrapperClass,
@@ -165,6 +165,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 	const isInsidePlayerBlock = !!context['videopack/isInsidePlayerBlock'];
 	const isOverlay = isInsideThumbnail || isInsidePlayer;
 
+	const effectiveSkin = getEffectiveValue('skin', attributes, context);
 	const effectiveTitleColor = getEffectiveValue('title_color', attributes, context);
 	const effectiveTitleBgColor = getEffectiveValue('title_background_color', attributes, context);
 
@@ -183,11 +184,11 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 	const position = attributes.position || context['videopack/position'] || 'top';
 
 	const blockProps = useBlockProps({
-		className: `videopack-video-title-block videopack-video-title-wrapper ${isOverlay ? effectiveSkin : ''} ${
+		className: `videopack-view-count-block videopack-view-count-wrapper ${isOverlay ? effectiveSkin : ''} ${
 			isOverlay ? `is-overlay position-${position}` : ''
 		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayer ? 'is-inside-player' : ''
-		} ${!postId && !manualTitle ? 'no-title' : ''} ${
+		} ${!postId ? 'no-title' : ''} ${
 			effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''
 		} has-text-align-${finalTextAlign}`,
 		style: {

@@ -299,10 +299,14 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block) {
+  position: relative;
+  container-type: inline-size;
   --videopack-title-background-color: #141414;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
@@ -311,6 +315,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -319,6 +325,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -330,6 +338,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -338,6 +348,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -346,6 +358,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -354,6 +368,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -365,6 +381,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -376,6 +394,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -384,6 +404,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -395,6 +417,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -406,6 +430,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -414,6 +440,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -425,6 +453,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -436,6 +466,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -444,6 +476,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -455,6 +489,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -466,6 +502,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -474,6 +512,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -485,6 +525,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -493,11 +535,24 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block).vjs-theme-sea.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
   background-color: rgba(65, 118, 188, 0.4);
+}
+:is(.gallery-thumbnail,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-holder,
+.videopack-thumbnail-block:not(.is-full-width)) {
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background: #000;
 }
 :is(.videopack-wrapper,
 .videopack-gallery-wrapper,
@@ -550,7 +605,11 @@
 .videopack-thumbnail-wrapper {
   position: relative;
   display: block;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio parity */
+  height: 0;
   overflow: hidden;
+  container-type: inline-size;
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container {
   position: absolute;
@@ -562,6 +621,15 @@
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container > * {
   pointer-events: auto;
+}
+.gallery-item-clickable-area,
+.videopack-thumbnail-holder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 .videopack-share-container {
   display: flex;
@@ -763,8 +831,17 @@
     width: 100%;
 }
 
-.videopack-view-count-block:not(.is-overlay) {
+.videopack-view-count.is-not-overlay {
     margin-bottom: 0.5em;
+    color: var(--wp--preset--color--foreground, inherit) !important;
+}
+
+/* Ensure it's visible even if inside a player container with white text defaults */
+
+.videopack-video-player .videopack-view-count.is-not-overlay,
+.vjs-theme-videopack .videopack-view-count.is-not-overlay,
+.video-js .videopack-view-count.is-not-overlay {
+    color: var(--wp--preset--color--foreground, #333) !important;
 }
 
 /* Specific styling for the view count component itself if needed */
@@ -1147,10 +1224,14 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block) {
+  position: relative;
+  container-type: inline-size;
   --videopack-title-background-color: #141414;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
@@ -1159,6 +1240,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1167,6 +1250,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1178,6 +1263,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1186,6 +1273,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1194,6 +1283,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1202,6 +1293,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1213,6 +1306,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1224,6 +1319,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1232,6 +1329,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1243,6 +1342,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1254,6 +1355,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1262,6 +1365,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1273,6 +1378,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1284,6 +1391,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1292,6 +1401,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1303,6 +1414,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1314,6 +1427,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1322,6 +1437,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1333,6 +1450,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1341,11 +1460,24 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block).vjs-theme-sea.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
   background-color: rgba(65, 118, 188, 0.4);
+}
+:is(.gallery-thumbnail,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-holder,
+.videopack-thumbnail-block:not(.is-full-width)) {
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background: #000;
 }
 :is(.videopack-wrapper,
 .videopack-gallery-wrapper,
@@ -1398,7 +1530,11 @@
 .videopack-thumbnail-wrapper {
   position: relative;
   display: block;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio parity */
+  height: 0;
   overflow: hidden;
+  container-type: inline-size;
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container {
   position: absolute;
@@ -1410,6 +1546,15 @@
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container > * {
   pointer-events: auto;
+}
+.gallery-item-clickable-area,
+.videopack-thumbnail-holder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 .videopack-share-container {
   display: flex;
@@ -1799,10 +1944,14 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block) {
+  position: relative;
+  container-type: inline-size;
   --videopack-title-background-color: #141414;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
@@ -1811,6 +1960,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1819,6 +1970,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1830,6 +1983,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1838,6 +1993,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1846,6 +2003,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1854,6 +2013,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1865,6 +2026,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1876,6 +2039,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1884,6 +2049,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1895,6 +2062,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1906,6 +2075,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1914,6 +2085,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1925,6 +2098,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1936,6 +2111,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1944,6 +2121,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1955,6 +2134,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1966,6 +2147,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1974,6 +2157,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1985,6 +2170,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -1993,11 +2180,24 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block).vjs-theme-sea.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
   background-color: rgba(65, 118, 188, 0.4);
+}
+:is(.gallery-thumbnail,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-holder,
+.videopack-thumbnail-block:not(.is-full-width)) {
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background: #000;
 }
 :is(.videopack-wrapper,
 .videopack-gallery-wrapper,
@@ -2050,7 +2250,11 @@
 .videopack-thumbnail-wrapper {
   position: relative;
   display: block;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio parity */
+  height: 0;
   overflow: hidden;
+  container-type: inline-size;
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container {
   position: absolute;
@@ -2062,6 +2266,15 @@
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container > * {
   pointer-events: auto;
+}
+.gallery-item-clickable-area,
+.videopack-thumbnail-holder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 .videopack-share-container {
   display: flex;
@@ -2456,10 +2669,14 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block) {
+  position: relative;
+  container-type: inline-size;
   --videopack-title-background-color: #141414;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
@@ -2468,6 +2685,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2476,6 +2695,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2487,6 +2708,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2495,6 +2718,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2503,6 +2728,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2511,6 +2738,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2522,6 +2751,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2533,6 +2764,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2541,6 +2774,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2552,6 +2787,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2563,6 +2800,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2571,6 +2810,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2582,6 +2823,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2593,6 +2836,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2601,6 +2846,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2612,6 +2859,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2623,6 +2872,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2631,6 +2882,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2642,6 +2895,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -2650,11 +2905,24 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block).vjs-theme-sea.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
   background-color: rgba(65, 118, 188, 0.4);
+}
+:is(.gallery-thumbnail,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-holder,
+.videopack-thumbnail-block:not(.is-full-width)) {
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background: #000;
 }
 :is(.videopack-wrapper,
 .videopack-gallery-wrapper,
@@ -2707,7 +2975,11 @@
 .videopack-thumbnail-wrapper {
   position: relative;
   display: block;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio parity */
+  height: 0;
   overflow: hidden;
+  container-type: inline-size;
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container {
   position: absolute;
@@ -2719,6 +2991,15 @@
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container > * {
   pointer-events: auto;
+}
+.gallery-item-clickable-area,
+.videopack-thumbnail-holder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 .videopack-share-container {
   display: flex;
@@ -2816,9 +3097,46 @@
   margin: 0;
   z-index: 2;
 }
-/* Video.js Big Play Button Base */
-.vjs-big-play-button {
+/* Video.js Big Play Button Base - Modern Centering and Specificity Reset */
+.play-button-container.video-js .vjs-big-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  margin-top: 0;
+  margin-left: 0;
   z-index: 2;
+  aspect-ratio: auto; /* Let skins handle their own ratios */
+  font-size: clamp(12px, 9cqi, 40px);
+}
+:is(.play-button-container.video-js, .videopack-play-button-block) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 115;
+  margin: 0;
+}
+:is(.play-button-container.video-js, .videopack-play-button-block) > * {
+  pointer-events: auto;
+}
+:is(.play-button-container.video-js, .videopack-play-button-block) .play-button-container.video-js {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 /* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
 :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color {
@@ -2905,8 +3223,9 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 5em;
-  height: 5em;
+  width: clamp(1.2em, 9cqi, 5em);
+  height: clamp(1.2em, 9cqi, 5em);
+  margin: 0;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   transition: transform 0.15s ease, opacity 0.15s ease;
   z-index: 2;

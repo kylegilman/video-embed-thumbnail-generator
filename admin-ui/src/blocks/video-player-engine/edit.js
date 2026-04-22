@@ -4,11 +4,19 @@ import {
 	InspectorControls,
 	BlockContextProvider,
 	store as blockEditorStore,
+	BlockControls,
 } from '@wordpress/block-editor';
 import { useMemo, useCallback, useState, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { getSettings } from '../../api/settings';
 import { __ } from '@wordpress/i18n';
+import {
+	ToolbarGroup,
+	ToolbarButton,
+} from '@wordpress/components';
+import { undo as resetIcon } from '@wordpress/icons';
+import { decodeEntities } from '@wordpress/html-entities';
+import { applyFilters } from '@wordpress/hooks';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
 import VideoSettings from '../../components/VideoSettings/VideoSettings.js';
 import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
@@ -29,6 +37,11 @@ export default function Edit(props) {
 	const { context, isSelected, clientId } = props;
 	const skin = getEffectiveValue('skin', {}, context);
 	const [options, setOptions] = useState({});
+	const [restartCount, setRestartCount] = useState(0);
+
+	const resetPlayer = useCallback(() => {
+		setRestartCount((prev) => prev + 1);
+	}, []);
 
 	useEffect(() => {
 		getSettings().then(setOptions);
@@ -239,12 +252,23 @@ export default function Edit(props) {
 			),
 			downloadlink: contextValue['videopack/downloadlink'],
 			embedcode: contextValue['videopack/embedcode'],
-			restartCount: contextValue['videopack/restartCount'],
+			restartCount: restartCount || contextValue['videopack/restartCount'],
 		};
 	}, [contextValue, resolvedPostId]);
 
 	return (
 		<div {...blockProps}>
+			{isSelected && (
+				<BlockControls group="other">
+					<ToolbarGroup>
+						<ToolbarButton
+							icon={resetIcon}
+							label={__('Restart Video', 'video-embed-thumbnail-generator')}
+							onClick={resetPlayer}
+						/>
+					</ToolbarGroup>
+				</BlockControls>
+			)}
 			<InspectorControls>
 				<Thumbnails
 					setAttributes={setParentAttributes}

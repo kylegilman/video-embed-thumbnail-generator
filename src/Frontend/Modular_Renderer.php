@@ -32,14 +32,68 @@ class Modular_Renderer {
 	}
 
 	/**
+	 * Renders the video duration badge.
+	 *
+	 * @param array $atts    Attributes (seconds, position, textAlign).
+	 * @param array $context Context (skin, colors).
+	 * @return string The rendered HTML.
+	 */
+	public static function render_video_duration( array $atts, array $context = array() ) {
+		$seconds = (int) ( $atts['seconds'] ?? 0 );
+		if ( ! $seconds ) {
+			return '';
+		}
+
+		$duration_text = self::format_duration( $seconds );
+		
+		$is_inside_thumb = ! empty( $context['isInsideThumbnail'] );
+		$is_overlay      = $is_inside_thumb || ! empty( $context['skin'] );
+		$position        = $atts['position'] ?? ( $context['position'] ?? ( $is_inside_thumb ? 'top' : 'bottom' ) );
+		$text_align      = $atts['textAlign'] ?? ( $is_inside_thumb ? 'center' : 'left' );
+
+		$class  = 'videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
+		$class .= ' position-' . esc_attr( $position );
+		$class .= ' has-text-align-' . esc_attr( $text_align );
+		
+		$style_vars = array();
+		if ( $is_overlay ) {
+			if ( ! empty( $context['title_background_color'] ) ) {
+				$style_vars[] = '--videopack-title-background-color: ' . $context['title_background_color'];
+			}
+			if ( ! empty( $context['title_color'] ) ) {
+				$style_vars[] = '--videopack-title-color: ' . $context['title_color'];
+			}
+		}
+
+		$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
+
+		return sprintf( '<div class="%s"%s>%s</div>', esc_attr( $class ), $style, esc_html( $duration_text ) );
+	}
+
+	/**
+	 * Formats seconds into HH:MM:SS or MM:SS.
+	 */
+	private static function format_duration( $seconds ) {
+		if ( ! $seconds ) return '0:00';
+		$h = floor( $seconds / 3600 );
+		$m = floor( ( $seconds % 3600 ) / 60 );
+		$s = $seconds % 60;
+		if ( $h > 0 ) {
+			return sprintf( '%d:%02d:%02d', $h, $m, $s );
+		}
+		return sprintf( '%d:%02d', $m, $s );
+	}
+
+	/**
 	 * Renders the main video container wrapper.
 	 *
 	 * @param array  $atts          Block or shortcode attributes.
 	 * @param string $inner_content Content to wrap.
 	 * @param bool   $is_block      Whether this is being rendered as a block.
+	 * @param array  $options       Optional. Global plugin options for fallbacks.
 	 * @return string The rendered HTML.
 	 */
-	public static function render_video_container( array $atts, $inner_content, $is_block = false ) {
+	public static function render_video_container( array $atts, $inner_content, $is_block = false, $options = array() ) {
 		wp_enqueue_style( 'videopack-frontend' );
 		$is_modular_engine = ! empty( $atts['is_modular_engine'] );
 		$classes           = array( 'videopack-wrapper' );
@@ -52,34 +106,45 @@ class Modular_Renderer {
 			$classes[] = $atts['wrapper_class'];
 		}
 
-		if ( ! empty( $atts['skin'] ) ) {
-			$classes[] = $atts['skin'];
+		if ( self::is_true( $atts['overlay_title'] ?? ( $options['overlay_title'] ?? true ) ) || self::is_true( $atts['downloadlink'] ?? ( $options['downloadlink'] ?? false ) ) ) {
+			$classes[] = 'videopack-video-title-visible';
 		}
 
-		if ( self::is_true( $atts['overlay_title'] ?? false ) || self::is_true( $atts['downloadlink'] ?? false ) ) {
-			$classes[] = 'videopack-video-title-visible';
+		$align = (string) ( $atts['align'] ?? '' );
+		if ( empty( $align ) ) {
+			// Fallback to gallery_align for collections, or standard align for players.
+			$align = ( ! empty( $atts['wrapper_class'] ) && strpos( $atts['wrapper_class'], 'collection' ) !== false ) 
+				? ( $options['gallery_align'] ?? '' ) 
+				: ( $options['align'] ?? '' );
 		}
 
 		if ( (bool) ( $atts['inline'] ?? false ) ) {
 			$classes[] = 'videopack-wrapper-inline';
-			$align     = (string) ( $atts['align'] ?? '' );
 			if ( in_array( $align, array( 'left', 'right' ), true ) ) {
 				$classes[] = 'videopack-wrapper-inline-' . $align;
 			} elseif ( 'center' === $align ) {
 				$classes[] = 'videopack-wrapper-auto-left';
 				$classes[] = 'videopack-wrapper-auto-right';
 			}
-		} elseif ( 'center' === (string) ( $atts['align'] ?? '' ) ) {
+		} elseif ( 'center' === $align || 'aligncenter' === $align ) {
 			$classes[] = 'videopack-wrapper-auto-left';
 			$classes[] = 'videopack-wrapper-auto-right';
-		} elseif ( 'right' === (string) ( $atts['align'] ?? '' ) ) {
+		} elseif ( 'right' === $align || 'alignright' === $align ) {
 			$classes[] = 'videopack-wrapper-auto-left';
 		}
 
-		// Explicitly add Gutenberg alignment classes for blocks to support dynamic fallbacks.
-		if ( $is_block && ! empty( $atts['align'] ) ) {
-			$classes[] = 'align' . $atts['align'];
+		// Explicitly add Gutenberg alignment classes for blocks or when using modern alignments.
+		if ( ! empty( $align ) ) {
+			if ( 0 === strpos( $align, 'align' ) ) {
+				$classes[] = $align;
+			} else {
+				$classes[] = 'align' . $align;
+			}
 		}
+
+		// We do NOT add the skin class to the outer container anymore to prevent
+		// style leakage to non-player elements (like view counts).
+		// Overlays like the Title Bar should handle their own skinning from context.
 
 		$style_vars = array();
 		$colors     = array(
@@ -92,30 +157,31 @@ class Modular_Renderer {
 		);
 
 		foreach ( $colors as $variable => $attribute ) {
-			if ( ! empty( $atts[ $attribute ] ) ) {
-				$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
+				$val = ! empty( $atts[ $attribute ] ) ? $atts[ $attribute ] : ( $options[ $attribute ] ?? '' );
+				if ( ! empty( $val ) ) {
+					$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
 
-				// Suppress background color variable if showBackground is false.
-				if ( 'title-background-color' === $variable && ! $show_bg ) {
-					continue;
+					// Suppress background color variable if showBackground is false.
+					if ( 'title-background-color' === $variable && ! $show_bg ) {
+						continue;
+					}
+
+					$style_vars[] = "--videopack-{$variable}: " . $val;
+
+					if ( 'title-background-color' === $variable ) {
+						$classes[] = 'videopack-has-title-background-color';
+					} elseif ( 'title-color' === $variable ) {
+						$classes[] = 'videopack-has-title-color';
+					} elseif ( 'play-button-color' === $variable ) {
+						$classes[] = 'videopack-has-play-button-color';
+					} elseif ( 'play-button-secondary-color' === $variable ) {
+						$classes[] = 'videopack-has-play-button-secondary-color';
+					} elseif ( 'control-bar-bg-color' === $variable ) {
+						$classes[] = 'videopack-has-control-bar-bg-color';
+					} elseif ( 'control-bar-color' === $variable ) {
+						$classes[] = 'videopack-has-control-bar-color';
+					}
 				}
-
-				$style_vars[] = "--videopack-{$variable}: " . $atts[ $attribute ];
-
-				if ( 'title-background-color' === $variable ) {
-					$classes[] = 'videopack-has-title-background-color';
-				} elseif ( 'title-color' === $variable ) {
-					$classes[] = 'videopack-has-title-color';
-				} elseif ( 'play-button-color' === $variable ) {
-					$classes[] = 'videopack-has-play-button-color';
-				} elseif ( 'play-button-secondary-color' === $variable ) {
-					$classes[] = 'videopack-has-play-button-secondary-color';
-				} elseif ( 'control-bar-bg-color' === $variable ) {
-					$classes[] = 'videopack-has-control-bar-bg-color';
-				} elseif ( 'control-bar-color' === $variable ) {
-					$classes[] = 'videopack-has-control-bar-color';
-				}
-			}
 		}
 
 		if ( ! empty( $atts['block_gap'] ) ) {
@@ -285,6 +351,7 @@ class Modular_Renderer {
 		$options      = get_option( 'videopack_options', array() );
 		$downloadlink = self::is_true( $atts['downloadlink'] ?? ( $options['downloadlink'] ?? false ) );
 		$embedcode    = self::is_true( $atts['embedcode'] ?? ( $options['embedcode'] ?? false ) );
+
 		$title        = ! empty( $atts['title'] ) ? $atts['title'] : ( $source ? $source->get_title() : '' );
 		$tag          = $atts['tagName'] ?? 'h3';
 		
@@ -292,12 +359,14 @@ class Modular_Renderer {
 		$position            = ! empty( $atts['position'] ) ? $atts['position'] : ( $is_inside_thumbnail ? 'bottom' : 'top' );
 
 		$show_title = ! isset( $atts['overlay_title'] ) || self::is_true( $atts['overlay_title'] );
-		// Normalize showBackground from attributes or context.
+
+		// Resolve showBackground from attributes or context.
 		$is_overlay      = self::is_true( $atts['isOverlay'] ?? false ) || self::is_true( $atts['is_overlay'] ?? false );
 		$show_background = true;
 		if ( isset( $atts['showBackground'] ) ) {
 			$show_background = self::is_true( $atts['showBackground'] );
 		}
+
 
 		// Resolve Embed Link.
 		$embedlink = $atts['embedlink'] ?? '';
@@ -323,7 +392,8 @@ class Modular_Renderer {
 		}
 
 		// Overlay Mode (Info Bar).
-		$has_embed    = $embedcode && ! empty( $embedlink );
+		$has_embed    = $embedcode && ! empty( $embedlink ) && ! $is_inside_thumbnail;
+		$downloadlink = $downloadlink && ! $is_inside_thumbnail;
 		$share_svg    = '<svg class="videopack-icon-svg share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z" /></svg>';
 		$close_svg    = '<svg class="videopack-icon-svg close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" /></svg>';
 		$download_svg = '<svg class="videopack-icon-svg download-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" /></svg>';
@@ -365,7 +435,7 @@ class Modular_Renderer {
 		}
 		$wrapper_style = ! empty( $wrapper_style_vars ) ? ' style="' . esc_attr( implode( ';', $wrapper_style_vars ) ) . '"' : '';
 
-		$html  = '<div id="video_' . esc_attr( (string) $id ) . '_meta" class="videopack-meta-wrapper"' . $wrapper_style . '>';
+		$html  = '<div id="video_' . esc_attr( (string) $id ) . '_meta" class="videopack-meta-wrapper" data-id="' . esc_attr( (string) $id ) . '" data-post-id="' . esc_attr( (string) $id ) . '"' . $wrapper_style . '>';
 		$html .= '<div class="' . esc_attr( $bar_class ) . '"' . $bar_style . '>' . "\n";
 
 		if ( $show_title ) {
@@ -441,6 +511,53 @@ class Modular_Renderer {
 	}
 
 	/**
+	 * Renders the video player engine markup.
+	 *
+	 * @param \Videopack\Frontend\Video_Players\Player $player         The player instance.
+	 * @param array                                    $atts           The player attributes.
+	 * @param string                                   $inner_content  The inner block content.
+	 * @param array                                    $options        Plugin options.
+	 * @return string The rendered HTML.
+	 */
+	public static function render_player_engine( $player, $atts, $inner_content = '', $options = array() ) {
+		$style_vars     = array();
+		$classes        = array( 'videopack-player-relative-wrapper' );
+
+		if ( ! empty( $atts['skin'] ) ) {
+			$classes[] = $atts['skin'];
+		}
+
+		$colors = array(
+			'title-color'            => 'title_color',
+			'title-background-color' => 'title_background_color',
+			'play-button-color'      => 'play_button_color',
+			'play-button-secondary-color' => 'play_button_secondary_color',
+			'control-bar-bg-color'   => 'control_bar_bg_color',
+			'control-bar-color'      => 'control_bar_color',
+		);
+
+		foreach ( $colors as $variable => $attribute ) {
+			if ( ! empty( $atts[ $attribute ] ) ) {
+				$style_vars[] = "--videopack-{$variable}: " . $atts[ $attribute ];
+				$classes[]    = "videopack-has-{$variable}";
+			}
+		}
+
+		// Inject MEJS controls SVG for mask coloring.
+		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+
+		return sprintf(
+			'<div class="%s" style="%s">%s%s</div>',
+			esc_attr( implode( ' ', array_unique( array_filter( $classes ) ) ) ),
+			esc_attr( implode( ';', $style_vars ) ),
+			$player->get_player_code( $atts ),
+			$inner_content
+		);
+	}
+
+
+
+	/**
 	 * Renders the view count HTML.
 	 *
 	 * @param \Videopack\Video_Source\Source $source The video source object.
@@ -495,7 +612,13 @@ class Modular_Renderer {
 		}
 
 		$style   = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', $style_attrs ) ) . '"' : '';
-		$classes = 'videopack-view-count has-text-align-' . esc_attr( $text_align ) . ( $is_overlay ? ' is-overlay is-badge' : '' );
+		$classes = 'videopack-view-count has-text-align-' . esc_attr( $text_align );
+		
+		if ( $is_overlay ) {
+			$classes .= ' is-overlay is-badge';
+		} else {
+			$classes .= ' is-not-overlay';
+		}
 		
 		if ( $has_custom_bg ) {
 			$classes .= ' videopack-has-title-background-color';
@@ -514,41 +637,268 @@ class Modular_Renderer {
 	}
 
 	/**
-	 * Renders the fully assembled player HTML including overlays like the title and watermark.
+	 * Renders a video thumbnail card with an image, link, and inner content.
 	 *
-	 * @param \Videopack\Video_Players\Player $player   The player instance.
-	 * @param array                           $atts     The video attributes.
-	 * @param \Videopack\Video_Source\Source  $source   The video source object.
-	 * @param array                           $options  The global plugin options.
+	 * @param array  $atts          Thumbnail attributes.
+	 * @param string $inner_content Content to render inside the thumbnail overlay.
+	 * @param array  $options       Global plugin options.
+	 * @param array  $context       Context variables (skin, id, etc.)
 	 * @return string The rendered HTML.
 	 */
-	public static function render_player_assembly( $player, $atts, $source, $options ) {
+	public static function render_thumbnail( array $atts, $inner_content, $options, $context = array() ) {
+		wp_enqueue_style( 'videopack-frontend' );
+		$thumbnail_url = $atts['poster'] ?? ( $context['poster'] ?? '' );
+		if ( ! $thumbnail_url ) {
+			return '';
+		}
+
+		$link_to       = $atts['linkTo'] ?? ( $atts['link_to'] ?? 'none' );
+		$skin          = $context['skin'] ?? ( $atts['skin'] ?? ( $options['skin'] ?? 'vjs-theme-videopack' ) );
+		$post_id       = $context['postId'] ?? ( $atts['id'] ?? 0 );
+		$instance_id   = $context['videopackId'] ?? ( $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() ) );
+
+		$style_vars     = array();
+		$classes        = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item', $skin );
+
+		$colors = array(
+			'title-color'            => 'title_color',
+			'title-background-color' => 'title_background_color',
+			'play-button-color'           => 'play_button_color',
+			'play-button-secondary-color' => 'play_button_secondary_color',
+			'control-bar-bg-color'        => 'control_bar_bg_color',
+			'control-bar-color'           => 'control_bar_color',
+		);
+
+		foreach ( $colors as $variable => $attribute ) {
+			$val = $atts[ $attribute ] ?? ( $context[ $attribute ] ?? '' );
+			if ( ! empty( $val ) ) {
+				$style_vars[] = "--videopack-{$variable}: " . $val;
+				$classes[]    = "videopack-has-{$variable}";
+			}
+		}
+
+		// Inject MEJS controls SVG for mask coloring.
+		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+
+		$wrapper_style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
+		$wrapper_data  = sprintf(
+			' class="%s"%s data-attachment-id="%d" data-videopack-id="%s" data-videopack-lightbox="%s"',
+			esc_attr( implode( ' ', array_unique( array_filter( $classes ) ) ) ),
+			$wrapper_style,
+			(int) $post_id,
+			esc_attr( (string) $instance_id ),
+			( 'lightbox' === $link_to ? 'true' : 'false' )
+		);
+
+		$html = sprintf( '<div%s>', $wrapper_data );
+
+		if ( 'none' !== $link_to ) {
+			$url   = ( 'lightbox' === $link_to ) ? '#' : get_permalink( $post_id );
+			$html .= sprintf( '<a href="%s" class="videopack-thumbnail-link %s" data-videopack-link-to="%s">', esc_url( $url ), ( 'lightbox' === $link_to ? 'videopack-lightbox' : '' ), esc_attr( $link_to ) );
+		}
+
+		$html .= sprintf( '<img src="%s" alt="" class="videopack-thumbnail" />', esc_url( $thumbnail_url ) );
+		$html .= '<div class="videopack-inner-blocks-container">' . $inner_content . '</div>';
+
+		if ( 'none' !== $link_to ) {
+			$html .= '</a>';
+		}
+
+		$html .= '</div>';
+
+		return $html;
+	}
+
+	/**
+	 * Renders a modular play button.
+	 *
+	 * @param array  $atts    Button attributes (color, etc.)
+	 * @param array  $options Global plugin options.
+	 * @param string $skin    Current skin class.
+	 * @return string The rendered HTML.
+	 */
+	public static function render_play_button( array $atts, array $options, $skin = '' ) {
+		$embed_method = $options['embed_method'] ?? 'Video.js';
+		
+		// Map shorthand attributes if present.
+		$play_button_color           = $atts['play_button_color'] ?? ( $atts['color'] ?? '' );
+		$play_button_secondary_color = $atts['play_button_secondary_color'] ?? ( $atts['secondary_color'] ?? '' );
+
+		$classes    = array( 'videopack-play-button' );
+		$style_vars = array();
+
+		if ( ! empty( $play_button_color ) ) {
+			$classes[]    = 'videopack-has-play-button-color';
+			$style_vars[] = '--videopack-play-button-color: ' . $play_button_color;
+		}
+		if ( ! empty( $play_button_secondary_color ) ) {
+			$classes[]    = 'videopack-has-play-button-secondary-color';
+			$style_vars[] = '--videopack-play-button-secondary-color: ' . $play_button_secondary_color;
+		}
+
+		if ( 'WordPress Default' === $embed_method ) {
+			$classes[]    = 'mejs-overlay mejs-layer mejs-overlay-play';
+			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+
+			$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
+
+			return sprintf(
+				'<div class="%s"%s><div class="mejs-overlay-button" style="width: 80px; height: 80px;"></div></div>',
+				esc_attr( implode( ' ', $classes ) ),
+				$style
+			);
+		}
+
+		$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
+
+		return sprintf(
+			'<div class="%1$s play-button-container video-js %2$s vjs-big-play-centered vjs-paused vjs-controls-enabled"%3$s><button class="vjs-big-play-button" type="button" aria-disabled="false"><span class="vjs-icon-placeholder" aria-hidden="true"></span><span class="vjs-control-text" aria-live="polite">%4$s</span></button></div>',
+			esc_attr( implode( ' ', $classes ) ),
+			esc_attr( (string) $skin ),
+			$style,
+			esc_html__( 'Play Video', 'video-embed-thumbnail-generator' )
+		);
+	}
+
+	/**
+	 * Renders the fully assembled player HTML including overlays like the title and watermark.
+	/**
+	 * Renders the full player assembly.
+	 *
+	 * @param \Videopack\Video_Players\Player $player        The player instance.
+	 * @param array                           $atts          The video attributes.
+	 * @param \Videopack\Video_Source\Source  $source        The video source object.
+	 * @param array                           $options       The global plugin options.
+	 * @param bool                            $is_block      Optional. Whether this is a block context.
+	 * @param string                          $inner_content Optional. Pre-rendered inner block content.
+	 * @return string The rendered HTML.
+	 */
+	public static function render_player_assembly( $player, $atts, $source, $options, $is_block = false, $inner_content = '' ) {
 		$player_content = '';
 
-		// Video Title / Social Bar.
-		$title_atts = array_merge( $atts, array( 'isOverlay' => true ) );
-		$player_content .= self::render_video_title( $title_atts, $source, $player->get_id() );
+		if ( ! empty( $inner_content ) ) {
+			// If we have inner blocks (from Block Editor or simulation), use them.
+			// Wrap in relative container to ensure overlays (Title, Watermark, etc.) are positioned correctly.
+			$player_content = sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $inner_content );
+		} else {
+			// Auto-assembly logic for standalone players/legacy shortcodes.
+			
+			// Video Title / Social Bar.
+			$title_atts = array_merge( $atts, array( 'isOverlay' => true ) );
+			$player_content .= self::render_video_title( $title_atts, $source, $player->get_id() );
 
-		// Watermark.
-		$player_content .= self::render_watermark( $atts + array( 'instance_id' => $player->get_id() ) );
+			// Watermark.
+			$player_content .= self::render_watermark( $atts + array( 'instance_id' => $player->get_id() ) );
 
-		// Core Player.
-		$player_content .= $player->get_player_code( $atts );
-		
-		// Wrap in relative container.
-		$inner_content = sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $player_content );
+			// Core Player.
+			$player_content .= $player->get_player_code( $atts );
+			
+			// Wrap in relative container.
+			$player_content = sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $player_content );
 
-		// View Count.
-		if ( ! empty( $atts['views'] ) ) {
-			$inner_content .= self::render_view_count( $source, $atts );
+			// View Count.
+			if ( ! empty( $atts['views'] ) ) {
+				$player_content .= self::render_view_count( $source, $atts );
+			}
+
+			// Caption.
+			if ( ! empty( $atts['caption'] ) ) {
+				$player_content .= self::render_video_caption( $atts['caption'] );
+			}
 		}
 
-		// Caption.
-		if ( ! empty( $atts['caption'] ) ) {
-			$inner_content .= self::render_video_caption( $atts['caption'] );
+		return self::render_video_container( $atts, $player_content, $is_block, $options );
+	}
+
+	/**
+	 * Renders the pagination HTML for the gallery.
+	 *
+	 * @param int $current_page The current active page.
+	 * @param int $total_pages  The maximum number of pages.
+	 * @return string The rendered pagination HTML.
+	 */
+	public static function render_pagination( $current_page, $total_pages ) {
+		$total_pages  = (int) $total_pages;
+		$current_page = (int) $current_page;
+
+		if ( $total_pages <= 1 ) {
+			return '';
 		}
 
-		return self::render_video_container( $atts, $inner_content );
+		$pages = array();
+		if ( $total_pages <= 7 ) {
+			for ( $i = 1; $i <= $total_pages; $i++ ) {
+				$pages[] = $i;
+			}
+		} else {
+			$pages[] = 1;
+
+			$start = max( 2, $current_page - 1 );
+			$end   = min( $total_pages - 1, $current_page + 1 );
+
+			if ( $current_page <= 3 ) {
+				$end = 4;
+			} elseif ( $current_page >= $total_pages - 2 ) {
+				$start = $total_pages - 3;
+			}
+
+			if ( $start > 2 ) {
+				$pages[] = '...';
+			}
+
+			for ( $i = $start; $i <= $end; $i++ ) {
+				$pages[] = $i;
+			}
+
+			if ( $end < $total_pages - 1 ) {
+				$pages[] = '...';
+			}
+
+			$pages[] = $total_pages;
+		}
+
+		ob_start();
+		?>
+		<div class="videopack-pagination">
+			<button
+				class="videopack-pagination-button <?php echo $current_page <= 1 ? 'videopack-hidden' : ''; ?>"
+				data-page="<?php echo esc_attr( (string) ( $current_page - 1 ) ); ?>"
+				aria-label="<?php esc_attr_e( 'Previous Page', 'video-embed-thumbnail-generator' ); ?>"
+			>
+				<span class="videopack-pagination-arrow">&lt;</span>
+			</button>
+
+			<?php foreach ( $pages as $page ) : ?>
+				<?php
+				$is_active   = $page === $current_page;
+				$is_ellipsis = '...' === $page;
+				$class       = 'videopack-pagination-button';
+				if ( $is_active ) {
+					$class .= ' is-active';
+				}
+				if ( $is_ellipsis ) {
+					$class .= ' is-ellipsis';
+				}
+				?>
+				<button
+					class="<?php echo esc_attr( $class ); ?>"
+					<?php disabled( $is_active || $is_ellipsis ); ?>
+					data-page="<?php echo esc_attr( (string) $page ); ?>"
+				>
+					<?php echo esc_html( (string) $page ); ?>
+				</button>
+			<?php endforeach; ?>
+
+			<button
+				class="videopack-pagination-button <?php echo $current_page >= $total_pages ? 'videopack-hidden' : ''; ?>"
+				data-page="<?php echo esc_attr( (string) ( $current_page + 1 ) ); ?>"
+				aria-label="<?php esc_attr_e( 'Next Page', 'video-embed-thumbnail-generator' ); ?>"
+			>
+				<span class="videopack-pagination-arrow">&gt;</span>
+			</button>
+		</div>
+		<?php
+		return (string) ob_get_clean();
 	}
 
 }

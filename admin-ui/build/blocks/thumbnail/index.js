@@ -80,12 +80,20 @@ function VideoThumbnailPreview({
 
   // Priority: 1. Manual video data (previews), 2. Direct poster URL from meta, 3. WordPress media object, 4. Default "no thumbnail"
   const thumbnailUrl = video.poster_url || posterUrl || thumbnailMedia?.source_url || defaultNoThumb;
-  const containerClass = `gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${effectiveSkin} ${resolvedDuotoneClass || ''}`.trim();
+  const play_button_color = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('play_button_color', {}, context);
+  const play_button_secondary_color = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('play_button_secondary_color', {}, context);
+  const containerClass = `gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${effectiveSkin} ${resolvedDuotoneClass || ''} ${play_button_color ? 'videopack-has-play-button-color' : ''} ${play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : ''}`.trim();
   const imgStyle = resolvedDuotoneClass ? {
     filter: `url(#${resolvedDuotoneClass})`
   } : {};
+  const containerStyle = {
+    ...imgStyle,
+    '--videopack-play-button-color': play_button_color,
+    '--videopack-play-button-secondary-color': play_button_secondary_color
+  };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
     className: containerClass,
+    style: containerStyle,
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("img", {
       src: thumbnailUrl,
       alt: thumbnailMedia?.alt_text || '',

@@ -32,6 +32,13 @@ class Blocks implements Hook_Subscriber {
 	protected $format_registry;
 
 	/**
+	 * Instance counter for unique element IDs.
+	 *
+	 * @var int $instance_counter
+	 */
+	public static $instance_counter = 0;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array                             $options         Plugin options.
@@ -40,6 +47,40 @@ class Blocks implements Hook_Subscriber {
 	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry ) {
 		$this->options         = $options;
 		$this->format_registry = $format_registry;
+
+		// Inject render callbacks via metadata filter as early as possible.
+		add_filter( 'block_type_metadata_settings', array( $this, 'inject_render_callbacks' ), 10, 2 );
+	}
+
+	/**
+	 * Injects render callbacks into block settings based on metadata names.
+	 *
+	 * @param array $settings Block settings.
+	 * @param array $metadata Block metadata.
+	 * @return array Modified settings.
+	 */
+	public function inject_render_callbacks( $settings, $metadata ) {
+		$block_map = array(
+			'videopack/videopack-video'     => 'render_player',
+			'videopack/video-player-engine' => 'render_player_engine',
+			'videopack/video-watermark'     => 'render_video_watermark',
+			'videopack/collection'          => 'render_collection',
+			'videopack/thumbnail'           => 'render_thumbnail',
+			'videopack/video-title'         => 'render_video_title',
+			'videopack/video-duration'      => 'render_video_duration',
+			'videopack/view-count'          => 'render_view_count',
+			'videopack/play-button'         => 'render_play_button',
+			'videopack/pagination'          => 'render_pagination',
+			'videopack/video-loop'          => 'render_video_loop',
+			'videopack/video-caption'       => 'render_video_caption',
+		);
+
+		$name = $metadata['name'] ?? '';
+		if ( isset( $block_map[ $name ] ) && method_exists( $this, $block_map[ $name ] ) ) {
+			$settings['render_callback'] = array( $this, $block_map[ $name ] );
+		}
+
+		return $settings;
 	}
 
 	/**
@@ -66,7 +107,14 @@ class Blocks implements Hook_Subscriber {
 	 * @return array
 	 */
 	public function get_filters(): array {
-		return array();
+		return array(
+			array(
+				'hook'     => 'render_block_context',
+				'callback' => 'filter_render_block_context',
+				'priority' => 10,
+				'accepted_args'     => 2,
+			),
+		);
 	}
 
 	/**
@@ -77,35 +125,98 @@ class Blocks implements Hook_Subscriber {
 	 * @return void
 	 */
 	public function register_callbacks() {
-		$blocks = array(
-			'collection'     => 'render_collection',
-			'thumbnail'      => 'render_thumbnail',
-			'video-title'    => 'render_video_title',
-			'video-duration' => 'render_video_duration',
-			'view-count'     => 'render_view_count',
-			'play-button'    => 'render_play_button',
-			'pagination'     => 'render_pagination',
-			'video-loop'     => 'render_video_loop',
-			'video-caption'  => 'render_video_caption',
-		);
-
-		foreach ( $blocks as $name => $callback ) {
-			add_filter(
-				'block_type_metadata_settings',
-				function ( $settings, $metadata ) use ( $name, $callback ) {
-					if ( ( 'videopack/' . $name ) === $metadata['name'] ) {
-						$settings['render_callback'] = array( $this, $callback );
-					}
-					return $settings;
-				},
-				10,
-				2
-			);
-		}
+		// No-op: Callbacks are now injected via constructor filter to prevent race conditions with Admin\Ui.
 	}
 
 	/**
-	 * Renders the Collection block.
+	 * Generic player renderer for the main Videopack block.
+	 *
+	 * @param array $attributes Block attributes.
+	 * @param string $content Block content.
+	 * @param \WP_Block $block The block instance.
+	 * @return string Rendered HTML.
+	 */
+	public function render_player( $attributes, $content, $block ) {
+		self::$instance_counter++;
+		$instance_id = 'vp_' . self::$instance_counter;
+		
+		$block->context['videopack/instanceId']          = $instance_id;
+		$block->context['videopack/isInsidePlayerBlock'] = true;
+
+		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? null ) );
+		
+		// If no ID is provided, only fallback to get_the_ID() if we are on an attachment page.
+		if ( ! $post_id ) {
+			if ( is_attachment() ) {
+				$post_id = get_the_ID();
+			} else {
+				// Search for a video ID in the block content if possible, or just fail gracefully.
+				// For now, if no ID is found, Source_Factory will handle the null.
+			}
+		}
+
+		if ( $post_id ) {
+			$block->context['videopack/postId'] = (int) $post_id;
+		}
+
+		$source = $post_id ? \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry ) : null;
+
+		// The context is now handled globally via filter_render_block_context.
+		// We only need to resolve the poster for the container if missing.
+		$attributes['poster'] = ! empty( $attributes['poster'] ) ? $attributes['poster'] : ( $source ? $source->get_poster() : ( $this->options['poster'] ?? '' ) );
+
+		if ( empty( $attributes['title'] ) && $source ) {
+			$attributes['title'] = $source->get_title();
+		}
+
+		// Propagate watermark settings.
+		$block->context['videopack/watermark']         = $attributes['watermark'] ?? ( $this->options['watermark'] ?? '' );
+		$block->context['videopack/watermark_styles']  = $attributes['watermark_styles'] ?? ( $this->options['watermark_styles'] ?? array() );
+		$block->context['videopack/watermark_link_to'] = $attributes['watermark_link_to'] ?? ( $this->options['watermark_link_to'] ?? 'false' );
+
+		// Propagate media context if present.
+		if ( ! empty( $attributes['poster'] ) ) {
+			$block->context['videopack/poster'] = $attributes['poster'];
+		}
+		if ( ! empty( $attributes['src'] ) ) {
+			$block->context['videopack/src'] = $attributes['src'];
+		}
+
+		return Modular_Renderer::render_video_container( $attributes, $content, true, $this->options );
+	}
+
+	/**
+	 * Renders the Video Player Engine block.
+	 *
+	 * @param array $attributes Block attributes.
+	 * @param string $content Block content.
+	 * @param \WP_Block $block The block instance.
+	 * @return string Rendered HTML.
+	 */
+	public function render_player_engine( $attributes, $content, $block ) {
+		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? get_the_ID() ) );
+		
+		// Safety check: skip rendering if we can't find a valid video ID.
+		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
+			return '';
+		}
+
+		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
+		$merged_attributes = array_merge( $this->get_context_attributes( $block->context ), $attributes, array( 'id' => $post_id ) );
+		$player            = $shortcode_handler->prepare_player( $merged_attributes );
+
+		if ( ! $player ) {
+			return '';
+		}
+
+		// Ensure children know they are inside a player engine.
+		$block->context['videopack/isInsidePlayer'] = true;
+
+		return Modular_Renderer::render_player_engine( $player['player'], $player['final_atts'], $content, $this->options );
+	}
+
+	/**
+	 * Renders a collection block.
 	 *
 	 * @param array     $attributes Block attributes.
 	 * @param string    $content    Block inner content.
@@ -348,6 +459,7 @@ class Blocks implements Hook_Subscriber {
 		$link_to       = $attributes['linkTo'] ?? 'none';
 		$skin          = $block->context['videopack/skin'] ?? '';
 		$inner_content = '';
+
 		foreach ( $block->inner_blocks as $inner_block ) {
 			// Deep Clone: Clone each inner block to ensure context modification does not pollute 
 			// shared block objects in memory (which causes the "Sticky Poster" leak).
@@ -435,24 +547,18 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_video_title( $attributes, $content, $block ) {
-		$post_id = $block->context['videopack/postId'] ?? get_the_ID();
-		$source  = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
-
-		// Normalize boolean context attributes.
-		$normalized_context = array();
-		foreach ( array( 'downloadlink', 'embedcode', 'showBackground', 'overlay_title' ) as $key ) {
-			if ( isset( $block->context[ "videopack/{$key}" ] ) ) {
-				$val = $block->context[ "videopack/{$key}" ];
-				if ( 'false' === $val || '0' === $val || '' === $val ) {
-					$val = false;
-				} elseif ( 'true' === $val || '1' === $val ) {
-					$val = true;
-				}
-				$normalized_context[ $key ] = $val;
-			}
+		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? get_the_ID() ) );
+		
+		// Safety check: ensure we have a valid, positive ID.
+		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
+			return '';
 		}
 
-		// Normalize direct block attributes too.
+		$source = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
+
+		$context_attributes = $this->get_context_attributes( $block->context );
+		
+		// Normalize direct block attributes for booleans since they might come as strings from Gutenberg.
 		foreach ( array( 'downloadlink', 'embedcode', 'showBackground', 'overlay_title' ) as $key ) {
 			if ( isset( $attributes[ $key ] ) ) {
 				$val = $attributes[ $key ];
@@ -465,25 +571,22 @@ class Blocks implements Hook_Subscriber {
 			}
 		}
 
+		// Filter out null or empty string attributes to allow context fallbacks to work.
+		// We DO NOT filter out 'false' here because that represents an explicit user override.
+		$filtered_attributes = array_filter( (array) $attributes, function( $v ) { return ! is_null( $v ) && '' !== $v; } );
+
 		// Merge context into attributes for the renderer.
 		$merged_attributes = array_merge(
+			$context_attributes,
 			array(
 				'isOverlay'              => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayer'] ) ),
-				'overlay_title'          => $normalized_context['overlay_title'] ?? true,
-				'title_color'            => $block->context['videopack/title_color'] ?? '',
-				'title_background_color' => $block->context['videopack/title_background_color'] ?? '',
-				'skin'                   => $block->context['videopack/skin'] ?? '',
-				'downloadlink'           => $normalized_context['downloadlink'] ?? false,
-				'embedcode'              => $normalized_context['embedcode'] ?? false,
-				'textAlign'              => ! empty( $block->context['videopack/textAlign'] ) ? $block->context['videopack/textAlign'] : null,
-				'showBackground'         => $normalized_context['showBackground'] ?? true,
-				'position'               => $block->context['videopack/position'] ?? null,
 				'isInsideThumbnail'      => ! empty( $block->context['videopack/isInsideThumbnail'] ),
+				'isInsidePlayer'         => ! empty( $block->context['videopack/isInsidePlayer'] ),
 			),
-			$attributes
+			$filtered_attributes
 		);
 
-		$id = $attributes['id'] ?? ( $post_id ?: '' );
+		$id = $attributes['id'] ?? ( (string) $post_id ?: '' );
 
 		// If embedcode is on, ensure we have an embedlink.
 		if ( ! empty( $merged_attributes['embedcode'] ) && empty( $merged_attributes['embedlink'] ) ) {
@@ -504,7 +607,13 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_video_duration( $attributes, $content, $block ) {
-		$post_id = $block->context['videopack/postId'] ?? get_the_ID();
+		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? get_the_ID() ) );
+		
+		// Safety check: ensure we have a valid, positive ID.
+		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
+			return '';
+		}
+
 		$meta    = get_post_meta( $post_id, '_videopack-meta', true );
 		if ( empty( $meta ) ) {
 			$meta = array();
@@ -604,8 +713,10 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_view_count( $attributes, $content, $block ) {
-		$post_id = $block->context['videopack/postId'] ?? get_the_ID();
-		if ( ! $post_id ) {
+		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? get_the_ID() ) );
+
+		// Safety check: ensure we have a valid, positive ID.
+		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
 			return '';
 		}
 
@@ -615,18 +726,47 @@ class Blocks implements Hook_Subscriber {
 			$this->format_registry
 		);
 
+		// Filter out null attributes to allow context fallbacks to work.
+		$filtered_attributes = array_filter( (array) $attributes, function( $v ) { return ! is_null( $v ); } );
+
 		// Resolve attributes with context-aware defaults.
-		$merged_attributes = array_merge( (array) $attributes, array(
-			'isOverlay'              => $attributes['isOverlay'] ?? ! empty( $block->context['videopack/isInsideThumbnail'] ),
-			'isInsideThumbnail'      => ! empty( $block->context['videopack/isInsideThumbnail'] ),
-			'isInsidePlayerBlock'    => ! empty( $block->context['videopack/isInsidePlayerBlock'] ),
-			'textAlign'              => $attributes['textAlign'] ?? ( $block->context['videopack/textAlign'] ?? null ),
-			'title_color'            => $block->context['videopack/title_color'] ?? $attributes['title_color'] ?? '',
-			'title_background_color' => $block->context['videopack/title_background_color'] ?? $attributes['title_background_color'] ?? '',
-			'skin'                   => $block->context['videopack/skin'] ?? $attributes['skin'] ?? '',
-		) );
+		$merged_attributes = array_merge( 
+			$this->get_context_attributes( $block->context ), 
+			$filtered_attributes, 
+			array(
+				'isOverlay'              => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayer'] ) ),
+				'isInsideThumbnail'      => ! empty( $block->context['videopack/isInsideThumbnail'] ),
+				'isInsidePlayer'         => ! empty( $block->context['videopack/isInsidePlayer'] ),
+				'textAlign'              => $attributes['textAlign'] ?? ( $block->context['videopack/textAlign'] ?? null ),
+				'title_color'            => $block->context['videopack/title_color'] ?? $attributes['title_color'] ?? '',
+				'title_background_color' => $block->context['videopack/title_background_color'] ?? $attributes['title_background_color'] ?? '',
+				'skin'                   => $block->context['videopack/skin'] ?? $attributes['skin'] ?? '',
+			) 
+		);
 
 		return Modular_Renderer::render_view_count( $source, $merged_attributes );
+	}
+
+	/**
+	 * Renders the Video Watermark block.
+	 *
+	 * @param array     $attributes Block attributes.
+	 * @param string    $content    Block inner content.
+	 * @param \WP_Block $block      Block instance.
+	 * @return string Rendered HTML.
+	 */
+	public function render_video_watermark( $attributes, $content, $block ) {
+		$merged_attributes = array_merge(
+			array(
+				'watermark'         => $block->context['videopack/watermark'] ?? '',
+				'watermark_styles'  => $block->context['videopack/watermark_styles'] ?? array(),
+				'watermark_link_to' => $block->context['videopack/watermark_link_to'] ?? '',
+				'skin'              => $block->context['videopack/skin'] ?? '',
+			),
+			$attributes
+		);
+
+		return Modular_Renderer::render_watermark( $merged_attributes );
 	}
 
 	/**
@@ -774,5 +914,117 @@ class Blocks implements Hook_Subscriber {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Filters the block context to inject global plugin defaults for Videopack attributes.
+	 *
+	 * This ensures that child blocks correctly inherit global settings when the parent block
+	 * uses the default (unspecified) value, while still allowing explicit per-block overrides.
+	 *
+	 * @param array $context The block context.
+	 * @param array $block   The block being rendered.
+	 * @return array Modified context.
+	 */
+	public function filter_render_block_context( $context, $block ) {
+		$block_name = $block['blockName'] ?? '';
+		if ( strpos( $block_name, 'videopack/' ) !== 0 ) {
+			return $context;
+		}
+
+		// List of attributes that provide context and their global fallbacks.
+		// We prioritize: 1. Value already in context, 2. Parent block attribute, 3. Global option.
+		$fallbacks = array(
+			'videopack/downloadlink'   => array( 'attr' => 'downloadlink', 'global' => Modular_Renderer::is_true( $this->options['downloadlink'] ?? false ) ),
+			'videopack/embedcode'      => array( 'attr' => 'embedcode', 'global' => Modular_Renderer::is_true( $this->options['embedcode'] ?? false ) ),
+			'videopack/overlay_title'  => array( 'attr' => 'overlay_title', 'global' => Modular_Renderer::is_true( $this->options['overlay_title'] ?? true ) ),
+			'videopack/showBackground' => array( 'attr' => 'showBackground', 'global' => Modular_Renderer::is_true( $this->options['showBackground'] ?? true ) ),
+			'videopack/views'          => array( 'attr' => 'views', 'global' => Modular_Renderer::is_true( $this->options['views'] ?? false ) ),
+			'videopack/skin'           => array( 'attr' => 'skin', 'global' => $this->options['skin'] ?? 'vjs-theme-videopack' ),
+			'videopack/postId'         => array( 'attr' => 'id', 'global' => null ),
+			'videopack/poster'         => array( 'attr' => 'poster', 'global' => null ),
+			'videopack/watermark'      => array( 'attr' => 'watermark', 'global' => $this->options['watermark'] ?? '' ),
+			'videopack/watermark_link_to' => array( 'attr' => 'watermark_link_to', 'global' => $this->options['watermark_link_to'] ?? 'false' ),
+			'videopack/watermark_styles'  => array( 'attr' => 'watermark_styles', 'global' => array() ),
+		);
+
+		foreach ( $fallbacks as $context_key => $config ) {
+			$attr_key = $config['attr'];
+			$global   = $config['global'];
+
+			if ( ! isset( $context[ $context_key ] ) || null === $context[ $context_key ] ) {
+				// Check if the parent block (if this is a child) or current block has the attribute.
+				if ( isset( $block['attrs'][ $attr_key ] ) ) {
+					$context[ $context_key ] = $block['attrs'][ $attr_key ];
+				} else {
+					$context[ $context_key ] = $global;
+				}
+			}
+		}
+
+		return $context;
+	}
+
+	/**
+	 * Extracts Videopack-specific context into a flat attributes array with boolean normalization and global fallbacks.
+	 *
+	 * @param array $context The block context.
+	 * @return array Extracted attributes.
+	 */
+	private function get_context_attributes( $context ) {
+		$attributes = array();
+		foreach ( (array) $context as $key => $value ) {
+			if ( strpos( $key, 'videopack/' ) === 0 ) {
+				$attr_key = substr( $key, 10 );
+				$val      = $value;
+
+				// Normalize booleans that might come as strings from Gutenberg context.
+				if ( in_array( $attr_key, array( 'downloadlink', 'embedcode', 'showBackground', 'overlay_title', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'playback_rate', 'fullwidth' ), true ) ) {
+					$val = Modular_Renderer::is_true( $val );
+				}
+
+				$attributes[ $attr_key ] = $val;
+			}
+		}
+
+		// Apply global fallbacks for design attributes if they were not provided by context or are empty.
+		// This ensures children inherit from global settings when the parent block doesn't explicitly override them.
+		$design_keys = array(
+			'skin'                        => $this->options['skin'] ?? 'vjs-theme-videopack',
+			'downloadlink'                => Modular_Renderer::is_true( $this->options['downloadlink'] ?? false ),
+			'embedcode'                   => Modular_Renderer::is_true( $this->options['embedcode'] ?? false ),
+			'autoplay'                    => Modular_Renderer::is_true( $this->options['autoplay'] ?? false ),
+			'controls'                    => Modular_Renderer::is_true( $this->options['controls'] ?? true ),
+			'loop'                        => Modular_Renderer::is_true( $this->options['loop'] ?? false ),
+			'muted'                       => Modular_Renderer::is_true( $this->options['muted'] ?? false ),
+			'playsinline'                 => Modular_Renderer::is_true( $this->options['playsinline'] ?? false ),
+			'playback_rate'               => Modular_Renderer::is_true( $this->options['playback_rate'] ?? false ),
+			'volume'                      => (float) ( $this->options['volume'] ?? 1.0 ),
+			'play_button_color'           => $this->options['play_button_color'] ?? '',
+			'play_button_secondary_color' => $this->options['play_button_secondary_color'] ?? '',
+			'title_color'                 => $this->options['title_color'] ?? '',
+			'title_background_color'      => $this->options['title_background_color'] ?? '',
+			'control_bar_bg_color'        => $this->options['control_bar_bg_color'] ?? '',
+			'control_bar_color'           => $this->options['control_bar_color'] ?? '',
+			'overlay_title'               => Modular_Renderer::is_true( $this->options['overlay_title'] ?? true ),
+			'showBackground'              => Modular_Renderer::is_true( $this->options['showBackground'] ?? true ),
+			'views'                       => Modular_Renderer::is_true( $this->options['views'] ?? false ),
+			'watermark'                   => $this->options['watermark'] ?? '',
+			'watermark_styles'            => $this->options['watermark_styles'] ?? array(),
+			'watermark_link_to'           => $this->options['watermark_link_to'] ?? 'false',
+			'width'                       => (int) ( $this->options['width'] ?? 960 ),
+			'height'                      => (int) ( $this->options['height'] ?? 540 ),
+		);
+
+		foreach ( $design_keys as $key => $fallback ) {
+			// If the attribute is not set, or is an empty string, we allow the fallback to take over.
+			// We no longer force-overwrite 'false' because we need to respect explicit user overrides.
+			$val = $attributes[ $key ] ?? null;
+			if ( ! isset( $attributes[ $key ] ) || '' === $val || null === $val ) {
+				$attributes[ $key ] = $fallback;
+			}
+		}
+
+		return $attributes;
 	}
 }

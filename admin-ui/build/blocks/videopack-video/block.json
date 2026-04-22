@@ -21,7 +21,29 @@
     "videopack/control_bar_color"
   ],
   "providesContext": {
-    "videopack/postId": "id"
+    "videopack/postId": "id",
+    "videopack/skin": "skin",
+    "videopack/downloadlink": "downloadlink",
+    "videopack/embedcode": "embedcode",
+    "videopack/autoplay": "autoplay",
+    "videopack/controls": "controls",
+    "videopack/loop": "loop",
+    "videopack/muted": "muted",
+    "videopack/playsinline": "playsinline",
+    "videopack/preload": "preload",
+    "videopack/volume": "volume",
+    "videopack/play_button_color": "play_button_color",
+    "videopack/play_button_secondary_color": "play_button_secondary_color",
+    "videopack/title_color": "title_color",
+    "videopack/title_background_color": "title_background_color",
+    "videopack/isInsidePlayer": "isInsidePlayer",
+    "videopack/isInsidePlayerBlock": "isInsidePlayerBlock",
+    "videopack/watermark": "watermark",
+    "videopack/watermark_styles": "watermark_styles",
+    "videopack/watermark_link_to": "watermark_link_to",
+    "videopack/views": "views",
+    "videopack/overlay_title": "overlay_title",
+    "videopack/showBackground": "showBackground"
   },
   "supports": {
     "html": false,
@@ -170,20 +192,16 @@
       "type": "string"
     },
     "downloadlink": {
-      "type": "boolean",
-      "default": false
+      "type": "boolean"
     },
     "overlay_title": {
-      "type": "boolean",
-      "default": true
+      "type": "boolean"
     },
     "views": {
-      "type": "boolean",
-      "default": false
+      "type": "boolean"
     },
     "embedcode": {
-      "type": "boolean",
-      "default": false
+      "type": "boolean"
     },
     "embedlink": {
       "type": "string"
@@ -197,8 +215,7 @@
       "default": false
     },
     "showBackground": {
-      "type": "boolean",
-      "default": true
+      "type": "boolean"
     },
     "title_position": {
       "type": "string",
@@ -206,7 +223,7 @@
     },
     "isInsidePlayer": {
       "type": "boolean",
-      "default": true
+      "default": false
     },
     "restartCount": {
       "type": "number",

@@ -8,6 +8,9 @@
 	"parent": [ "videopack/videopack-video" ],
 	"allowedBlocks": [ "videopack/video-watermark", "videopack/video-title" ],
 	"editorStyle": "file:./index.css",
+	"providesContext": {
+		"videopack/isInsidePlayer": "isInsidePlayer"
+	},
 	"usesContext": [
 		"videopack/postId",
 		"videopack/skin",

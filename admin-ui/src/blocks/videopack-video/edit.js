@@ -199,7 +199,9 @@ const SingleVideoBlock = ({
 						? ' videopack-has-play-button-secondary-color'
 						: ''
 				}${
-					attributes.overlay_title || attributes.downloadlink || attributes.embedcode
+					(attributes.overlay_title ?? videopack_config?.options?.overlay_title) || 
+					(attributes.downloadlink ?? videopack_config?.options?.downloadlink) || 
+					(attributes.embedcode ?? videopack_config?.options?.embedcode)
 						? ' videopack-video-title-visible'
 						: ''
 				}`}
@@ -238,7 +240,11 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
 			: '');
 
+	const globalOptions = config?.options || {};
+	const effectiveAlign = attributes.align || globalOptions.align || '';
+
 	const blockProps = useBlockProps({
+		className: effectiveAlign ? `align${effectiveAlign}` : '',
 		style: {
 			'--videopack-mejs-controls-svg': mejsSvgPath
 				? `url("${mejsSvgPath}")`
@@ -264,6 +270,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	}, [clientId]);
 
 	const isContextual = postId && (Number(postId) !== Number(editorPostId) || isSiteEditor);
+	const shouldPersist = !isContextual;
 	const resolvedPostId = isContextual ? postId : (id || undefined);
 
 	const effectiveId = resolvedPostId;
@@ -277,7 +284,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	);
 
 	const resolvedAttributes = useMemo(() => {
-		if (!isContextual || !attachment) {
+		if (!attachment) {
 			return attributes;
 		}
 
@@ -440,11 +447,38 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				{}
 			);
 
-			if (Object.keys(updatedAttributes).length > 0 && shouldPersist) {
-				setAttributes(updatedAttributes);
+			const dynamicKeys = [
+				'src',
+				'poster',
+				'title',
+				'caption',
+				'width',
+				'height',
+				'sources',
+				'source_groups',
+				'embedlink',
+			];
+
+			if (Object.keys(updatedAttributes).length > 0) {
+				const filteredUpdates = { ...updatedAttributes };
+				
+				// We always want to persist the ID if it's being set.
+				// For other attributes, we only persist them if we are NOT in a contextual loop
+				// AND they are not in the dynamicKeys list.
+				if (attachmentObject.id) {
+					dynamicKeys.forEach((key) => {
+						if (!shouldPersist || (key in filteredUpdates)) {
+							delete filteredUpdates[key];
+						}
+					});
+				}
+
+				if (Object.keys(filteredUpdates).length > 0) {
+					setAttributes(filteredUpdates);
+				}
 			}
 		},
-		[setAttributes]
+		[setAttributes, shouldPersist]
 	);
 
 	useEffect(() => {

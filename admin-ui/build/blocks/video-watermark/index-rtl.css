@@ -372,10 +372,14 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block) {
+  position: relative;
+  container-type: inline-size;
   --videopack-title-background-color: #141414;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
@@ -384,6 +388,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -392,6 +398,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -403,6 +411,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -411,6 +421,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -419,6 +431,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -427,6 +441,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -438,6 +454,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -449,6 +467,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -457,6 +477,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -468,6 +490,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -479,6 +503,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -487,6 +513,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -498,6 +526,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -509,6 +539,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -517,6 +549,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -528,6 +562,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -539,6 +575,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -547,6 +585,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -558,6 +598,8 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
@@ -566,11 +608,24 @@
 .videopack-gallery-item,
 .gallery-thumbnail,
 .videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block).vjs-theme-sea.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
   background-color: rgba(65, 118, 188, 0.4);
+}
+:is(.gallery-thumbnail,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-holder,
+.videopack-thumbnail-block:not(.is-full-width)) {
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background: #000;
 }
 :is(.videopack-wrapper,
 .videopack-gallery-wrapper,
@@ -623,7 +678,11 @@
 .videopack-thumbnail-wrapper {
   position: relative;
   display: block;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio parity */
+  height: 0;
   overflow: hidden;
+  container-type: inline-size;
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container {
   position: absolute;
@@ -635,6 +694,15 @@
 }
 .videopack-thumbnail-wrapper .videopack-inner-blocks-container > * {
   pointer-events: auto;
+}
+.gallery-item-clickable-area,
+.videopack-thumbnail-holder {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 .videopack-share-container {
   display: flex;
