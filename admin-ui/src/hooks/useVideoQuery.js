@@ -25,10 +25,15 @@ export default function useVideoQuery(attributes, previewPostId) {
 		page_number = 1,
 		enable_collection_video_limit = false,
 		collection_video_limit = 12,
+		id,
 	} = attributes;
 
 	const { categories, tags } = useSelect((select) => {
-		const { getEntityRecords } = select('core');
+		const core = select('core');
+		if (!core) {
+			return { categories: [], tags: [] };
+		}
+		const { getEntityRecords } = core;
 		return {
 			categories: getEntityRecords('taxonomy', 'category', {
 				per_page: -1,
@@ -41,7 +46,10 @@ export default function useVideoQuery(attributes, previewPostId) {
 	const debouncedSetSearchString = useDebounce(setSearchString, 500);
 
 	const postTypes = useSelect(
-		(select) => select('core').getPostTypes({ per_page: -1 }),
+		(select) => {
+			const core = select('core');
+			return core ? core.getPostTypes({ per_page: -1 }) : [];
+		},
 		[]
 	);
 
@@ -86,8 +94,8 @@ export default function useVideoQuery(attributes, previewPostId) {
 				? (parseInt(gallery_per_page, 10) || 12) 
 				: (enable_collection_video_limit ? (parseInt(collection_video_limit, 10) || 12) : -1),
 			page_number: parseInt(page_number, 10) || 1,
-			gallery_id: gallery_id ? parseInt(gallery_id, 10) : undefined,
-			gallery_include,
+			gallery_id: gallery_id ? parseInt(gallery_id, 10) : (previewPostId ? parseInt(previewPostId, 10) : undefined),
+			gallery_include: gallery_include || id,
 			gallery_exclude,
 			gallery_source,
 			gallery_category,
@@ -143,7 +151,15 @@ export default function useVideoQuery(attributes, previewPostId) {
 
 	const { searchResults, currentPost, isResolvingSearch } = useSelect(
 		(select) => {
-			const { getEntityRecord, getEntityRecords, isResolving: checkResolving } = select('core');
+			const core = select('core');
+			if (!core) {
+				return {
+					searchResults: [],
+					currentPost: null,
+					isResolvingSearch: false,
+				};
+			}
+			const { getEntityRecord, getEntityRecords, isResolving: checkResolving } = core;
 			const results = [];
 			let resolving = false;
 
@@ -217,7 +233,11 @@ export default function useVideoQuery(attributes, previewPostId) {
 			if (excludedIds.length === 0) {
 				return [];
 			}
-			const records = select('core').getEntityRecords(
+			const core = select('core');
+			if (!core) {
+				return [];
+			}
+			const records = core.getEntityRecords(
 				'postType',
 				'attachment',
 				{

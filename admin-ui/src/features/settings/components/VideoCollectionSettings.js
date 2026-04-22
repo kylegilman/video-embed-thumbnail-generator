@@ -12,9 +12,7 @@ import {
 } from '@wordpress/components';
 import { sortAscending, sortDescending } from '../../../assets/icon';
 import useVideoQuery from '../../../hooks/useVideoQuery';
-import VideopackBlockPreview, {
-	VideopackTemplatePreview,
-} from '../../../components/common/VideopackBlockPreview';
+import { BlockPreview, TemplatePreview } from '../../../components/Preview';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe';
 import CompactColorPicker from '../../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../../utils/colors';
@@ -630,16 +628,16 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 											<Spinner />
 										</div>
 									)}
-									<VideopackBlockPreview
+									<BlockPreview
 										name="videopack/collection"
 										attributes={settings}
 										context={previewContext}
 									>
-										<VideopackTemplatePreview
+										<TemplatePreview
 											template={galleryTemplate}
 											context={previewContext}
 										/>
-									</VideopackBlockPreview>
+									</BlockPreview>
 								</div>
 							</PreviewIframe>
 						</div>

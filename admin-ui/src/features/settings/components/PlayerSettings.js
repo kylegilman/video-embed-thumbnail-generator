@@ -25,7 +25,7 @@ import { getColorFallbacks } from '../../../utils/colors';
 import VideopackTooltip from './VideopackTooltip';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import useResolutions from '../../../hooks/useResolutions';
-import VideopackBlockPreview from '../../../components/common/VideopackBlockPreview';
+import { BlockPreview } from '../../../components/Preview';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
@@ -503,7 +503,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								{(overlay_title ||
 									downloadlink ||
 									(embeddable && embedcode)) && (
-									<VideopackBlockPreview
+									<BlockPreview
 										name="videopack/video-title"
 										attributes={{ 
 											title: 'Sample Video',
@@ -518,7 +518,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 									/>
 								)}
 								{watermark && (
-									<VideopackBlockPreview
+									<BlockPreview
 										name="videopack/video-watermark"
 										isInsidePlayer={true}
 										isOverlay={true}
@@ -527,7 +527,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								)}
 							</VideoPlayer>
 							{views && (
-								<VideopackBlockPreview
+								<BlockPreview
 									name="videopack/view-count"
 									attributes={{ 
 										count: 1234, 
