@@ -2,13 +2,13 @@
  * Features for integrating Videopack with the TinyMCE editor.
  */
 
-import { createRoot, useState, useEffect } from '@wordpress/element';
+import { createRoot, useState, useEffect, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
-import VideoGallery from '../../components/VideoGallery/VideoGallery';
-import VideoList from '../../components/VideoList/VideoList';
-import Pagination from '../../components/Pagination/Pagination';
+import { BlockPreview, TemplatePreview } from '../../components/Preview';
+import { getGridTemplate, getListTemplate } from '../../utils/templates';
+import { getEffectiveValue } from '../../utils/context';
+import useVideoQuery from '../../hooks/useVideoQuery';
 /* global videopack_config, tinymce, MutationObserver */
 import './tinymce.scss';
 
@@ -72,10 +72,51 @@ import './tinymce.scss';
 
 	const PlaceHolderWrapper = ({ type, attributes, mountNode }) => {
 		const [fullAttributes, setFullAttributes] = useState(attributes);
-		const [isLoading, setIsLoading] = useState(type === 'Video');
-		const [galleryPage, setGalleryPage] = useState(1);
-		const [totalPages, setTotalPages] = useState(1);
+		const activePostId = useMemo(() => detectPostId(), []);
+		const effectiveOptions = useMemo(
+			() => ({
+				embed_method: videopack_config?.embed_method,
+				...(videopack_config?.options || {}),
+				...(videopack_config?.defaults || {}),
+			}),
+			[]
+		);
+
+		// Normalize attributes and merging defaults
+		const mergedAttributes = useMemo(() => {
+			const merged = {
+				...effectiveOptions,
+				...fullAttributes,
+				autoplay: false, // Never autoplay in TinyMCE preview
+			};
+
+			// Fix for gallery_source="current" in TinyMCE/REST context where get_the_ID() is 0.
+			if (
+				merged.gallery_source === 'current' &&
+				(!merged.gallery_id ||
+					merged.gallery_id === '0' ||
+					parseInt(merged.gallery_id, 10) === 0)
+			) {
+				if (activePostId) {
+					merged.gallery_id = activePostId;
+				}
+			}
+			return merged;
+		}, [effectiveOptions, fullAttributes, activePostId]);
+
+		const { videoResults, isResolving, maxNumPages } = useVideoQuery(
+			{ ...mergedAttributes, page_number: 1 },
+			activePostId
+		);
 		const [isSelected, setIsSelected] = useState(false);
+		const themePresetsStyle = useMemo(() => {
+			const colors = videopack_config?.themeColors || [];
+			const styles = {};
+			colors.forEach((c) => {
+				styles[`--wp--preset--color--${c.slug}`] = c.color;
+			});
+			return styles;
+		}, []);
 
 		// Watch for selection changes on the wpview container
 		useEffect(() => {
@@ -100,92 +141,7 @@ import './tinymce.scss';
 			return () => observer.disconnect();
 		}, [mountNode]);
 
-		// Fetch metadata for galleries/lists to get total pages
-		useEffect(() => {
-			if (type === 'Video') {
-				return;
-			}
-
-			const args = {
-				...attributes,
-				gallery_pagination: true,
-				gallery_per_page: attributes.gallery_per_page || 10,
-				page_number: galleryPage,
-			};
-
-			apiFetch({
-				path: `/videopack/v1/video_gallery?${new URLSearchParams(
-					args
-				).toString()}`,
-			})
-				.then((response) => {
-					setFullAttributes((prev) => {
-						const next = {
-							...prev,
-							...(response.attributes || {}),
-						};
-						// Preserve the raw state of gallery_pagination from shortcode if present
-						if (attributes.gallery_pagination !== undefined) {
-							next.gallery_pagination =
-								attributes.gallery_pagination;
-						}
-						return next;
-					});
-					setTotalPages(response.max_num_pages || 1);
-				})
-				.finally(() => setIsLoading(false));
-		}, [type, attributes, galleryPage]);
-
-		// Fetch metadata for single videos if only ID is provided
-		useEffect(() => {
-			if (type !== 'Video' || !attributes.id) {
-				setIsLoading(false);
-				return;
-			}
-
-			// If we have an ID, we almost always want to fetch its metadata to get sources/poster
-			apiFetch({
-				path: `/videopack/v1/video_gallery?gallery_include=${attributes.id}`,
-			})
-				.then((response) => {
-					if (response.videos && response.videos.length > 0) {
-						const video = response.videos[0];
-						setFullAttributes((prev) => {
-							const videoVars = video.player_vars || {};
-							const defaults =
-								window.videopack_config?.defaults || {};
-							const merged = { ...videoVars, ...prev };
-
-							// If height or width in 'prev' match the global defaults, and metadata provides a different value,
-							// we assume the user hasn't explicitly overridden them in the shortcode text.
-							if (
-								parseInt(prev.width, 10) ===
-									parseInt(defaults.width, 10) &&
-								videoVars.width
-							) {
-								merged.width = videoVars.width;
-							}
-							if (
-								parseInt(prev.height, 10) ===
-									parseInt(defaults.height, 10) &&
-								videoVars.height
-							) {
-								merged.height = videoVars.height;
-							}
-
-							return {
-								...merged,
-								title: prev.title || video.title,
-								poster: prev.poster || videoVars.poster,
-								src: prev.url || prev.src || videoVars.src,
-							};
-						});
-					}
-				})
-				.finally(() => setIsLoading(false));
-		}, [type, attributes.id]);
-
-		if (isLoading) {
+		if (isResolving) {
 			return (
 				<div className="loading-placeholder">
 					<div className="dashicons dashicons-admin-media"></div>
@@ -196,77 +152,60 @@ import './tinymce.scss';
 			);
 		}
 
-		let Component = VideoPlayer;
-		if (type === 'Gallery') {
-			Component = VideoGallery;
-		} else if (type === 'List') {
-			Component = VideoList;
-		}
+		// Resolve template
+		const template =
+			type === 'Video'
+				? [
+						[
+							'videopack/videopack-video',
+							{},
+							[
+								[
+									'videopack/video-player-engine',
+									{},
+									[
+										mergedAttributes.overlay_title !== false
+											? ['videopack/video-title', {}]
+											: null,
+									].filter(Boolean),
+								],
+							],
+						],
+				  ]
+				: type === 'Gallery'
+				? getGridTemplate(mergedAttributes)
+				: getListTemplate(mergedAttributes);
 
-		// Normalize attributes and merging defaults
-		const finalAttributes = {
-			...(videopack_config?.options || {}),
-			...(videopack_config?.defaults || {}),
-			...fullAttributes,
-			autoplay: false, // Never autoplay in TinyMCE preview
+		const contextValue = {
+			...mergedAttributes,
+			'videopack/videos': videoResults,
+			'videopack/layout': type === 'Gallery' ? 'grid' : 'list',
+			'videopack/columns': parseInt(mergedAttributes.gallery_columns, 10) || 3,
+			'videopack/skin': getEffectiveValue('skin', mergedAttributes, {}),
+			'videopack/play_button_color': getEffectiveValue('play_button_color', mergedAttributes, {}),
+			'videopack/play_button_secondary_color': getEffectiveValue('play_button_secondary_color', mergedAttributes, {}),
+			'videopack/title_color': getEffectiveValue('title_color', mergedAttributes, {}),
+			'videopack/title_background_color': getEffectiveValue('title_background_color', mergedAttributes, {}),
+			'videopack/gallery_pagination': mergedAttributes.gallery_pagination,
+			'videopack/gallery_per_page': mergedAttributes.gallery_per_page,
 		};
-
-		// Fix for gallery_source="current" in TinyMCE/REST context where get_the_ID() is 0.
-		// If source is current and gallery_id is 0/missing or string "0", use the current postId from config.
-		if (
-			finalAttributes.gallery_source === 'current' &&
-			(!finalAttributes.gallery_id ||
-				finalAttributes.gallery_id === '0' ||
-				parseInt(finalAttributes.gallery_id, 10) === 0)
-		) {
-			const postId = detectPostId();
-			if (postId) {
-				finalAttributes.gallery_id = postId;
-			}
-		}
-
-		// Normalize gallery_pagination to boolean
-		const isPaginated =
-			finalAttributes.gallery_pagination === 'true' ||
-			finalAttributes.gallery_pagination === true;
-
-		// If we only have a URL but no sources array, create a default one for the player
-		if (
-			finalAttributes.url &&
-			(!finalAttributes.sources || finalAttributes.sources.length === 0)
-		) {
-			finalAttributes.src = finalAttributes.url;
-			finalAttributes.sources = [
-				{ src: finalAttributes.url, type: 'video/mp4' },
-			];
-		}
-
-		const commonProps = {
-			attributes: finalAttributes,
-			isEditing: false,
-			isSelected,
-		};
-
-		const galleryProps =
-			type !== 'Video'
-				? {
-						galleryPage,
-						setGalleryPage,
-						totalPages,
-						setTotalPages,
-					}
-				: {};
 
 		return (
-			<div className="videopack-tinymce-wrapper">
-				<Component {...commonProps} {...galleryProps} />
-				{isPaginated && totalPages > 1 && (
-					<Pagination
-						currentPage={galleryPage}
-						totalPages={totalPages}
-						onPageChange={setGalleryPage}
+			<div className="videopack-tinymce-wrapper" style={themePresetsStyle}>
+				{videopack_config?.globalStyles && (
+					<style
+						dangerouslySetInnerHTML={{
+							__html: videopack_config.globalStyles,
+						}}
 					/>
 				)}
+				<TemplatePreview
+					attributes={mergedAttributes}
+					template={template}
+					context={contextValue}
+					video={videoResults[0]}
+					postId={detectPostId()}
+				/>
 				{!isSelected && <div className="videopack-block-overlay" />}
 			</div>
 		);
@@ -310,9 +249,9 @@ import './tinymce.scss';
 		};
 		const tag = shortcode.tag;
 
-		// If the shortcode has content (e.g. [videopack]URL[/videopack]), map it to the url attribute
-		if (shortcode.content && !attrs.url && !attrs.src) {
-			attrs.url = shortcode.content.trim();
+		// If the shortcode has content (e.g. [videopack]URL[/videopack]), map it to the src attribute ONLY if id is missing
+		if (shortcode.content && !attrs.id && !attrs.src) {
+			attrs.src = shortcode.content.trim();
 		}
 
 		let type = 'Video';
@@ -323,17 +262,17 @@ import './tinymce.scss';
 			type = 'Gallery';
 		} else {
 			// Detect if it should be a list
-			const hasMultipleIds = attrs.id && attrs.id.includes(',');
+			const hasMultipleIds = attrs.id && (typeof attrs.id === 'string' && attrs.id.includes(','));
 			const hasQuerySource =
 				attrs.gallery_source ||
 				attrs.gallery_category ||
 				attrs.gallery_tag;
 			const isEmptyAndNotUrl =
-				!attrs.id && !attrs.url && !shortcode.content;
+				!attrs.id && !attrs.src && !shortcode.content;
 			const hasGalleryIdOnly =
 				attrs.gallery_id &&
 				!attrs.id &&
-				!attrs.url &&
+				!attrs.src &&
 				!shortcode.content;
 
 			if (
@@ -771,10 +710,10 @@ import './tinymce.scss';
 
 		const initEditor = (editor) => {
 			editor.on('init', () => {
-				if (videopack_config?.globalStyles) {
-					editor.dom.addStyle(videopack_config.globalStyles);
+				if (typeof videojs !== 'undefined') {
+					editor.getWin().videojs = videojs;
 				}
-				// Share videopack_config with the iframe window just in case
+				// Share videopack_config and videojs with the iframe window
 				editor.getWin().videopack_config = videopack_config;
 			});
 

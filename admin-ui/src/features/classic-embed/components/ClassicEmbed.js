@@ -14,6 +14,10 @@ import useVideoQuery from '../../../hooks/useVideoQuery';
 import { useVideoData } from '../../../hooks/useVideoData';
 import useVideoProbe from '../../../hooks/useVideoProbe';
 import { generateShortcode, normalizeOptions } from '../../../utils/helpers';
+import { BlockPreview, TemplatePreview } from '../../../components/Preview';
+import { getGridTemplate, getListTemplate } from '../../../utils/templates';
+import { getEffectiveValue } from '../../../utils/context';
+import './ClassicEmbed.scss';
 
 /**
  * ClassicEmbed component.
@@ -386,9 +390,73 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 		]
 	);
 
+	const renderPreview = () => {
+		const type = activeTab === 'single' ? 'Video' : activeTab === 'gallery' ? 'Gallery' : 'List';
+		const attributes = activeTab === 'single' ? singleAttributes : activeTab === 'gallery' ? galleryAttributes : listAttributes;
+
+		const mergedAttributes = {
+			...normalizedOptions,
+			...attributes,
+			autoplay: false,
+		};
+
+		const template =
+			type === 'Video'
+				? [
+						[
+							'videopack/videopack-video',
+							{},
+							[
+								[
+									'videopack/video-player-engine',
+									{},
+									[
+										mergedAttributes.overlay_title !== false
+											? ['videopack/video-title', {}]
+											: null,
+									].filter(Boolean),
+								],
+							],
+						],
+				  ]
+				: type === 'Gallery'
+				? getGridTemplate(mergedAttributes)
+				: getListTemplate(mergedAttributes);
+
+		const contextValue = {
+			...mergedAttributes,
+			'videopack/videos': queryData.videoResults,
+			'videopack/layout': type === 'Gallery' ? 'grid' : 'list',
+			'videopack/columns': parseInt(mergedAttributes.gallery_columns, 10) || 3,
+			'videopack/skin': getEffectiveValue('skin', mergedAttributes, {}),
+			'videopack/play_button_color': getEffectiveValue('play_button_color', mergedAttributes, {}),
+			'videopack/play_button_secondary_color': getEffectiveValue('play_button_secondary_color', mergedAttributes, {}),
+			'videopack/title_color': getEffectiveValue('title_color', mergedAttributes, {}),
+			'videopack/title_background_color': getEffectiveValue('title_background_color', mergedAttributes, {}),
+			'videopack/gallery_pagination': mergedAttributes.gallery_pagination,
+			'videopack/gallery_per_page': mergedAttributes.gallery_per_page,
+		};
+
+		return (
+			<div className="videopack-classic-preview-container">
+				<h3>{__('Preview', 'video-embed-thumbnail-generator')}</h3>
+				<div className="videopack-classic-preview-inner">
+					<TemplatePreview
+						attributes={mergedAttributes}
+						template={template}
+						context={contextValue}
+						video={videoData?.record || queryData.videoResults[0]}
+						postId={postId}
+					/>
+				</div>
+			</div>
+		);
+	};
+
 	return (
-		<div className="videopack-classic-embed">
-			<div className="videopack-tab-content">
+		<div className="videopack-classic-embed-outer">
+			<div className="videopack-classic-embed">
+				<div className="videopack-tab-content">
 				{activeTab === 'single' && (
 					<>
 						<PanelBody
@@ -565,7 +633,9 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 						</div>
 					</>
 				)}
+				</div>
 			</div>
+			{renderPreview()}
 		</div>
 	);
 }
