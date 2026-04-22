@@ -225,6 +225,13 @@ class Validate {
 	public function safe_css( array $styles ) {
 		$styles[] = 'display';
 		$styles[] = 'visibility';
+		$styles[] = 'aspect-ratio';
+		$styles[] = 'container-type';
+
+		// Allow all Videopack and gallery custom properties.
+		// WordPress safe_css filter allows us to add patterns or specific names.
+		$styles[] = '--videopack-*';
+		$styles[] = '--gallery-*';
 
 		return (array) $styles;
 	}

@@ -10,16 +10,9 @@ import {
 	useState,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { BlockControls } from '@wordpress/block-editor';
-import {
-	share as shareIcon,
-	download as downloadIcon,
-	heading as titleIcon,
-	undo as resetIcon,
-} from '@wordpress/icons';
-import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import { decodeEntities } from '@wordpress/html-entities';
 import { applyFilters } from '@wordpress/hooks';
+import { getEffectiveValue } from '../../utils/context';
 import GenericPlayer from './GenericPlayer.js';
 import VideoJS from './VideoJs.js';
 import WpMejsPlayer from './WpMejsPlayer.js';
@@ -39,6 +32,7 @@ const noop = () => {};
  *
  * @param {Object}   props               Component props.
  * @param {Object}   props.attributes    Block attributes.
+ * @param {Object}   props.context       Inherited block context.
  * @param {Function} props.setAttributes Function to update block attributes.
  * @param {boolean}  props.isSelected    Whether the block is selected.
  * @param {boolean}  props.hideStaticOverlays Whether to hide site-wide static overlays (watermark, title).
@@ -48,6 +42,7 @@ const noop = () => {};
  */
 const VideoPlayer = ({
 	attributes,
+	context = {},
 	setAttributes = noop,
 	onReady = noop,
 	isSelected = false,
@@ -78,6 +73,13 @@ const VideoPlayer = ({
 		}
 	}, [attributes, detectedDimensions.src]);
 
+	// Handle external restart requests
+	useEffect(() => {
+		if (attributes?.restartCount > 0) {
+			resetPlayer();
+		}
+	}, [attributes?.restartCount, resetPlayer]);
+
 	const onMetadataLoaded = useCallback(
 		(dimensions) => {
 			if (
@@ -106,10 +108,8 @@ const VideoPlayer = ({
 	);
 
 	const {
-		embed_method,
 		autoplay,
 		controls = true,
-		skin,
 		loop,
 		muted,
 		playsinline,
@@ -124,16 +124,16 @@ const VideoPlayer = ({
 		text_tracks = [],
 		playback_rate,
 		default_ratio,
-		play_button_color,
-		play_button_secondary_color,
-		control_bar_bg_color,
-		control_bar_color,
-		title_color,
-		title_background_color,
-		overlay_title,
-		embeddable,
-		downloadlink,
 	} = decodedAttributes;
+
+	const embed_method = getEffectiveValue('embed_method', attributes, context);
+	const skin = getEffectiveValue('skin', attributes, context);
+	const play_button_color = getEffectiveValue('play_button_color', attributes, context);
+	const play_button_secondary_color = getEffectiveValue('play_button_secondary_color', attributes, context);
+	const control_bar_bg_color = getEffectiveValue('control_bar_bg_color', attributes, context);
+	const control_bar_color = getEffectiveValue('control_bar_color', attributes, context);
+	const title_color = getEffectiveValue('title_color', attributes, context);
+	const title_background_color = getEffectiveValue('title_background_color', attributes, context);
 
 	const players = useMemo(
 		() => applyFilters('videopack_admin_players', DEFAULT_PLAYERS),
@@ -468,18 +468,8 @@ const VideoPlayer = ({
 		return null; // Or a loading spinner
 	}
 
-
 	return (
 		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles}>
-			<BlockControls group="other">
-				<ToolbarGroup>
-					<ToolbarButton
-						icon={resetIcon}
-						label={__('Restart Video', 'video-embed-thumbnail-generator')}
-						onClick={resetPlayer}
-					/>
-				</ToolbarGroup>
-			</BlockControls>
 			<div
 				className={`videopack-player ${skin || ''}`}
 				style={{ ...innerPlayerStyles, position: 'relative' }}
@@ -523,84 +513,21 @@ const VideoPlayer = ({
 						);
 					}
 
-					if (embed_method === 'None') {
-						return (
-							<PlayerComponent
-								{...genericPlayerOptions}
-								key={`generic-${src}-${resetKey}-${
-									attributes.restartCount || 0
-								}`}
-								ref={videoRef}
-							/>
-						);
-					}
-
-					// Fallback for custom players
-					if (PlayerComponent === GenericPlayer) {
-						return (
-							<>
-								{!isSelected && (
-									<>
-										<ToolbarButton
-											icon={titleIcon}
-											label={__(
-												'Toggle Title Overlay',
-												'video-embed-thumbnail-generator'
-											)}
-											isPressed={overlay_title}
-											onClick={() =>
-												setAttributes({
-													overlay_title:
-														!overlay_title,
-												})
-											}
-										/>
-										<ToolbarButton
-											icon={shareIcon}
-											label={__(
-												'Toggle Share Button',
-												'video-embed-thumbnail-generator'
-											)}
-											isPressed={embeddable}
-											onClick={() =>
-												setAttributes({
-													embeddable: !embeddable,
-												})
-											}
-										/>
-										<ToolbarButton
-											icon={downloadIcon}
-											label={__(
-												'Toggle Download Button',
-												'video-embed-thumbnail-generator'
-											)}
-											isPressed={downloadlink}
-											onClick={() =>
-												setAttributes({
-													downloadlink: !downloadlink,
-												})
-											}
-										/>
-									</>
-								)}
-								<PlayerComponent
-									key={`${embed_method}-fallback-${src}-${resetKey}-${
-										attributes.restartCount || 0
-									}`}
-									{...genericPlayerOptions}
-									ref={videoRef}
-								/>
-							</>
-						);
-					}
 					return (
 						<PlayerComponent
 							key={`${embed_method}-${src}-${resetKey}-${
 								attributes.restartCount || 0
 							}`}
-							options={videoJsOptions || genericPlayerOptions}
+							options={
+								PlayerComponent === VideoJS ||
+								PlayerComponent === WpMejsPlayer
+									? videoJsOptions || genericPlayerOptions
+									: undefined
+							}
+							{...(PlayerComponent === GenericPlayer
+								? genericPlayerOptions
+								: {})}
 							skin={skin}
-							attributes={decodedAttributes}
 							onPlay={handlePlay}
 							onPause={handlePause}
 							onReady={handleVideoPlayerReady}

@@ -340,13 +340,19 @@ class Gallery {
 			$player_vars['starts'] = (int) ( $final_atts['starts'] ?? 0 );
 		}
 
-		return array(
+		$video_data = array(
 			'attachment_id' => (int) $data['id'],
 			'title'         => (string) $data['title'],
 			'poster_url'    => (string) $poster_url,
 			'poster_srcset' => $poster_id ? (string) wp_get_attachment_image_srcset( (int) $poster_id, 'medium_large' ) : '',
 			'player_vars'   => (array) $player_vars,
 		);
+
+		if ( ! empty( $video_meta['duration'] ) ) {
+			$video_data['duration'] = $video_meta['duration'];
+		}
+
+		return $video_data;
 	}
 
 	/**
@@ -363,11 +369,52 @@ class Gallery {
 	 * }
 	 */
 	public function collection_page( $page_number, array $query_atts, $layout = 'gallery' ) {
-		$page_number                = (int) $page_number;
-		$query_atts['embed_method'] = (string) ( $this->options['embed_method'] ?? 'Video.js' );
-		$attachments                = $this->get_gallery_videos( $page_number, $query_atts );
-		$videos_data                = array();
-		$max_num_pages              = (int) ( $attachments->max_num_pages ?? 1 );
+		$page_number = (int) $page_number;
+		$query_atts['currentPage'] = $page_number;
+		$query_atts['layout']      = ( 'gallery' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
+
+		/**
+		 * 1. Simulate the block structure.
+		 */
+		$block_atts = array_merge( $this->options, $query_atts, array(
+			'columns' => (int) ( $query_atts['gallery_columns'] ?? 3 ),
+		) );
+
+		$inner_blocks = '<!-- wp:videopack/video-loop -->';
+		$inner_blocks .= '<!-- wp:videopack/thumbnail /-->';
+		$inner_blocks .= '<!-- wp:videopack/play-button /-->';
+		$inner_blocks .= '<!-- wp:videopack/video-title {"isOverlay":true} /-->';
+		
+		if ( ! empty( $query_atts['showDuration'] ) ) {
+			$inner_blocks .= '<!-- wp:videopack/video-duration /-->';
+		}
+		
+		$inner_blocks .= '<!-- /wp:videopack/video-loop -->';
+
+		if ( ! empty( $query_atts['gallery_pagination'] ) ) {
+			$inner_blocks .= '<!-- wp:videopack/pagination /-->';
+		}
+
+		$serialized = sprintf(
+			'<!-- wp:videopack/collection %s -->%s<!-- /wp:videopack/collection -->',
+			wp_json_encode( $block_atts ),
+			$inner_blocks
+		);
+
+		/**
+		 * 2. Render the block HTML.
+		 */
+		$html = do_blocks( $serialized );
+
+		/**
+		 * 3. Return video data for AJAX lifecycle (lightbox init, etc).
+		 * 
+		 * Even though we render via blocks now, we still need to return the array of 
+		 * video metadata for videopack.js to pick up and process.
+		 */
+		$attachments = $this->get_gallery_videos( $page_number, $query_atts );
+		$videos_data = array();
+		$max_num_pages = (int) ( $attachments->max_num_pages ?? 1 );
 
 		if ( (bool) $attachments->have_posts() ) {
 			foreach ( (array) $attachments->posts as $attachment ) {
@@ -377,11 +424,6 @@ class Gallery {
 				}
 			}
 		}
-
-		wp_enqueue_style( 'videopack-frontend' );
-		ob_start();
-		include __DIR__ . '/partials/collection.php';
-		$html = (string) ob_get_clean();
 
 		return array(
 			'html'          => $html,
@@ -399,86 +441,6 @@ class Gallery {
 	 * @return string The rendered pagination HTML.
 	 */
 	public function render_pagination_html( $max_pages, $current_page ) {
-		$max_pages    = (int) $max_pages;
-		$current_page = (int) $current_page;
-
-		if ( $max_pages <= 1 ) {
-			return '';
-		}
-
-		$pages = array();
-		if ( $max_pages <= 7 ) {
-			for ( $i = 1; $i <= $max_pages; $i++ ) {
-				$pages[] = $i;
-			}
-		} else {
-			$pages[] = 1;
-
-			$start = max( 2, $current_page - 1 );
-			$end   = min( $max_pages - 1, $current_page + 1 );
-
-			if ( $current_page <= 3 ) {
-				$end = 4;
-			} elseif ( $current_page >= $max_pages - 2 ) {
-				$start = $max_pages - 3;
-			}
-
-			if ( $start > 2 ) {
-				$pages[] = '...';
-			}
-
-			for ( $i = $start; $i <= $end; $i++ ) {
-				$pages[] = $i;
-			}
-
-			if ( $end < $max_pages - 1 ) {
-				$pages[] = '...';
-			}
-
-			$pages[] = $max_pages;
-		}
-
-		ob_start();
-		?>
-		<div class="videopack-pagination">
-			<button
-				class="videopack-pagination-button <?php echo $current_page <= 1 ? 'videopack-hidden' : ''; ?>"
-				data-page="<?php echo esc_attr( (string) ( $current_page - 1 ) ); ?>"
-				aria-label="<?php esc_attr_e( 'Previous Page', 'video-embed-thumbnail-generator' ); ?>"
-			>
-				<span class="videopack-pagination-arrow">&lt;</span>
-			</button>
-
-			<?php foreach ( $pages as $page ) : ?>
-				<?php
-				$is_active   = $page === $current_page;
-				$is_ellipsis = '...' === $page;
-				$class       = 'videopack-pagination-button';
-				if ( $is_active ) {
-					$class .= ' is-active';
-				}
-				if ( $is_ellipsis ) {
-					$class .= ' is-ellipsis';
-				}
-				?>
-				<button
-					class="<?php echo esc_attr( $class ); ?>"
-					<?php disabled( $is_active || $is_ellipsis ); ?>
-					data-page="<?php echo esc_attr( (string) $page ); ?>"
-				>
-					<?php echo esc_html( (string) $page ); ?>
-				</button>
-			<?php endforeach; ?>
-
-			<button
-				class="videopack-pagination-button <?php echo $current_page >= $max_pages ? 'videopack-hidden' : ''; ?>"
-				data-page="<?php echo esc_attr( (string) ( $current_page + 1 ) ); ?>"
-				aria-label="<?php esc_attr_e( 'Next Page', 'video-embed-thumbnail-generator' ); ?>"
-			>
-				<span class="videopack-pagination-arrow">&gt;</span>
-			</button>
-		</div>
-		<?php
-		return (string) ob_get_clean();
+		return Modular_Renderer::render_pagination( $current_page, $max_pages );
 	}
 }

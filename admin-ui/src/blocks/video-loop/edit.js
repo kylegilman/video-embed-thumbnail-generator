@@ -38,7 +38,7 @@ import { VideoThumbnailPreview } from '../thumbnail/VideoThumbnailPreview';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 import { getSettings } from '../../api/settings';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
-import VideopackBlockPreview from '../../components/common/VideopackBlockPreview';
+import { BlockPreview as VideopackPreview } from '../../components/Preview';
 
 
 
@@ -596,7 +596,7 @@ export default function Edit({ context, clientId }) {
 				const isOverlay = !!currentFlags.isInsideThumbnail || !!currentFlags.isInsidePlayer;
 
 				return (
-					<VideopackBlockPreview
+					<VideopackPreview
 						key={itemKey}
 						name={name}
 						attributes={blockAttrs}
@@ -621,7 +621,7 @@ export default function Edit({ context, clientId }) {
 								previewContext,
 								currentFlags
 							)}
-					</VideopackBlockPreview>
+					</VideopackPreview>
 				);
 			}
 

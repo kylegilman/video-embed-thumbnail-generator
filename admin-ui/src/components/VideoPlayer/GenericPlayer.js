@@ -33,7 +33,7 @@ const GenericPlayer = forwardRef(
 			muted,
 			playsInline,
 			className,
-			sources,
+			sources = [],
 			src,
 			tracks = [],
 		},

@@ -257,7 +257,7 @@ function ViewCount({
     };
   }, [postId, count]);
   const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail;
-  const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${actualIsOverlay ? effectiveSkin : ''} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} position-${position || 'top'} has-text-align-${textAlign || 'right'}`;
+  const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${actualIsOverlay ? effectiveSkin : ''} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} ${actualIsOverlay ? `position-${position || 'top'}` : ''} has-text-align-${textAlign || (actualIsOverlay ? 'right' : 'left')}`;
   const finalBlockProps = blockProps || {
     className: wrapperClass,
     style: {
@@ -323,6 +323,7 @@ function Edit({
   const isInsidePlayer = !!context['videopack/isInsidePlayer'];
   const isInsidePlayerBlock = !!context['videopack/isInsidePlayerBlock'];
   const isOverlay = isInsideThumbnail || isInsidePlayer;
+  const effectiveSkin = (0,_utils_context__WEBPACK_IMPORTED_MODULE_11__.getEffectiveValue)('skin', attributes, context);
   const effectiveTitleColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_11__.getEffectiveValue)('title_color', attributes, context);
   const effectiveTitleBgColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_11__.getEffectiveValue)('title_background_color', attributes, context);
   const colorFallbacks = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => (0,_utils_colors__WEBPACK_IMPORTED_MODULE_10__.getColorFallbacks)({
@@ -333,7 +334,7 @@ function Edit({
   const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
   const position = attributes.position || context['videopack/position'] || 'top';
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)({
-    className: `videopack-video-title-block videopack-video-title-wrapper ${isOverlay ? effectiveSkin : ''} ${isOverlay ? `is-overlay position-${position}` : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayer ? 'is-inside-player' : ''} ${!postId && !manualTitle ? 'no-title' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} has-text-align-${finalTextAlign}`,
+    className: `videopack-view-count-block videopack-view-count-wrapper ${isOverlay ? effectiveSkin : ''} ${isOverlay ? `is-overlay position-${position}` : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayer ? 'is-inside-player' : ''} ${!postId ? 'no-title' : ''} ${effectiveTitleBgColor ? 'videopack-has-title-background-color' : ''} has-text-align-${finalTextAlign}`,
     style: {
       '--videopack-title-color': effectiveTitleColor || undefined,
       '--videopack-title-background-color': effectiveTitleBgColor || undefined

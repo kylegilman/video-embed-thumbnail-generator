@@ -106,9 +106,9 @@ class Assets implements Hook_Subscriber {
 				$player_script_deps = array();
 				$player_style_deps  = array();
 
-				if ( in_array( (string) $handle, array( 'videopack-admin-screens', 'videopack-media-library' ), true ) ) {
-					$player_script_deps = (array) $player->get_player_script_handles();
-					$player_style_deps  = (array) $player->get_player_style_handles();
+				if ( in_array( (string) $handle, array( 'videopack-admin-screens', 'videopack-media-library', 'videopack-classic-editor', 'videopack-frontend' ), true ) ) {
+					$player_script_deps = array_diff( (array) $player->get_player_script_handles(), array( (string) $handle ) );
+					$player_style_deps  = array_diff( (array) $player->get_player_style_handles(), array( (string) $handle ) );
 				}
 
 				wp_register_script(
@@ -231,6 +231,18 @@ class Assets implements Hook_Subscriber {
 					$src = $wp_styles->registered[ $handle ]->src;
 					if ( $src ) {
 						add_editor_style( $src );
+					}
+				}
+			}
+
+			// Add Video.js skins specifically for TinyMCE
+			if ( method_exists( $player, 'get_all_skin_handles' ) ) {
+				foreach ( $player->get_all_skin_handles() as $handle ) {
+					if ( isset( $wp_styles->registered[ $handle ] ) ) {
+						$src = $wp_styles->registered[ $handle ]->src;
+						if ( $src ) {
+							add_editor_style( $src );
+						}
 					}
 				}
 			}

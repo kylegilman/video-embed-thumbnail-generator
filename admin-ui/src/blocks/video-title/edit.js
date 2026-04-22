@@ -341,6 +341,7 @@ export default function Edit(props) {
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayer = !!context['videopack/isInsidePlayer'];
+	const isInsidePlayerBlock = !!context['videopack/isInsidePlayerBlock'];
 
 	// Derived defaults that don't fight with user saved attributes
 	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
@@ -371,7 +372,7 @@ export default function Edit(props) {
 	const effectiveOverlayTitle = getEffectiveValue('overlay_title', attributes, context);
 	const effectiveShowBackground = getEffectiveValue('showBackground', attributes, context);
 
-	const isOverlay = explicitIsOverlay !== undefined ? explicitIsOverlay : (isInsideThumbnail || isInsidePlayer);
+	const isOverlay = explicitIsOverlay !== undefined ? explicitIsOverlay : (isInsideThumbnail || isInsidePlayer || isInsidePlayerBlock);
 	const wrapperClass = 'videopack-video-title-wrapper';
 
 	const titleColorFallback = context['videopack/title_color'];
@@ -438,7 +439,7 @@ export default function Edit(props) {
 						setAttributes({ textAlign: nextAlign });
 					}}
 				/>
-				{isInsidePlayer && (
+				{(isInsidePlayer || isInsidePlayerBlock) && (
 					<ToolbarGroup>
 						<ToolbarButton
 							icon={titleIcon}

@@ -1,0 +1,79 @@
+/**
+ * Shared layout logic for Videopack collections and galleries.
+ * This ensures consistent grid and list behavior across frontend and all editor states.
+ */
+
+/* Container resets and defaults */
+.videopack-collection-inner,
+.videopack-collection-grid,
+.videopack-gallery-wrapper {
+	width: 100%;
+	max-width: 100%;
+	display: block; // Fallback
+	gap: var( --videopack-collection-gap, var( --wp--style--block-gap, var( --wp--style--spacing--block-gap, 20px ) ) );
+
+	// Default layout logic (handle classes on self OR on parent)
+	:is(.layout-grid &, &.layout-grid) {
+		display: grid;
+		grid-template-columns: repeat(var(--videopack-collection-columns, 3), 1fr);
+
+		:is(.columns-1 &, &.columns-1) { grid-template-columns: 1fr; }
+		:is(.columns-2 &, &.columns-2) { grid-template-columns: repeat(2, 1fr); }
+		:is(.columns-3 &, &.columns-3) { grid-template-columns: repeat(3, 1fr); }
+		:is(.columns-4 &, &.columns-4) { grid-template-columns: repeat(4, 1fr); }
+		:is(.columns-5 &, &.columns-5) { grid-template-columns: repeat(5, 1fr); }
+		:is(.columns-6 &, &.columns-6) { grid-template-columns: repeat(6, 1fr); }
+	}
+
+	:is(.layout-list &, &.layout-list) {
+		display: flex;
+		flex-direction: column;
+	}
+}
+
+/* Base item containment */
+.videopack-collection-item,
+.videopack-gallery-item,
+.gallery-thumbnail {
+	position: relative;
+	width: 100%;
+	transition: all 0.2s ease;
+	box-sizing: border-box;
+
+	img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	&.gallery-thumbnail {
+		padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+		height: 0;
+		cursor: pointer;
+		overflow: hidden;
+		background: #000;
+		container-type: inline-size;
+
+		img {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+}
+
+.videopack-inner-blocks-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+
+	& > * {
+		pointer-events: auto;
+	}
+}
