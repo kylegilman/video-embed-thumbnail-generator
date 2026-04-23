@@ -9,6 +9,7 @@ import { BlockPreview, TemplatePreview } from '../../components/Preview';
 import { getGridTemplate, getListTemplate } from '../../utils/templates';
 import { getEffectiveValue } from '../../utils/context';
 import useVideoQuery from '../../hooks/useVideoQuery';
+import { normalizeOptions } from '../../utils/helpers';
 /* global videopack_config, tinymce, MutationObserver */
 import './tinymce.scss';
 
@@ -101,7 +102,7 @@ import './tinymce.scss';
 					merged.gallery_id = activePostId;
 				}
 			}
-			return merged;
+			return normalizeOptions(merged);
 		}, [effectiveOptions, fullAttributes, activePostId]);
 
 		const { videoResults, isResolving, maxNumPages } = useVideoQuery(
@@ -153,7 +154,7 @@ import './tinymce.scss';
 		}
 
 		// Resolve template
-		const template =
+		let template =
 			type === 'Video'
 				? [
 						[
@@ -188,6 +189,12 @@ import './tinymce.scss';
 			'videopack/title_background_color': getEffectiveValue('title_background_color', mergedAttributes, {}),
 			'videopack/gallery_pagination': mergedAttributes.gallery_pagination,
 			'videopack/gallery_per_page': mergedAttributes.gallery_per_page,
+			'videopack/pagination_color': getEffectiveValue('pagination_color', mergedAttributes, {}),
+			'videopack/pagination_background_color': getEffectiveValue('pagination_background_color', mergedAttributes, {}),
+			'videopack/pagination_active_color': getEffectiveValue('pagination_active_color', mergedAttributes, {}),
+			'videopack/pagination_active_bg_color': getEffectiveValue('pagination_active_bg_color', mergedAttributes, {}),
+			'videopack/totalPages': maxNumPages,
+			'videopack/currentPage': 1,
 		};
 
 		return (

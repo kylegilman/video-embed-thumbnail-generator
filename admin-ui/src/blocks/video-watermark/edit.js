@@ -68,10 +68,8 @@ export function VideoWatermark({
 
 	const style = {
 		position: isBlockEditor ? 'relative' : 'absolute',
-		maxWidth: '90%',
 		width: effectiveUrl ? `${actualScale}%` : '260px',
 		height: 'auto',
-		zIndex: isBlockEditor ? undefined : 111,
 		pointerEvents: 'auto',
 		transform: '',
 	};
@@ -158,12 +156,10 @@ export function getWatermarkBlockStyles(attributes, context) {
 
 	const style = {
 		position: 'absolute',
-		maxWidth: '90%',
 		width: `${effectiveScale}%`,
 		minWidth: '20px', // Prevent total collapse
 		minHeight: '20px',
 		height: 'auto',
-		zIndex: 115,
 		transform: '',
 	};
 
