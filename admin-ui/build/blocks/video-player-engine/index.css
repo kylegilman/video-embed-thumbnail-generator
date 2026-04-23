@@ -307,10 +307,28 @@
 .videopack-video-player-engine-block) {
   position: relative;
   container-type: inline-size;
+}
+:is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block) {
   --videopack-title-background-color: #141414;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -321,6 +339,9 @@
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block).default, :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -330,10 +351,26 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-videopack {
+.videopack-video-player-engine-block).vjs-theme-videopack, .vjs-theme-videopack :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block) {
   --videopack-title-background-color: #2b333f;
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -343,7 +380,10 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).default .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-video-player-engine-block).vjs-theme-city, .vjs-theme-city :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -353,30 +393,13 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).default :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail), :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-videopack .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-videopack :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
+.videopack-video-player-engine-block) {
+  --videopack-title-background-color: var(--vjs-theme-city--primary, #21a1d1);
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -386,10 +409,26 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-city {
-  --videopack-title-background-color: var(--vjs-theme-city--primary);
+.videopack-video-player-engine-block).vjs-theme-fantasy, .vjs-theme-fantasy :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block) {
+  --videopack-title-background-color: var(--vjs-theme-fantasy--primary, #643f82);
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -399,7 +438,10 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-city .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-video-player-engine-block).vjs-theme-forest, .vjs-theme-forest :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -409,10 +451,13 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-city :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
+.videopack-video-player-engine-block) {
+  --videopack-title-background-color: var(--vjs-theme-forest--primary, #395d26);
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -422,10 +467,10 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-fantasy {
-  --videopack-title-background-color: var(--vjs-theme-fantasy--primary);
-}
-:is(.videopack-wrapper,
+.videopack-video-player-engine-block).vjs-theme-sea, .vjs-theme-sea :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -435,69 +480,13 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-fantasy .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-fantasy :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-forest {
-  --videopack-title-background-color: var(--vjs-theme-forest--primary);
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-forest .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-forest :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea {
+.videopack-video-player-engine-block) {
   --videopack-title-background-color: rgb(65, 118, 188);
 }
-:is(.videopack-wrapper,
+:is(:is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -507,7 +496,10 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-video-player-engine-block).videopack-video-title, .videopack-video-title):not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -517,31 +509,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+.videopack-video-player-engine-block) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
   background-color: var(--videopack-title-background-color);
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea.gallery-thumbnail .videopack-video-title::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
-  background-color: rgba(65, 118, 188, 0.4);
 }
 :is(.gallery-thumbnail,
 .videopack-thumbnail-wrapper,
@@ -584,11 +553,17 @@
   bottom: auto;
   transform: translateY(-50%);
 }
+:is(.gallery-thumbnail:hover, .videopack-thumbnail-wrapper:hover, .videopack-thumbnail-block:hover) .videopack-video-title.videopack-thumbnail-title.is-overlay {
+  --videopack-title-bg-alpha: 0.9;
+}
 .videopack-video-watermark {
   position: absolute;
-  z-index: 111;
+  z-index: 95;
   pointer-events: auto;
   display: block;
+  width: 100%;
+  height: auto;
+  max-width: 90%;
 }
 .videopack-video-watermark img {
   display: block;
@@ -1013,16 +988,127 @@
   line-height: 150%;
   font-style: italic;
 }
-.videopack-wrapper .vjs-res-button:before {
+.videopack-wrapper .vjs-res-button .vjs-icon-placeholder:before {
   font-family: VideoJs;
   content: "\f114";
 }
 .videopack-wrapper .vjs-res-button span.vjs-control-text {
   display: none;
 }
-.videopack-wrapper .vjs-res-button .vjs-menu .vjs-menu-content {
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu {
+  bottom: 100%;
+  margin-bottom: 0;
+  /* Alignment shifts for player boundaries */
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing.vjs-menu-align-right,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu.vjs-menu-align-right {
+  left: auto;
+  right: 0;
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing.vjs-menu-align-right .vjs-menu-content,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu.vjs-menu-align-right .vjs-menu-content {
+  left: auto;
+  right: 0;
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing.vjs-menu-align-left,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu.vjs-menu-align-left {
+  left: 0;
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing.vjs-menu-align-left .vjs-menu-content,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu.vjs-menu-align-left .vjs-menu-content {
+  left: 0;
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+  bottom: 0;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu .vjs-menu-content,
+.videopack-wrapper .vjs-res-button + .vjs-menu .vjs-menu-content {
   overflow: visible;
   bottom: 0;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item {
+  text-transform: none;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu {
+  position: relative;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu::after,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 5px solid currentColor;
+  position: absolute;
+  left: 8px;
+  right: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.6;
+  z-index: 2;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu:hover::after,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu:hover::after {
+  opacity: 1;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: auto;
+  bottom: 0;
+  margin-left: 0.2em;
+  margin-bottom: 0;
+  min-width: 8em;
+  height: auto;
+  width: auto;
+  z-index: 10;
+  /* Hover Bridge */
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu::before,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -0.2em;
+  width: 0.2em;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu .vjs-menu-content,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu .vjs-menu-content {
+  position: static;
+  bottom: auto;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu li.vjs-menu-item,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu li.vjs-menu-item {
+  font-size: 1em;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu:hover > .vjs-menu, .videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu.vjs-submenu-open > .vjs-menu,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu:hover > .vjs-menu,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu.vjs-submenu-open > .vjs-menu {
+  display: block;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left {
+  left: auto;
+  right: 100%;
+  margin-left: 0;
+  margin-right: 0.2em;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left::before,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left::before {
+  left: auto;
+  right: -0.2em;
 }
 .videopack-wrapper {
   /* Video.js Overrides */
@@ -1085,6 +1171,10 @@
 .videopack-wrapper.videopack-has-control-bar-bg-color .mejs-controls {
   background-color: var(--videopack-control-bar-bg-color-alpha);
 }
+.videopack-wrapper .vjs-control-bar,
+.videopack-wrapper .mejs-controls {
+  z-index: 120 !important;
+}
 .videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-button button {
   background-image: none;
   background-color: var(--videopack-control-bar-color);
@@ -1142,6 +1232,17 @@
 .videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-volume-current,
 .videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-volume-handle {
   background: var(--videopack-control-bar-color);
+}
+.videopack-wrapper .vjs-theme-videopack .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu .vjs-menu-content,
+.videopack-wrapper .vjs-theme-videopack .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu .vjs-menu-content {
+  border-radius: 8px;
+}
+.videopack-wrapper .vjs-theme-city .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu::after,
+.videopack-wrapper .vjs-theme-city .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu::after {
+  border-right: none;
+  border-left: 5px solid currentColor;
+  right: 8px;
+  left: auto;
 }
 /*!**********************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/CompactColorPicker/CompactColorPicker.scss ***!

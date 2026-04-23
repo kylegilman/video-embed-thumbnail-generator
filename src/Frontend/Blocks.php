@@ -16,6 +16,12 @@ use Videopack\Common\Hook_Subscriber;
  * Handles server-side rendering for Videopack modular blocks.
  */
 class Blocks implements Hook_Subscriber {
+	/**
+	 * Cache for prepared player metadata during collection rendering.
+	 *
+	 * @var array
+	 */
+	public static $collection_metadata_cache = array();
 
 	/**
 	 * Plugin options.
@@ -224,131 +230,157 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_collection( $attributes, $content, $block ) {
-		// Handle pagination from URL if not explicitly set.
-		$paged = get_query_var( 'paged' ) ? (int) get_query_var( 'paged' ) : ( get_query_var( 'page' ) ? (int) get_query_var( 'page' ) : 1 );
-		if ( ! empty( $attributes['currentPage'] ) ) {
-			$paged = (int) $attributes['currentPage'];
+		$paged = (int) ( $attributes['page_number'] ?? ( $attributes['currentPage'] ?? 1 ) );
+		
+		$has_pagination = false;
+		foreach ( $block->inner_blocks as $inner_block ) {
+			if ( 'videopack/pagination' === $inner_block->name ) {
+				$has_pagination = true;
+				break;
+			}
 		}
+		$attributes['gallery_pagination'] = $has_pagination;
+		
+		$instance_id = $attributes['instanceId'] ?? 'vp_' . \Videopack\Admin\Ui::$instance_counter;
+		if ( ! isset( $attributes['instanceId'] ) ) {
+			\Videopack\Admin\Ui::$instance_counter++;
+			$instance_id = 'vp_' . \Videopack\Admin\Ui::$instance_counter;
+		}
+		$collection_id = $attributes['collectionId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
+		$attributes['collectionId'] = $collection_id;
+		self::$collection_metadata_cache[ $collection_id ] = array();
 
-		$query_args = $this->build_query_args( $attributes, $paged );
-		$query      = new \WP_Query( $query_args );
+		$gallery_handler = new Gallery( $this->options, $this->format_registry );
+		$query           = $gallery_handler->get_gallery_videos( $paged, $attributes );
 
 		if ( ! $query->have_posts() ) {
 			return '';
 		}
 
-		$skin   = $attributes['skin'] ?? ( $this->options['skin'] ?? 'vjs-theme-videopack' );
-		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( 'Video.js', $this->options, $this->format_registry );
-		$player->register_scripts();
-		wp_enqueue_style( 'video-js' );
-		wp_enqueue_style( 'videopack-frontend' );
-		if ( ! empty( $skin ) ) {
-			wp_enqueue_style( (string) $skin );
+		$total_pages = (int) $query->max_num_pages;
+		$skin        = $attributes['skin'] ?? ( $this->options['skin'] ?? 'vjs-theme-videopack' );
+
+		// Normalize camelCase attributes to snake_case for the renderer.
+		$normalized_attributes = array_merge( $this->options, $attributes );
+		$color_map             = array(
+			'titleColor'               => 'title_color',
+			'titleBackgroundColor'     => 'title_background_color',
+			'playButtonColor'          => 'play_button_color',
+			'playButtonSecondaryColor' => 'play_button_secondary_color',
+			'controlBarBgColor'        => 'control_bar_bg_color',
+			'controlBarColor'          => 'control_bar_color',
+			'galleryId'                => 'gallery_id',
+			'gallerySource'            => 'gallery_source',
+			'galleryPagination'        => 'gallery_pagination',
+			'galleryPerPage'           => 'gallery_per_page',
+			'galleryInclude'           => 'gallery_include',
+			'galleryExclude'           => 'gallery_exclude',
+			'galleryOrderBy'           => 'gallery_orderby',
+			'galleryOrder'             => 'gallery_order',
+		);
+		foreach ( $color_map as $camel => $snake ) {
+			if ( isset( $attributes[ $camel ] ) ) {
+				$normalized_attributes[ $snake ] = $attributes[ $camel ];
+			}
 		}
 
-		$layout          = $attributes['layout'] ?? 'grid';
-		$columns         = $attributes['columns'] ?? 3;
-		$total_pages     = (int) $query->max_num_pages;
-		$inner_content   = '';
+		// 1. Pre-fetch and cache metadata for all videos in this page of the collection.
+		$embed_method = $this->options['embed_method'] ?? 'Video.js';
+		foreach ( $query->posts as $attachment ) {
+			$attachment_id = $attachment->ID;
+			$player        = \Videopack\Frontend\Video_Players\Player_Factory::create( $embed_method, $this->options, $this->format_registry );
+			$source        = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options, $this->format_registry );
+			$player->set_source( $source );
+			
+			// Lightbox always needs controls and title.
+			$lightbox_atts = array_merge( $normalized_attributes, array( 
+				'id'            => $attachment_id,
+				'controls'      => true,
+				'overlay_title' => true,
+			) );
+			$player->set_atts( $lightbox_atts );
+			
+			$item_metadata = $player->prepare_video_vars();
+			
+			// Generate the full assembly (including title overlay, play button, etc).
+			$item_metadata['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_player_assembly( $player, $lightbox_atts, $source, $this->options );
+			$item_metadata['player_html']      = $item_metadata['full_player_html'];
 
-		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
+			self::$collection_metadata_cache[ $collection_id ][ $attachment_id ] = $item_metadata;
+		}
 
-		$collection_players = array();
-		$gallery_instance   = ++\Videopack\Admin\Ui::$instance_counter;
+		// 2. Render content.
+		$loop_content  = '';
+		$other_content = '';
 
-		while ( $query->have_posts() ) {
-			$query->the_post();
-			$post_id = get_the_ID();
-
+		// We iterate through posts and render the 'videopack/video-loop' block for each.
+		foreach ( $query->posts as $attachment ) {
+			$post_id = $attachment->ID;
 			foreach ( $block->inner_blocks as $inner_block ) {
 				if ( 'videopack/video-loop' === $inner_block->name ) {
-					// Clone the block to ensure an isolated state for each loop iteration.
 					$cloned_block = clone $inner_block;
-
-					\Videopack\Admin\Ui::$instance_counter++;
-					$cloned_block->context['videopack/instanceId'] = 'vp_' . \Videopack\Admin\Ui::$instance_counter;
-
-					$cloned_block->context['videopack/postId']                = $post_id;
-					$cloned_block->context['videopack/isInLoop']    = true;
-					$cloned_block->context['videopack/currentPage'] = $paged;
-					$cloned_block->context['videopack/totalPages']  = $total_pages;
-					$cloned_block->context['videopack/skin']        = $skin;
-					$cloned_block->context['videopack/galleryId']   = $gallery_instance;
-
-					// Pass along individual styling attributes to context.
-					$style_atts = array(
-						'title_color',
-						'title_background_color',
-						'play_button_color',
-						'play_button_secondary_color',
-						'control_bar_bg_color',
-						'control_bar_color',
-					);
+					
+					$cloned_block->context['videopack/postId']               = $post_id;
+					$cloned_block->context['videopack/collectionId']         = $collection_id;
+					$cloned_block->context['videopack/collectionAttributes'] = $normalized_attributes;
+					$cloned_block->context['videopack/currentPage']          = $paged;
+					$cloned_block->context['videopack/totalPages']           = $total_pages;
+					$cloned_block->context['videopack/skin']                 = $skin;
+					
+					// Pass styling context down.
+					$style_atts = array( 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color' );
 					foreach ( $style_atts as $att ) {
 						if ( ! empty( $attributes[ $att ] ) ) {
 							$cloned_block->context[ "videopack/{$att}" ] = $attributes[ $att ];
 						}
 					}
 
-					$prepared = $shortcode_handler->prepare_player( array( 'id' => $post_id ) );
-
-					if ( $prepared ) {
-						$player      = $prepared['player'];
-						$player_vars = $player->prepare_video_vars();
-						$player_id   = 'videopack_player_gallery_' . $post_id . '_' . $gallery_instance;
-						$player_vars['id'] = $player_id;
-
-						// Add the missing player HTML for the lightbox.
-						$player_vars['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_player_assembly( $player, $prepared['final_atts'], $prepared['source'], $this->options );
-						$player_vars['player_html']      = $player_vars['full_player_html'];
-
-						$collection_players[ $player_id ] = $player_vars;
-						$cloned_block->context['videopack/videopackId'] = $player_id;
-
-						// Always set these keys (even to empty strings) to prevent inheritance from the page context.
-						$cloned_block->context['videopack/poster']  = $prepared['final_atts']['poster'] ?? '';
-						$cloned_block->context['videopack/src']     = $prepared['final_atts']['src'] ?? '';
-						$cloned_block->context['videopack/sources'] = $prepared['final_atts']['sources'] ?? array();
-						$cloned_block->context['videopack/title']   = $prepared['final_atts']['title'] ?? '';
-					}
-
-					$inner_content .= $cloned_block->render();
+					$loop_content .= $cloned_block->render();
 				}
 			}
 		}
 
-		if ( ! empty( $collection_players ) ) {
-			$script = sprintf(
-				'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; Object.assign(window.videopack.player_data, %s);',
-				wp_json_encode( $collection_players )
-			);
-			wp_add_inline_script( 'videopack-frontend', $script );
+		// Render non-loop blocks (like pagination).
+		foreach ( $block->inner_blocks as $inner_block ) {
+			if ( 'videopack/video-loop' !== $inner_block->name ) {
+				$cloned_block = clone $inner_block;
+				$cloned_block->context['videopack/currentPage'] = $paged;
+				$cloned_block->context['videopack/totalPages']  = $total_pages;
+				$other_content .= $cloned_block->render();
+			}
 		}
+
+		$layout  = $attributes['layout'] ?? 'grid';
+		$columns = (int) ( $attributes['columns'] ?? 3 );
+
 		$block_gap = $attributes['style']['spacing']['blockGap'] ?? '';
 		if ( $block_gap && is_string( $block_gap ) && 0 === strpos( $block_gap, 'var:preset|spacing|' ) ) {
 			$block_gap = str_replace( array( 'var:preset|spacing|', '|' ), array( 'var(--wp--preset--spacing--', '--' ), $block_gap ) . ')';
 		}
 
+		$inner_blocks_template = '';
+		if ( function_exists( 'serialize_blocks' ) ) {
+			$template_data = array();
+			foreach ( $block->inner_blocks as $inner_block ) {
+				$template_data[] = $inner_block->parsed_block;
+			}
+			$inner_blocks_template = wp_json_encode( $template_data );
+		}
+
 		$output = Modular_Renderer::render_video_container(
 			array_merge( $this->options, $attributes, array( 
-				'align'         => $attributes['align'] ?? ( $this->options['gallery_align'] ?? 'wide' ),
-				'block_gap'     => $block_gap,
-				'wrapper_class' => 'videopack-collection-wrapper',
+				'align'                 => $attributes['align'] ?? ( $this->options['gallery_align'] ?? 'wide' ),
+				'block_gap'             => $block_gap,
+				'wrapper_class'         => 'videopack-collection-wrapper',
+				'inner_blocks_template' => $inner_blocks_template,
+				'totalPages'            => $total_pages,
+				'currentPage'           => $paged,
 			) ),
-			'<div class="videopack-collection-inner ' . esc_attr( "layout-{$layout} columns-{$columns}" ) . '">' . $inner_content . '</div>',
+			'<div class="videopack-collection-inner ' . esc_attr( "layout-{$layout} columns-{$columns}" ) . '">' . $loop_content . '</div>' . $other_content,
 			true
 		);
 
 		wp_reset_postdata();
-
-		// Render any blocks that are NOT video-cards (e.g., pagination) after the loop.
-		foreach ( $block->inner_blocks as $inner_block ) {
-			if ( 'videopack/video-loop' !== $inner_block->name ) {
-				$inner_block->context['videopack/currentPage'] = $paged;
-				$inner_block->context['videopack/totalPages']  = $total_pages;
-				$output .= $inner_block->render();
-			}
-		}
 
 		return $output;
 	}
@@ -362,6 +394,21 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_video_loop( $attributes, $content, $block ) {
+		$attributes = array_merge( $this->options, $attributes );
+		$color_map  = array(
+			'titleColor'               => 'title_color',
+			'titleBackgroundColor'     => 'title_background_color',
+			'playButtonColor'          => 'play_button_color',
+			'playButtonSecondaryColor' => 'play_button_secondary_color',
+			'controlBarBgColor'        => 'control_bar_bg_color',
+			'controlBarColor'          => 'control_bar_color',
+		);
+		foreach ( $color_map as $camel => $snake ) {
+			if ( isset( $attributes[ $camel ] ) ) {
+				$attributes[ $snake ] = $attributes[ $camel ];
+			}
+		}
+
 		$post_id = $block->context['videopack/postId'] ?? get_the_ID();
 		if ( ! $post_id ) {
 			return '';
@@ -370,62 +417,28 @@ class Blocks implements Hook_Subscriber {
 		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
 		$inner_content = '';
 
-		$loop_players = array();
-		$gallery_instance = $block->context['videopack/galleryId'] ?? ++\Videopack\Admin\Ui::$instance_counter;
-
 		foreach ( $block->inner_blocks as $inner_block ) {
 			// Clone the block to ensure an isolated state for each loop iteration.
 			$cloned_block = clone $inner_block;
 
+			// Ensure children inherit the essential context from the loop.
+			$cloned_block->context['videopack/postId']       = $post_id;
+			$cloned_block->context['videopack/isInLoop']     = true;
+			$cloned_block->context['videopack/videopackId'] = $block->context['videopack/videopackId'] ?? '';
+			
+			// Generate a unique instance ID for this specific block inside the loop.
 			\Videopack\Admin\Ui::$instance_counter++;
 			$cloned_block->context['videopack/instanceId'] = 'vp_' . \Videopack\Admin\Ui::$instance_counter;
 
-			$cloned_block->context['videopack/postId']               = $post_id;
-			$cloned_block->context['videopack/isInLoop']   = true;
-			$cloned_block->context['videopack/skin']       = $block->context['videopack/skin'] ?? '';
-
-			// Pass styling context down to children.
-			$style_atts = array(
-				'title_color',
-				'title_background_color',
-				'play_button_color',
-				'play_button_secondary_color',
-				'control_bar_bg_color',
-				'control_bar_color',
-			);
-			foreach ( $style_atts as $att ) {
-				if ( ! empty( $block->context[ "videopack/{$att}" ] ) ) {
-					$cloned_block->context[ "videopack/{$att}" ] = $block->context[ "videopack/{$att}" ];
+			// Pass down shared context from parents (skin, colors, etc).
+			$inherited_keys = array( 'collectionId', 'skin', 'poster', 'src', 'sources', 'title', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color' );
+			foreach ( $inherited_keys as $key ) {
+				if ( isset( $block->context[ "videopack/{$key}" ] ) ) {
+					$cloned_block->context[ "videopack/{$key}" ] = $block->context[ "videopack/{$key}" ];
 				}
-			}
-			
-			// Resolve robust media data using existing Shortcode logic.
-			$prepared = $shortcode_handler->prepare_player( array( 'id' => $post_id ) );
-
-			if ( $prepared ) {
-				$player_vars = $prepared['player']->prepare_video_vars();
-				$player_id   = 'videopack_player_gallery_' . $post_id . '_' . $gallery_instance;
-				$player_vars['id'] = $player_id;
-
-				$loop_players[ $player_id ] = $player_vars;
-				$cloned_block->context['videopack/videopackId'] = $player_id;
-			
-				// Always set these keys (even to empty strings) to prevent inheritance from the page context.
-				$cloned_block->context['videopack/poster']  = $prepared['final_atts']['poster'] ?? '';
-				$cloned_block->context['videopack/src']     = $prepared['final_atts']['src'] ?? '';
-				$cloned_block->context['videopack/sources'] = $prepared['final_atts']['sources'] ?? array();
-				$cloned_block->context['videopack/title']   = $prepared['final_atts']['title'] ?? '';
 			}
 
 			$inner_content .= $cloned_block->render();
-		}
-
-		if ( ! empty( $loop_players ) ) {
-			$script = sprintf(
-				'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; Object.assign(window.videopack.player_data, %s);',
-				wp_json_encode( $loop_players )
-			);
-			wp_add_inline_script( 'videopack-frontend', $script );
 		}
 
 		return sprintf(
@@ -443,20 +456,92 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_thumbnail( $attributes, $content, $block ) {
-		$post_id = $block->context['videopack/postId'] ?? get_the_ID();
+		$attributes = array_merge( $this->options, $attributes );
+		$color_map  = array(
+			'titleColor'               => 'title_color',
+			'titleBackgroundColor'     => 'title_background_color',
+			'playButtonColor'          => 'play_button_color',
+			'playButtonSecondaryColor' => 'play_button_secondary_color',
+			'controlBarBgColor'        => 'control_bar_bg_color',
+			'controlBarColor'          => 'control_bar_color',
+		);
+		foreach ( $color_map as $camel => $snake ) {
+			if ( isset( $attributes[ $camel ] ) ) {
+				$attributes[ $snake ] = $attributes[ $camel ];
+			}
+		}
+
+		$post_id       = $block->context['videopack/postId'] ?? get_the_ID();
 		if ( ! $post_id ) {
 			return '';
 		}
 
-		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
-		$prepared          = $shortcode_handler->prepare_player( array( 'id' => $post_id ) );
-		$thumbnail_url     = $prepared['final_atts']['poster'] ?? '';
+		$collection_id = $block->context['videopack/collectionId'] ?? null;
+		$instance_id   = $block->context['videopack/instanceId'] ?? null;
+
+		// Optimization: If this is a naked render (no collection/instance context)
+		// and the post doesn't have a video, skip it to avoid log noise and wasted CPU.
+		if ( ! $collection_id && ! $instance_id ) {
+			$source = \Videopack\Video_Source\Source_Factory::create( (int) $post_id, $this->options );
+			if ( ! $source || ! $source->exists() ) {
+				return '';
+			}
+		}
+
+		$instance_id = $instance_id ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
+
+		// Determine the final key for player_data.
+		// If in a collection, use a predictable key based on collection ID.
+		if ( $collection_id ) {
+			$videopack_id = "videopack_player_gallery_{$post_id}_{$collection_id}";
+		} else {
+			$videopack_id = "videopack_player_{$instance_id}";
+		}
+
+		$player_data = null;
+		if ( $collection_id && isset( self::$collection_metadata_cache[ $collection_id ][ $post_id ] ) ) {
+			$player_data = self::$collection_metadata_cache[ $collection_id ][ $post_id ];
+		}
+
+		if ( ! $player_data ) {
+			$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
+			$prepared          = $shortcode_handler->prepare_player( array_merge( $attributes, array( 'id' => $post_id ) ) );
+			
+			if ( $prepared ) {
+				$player      = $prepared['player'];
+				$player_data = $player->prepare_video_vars();
+				
+				// Ensure full_player_html is available for lightbox.
+				if ( ! isset( $player_data['full_player_html'] ) ) {
+					$player_data['full_player_html'] = $player->get_player_code( array_merge( $attributes, array( 'id' => $post_id ) ) );
+				}
+				if ( ! isset( $player_data['player_html'] ) ) {
+					$player_data['player_html'] = $player_data['full_player_html'];
+				}
+			}
+		}
+
+		// Always register player data if we have it, as every instance needs its own key in player_data
+		// to support Next/Prev navigation correctly.
+		if ( $player_data ) {
+			// Ensure the ID inside metadata matches the key.
+			$player_data['id'] = $videopack_id;
+			
+			$script = sprintf(
+				'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["%s"] = %s;',
+				esc_js( $videopack_id ),
+				wp_json_encode( $player_data )
+			);
+			wp_add_inline_script( 'videopack-frontend', $script );
+		}
+
+		$thumbnail_url = $player_data['poster'] ?? ( $attributes['poster'] ?? '' );
+		$link_to       = $attributes['linkTo'] ?? 'none';
 
 		if ( ! $thumbnail_url ) {
 			return '';
 		}
 
-		$link_to       = $attributes['linkTo'] ?? 'none';
 		$skin          = $block->context['videopack/skin'] ?? '';
 		$inner_content = '';
 
@@ -514,7 +599,7 @@ class Blocks implements Hook_Subscriber {
 				'class'                   => implode( ' ', array_unique( array_filter( $classes ) ) ),
 				'style'                   => implode( ';', $style_vars ),
 				'data-attachment-id'      => (int) $post_id,
-				'data-videopack-id'       => esc_attr( $block->context['videopack/videopackId'] ?? '' ),
+				'data-videopack-id'       => esc_attr( $videopack_id ),
 				'data-videopack-lightbox' => ( 'lightbox' === $link_to ? 'true' : 'false' ),
 			)
 		);
@@ -781,30 +866,12 @@ class Blocks implements Hook_Subscriber {
 		$current_page = $block->context['videopack/currentPage'] ?? 1;
 		$total_pages  = $block->context['videopack/totalPages'] ?? 1;
 
-		if ( $total_pages <= 1 ) {
-			return '';
-		}
-
-		$links = paginate_links(
-			array(
-				'current'   => $current_page,
-				'total'     => $total_pages,
-				'type'      => 'array',
-				'prev_next' => true,
-			)
+		$merged_attributes = array_merge( 
+			$this->get_context_attributes( $block->context ), 
+			$attributes 
 		);
 
-		if ( ! $links ) {
-			return '';
-		}
-
-		$html = '<nav class="videopack-pagination"><ul class="videopack-pagination-list">';
-		foreach ( $links as $link ) {
-			$html .= sprintf( '<li class="videopack-pagination-item">%s</li>', $link );
-		}
-		$html .= '</ul></nav>';
-
-		return $html;
+		return Modular_Renderer::render_pagination( $current_page, $total_pages, $merged_attributes );
 	}
 
 	/**
@@ -835,46 +902,6 @@ class Blocks implements Hook_Subscriber {
 		return sprintf( '%d:%02d', $m, $s );
 	}
 
-	/**
-	 * Builds WP_Query args from block attributes.
-	 */
-	private function build_query_args( $attributes, $paged = 1 ) {
-		$per_page = $attributes['gallery_per_page'] ?? 10;
-		$args     = array(
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'video',
-			'post_status'    => 'inherit',
-			'posts_per_page' => $per_page,
-			'paged'          => $paged,
-			'orderby'        => $attributes['gallery_orderby'] ?? 'menu_order',
-			'order'          => $attributes['gallery_order'] ?? 'asc',
-		);
-
-		$source = $attributes['gallery_source'] ?? 'current';
-
-		if ( 'current' === $source ) {
-			// We handle the parent post in the gallery/collection context.
-			// For a block, 'current' usually means the post it's embedded in.
-			// However, attachments have their own IDs.
-			// We rely on the global $post if not specified.
-			$args['post_parent'] = get_the_ID();
-		} elseif ( 'custom' === $source && ! empty( $attributes['gallery_id'] ) ) {
-			$args['post_parent'] = $attributes['gallery_id'];
-		} elseif ( 'manual' === $source && ! empty( $attributes['gallery_include'] ) ) {
-			$args['post__in'] = array_map( 'intval', explode( ',', $attributes['gallery_include'] ) );
-			$args['orderby'] = 'post__in';
-		} elseif ( 'category' === $source && ! empty( $attributes['gallery_category'] ) ) {
-			$args['category_name'] = $attributes['gallery_category'];
-		} elseif ( 'tag' === $source && ! empty( $attributes['gallery_tag'] ) ) {
-			$args['tag'] = $attributes['gallery_tag'];
-		}
-
-		if ( ! empty( $attributes['gallery_exclude'] ) ) {
-			$args['post__not_in'] = array_map( 'intval', explode( ',', $attributes['gallery_exclude'] ) );
-		}
-
-		return (array) apply_filters( 'videopack_collection_query_args', $args, $attributes );
-	}
 
 	/**
 	 * Renders the global lightbox modal in the footer.
@@ -946,6 +973,16 @@ class Blocks implements Hook_Subscriber {
 			'videopack/watermark'      => array( 'attr' => 'watermark', 'global' => $this->options['watermark'] ?? '' ),
 			'videopack/watermark_link_to' => array( 'attr' => 'watermark_link_to', 'global' => $this->options['watermark_link_to'] ?? 'false' ),
 			'videopack/watermark_styles'  => array( 'attr' => 'watermark_styles', 'global' => array() ),
+			'videopack/pagination_color'            => array( 'attr' => 'pagination_color', 'global' => $this->options['pagination_color'] ?? '' ),
+			'videopack/pagination_background_color' => array( 'attr' => 'pagination_background_color', 'global' => $this->options['pagination_background_color'] ?? '' ),
+			'videopack/pagination_active_color'     => array( 'attr' => 'pagination_active_color', 'global' => $this->options['pagination_active_color'] ?? '' ),
+			'videopack/pagination_active_bg_color'  => array( 'attr' => 'pagination_active_bg_color', 'global' => $this->options['pagination_active_bg_color'] ?? '' ),
+			'videopack/title_color'                 => array( 'attr' => 'titleColor', 'global' => $this->options['title_color'] ?? '' ),
+			'videopack/title_background_color'      => array( 'attr' => 'titleBackgroundColor', 'global' => $this->options['title_background_color'] ?? '' ),
+			'videopack/play_button_color'           => array( 'attr' => 'playButtonColor', 'global' => $this->options['play_button_color'] ?? '' ),
+			'videopack/play_button_secondary_color' => array( 'attr' => 'playButtonSecondaryColor', 'global' => $this->options['play_button_secondary_color'] ?? '' ),
+			'videopack/control_bar_bg_color'        => array( 'attr' => 'controlBarBgColor', 'global' => $this->options['control_bar_bg_color'] ?? '' ),
+			'videopack/control_bar_color'           => array( 'attr' => 'controlBarColor', 'global' => $this->options['control_bar_color'] ?? '' ),
 		);
 
 		foreach ( $fallbacks as $context_key => $config ) {

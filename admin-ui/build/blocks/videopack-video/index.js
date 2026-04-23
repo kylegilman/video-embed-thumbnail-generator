@@ -5389,10 +5389,11 @@ const normalizeOptions = options => {
   };
 
   // Boolean conversions
-  const booleans = ['autoplay', 'loop', 'muted', 'controls', 'playback_rate', 'playsinline', 'downloadlink', 'overlay_title', 'nativecontrolsfortouch', 'pauseothervideos', 'right_click', 'auto_res', 'auto_codec'];
+  const booleans = ['autoplay', 'loop', 'muted', 'controls', 'playback_rate', 'playsinline', 'downloadlink', 'overlay_title', 'nativecontrolsfortouch', 'pauseothervideos', 'right_click', 'gallery_pagination', 'gallery_title', 'views', 'auto_res', 'auto_codec'];
   booleans.forEach(key => {
     if (Object.prototype.hasOwnProperty.call(normalized, key)) {
-      normalized[key] = normalized[key] === 'true' || normalized[key] === true;
+      const val = normalized[key];
+      normalized[key] = val === 'true' || val === true || val === '1' || val === 1 || val === 'on';
     }
   });
 

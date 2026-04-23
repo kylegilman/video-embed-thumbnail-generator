@@ -34,6 +34,7 @@ export default function CollectionSettingsPanel({
 					attributes={attributes}
 					setAttributes={setAttributes}
 					queryData={queryData}
+					options={options}
 					showManualSource={showManualSource}
 					isSiteEditor={isSiteEditor}
 					hasPaginationBlock={hasPaginationBlock}
@@ -51,11 +52,12 @@ export default function CollectionSettingsPanel({
 			{showLayoutSettings && showGalleryOptions && (
 				<PanelBody
 					title={__('Layout Settings', 'video-embed-thumbnail-generator')}
-					initialOpen={false}
+					initialOpen={showGalleryOptions}
 				>
 					<CollectionLayoutSettings
 						attributes={attributes}
 						setAttributes={setAttributes}
+						options={options}
 					/>
 				</PanelBody>
 			)}

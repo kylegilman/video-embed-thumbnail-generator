@@ -23,14 +23,18 @@ export const normalizeOptions = (options) => {
 		'nativecontrolsfortouch',
 		'pauseothervideos',
 		'right_click',
+		'gallery_pagination',
+		'gallery_title',
+		'views',
 		'auto_res',
 		'auto_codec',
 	];
 
 	booleans.forEach((key) => {
 		if (Object.prototype.hasOwnProperty.call(normalized, key)) {
+			const val = normalized[key];
 			normalized[key] =
-				normalized[key] === 'true' || normalized[key] === true;
+				val === 'true' || val === true || val === '1' || val === 1 || val === 'on';
 		}
 	});
 

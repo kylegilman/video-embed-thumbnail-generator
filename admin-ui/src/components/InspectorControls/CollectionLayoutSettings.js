@@ -4,8 +4,9 @@ import { __ } from '@wordpress/i18n';
 export default function CollectionLayoutSettings({
 	attributes,
 	setAttributes,
+	options = {},
 }) {
-	const { gallery_columns, overlay_title, gallery_end } = attributes;
+	const { gallery_columns, overlay_title, gallery_end, gallery_pagination } = attributes;
 
 	const updateNumericAttribute = (name, value) => {
 		const parsedValue = parseInt(value, 10);
@@ -24,7 +25,7 @@ export default function CollectionLayoutSettings({
 				__nextHasNoMarginBottom
 				label={__('Title overlay', 'video-embed-thumbnail-generator')}
 				onChange={(val) => setAttributes({ overlay_title: val })}
-				checked={!!overlay_title}
+				checked={overlay_title ?? !!options.overlay_title}
 			/>
 			<SelectControl
 				__nextHasNoMarginBottom

@@ -13,6 +13,7 @@ export default function CollectionQuerySettings({
 	attributes,
 	setAttributes,
 	queryData,
+	options = {},
 	showManualSource = true,
 	isSiteEditor = false,
 	hasPaginationBlock = true,
@@ -24,6 +25,7 @@ export default function CollectionQuerySettings({
 		gallery_per_page,
 		enable_collection_video_limit,
 		collection_video_limit,
+		gallery_pagination,
 	} = attributes;
 
 	const baseGalleryOrderbyOptions = useMemo(
@@ -106,7 +108,7 @@ export default function CollectionQuerySettings({
 				/>
 			</div>
 
-			{hasPaginationBlock && (
+			{(!!gallery_pagination || !!hasPaginationBlock) ? (
 				<TextControl
 					label={__(
 						'Number of videos per page',
@@ -114,11 +116,12 @@ export default function CollectionQuerySettings({
 					)}
 					type="number"
 					value={gallery_per_page ?? ''}
-					onChange={(val) => updateNumericAttribute('gallery_per_page', val)}
+					placeholder={options.gallery_per_page}
+					onChange={(val) =>
+						updateNumericAttribute('gallery_per_page', val)
+					}
 				/>
-			)}
-
-			{!hasPaginationBlock && (
+			) : (
 				<>
 					<ToggleControl
 						__nextHasNoMarginBottom
@@ -128,10 +131,14 @@ export default function CollectionQuerySettings({
 						)}
 						checked={!!enable_collection_video_limit}
 						onChange={(val) => {
-							const updates = { enable_collection_video_limit: val };
+							const updates = {
+								enable_collection_video_limit: val,
+							};
 							if (!val) {
 								updates.collection_video_limit = -1;
-							} else if (Number(collection_video_limit) === -1) {
+							} else if (
+								Number(collection_video_limit) === -1
+							) {
 								updates.collection_video_limit = 12;
 							}
 							setAttributes(updates);
@@ -156,11 +163,28 @@ export default function CollectionQuerySettings({
 									: (collection_video_limit ?? '')
 							}
 							onChange={(val) =>
-								updateNumericAttribute('collection_video_limit', val)
+								updateNumericAttribute(
+									'collection_video_limit',
+									val
+								)
 							}
 						/>
 					)}
 				</>
+			)}
+
+			{!hasPaginationBlock && (
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={__(
+						'Enable Pagination',
+						'video-embed-thumbnail-generator'
+					)}
+					checked={!!gallery_pagination}
+					onChange={(val) =>
+						setAttributes({ gallery_pagination: val })
+					}
+				/>
 			)}
 		</>
 	);

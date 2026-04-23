@@ -24,9 +24,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const postId = context['videopack/postId'];
 	const { linkTo, style } = attributes;
 
-	const blockProps = useBlockProps({
-		className: 'videopack-thumbnail-block',
-	});
+	const blockProps = useBlockProps();
 
 	/**
 	 * For the template preview itself, we can derive the duotone class from attributes.
@@ -91,7 +89,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<div {...blockProps}>
+			<div {...blockProps} className={ ( blockProps.className || '' ) + ' videopack-thumbnail-block' }>
 				{!postId ? (
 					<Placeholder
 						icon="format-video"

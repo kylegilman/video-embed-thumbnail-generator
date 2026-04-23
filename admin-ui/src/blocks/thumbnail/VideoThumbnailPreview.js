@@ -34,10 +34,11 @@ export function VideoThumbnailPreview({
 			// Fetch the attachment record for the video
 			const attachment = getEntityRecord('postType', 'attachment', postId);
 			const videopackMeta = attachment?.meta?.['_videopack-meta'] || {};
+			const videopackData = attachment?.videopack || {};
 			
 			// The thumbnail ID is stored in poster_id, and URL in poster
 			const mediaId = videopackMeta.poster_id;
-			const directPoster = videopackMeta.poster;
+			const directPoster = videopackData.poster || videopackMeta.poster;
 
 			return {
 				thumbnailMedia: mediaId ? getMedia(mediaId) : null,

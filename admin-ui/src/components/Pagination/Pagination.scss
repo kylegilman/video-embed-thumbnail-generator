@@ -1,12 +1,39 @@
 @use "@wordpress/base-styles/colors";
 
+/**
+ * Standardized Pagination Styles
+ * Targets both React (buttons) and PHP (links) structure.
+ */
 .videopack-pagination {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	gap: 8px;
-	margin: 1em 0;
+	margin: 1.5em 0;
 	user-select: none;
+	width: 100%;
+
+	// Reset list styles for themes
+	ul.videopack-pagination-list {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		li.videopack-pagination-item {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			line-height: 1;
+
+			&::before {
+				content: none !important;
+			}
+		}
+	}
 
 	&.is-placeholder,
 	.is-placeholder & {
@@ -15,7 +42,6 @@
 		pointer-events: none;
 	}
 
-	.videopack-pagination-button,
 	.page-numbers {
 		display: inline-flex;
 		align-items: center;
@@ -31,26 +57,24 @@
 		font-size: 14px;
 		font-weight: 500;
 		transition: all 0.2s ease;
+		text-decoration: none;
+		outline: none;
+		box-shadow: none;
+		appearance: none;
 
-		&:hover:not(:disabled) {
-			border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, colors.$gray-600));
-			color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, colors.$gray-600));
-			background: colors.$gray-100;
-		}
-
-		&:disabled,
-		&.disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
+		&:hover:not(.current):not(:disabled) {
+			border-color: var(--videopack-pagination-active-bg, colors.$gray-600);
+			color: var(--videopack-pagination-active-bg, colors.$gray-600);
 			background: colors.$gray-100;
 		}
 
 		&.is-active,
 		&.current {
-			background: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, colors.$gray-600));
-			border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, colors.$gray-600));
+			background: var(--videopack-pagination-active-bg, colors.$gray-600);
+			border-color: var(--videopack-pagination-active-bg, colors.$gray-600);
 			color: var(--videopack-pagination-active-color, colors.$white);
 			cursor: default;
+			pointer-events: none;
 		}
 
 		&.is-ellipsis,
@@ -62,7 +86,7 @@
 			padding: 0;
 
 			&:hover {
-				color: #333;
+				color: inherit;
 				background: transparent;
 			}
 		}
@@ -78,5 +102,6 @@
 		font-weight: bold;
 		font-family: monospace;
 		font-size: 18px;
+		line-height: 1;
 	}
 }

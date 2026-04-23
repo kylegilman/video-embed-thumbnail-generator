@@ -1282,10 +1282,11 @@ function VideoThumbnailPreview({
     // Fetch the attachment record for the video
     const attachment = getEntityRecord('postType', 'attachment', postId);
     const videopackMeta = attachment?.meta?.['_videopack-meta'] || {};
+    const videopackData = attachment?.videopack || {};
 
     // The thumbnail ID is stored in poster_id, and URL in poster
     const mediaId = videopackMeta.poster_id;
-    const directPoster = videopackMeta.poster;
+    const directPoster = videopackData.poster || videopackMeta.poster;
     return {
       thumbnailMedia: mediaId ? getMedia(mediaId) : null,
       posterUrl: directPoster,
@@ -2064,10 +2065,8 @@ function VideoWatermark({
   const actualScale = effectiveScale !== undefined && effectiveScale !== '' ? effectiveScale : 10;
   const style = {
     position: isBlockEditor ? 'relative' : 'absolute',
-    maxWidth: '90%',
     width: effectiveUrl ? `${actualScale}%` : '260px',
     height: 'auto',
-    zIndex: isBlockEditor ? undefined : 111,
     pointerEvents: 'auto',
     transform: ''
   };
@@ -2150,13 +2149,11 @@ function getWatermarkBlockStyles(attributes, context) {
   const effectiveY = getEffective('watermark_y', 'y', 7);
   const style = {
     position: 'absolute',
-    maxWidth: '90%',
     width: `${effectiveScale}%`,
     minWidth: '20px',
     // Prevent total collapse
     minHeight: '20px',
     height: 'auto',
-    zIndex: 115,
     transform: ''
   };
   if (effectiveAlign === 'center') {
@@ -3242,29 +3239,47 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Pagination_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Pagination.scss */ "./src/components/Pagination/Pagination.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
+/* harmony import */ var _Pagination_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Pagination.scss */ "./src/components/Pagination/Pagination.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
 /**
- * Standardized Pagination Component.
+ * A standardized pagination component for use in both blocks and previews.
  *
- * @param {Object}   props              Props.
+ * @param {Object}   props              Component props.
  * @param {number}   props.currentPage  The current active page.
  * @param {number}   props.totalPages   The total number of pages.
  * @param {Function} props.onPageChange Callback when a page is changed.
+ * @param {Object}   props.attributes   Optional. Block attributes for color resolution.
+ * @param {Object}   props.context      Optional. Block context for color resolution.
  */
 
 function Pagination({
   currentPage,
   totalPages,
-  onPageChange
+  onPageChange,
+  attributes = {},
+  context = {},
+  style: propStyle
 }) {
   if (totalPages <= 1) {
     return null;
   }
+  const paginationColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)('pagination_color', attributes, context);
+  const paginationBg = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)('pagination_background_color', attributes, context);
+  const paginationActiveBg = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)('pagination_active_bg_color', attributes, context);
+  const paginationActiveColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)('pagination_active_color', attributes, context);
+  const style = {
+    '--videopack-pagination-color': paginationColor,
+    '--videopack-pagination-bg': paginationBg,
+    '--videopack-pagination-active-bg': paginationActiveBg,
+    '--videopack-pagination-active-color': paginationActiveColor,
+    ...propStyle
+  };
   const getPageNumbers = () => {
     const pages = [];
     const showMax = 5; // Max number of page buttons to show around current page
@@ -3302,30 +3317,47 @@ function Pagination({
     return pages;
   };
   const pages = getPageNumbers();
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("nav", {
     className: "videopack-pagination",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
-      className: `videopack-pagination-button ${currentPage <= 1 ? 'is-hidden' : ''}`,
-      onClick: () => currentPage > 1 && onPageChange(currentPage - 1),
-      "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Previous Page', 'video-embed-thumbnail-generator'),
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-        className: "videopack-pagination-arrow",
-        children: '<'
-      })
-    }), pages.map((page, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
-      className: `videopack-pagination-button ${page === currentPage ? 'is-active' : ''} ${page === '...' ? 'is-ellipsis' : ''}`,
-      disabled: page === '...',
-      onClick: () => typeof page === 'number' && onPageChange(page),
-      children: page
-    }, index)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
-      className: `videopack-pagination-button ${currentPage >= totalPages ? 'is-hidden' : ''}`,
-      onClick: () => currentPage < totalPages && onPageChange(currentPage + 1),
-      "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Next Page', 'video-embed-thumbnail-generator'),
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-        className: "videopack-pagination-arrow",
-        children: '>'
-      })
-    })]
+    "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Pagination', 'video-embed-thumbnail-generator'),
+    style: style,
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("ul", {
+      className: "videopack-pagination-list",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("li", {
+        className: "videopack-pagination-item",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          className: `videopack-pagination-button prev page-numbers ${currentPage <= 1 ? 'is-hidden videopack-hidden' : ''}`,
+          onClick: () => currentPage > 1 && onPageChange(currentPage - 1),
+          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Previous Page', 'video-embed-thumbnail-generator'),
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            className: "videopack-pagination-arrow",
+            children: "<"
+          })
+        })
+      }), pages.map((page, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("li", {
+        className: "videopack-pagination-item",
+        children: page === '...' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+          className: "page-numbers dots",
+          children: page
+        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          className: `videopack-pagination-button page-numbers ${page === currentPage ? 'is-active current' : ''}`,
+          onClick: () => typeof page === 'number' && onPageChange(page),
+          "aria-current": page === currentPage ? 'page' : undefined,
+          children: page
+        })
+      }, index)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("li", {
+        className: "videopack-pagination-item",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+          className: `videopack-pagination-button next page-numbers ${currentPage >= totalPages ? 'is-hidden videopack-hidden' : ''}`,
+          onClick: () => currentPage < totalPages && onPageChange(currentPage + 1),
+          "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Next Page', 'video-embed-thumbnail-generator'),
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+            className: "videopack-pagination-arrow",
+            children: ">"
+          })
+        })
+      })]
+    })
   });
 }
 
@@ -3636,19 +3668,16 @@ function Pagination({
   const currentPage = context['videopack/currentPage'] || 1;
   const totalPages = context['videopack/totalPages'] || 1;
   const onPageChange = context['videopack/onPageChange'] || (() => {});
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-    className: "videopack-pagination-block",
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_Pagination_Pagination__WEBPACK_IMPORTED_MODULE_0__["default"], {
+    currentPage: currentPage,
+    totalPages: totalPages,
+    onPageChange: onPageChange,
     style: {
       '--videopack-pagination-color': paginationColor,
       '--videopack-pagination-bg': paginationBg,
       '--videopack-pagination-active-color': paginationActiveColor,
       '--videopack-pagination-active-bg': paginationActiveBg
-    },
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_Pagination_Pagination__WEBPACK_IMPORTED_MODULE_0__["default"], {
-      currentPage: currentPage,
-      totalPages: totalPages,
-      onPageChange: onPageChange
-    })
+    }
   });
 }
 
@@ -9458,12 +9487,18 @@ const getEffectiveValue = (key, attributes = {}, context = {}) => {
   // 3. Fallback to global plugin defaults
   const globalOptions = videopack_config?.options || {};
   const globalDefaults = videopack_config?.defaults || {};
-
-  // Skin has special handling in some places, but we'll try to find it in options or defaults
   if (attrKey === 'skin') {
-    return globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
+    return attributes.skin || context['videopack/skin'] || globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
   }
-  return globalOptions[attrKey] ?? globalDefaults[attrKey];
+  const val = attributes[attrKey] ?? context[`videopack/${attrKey}`];
+  if (val !== undefined && val !== null) {
+    return val;
+  }
+  const fallback = globalOptions[attrKey] ?? globalDefaults[attrKey];
+  if (attrKey === 'gallery_per_page') {
+    console.log(`getEffectiveValue fallback for ${attrKey}:`, fallback);
+  }
+  return fallback;
 };
 
 /***/ },
@@ -9496,10 +9531,11 @@ const normalizeOptions = options => {
   };
 
   // Boolean conversions
-  const booleans = ['autoplay', 'loop', 'muted', 'controls', 'playback_rate', 'playsinline', 'downloadlink', 'overlay_title', 'nativecontrolsfortouch', 'pauseothervideos', 'right_click', 'auto_res', 'auto_codec'];
+  const booleans = ['autoplay', 'loop', 'muted', 'controls', 'playback_rate', 'playsinline', 'downloadlink', 'overlay_title', 'nativecontrolsfortouch', 'pauseothervideos', 'right_click', 'gallery_pagination', 'gallery_title', 'views', 'auto_res', 'auto_codec'];
   booleans.forEach(key => {
     if (Object.prototype.hasOwnProperty.call(normalized, key)) {
-      normalized[key] = normalized[key] === 'true' || normalized[key] === true;
+      const val = normalized[key];
+      normalized[key] = val === 'true' || val === true || val === '1' || val === 1 || val === 'on';
     }
   });
 

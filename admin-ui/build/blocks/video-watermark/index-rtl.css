@@ -380,10 +380,28 @@
 .videopack-video-player-engine-block) {
   position: relative;
   container-type: inline-size;
+}
+:is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block) {
   --videopack-title-background-color: #141414;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -394,6 +412,9 @@
 .videopack-collection,
 .videopack-video-title-block,
 .videopack-video-player-engine-block).default, :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -403,10 +424,26 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-videopack {
+.videopack-video-player-engine-block).vjs-theme-videopack, .vjs-theme-videopack :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block) {
   --videopack-title-background-color: #2b333f;
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -416,7 +453,10 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).default .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-video-player-engine-block).vjs-theme-city, .vjs-theme-city :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -426,30 +466,13 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).default :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail), :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-videopack .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-videopack :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
+.videopack-video-player-engine-block) {
+  --videopack-title-background-color: var(--vjs-theme-city--primary, #21a1d1);
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -459,10 +482,26 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-city {
-  --videopack-title-background-color: var(--vjs-theme-city--primary);
+.videopack-video-player-engine-block).vjs-theme-fantasy, .vjs-theme-fantasy :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
+.videopack-gallery-wrapper,
+.videopack-gallery-item,
+.gallery-thumbnail,
+.videopack-player,
+.videopack-thumbnail-wrapper,
+.videopack-thumbnail-block,
+.videopack-video-block,
+.videopack-collection,
+.videopack-video-title-block,
+.videopack-video-player-engine-block) {
+  --videopack-title-background-color: var(--vjs-theme-fantasy--primary, #643f82);
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -472,7 +511,10 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-city .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-video-player-engine-block).vjs-theme-forest, .vjs-theme-forest :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -482,10 +524,13 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-city :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
+.videopack-video-player-engine-block) {
+  --videopack-title-background-color: var(--vjs-theme-forest--primary, #395d26);
 }
 :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -495,10 +540,10 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-fantasy {
-  --videopack-title-background-color: var(--vjs-theme-fantasy--primary);
-}
-:is(.videopack-wrapper,
+.videopack-video-player-engine-block).vjs-theme-sea, .vjs-theme-sea :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -508,69 +553,13 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-fantasy .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-fantasy :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-forest {
-  --videopack-title-background-color: var(--vjs-theme-forest--primary);
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-forest .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-forest :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea {
+.videopack-video-player-engine-block) {
   --videopack-title-background-color: rgb(65, 118, 188);
 }
-:is(.videopack-wrapper,
+:is(:is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -580,7 +569,10 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea .videopack-video-title:not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-video-player-engine-block).videopack-video-title, .videopack-video-title):not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-player-relative-wrapper,
+.videopack-meta-wrapper,
+.videopack-video-title,
 .videopack-gallery-wrapper,
 .videopack-gallery-item,
 .gallery-thumbnail,
@@ -590,31 +582,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+.videopack-video-player-engine-block) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
   background-color: var(--videopack-title-background-color);
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea.gallery-thumbnail .videopack-video-title::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.videopack-gallery-item,
-.gallery-thumbnail,
-.videopack-player,
-.videopack-thumbnail-wrapper,
-.videopack-thumbnail-block,
-.videopack-video-block,
-.videopack-collection,
-.videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea.videopack-video-title-block.is-inside-thumbnail .videopack-video-title::before {
-  background-color: rgba(65, 118, 188, 0.4);
 }
 :is(.gallery-thumbnail,
 .videopack-thumbnail-wrapper,
@@ -657,11 +626,17 @@
   bottom: auto;
   transform: translateY(-50%);
 }
+:is(.gallery-thumbnail:hover, .videopack-thumbnail-wrapper:hover, .videopack-thumbnail-block:hover) .videopack-video-title.videopack-thumbnail-title.is-overlay {
+  --videopack-title-bg-alpha: 0.9;
+}
 .videopack-video-watermark {
   position: absolute;
-  z-index: 111;
+  z-index: 95;
   pointer-events: auto;
   display: block;
+  width: 100%;
+  height: auto;
+  max-width: 90%;
 }
 .videopack-video-watermark img {
   display: block;

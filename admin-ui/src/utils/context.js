@@ -27,10 +27,20 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	const globalOptions = videopack_config?.options || {};
 	const globalDefaults = videopack_config?.defaults || {};
 
-	// Skin has special handling in some places, but we'll try to find it in options or defaults
 	if (attrKey === 'skin') {
-		return globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
+		return attributes.skin || context['videopack/skin'] || globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
 	}
 
-	return globalOptions[attrKey] ?? globalDefaults[attrKey];
+	const val = attributes[attrKey] ?? context[`videopack/${attrKey}`];
+	if ( val !== undefined && val !== null ) {
+		return val;
+	}
+
+	const fallback = globalOptions[attrKey] ?? globalDefaults[attrKey];
+
+	if ( attrKey === 'gallery_per_page' ) {
+		console.log( `getEffectiveValue fallback for ${attrKey}:`, fallback );
+	}
+
+	return fallback;
 };

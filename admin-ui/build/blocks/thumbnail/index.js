@@ -62,10 +62,11 @@ function VideoThumbnailPreview({
     // Fetch the attachment record for the video
     const attachment = getEntityRecord('postType', 'attachment', postId);
     const videopackMeta = attachment?.meta?.['_videopack-meta'] || {};
+    const videopackData = attachment?.videopack || {};
 
     // The thumbnail ID is stored in poster_id, and URL in poster
     const mediaId = videopackMeta.poster_id;
-    const directPoster = videopackMeta.poster;
+    const directPoster = videopackData.poster || videopackMeta.poster;
     return {
       thumbnailMedia: mediaId ? getMedia(mediaId) : null,
       posterUrl: directPoster,
@@ -156,9 +157,7 @@ function Edit({
     linkTo,
     style
   } = attributes;
-  const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({
-    className: 'videopack-thumbnail-block'
-  });
+  const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)();
 
   /**
    * For the template preview itself, we can derive the duotone class from attributes.
@@ -200,6 +199,7 @@ function Edit({
       })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       ...blockProps,
+      className: (blockProps.className || '') + ' videopack-thumbnail-block',
       children: [!postId ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Placeholder, {
         icon: "format-video",
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Video Thumbnail', 'video-embed-thumbnail-generator'),
@@ -260,10 +260,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function save() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-    ..._wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps.save(),
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InnerBlocks.Content, {})
-  });
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InnerBlocks.Content, {});
 }
 
 /***/ },
@@ -306,12 +303,18 @@ const getEffectiveValue = (key, attributes = {}, context = {}) => {
   // 3. Fallback to global plugin defaults
   const globalOptions = videopack_config?.options || {};
   const globalDefaults = videopack_config?.defaults || {};
-
-  // Skin has special handling in some places, but we'll try to find it in options or defaults
   if (attrKey === 'skin') {
-    return globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
+    return attributes.skin || context['videopack/skin'] || globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
   }
-  return globalOptions[attrKey] ?? globalDefaults[attrKey];
+  const val = attributes[attrKey] ?? context[`videopack/${attrKey}`];
+  if (val !== undefined && val !== null) {
+    return val;
+  }
+  const fallback = globalOptions[attrKey] ?? globalDefaults[attrKey];
+  if (attrKey === 'gallery_per_page') {
+    console.log(`getEffectiveValue fallback for ${attrKey}:`, fallback);
+  }
+  return fallback;
 };
 
 /***/ },

@@ -2,10 +2,10 @@ import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useMemo } from '@wordpress/element';
 import Pagination from '../../components/Pagination/Pagination';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
-import { getColorFallbacks } from '../../utils/colors';
+import { getEffectiveValue } from '../../utils/context';
+import { useVideopackContext } from '../../utils/VideopackContext';
 
 /* global videopack_config */
 
@@ -23,20 +23,9 @@ export default function Edit({
 		pagination_active_color,
 	} = attributes;
 
-	const currentPage = context['videopack/currentPage'] || 1;
-	const totalPages = context['videopack/totalPages'] || 1;
-
-	const colorFallbacks = useMemo(() => {
-		const contextSettings = {
-			pagination_color: context['videopack/pagination_color'],
-			pagination_background_color:
-				context['videopack/pagination_background_color'],
-			pagination_active_bg_color:
-				context['videopack/pagination_active_bg_color'],
-			pagination_active_color: context['videopack/pagination_active_color'],
-		};
-		return getColorFallbacks(contextSettings);
-	}, [context]);
+	const vpContext = useVideopackContext();
+	const currentPage = vpContext.currentPage || context['videopack/currentPage'] || 1;
+	const totalPages = vpContext.totalPages || context['videopack/totalPages'] || 1;
 
 	const THEME_COLORS = videopack_config?.themeColors || [];
 
@@ -59,18 +48,6 @@ export default function Edit({
 
 	const blockProps = useBlockProps({
 		className: 'videopack-pagination-block',
-		style: {
-			'--videopack-pagination-color':
-				pagination_color || colorFallbacks.pagination_color,
-			'--videopack-pagination-bg':
-				pagination_background_color ||
-				colorFallbacks.pagination_background_color,
-			'--videopack-pagination-active-bg':
-				pagination_active_bg_color ||
-				colorFallbacks.pagination_active_bg_color,
-			'--videopack-pagination-active-color':
-				pagination_active_color || colorFallbacks.pagination_active_color,
-		},
 	});
 
 	return (
@@ -96,7 +73,7 @@ export default function Edit({
 											setAttributes({ pagination_color: value })
 										}
 										colors={THEME_COLORS}
-										fallbackValue={colorFallbacks.pagination_color}
+										fallbackValue={getEffectiveValue('pagination_color', {}, context)}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
@@ -112,9 +89,7 @@ export default function Edit({
 											})
 										}
 										colors={THEME_COLORS}
-										fallbackValue={
-											colorFallbacks.pagination_background_color
-										}
+										fallbackValue={getEffectiveValue('pagination_background_color', {}, context)}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
@@ -130,9 +105,7 @@ export default function Edit({
 											})
 										}
 										colors={THEME_COLORS}
-										fallbackValue={
-											colorFallbacks.pagination_active_bg_color
-										}
+										fallbackValue={getEffectiveValue('pagination_active_bg_color', {}, context)}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
@@ -148,9 +121,7 @@ export default function Edit({
 											})
 										}
 										colors={THEME_COLORS}
-										fallbackValue={
-											colorFallbacks.pagination_active_color
-										}
+										fallbackValue={getEffectiveValue('pagination_active_color', {}, context)}
 									/>
 								</div>
 							</div>
@@ -168,6 +139,8 @@ export default function Edit({
 						currentPage={1}
 						totalPages={10}
 						onPageChange={() => {}}
+						attributes={attributes}
+						context={context}
 					/>
 				</div>
 			) : (
@@ -176,6 +149,8 @@ export default function Edit({
 						currentPage={currentPage}
 						totalPages={totalPages}
 						onPageChange={handlePageChange}
+						attributes={attributes}
+						context={context}
 					/>
 				</div>
 			)}

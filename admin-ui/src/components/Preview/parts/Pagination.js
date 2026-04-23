@@ -21,20 +21,16 @@ export default function Pagination({ attributes = {}, context = {} }) {
 	const onPageChange = context['videopack/onPageChange'] || (() => {});
 
 	return (
-		<div
-			className="videopack-pagination-block"
+		<PaginationBase
+			currentPage={currentPage}
+			totalPages={totalPages}
+			onPageChange={onPageChange}
 			style={{
 				'--videopack-pagination-color': paginationColor,
 				'--videopack-pagination-bg': paginationBg,
 				'--videopack-pagination-active-color': paginationActiveColor,
 				'--videopack-pagination-active-bg': paginationActiveBg,
 			}}
-		>
-			<PaginationBase
-				currentPage={currentPage}
-				totalPages={totalPages}
-				onPageChange={onPageChange}
-			/>
-		</div>
+		/>
 	);
 }
