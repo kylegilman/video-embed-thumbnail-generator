@@ -180,11 +180,6 @@ $center-big-play-button: true; // true default
   padding-bottom: 4px;
 }
 
-.vjs-menu-button.vjs-menu-button-popup.vjs-control .vjs-menu .vjs-menu-content {
-  border-radius: 8px;
-  bottom: 4px;
-  margin-bottom: 0;
-}
 
 $slider-bg-color: color.adjust($primary-background-color, $lightness: 33%);
 
