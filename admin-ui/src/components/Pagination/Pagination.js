@@ -1,18 +1,41 @@
 import { __ } from '@wordpress/i18n';
+import { getEffectiveValue } from '../../utils/context';
 import './Pagination.scss';
 
 /**
- * Standardized Pagination Component.
+ * A standardized pagination component for use in both blocks and previews.
  *
- * @param {Object}   props              Props.
+ * @param {Object}   props              Component props.
  * @param {number}   props.currentPage  The current active page.
  * @param {number}   props.totalPages   The total number of pages.
  * @param {Function} props.onPageChange Callback when a page is changed.
+ * @param {Object}   props.attributes   Optional. Block attributes for color resolution.
+ * @param {Object}   props.context      Optional. Block context for color resolution.
  */
-export default function Pagination({ currentPage, totalPages, onPageChange }) {
+export default function Pagination({
+	currentPage,
+	totalPages,
+	onPageChange,
+	attributes = {},
+	context = {},
+	style: propStyle,
+}) {
 	if (totalPages <= 1) {
 		return null;
 	}
+
+	const paginationColor = getEffectiveValue('pagination_color', attributes, context);
+	const paginationBg = getEffectiveValue('pagination_background_color', attributes, context);
+	const paginationActiveBg = getEffectiveValue('pagination_active_bg_color', attributes, context);
+	const paginationActiveColor = getEffectiveValue('pagination_active_color', attributes, context);
+
+	const style = {
+		'--videopack-pagination-color': paginationColor,
+		'--videopack-pagination-bg': paginationBg,
+		'--videopack-pagination-active-bg': paginationActiveBg,
+		'--videopack-pagination-active-color': paginationActiveColor,
+		...propStyle,
+	};
 
 	const getPageNumbers = () => {
 		const pages = [];
@@ -59,46 +82,74 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
 	const pages = getPageNumbers();
 
 	return (
-		<div className="videopack-pagination">
-			<button
-				className={`videopack-pagination-button ${
-					currentPage <= 1 ? 'is-hidden' : ''
-				}`}
-				onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-				aria-label={__(
-					'Previous Page',
-					'video-embed-thumbnail-generator'
-				)}
-			>
-				<span className="videopack-pagination-arrow">{'<'}</span>
-			</button>
+		<nav
+			className="videopack-pagination"
+			aria-label={__('Pagination', 'video-embed-thumbnail-generator')}
+			style={style}
+		>
+			<ul className="videopack-pagination-list">
+				<li className="videopack-pagination-item">
+					<button
+						className={`videopack-pagination-button prev page-numbers ${
+							currentPage <= 1 ? 'is-hidden videopack-hidden' : ''
+						}`}
+						onClick={() =>
+							currentPage > 1 && onPageChange(currentPage - 1)
+						}
+						aria-label={__(
+							'Previous Page',
+							'video-embed-thumbnail-generator'
+						)}
+					>
+						<span className="videopack-pagination-arrow">&lt;</span>
+					</button>
+				</li>
 
-			{pages.map((page, index) => (
-				<button
-					key={index}
-					className={`videopack-pagination-button ${
-						page === currentPage ? 'is-active' : ''
-					} ${page === '...' ? 'is-ellipsis' : ''}`}
-					disabled={page === '...'}
-					onClick={() =>
-						typeof page === 'number' && onPageChange(page)
-					}
-				>
-					{page}
-				</button>
-			))}
+				{pages.map((page, index) => (
+					<li key={index} className="videopack-pagination-item">
+						{page === '...' ? (
+							<span className="page-numbers dots">{page}</span>
+						) : (
+							<button
+								className={`videopack-pagination-button page-numbers ${
+									page === currentPage
+										? 'is-active current'
+										: ''
+								}`}
+								onClick={() =>
+									typeof page === 'number' &&
+									onPageChange(page)
+								}
+								aria-current={
+									page === currentPage ? 'page' : undefined
+								}
+							>
+								{page}
+							</button>
+						)}
+					</li>
+				))}
 
-			<button
-				className={`videopack-pagination-button ${
-					currentPage >= totalPages ? 'is-hidden' : ''
-				}`}
-				onClick={() =>
-					currentPage < totalPages && onPageChange(currentPage + 1)
-				}
-				aria-label={__('Next Page', 'video-embed-thumbnail-generator')}
-			>
-				<span className="videopack-pagination-arrow">{'>'}</span>
-			</button>
-		</div>
+				<li className="videopack-pagination-item">
+					<button
+						className={`videopack-pagination-button next page-numbers ${
+							currentPage >= totalPages
+								? 'is-hidden videopack-hidden'
+								: ''
+						}`}
+						onClick={() =>
+							currentPage < totalPages &&
+							onPageChange(currentPage + 1)
+						}
+						aria-label={__(
+							'Next Page',
+							'video-embed-thumbnail-generator'
+						)}
+					>
+						<span className="videopack-pagination-arrow">&gt;</span>
+					</button>
+				</li>
+			</ul>
+		</nav>
 	);
 }

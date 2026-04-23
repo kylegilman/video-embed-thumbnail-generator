@@ -95,6 +95,7 @@ class Modular_Renderer {
 	 */
 	public static function render_video_container( array $atts, $inner_content, $is_block = false, $options = array() ) {
 		wp_enqueue_style( 'videopack-frontend' );
+		wp_enqueue_script( 'videopack-frontend' );
 		$is_modular_engine = ! empty( $atts['is_modular_engine'] );
 		$classes           = array( 'videopack-wrapper' );
 
@@ -191,17 +192,52 @@ class Modular_Renderer {
 		// Add MEJS controls SVG for mask coloring.
 		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
 
-		$wrapper_attrs = '';
+		$extra_attrs = array();
+		if ( ! empty( $atts['wrapper_class'] ) && strpos( $atts['wrapper_class'], 'collection' ) !== false ) {
+			// Ensure we pass back the settings for AJAX pagination.
+			// We only include attributes that are relevant to the video query to keep it clean.
+			$query_keys = array(
+				'gallery_id', 'gallery_source', 'gallery_pagination', 'gallery_per_page',
+				'gallery_include', 'gallery_exclude', 'gallery_orderby', 'gallery_order',
+				'gallery_category', 'gallery_tag', 'relation',
+				'columns', 'layout', 'skin',
+				'pagination_color', 'pagination_background_color',
+				'pagination_active_bg_color', 'pagination_active_color',
+				'title_color', 'title_background_color',
+				'play_button_color', 'play_button_secondary_color',
+				'control_bar_bg_color', 'control_bar_color',
+				'views', 'overlay_title',
+				'enable_collection_video_limit', 'collection_video_limit',
+				'grid_metadata', 'grid_link_to', 'inner_blocks_template', 'collectionId', 'gallery_end'
+			);
+			$query_settings = array();
+			foreach ( $query_keys as $key ) {
+				if ( isset( $atts[ $key ] ) ) {
+					$query_settings[ $key ] = $atts[ $key ];
+				}
+			}
+			$json = wp_json_encode( $query_settings );
+			$extra_attrs['data-settings-cache'] = $json;
+			$extra_attrs['data-layout']         = $atts['layout'] ?? 'grid';
+			$extra_attrs['data-total-pages']    = $atts['totalPages'] ?? 1;
+			$extra_attrs['data-current-page']   = $atts['currentPage'] ?? 1;
+		}
+
+		$data_attrs = '';
+		foreach ( $extra_attrs as $key => $val ) {
+			$data_attrs .= ' ' . esc_attr( $key ) . '="' . esc_attr( (string) $val ) . '"';
+		}
+
 		if ( $is_block ) {
 			$wrapper_attrs = get_block_wrapper_attributes(
 				array(
 					'class' => implode( ' ', $classes ),
 					'style' => implode( ';', $style_vars ),
 				)
-			);
+			) . $data_attrs;
 		} else {
 			$style         = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
-			$wrapper_attrs = 'class="' . esc_attr( implode( ' ', $classes ) ) . '"' . $style;
+			$wrapper_attrs = 'class="' . esc_attr( implode( ' ', $classes ) ) . '"' . $style . $data_attrs;
 		}
 
 		return sprintf(
@@ -262,11 +298,7 @@ class Modular_Renderer {
 		}
 
 		$style_attrs = array(
-			'position:absolute',
 			'max-width:' . $scale . '%',
-			'width:100%',
-			'height:auto',
-			'z-index:10',
 		);
 
 		if ( 'center' === $align ) {
@@ -412,7 +444,7 @@ class Modular_Renderer {
 		$has_custom_bg     = ! empty( $atts['title_background_color'] );
 		$has_custom_color  = ! empty( $atts['title_color'] );
 		
-		$bar_style = ( $show_background && $bg_color ) ? ' style="background-color:' . esc_attr( $bg_color ) . '"' : '';
+		$bar_style = '';
 		$bar_class = 'videopack-video-title is-overlay ' . esc_attr( $skin ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' );
 		
 		if ( $is_inside_thumbnail ) {
@@ -817,7 +849,7 @@ class Modular_Renderer {
 	 * @param int $total_pages  The maximum number of pages.
 	 * @return string The rendered pagination HTML.
 	 */
-	public static function render_pagination( $current_page, $total_pages ) {
+	public static function render_pagination( $current_page, $total_pages, $atts = array() ) {
 		$total_pages  = (int) $total_pages;
 		$current_page = (int) $current_page;
 
@@ -857,46 +889,56 @@ class Modular_Renderer {
 			$pages[] = $total_pages;
 		}
 
+		$styles = array();
+		$color_keys = array(
+			'pagination_color'            => '--videopack-pagination-color',
+			'pagination_background_color' => '--videopack-pagination-bg',
+			'pagination_active_color'     => '--videopack-pagination-active-color',
+			'pagination_active_bg_color'  => '--videopack-pagination-active-bg',
+		);
+
+		foreach ( $color_keys as $attr_key => $css_var ) {
+			if ( ! empty( $atts[ $attr_key ] ) ) {
+				$styles[] = "$css_var: " . $atts[ $attr_key ];
+			}
+		}
+		$style_attr = ! empty( $styles ) ? ' style="' . esc_attr( implode( '; ', $styles ) ) . '"' : '';
+
 		ob_start();
 		?>
-		<div class="videopack-pagination">
-			<button
-				class="videopack-pagination-button <?php echo $current_page <= 1 ? 'videopack-hidden' : ''; ?>"
-				data-page="<?php echo esc_attr( (string) ( $current_page - 1 ) ); ?>"
-				aria-label="<?php esc_attr_e( 'Previous Page', 'video-embed-thumbnail-generator' ); ?>"
-			>
-				<span class="videopack-pagination-arrow">&lt;</span>
-			</button>
+		<nav class="videopack-pagination" aria-label="<?php esc_attr_e( 'Pagination', 'video-embed-thumbnail-generator' ); ?>"<?php echo $style_attr; ?>>
+			<ul class="videopack-pagination-list">
+				<li class="videopack-pagination-item">
+					<button class="prev page-numbers videopack-pagination-button <?php echo $current_page <= 1 ? 'is-hidden videopack-hidden' : ''; ?>" data-page="<?php echo esc_attr( (string) ( $current_page - 1 ) ); ?>" aria-label="<?php esc_attr_e( 'Previous Page', 'video-embed-thumbnail-generator' ); ?>">
+						<span class="videopack-pagination-arrow">&lt;</span>
+					</button>
+				</li>
 
-			<?php foreach ( $pages as $page ) : ?>
-				<?php
-				$is_active   = $page === $current_page;
-				$is_ellipsis = '...' === $page;
-				$class       = 'videopack-pagination-button';
-				if ( $is_active ) {
-					$class .= ' is-active';
-				}
-				if ( $is_ellipsis ) {
-					$class .= ' is-ellipsis';
-				}
-				?>
-				<button
-					class="<?php echo esc_attr( $class ); ?>"
-					<?php disabled( $is_active || $is_ellipsis ); ?>
-					data-page="<?php echo esc_attr( (string) $page ); ?>"
-				>
-					<?php echo esc_html( (string) $page ); ?>
-				</button>
-			<?php endforeach; ?>
+				<?php foreach ( $pages as $page ) : ?>
+					<?php
+					$is_active   = (int) $page === $current_page;
+					$is_ellipsis = '...' === $page;
+					?>
+					<li class="videopack-pagination-item">
+						<?php if ( $is_ellipsis ) : ?>
+							<span class="page-numbers dots is-ellipsis videopack-pagination-button"><?php echo esc_html( (string) $page ); ?></span>
+						<?php elseif ( $is_active ) : ?>
+							<button aria-current="page" class="page-numbers current is-active videopack-pagination-button"><?php echo esc_html( (string) $page ); ?></button>
+						<?php else : ?>
+							<button class="page-numbers videopack-pagination-button" data-page="<?php echo esc_attr( (string) $page ); ?>">
+								<?php echo esc_html( (string) $page ); ?>
+							</button>
+						<?php endif; ?>
+					</li>
+				<?php endforeach; ?>
 
-			<button
-				class="videopack-pagination-button <?php echo $current_page >= $total_pages ? 'videopack-hidden' : ''; ?>"
-				data-page="<?php echo esc_attr( (string) ( $current_page + 1 ) ); ?>"
-				aria-label="<?php esc_attr_e( 'Next Page', 'video-embed-thumbnail-generator' ); ?>"
-			>
-				<span class="videopack-pagination-arrow">&gt;</span>
-			</button>
-		</div>
+				<li class="videopack-pagination-item">
+					<button class="next page-numbers videopack-pagination-button <?php echo $current_page >= $total_pages ? 'is-hidden videopack-hidden' : ''; ?>" data-page="<?php echo esc_attr( (string) ( $current_page + 1 ) ); ?>" aria-label="<?php esc_attr_e( 'Next Page', 'video-embed-thumbnail-generator' ); ?>">
+						<span class="videopack-pagination-arrow">&gt;</span>
+					</button>
+				</li>
+			</ul>
+		</nav>
 		<?php
 		return (string) ob_get_clean();
 	}

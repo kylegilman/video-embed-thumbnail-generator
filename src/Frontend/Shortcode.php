@@ -145,6 +145,7 @@ class Shortcode implements Hook_Subscriber {
 				'grid_link_to'                  => 'post',
 				'grid_columns'                  => 3,
 				'is_modular_engine'             => false,
+				'collectionId'                  => null,
 			),
 			'options_atts'    => array(
 				'width',
@@ -244,8 +245,6 @@ class Shortcode implements Hook_Subscriber {
 				'skip_buttons',
 				'gallery',
 				'enable_collection_video_limit',
-				'collection_video_limit',
-				'gallery_per_page',
 			),
 		);
 	}
@@ -711,11 +710,11 @@ class Shortcode implements Hook_Subscriber {
 
 		// 1. Check if this is a collection (gallery, list, or query).
 		$is_gallery = ! empty( $query_atts['gallery'] ) && true === $query_atts['gallery'];
-		$is_list    = ! $is_gallery && ( ! empty( $query_atts['id'] ) && strpos( (string) $query_atts['id'], ',' ) !== false );
-		$is_query   = ! $is_gallery && empty( $query_atts['id'] ) && empty( $content );
+		$has_comma  = ! empty( $query_atts['id'] ) && strpos( (string) $query_atts['id'], ',' ) !== false;
+		$is_query   = ! $is_gallery && ! $has_comma && empty( $query_atts['id'] ) && empty( $content );
 
-		if ( $is_gallery || $is_list || $is_query ) {
-			return $this->simulate_collection_block( $query_atts, $is_list );
+		if ( $is_gallery || $has_comma || $is_query ) {
+			return $this->simulate_collection_block( $query_atts, $has_comma );
 		}
 
 		// 2. Otherwise, simulate a single video player block.
@@ -726,11 +725,8 @@ class Shortcode implements Hook_Subscriber {
 	 * Simulates a videopack/collection block.
 	 */
 	private function simulate_collection_block( $query_atts, $is_list = false ) {
-		// Force layout to 'grid' or 'list' for collection simulation, ignoring the 'player' default.
-		$layout = ( ! empty( $query_atts['gallery'] ) && true === $query_atts['gallery'] ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
-		if ( 'player' === $layout ) {
-			$layout = 'grid';
-		}
+		$is_gallery = ! empty( $query_atts['gallery'] ) && true === $query_atts['gallery'];
+		$layout = $is_gallery ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
 		
 		// Map shortcode to block attributes.
 		$block_atts = array_merge( $query_atts, array(
@@ -747,20 +743,41 @@ class Shortcode implements Hook_Subscriber {
 			$block_atts['gallery_id'] = get_the_ID() ?: get_queried_object_id();
 		}
 
-		// Build serialized block string using correctly nested structure.
+		// Build serialized block string using correctly nested structure matching the block editor's templates.
 		$inner_blocks = '';
 		$inner_blocks .= '<!-- wp:videopack/video-loop -->';
-		$inner_blocks .= '<!-- wp:videopack/thumbnail -->';
-		$inner_blocks .= '<div class="wp-block-videopack-thumbnail">';
-		$inner_blocks .= '<!-- wp:videopack/play-button /-->';
-		$inner_blocks .= '<!-- wp:videopack/video-title {"isOverlay":true} /-->';
-		
-		if ( ! empty( $query_atts['showDuration'] ) ) {
-			$inner_blocks .= '<!-- wp:videopack/video-duration /-->';
+
+		if ( $is_gallery ) {
+			// Use the Grid/Gallery template (thumbnails).
+			$inner_blocks .= '<!-- wp:videopack/thumbnail -->';
+			$inner_blocks .= '<div class="wp-block-videopack-thumbnail">';
+			$inner_blocks .= '<!-- wp:videopack/play-button /-->';
+			$inner_blocks .= '<!-- wp:videopack/video-title {"isOverlay":true} /-->';
+			
+			if ( ! empty( $query_atts['showDuration'] ) ) {
+				$inner_blocks .= '<!-- wp:videopack/video-duration /-->';
+			}
+			
+			$inner_blocks .= '</div>';
+			$inner_blocks .= '<!-- /wp:videopack/thumbnail -->';
+		} else {
+			// Use the List template (full players).
+			$inner_blocks .= '<!-- wp:videopack/videopack-video -->';
+			
+			$engine_inner = '';
+			if ( ( $query_atts['overlay_title'] ?? true ) !== false || ! empty( $query_atts['downloadlink'] ) || ! empty( $query_atts['embedcode'] ) ) {
+				$engine_inner .= '<!-- wp:videopack/video-title /-->';
+			}
+			
+			$inner_blocks .= sprintf( '<!-- wp:videopack/video-player-engine -->%s<!-- /wp:videopack/video-player-engine -->', $engine_inner );
+			
+			if ( ( $query_atts['views'] ?? false ) !== false ) {
+				$inner_blocks .= '<!-- wp:videopack/view-count /-->';
+			}
+			
+			$inner_blocks .= '<!-- /wp:videopack/videopack-video -->';
 		}
-		
-		$inner_blocks .= '</div>';
-		$inner_blocks .= '<!-- /wp:videopack/thumbnail -->';
+
 		$inner_blocks .= '<!-- /wp:videopack/video-loop -->';
 
 		if ( ! empty( $query_atts['gallery_pagination'] ) ) {

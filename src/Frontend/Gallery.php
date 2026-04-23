@@ -75,7 +75,7 @@ class Gallery {
 		if ( (string) ( $query_atts['gallery_orderby'] ?? '' ) === 'menu_order' ) {
 			$query_atts['gallery_orderby'] = 'menu_order ID';
 		}
-		if ( (bool) ( $query_atts['gallery_pagination'] ?? false ) !== true ) {
+		if ( (bool) ( $query_atts['gallery_pagination'] ?? ( $this->options['gallery_pagination'] ?? false ) ) !== true ) {
 			if ( ! isset( $query_atts['gallery_per_page'] ) || -1 === (int) $query_atts['gallery_per_page'] ) {
 				$query_atts['gallery_per_page'] = (int) ( $query_atts['collection_video_limit'] ?? ( $query_atts['videos'] ?? -1 ) );
 			}
@@ -88,7 +88,7 @@ class Gallery {
 			'orderby'        => (string) ( $query_atts['gallery_orderby'] ?? 'post_date' ),
 			'order'          => (string) ( $query_atts['gallery_order'] ?? 'desc' ),
 			'post_mime_type' => 'video',
-			'posts_per_page' => (int) ( $query_atts['gallery_per_page'] ?? -1 ),
+			'posts_per_page' => (int) ( $query_atts['gallery_per_page'] ?? ( $this->options['gallery_per_page'] ?? -1 ) ),
 			'paged'          => (int) $page_number,
 			'post_status'    => 'inherit', // Attachments have status 'inherit', not 'published'.
 			'post_parent'    => (int) ( $query_atts['gallery_id'] ?? 0 ),
@@ -246,6 +246,23 @@ class Gallery {
 			);
 		}
 
+		// Normalize camelCase attributes to snake_case for the player.
+		$extra_map = array(
+			'titleColor'               => 'title_color',
+			'titleBackgroundColor'     => 'title_background_color',
+			'playButtonColor'          => 'play_button_color',
+			'playButtonSecondaryColor' => 'play_button_secondary_color',
+			'controlBarBgColor'        => 'control_bar_bg_color',
+			'controlBarColor'          => 'control_bar_color',
+			'collectionId'             => 'collection_id',
+			'is_modular_engine'        => 'is_modular_engine',
+		);
+		foreach ( $extra_map as $camel => $snake ) {
+			if ( isset( $final_atts[ $camel ] ) ) {
+				$final_atts[ $snake ] = $final_atts[ $camel ];
+			}
+		}
+
 		$autoplay = (bool) ( $final_atts['autoplay'] ?? false );
 
 		// If this is a gallery, we force autoplay because it will be shown in a modal/popup when clicked.
@@ -306,7 +323,9 @@ class Gallery {
 		self::$player_instance_counter++;
 		$instance_id = (string) self::$player_instance_counter;
 		$player      = Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
-		$player->set_id( 'gallery_' . (int) $data['id'] . '_' . $instance_id );
+		
+		$collection_id = $final_atts['collection_id'] ?? $query_atts['collectionId'] ?? 'vp_gallery_default';
+		$player->set_id( "gallery_{$data['id']}_{$collection_id}" );
 		$player->set_source( $source );
 		$player->set_atts(
 			array_merge(
@@ -369,35 +388,62 @@ class Gallery {
 	 * }
 	 */
 	public function collection_page( $page_number, array $query_atts, $layout = 'gallery' ) {
-		$page_number = (int) $page_number;
-		$query_atts['currentPage'] = $page_number;
-		$query_atts['layout']      = ( 'gallery' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
+		$page_number               = (int) $page_number;
+		$query_atts['currentPage']  = $page_number;
+		if ( empty( $query_atts['collectionId'] ) ) {
+			$query_atts['collectionId'] = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
+		}
+		$query_atts['layout']       = ( 'gallery' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
 
 		/**
 		 * 1. Simulate the block structure.
 		 */
+		$collection_id = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
 		$block_atts = array_merge( $this->options, $query_atts, array(
-			'columns' => (int) ( $query_atts['gallery_columns'] ?? 3 ),
+			'columns'      => (int) ( $query_atts['gallery_columns'] ?? 3 ),
+			'collectionId' => $collection_id,
 		) );
 
-		$inner_blocks = '<!-- wp:videopack/video-loop -->';
-		$inner_blocks .= '<!-- wp:videopack/thumbnail /-->';
-		$inner_blocks .= '<!-- wp:videopack/play-button /-->';
-		$inner_blocks .= '<!-- wp:videopack/video-title {"isOverlay":true} /-->';
-		
-		if ( ! empty( $query_atts['showDuration'] ) ) {
-			$inner_blocks .= '<!-- wp:videopack/video-duration /-->';
-		}
-		
-		$inner_blocks .= '<!-- /wp:videopack/video-loop -->';
+		$inner_blocks_json = (string) ( $query_atts['inner_blocks_template'] ?? '' );
+		$inner_blocks      = '';
 
-		if ( ! empty( $query_atts['gallery_pagination'] ) ) {
-			$inner_blocks .= '<!-- wp:videopack/pagination /-->';
+		if ( ! empty( $inner_blocks_json ) ) {
+			$template_data = json_decode( $inner_blocks_json, true );
+			if ( is_array( $template_data ) && function_exists( 'serialize_blocks' ) ) {
+				$inner_blocks = serialize_blocks( $template_data );
+			}
+		}
+
+		// Fallback to default structure if no template is provided (e.g. legacy galleries).
+		if ( empty( $inner_blocks ) ) {
+			$grid_metadata = (string) ( $query_atts['grid_metadata'] ?? '' );
+			$show_duration = strpos( $grid_metadata, 'duration' ) !== false || ! empty( $query_atts['showDuration'] );
+			$show_views    = strpos( $grid_metadata, 'views' ) !== false || ! empty( $query_atts['views'] );
+			$link_to       = $query_atts['grid_link_to'] ?? 'lightbox';
+
+			$inner_blocks = '<!-- wp:videopack/video-loop -->';
+			$inner_blocks .= sprintf( '<!-- wp:videopack/thumbnail {"linkTo":"%s"} -->', esc_attr( $link_to ) );
+			$inner_blocks .= '<!-- wp:videopack/play-button /-->';
+			$inner_blocks .= '<!-- wp:videopack/video-title {"isOverlay":true} /-->';
+			
+			if ( $show_duration ) {
+				$inner_blocks .= '<!-- wp:videopack/video-duration /-->';
+			}
+			if ( $show_views ) {
+				$inner_blocks .= '<!-- wp:videopack/view-count /-->';
+			}
+			
+			$inner_blocks .= '<!-- /wp:videopack/thumbnail -->';
+			$inner_blocks .= '<!-- /wp:videopack/video-loop -->';
+
+			if ( ! empty( $query_atts['gallery_pagination'] ) ) {
+				$inner_blocks .= '<!-- wp:videopack/pagination /-->';
+			}
 		}
 
 		$serialized = sprintf(
 			'<!-- wp:videopack/collection %s -->%s<!-- /wp:videopack/collection -->',
-			wp_json_encode( $block_atts ),
+			wp_json_encode( $query_atts ),
 			$inner_blocks
 		);
 

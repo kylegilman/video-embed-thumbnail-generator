@@ -34,6 +34,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import useVideoQuery from '../../hooks/useVideoQuery';
+import { useVideopackContext } from '../../utils/VideopackContext';
+import { getEffectiveValue } from '../../utils/context';
 import { VideoThumbnailPreview } from '../thumbnail/VideoThumbnailPreview';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 import { getSettings } from '../../api/settings';
@@ -242,7 +244,8 @@ function SortableItem({
  * @param {string} props.clientId Block client ID.
  * @return {Element}              The rendered component.
  */
-export default function Edit({ context, clientId }) {
+export default function Edit({ attributes, setAttributes, context, clientId }) {
+	const vpContext = useVideopackContext();
 	const [options, setOptions] = useState({});
 	const [isHovering, setIsHovering] = useState(false);
 	const { updateBlockAttributes } = useDispatch('core/block-editor');
@@ -272,9 +275,11 @@ export default function Edit({ context, clientId }) {
 		gallery_order: context['videopack/gallery_order'],
 		gallery_include: context['videopack/gallery_include'],
 		gallery_exclude: context['videopack/gallery_exclude'],
-		gallery_pagination: context['videopack/gallery_pagination'],
-		gallery_per_page: context['videopack/gallery_per_page'],
-		page_number: context['videopack/currentPage'] || 1,
+		gallery_pagination: vpContext.gallery_pagination ?? getEffectiveValue('gallery_pagination', attributes, context),
+		gallery_per_page: vpContext.gallery_per_page ?? getEffectiveValue('gallery_per_page', attributes, context),
+		enable_collection_video_limit: getEffectiveValue('enable_collection_video_limit', attributes, context),
+		collection_video_limit: getEffectiveValue('collection_video_limit', attributes, context),
+		page_number: vpContext.currentPage || context['videopack/currentPage'] || 1,
 	};
 
 	const {
@@ -371,6 +376,8 @@ export default function Edit({ context, clientId }) {
 	// Final duotone class resolution
 	const resolvedDuotoneClass =
 		presetDuotoneClass || ( customDuotoneColors ? customFilterId : '' );
+
+	console.log( 'VideoLoop passing to useVideoQuery:', queryAttributes );
 
 	// We fetch query data to power the live preview template
 	const queryData = useVideoQuery(

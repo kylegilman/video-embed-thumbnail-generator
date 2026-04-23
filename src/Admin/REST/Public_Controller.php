@@ -38,7 +38,7 @@ class Public_Controller extends Controller {
 			$this->namespace,
 			'/video_gallery',
 			array(
-				'methods'             => \WP_REST_Server::READABLE,
+				'methods'             => 'GET, POST',
 				'callback'            => array( $this, 'video_gallery' ),
 				'permission_callback' => '__return_true',
 				'args'                => $this->get_gallery_args(),
@@ -128,6 +128,8 @@ class Public_Controller extends Controller {
 		$shortcode    = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
 		$gallery      = new \Videopack\Frontend\Gallery( $this->options, $this->format_registry );
 		$gallery_atts = (array) $shortcode->atts( $request->get_params() );
+		$gallery_atts['inner_blocks_template'] = $request->get_param( 'inner_blocks_template' );
+
 		$page         = (int) ( $request->get_param( 'page_number' ) ?: 1 );
 		$layout = (string) $request->get_param( 'layout' );
 		if ( ! $layout ) {
@@ -315,6 +317,83 @@ class Public_Controller extends Controller {
 			'gallery_category'   => array( 'type' => 'string' ),
 			'gallery_tag'        => array( 'type' => 'string' ),
 			'layout'             => array( 'type' => 'string' ),
+			'grid_metadata'      => array( 'type' => 'string' ),
+			'grid_link_to'       => array( 'type' => 'string' ),
+			'inner_blocks_template' => array( 
+				'type'              => 'string',
+				'sanitize_callback' => array( $this, 'sanitize_inner_blocks_template' ),
+			),
+			'collectionId'       => array( 'type' => 'string' ),
+			'id'                 => array( 'type' => array( 'number', 'null' ) ),
 		);
+	}
+
+	/**
+	 * Sanitizes the inner_blocks_template JSON array.
+	 *
+	 * Ensures the JSON is valid and only allows videopack blocks to prevent
+	 * arbitrary block execution vulnerabilities.
+	 */
+	public function sanitize_inner_blocks_template( $value ) {
+		if ( empty( $value ) || ! is_string( $value ) ) {
+			return '';
+		}
+
+		$decoded = json_decode( wp_unslash( $value ), true );
+		
+		if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $decoded ) ) {
+			return '';
+		}
+
+		$sanitized = $this->sanitize_blocks_recursive( $decoded );
+
+		return wp_json_encode( $sanitized );
+	}
+
+	/**
+	 * Recursively sanitizes a parsed Gutenberg block array.
+	 */
+	private function sanitize_blocks_recursive( array $blocks ) {
+		$sanitized = array();
+		foreach ( $blocks as $block ) {
+			// Security: strictly reject any blocks that are not part of Videopack
+			// to prevent arbitrary core block or shortcode execution.
+			if ( ! isset( $block['blockName'] ) || strpos( $block['blockName'], 'videopack/' ) !== 0 ) {
+				continue;
+			}
+			
+			$safe_block = array(
+				'blockName' => sanitize_text_field( $block['blockName'] ),
+			);
+			
+			if ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) {
+				$safe_block['attrs'] = array();
+				foreach ( $block['attrs'] as $key => $val ) {
+					if ( is_array( $val ) ) {
+						$safe_block['attrs'][ sanitize_text_field( $key ) ] = map_deep( $val, 'sanitize_text_field' );
+					} elseif ( is_scalar( $val ) ) {
+						$safe_block['attrs'][ sanitize_text_field( $key ) ] = sanitize_text_field( $val );
+					}
+				}
+			}
+			
+			if ( isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+				$safe_block['innerBlocks'] = $this->sanitize_blocks_recursive( $block['innerBlocks'] );
+			}
+			
+			if ( isset( $block['innerHTML'] ) ) {
+				$safe_block['innerHTML'] = wp_kses_post( $block['innerHTML'] );
+			}
+			
+			if ( isset( $block['innerContent'] ) && is_array( $block['innerContent'] ) ) {
+				$safe_block['innerContent'] = array();
+				foreach ( $block['innerContent'] as $content ) {
+					$safe_block['innerContent'][] = is_string( $content ) ? wp_kses_post( $content ) : $content;
+				}
+			}
+			
+			$sanitized[] = $safe_block;
+		}
+		return $sanitized;
 	}
 }

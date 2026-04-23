@@ -70,17 +70,10 @@
       "type": "string",
       "default": ""
     },
-    "gallery_pagination": {
-      "type": "boolean"
-    },
     "gallery_per_page": {
       "type": "number"
     },
     "currentPage": {
-      "type": "number",
-      "default": 1
-    },
-    "totalPages": {
       "type": "number",
       "default": 1
     },
@@ -142,12 +135,10 @@
     "videopack/gallery_order": "gallery_order",
     "videopack/gallery_include": "gallery_include",
     "videopack/gallery_exclude": "gallery_exclude",
-    "videopack/gallery_pagination": "gallery_pagination",
     "videopack/gallery_per_page": "gallery_per_page",
     "videopack/enable_collection_video_limit": "enable_collection_video_limit",
     "videopack/collection_video_limit": "collection_video_limit",
     "videopack/currentPage": "currentPage",
-    "videopack/totalPages": "totalPages",
     "videopack/pagination_color": "pagination_color",
     "videopack/pagination_background_color": "pagination_background_color",
     "videopack/pagination_active_bg_color": "pagination_active_bg_color",

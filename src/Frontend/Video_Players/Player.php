@@ -484,7 +484,11 @@ class Player {
 	 * @return string The poster URL.
 	 */
 	public function get_poster(): string {
-		return (string) ( $this->atts['poster'] ?? '' );
+		$poster = (string) ( $this->atts['poster'] ?? '' );
+		if ( empty( $poster ) && $this->get_source() && method_exists( $this->get_source(), 'get_poster' ) ) {
+			$poster = $this->get_source()->get_poster();
+		}
+		return (string) $poster;
 	}
 
 	/**
@@ -537,6 +541,7 @@ class Player {
 			'view_count_text'             => $this->get_source() ? \Videopack\Common\I18n::format_view_count( $this->get_source()->get_views() ) : '',
 			'rotate'                      => (int) ( $this->get_source() ? $this->get_source()->get_rotate() : 0 ),
 			'skin'                        => (string) ( $this->atts['skin'] ?? ( $this->options['skin'] ?? 'vjs-theme-videopack' ) ),
+			'poster'                      => (string) $this->get_poster(),
 		);
 
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );

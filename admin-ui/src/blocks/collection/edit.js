@@ -7,6 +7,7 @@ import { getSettings } from '../../api/settings';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
 import { getEffectiveValue } from '../../utils/context';
+import { VideopackProvider } from '../../utils/VideopackContext';
 import { getGridTemplate, getListTemplate } from '../../utils/templates';
 import './editor.scss';
 
@@ -19,7 +20,6 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 		layout = 'grid',
 		columns = 3,
 		currentPage = 1,
-		totalPages,
 	} = attributes;
 
 	// Resolve Effective Values for design and pagination (these follow global settings)
@@ -49,16 +49,6 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 		return resolved;
 	}, [ attributes, context ] );
 
-	const previewPostId = useSelect( ( select ) => select( 'core/editor' ).getCurrentPostId(), [] );
-
-	// We fetch query data to power the live preview template and pagination info
-	const queryData = useVideoQuery( {
-		...attributes,
-		gallery_pagination: effectiveValues.gallery_pagination,
-		gallery_per_page: effectiveValues.gallery_pagination ? ( effectiveValues.gallery_per_page || 12 ) : ( effectiveValues.enable_collection_video_limit ? ( effectiveValues.collection_video_limit || 12 ) : -1 ),
-		page_number: currentPage || 1,
-	}, previewPostId );
-
 	const { hasPaginationBlock, isNewlyInserted } = useSelect(
 		( select ) => {
 			const { getBlocks, getBlock } = select( 'core/block-editor' );
@@ -66,34 +56,38 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 			const block = getBlock( clientId );
 			return {
 				hasPaginationBlock: blocks.some( ( b ) => b.name === 'videopack/pagination' ),
-				isNewlyInserted: blocks.length === 0 && block && block.isValid,
+				isNewlyInserted: block && ! block.attributes.gallery_id && ! block.attributes.gallery_category && ! block.attributes.gallery_tag && ! block.attributes.gallery_include,
 			};
 		},
 		[ clientId ]
 	);
 
-	// Sync local gallery_pagination attribute with presence of pagination block
-	useEffect( () => {
-		if ( hasPaginationBlock !== !!attributes.gallery_pagination ) {
-			setAttributes( { gallery_pagination: hasPaginationBlock } );
-		}
-	}, [ hasPaginationBlock, attributes.gallery_pagination, setAttributes ] );
+	const previewPostId = useSelect( ( select ) => select( 'core/editor' ).getCurrentPostId(), [] );
 
-	useEffect( () => {
-		if (
-			queryData.maxNumPages !== undefined &&
-			queryData.maxNumPages !== totalPages
-		) {
-			setAttributes( { totalPages: queryData.maxNumPages } );
-		}
-	}, [ queryData.maxNumPages, totalPages, setAttributes ] );
-
+	const queryParams = {
+		...attributes,
+		gallery_pagination: hasPaginationBlock,
+		gallery_per_page: hasPaginationBlock 
+			? ( effectiveValues.gallery_per_page || 12 ) 
+			: ( effectiveValues.enable_collection_video_limit ? ( effectiveValues.collection_video_limit || 12 ) : -1 ),
+		page_number: currentPage || 1,
+	};
+	// We fetch query data to power the live preview template and pagination info
+	const queryData = useVideoQuery( queryParams, previewPostId );
 
 	useEffect( () => {
 		getSettings().then( ( response ) => {
 			setOptions( response );
 		} );
 	}, [] );
+
+	// Sync structural state to attributes for persistence ONLY if needed for frontend.
+	// We handle gallery_per_page here because it's a user setting that should persist.
+	useEffect( () => {
+		if ( attributes.gallery_per_page !== effectiveValues.gallery_per_page ) {
+			setAttributes( { gallery_per_page: effectiveValues.gallery_per_page } );
+		}
+	}, [ effectiveValues.gallery_per_page, attributes.gallery_per_page, setAttributes ] );
 
 	// Resolve blockGap value for use in internal grid spacing
 	const resolvedBlockGap = useMemo(() => {
@@ -117,20 +111,6 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 	}, [ layout, options ] );
 
 	const blockProps = useBlockProps( {
-		className: [
-			'videopack-collection',
-			'videopack-wrapper',
-			`layout-${ layout }`,
-			`columns-${ columns }`,
-			// If no explicit align is set, apply the effective (global) align class
-			! attributes.align && effectiveValues.align ? `align${ effectiveValues.align }` : '',
-			effectiveValues.title_color ? 'videopack-has-title-color' : '',
-			effectiveValues.title_background_color ? 'videopack-has-title-background-color' : '',
-			effectiveValues.play_button_color ? 'videopack-has-play-button-color' : '',
-			effectiveValues.play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : '',
-			effectiveValues.control_bar_bg_color ? 'videopack-has-control-bar-bg-color' : '',
-			effectiveValues.control_bar_color ? 'videopack-has-control-bar-color' : '',
-		].filter( Boolean ).join( ' ' ),
 		style: {
 			'--videopack-title-color': effectiveValues.title_color,
 			'--videopack-title-background-color': effectiveValues.title_background_color,
@@ -143,11 +123,61 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 		},
 	} );
 
+	const collectionClasses = [
+		'videopack-collection',
+		'videopack-wrapper',
+		`layout-${ layout }`,
+		`columns-${ columns }`,
+		// If no explicit align is set, apply the effective (global) align class
+		! attributes.align && effectiveValues.align ? `align${ effectiveValues.align }` : '',
+		effectiveValues.title_color ? 'videopack-has-title-color' : '',
+		effectiveValues.title_background_color ? 'videopack-has-title-background-color' : '',
+		effectiveValues.play_button_color ? 'videopack-has-play-button-color' : '',
+		effectiveValues.play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : '',
+		effectiveValues.control_bar_bg_color ? 'videopack-has-control-bar-bg-color' : '',
+		effectiveValues.control_bar_color ? 'videopack-has-control-bar-color' : '',
+	].filter( Boolean ).join( ' ' );
+
+	const videopackContextValue = {
+		gallery_pagination: hasPaginationBlock,
+		gallery_per_page: effectiveValues.gallery_per_page,
+		totalPages: queryData.maxNumPages,
+		currentPage: currentPage,
+	};
+
+	const providedContext = {
+		...context,
+		'videopack/layout': layout,
+		'videopack/columns': columns,
+		'videopack/skin': effectiveValues.skin,
+		'videopack/gallery_source': attributes.gallery_source,
+		'videopack/gallery_id': attributes.gallery_id,
+		'videopack/gallery_category': attributes.gallery_category,
+		'videopack/gallery_tag': attributes.gallery_tag,
+		'videopack/gallery_orderby': attributes.gallery_orderby,
+		'videopack/gallery_order': attributes.gallery_order,
+		'videopack/gallery_include': attributes.gallery_include,
+		'videopack/gallery_exclude': attributes.gallery_exclude,
+		'videopack/gallery_pagination': hasPaginationBlock,
+		'videopack/gallery_per_page': effectiveValues.gallery_per_page,
+		'videopack/enable_collection_video_limit': effectiveValues.enable_collection_video_limit,
+		'videopack/collection_video_limit': effectiveValues.collection_video_limit,
+		'videopack/title_color': effectiveValues.title_color,
+		'videopack/title_background_color': effectiveValues.title_background_color,
+		'videopack/play_button_color': effectiveValues.play_button_color,
+		'videopack/play_button_secondary_color': effectiveValues.play_button_secondary_color,
+		'videopack/control_bar_bg_color': effectiveValues.control_bar_bg_color,
+		'videopack/control_bar_color': effectiveValues.control_bar_color,
+		'videopack/views': effectiveValues.views,
+		'videopack/overlay_title': effectiveValues.overlay_title,
+		'videopack/totalPages': queryData.maxNumPages,
+	};
+
 	// If options haven't loaded yet for a newly inserted block, don't render InnerBlocks 
 	// to prevent the wrong template from being applied.
 	if ( ! options && isNewlyInserted ) {
 		return (
-			<div { ...blockProps }>
+			<div { ...blockProps } className={ ( blockProps.className || '' ) + ' ' + collectionClasses }>
 				<div className="videopack-collection-placeholder">
 					<Spinner />
 				</div>
@@ -178,7 +208,6 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 						/>
 					) }
 				</PanelBody>
-
 				<CollectionSettingsPanel
 					attributes={ attributes }
 					setAttributes={ setAttributes }
@@ -192,32 +221,16 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 				/>
 			</InspectorControls>
 
-			<div { ...blockProps }>
+			<div { ...blockProps } className={ ( blockProps.className || '' ) + ' ' + collectionClasses }>
 				<BlockContextProvider
-					value={ {
-						...context,
-						'videopack/layout': layout,
-						'videopack/columns': columns,
-						'videopack/skin': effectiveValues.skin,
-						'videopack/gallery_pagination': effectiveValues.gallery_pagination,
-						'videopack/gallery_per_page': effectiveValues.gallery_per_page,
-						'videopack/enable_collection_video_limit': effectiveValues.enable_collection_video_limit,
-						'videopack/collection_video_limit': effectiveValues.collection_video_limit,
-						'videopack/title_color': effectiveValues.title_color,
-						'videopack/title_background_color': effectiveValues.title_background_color,
-						'videopack/play_button_color': effectiveValues.play_button_color,
-						'videopack/play_button_secondary_color': effectiveValues.play_button_secondary_color,
-						'videopack/control_bar_bg_color': effectiveValues.control_bar_bg_color,
-						'videopack/control_bar_color': effectiveValues.control_bar_color,
-						'videopack/views': effectiveValues.views,
-						'videopack/overlay_title': effectiveValues.overlay_title,
-						'videopack/totalPages': queryData.maxNumPages,
-					} }
+					value={ providedContext }
 				>
-					<InnerBlocks
-						allowedBlocks={ ALLOWED_BLOCKS }
-						template={ dynamicTemplate }
-					/>
+					<VideopackProvider value={ videopackContextValue }>
+						<InnerBlocks
+							allowedBlocks={ ALLOWED_BLOCKS }
+							template={ dynamicTemplate }
+						/>
+					</VideopackProvider>
 				</BlockContextProvider>
 			</div>
 		</>

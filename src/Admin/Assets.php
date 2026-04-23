@@ -111,14 +111,16 @@ class Assets implements Hook_Subscriber {
 					$player_style_deps  = array_diff( (array) $player->get_player_style_handles(), array( (string) $handle ) );
 				}
 
-				wp_register_script(
-					(string) $handle,
-					(string) $build_url . (string) $filename . '.js',
-					array_unique( array_merge( (array) $asset['dependencies'], $handle === 'videopack-media-library' ? array( 'media-views', 'media-models', 'media-editor' ) : array(), $player_script_deps ) ),
-					(string) $asset['version'],
-					true
-				);
-				wp_set_script_translations( (string) $handle, 'video-embed-thumbnail-generator' );
+				if ( 'videopack-frontend' !== $handle ) {
+					wp_register_script(
+						(string) $handle,
+						(string) $build_url . (string) $filename . '.js',
+						array_unique( array_merge( (array) $asset['dependencies'], $handle === 'videopack-media-library' ? array( 'media-views', 'media-models', 'media-editor' ) : array(), $player_script_deps ) ),
+						(string) $asset['version'],
+						true
+					);
+					wp_set_script_translations( (string) $handle, 'video-embed-thumbnail-generator' );
+				}
 
 				if ( file_exists( (string) $build_dir . (string) $filename . '.css' ) ) {
 					wp_register_style(
@@ -216,6 +218,7 @@ class Assets implements Hook_Subscriber {
 		// Classic Editor TinyMCE Plugin (Main Host Page).
 		if ( in_array( (string) $hook_suffix, array( 'post.php', 'post-new.php' ), true ) && ! ( function_exists( 'use_block_editor_for_post' ) && use_block_editor_for_post( get_post() ) ) ) {
 			wp_enqueue_script( 'videopack-classic-editor' );
+			wp_enqueue_style( 'videopack-classic-editor' );
 
 			// Add editor styles for TinyMCE previews.
 			add_editor_style( (string) includes_url( 'css/media-views.css' ) );
