@@ -22,6 +22,8 @@ export default function CollectionWrapper({ children, attributes = {}, context =
 				play_button_secondary_color
 					? 'videopack-has-play-button-secondary-color'
 					: ''
+			} ${
+				(attributes.overlay_title !== false || attributes.downloadlink) ? 'videopack-video-title-visible' : ''
 			}`}
 			style={{
 				'--videopack-collection-columns': columns,

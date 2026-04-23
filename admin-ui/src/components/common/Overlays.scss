@@ -129,7 +129,8 @@ $badge-selectors: (
 	&.is-overlay {
 		// Hide the overlay if the parent doesn't have the visible class
 		// EXCEPT if this is a thumbnail (thumbnails don't use this class for visibility)
-		:is(.videopack-wrapper:not(.videopack-video-title-visible):not(:hover),
+		// We exclude .videopack-collection-wrapper so the collection itself doesn't globally hide/show titles.
+		:is(.videopack-wrapper:not(.videopack-collection-wrapper):not(.videopack-video-title-visible):not(:hover),
 			.videopack-video-block:not(.videopack-video-title-visible):not(:hover)) &:not(.videopack-thumbnail-title) {
 			opacity: 0;
 			visibility: hidden;
@@ -137,7 +138,7 @@ $badge-selectors: (
 		}
 
 		// Show it on hover, even if the video is playing
-		:is(.videopack-wrapper:hover, .videopack-video-block:hover, .videopack-player:hover) &:not(.videopack-thumbnail-title) {
+		:is(.videopack-wrapper:not(.videopack-collection-wrapper):hover, .videopack-video-block:hover, .videopack-player:hover) &:not(.videopack-thumbnail-title) {
 			opacity: 1 !important;
 			visibility: visible !important;
 			pointer-events: auto !important;

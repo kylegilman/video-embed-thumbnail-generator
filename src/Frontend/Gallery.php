@@ -105,9 +105,13 @@ class Gallery {
 		if ( ! empty( $query_atts['gallery_id'] ) ) {
 			$args['post_parent'] = (int) $query_atts['gallery_id'];
 		} elseif ( in_array( (string) ( $query_atts['gallery_source'] ?? '' ), array( 'current', 'custom' ), true ) ) {
-			// If source is current or custom but no ID is provided, return empty.
-			$args['post__in'] = array( 0 );
-			unset( $args['post_parent'] );
+			if ( empty( $query_atts['gallery_id'] ) && 'current' === ( $query_atts['gallery_source'] ?? '' ) ) {
+				$args['post_parent'] = get_the_ID();
+			} else {
+				// If source is custom but no ID is provided, or current but still no ID (e.g. not on a post), return empty.
+				$args['post__in'] = array( 0 );
+				unset( $args['post_parent'] );
+			}
 		} else {
 			unset( $args['post_parent'] );
 		}

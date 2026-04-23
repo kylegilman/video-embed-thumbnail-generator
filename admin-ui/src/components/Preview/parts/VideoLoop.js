@@ -18,7 +18,7 @@ export default function VideoLoop({
 
 	return (
 		<div
-			className={`videopack-video-loop videopack-wrapper layout-${layout} columns-${columns} ${
+			className={`videopack-video-loop layout-${layout} columns-${columns} ${
 				play_button_color ? 'videopack-has-play-button-color' : ''
 			} ${
 				play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : ''
