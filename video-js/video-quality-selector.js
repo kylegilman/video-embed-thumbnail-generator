@@ -52,6 +52,7 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 
 			onClick() {
 				if (this.call_count > 0) { return; }
+				this.player().manualResolutionSelected = true;
 				this.player().changeRes(this.resolution, this.codec);
 				this.call_count++;
 			}
