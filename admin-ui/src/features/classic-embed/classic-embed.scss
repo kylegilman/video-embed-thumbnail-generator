@@ -1,22 +1,50 @@
 @use "@wordpress/base-styles/colors";
 
+// ---------------------------------------------------------------------------
+// WordPress Environment Fixes (Classic Editor / Thickbox)
+// ---------------------------------------------------------------------------
+
 // These styles are intended for the media-upload.php iframe context.
 body.videopack-is-editing #media-upload-header {
 	display: none;
 }
 
-.videopack-classic-embed {
-	background: #fff;
+// Ensure the Thickbox stays above the TinyMCE inline toolbars
+// TinyMCE uses 100100, so we use 100105.
+#TB_window, #TB_overlay {
+	z-index: 100105 !important;
+}
+
+// ---------------------------------------------------------------------------
+// Classic Embed Feature Layout
+// ---------------------------------------------------------------------------
+
+.videopack-classic-embed-outer {
+	width: 100%;
+	min-height: 500px;
+	padding: 20px;
+	box-sizing: border-box;
+	background-color: colors.$white;
 }
 
 .videopack-classic-embed {
-
-	background-color: colors.$white;
-	padding-bottom: 1px;
+	max-width: 1200px; // Reasonable limit for readability in full-width mode
+	margin: 0 auto;
 
 	.videopack-tab-content {
 		margin: 0 15px;
 		padding-top: 15px;
+
+		.components-panel__body {
+			background: transparent;
+			border: none;
+			border-bottom: 1px solid #e0e0e0;
+			margin-bottom: 0;
+
+			.components-panel__body-title {
+				padding: 10px 0;
+			}
+		}
 	}
 
 	.videopack-insert-button-wrapper {
@@ -25,10 +53,5 @@ body.videopack-is-editing #media-upload-header {
 		display: flex;
 		justify-content: flex-end;
 	}
-
-	.components-panel__body {
-		border: 1px solid colors.$gray-200;
-		border-radius: 4px;
-		margin-bottom: 15px;
-	}
 }
+
