@@ -837,13 +837,13 @@ picture.vjs-poster {
 .videopack-video-title.has-no-background {
   background: transparent !important;
 }
-:is(.videopack-wrapper:not(.videopack-video-title-visible):not(:hover),
+:is(.videopack-wrapper:not(.videopack-collection-wrapper):not(.videopack-video-title-visible):not(:hover),
 .videopack-video-block:not(.videopack-video-title-visible):not(:hover)) .videopack-video-title.is-overlay:not(.videopack-thumbnail-title) {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
-:is(.videopack-wrapper:hover, .videopack-video-block:hover, .videopack-player:hover) .videopack-video-title.is-overlay:not(.videopack-thumbnail-title) {
+:is(.videopack-wrapper:not(.videopack-collection-wrapper):hover, .videopack-video-block:hover, .videopack-player:hover) .videopack-video-title.is-overlay:not(.videopack-thumbnail-title) {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;

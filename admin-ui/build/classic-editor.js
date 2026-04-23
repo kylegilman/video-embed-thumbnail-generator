@@ -4568,7 +4568,7 @@ const PREVIEW_COMPONENTS = {
     context,
     ...props
   }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
-    className: `videopack-video-block-container ${className || ''}`,
+    className: `videopack-video-block-container videopack-wrapper ${attributes.overlay_title !== false || attributes.downloadlink ? 'videopack-video-title-visible' : ''} ${className || ''}`,
     ...props,
     children: children
   }),
@@ -4775,7 +4775,7 @@ function CollectionWrapper({
   const play_button_color = attributes.play_button_color || context['videopack/play_button_color'];
   const play_button_secondary_color = attributes.play_button_secondary_color || context['videopack/play_button_secondary_color'];
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", {
-    className: `videopack-collection videopack-wrapper layout-${layout} columns-${columns}${align ? ` align${align}` : ''} ${play_button_color ? 'videopack-has-play-button-color' : ''} ${play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : ''}`,
+    className: `videopack-collection videopack-wrapper layout-${layout} columns-${columns}${align ? ` align${align}` : ''} ${play_button_color ? 'videopack-has-play-button-color' : ''} ${play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : ''} ${attributes.overlay_title !== false || attributes.downloadlink ? 'videopack-video-title-visible' : ''}`,
     style: {
       '--videopack-collection-columns': columns,
       '--videopack-title-color': attributes.title_color || context['videopack/title_color'],
@@ -4865,7 +4865,7 @@ function VideoLoop({
   const play_button_color = attributes.play_button_color || context['videopack/play_button_color'];
   const play_button_secondary_color = attributes.play_button_secondary_color || context['videopack/play_button_secondary_color'];
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-    className: `videopack-video-loop videopack-wrapper layout-${layout} columns-${columns} ${play_button_color ? 'videopack-has-play-button-color' : ''} ${play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : ''}`,
+    className: `videopack-video-loop layout-${layout} columns-${columns} ${play_button_color ? 'videopack-has-play-button-color' : ''} ${play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : ''}`,
     style: {
       '--videopack-play-button-color': play_button_color || undefined,
       '--videopack-play-button-secondary-color': play_button_secondary_color || undefined,

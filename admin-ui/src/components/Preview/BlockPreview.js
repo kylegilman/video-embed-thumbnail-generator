@@ -26,7 +26,9 @@ const PREVIEW_COMPONENTS = {
 		...props
 	}) => (
 		<div
-			className={`videopack-video-block-container ${className || ''}`}
+			className={`videopack-video-block-container videopack-wrapper ${
+				attributes.overlay_title !== false || attributes.downloadlink ? 'videopack-video-title-visible' : ''
+			} ${className || ''}`}
 			{...props}
 		>
 			{children}
