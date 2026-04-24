@@ -20,21 +20,26 @@
 		"@dnd-kit/core": "^6.3.1",
 		"@dnd-kit/sortable": "^10.0.0",
 		"@dnd-kit/utilities": "^3.2.2",
-		"@wordpress/api-fetch": "^7.43.0",
-		"@wordpress/blocks": "^15.16.0",
-		"@wordpress/core-data": "^7.43.0",
-		"@wordpress/dataviews": "^14.0.0",
-		"@wordpress/i18n": "^6.16.0",
-		"@wordpress/icons": "^12.1.0",
-		"@wordpress/media-utils": "^5.43.0",
+		"@wordpress/api-fetch": "^7.44.0",
+		"@wordpress/blocks": "^15.17.0",
+		"@wordpress/core-data": "^7.44.0",
+		"@wordpress/dataviews": "^14.1.0",
+		"@wordpress/i18n": "^6.17.0",
+		"@wordpress/icons": "^12.2.0",
+		"@wordpress/media-utils": "^5.44.0",
 		"video.js": "^8.23.4"
 	},
 	"devDependencies": {
-		"@wordpress/base-styles": "^6.19.0",
-		"@wordpress/eslint-plugin": "^24.5.0",
-		"@wordpress/scripts": "^31.8.0",
-		"eslint": "^8.55.0",
+		"@wordpress/base-styles": "^6.20.0",
+		"@wordpress/eslint-plugin": "^25.0.0",
+		"@wordpress/scripts": "^32.0.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1"
+	},
+	"overrides": {
+		"react-autosize-textarea": {
+			"react": "$react",
+			"react-dom": "$react-dom"
+		}
 	}
 }

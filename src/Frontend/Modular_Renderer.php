@@ -290,9 +290,20 @@ class Modular_Renderer {
 		// Link Resolution.
 		$link_to = $atts['watermark_link_to'] ?? ( $options['watermark_link_to'] ?? 'false' );
 		$link    = '';
+		$post_id = $atts['postId'] ?? ( $atts['id'] ?? 0 );
 
 		if ( 'home' === $link_to ) {
 			$link = get_home_url();
+		} elseif ( 'parent' === $link_to && $post_id ) {
+			$parent_id = wp_get_post_parent_id( $post_id );
+			$link      = $parent_id ? get_permalink( $parent_id ) : get_permalink( $post_id );
+		} elseif ( 'attachment' === $link_to && $post_id ) {
+			$link = get_permalink( $post_id );
+		} elseif ( 'download' === $link_to && $post_id ) {
+			$source = \Videopack\Video_Source\Source_Factory::create( (int) $post_id, $options );
+			if ( $source ) {
+				$link = $source->get_download_url();
+			}
 		} elseif ( 'custom' === $link_to ) {
 			$link = $atts['watermark_url'] ?? ( $options['watermark_url'] ?? '' );
 		}
@@ -330,13 +341,33 @@ class Modular_Renderer {
 		$skin = $atts['skin'] ?? ( $options['skin'] ?? 'default' );
 		$id   = $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() );
 
+		$skin = $atts['skin'] ?? ( $options['skin'] ?? 'default' );
+		$id   = $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() );
+
 		if ( $link ) {
+			$is_download = 'download' === $link_to;
+			$link_attrs  = array();
+
+			if ( $is_download ) {
+				$link_attrs[] = 'class="videopack-download-link"';
+				$link_attrs[] = 'href="' . esc_url( $source ? $source->get_url() : $link ) . '"';
+				$link_attrs[] = 'download';
+				$link_attrs[] = 'title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"';
+				if ( $source ) {
+					$link_attrs[] = 'data-alt_link="' . esc_url( $source->get_download_url() ) . '"';
+				}
+			} else {
+				$link_attrs[] = 'href="' . esc_url( $link ) . '"';
+				$link_attrs[] = 'target="_blank"';
+				$link_attrs[] = 'rel="noopener"';
+			}
+
 			return sprintf(
-				'<div id="video_%s_watermark" class="videopack-video-watermark %s"%s><a href="%s" target="_blank" rel="noopener">%s</a></div>',
+				'<div id="video_%s_watermark" class="videopack-video-watermark %s"%s><a %s>%s</a></div>',
 				esc_attr( (string) $id ),
 				esc_attr( $skin ),
 				$style,
-				esc_url( $link ),
+				implode( ' ', $link_attrs ),
 				$img
 			);
 		}
@@ -445,7 +476,8 @@ class Modular_Renderer {
 		$has_custom_color  = ! empty( $atts['title_color'] );
 		
 		$bar_style = '';
-		$bar_class = 'videopack-video-title is-overlay ' . esc_attr( $skin ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' );
+		$skin_class = ( 'Video.js' === ( $options['embed_method'] ?? 'Video.js' ) ) ? $skin : '';
+		$bar_class = 'videopack-video-title is-overlay ' . esc_attr( $skin_class ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' );
 		
 		if ( $is_inside_thumbnail ) {
 			$bar_class .= ' videopack-thumbnail-title';
@@ -485,8 +517,14 @@ class Modular_Renderer {
 		}
 
 		if ( $downloadlink && $source ) {
-			$download_attributes = 'class="videopack-download-link" href="' . esc_attr( $source->get_download_url() ) . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"';
-			$html               .= '<a ' . $download_attributes . '>' . "\n";
+			$download_attributes = array(
+				'class="videopack-download-link"',
+				'href="' . esc_attr( $source->get_url() ) . '"',
+				'download',
+				'data-alt_link="' . esc_attr( $source->get_download_url() ) . '"',
+				'title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"',
+			);
+			$html .= '<a ' . implode( ' ', $download_attributes ) . '>' . "\n";
 			$html               .= '<span class="videopack-icons download">' . "\n" . $download_svg . "\n" . '</span>' . "\n";
 			$html               .= '</a>' . "\n";
 		}
@@ -555,7 +593,8 @@ class Modular_Renderer {
 		$style_vars     = array();
 		$classes        = array( 'videopack-player-relative-wrapper' );
 
-		if ( ! empty( $atts['skin'] ) ) {
+		$embed_method = $options['embed_method'] ?? 'Video.js';
+		if ( ! empty( $atts['skin'] ) && 'Video.js' === $embed_method ) {
 			$classes[] = $atts['skin'];
 		}
 
@@ -579,9 +618,10 @@ class Modular_Renderer {
 		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
 
 		return sprintf(
-			'<div class="%s" style="%s">%s%s</div>',
+			'<div class="%s" style="%s" data-id="%s">%s%s</div>',
 			esc_attr( implode( ' ', array_unique( array_filter( $classes ) ) ) ),
 			esc_attr( implode( ';', $style_vars ) ),
+			esc_attr( $player->get_id() ),
 			$player->get_player_code( $atts ),
 			$inner_content
 		);
@@ -690,7 +730,10 @@ class Modular_Renderer {
 		$instance_id   = $context['videopackId'] ?? ( $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() ) );
 
 		$style_vars     = array();
-		$classes        = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item', $skin );
+		$classes        = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
+		if ( 'Video.js' === ( $options['embed_method'] ?? 'Video.js' ) ) {
+			$classes[] = $skin;
+		}
 
 		$colors = array(
 			'title-color'            => 'title_color',
@@ -769,7 +812,7 @@ class Modular_Renderer {
 		}
 
 		if ( 'WordPress Default' === $embed_method ) {
-			$classes[]    = 'mejs-overlay mejs-layer mejs-overlay-play';
+			$classes[]    = 'mejs-overlay mejs-layer mejs-overlay-play play-button-container';
 			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
 
 			$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';

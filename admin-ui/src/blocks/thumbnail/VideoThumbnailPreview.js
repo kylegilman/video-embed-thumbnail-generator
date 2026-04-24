@@ -17,8 +17,9 @@ export function VideoThumbnailPreview({
 	children,
 	resolvedDuotoneClass,
 	context = {},
-	video = {},
+	video: manualVideo = {},
 }) {
+	const video = (manualVideo && Object.keys(manualVideo).length > 0) ? manualVideo : (context['videopack/video'] || {});
 	const effectiveSkin = getEffectiveValue('skin', {}, context);
 	const { thumbnailMedia, posterUrl, isResolving } = useSelect(
 		(select) => {
@@ -78,8 +79,13 @@ export function VideoThumbnailPreview({
 		context
 	);
 
+	const effectiveEmbedMethod = getEffectiveValue(
+		'embed_method',
+		{},
+		context
+	);
 	const containerClass = `gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${
-		effectiveSkin
+		effectiveEmbedMethod === 'Video.js' ? (effectiveSkin || '') : ''
 	} ${resolvedDuotoneClass || ''} ${
 		play_button_color ? 'videopack-has-play-button-color' : ''
 	} ${

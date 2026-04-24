@@ -19,7 +19,7 @@ export const getColorFallbacks = (settings) => {
 
 	if (embed_method === 'WordPress Default') {
 		fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
-		fallbacks.control_bar_bg_color = 'rgba(0, 0, 0, 0.35)';
+		fallbacks.control_bar_bg_color = '#222222';
 		fallbacks.play_button_color = '#ffffff';
 		fallbacks.play_button_secondary_color = '#ffffff';
 	} else if (embed_method?.startsWith('Video.js')) {

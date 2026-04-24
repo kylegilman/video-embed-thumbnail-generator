@@ -185,6 +185,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 
 	const watermarkLinkOptions = [
 		{
+			value: 'false',
+			label: __('None', 'video-embed-thumbnail-generator'),
+		},
+		{
 			value: 'home',
 			label: __('Home page', 'video-embed-thumbnail-generator'),
 		},
@@ -193,23 +197,16 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			label: __('Parent post', 'video-embed-thumbnail-generator'),
 		},
 		{
-			value: 'attachment',
-			label: __(
-				'Video attachment page',
-				'video-embed-thumbnail-generator'
-			),
-		},
-		{
 			value: 'download',
 			label: __('Download video', 'video-embed-thumbnail-generator'),
 		},
 		{
-			value: 'custom',
-			label: __('Custom URL', 'video-embed-thumbnail-generator'),
+			value: 'attachment',
+			label: __('Video attachment page', 'video-embed-thumbnail-generator'),
 		},
 		{
-			value: 'false',
-			label: __('None', 'video-embed-thumbnail-generator'),
+			value: 'custom',
+			label: __('Custom URL', 'video-embed-thumbnail-generator'),
 		},
 	];
 

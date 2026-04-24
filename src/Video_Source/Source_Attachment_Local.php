@@ -298,4 +298,15 @@ class Source_Attachment_Local extends Source {
 			$this->create_source_placeholder( $format );
 		}
 	}
+
+	/**
+	 * Get the download URL for the video.
+	 *
+	 * Uses the Videopack download redirect to force download via PHP.
+	 *
+	 * @return string The download URL.
+	 */
+	public function get_download_url(): string {
+		return (string) add_query_arg( 'videopack[download]', 'true', get_permalink( $this->get_id() ) );
+	}
 }

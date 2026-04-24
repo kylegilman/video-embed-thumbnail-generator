@@ -423,14 +423,17 @@ const useVideoSettings = (attributes, setAttributes, options = {}, {
         ...attributes,
         ...processedKey
       };
+      setAttributes(processedKey);
     } else {
       const processedValue = key === 'title' && value === '' ? undefined : value;
       updatedAttrs = {
         ...attributes,
         [key]: processedValue
       };
+      setAttributes({
+        [key]: processedValue
+      });
     }
-    setAttributes(updatedAttrs);
     if (id) {
       // Handle caption updates for the attachment record.
       if (typeof key === 'object' && key !== null) {
@@ -1303,7 +1306,6 @@ const WatermarkPositioner = ({
     if (!s.isDragging && !s.isResizing) {
       return;
     }
-    // console.log('[Videopack] mousemove');
     const dragStart = dragStartRef.current;
     const containerWidth = s.containerDimensions.width;
     const containerHeight = s.containerDimensions.height;
@@ -1954,7 +1956,7 @@ const getColorFallbacks = settings => {
   };
   if (embed_method === 'WordPress Default') {
     fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
-    fallbacks.control_bar_bg_color = 'rgba(0, 0, 0, 0.35)';
+    fallbacks.control_bar_bg_color = '#222222';
     fallbacks.play_button_color = '#ffffff';
     fallbacks.play_button_secondary_color = '#ffffff';
   } else if (embed_method?.startsWith('Video.js')) {
@@ -4787,7 +4789,8 @@ const SingleVideoBlock = ({
   resolvedAttributes = attributes
 }) => {
   const {
-    src
+    src,
+    id: effectiveId
   } = resolvedAttributes;
   const {
     record: attachment
@@ -4887,6 +4890,10 @@ const SingleVideoBlock = ({
         probedMetadata: effectiveMetadata
       }, attributes.id || src)]
     }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("figure", {
+      style: {
+        display: src || effectiveId ? 'block' : 'none'
+      },
+      "aria-hidden": !(src || effectiveId),
       className: `videopack-video-block-container videopack-wrapper${attributes.title_background_color ? ' videopack-has-title-background-color' : ''}${attributes.play_button_color ? ' videopack-has-play-button-color' : ''}${attributes.play_button_secondary_color ? ' videopack-has-play-button-secondary-color' : ''}${(attributes.overlay_title ?? videopack_config?.options?.overlay_title) || (attributes.downloadlink ?? videopack_config?.options?.downloadlink) || (attributes.embedcode ?? videopack_config?.options?.embedcode) ? ' videopack-video-title-visible' : ''}`,
       children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.BlockContextProvider, {
         value: contextValue,
@@ -4990,12 +4997,20 @@ const Edit = ({
       sources: attachment.videopack?.sources || (attachment.source_url || attachment.url ? [{
         src: attachment.source_url || attachment.url
       }] : attributes.sources || []),
-      source_groups: attachment.videopack?.source_groups || attributes.source_groups || {},
+      source_groups: (attachment.videopack?.source_groups && Object.keys(attachment.videopack.source_groups).length > 0 ? attachment.videopack.source_groups : null) || (attributes.source_groups && Object.keys(attributes.source_groups).length > 0 ? attributes.source_groups : null) || {},
       default_ratio: attachment.meta?.['_kgflashmediaplayer-ratio'] || attributes.default_ratio,
       fixed_aspect: attachment.meta?.['_kgflashmediaplayer-fixedaspect'] || attributes.fixed_aspect,
-      fullwidth: attachment.meta?.['_kgflashmediaplayer-fullwidth'] || attributes.fullwidth
+      fullwidth: attributes.fullwidth,
+      embed_method: attributes.embed_method || options?.embed_method || config?.embed_method,
+      skin: attributes.skin || options?.skin || config?.skin,
+      play_button_color: attributes.play_button_color || options?.play_button_color || config?.play_button_color,
+      play_button_secondary_color: attributes.play_button_secondary_color || options?.play_button_secondary_color || config?.play_button_secondary_color,
+      control_bar_bg_color: attributes.control_bar_bg_color || options?.control_bar_bg_color || config?.control_bar_bg_color,
+      control_bar_color: attributes.control_bar_color || options?.control_bar_color || config?.control_bar_color,
+      title_color: attributes.title_color || options?.title_color || config?.title_color,
+      title_background_color: attributes.title_background_color || options?.title_background_color || config?.title_background_color
     };
-  }, [attributes, attachment, isContextual]);
+  }, [attributes, attachment, options, config]);
   const attributesRef = (0,external_wp_element_namespaceObject.useRef)(attributes);
   const lastFetchedIdRef = (0,external_wp_element_namespaceObject.useRef)(null);
   const isMountedRef = (0,external_wp_element_namespaceObject.useRef)(false);
@@ -5029,6 +5044,7 @@ const Edit = ({
         src: attachmentObject.source_url || attachmentObject.url
       }] : []),
       source_groups: attachmentObject.videopack?.source_groups || {},
+      text_tracks: attachmentObject.videopack?.text_tracks || [],
       showCaption: !!(attachmentObject.caption?.raw ?? attachmentObject.caption?.rendered)
     };
     const updatedAttributes = Object.keys(media_attributes).reduce((acc, key) => {
@@ -5046,7 +5062,7 @@ const Edit = ({
       }
       return acc;
     }, {});
-    const dynamicKeys = ['src', 'poster', 'title', 'caption', 'width', 'height', 'sources', 'source_groups', 'embedlink'];
+    const dynamicKeys = ['src', 'poster', 'title', 'caption', 'width', 'height', 'embedlink', 'sources', 'source_groups', 'text_tracks', 'embed_method', 'skin', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'title_color', 'title_background_color'];
     if (Object.keys(updatedAttributes).length > 0) {
       const filteredUpdates = {
         ...updatedAttributes
@@ -5163,9 +5179,7 @@ const Edit = ({
       // Hydrate embed_method from global settings if it's missing from block attributes
       // We skip persistence if we are in a contextual (loop) environment
       if (response?.embed_method && !attributesRef.current.embed_method && !isContextual) {
-        setAttributes({
-          embed_method: response.embed_method
-        });
+        // We no longer call setAttributes here to keep the block markup clean
       }
     });
     if (!hasAttemptedInitialUpload.current && !id && (0,external_wp_blob_namespaceObject.isBlobURL)(src)) {
@@ -5268,21 +5282,15 @@ const Edit = ({
           }
         })
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("figure", {
-      style: {
-        display: src || effectiveId ? 'block' : 'none'
-      },
-      "aria-hidden": !(src || effectiveId),
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(SingleVideoBlock, {
-        clientId: clientId,
-        setAttributes: setAttributes,
-        attributes: attributes,
-        options: options,
-        isSelected: isSelected,
-        videoData: videoData,
-        resolvedPostId: resolvedPostId,
-        resolvedAttributes: resolvedAttributes
-      })
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(SingleVideoBlock, {
+      clientId: clientId,
+      setAttributes: setAttributes,
+      attributes: attributes,
+      options: options,
+      isSelected: isSelected,
+      videoData: videoData,
+      resolvedPostId: resolvedPostId,
+      resolvedAttributes: resolvedAttributes
     })]
   });
 };

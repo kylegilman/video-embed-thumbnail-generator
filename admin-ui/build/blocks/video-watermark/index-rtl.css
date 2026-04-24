@@ -143,7 +143,7 @@
   bottom: 0;
   z-index: -1;
   transition: visibility 0.3s linear, opacity 0.3s linear;
-  background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+  background-color: var(--videopack-title-background-color, var(--videopack-title-bg-fallback, rgba(20, 20, 20, 0.9)));
   opacity: var(--videopack-title-bg-alpha, 0.9);
 }
 .videopack-video-title.is-overlay .videopack-title {
@@ -275,7 +275,7 @@
 }
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
   position: absolute;
-  background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+  background-color: var(--videopack-title-background-color, var(--videopack-title-bg-fallback, rgba(20, 20, 20, 0.9)));
   color: var(--videopack-title-color, #fff);
   opacity: var(--videopack-title-bg-alpha, 0.9);
   padding: 2px 6px;
@@ -377,7 +377,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
   position: relative;
   container-type: inline-size;
 }
@@ -394,8 +395,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: #141414;
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: #222222;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
 :is(.videopack-wrapper,
@@ -411,7 +413,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).default, :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).default, :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -424,7 +427,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-videopack, .vjs-theme-videopack :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-videopack, .vjs-theme-videopack :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -437,8 +441,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: #2b333f;
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: #2b333f;
 }
 :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -453,7 +458,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-city, .vjs-theme-city :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-city, .vjs-theme-city :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -466,8 +472,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: var(--vjs-theme-city--primary, #21a1d1);
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: var(--vjs-theme-city--primary, #21a1d1);
 }
 :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -482,7 +489,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-fantasy, .vjs-theme-fantasy :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-fantasy, .vjs-theme-fantasy :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -495,8 +503,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: var(--vjs-theme-fantasy--primary, #643f82);
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: var(--vjs-theme-fantasy--primary, #643f82);
 }
 :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -511,7 +520,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-forest, .vjs-theme-forest :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-forest, .vjs-theme-forest :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -524,8 +534,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: var(--vjs-theme-forest--primary, #395d26);
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: var(--vjs-theme-forest--primary, #395d26);
 }
 :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -540,7 +551,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea, .vjs-theme-sea :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-sea, .vjs-theme-sea :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -553,8 +565,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: rgb(65, 118, 188);
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: rgb(65, 118, 188);
 }
 :is(:is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -569,7 +582,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).videopack-video-title, .videopack-video-title):not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).videopack-video-title, .videopack-video-title)::before, :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -582,8 +596,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
+.videopack-video-player-engine-block,
+.videopack-video-loop) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background-color: var(--videopack-title-background-color, var(--videopack-title-bg-fallback));
 }
 :is(.gallery-thumbnail,
 .videopack-thumbnail-wrapper,
@@ -595,15 +610,6 @@
   cursor: pointer;
   overflow: hidden;
   background: #000;
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.gallery-thumbnail,
-.videopack-video-title-block).videopack-has-title-background-color .videopack-video-title:not(.no-title)::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.gallery-thumbnail,
-.videopack-video-title-block).videopack-has-title-background-color :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color) !important;
 }
 .videopack-video-title.videopack-thumbnail-title.is-overlay {
   position: absolute;
@@ -699,7 +705,7 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
-  background: linear-gradient(to bottom, var(--videopack-title-background-color) 0%, color-mix(in srgb, var(--videopack-title-background-color), transparent 40%) 60%, transparent 100%);
+  background: linear-gradient(to bottom, var(--videopack-title-background-color, var(--videopack-title-bg-fallback, #222222)) 0%, color-mix(in srgb, var(--videopack-title-background-color, var(--videopack-title-bg-fallback, #222222)), transparent 40%) 60%, transparent 100%);
 }
 .videopack-thumbnail-title.position-top ~ .videopack-share-container, .videopack-thumbnail-title.position-top .videopack-share-container {
   margin-top: 0;

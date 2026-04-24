@@ -286,7 +286,11 @@
 			/**
 			 * @type {?String}
 			 */
-			sourcechooserText: null
+			sourcechooserText: null,
+			/**
+			 * @type {?Object}
+			 */
+			source_groups: null
 		});
 
 		Object.assign(MediaElementPlayer.prototype, {
@@ -329,13 +333,16 @@
 				player.sourcechooserButton = document.createElement('div');
 				player.sourcechooserButton.className = `${t.options.classPrefix}button ${t.options.classPrefix}sourcechooser-button`;
 				player.sourcechooserButton.innerHTML =
-					`<button type="button" role="button" aria-haspopup="true" aria-owns="${t.id}" title="${sourceTitle}" aria-label="${sourceTitle}" tabindex="0"><span class="videopack-icons gear"></span></button>` +
+					`<button type="button" role="button" aria-haspopup="true" aria-owns="${t.id}" title="${sourceTitle}" aria-label="${sourceTitle}" tabindex="0">` +
+					`<span class="videopack-icons gear"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 15.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5zM19.4 13c0-.3.1-.6.1-1s0-.7-.1-1l2.1-1.7c.2-.2.2-.4.1-.6l-2-3.5c-.1-.2-.3-.3-.5-.2l-2.5 1c-.5-.4-1.1-.7-1.7-.9l-.4-2.6c0-.2-.2-.4-.5-.4h-4c-.3 0-.5.2-.5.4l-.4 2.6c-.6.2-1.2.5-1.7.9l-2.5-1c-.2-.1-.4 0-.5.2l-2 3.5c-.1.2-.1.4.1.6l2.1 1.7c-.1.3-.1.6-.1 1s0 .7.1 1l-2.1 1.7c-.2.2-.2.4-.1.6l2 3.5c.1.2.3.3.5.2l2.5-1c.5.4 1.1.7 1.7.9l.4 2.6c0 .2.2.4.5.4h4c.3 0 .5-.2.5-.4l.4-2.6c.6-.2 1.2-.5 1.7-.9l2.5 1c.2.1.4 0 .5-.2l2-3.5c.1-.2.1-.4-.1-.6L19.4 13z" /></svg></span>` +
+					`</button>` +
 					`<div class="${t.options.classPrefix}sourcechooser-selector ${t.options.classPrefix}offscreen" role="menu" aria-expanded="false" aria-hidden="true"><ul></ul></div>`;
 
 				t.addControlElement(player.sourcechooserButton, 'sourcechooser');
 
-				let source_groups = null;
-				if (window.videopack && window.videopack.player_data) {
+				let source_groups = t.options.source_groups || null;
+
+				if (!source_groups && window.videopack && window.videopack.player_data) {
 					const wrapper = t.node.closest('.videopack-player');
 					if (wrapper) {
 						let id = wrapper.dataset.id;
@@ -393,10 +400,15 @@
 								subMenu.style.display = '';
 								subMenu.style.visibility = '';
 
-								if (parentRect.right + subMenuWidth > window.innerWidth && parentRect.left > subMenuWidth) {
-									codecLi.classList.add('mejs-submenu-left');
+								// Default to left-opening. If it would go off the left edge, switch to right.
+								const container = t.container.get ? t.container.get(0) : t.container;
+								const playerOffset = container.getBoundingClientRect().left;
+								const nodeOffset = codecLi.getBoundingClientRect().left;
+								
+								if (nodeOffset - subMenuWidth < playerOffset) {
+									codecLi.classList.add(`${t.options.classPrefix}submenu-right`);
 								} else {
-									codecLi.classList.remove('mejs-submenu-left');
+									codecLi.classList.remove(`${t.options.classPrefix}submenu-right`);
 								}
 							}
 						});
@@ -533,7 +545,6 @@
 					`<label for="${inputId}" aria-hidden="true">${resolutionLabel}</label>`;
 				target.appendChild(li);
 
-				t.adjustSourcechooserBox();
 			},
 
 			/**
@@ -589,15 +600,6 @@
 				}
 			},
 
-			/**
-			 *
-			 */
-			adjustSourcechooserBox() {
-				const t = this;
-				// adjust the size of the outer box
-				t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`).style.height =
-					`${parseFloat(t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector ul`).offsetHeight)}px`;
-			},
 
 			/**
 			 *

@@ -377,8 +377,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const resolvedDuotoneClass =
 		presetDuotoneClass || ( customDuotoneColors ? customFilterId : '' );
 
-	console.log( 'VideoLoop passing to useVideoQuery:', queryAttributes );
-
 	// We fetch query data to power the live preview template
 	const queryData = useVideoQuery(
 		queryAttributes,
@@ -796,7 +794,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 											<BlockContextProvider
 												value={{
 													...context,
-													'videopack/postId': video.attachment_id,
+													'videopack/postId': video.attachment_id || video.id,
+													'videopack/video': video,
+													'videopack/title': video.title,
 												}}
 											>
 												{isEditableTemplate ? (

@@ -156,13 +156,13 @@ const useVideoSettings = (
 				processedKey.title = undefined;
 			}
 			updatedAttrs = { ...attributes, ...processedKey };
+			setAttributes(processedKey);
 		} else {
 			const processedValue =
 				key === 'title' && value === '' ? undefined : value;
 			updatedAttrs = { ...attributes, [key]: processedValue };
+			setAttributes({ [key]: processedValue });
 		}
-
-		setAttributes(updatedAttrs);
 
 		if (id) {
 			// Handle caption updates for the attachment record.
