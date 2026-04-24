@@ -23,6 +23,19 @@
 		:is(.columns-4 &, &.columns-4) { grid-template-columns: repeat(4, 1fr); }
 		:is(.columns-5 &, &.columns-5) { grid-template-columns: repeat(5, 1fr); }
 		:is(.columns-6 &, &.columns-6) { grid-template-columns: repeat(6, 1fr); }
+
+		/* Responsive Adaptation */
+		@container (max-width: 800px) {
+			:is(.columns-3 &, .columns-4 &, .columns-5 &, .columns-6 &, &.columns-3, &.columns-4, &.columns-5, &.columns-6) {
+				grid-template-columns: repeat(2, 1fr) !important;
+			}
+		}
+
+		@container (max-width: 500px) {
+			:is(.columns-2 &, .columns-3 &, .columns-4 &, .columns-5 &, .columns-6 &, &.columns-2, &.columns-3, &.columns-4, &.columns-5, &.columns-6) {
+				grid-template-columns: 1fr !important;
+			}
+		}
 	}
 
 	:is(.layout-list &, &.layout-list) {

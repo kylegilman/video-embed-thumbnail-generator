@@ -36,6 +36,8 @@
     "videopack/play_button_secondary_color": "play_button_secondary_color",
     "videopack/title_color": "title_color",
     "videopack/title_background_color": "title_background_color",
+    "videopack/control_bar_bg_color": "control_bar_bg_color",
+    "videopack/control_bar_color": "control_bar_color",
     "videopack/isInsidePlayer": "isInsidePlayer",
     "videopack/isInsidePlayerBlock": "isInsidePlayerBlock",
     "videopack/watermark": "watermark",
@@ -43,7 +45,13 @@
     "videopack/watermark_link_to": "watermark_link_to",
     "videopack/views": "views",
     "videopack/overlay_title": "overlay_title",
-    "videopack/showBackground": "showBackground"
+    "videopack/showBackground": "showBackground",
+    "videopack/sources": "sources",
+    "videopack/source_groups": "source_groups",
+    "videopack/text_tracks": "text_tracks",
+    "videopack/width": "width",
+    "videopack/height": "height",
+    "videopack/embed_method": "embed_method"
   },
   "supports": {
     "html": false,
@@ -153,10 +161,12 @@
       "type": "string"
     },
     "watermark_styles": {
-      "type": "object"
+      "type": "object",
+      "default": {}
     },
     "watermark_link_to": {
-      "type": "string"
+      "type": "string",
+      "default": ""
     },
     "default_ratio": {
       "type": "string",
@@ -207,8 +217,7 @@
       "type": "string"
     },
     "embed_method": {
-      "type": "string",
-      "default": "Video.js"
+      "type": "string"
     },
     "showCaption": {
       "type": "boolean",

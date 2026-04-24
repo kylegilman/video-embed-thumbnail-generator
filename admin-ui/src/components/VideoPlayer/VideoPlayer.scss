@@ -123,8 +123,8 @@
 
 	// Icon Toggles
 	.videopack-icons {
-		&.share .close-icon { display: none !important; }
-		&.close .share-icon { display: none !important; }
+		&.share .close-icon { display: none; }
+		&.close .share-icon { display: none; }
 	}
 
 	// Watermark
@@ -207,10 +207,10 @@
 				height: 0;
 				border-top: 5px solid transparent;
 				border-bottom: 5px solid transparent;
-				border-right: 5px solid currentColor; // Default: Points left
+				border-left: 5px solid currentColor; // Default: Points right
 				position: absolute;
-				left: 8px;
-				right: auto;
+				right: 8px;
+				left: auto;
 				top: 50%;
 				transform: translateY(-50%);
 				opacity: 0.6;
@@ -224,10 +224,11 @@
 			>.vjs-menu {
 				display: none;
 				position: absolute;
-				left: 100%;
+				right: 100%;
+				left: auto;
 				top: auto;
 				bottom: 0;
-				margin-left: 0.2em;
+				margin-right: 0.2em;
 				margin-bottom: 0;
 				min-width: 8em;
 				height: auto;
@@ -240,7 +241,7 @@
 					position: absolute;
 					top: 0;
 					bottom: 0;
-					left: -0.2em;
+					right: -0.2em;
 					width: 0.2em;
 				}
 
@@ -263,15 +264,15 @@
 				display: block;
 			}
 
-			>.vjs-menu.vjs-submenu-left {
-				left: auto;
-				right: 100%;
-				margin-left: 0;
-				margin-right: 0.2em;
+			>.vjs-menu.vjs-submenu-right {
+				right: auto;
+				left: 100%;
+				margin-right: 0;
+				margin-left: 0.2em;
 
 				&::before {
-					left: auto;
-					right: -0.2em;
+					right: auto;
+					left: -0.2em;
 				}
 			}
 		}
@@ -369,13 +370,13 @@
 	}
 
 	// Ensure controls sit above overlays (Title, Watermark, etc)
-	.vjs-control-bar,
-	.mejs-controls {
-		z-index: 120 !important;
+	.videopack-player .vjs-control-bar,
+	.videopack-player .mejs-container .mejs-controls {
+		z-index: 150;
 	}
 
 	&.videopack-has-control-bar-color .mejs-controls {
-		.mejs-button button {
+		.mejs-button:not(.mejs-sourcechooser-button) button {
 			background-image: none;
 			background-color: var(--videopack-control-bar-color);
 			mask-image: var(--videopack-mejs-controls-svg);
@@ -445,6 +446,246 @@
 		.mejs-volume-current,
 		.mejs-volume-handle {
 			background: var(--videopack-control-bar-color);
+		}
+	}
+
+	/* MEJS Source Chooser Styles */
+	.mejs__sourcechooser-button,
+	.mejs-sourcechooser-button {
+		position: relative;
+		overflow: visible;
+
+		button {
+			background: transparent;
+			mask-image: none;
+			-webkit-mask-image: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			.videopack-icons.gear {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+				height: 100%;
+				color: var(--videopack-control-bar-color, #fff);
+
+				svg {
+					width: 18px;
+					height: 18px;
+					fill: currentColor;
+				}
+			}
+		}
+
+		.mejs__sourcechooser-selector,
+		.mejs-sourcechooser-selector {
+			background: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color, var(--videopack-title-background-color, #222222)), transparent 30%)")};
+			border: none;
+			border-radius: 4px;
+			bottom: 40px;
+			height: auto;
+			overflow: visible;
+			padding: 0;
+			position: absolute;
+			right: 0;
+			left: auto;
+			visibility: visible;
+
+			ul {
+				display: block;
+				list-style-type: none;
+				margin: 0;
+				overflow: visible;
+				padding: 5px 0;
+
+				li {
+					color: var(--videopack-control-bar-color, #fff);
+					display: block;
+					list-style-type: none;
+					margin: 0;
+					overflow: hidden;
+					padding: 0;
+					cursor: pointer;
+					font-size: 11px;
+					line-height: 24px;
+					text-align: left;
+
+					&:hover {
+						background-color: rgba(255, 255, 255, 0.2);
+					}
+
+					&.sourcechooser-selected {
+						background-color: rgba(255, 255, 255, 0.2);
+						font-weight: bold;
+					}
+
+					label {
+						color: var(--videopack-control-bar-color, #fff);
+						display: block;
+						padding: 0 10px;
+						cursor: pointer;
+						margin: 0;
+					}
+
+					input {
+						display: none;
+					}
+
+					&.mejs__sourcechooser-codec-item,
+					&.mejs-sourcechooser-codec-item {
+						position: relative;
+						overflow: visible;
+
+						>span {
+							color: var(--videopack-control-bar-color, #fff);
+							display: block;
+							padding: 0 10px 0 20px;
+							font-weight: bold;
+						}
+
+						&::after {
+							content: '';
+							display: block;
+							width: 0;
+							height: 0;
+							border-top: 4px solid transparent;
+							border-bottom: 4px solid transparent;
+							border-right: 4px solid currentColor; // Default: Points left
+							position: absolute;
+							left: 8px;
+							top: 50%;
+							transform: translateY(-50%);
+							opacity: 0.6;
+						}
+
+						.mejs__sourcechooser-submenu,
+						.mejs-sourcechooser-submenu {
+							display: none;
+							position: absolute;
+							right: 100%;
+							left: auto;
+							bottom: 0;
+							background: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color, var(--videopack-title-background-color, #222222)), transparent 30%)")};
+							border: none;
+							border-radius: 4px;
+							padding: 5px 0;
+							margin-right: 2px;
+							min-width: 100px;
+							list-style-type: none;
+
+							&::before {
+								content: "";
+								position: absolute;
+								top: 0;
+								bottom: 0;
+								right: -2px;
+								width: 2px;
+							}
+
+							li {
+								padding: 0;
+								width: 100%;
+							}
+						}
+
+						&.mejs__submenu-right,
+						&.mejs-submenu-right {
+							.mejs__sourcechooser-submenu,
+							.mejs-sourcechooser-submenu {
+								right: auto;
+								left: 100%;
+								margin-right: 0;
+								margin-left: 2px;
+
+								&::before {
+									right: auto;
+									left: -2px;
+								}
+							}
+						}
+
+						&:hover .mejs__sourcechooser-submenu,
+						&:hover .mejs-sourcechooser-submenu {
+							display: block;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.mejs__speed-button,
+	.mejs-speed-button {
+		position: relative;
+		overflow: visible;
+
+		>button {
+			background: transparent;
+			color: #fff;
+			font-size: 11px;
+			line-height: normal;
+			margin: 0;
+			width: 36px;
+			height: 100%;
+			mask-image: none;
+			-webkit-mask-image: none;
+		}
+
+		.mejs__speed-selector,
+		.mejs-speed-selector {
+			background: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color, var(--videopack-title-background-color, #222222)), transparent 30%)")};
+			border: none;
+			border-radius: 4px;
+			right: 0;
+			left: auto;
+			height: auto;
+			overflow: hidden;
+			padding: 5px 0;
+			position: absolute;
+			bottom: 40px;
+			visibility: hidden;
+			width: 60px;
+
+			ul {
+				display: block;
+				list-style-type: none;
+				margin: 0;
+				padding: 0;
+
+				li {
+					color: var(--videopack-control-bar-color, #fff);
+					display: block;
+					padding: 0 10px;
+					font-size: 10px;
+					line-height: 24px;
+					cursor: pointer;
+
+					&:hover {
+						background-color: rgba(255, 255, 255, 0.4);
+					}
+
+					&.mejs-speed-selected {
+						background: rgba(255, 255, 255, 0.4);
+						font-weight: bold;
+					}
+
+					label {
+						cursor: pointer;
+						margin: 0;
+					}
+
+					input {
+						display: none;
+					}
+				}
+			}
+		}
+
+		&:hover .mejs__speed-selector,
+		&:hover .mejs-speed-selector {
+			visibility: visible;
 		}
 	}
 

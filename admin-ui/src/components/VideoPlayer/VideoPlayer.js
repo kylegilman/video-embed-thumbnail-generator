@@ -49,6 +49,7 @@ const VideoPlayer = ({
 	hideStaticOverlays = false,
 	children,
 }) => {
+	const wrapperRef = useRef(null);
 	const [detectedDimensions, setDetectedDimensions] = useState({
 		width: null,
 		height: null,
@@ -119,14 +120,38 @@ const VideoPlayer = ({
 		volume,
 		auto_res,
 		auto_codec,
-		sources = [],
-		source_groups = {},
+		sources: incomingSources = [],
+		source_groups: incomingSourceGroups = {},
 		text_tracks = [],
 		playback_rate,
 		default_ratio,
 	} = decodedAttributes;
 
-	const embed_method = getEffectiveValue('embed_method', attributes, context);
+	const source_groups = useMemo(() => {
+		// If we have valid groups, use them (handle empty array vs object)
+		if (incomingSourceGroups && !Array.isArray(incomingSourceGroups) && Object.keys(incomingSourceGroups).length > 0) {
+			return incomingSourceGroups;
+		}
+
+		// Fallback: Group flat sources by codec
+		if (incomingSources.length > 0) {
+			const groups = {};
+			incomingSources.forEach((s) => {
+				const codec = s.codec || 'h264';
+				if (!groups[codec]) {
+					groups[codec] = [];
+				}
+				groups[codec].push(s);
+			});
+			return groups;
+		}
+
+		return {};
+	}, [incomingSourceGroups, incomingSources]);
+
+
+	const raw_embed_method = getEffectiveValue('embed_method', attributes, context);
+	const embed_method = raw_embed_method || videopack_config?.embed_method || 'Video.js';
 	const skin = getEffectiveValue('skin', attributes, context);
 	const play_button_color = getEffectiveValue('play_button_color', attributes, context);
 	const play_button_secondary_color = getEffectiveValue('play_button_secondary_color', attributes, context);
@@ -235,6 +260,7 @@ const VideoPlayer = ({
 		control_bar_color,
 		title_color,
 		title_background_color,
+		embed_method,
 	]);
 
 	const innerPlayerStyles = useMemo(() => {
@@ -250,6 +276,9 @@ const VideoPlayer = ({
 
 	const wrapperClasses = useMemo(() => {
 		const classes = ['videopack-video-block-container', 'videopack-wrapper', 'videopack-video-title-visible'];
+		if (embed_method === 'Video.js' && skin) {
+			classes.push(skin);
+		}
 		if (isFixedAspect || aspectRatio) {
 			classes.push('videopack-has-aspect-ratio');
 			if (isFixedAspect) {
@@ -284,6 +313,8 @@ const VideoPlayer = ({
 		title_background_color,
 		isFixedAspect,
 		aspectRatio,
+		skin,
+		embed_method,
 	]);
 
 	const actualAutoplay = useMemo(() => {
@@ -291,27 +322,33 @@ const VideoPlayer = ({
 	}, [autoplay]);
 
 	const videoRef = useRef(null);
-	const playerInstanceRef = useRef(null);
-	const wrapperRef = useRef(null);
-
-	const allSources = useMemo(() => {
-		if (Object.keys(source_groups).length > 0) {
-			return Object.values(source_groups).flatMap(
-				(group) => group.sources
-			);
-		}
-		return sources;
-	}, [sources, source_groups]);
 
 	const finalizedSources = useMemo(() => {
-		if (allSources && allSources.length > 0) {
-			return allSources;
+		// Priority 1: Sources from groups
+		if (Object.keys(source_groups).length > 0) {
+			const groupedSources = Object.values(source_groups).flatMap(g => g.sources || []);
+			if (groupedSources.length > 0) return groupedSources.filter(s => s && s.src);
 		}
+
+		// Priority 2: Flat sources array
+		if (incomingSources && incomingSources.length > 0) {
+			return incomingSources.filter(s => s && s.src);
+		}
+
+		// Priority 3: Primary src attribute
 		if (src) {
-			return [{ src, type: 'video/mp4' }]; // Basic fallback
+			return [{ src, type: 'video/mp4' }];
 		}
+
 		return [];
-	}, [allSources, src]);
+	}, [source_groups, incomingSources, src]);
+
+	const uniqueKey = useMemo(() => {
+		const sourceStr = (finalizedSources || [])
+			.map((s) => (s && typeof s === 'object' ? s.src : String(s || '')))
+			.join(',');
+		return `${skin}-${actualAutoplay}-${loop}-${muted}-${preload}-${sourceStr}-${Object.keys(source_groups).join(',')}`;
+	}, [skin, actualAutoplay, loop, muted, preload, finalizedSources, source_groups]);
 
 	const genericPlayerOptions = useMemo(
 		() => ({
@@ -383,6 +420,8 @@ const VideoPlayer = ({
 			})),
 		};
 
+		options.source_groups = source_groups;
+
 		const hasResolutions = finalizedSources.some((s) => s.resolution);
 
 		if (hasResolutions) {
@@ -436,9 +475,18 @@ const VideoPlayer = ({
 		onReadyRef.current = onReady;
 	}, [onReady]);
 
+	useEffect(() => {
+		if (typeof window !== 'undefined' && attributes.id) {
+			window.videopack = window.videopack || {};
+			window.videopack.player_data = window.videopack.player_data || {};
+			window.videopack.player_data[`videopack_player_${attributes.id}`] = {
+				source_groups,
+			};
+		}
+	}, [attributes.id, source_groups]);
+
 	const handleVideoPlayerReady = useCallback(
 		(player) => {
-			playerInstanceRef.current = player;
 			player.on('loadedmetadata', () => {
 				if (onReadyRef.current) {
 					if (embed_method === 'Video.js') {
@@ -456,7 +504,6 @@ const VideoPlayer = ({
 	);
 
 	const handleMejsReady = useCallback((player) => {
-		playerInstanceRef.current = player;
 		if (onReadyRef.current) {
 			onReadyRef.current(player);
 		}
@@ -471,18 +518,20 @@ const VideoPlayer = ({
 	return (
 		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles}>
 			<div
-				className={`videopack-player ${skin || ''}`}
+				className={`videopack-player ${
+					embed_method === 'Video.js' ? skin || '' : ''
+				}`}
 				style={{ ...innerPlayerStyles, position: 'relative' }}
+				data-id={attributes.id}
 			>
 				{/* Overlays and interactive elements move outside player div for better layout control */}
 				{(() => {
-					const PlayerComponent =
-						players[embed_method] || players.None;
+					const PlayerComponent = players[embed_method] || players.None;
 
 					if (embed_method === 'Video.js' && videoJsOptions) {
 						return (
 							<PlayerComponent
-								key={`videojs-${src}-${resetKey}-${
+								key={`videojs-${src}-${resetKey}-${uniqueKey}-${
 									attributes.restartCount || 0
 								}`}
 								options={videoJsOptions}
@@ -498,7 +547,7 @@ const VideoPlayer = ({
 					if (embed_method === 'WordPress Default') {
 						return (
 							<PlayerComponent
-								key={`wpvideo-${src}-${resetKey}-${
+								key={`wpvideo-${src}-${resetKey}-${uniqueKey}-${
 									attributes.restartCount || 0
 								}`}
 								options={genericPlayerOptions}
@@ -509,13 +558,14 @@ const VideoPlayer = ({
 								playback_rate={playback_rate}
 								aspectRatio={aspectRatio}
 								onMetadataLoaded={onMetadataLoaded}
+								source_groups={source_groups}
 							/>
 						);
 					}
 
 					return (
 						<PlayerComponent
-							key={`${embed_method}-${src}-${resetKey}-${
+							key={`${embed_method}-${src}-${resetKey}-${uniqueKey}-${
 								attributes.restartCount || 0
 							}`}
 							options={
@@ -532,6 +582,7 @@ const VideoPlayer = ({
 							onPause={handlePause}
 							onReady={handleVideoPlayerReady}
 							onMetadataLoaded={onMetadataLoaded}
+							source_groups={source_groups}
 						/>
 					);
 				})()}

@@ -12,11 +12,22 @@ import {
 	RangeControl,
 	SelectControl,
 	TextControl,
+	ToolbarGroup,
+	ToolbarButton,
+	Dropdown,
 } from '@wordpress/components';
 import { useState, useEffect, useMemo, useRef, useCallback } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import WatermarkPositioner from '../../components/WatermarkPositioner/WatermarkPositioner';
-import { image as imageIcon } from '@wordpress/icons';
+import {
+	image as imageIcon,
+	link as customIcon,
+	home as homeIcon,
+	download as downloadIcon,
+	page as attachmentIcon,
+	post as parentIcon,
+	notAllowed as noneIcon,
+} from '@wordpress/icons';
 import { getEffectiveValue } from '../../utils/context';
 import './editor.scss';
 
@@ -208,7 +219,7 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 			const element = containerRef.current;
 			
 			// Find the most specific media container to ensure accurate pixel calculations
-			const container = element.closest('.videopack-player, .videopack-video-thumbnail-preview, .videopack-wrapper');
+			const container = element.closest('.videopack-player, .videopack-video-thumbnail-preview, .videopack-wrapper, .videopack-video-block-container, .wp-block-videopack-videopack-video');
 			if (container) {
 				const rect = container.getBoundingClientRect();
 				if (rect.width > 0 && rect.height > 0) {
@@ -223,7 +234,7 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 		updateDimensions();
 
 		const observer = new ResizeObserver(updateDimensions);
-		const container = containerRef.current.closest('.videopack-player, .videopack-video-thumbnail-preview, .videopack-wrapper');
+		const container = containerRef.current.closest('.videopack-player, .videopack-video-thumbnail-preview, .videopack-wrapper, .videopack-video-block-container, .wp-block-videopack-videopack-video');
 		if (container) {
 			observer.observe(container);
 		}
@@ -242,8 +253,6 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 		watermark_url = '',
 	} = attributes;
 
-	// Design attributes are now derived dynamically via getEffectiveValue in the render cycle.
-	// We no longer auto-initialize attributes to prevent them from becoming "stale".
 
 	// Resolve effective values with correct priority: 
 	// Individual attribute -> Composite context object -> Individual context key -> Default
@@ -301,7 +310,8 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 		style: activeOverlayStyles,
 	});
 
-	if (!watermark && !context['videopack/watermark']) {
+
+	if (!effectiveUrl) {
 		return (
 			<div {...blockProps} className="videopack-video-watermark-placeholder">
 				<MediaPlaceholder
@@ -331,6 +341,67 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 						'video-embed-thumbnail-generator'
 					)}
 				/>
+				<ToolbarGroup label={__('Link To', 'video-embed-thumbnail-generator')}>
+					<ToolbarButton
+						icon={noneIcon}
+						label={__('No Link', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ watermark_link_to: 'false' })}
+						isPressed={effectiveLinkToType === 'false'}
+					/>
+					<ToolbarButton
+						icon={homeIcon}
+						label={__('Link to Home Page', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ watermark_link_to: 'home' })}
+						isPressed={effectiveLinkToType === 'home'}
+					/>
+					<ToolbarButton
+						icon={parentIcon}
+						label={__('Link to Parent Post', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ watermark_link_to: 'parent' })}
+						isPressed={effectiveLinkToType === 'parent'}
+					/>
+					<ToolbarButton
+						icon={downloadIcon}
+						label={__('Download Video', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ watermark_link_to: 'download' })}
+						isPressed={effectiveLinkToType === 'download'}
+					/>
+					<ToolbarButton
+						icon={attachmentIcon}
+						label={__('Link to Attachment Page', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ watermark_link_to: 'attachment' })}
+						isPressed={effectiveLinkToType === 'attachment'}
+					/>
+					<Dropdown
+						popoverProps={{ position: 'bottom center', className: 'videopack-url-popover' }}
+						renderToggle={({ isOpen, onToggle }) => (
+							<ToolbarButton
+								icon={customIcon}
+								label={__('Link to Custom URL', 'video-embed-thumbnail-generator')}
+								onClick={() => {
+									setAttributes({ watermark_link_to: 'custom' });
+									onToggle();
+								}}
+								aria-expanded={isOpen}
+								isPressed={effectiveLinkToType === 'custom'}
+							/>
+						)}
+						renderContent={() => (
+							<div style={{ padding: '12px', minWidth: '260px' }}>
+								<TextControl
+									__nextHasNoMarginBottom
+									__next40pxDefaultSize
+									label={__('Custom URL', 'video-embed-thumbnail-generator')}
+									value={watermark_url}
+									placeholder="https://..."
+									onChange={(value) =>
+										setAttributes({ watermark_url: value })
+									}
+								/>
+							</div>
+						)}
+					/>
+				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
 				<PanelBody
@@ -462,6 +533,27 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 								value: 'home',
 								label: __(
 									'Home page',
+									'video-embed-thumbnail-generator'
+								),
+							},
+							{
+								value: 'parent',
+								label: __(
+									'Parent post',
+									'video-embed-thumbnail-generator'
+								),
+							},
+							{
+								value: 'download',
+								label: __(
+									'Download video',
+									'video-embed-thumbnail-generator'
+								),
+							},
+							{
+								value: 'attachment',
+								label: __(
+									'Video attachment page',
 									'video-embed-thumbnail-generator'
 								),
 							},

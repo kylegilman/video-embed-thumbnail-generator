@@ -117,12 +117,11 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const overlayStyles = {};
 	if (isInsidePlayer || isInsideThumbnail) {
 		overlayStyles.position = 'absolute';
-		overlayStyles.top = '50%';
-		overlayStyles.left = '50%';
-		overlayStyles.transform = 'translate(-50%, -50%)';
+		overlayStyles.top = 0;
+		overlayStyles.left = 0;
+		overlayStyles.width = '100%';
+		overlayStyles.height = '100%';
 		overlayStyles.zIndex = 115;
-		overlayStyles.width = 'auto';
-		overlayStyles.height = 'auto';
 	}
 
 	const blockProps = useBlockProps({

@@ -163,6 +163,7 @@ export function VideoTitle({
 	const effectiveDownloadlink = getEffectiveValue('downloadlink', attributes, context);
 	const effectiveShowBackground = getEffectiveValue('showBackground', attributes, context);
 	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
+	const effectiveEmbedMethod = getEffectiveValue('embed_method', attributes, context);
 	const effectiveSkin = getEffectiveValue('skin', attributes, context);
 	const effectiveTitleColor = getEffectiveValue('title_color', attributes, context);
 	const effectiveTitleBgColor = getEffectiveValue('title_background_color', attributes, context);
@@ -184,7 +185,7 @@ export function VideoTitle({
 
 	const finalBlockProps = blockProps || {
 		className: `videopack-video-title-block videopack-video-title-wrapper ${
-			isOverlay ? effectiveSkin : ''
+			isOverlay && effectiveEmbedMethod === 'Video.js' ? effectiveSkin : ''
 		} ${isOverlay ? `is-overlay position-${position}` : ''} ${
 			isInsideThumbnail ? 'is-inside-thumbnail' : ''
 		} ${isInsidePlayer ? 'is-inside-player' : ''} ${
@@ -390,12 +391,15 @@ export default function Edit(props) {
 		[context]
 	);
 
+	const effectiveEmbedMethod = getEffectiveValue('embed_method', attributes, context);
 	const skin = getEffectiveValue('skin', attributes, context);
 	const effectiveTitleColor = getEffectiveValue('title_color', attributes, context);
 	const effectiveTitleBgColor = getEffectiveValue('title_background_color', attributes, context);
 
 	const blockProps = useBlockProps({
-		className: `videopack-video-title-block ${wrapperClass} ${skin} ${
+		className: `videopack-video-title-block ${wrapperClass} ${
+			isOverlay && effectiveEmbedMethod === 'Video.js' ? skin : ''
+		} ${
 			isOverlay ? `is-overlay position-${position}` : ''
 		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayer ? 'is-inside-player' : ''

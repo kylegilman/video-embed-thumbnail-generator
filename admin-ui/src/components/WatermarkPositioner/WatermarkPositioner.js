@@ -40,7 +40,7 @@ const WatermarkPositioner = ({
 
 	const dragStartRef = useRef({ x: 0, y: 0, initialLeft: 0, initialTop: 0 });
 	const stateRef = useRef({});
-	
+
 	const effectiveImageUrl = imageUrl || settings?.url || settings?.watermark;
 
 	useEffect(() => {
@@ -115,17 +115,17 @@ const WatermarkPositioner = ({
 		}
 
 		const w = (containerWidth * currentScale) / 100;
-		const ratio = watermarkImage 
-			? (watermarkImage.width / watermarkImage.height) 
+		const ratio = watermarkImage
+			? (watermarkImage.width / watermarkImage.height)
 			: (lastAspectRatioRef.current || 1);
 		const h = w / ratio;
 
-		return { 
-			wmStyle: style, 
-			wmWidth: w, 
-			wmHeight: h, 
-			x: currentX, 
-			y: currentY, 
+		return {
+			wmStyle: style,
+			wmWidth: w,
+			wmHeight: h,
+			x: currentX,
+			y: currentY,
 			scale: currentScale,
 			alignment: currentAlign,
 			valign: currentValign,
@@ -189,7 +189,7 @@ const WatermarkPositioner = ({
 			transientScale !== null
 				? transientScale
 				: Number(settings.scale || settings.watermark_scale || 10);
-		
+
 		const initialX = Number(settings.x || settings.watermark_x || 0);
 		const initialY = Number(settings.y || settings.watermark_y || 0);
 
@@ -227,7 +227,7 @@ const WatermarkPositioner = ({
 
 		const finalX = s.transientPercentages.x;
 		const finalY = s.transientPercentages.y;
-		
+
 		const finalScale =
 			wasResizing && s.transientScale !== null
 				? s.transientScale
@@ -406,7 +406,7 @@ const WatermarkPositioner = ({
 		) {
 			return;
 		}
-		// console.log('[Videopack] mousemove');
+
 		const dragStart = dragStartRef.current;
 		const containerWidth = s.containerDimensions.width;
 		const containerHeight = s.containerDimensions.height;
@@ -550,7 +550,7 @@ const WatermarkPositioner = ({
 			}}
 		>
 			{(isDragging || isResizing) && (
-				<div 
+				<div
 					className="videopack-interaction-overlay"
 					style={{
 						position: 'fixed',

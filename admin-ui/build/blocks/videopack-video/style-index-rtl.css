@@ -70,7 +70,7 @@
   bottom: 0;
   z-index: -1;
   transition: visibility 0.3s linear, opacity 0.3s linear;
-  background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+  background-color: var(--videopack-title-background-color, var(--videopack-title-bg-fallback, rgba(20, 20, 20, 0.9)));
   opacity: var(--videopack-title-bg-alpha, 0.9);
 }
 .videopack-video-title.is-overlay .videopack-title {
@@ -202,7 +202,7 @@
 }
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
   position: absolute;
-  background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+  background-color: var(--videopack-title-background-color, var(--videopack-title-bg-fallback, rgba(20, 20, 20, 0.9)));
   color: var(--videopack-title-color, #fff);
   opacity: var(--videopack-title-bg-alpha, 0.9);
   padding: 2px 6px;
@@ -304,7 +304,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
   position: relative;
   container-type: inline-size;
 }
@@ -321,8 +322,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: #141414;
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: #222222;
   --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
 }
 :is(.videopack-wrapper,
@@ -338,7 +340,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).default, :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).default, :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -351,7 +354,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-videopack, .vjs-theme-videopack :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-videopack, .vjs-theme-videopack :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -364,8 +368,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: #2b333f;
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: #2b333f;
 }
 :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -380,7 +385,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-city, .vjs-theme-city :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-city, .vjs-theme-city :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -393,8 +399,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: var(--vjs-theme-city--primary, #21a1d1);
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: var(--vjs-theme-city--primary, #21a1d1);
 }
 :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -409,7 +416,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-fantasy, .vjs-theme-fantasy :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-fantasy, .vjs-theme-fantasy :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -422,8 +430,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: var(--vjs-theme-fantasy--primary, #643f82);
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: var(--vjs-theme-fantasy--primary, #643f82);
 }
 :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -438,7 +447,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-forest, .vjs-theme-forest :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-forest, .vjs-theme-forest :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -451,8 +461,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: var(--vjs-theme-forest--primary, #395d26);
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: var(--vjs-theme-forest--primary, #395d26);
 }
 :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -467,7 +478,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).vjs-theme-sea, .vjs-theme-sea :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).vjs-theme-sea, .vjs-theme-sea :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -480,8 +492,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) {
-  --videopack-title-background-color: rgb(65, 118, 188);
+.videopack-video-player-engine-block,
+.videopack-video-loop) {
+  --videopack-title-bg-fallback: rgb(65, 118, 188);
 }
 :is(:is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
@@ -496,7 +509,8 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block).videopack-video-title, .videopack-video-title):not(.videopack-has-title-background-color)::before, :is(.videopack-wrapper,
+.videopack-video-player-engine-block,
+.videopack-video-loop).videopack-video-title, .videopack-video-title)::before, :is(.videopack-wrapper,
 .videopack-player-relative-wrapper,
 .videopack-meta-wrapper,
 .videopack-video-title,
@@ -509,8 +523,9 @@
 .videopack-video-block,
 .videopack-collection,
 .videopack-video-title-block,
-.videopack-video-player-engine-block) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color);
+.videopack-video-player-engine-block,
+.videopack-video-loop) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
+  background-color: var(--videopack-title-background-color, var(--videopack-title-bg-fallback));
 }
 :is(.gallery-thumbnail,
 .videopack-thumbnail-wrapper,
@@ -522,15 +537,6 @@
   cursor: pointer;
   overflow: hidden;
   background: #000;
-}
-:is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.gallery-thumbnail,
-.videopack-video-title-block).videopack-has-title-background-color .videopack-video-title:not(.no-title)::before, :is(.videopack-wrapper,
-.videopack-gallery-wrapper,
-.gallery-thumbnail,
-.videopack-video-title-block).videopack-has-title-background-color :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
-  background-color: var(--videopack-title-background-color) !important;
 }
 .videopack-video-title.videopack-thumbnail-title.is-overlay {
   position: absolute;
@@ -626,7 +632,7 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
-  background: linear-gradient(to bottom, var(--videopack-title-background-color) 0%, color-mix(in srgb, var(--videopack-title-background-color), transparent 40%) 60%, transparent 100%);
+  background: linear-gradient(to bottom, var(--videopack-title-background-color, var(--videopack-title-bg-fallback, #222222)) 0%, color-mix(in srgb, var(--videopack-title-background-color, var(--videopack-title-bg-fallback, #222222)), transparent 40%) 60%, transparent 100%);
 }
 .videopack-thumbnail-title.position-top ~ .videopack-share-container, .videopack-thumbnail-title.position-top .videopack-share-container {
   margin-top: 0;
@@ -715,7 +721,7 @@
   aspect-ratio: auto; /* Let skins handle their own ratios */
   font-size: clamp(12px, 9cqi, 40px);
 }
-:is(.play-button-container.video-js, .videopack-play-button-block) {
+:is(.play-button-container.video-js, .videopack-play-button-block.video-js, .play-button-container, .videopack-play-button-block) {
   position: absolute;
   top: 0;
   right: 0;
@@ -729,19 +735,12 @@
   z-index: 115;
   margin: 0;
 }
-:is(.play-button-container.video-js, .videopack-play-button-block) > * {
+:is(.play-button-container.video-js, .videopack-play-button-block.video-js, .play-button-container, .videopack-play-button-block) > * {
   pointer-events: auto;
 }
-:is(.play-button-container.video-js, .videopack-play-button-block) .play-button-container.video-js {
-  position: absolute;
-  top: 0;
-  right: 0;
+:is(.play-button-container.video-js, .videopack-play-button-block.video-js, .play-button-container, .videopack-play-button-block).mejs-overlay {
   width: 100%;
   height: 100%;
-  background-color: transparent;
-  background: transparent;
-  border: none;
-  box-shadow: none;
 }
 /* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
 :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail, .videopack-play-button-block, .videopack-gallery-item).videopack-has-play-button-secondary-color {
@@ -957,10 +956,10 @@
   pointer-events: none;
 }
 .videopack-wrapper .videopack-icons.share .close-icon {
-  display: none !important;
+  display: none;
 }
 .videopack-wrapper .videopack-icons.close .share-icon {
-  display: none !important;
+  display: none;
 }
 .videopack-wrapper .videopack-watermark img {
   display: block;
@@ -1043,10 +1042,10 @@
   height: 0;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-left: 5px solid currentColor;
+  border-right: 5px solid currentColor;
   position: absolute;
-  right: 8px;
-  left: auto;
+  left: 8px;
+  right: auto;
   top: 50%;
   transform: translateY(-50%);
   opacity: 0.6;
@@ -1060,10 +1059,11 @@
 .videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu {
   display: none;
   position: absolute;
-  right: 100%;
+  left: 100%;
+  right: auto;
   top: auto;
   bottom: 0;
-  margin-right: 0.2em;
+  margin-left: 0.2em;
   margin-bottom: 0;
   min-width: 8em;
   height: auto;
@@ -1077,7 +1077,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  right: -0.2em;
+  left: -0.2em;
   width: 0.2em;
 }
 .videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu .vjs-menu-content,
@@ -1098,17 +1098,17 @@
 .videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu.vjs-submenu-open > .vjs-menu {
   display: block;
 }
-.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left,
-.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left {
-  right: auto;
-  left: 100%;
-  margin-right: 0;
-  margin-left: 0.2em;
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-right,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-right {
+  left: auto;
+  right: 100%;
+  margin-left: 0;
+  margin-right: 0.2em;
 }
-.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left::before,
-.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left::before {
-  right: auto;
-  left: -0.2em;
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-right::before,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-right::before {
+  left: auto;
+  right: -0.2em;
 }
 .videopack-wrapper {
   /* Video.js Overrides */
@@ -1171,11 +1171,11 @@
 .videopack-wrapper.videopack-has-control-bar-bg-color .mejs-controls {
   background-color: var(--videopack-control-bar-bg-color-alpha);
 }
-.videopack-wrapper .vjs-control-bar,
-.videopack-wrapper .mejs-controls {
-  z-index: 120 !important;
+.videopack-wrapper .videopack-player .vjs-control-bar,
+.videopack-wrapper .videopack-player .mejs-container .mejs-controls {
+  z-index: 150;
 }
-.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-button button {
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-button:not(.mejs-sourcechooser-button) button {
   background-image: none;
   background-color: var(--videopack-control-bar-color);
   mask-image: var(--videopack-mejs-controls-svg);
@@ -1232,6 +1232,384 @@
 .videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-volume-current,
 .videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-volume-handle {
   background: var(--videopack-control-bar-color);
+}
+.videopack-wrapper {
+  /* MEJS Source Chooser Styles */
+}
+.videopack-wrapper .mejs__sourcechooser-button,
+.videopack-wrapper .mejs-sourcechooser-button {
+  position: relative;
+  overflow: visible;
+}
+.videopack-wrapper .mejs__sourcechooser-button button,
+.videopack-wrapper .mejs-sourcechooser-button button {
+  background: transparent;
+  mask-image: none;
+  -webkit-mask-image: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.videopack-wrapper .mejs__sourcechooser-button button .videopack-icons.gear,
+.videopack-wrapper .mejs-sourcechooser-button button .videopack-icons.gear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--videopack-control-bar-color, #fff);
+}
+.videopack-wrapper .mejs__sourcechooser-button button .videopack-icons.gear svg,
+.videopack-wrapper .mejs-sourcechooser-button button .videopack-icons.gear svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector {
+  background: color-mix(in srgb, var(--videopack-control-bar-bg-color, var(--videopack-title-background-color, #222222)), transparent 30%);
+  border: none;
+  border-radius: 4px;
+  bottom: 40px;
+  height: auto;
+  overflow: visible;
+  padding: 0;
+  position: absolute;
+  left: 0;
+  right: auto;
+  visibility: visible;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul {
+  display: block;
+  list-style-type: none;
+  margin: 0;
+  overflow: visible;
+  padding: 5px 0;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li {
+  color: var(--videopack-control-bar-color, #fff);
+  display: block;
+  list-style-type: none;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 24px;
+  text-align: right;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li:hover,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li:hover,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li:hover,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.sourcechooser-selected,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.sourcechooser-selected,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.sourcechooser-selected,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.sourcechooser-selected {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li label,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li label,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li label,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li label {
+  color: var(--videopack-control-bar-color, #fff);
+  display: block;
+  padding: 0 10px;
+  cursor: pointer;
+  margin: 0;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li input,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li input,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li input,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li input {
+  display: none;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item {
+  position: relative;
+  overflow: visible;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item > span, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item > span,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item > span,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item > span,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item > span,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item > span,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item > span,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item > span {
+  color: var(--videopack-control-bar-color, #fff);
+  display: block;
+  padding: 0 20px 0 10px;
+  font-weight: bold;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item::after, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item::after,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item::after,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item::after,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item::after,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item::after,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item::after,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 4px solid currentColor;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.6;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu {
+  display: none;
+  position: absolute;
+  left: 100%;
+  right: auto;
+  bottom: 0;
+  background: color-mix(in srgb, var(--videopack-control-bar-bg-color, var(--videopack-title-background-color, #222222)), transparent 30%);
+  border: none;
+  border-radius: 4px;
+  padding: 5px 0;
+  margin-left: 2px;
+  min-width: 100px;
+  list-style-type: none;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu::before, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -2px;
+  width: 2px;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu li,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu li, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu li,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu li,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu li,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu li,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu li,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs__sourcechooser-submenu li,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item .mejs-sourcechooser-submenu li {
+  padding: 0;
+  width: 100%;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu {
+  left: auto;
+  right: 100%;
+  margin-left: 0;
+  margin-right: 2px;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu::before, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu::before, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu::before, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs__submenu-right .mejs-sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs__sourcechooser-submenu::before,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item.mejs-submenu-right .mejs-sourcechooser-submenu::before {
+  left: auto;
+  right: -2px;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item:hover .mejs__sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item:hover .mejs-sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item:hover .mejs__sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item:hover .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item:hover .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item:hover .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item:hover .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs__sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item:hover .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item:hover .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs__sourcechooser-codec-item:hover .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item:hover .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs__sourcechooser-selector ul li.mejs-sourcechooser-codec-item:hover .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item:hover .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs__sourcechooser-codec-item:hover .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item:hover .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-codec-item:hover .mejs-sourcechooser-submenu {
+  display: block;
+}
+.videopack-wrapper .mejs__speed-button,
+.videopack-wrapper .mejs-speed-button {
+  position: relative;
+  overflow: visible;
+}
+.videopack-wrapper .mejs__speed-button > button,
+.videopack-wrapper .mejs-speed-button > button {
+  background: transparent;
+  color: #fff;
+  font-size: 11px;
+  line-height: normal;
+  margin: 0;
+  width: 36px;
+  height: 100%;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+.videopack-wrapper .mejs__speed-button .mejs__speed-selector,
+.videopack-wrapper .mejs__speed-button .mejs-speed-selector,
+.videopack-wrapper .mejs-speed-button .mejs__speed-selector,
+.videopack-wrapper .mejs-speed-button .mejs-speed-selector {
+  background: color-mix(in srgb, var(--videopack-control-bar-bg-color, var(--videopack-title-background-color, #222222)), transparent 30%);
+  border: none;
+  border-radius: 4px;
+  left: 0;
+  right: auto;
+  height: auto;
+  overflow: hidden;
+  padding: 5px 0;
+  position: absolute;
+  bottom: 40px;
+  visibility: hidden;
+  width: 60px;
+}
+.videopack-wrapper .mejs__speed-button .mejs__speed-selector ul,
+.videopack-wrapper .mejs__speed-button .mejs-speed-selector ul,
+.videopack-wrapper .mejs-speed-button .mejs__speed-selector ul,
+.videopack-wrapper .mejs-speed-button .mejs-speed-selector ul {
+  display: block;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.videopack-wrapper .mejs__speed-button .mejs__speed-selector ul li,
+.videopack-wrapper .mejs__speed-button .mejs-speed-selector ul li,
+.videopack-wrapper .mejs-speed-button .mejs__speed-selector ul li,
+.videopack-wrapper .mejs-speed-button .mejs-speed-selector ul li {
+  color: var(--videopack-control-bar-color, #fff);
+  display: block;
+  padding: 0 10px;
+  font-size: 10px;
+  line-height: 24px;
+  cursor: pointer;
+}
+.videopack-wrapper .mejs__speed-button .mejs__speed-selector ul li:hover,
+.videopack-wrapper .mejs__speed-button .mejs-speed-selector ul li:hover,
+.videopack-wrapper .mejs-speed-button .mejs__speed-selector ul li:hover,
+.videopack-wrapper .mejs-speed-button .mejs-speed-selector ul li:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+.videopack-wrapper .mejs__speed-button .mejs__speed-selector ul li.mejs-speed-selected,
+.videopack-wrapper .mejs__speed-button .mejs-speed-selector ul li.mejs-speed-selected,
+.videopack-wrapper .mejs-speed-button .mejs__speed-selector ul li.mejs-speed-selected,
+.videopack-wrapper .mejs-speed-button .mejs-speed-selector ul li.mejs-speed-selected {
+  background: rgba(255, 255, 255, 0.4);
+  font-weight: bold;
+}
+.videopack-wrapper .mejs__speed-button .mejs__speed-selector ul li label,
+.videopack-wrapper .mejs__speed-button .mejs-speed-selector ul li label,
+.videopack-wrapper .mejs-speed-button .mejs__speed-selector ul li label,
+.videopack-wrapper .mejs-speed-button .mejs-speed-selector ul li label {
+  cursor: pointer;
+  margin: 0;
+}
+.videopack-wrapper .mejs__speed-button .mejs__speed-selector ul li input,
+.videopack-wrapper .mejs__speed-button .mejs-speed-selector ul li input,
+.videopack-wrapper .mejs-speed-button .mejs__speed-selector ul li input,
+.videopack-wrapper .mejs-speed-button .mejs-speed-selector ul li input {
+  display: none;
+}
+.videopack-wrapper .mejs__speed-button:hover .mejs__speed-selector, .videopack-wrapper .mejs__speed-button:hover .mejs-speed-selector,
+.videopack-wrapper .mejs-speed-button:hover .mejs__speed-selector,
+.videopack-wrapper .mejs-speed-button:hover .mejs-speed-selector {
+  visibility: visible;
 }
 .videopack-wrapper .vjs-theme-videopack .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu .vjs-menu-content,
 .videopack-wrapper .vjs-theme-videopack .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu .vjs-menu-content {

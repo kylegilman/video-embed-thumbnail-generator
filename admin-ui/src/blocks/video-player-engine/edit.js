@@ -6,7 +6,7 @@ import {
 	store as blockEditorStore,
 	BlockControls,
 } from '@wordpress/block-editor';
-import { useMemo, useCallback, useState, useEffect } from '@wordpress/element';
+import { useMemo, useCallback, useState, useEffect, useRef } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { getSettings } from '../../api/settings';
 import { __ } from '@wordpress/i18n';
@@ -35,7 +35,6 @@ const ALLOWED_BLOCKS = ['videopack/video-watermark', 'videopack/video-title'];
  */
 export default function Edit(props) {
 	const { context, isSelected, clientId } = props;
-	const skin = getEffectiveValue('skin', {}, context);
 	const [options, setOptions] = useState({});
 	const [restartCount, setRestartCount] = useState(0);
 
@@ -180,8 +179,17 @@ export default function Edit(props) {
 		return result;
 	}, [context, effectiveAttributes, resolvedPostId, isContextual]);
 
+	const effectiveEmbedMethod = getEffectiveValue('embed_method', parentAttributes, context);
+	const skin = getEffectiveValue('skin', parentAttributes, context);
+
+	useEffect(() => {
+		resetPlayer();
+	}, [skin, resetPlayer]);
+
 	const blockProps = useBlockProps({
-		className: `videopack-video-player-engine-block videopack-wrapper ${skin} ${
+		className: `videopack-video-player-engine-block videopack-wrapper ${
+			effectiveEmbedMethod === 'Video.js' ? skin : ''
+		} ${
 			hasTitleFeatures ? 'videopack-video-title-visible' : ''
 		} ${
 			getEffectiveValue('play_button_color', {}, contextValue) ? 'videopack-has-play-button-color' : ''
@@ -201,8 +209,12 @@ export default function Edit(props) {
 	const attributes = useMemo(() => {
 		return {
 			'videopack/postId': resolvedPostId,
-			embed_method: contextValue['videopack/embed_method'],
-			skin: getEffectiveValue('skin', {}, contextValue),
+			embed_method: getEffectiveValue(
+				'embed_method',
+				parentAttributes,
+				contextValue
+			),
+			skin: getEffectiveValue('skin', parentAttributes, contextValue),
 			autoplay: contextValue['videopack/autoplay'],
 			controls: contextValue['videopack/controls'],
 			loop: contextValue['videopack/loop'],
@@ -226,35 +238,35 @@ export default function Edit(props) {
 			fullwidth: contextValue['videopack/fullwidth'],
 			play_button_color: getEffectiveValue(
 				'play_button_color',
-				{},
+				parentAttributes,
 				contextValue
 			),
 			play_button_secondary_color: getEffectiveValue(
 				'play_button_secondary_color',
-				{},
+				parentAttributes,
 				contextValue
 			),
 			control_bar_bg_color: getEffectiveValue(
 				'control_bar_bg_color',
-				{},
+				parentAttributes,
 				contextValue
 			),
 			control_bar_color: getEffectiveValue(
 				'control_bar_color',
-				{},
+				parentAttributes,
 				contextValue
 			),
-			title_color: getEffectiveValue('title_color', {}, contextValue),
+			title_color: getEffectiveValue('title_color', parentAttributes, contextValue),
 			title_background_color: getEffectiveValue(
 				'title_background_color',
-				{},
+				parentAttributes,
 				contextValue
 			),
 			downloadlink: contextValue['videopack/downloadlink'],
 			embedcode: contextValue['videopack/embedcode'],
 			restartCount: restartCount || contextValue['videopack/restartCount'],
 		};
-	}, [contextValue, resolvedPostId]);
+	}, [contextValue, resolvedPostId, restartCount]);
 
 	return (
 		<div {...blockProps}>
@@ -292,8 +304,10 @@ export default function Edit(props) {
 			</InspectorControls>
 			<VideoPlayer
 				attributes={attributes}
+				context={contextValue}
 				isSelected={isSelected}
 				hideStaticOverlays={true}
+				onReady={() => {}}
 			>
 				<div
 					className={`videopack-inner-blocks-overlay ${
@@ -321,4 +335,4 @@ export default function Edit(props) {
 			</VideoPlayer>
 		</div>
 	);
-}
+};

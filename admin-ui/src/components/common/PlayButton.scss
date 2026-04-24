@@ -41,7 +41,7 @@
 }
 
 // Global fixes for Video.js inheritance and Gutenberg block overlays
-:is(.play-button-container.video-js, .videopack-play-button-block) {
+:is(.play-button-container.video-js, .videopack-play-button-block.video-js, .play-button-container, .videopack-play-button-block) {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -59,17 +59,10 @@
 		pointer-events: auto;
 	}
 
-	// Nested cleanup for the child container inside the Gutenberg block
-	.play-button-container.video-js {
-		position: absolute;
-		top: 0;
-		left: 0;
+	// Ensure MEJS overlay also covers the area
+	&.mejs-overlay {
 		width: 100%;
 		height: 100%;
-		background-color: transparent;
-		background: transparent;
-		border: none;
-		box-shadow: none;
 	}
 }
 

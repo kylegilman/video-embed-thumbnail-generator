@@ -632,7 +632,11 @@ class Blocks implements Hook_Subscriber {
 
 		$effective_atts = array_merge( $this->options, $block->context, $attributes );
 		$style_vars     = array();
-		$classes        = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item', $skin );
+		$classes        = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
+
+		if ( 'Video.js' === ( $this->options['embed_method'] ?? 'Video.js' ) && $skin ) {
+			$classes[] = $skin;
+		}
 
 		$colors = array(
 			'title-color'            => 'title_color',
@@ -666,7 +670,15 @@ class Blocks implements Hook_Subscriber {
 		$html = sprintf( '<div %s>', $wrapper_attributes );
 
 		if ( 'none' !== $link_to ) {
-			$url   = ( 'lightbox' === $link_to ) ? '#' : get_permalink( $post_id );
+			$url = '#';
+			if ( 'lightbox' === $link_to ) {
+				$url = '#';
+			} elseif ( 'parent' === $link_to ) {
+				$parent_id = wp_get_post_parent_id( $post_id );
+				$url       = $parent_id ? get_permalink( $parent_id ) : get_permalink( $post_id );
+			} else {
+				$url = get_permalink( $post_id );
+			}
 			$html .= sprintf( '<a href="%s" class="videopack-thumbnail-link %s" data-videopack-link-to="%s">', esc_url( $url ), ( 'lightbox' === $link_to ? 'videopack-lightbox' : '' ), esc_attr( $link_to ) );
 		}
 
@@ -778,6 +790,9 @@ class Blocks implements Hook_Subscriber {
 		$text_align         = ! empty( $attributes['textAlign'] ) ? $attributes['textAlign'] : ( $is_inside_thumb ? 'center' : ( $is_inside_player ? 'right' : 'left' ) );
 
 		$class              = 'videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
+		if ( 'Video.js' === ( $this->options['embed_method'] ?? 'Video.js' ) && ! empty( $block->context['videopack/skin'] ) ) {
+			$class .= ' ' . $block->context['videopack/skin'];
+		}
 		$class             .= ' position-' . esc_attr( $position );
 		$class             .= ' has-text-align-' . esc_attr( $text_align );
 		$style_vars         = array();
@@ -806,46 +821,12 @@ class Blocks implements Hook_Subscriber {
 	 */
 	public function render_play_button( $attributes, $content, $block ) {
 		$skin         = $block->context['videopack/skin'] ?? '';
-		$embed_method = $this->options['embed_method'] ?? 'Video.js';
+		
+		// Map shorthand attributes if present.
+		$attributes['play_button_color']           = $attributes['play_button_color'] ?? ( $block->context['videopack/play_button_color'] ?? '' );
+		$attributes['play_button_secondary_color'] = $attributes['play_button_secondary_color'] ?? ( $block->context['videopack/play_button_secondary_color'] ?? '' );
 
-		// Resolve effective colors by checking attributes (leaf override) -> context (container override) -> options (global default).
-		$play_button_color           = $attributes['play_button_color'] ?? ( $block->context['videopack/play_button_color'] ?? ( $this->options['play_button_color'] ?? '' ) );
-		$play_button_secondary_color = $attributes['play_button_secondary_color'] ?? ( $block->context['videopack/play_button_secondary_color'] ?? ( $this->options['play_button_secondary_color'] ?? '' ) );
-
-		$classes    = array( 'videopack-play-button' );
-		$style_vars = array();
-
-		if ( ! empty( $play_button_color ) ) {
-			$classes[]    = 'videopack-has-play-button-color';
-			$style_vars[] = '--videopack-play-button-color: ' . $play_button_color;
-		}
-		if ( ! empty( $play_button_secondary_color ) ) {
-			$classes[]    = 'videopack-has-play-button-secondary-color';
-			$style_vars[] = '--videopack-play-button-secondary-color: ' . $play_button_secondary_color;
-		}
-
-		if ( 'WordPress Default' === $embed_method ) {
-			$classes[]    = 'mejs-overlay mejs-layer mejs-overlay-play';
-			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
-
-			$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
-
-			return sprintf(
-				'<div class="%s"%s><div class="mejs-overlay-button" style="width: 80px; height: 80px;"></div></div>',
-				esc_attr( implode( ' ', $classes ) ),
-				$style
-			);
-		}
-
-		$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
-
-		return sprintf(
-			'<div class="%1$s play-button-container video-js %2$s vjs-big-play-centered vjs-paused vjs-controls-enabled"%3$s><button class="vjs-big-play-button" type="button" aria-disabled="false"><span class="vjs-icon-placeholder" aria-hidden="true"></span><span class="vjs-control-text" aria-live="polite">%4$s</span></button></div>',
-			esc_attr( implode( ' ', $classes ) ),
-			esc_attr( $skin ),
-			$style,
-			esc_html__( 'Play Video', 'video-embed-thumbnail-generator' )
-		);
+		return Modular_Renderer::render_play_button( $attributes, $this->options, $skin );
 	}
 
 	/**
@@ -906,6 +887,7 @@ class Blocks implements Hook_Subscriber {
 				'watermark_styles'  => $block->context['videopack/watermark_styles'] ?? array(),
 				'watermark_link_to' => $block->context['videopack/watermark_link_to'] ?? '',
 				'skin'              => $block->context['videopack/skin'] ?? '',
+				'postId'            => $block->context['videopack/postId'] ?? 0,
 			),
 			$attributes
 		);

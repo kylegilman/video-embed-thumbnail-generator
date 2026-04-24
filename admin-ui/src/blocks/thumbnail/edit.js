@@ -1,11 +1,23 @@
 import {
 	useBlockProps,
 	InnerBlocks,
-	InspectorControls,
 	BlockContextProvider,
+	BlockControls,
 } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, Placeholder } from '@wordpress/components';
+import {
+	ToolbarGroup,
+	ToolbarButton,
+	Placeholder,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import {
+	link as linkIcon,
+	fullscreen as lightboxIcon,
+	page as postIcon,
+	notAllowed as noneIcon,
+	video as videoIcon,
+	post as parentIcon,
+} from '@wordpress/icons';
 import { VideoThumbnailPreview } from './VideoThumbnailPreview';
 
 import './editor.scss';
@@ -45,50 +57,40 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 	return (
 		<>
-			<InspectorControls>
-				<PanelBody
-					title={__(
-						'Thumbnail Settings',
-						'video-embed-thumbnail-generator'
-					)}
-				>
-					<SelectControl
-						label={__('Link To', 'video-embed-thumbnail-generator')}
-						value={linkTo}
-						options={[
-							{
-								label: __(
-									'None',
-									'video-embed-thumbnail-generator'
-								),
-								value: 'none',
-							},
-							{
-								label: __(
-									'Lightbox',
-									'video-embed-thumbnail-generator'
-								),
-								value: 'lightbox',
-							},
-							{
-								label: __(
-									'Direct Link',
-									'video-embed-thumbnail-generator'
-								),
-								value: 'file',
-							},
-							{
-								label: __(
-									'Attachment Page',
-									'video-embed-thumbnail-generator'
-								),
-								value: 'post',
-							},
-						]}
-						onChange={(value) => setAttributes({ linkTo: value })}
+			<BlockControls>
+				<ToolbarGroup label={__('Link To', 'video-embed-thumbnail-generator')}>
+					<ToolbarButton
+						icon={noneIcon}
+						label={__('No Link', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ linkTo: 'none' })}
+						isPressed={linkTo === 'none'}
 					/>
-				</PanelBody>
-			</InspectorControls>
+					<ToolbarButton
+						icon={lightboxIcon}
+						label={__('Open in Pop-up Player', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ linkTo: 'lightbox' })}
+						isPressed={linkTo === 'lightbox'}
+					/>
+					<ToolbarButton
+						icon={parentIcon}
+						label={__('Link to Parent Post', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ linkTo: 'parent' })}
+						isPressed={linkTo === 'parent'}
+					/>
+					<ToolbarButton
+						icon={videoIcon}
+						label={__('Link to Video File', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ linkTo: 'file' })}
+						isPressed={linkTo === 'file'}
+					/>
+					<ToolbarButton
+						icon={postIcon}
+						label={__('Link to Attachment Page', 'video-embed-thumbnail-generator')}
+						onClick={() => setAttributes({ linkTo: 'post' })}
+						isPressed={linkTo === 'post'}
+					/>
+				</ToolbarGroup>
+			</BlockControls>
 			<div {...blockProps} className={ ( blockProps.className || '' ) + ' videopack-thumbnail-block' }>
 				{!postId ? (
 					<Placeholder

@@ -18,7 +18,7 @@ import { useEffect, useRef } from '@wordpress/element';
  * @return {Element} The rendered component.
  */
 const WpMejsPlayer = (props) => {
-	const { options, controls, actualAutoplay, aspectRatio } = props;
+	const { options, controls, actualAutoplay, aspectRatio, source_groups } = props;
 
 	const playerRef = useRef(null);
 	const containerRef = useRef(null);
@@ -126,6 +126,12 @@ const WpMejsPlayer = (props) => {
 						container.ownerDocument.createElement('source');
 					source.src = s.src;
 					source.type = s.type;
+					if (s.resolution) {
+						source.setAttribute('data-res', s.resolution);
+					}
+					if (s.default_res) {
+						source.setAttribute('data-default_res', s.default_res);
+					}
 					videoElement.appendChild(source);
 				});
 
@@ -150,6 +156,7 @@ const WpMejsPlayer = (props) => {
 				const mejsOptions = {
 					pluginPath: '/wp-includes/js/mediaelement/',
 					...mejsSettings,
+					source_groups: source_groups || options.source_groups,
 				};
 
 				// Ensure features is an array to avoid MEJS crashes in setResponsiveMode.
@@ -163,9 +170,12 @@ const WpMejsPlayer = (props) => {
 						'current',
 						'duration',
 						'tracks',
+						'sourcechooser',
 						'volume',
 						'fullscreen',
 					];
+				} else if (!mejsOptions.features.includes('sourcechooser')) {
+					mejsOptions.features.push('sourcechooser');
 				}
 
 				if (!mejsOptions.stretching) {

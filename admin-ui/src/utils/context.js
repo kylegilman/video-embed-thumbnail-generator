@@ -13,13 +13,16 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	const contextKey = key.includes('/') ? key : `videopack/${key}`;
 	const attrKey = key.includes('/') ? key.split('/')[1] : key;
 
+	// Helper to check if a value is valid (not undefined, null, or empty string)
+	const isValid = (val) => val !== undefined && val !== null;
+
 	// 1. Check local attribute override
-	if (attributes[attrKey] !== undefined && attributes[attrKey] !== null && attributes[attrKey] !== '') {
+	if (isValid(attributes[attrKey])) {
 		return attributes[attrKey];
 	}
 
 	// 2. Check inherited context (from Collection or Video block)
-	if (context[contextKey] !== undefined && context[contextKey] !== null && context[contextKey] !== '') {
+	if (isValid(context[contextKey])) {
 		return context[contextKey];
 	}
 
@@ -28,19 +31,15 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	const globalDefaults = videopack_config?.defaults || {};
 
 	if (attrKey === 'skin') {
-		return attributes.skin || context['videopack/skin'] || globalOptions.skin || globalDefaults.skin || 'vjs-theme-videopack';
+		const localValue = attributes[attrKey] || context[contextKey];
+		if (isValid(localValue)) {
+			return localValue;
+		}
+		return globalOptions.skin || globalDefaults.skin || videopack_config?.skin || 'vjs-theme-videopack';
 	}
 
-	const val = attributes[attrKey] ?? context[`videopack/${attrKey}`];
-	if ( val !== undefined && val !== null ) {
-		return val;
-	}
+	const globalValue = globalOptions[attrKey] ?? globalDefaults[attrKey] ?? videopack_config?.[attrKey];
+	const finalValue = isValid(globalValue) ? globalValue : undefined;
 
-	const fallback = globalOptions[attrKey] ?? globalDefaults[attrKey];
-
-	if ( attrKey === 'gallery_per_page' ) {
-		console.log( `getEffectiveValue fallback for ${attrKey}:`, fallback );
-	}
-
-	return fallback;
+	return finalValue;
 };

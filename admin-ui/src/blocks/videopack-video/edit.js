@@ -72,7 +72,7 @@ const SingleVideoBlock = ({
 	resolvedPostId,
 	resolvedAttributes = attributes,
 }) => {
-	const { src } = resolvedAttributes;
+	const { src, id: effectiveId } = resolvedAttributes;
 
 	const { record: attachment } = videoData;
 	const editorPostId = useSelect(
@@ -186,6 +186,8 @@ const SingleVideoBlock = ({
 				/>
 			</InspectorControls>
 			<figure
+				style={{ display: (src || effectiveId) ? 'block' : 'none' }}
+				aria-hidden={!(src || effectiveId)}
 				className={`videopack-video-block-container videopack-wrapper${
 					attributes.title_background_color
 						? ' videopack-has-title-background-color'
@@ -199,8 +201,8 @@ const SingleVideoBlock = ({
 						? ' videopack-has-play-button-secondary-color'
 						: ''
 				}${
-					(attributes.overlay_title ?? videopack_config?.options?.overlay_title) || 
-					(attributes.downloadlink ?? videopack_config?.options?.downloadlink) || 
+					(attributes.overlay_title ?? videopack_config?.options?.overlay_title) ||
+					(attributes.downloadlink ?? videopack_config?.options?.downloadlink) ||
 					(attributes.embedcode ?? videopack_config?.options?.embedcode)
 						? ' videopack-video-title-visible'
 						: ''
@@ -338,8 +340,14 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					  ]
 					: attributes.sources || []),
 			source_groups:
-				attachment.videopack?.source_groups ||
-				attributes.source_groups ||
+				(attachment.videopack?.source_groups &&
+				Object.keys(attachment.videopack.source_groups).length > 0
+					? attachment.videopack.source_groups
+					: null) ||
+				(attributes.source_groups &&
+				Object.keys(attributes.source_groups).length > 0
+					? attributes.source_groups
+					: null) ||
 				{},
 			default_ratio:
 				attachment.meta?.['_kgflashmediaplayer-ratio'] ||
@@ -348,10 +356,25 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				attachment.meta?.['_kgflashmediaplayer-fixedaspect'] ||
 				attributes.fixed_aspect,
 			fullwidth:
-				attachment.meta?.['_kgflashmediaplayer-fullwidth'] ||
 				attributes.fullwidth,
+			embed_method:
+				attributes.embed_method || options?.embed_method || config?.embed_method,
+			skin:
+				attributes.skin || options?.skin || config?.skin,
+			play_button_color:
+				attributes.play_button_color || options?.play_button_color || config?.play_button_color,
+			play_button_secondary_color:
+				attributes.play_button_secondary_color || options?.play_button_secondary_color || config?.play_button_secondary_color,
+			control_bar_bg_color:
+				attributes.control_bar_bg_color || options?.control_bar_bg_color || config?.control_bar_bg_color,
+			control_bar_color:
+				attributes.control_bar_color || options?.control_bar_color || config?.control_bar_color,
+			title_color:
+				attributes.title_color || options?.title_color || config?.title_color,
+			title_background_color:
+				attributes.title_background_color || options?.title_background_color || config?.title_background_color,
 		};
-	}, [attributes, attachment, isContextual]);
+	}, [attributes, attachment, options, config]);
 
 	const attributesRef = useRef(attributes);
 	const lastFetchedIdRef = useRef(null);
@@ -415,6 +438,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 						  ]
 						: []),
 				source_groups: attachmentObject.videopack?.source_groups || {},
+				text_tracks: attachmentObject.videopack?.text_tracks || [],
 				showCaption: !!(
 					attachmentObject.caption?.raw ??
 					attachmentObject.caption?.rendered
@@ -454,14 +478,23 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				'caption',
 				'width',
 				'height',
+				'embedlink',
 				'sources',
 				'source_groups',
-				'embedlink',
+				'text_tracks',
+				'embed_method',
+				'skin',
+				'play_button_color',
+				'play_button_secondary_color',
+				'control_bar_bg_color',
+				'control_bar_color',
+				'title_color',
+				'title_background_color',
 			];
 
 			if (Object.keys(updatedAttributes).length > 0) {
 				const filteredUpdates = { ...updatedAttributes };
-				
+
 				// We always want to persist the ID if it's being set.
 				// For other attributes, we only persist them if we are NOT in a contextual loop
 				// AND they are not in the dynamicKeys list.
@@ -606,7 +639,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			// Hydrate embed_method from global settings if it's missing from block attributes
 			// We skip persistence if we are in a contextual (loop) environment
 			if (response?.embed_method && !attributesRef.current.embed_method && !isContextual) {
-				setAttributes({ embed_method: response.embed_method });
+				// We no longer call setAttributes here to keep the block markup clean
 			}
 		});
 
@@ -743,21 +776,16 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				</>
 			)}
 
-			<figure 
-				style={{ display: (src || effectiveId) ? 'block' : 'none' }}
-				aria-hidden={!(src || effectiveId)}
-			>
-				<SingleVideoBlock
-					clientId={clientId}
-					setAttributes={setAttributes}
-					attributes={attributes}
-					options={options}
-					isSelected={isSelected}
-					videoData={videoData}
-					resolvedPostId={resolvedPostId}
-					resolvedAttributes={resolvedAttributes}
-				/>
-			</figure>
+			<SingleVideoBlock
+				clientId={clientId}
+				setAttributes={setAttributes}
+				attributes={attributes}
+				options={options}
+				isSelected={isSelected}
+				videoData={videoData}
+				resolvedPostId={resolvedPostId}
+				resolvedAttributes={resolvedAttributes}
+			/>
 		</figure>
 	);
 };

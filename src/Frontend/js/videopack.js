@@ -86,9 +86,10 @@
 		 * @param {HTMLElement|Document} container The container to search.
 		 */
 		initModularBlocks: function (container = document) {
-			container.querySelectorAll('.videopack-meta-wrapper, .videopack-thumbnail-wrapper').forEach((element) => {
+			container.querySelectorAll('.videopack-meta-wrapper, .videopack-thumbnail-wrapper, .videopack-video-watermark').forEach((element) => {
 				const shareToggle = element.querySelector('.videopack-share-toggle');
-				if (shareToggle) {
+				const downloadLink = element.querySelector('.videopack-download-link');
+				if (shareToggle || downloadLink) {
 					this.setupMetaBar(element);
 				}
 			});
