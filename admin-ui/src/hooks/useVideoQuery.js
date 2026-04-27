@@ -21,10 +21,10 @@ export default function useVideoQuery(attributes, previewPostId) {
 		gallery_include,
 		gallery_exclude,
 		gallery_pagination,
-		gallery_per_page = 12,
+		gallery_per_page = 6,
 		page_number = 1,
 		enable_collection_video_limit = false,
-		collection_video_limit = 12,
+		collection_video_limit = 6,
 		id,
 	} = attributes;
 
@@ -91,8 +91,8 @@ export default function useVideoQuery(attributes, previewPostId) {
 			gallery_orderby: gallery_orderby || 'post_date',
 			gallery_order: gallery_order || 'DESC',
 			gallery_per_page: gallery_pagination 
-				? (parseInt(gallery_per_page, 10) || 12) 
-				: (enable_collection_video_limit ? (parseInt(collection_video_limit, 10) || 12) : -1),
+				? (parseInt(gallery_per_page, 10) || 6) 
+				: (enable_collection_video_limit ? (parseInt(collection_video_limit, 10) || 6) : -1),
 			page_number: parseInt(page_number, 10) || 1,
 			gallery_id: gallery_id ? parseInt(gallery_id, 10) : (previewPostId ? parseInt(previewPostId, 10) : undefined),
 			gallery_include: gallery_include || id,

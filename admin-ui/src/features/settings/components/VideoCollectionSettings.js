@@ -122,14 +122,10 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			'videopack/currentPage': currentPage,
 			'videopack/totalPages': maxNumPages,
 			'videopack/onPageChange': (page) => setCurrentPage(page),
-			'videopack/title_color': title_color || colorFallbacks.title_color,
-			'videopack/title_background_color':
-				title_background_color || colorFallbacks.title_background_color,
-			'videopack/play_button_color':
-				play_button_color || colorFallbacks.play_button_color,
-			'videopack/play_button_secondary_color':
-				play_button_secondary_color ||
-				colorFallbacks.play_button_secondary_color,
+			'videopack/title_color': title_color,
+			'videopack/title_background_color': title_background_color,
+			'videopack/play_button_color': play_button_color,
+			'videopack/play_button_secondary_color': play_button_secondary_color,
 			'videopack/pagination_color':
 				pagination_color || colorFallbacks.pagination_color,
 			'videopack/pagination_background_color':

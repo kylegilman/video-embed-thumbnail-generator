@@ -11,7 +11,7 @@ import {
 import { captureVideoFrame } from '../../utils/video-capture';
 import SelectFromLibrary from '../../features/settings/components/SelectFromLibrary';
 import WatermarkPositioner from '../WatermarkPositioner/WatermarkPositioner';
-import './WatermarkSettingsPanel.scss';
+
 
 const WatermarkSettingsPanel = ({
 	watermarkSettings,

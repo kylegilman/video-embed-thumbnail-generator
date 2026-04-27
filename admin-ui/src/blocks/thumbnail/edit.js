@@ -11,7 +11,6 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import {
-	link as linkIcon,
 	fullscreen as lightboxIcon,
 	page as postIcon,
 	notAllowed as noneIcon,
@@ -58,7 +57,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	return (
 		<>
 			<BlockControls>
-				<ToolbarGroup label={__('Link To', 'video-embed-thumbnail-generator')}>
+				<ToolbarGroup
+					label={__('Link To', 'video-embed-thumbnail-generator')}
+				>
 					<ToolbarButton
 						icon={noneIcon}
 						label={__('No Link', 'video-embed-thumbnail-generator')}
@@ -67,31 +68,48 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					/>
 					<ToolbarButton
 						icon={lightboxIcon}
-						label={__('Open in Pop-up Player', 'video-embed-thumbnail-generator')}
+						label={__(
+							'Open in Pop-up Player',
+							'video-embed-thumbnail-generator'
+						)}
 						onClick={() => setAttributes({ linkTo: 'lightbox' })}
 						isPressed={linkTo === 'lightbox'}
 					/>
 					<ToolbarButton
 						icon={parentIcon}
-						label={__('Link to Parent Post', 'video-embed-thumbnail-generator')}
+						label={__(
+							'Link to Parent Post',
+							'video-embed-thumbnail-generator'
+						)}
 						onClick={() => setAttributes({ linkTo: 'parent' })}
 						isPressed={linkTo === 'parent'}
 					/>
 					<ToolbarButton
 						icon={videoIcon}
-						label={__('Link to Video File', 'video-embed-thumbnail-generator')}
+						label={__(
+							'Link to Video File',
+							'video-embed-thumbnail-generator'
+						)}
 						onClick={() => setAttributes({ linkTo: 'file' })}
 						isPressed={linkTo === 'file'}
 					/>
 					<ToolbarButton
 						icon={postIcon}
-						label={__('Link to Attachment Page', 'video-embed-thumbnail-generator')}
+						label={__(
+							'Link to Attachment Page',
+							'video-embed-thumbnail-generator'
+						)}
 						onClick={() => setAttributes({ linkTo: 'post' })}
 						isPressed={linkTo === 'post'}
 					/>
 				</ToolbarGroup>
 			</BlockControls>
-			<div {...blockProps} className={ ( blockProps.className || '' ) + ' videopack-thumbnail-block' }>
+			<div
+				{...blockProps}
+				className={
+					(blockProps.className || '') + ' videopack-thumbnail-block'
+				}
+			>
 				{!postId ? (
 					<Placeholder
 						icon="format-video"

@@ -509,7 +509,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 											embedcode: !!(embeddable && embedcode),
 											showBackground: true
 										}}
-										isInsidePlayer={true}
+										isInsidePlayerOverlay={true}
+										isInsidePlayerContainer={true}
 										isOverlay={true}
 										context={previewContext}
 									/>
@@ -517,7 +518,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								{watermark && (
 									<BlockPreview
 										name="videopack/video-watermark"
-										isInsidePlayer={true}
+										isInsidePlayerOverlay={true}
+										isInsidePlayerContainer={true}
 										isOverlay={true}
 										context={previewContext}
 									/>

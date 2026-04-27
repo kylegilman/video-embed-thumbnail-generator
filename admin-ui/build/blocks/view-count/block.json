@@ -10,12 +10,9 @@
   "usesContext": [
     "videopack/postId",
     "videopack/skin",
-    "videopack/title_color",
-    "videopack/title_background_color",
-    "videopack/textAlign",
     "videopack/isInsideThumbnail",
-    "videopack/isInsidePlayer",
-    "videopack/isInsidePlayerBlock"
+    "videopack/isInsidePlayerOverlay",
+    "videopack/isInsidePlayerContainer"
   ],
   "attributes": {
     "iconType": {

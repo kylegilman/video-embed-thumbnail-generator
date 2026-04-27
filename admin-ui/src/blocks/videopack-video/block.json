@@ -22,7 +22,6 @@
 	],
 	"providesContext": {
 		"videopack/postId": "id",
-		"videopack/skin": "skin",
 		"videopack/downloadlink": "downloadlink",
 		"videopack/embedcode": "embedcode",
 		"videopack/autoplay": "autoplay",
@@ -32,14 +31,8 @@
 		"videopack/playsinline": "playsinline",
 		"videopack/preload": "preload",
 		"videopack/volume": "volume",
-		"videopack/play_button_color": "play_button_color",
-		"videopack/play_button_secondary_color": "play_button_secondary_color",
-		"videopack/title_color": "title_color",
-		"videopack/title_background_color": "title_background_color",
-		"videopack/control_bar_bg_color": "control_bar_bg_color",
-		"videopack/control_bar_color": "control_bar_color",
-		"videopack/isInsidePlayer": "isInsidePlayer",
-		"videopack/isInsidePlayerBlock": "isInsidePlayerBlock",
+		"videopack/isInsidePlayerOverlay": "isInsidePlayerOverlay",
+		"videopack/isInsidePlayerContainer": "isInsidePlayerContainer",
 		"videopack/watermark": "watermark",
 		"videopack/watermark_styles": "watermark_styles",
 		"videopack/watermark_link_to": "watermark_link_to",
@@ -103,9 +96,6 @@
 		},
 		"height": {
 			"type": "number"
-		},
-		"skin": {
-			"type": "string"
 		},
 		"autoplay": {
 			"type": "boolean",
@@ -180,24 +170,6 @@
 			"type": "boolean",
 			"default": false
 		},
-		"play_button_color": {
-			"type": "string"
-		},
-		"play_button_secondary_color": {
-			"type": "string"
-		},
-		"control_bar_bg_color": {
-			"type": "string"
-		},
-		"control_bar_color": {
-			"type": "string"
-		},
-		"title_color": {
-			"type": "string"
-		},
-		"title_background_color": {
-			"type": "string"
-		},
 		"textAlign": {
 			"type": "string"
 		},
@@ -230,7 +202,7 @@
 			"type": "string",
 			"default": "top"
 		},
-		"isInsidePlayer": {
+		"isInsidePlayerOverlay": {
 			"type": "boolean",
 			"default": false
 		},
@@ -238,13 +210,12 @@
 			"type": "number",
 			"default": 0
 		},
-		"isInsidePlayerBlock": {
+		"isInsidePlayerContainer": {
 			"type": "boolean",
 			"default": true
 		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",
 	"editorScript": "file:./index.js",
-	"editorStyle": "file:./index.css",
-	"style": "file:./style-index.css"
+	"editorStyle": "file:./index.css"
 }

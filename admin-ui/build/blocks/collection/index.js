@@ -15,6 +15,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
+/* harmony export */   getVideoSources: () => (/* binding */ getVideoSources),
 /* harmony export */   testEncodeCommand: () => (/* binding */ testEncodeCommand)
 /* harmony export */ });
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
@@ -66,6 +67,32 @@ const getPresets = async (attachmentId = null, url = '', probedMetadata = null, 
       throw error;
     }
     console.error('Error fetching presets:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches already grouped and labeled video sources for a player.
+ *
+ * @param {number|string} attachmentId   Optional. The video attachment ID.
+ * @param {string}        url            Optional. The video source URL.
+ * @param {AbortSignal}   signal         Optional. Abort signal.
+ */
+const getVideoSources = async (attachmentId = null, url = '', signal = null) => {
+  try {
+    const query = {
+      attachment_id: attachmentId,
+      url
+    };
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/sources', query),
+      signal
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw error;
+    }
+    console.error('Error fetching video sources:', error);
     throw error;
   }
 };
@@ -516,7 +543,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _api_settings__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../api/settings */ "./src/api/settings.js");
 /* harmony import */ var _hooks_useVideoQuery__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../hooks/useVideoQuery */ "./src/hooks/useVideoQuery.js");
 /* harmony import */ var _components_InspectorControls_CollectionSettingsPanel__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../components/InspectorControls/CollectionSettingsPanel */ "./src/components/InspectorControls/CollectionSettingsPanel.js");
-/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
+/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
 /* harmony import */ var _utils_VideopackContext__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../utils/VideopackContext */ "./src/utils/VideopackContext.js");
 /* harmony import */ var _utils_templates__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../utils/templates */ "./src/utils/templates.js");
 /* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/collection/editor.scss");
@@ -550,14 +577,11 @@ function Edit({
   } = attributes;
 
   // Resolve Effective Values for design and pagination (these follow global settings)
-  const effectiveValues = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => {
-    const keys = ['skin', 'align', 'gallery_pagination', 'gallery_per_page', 'enable_collection_video_limit', 'collection_video_limit', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'views', 'overlay_title'];
-    const resolved = {};
-    keys.forEach(key => {
-      resolved[key] = (0,_utils_context__WEBPACK_IMPORTED_MODULE_8__.getEffectiveValue)(key, attributes, context);
-    });
-    return resolved;
-  }, [attributes, context]);
+  const {
+    resolved: effectiveValues,
+    style: contextStyle,
+    classes: collectionClasses
+  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_8__["default"])(attributes, context);
   const {
     hasPaginationBlock,
     isNewlyInserted
@@ -577,7 +601,7 @@ function Edit({
   const queryParams = {
     ...attributes,
     gallery_pagination: hasPaginationBlock,
-    gallery_per_page: hasPaginationBlock ? effectiveValues.gallery_per_page || 12 : effectiveValues.enable_collection_video_limit ? effectiveValues.collection_video_limit || 12 : -1,
+    gallery_per_page: hasPaginationBlock ? effectiveValues.gallery_per_page || 6 : effectiveValues.enable_collection_video_limit ? effectiveValues.collection_video_limit || 6 : -1,
     page_number: currentPage || 1
   };
   // We fetch query data to power the live preview template and pagination info
@@ -587,16 +611,6 @@ function Edit({
       setOptions(response);
     });
   }, []);
-
-  // Sync structural state to attributes for persistence ONLY if needed for frontend.
-  // We handle gallery_per_page here because it's a user setting that should persist.
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
-    if (attributes.gallery_per_page !== effectiveValues.gallery_per_page) {
-      setAttributes({
-        gallery_per_page: effectiveValues.gallery_per_page
-      });
-    }
-  }, [effectiveValues.gallery_per_page, attributes.gallery_per_page, setAttributes]);
 
   // Resolve blockGap value for use in internal grid spacing
   const resolvedBlockGap = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => {
@@ -619,19 +633,14 @@ function Edit({
   }, [layout, options]);
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.useBlockProps)({
     style: {
-      '--videopack-title-color': effectiveValues.title_color,
-      '--videopack-title-background-color': effectiveValues.title_background_color,
-      '--videopack-play-button-color': effectiveValues.play_button_color,
-      '--videopack-play-button-secondary-color': effectiveValues.play_button_secondary_color,
-      '--videopack-control-bar-bg-color': effectiveValues.control_bar_bg_color,
-      '--videopack-control-bar-color': effectiveValues.control_bar_color,
+      ...contextStyle,
       '--videopack-collection-columns': columns,
       '--videopack-collection-gap': resolvedBlockGap
-    }
+    },
+    className: ['videopack-collection', 'videopack-wrapper', `layout-${layout}`, `columns-${columns}`,
+    // If no explicit align is set, apply the effective (global) align class
+    !attributes.align && effectiveValues.align ? `align${effectiveValues.align}` : '', collectionClasses].filter(Boolean).join(' ')
   });
-  const collectionClasses = ['videopack-collection', 'videopack-wrapper', `layout-${layout}`, `columns-${columns}`,
-  // If no explicit align is set, apply the effective (global) align class
-  !attributes.align && effectiveValues.align ? `align${effectiveValues.align}` : '', effectiveValues.title_color ? 'videopack-has-title-color' : '', effectiveValues.title_background_color ? 'videopack-has-title-background-color' : '', effectiveValues.play_button_color ? 'videopack-has-play-button-color' : '', effectiveValues.play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : '', effectiveValues.control_bar_bg_color ? 'videopack-has-control-bar-bg-color' : '', effectiveValues.control_bar_color ? 'videopack-has-control-bar-color' : ''].filter(Boolean).join(' ');
   const videopackContextValue = {
     gallery_pagination: hasPaginationBlock,
     gallery_per_page: effectiveValues.gallery_per_page,
@@ -717,7 +726,6 @@ function Edit({
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
       ...blockProps,
-      className: (blockProps.className || '') + ' ' + collectionClasses,
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.BlockContextProvider, {
         value: providedContext,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_utils_VideopackContext__WEBPACK_IMPORTED_MODULE_9__.VideopackProvider, {
@@ -756,6 +764,74 @@ function save() {
 
 /***/ },
 
+/***/ "./src/blocks/shared/design-context.js"
+/*!*********************************************!*\
+  !*** ./src/blocks/shared/design-context.js ***!
+  \*********************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   designAttributes: () => (/* binding */ designAttributes),
+/* harmony export */   providesDesignContext: () => (/* binding */ providesDesignContext),
+/* harmony export */   usesDesignContext: () => (/* binding */ usesDesignContext)
+/* harmony export */ });
+/**
+ * Shared design attributes and context definitions for Videopack blocks.
+ */
+
+const designAttributes = {
+  skin: {
+    type: 'string'
+  },
+  title_color: {
+    type: 'string'
+  },
+  title_background_color: {
+    type: 'string'
+  },
+  play_button_color: {
+    type: 'string'
+  },
+  play_button_secondary_color: {
+    type: 'string'
+  },
+  control_bar_bg_color: {
+    type: 'string'
+  },
+  control_bar_color: {
+    type: 'string'
+  },
+  pagination_color: {
+    type: 'string'
+  },
+  pagination_background_color: {
+    type: 'string'
+  },
+  pagination_active_bg_color: {
+    type: 'string'
+  },
+  pagination_active_color: {
+    type: 'string'
+  }
+};
+const providesDesignContext = {
+  'videopack/skin': 'skin',
+  'videopack/title_color': 'title_color',
+  'videopack/title_background_color': 'title_background_color',
+  'videopack/play_button_color': 'play_button_color',
+  'videopack/play_button_secondary_color': 'play_button_secondary_color',
+  'videopack/control_bar_bg_color': 'control_bar_bg_color',
+  'videopack/control_bar_color': 'control_bar_color',
+  'videopack/pagination_color': 'pagination_color',
+  'videopack/pagination_background_color': 'pagination_background_color',
+  'videopack/pagination_active_bg_color': 'pagination_active_bg_color',
+  'videopack/pagination_active_color': 'pagination_active_color'
+};
+const usesDesignContext = ['videopack/skin', 'videopack/title_color', 'videopack/title_background_color', 'videopack/play_button_color', 'videopack/play_button_secondary_color', 'videopack/control_bar_bg_color', 'videopack/control_bar_color', 'videopack/pagination_color', 'videopack/pagination_background_color', 'videopack/pagination_active_bg_color', 'videopack/pagination_active_color'];
+
+/***/ },
+
 /***/ "./src/components/CompactColorPicker/CompactColorPicker.js"
 /*!*****************************************************************!*\
   !*** ./src/components/CompactColorPicker/CompactColorPicker.js ***!
@@ -768,10 +844,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _CompactColorPicker_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CompactColorPicker.scss */ "./src/components/CompactColorPicker/CompactColorPicker.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
-
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__);
 
 
 /**
@@ -817,31 +891,31 @@ const CompactColorPicker = ({
       onChange(val);
     }
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
     className: "videopack-color-picker-container",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("span", {
       className: "videopack-color-picker-label",
       children: label
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Dropdown, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Dropdown, {
       className: "videopack-color-dropdown",
       contentClassName: "videopack-color-dropdown-content",
       renderToggle: ({
         isOpen,
         onToggle
-      }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
+      }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
         onClick: onToggle,
         "aria-expanded": isOpen,
         variant: "secondary",
         className: "videopack-color-picker-button",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ColorIndicator, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ColorIndicator, {
           colorValue: displayColor
         })
       }),
-      renderContent: () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      renderContent: () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
         className: "videopack-color-picker-palette-wrapper",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ColorPalette, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ColorPalette, {
           colors: colors,
-          value: hexValue,
+          value: hexValue === '' ? undefined : hexValue,
           onChange: handleOnChange,
           disableCustomColors: false,
           clearable: true
@@ -1662,10 +1736,10 @@ function useVideoQuery(attributes, previewPostId) {
     gallery_include,
     gallery_exclude,
     gallery_pagination,
-    gallery_per_page = 12,
+    gallery_per_page = 6,
     page_number = 1,
     enable_collection_video_limit = false,
-    collection_video_limit = 12,
+    collection_video_limit = 6,
     id
   } = attributes;
   const {
@@ -1736,7 +1810,7 @@ function useVideoQuery(attributes, previewPostId) {
     const args = {
       gallery_orderby: gallery_orderby || 'post_date',
       gallery_order: gallery_order || 'DESC',
-      gallery_per_page: gallery_pagination ? parseInt(gallery_per_page, 10) || 12 : enable_collection_video_limit ? parseInt(collection_video_limit, 10) || 12 : -1,
+      gallery_per_page: gallery_pagination ? parseInt(gallery_per_page, 10) || 6 : enable_collection_video_limit ? parseInt(collection_video_limit, 10) || 6 : -1,
       page_number: parseInt(page_number, 10) || 1,
       gallery_id: gallery_id ? parseInt(gallery_id, 10) : previewPostId ? parseInt(previewPostId, 10) : undefined,
       gallery_include: gallery_include || id,
@@ -1887,6 +1961,67 @@ function useVideoQuery(attributes, previewPostId) {
 
 /***/ },
 
+/***/ "./src/hooks/useVideopackContext.js"
+/*!******************************************!*\
+  !*** ./src/hooks/useVideopackContext.js ***!
+  \******************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   DESIGN_KEYS: () => (/* binding */ DESIGN_KEYS),
+/* harmony export */   "default": () => (/* binding */ useVideopackContext)
+/* harmony export */ });
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/context */ "./src/utils/context.js");
+
+
+const DESIGN_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'enable_collection_video_limit', 'collection_video_limit'];
+
+/**
+ * Hook to resolve Videopack design context and generate styles/classes.
+ *
+ * @param {Object} attributes Block attributes.
+ * @param {Object} context    Block context.
+ * @return {Object} Resolved values, styles, and classes.
+ */
+function useVideopackContext(attributes, context) {
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    const resolved = {};
+    const style = {};
+    const classes = [];
+    DESIGN_KEYS.forEach(key => {
+      const value = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)(key, attributes, context);
+      resolved[key] = value;
+      if (value) {
+        const cssKey = key.replace(/_/g, '-');
+        if (typeof value === 'string' || typeof value === 'number') {
+          const cssVar = `--videopack-${cssKey}`;
+          style[cssVar] = value;
+        }
+
+        // Only add classes for colors/styles that are actually set
+        if (key !== 'skin') {
+          classes.push(`videopack-has-${cssKey}`);
+        }
+      }
+    });
+
+    // Special handling for skin class
+    if (resolved.skin && resolved.skin !== 'default') {
+      classes.push(resolved.skin);
+    }
+    return {
+      resolved,
+      style,
+      classes: classes.join(' ')
+    };
+  }, [attributes, context]);
+}
+
+/***/ },
+
 /***/ "./src/utils/VideopackContext.js"
 /*!***************************************!*\
   !*** ./src/utils/VideopackContext.js ***!
@@ -1955,25 +2090,30 @@ const getColorFallbacks = settings => {
       case 'vjs-theme-city':
         fallbacks.title_background_color = '#bf3b4d';
         fallbacks.control_bar_bg_color = '#000000';
+        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#bf3b4d';
         break;
       case 'vjs-theme-fantasy':
         fallbacks.title_background_color = '#9f44b4';
         fallbacks.play_button_secondary_color = '#9f44b4';
+        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#9f44b4';
         break;
       case 'vjs-theme-forest':
         fallbacks.title_background_color = '#6fb04e';
         fallbacks.play_button_secondary_color = '#6fb04e';
         fallbacks.control_bar_bg_color = 'transparent';
+        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#6fb04e';
         break;
       case 'vjs-theme-sea':
         fallbacks.title_background_color = '#4176bc';
         fallbacks.play_button_secondary_color = '#4176bc';
         fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
+        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#4176bc';
         break;
       case 'kg-video-js-skin':
         fallbacks.title_background_color = '#000000';
         fallbacks.play_button_secondary_color = '#000000';
         fallbacks.control_bar_bg_color = '#000000';
+        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#000000';
         break;
     }
   }
@@ -1990,7 +2130,8 @@ const getColorFallbacks = settings => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   getEffectiveValue: () => (/* binding */ getEffectiveValue)
+/* harmony export */   getEffectiveValue: () => (/* binding */ getEffectiveValue),
+/* harmony export */   normalizeSourceGroups: () => (/* binding */ normalizeSourceGroups)
 /* harmony export */ });
 /* global videopack_config */
 
@@ -2030,9 +2171,36 @@ const getEffectiveValue = (key, attributes = {}, context = {}) => {
     }
     return globalOptions.skin || globalDefaults.skin || videopack_config?.skin || 'vjs-theme-videopack';
   }
+  if (attrKey === 'align') {
+    const localValue = attributes[attrKey] || context[contextKey];
+    if (isValid(localValue)) {
+      return localValue;
+    }
+    // Collections use gallery_align as their global default
+    const isCollection = attributes.layout || context['videopack/layout'];
+    if (isCollection) {
+      return globalOptions.gallery_align || globalOptions.align || globalDefaults.align || '';
+    }
+    return globalOptions.align || globalDefaults.align || '';
+  }
   const globalValue = globalOptions[attrKey] ?? globalDefaults[attrKey] ?? videopack_config?.[attrKey];
   const finalValue = isValid(globalValue) ? globalValue : undefined;
   return finalValue;
+};
+
+/**
+ * Normalizes video sources from the API into source_groups for the player.
+ *
+ * @param {Object} videoSources Grouped sources returned from the API.
+ * @return {Object} Grouped sources.
+ */
+const normalizeSourceGroups = videoSources => {
+  if (!videoSources || typeof videoSources !== 'object') {
+    return {};
+  }
+
+  // If it's already in the grouped format { codecId: { label, sources } }, return it
+  return videoSources;
 };
 
 /***/ },
@@ -2107,18 +2275,6 @@ const getListTemplate = options => {
 /*!*******************************************!*\
   !*** ./src/blocks/collection/editor.scss ***!
   \*******************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ },
-
-/***/ "./src/components/CompactColorPicker/CompactColorPicker.scss"
-/*!*******************************************************************!*\
-  !*** ./src/components/CompactColorPicker/CompactColorPicker.scss ***!
-  \*******************************************************************/
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
@@ -2297,7 +2453,7 @@ var close_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODUL
   \******************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/collection","title":"Videopack Collection","category":"media","icon":"grid-view","description":"A composable grid or list layout for displaying videos.","supports":{"html":false,"align":["left","right","center","wide","full"],"color":{"background":true,"text":true,"link":true},"spacing":{"margin":true,"padding":true,"blockGap":true}},"attributes":{"skin":{"type":"string"},"layout":{"type":"string","default":"grid"},"columns":{"type":"number","default":3},"gallery_source":{"type":"string","default":"current"},"gallery_id":{"type":"number","default":0},"gallery_category":{"type":"string","default":""},"gallery_tag":{"type":"string","default":""},"gallery_orderby":{"type":"string","default":"post_date"},"gallery_order":{"type":"string","default":"DESC"},"gallery_include":{"type":"string","default":""},"gallery_exclude":{"type":"string","default":""},"gallery_per_page":{"type":"number"},"currentPage":{"type":"number","default":1},"pagination_color":{"type":"string"},"pagination_background_color":{"type":"string"},"pagination_active_bg_color":{"type":"string"},"pagination_active_color":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"play_button_color":{"type":"string"},"play_button_secondary_color":{"type":"string"},"control_bar_bg_color":{"type":"string"},"control_bar_color":{"type":"string"},"views":{"type":"boolean"},"overlay_title":{"type":"boolean"},"gallery_align":{"type":"string"},"enable_collection_video_limit":{"type":"boolean"},"collection_video_limit":{"type":"number"}},"providesContext":{"videopack/skin":"skin","videopack/layout":"layout","videopack/columns":"columns","videopack/gallery_source":"gallery_source","videopack/gallery_id":"gallery_id","videopack/gallery_category":"gallery_category","videopack/gallery_tag":"gallery_tag","videopack/gallery_orderby":"gallery_orderby","videopack/gallery_order":"gallery_order","videopack/gallery_include":"gallery_include","videopack/gallery_exclude":"gallery_exclude","videopack/gallery_per_page":"gallery_per_page","videopack/enable_collection_video_limit":"enable_collection_video_limit","videopack/collection_video_limit":"collection_video_limit","videopack/currentPage":"currentPage","videopack/pagination_color":"pagination_color","videopack/pagination_background_color":"pagination_background_color","videopack/pagination_active_bg_color":"pagination_active_bg_color","videopack/pagination_active_color":"pagination_active_color","videopack/title_color":"title_color","videopack/title_background_color":"title_background_color","videopack/play_button_color":"play_button_color","videopack/play_button_secondary_color":"play_button_secondary_color","videopack/control_bar_bg_color":"control_bar_bg_color","videopack/control_bar_color":"control_bar_color","videopack/views":"views","videopack/overlay_title":"overlay_title"},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","style":"file:./style.scss","editorStyle":"file:./index.css"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/collection","title":"Videopack Collection","category":"media","icon":"grid-view","description":"A composable grid or list layout for displaying videos.","supports":{"html":false,"align":["left","right","center","wide","full"],"color":{"background":true,"text":true,"link":true},"spacing":{"margin":true,"padding":true,"blockGap":true}},"attributes":{"skin":{"type":"string"},"layout":{"type":"string","default":"grid"},"columns":{"type":"number","default":3},"gallery_source":{"type":"string","default":"current"},"gallery_id":{"type":"number","default":0},"gallery_category":{"type":"string","default":""},"gallery_tag":{"type":"string","default":""},"gallery_orderby":{"type":"string","default":"post_date"},"gallery_order":{"type":"string","default":"DESC"},"gallery_include":{"type":"string","default":""},"gallery_exclude":{"type":"string","default":""},"gallery_per_page":{"type":"number"},"currentPage":{"type":"number","default":1},"views":{"type":"boolean"},"overlay_title":{"type":"boolean"},"gallery_align":{"type":"string"},"enable_collection_video_limit":{"type":"boolean"},"collection_video_limit":{"type":"number"}},"providesContext":{"videopack/layout":"layout","videopack/columns":"columns","videopack/gallery_source":"gallery_source","videopack/gallery_id":"gallery_id","videopack/gallery_category":"gallery_category","videopack/gallery_tag":"gallery_tag","videopack/gallery_orderby":"gallery_orderby","videopack/gallery_order":"gallery_order","videopack/gallery_include":"gallery_include","videopack/gallery_exclude":"gallery_exclude","videopack/gallery_per_page":"gallery_per_page","videopack/enable_collection_video_limit":"enable_collection_video_limit","videopack/collection_video_limit":"collection_video_limit","videopack/currentPage":"currentPage","videopack/views":"views","videopack/overlay_title":"overlay_title"},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 
 /***/ }
 
@@ -2388,12 +2544,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _save__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./save */ "./src/blocks/collection/save.js");
 /* harmony import */ var _block_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./block.json */ "./src/blocks/collection/block.json");
 /* harmony import */ var _assets_icon__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../assets/icon */ "./src/assets/icon.js");
+/* harmony import */ var _shared_design_context__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../shared/design-context */ "./src/blocks/shared/design-context.js");
+
 
 
 
 
 
 (0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__.registerBlockType)(_block_json__WEBPACK_IMPORTED_MODULE_3__.name, {
+  ..._block_json__WEBPACK_IMPORTED_MODULE_3__,
+  attributes: {
+    ..._block_json__WEBPACK_IMPORTED_MODULE_3__.attributes,
+    ..._shared_design_context__WEBPACK_IMPORTED_MODULE_5__.designAttributes
+  },
+  providesContext: {
+    ..._block_json__WEBPACK_IMPORTED_MODULE_3__.providesContext,
+    ..._shared_design_context__WEBPACK_IMPORTED_MODULE_5__.providesDesignContext
+  },
   edit: _edit__WEBPACK_IMPORTED_MODULE_1__["default"],
   save: _save__WEBPACK_IMPORTED_MODULE_2__["default"]
 });

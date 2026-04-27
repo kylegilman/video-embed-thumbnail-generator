@@ -1,11 +1,13 @@
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { PanelBody } from '@wordpress/components';
+import { useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import Pagination from '../../components/Pagination/Pagination';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import { getEffectiveValue } from '../../utils/context';
 import { useVideopackContext } from '../../utils/VideopackContext';
+import { getColorFallbacks } from '../../utils/colors';
 
 /* global videopack_config */
 
@@ -24,8 +26,10 @@ export default function Edit({
 	} = attributes;
 
 	const vpContext = useVideopackContext();
-	const currentPage = vpContext.currentPage || context['videopack/currentPage'] || 1;
-	const totalPages = vpContext.totalPages || context['videopack/totalPages'] || 1;
+	const currentPage =
+		vpContext.currentPage || context['videopack/currentPage'] || 1;
+	const totalPages =
+		vpContext.totalPages || context['videopack/totalPages'] || 1;
 
 	const THEME_COLORS = videopack_config?.themeColors || [];
 
@@ -38,6 +42,11 @@ export default function Edit({
 			};
 		},
 		[clientId]
+	);
+
+	const fallbacks = useMemo(
+		() => getColorFallbacks(attributes),
+		[attributes]
 	);
 
 	const handlePageChange = (newPage) => {
@@ -54,12 +63,18 @@ export default function Edit({
 		<>
 			<InspectorControls>
 				<PanelBody
-					title={__('Pagination Colors', 'video-embed-thumbnail-generator')}
+					title={__(
+						'Pagination Colors',
+						'video-embed-thumbnail-generator'
+					)}
 				>
 					{showPaginationSettings && (
 						<div className="videopack-color-section">
 							<p className="videopack-settings-section-title">
-								{__('Pagination', 'video-embed-thumbnail-generator')}
+								{__(
+									'Pagination',
+									'video-embed-thumbnail-generator'
+								)}
 							</p>
 							<div className="videopack-color-flex-row is-pagination">
 								<div className="videopack-color-flex-item">
@@ -70,10 +85,21 @@ export default function Edit({
 										)}
 										value={pagination_color}
 										onChange={(value) =>
-											setAttributes({ pagination_color: value })
+											setAttributes({
+												pagination_color: value,
+											})
 										}
 										colors={THEME_COLORS}
-										fallbackValue={getEffectiveValue('pagination_color', {}, context)}
+										fallbackValue={
+											pagination_color === ''
+												? fallbacks.pagination_color
+												: getEffectiveValue(
+														'pagination_color',
+														{},
+														context
+													) ||
+													fallbacks.pagination_color
+										}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
@@ -85,11 +111,21 @@ export default function Edit({
 										value={pagination_background_color}
 										onChange={(value) =>
 											setAttributes({
-												pagination_background_color: value,
+												pagination_background_color:
+													value,
 											})
 										}
 										colors={THEME_COLORS}
-										fallbackValue={getEffectiveValue('pagination_background_color', {}, context)}
+										fallbackValue={
+											pagination_background_color === ''
+												? fallbacks.pagination_background_color
+												: getEffectiveValue(
+														'pagination_background_color',
+														{},
+														context
+													) ||
+													fallbacks.pagination_background_color
+										}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
@@ -101,11 +137,21 @@ export default function Edit({
 										value={pagination_active_bg_color}
 										onChange={(value) =>
 											setAttributes({
-												pagination_active_bg_color: value,
+												pagination_active_bg_color:
+													value,
 											})
 										}
 										colors={THEME_COLORS}
-										fallbackValue={getEffectiveValue('pagination_active_bg_color', {}, context)}
+										fallbackValue={
+											pagination_active_bg_color === ''
+												? fallbacks.pagination_active_bg_color
+												: getEffectiveValue(
+														'pagination_active_bg_color',
+														{},
+														context
+													) ||
+													fallbacks.pagination_active_bg_color
+										}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
@@ -121,7 +167,16 @@ export default function Edit({
 											})
 										}
 										colors={THEME_COLORS}
-										fallbackValue={getEffectiveValue('pagination_active_color', {}, context)}
+										fallbackValue={
+											pagination_active_color === ''
+												? fallbacks.pagination_active_color
+												: getEffectiveValue(
+														'pagination_active_color',
+														{},
+														context
+													) ||
+													fallbacks.pagination_active_color
+										}
 									/>
 								</div>
 							</div>
@@ -134,6 +189,10 @@ export default function Edit({
 				<div
 					{...blockProps}
 					className={`${blockProps.className} is-placeholder`}
+					title={__(
+						'Pagination Placeholder (Preview Only)',
+						'video-embed-thumbnail-generator'
+					)}
 				>
 					<Pagination
 						currentPage={1}

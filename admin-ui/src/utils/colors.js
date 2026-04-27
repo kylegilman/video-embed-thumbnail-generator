@@ -31,25 +31,35 @@ export const getColorFallbacks = (settings) => {
 			case 'vjs-theme-city':
 				fallbacks.title_background_color = '#bf3b4d';
 				fallbacks.control_bar_bg_color = '#000000';
+				fallbacks.pagination_active_bg_color =
+					settings?.pagination_active_bg_color || '#bf3b4d';
 				break;
 			case 'vjs-theme-fantasy':
 				fallbacks.title_background_color = '#9f44b4';
 				fallbacks.play_button_secondary_color = '#9f44b4';
+				fallbacks.pagination_active_bg_color =
+					settings?.pagination_active_bg_color || '#9f44b4';
 				break;
 			case 'vjs-theme-forest':
 				fallbacks.title_background_color = '#6fb04e';
 				fallbacks.play_button_secondary_color = '#6fb04e';
 				fallbacks.control_bar_bg_color = 'transparent';
+				fallbacks.pagination_active_bg_color =
+					settings?.pagination_active_bg_color || '#6fb04e';
 				break;
 			case 'vjs-theme-sea':
 				fallbacks.title_background_color = '#4176bc';
 				fallbacks.play_button_secondary_color = '#4176bc';
 				fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
+				fallbacks.pagination_active_bg_color =
+					settings?.pagination_active_bg_color || '#4176bc';
 				break;
 			case 'kg-video-js-skin':
 				fallbacks.title_background_color = '#000000';
 				fallbacks.play_button_secondary_color = '#000000';
 				fallbacks.control_bar_bg_color = '#000000';
+				fallbacks.pagination_active_bg_color =
+					settings?.pagination_active_bg_color || '#000000';
 				break;
 		}
 	}

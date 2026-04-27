@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 import { getSettings } from '../../api/settings';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
-import { getEffectiveValue } from '../../utils/context';
+import useVideopackContext from '../../hooks/useVideopackContext';
 import { VideopackProvider } from '../../utils/VideopackContext';
 import { getGridTemplate, getListTemplate } from '../../utils/templates';
 import './editor.scss';
@@ -23,31 +23,7 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 	} = attributes;
 
 	// Resolve Effective Values for design and pagination (these follow global settings)
-	const effectiveValues = useMemo( () => {
-		const keys = [
-			'skin',
-			'align',
-			'gallery_pagination',
-			'gallery_per_page',
-			'enable_collection_video_limit',
-			'collection_video_limit',
-			'title_color',
-			'title_background_color',
-			'play_button_color',
-			'play_button_secondary_color',
-			'control_bar_bg_color',
-			'control_bar_color',
-			'views',
-			'overlay_title'
-		];
-		
-		const resolved = {};
-		keys.forEach( key => {
-			resolved[key] = getEffectiveValue(key, attributes, context);
-		});
-		
-		return resolved;
-	}, [ attributes, context ] );
+	const { resolved: effectiveValues, style: contextStyle, classes: collectionClasses } = useVideopackContext(attributes, context);
 
 	const { hasPaginationBlock, isNewlyInserted } = useSelect(
 		( select ) => {
@@ -68,8 +44,8 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 		...attributes,
 		gallery_pagination: hasPaginationBlock,
 		gallery_per_page: hasPaginationBlock 
-			? ( effectiveValues.gallery_per_page || 12 ) 
-			: ( effectiveValues.enable_collection_video_limit ? ( effectiveValues.collection_video_limit || 12 ) : -1 ),
+			? ( effectiveValues.gallery_per_page || 6 ) 
+			: ( effectiveValues.enable_collection_video_limit ? ( effectiveValues.collection_video_limit || 6 ) : -1 ),
 		page_number: currentPage || 1,
 	};
 	// We fetch query data to power the live preview template and pagination info
@@ -80,14 +56,6 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 			setOptions( response );
 		} );
 	}, [] );
-
-	// Sync structural state to attributes for persistence ONLY if needed for frontend.
-	// We handle gallery_per_page here because it's a user setting that should persist.
-	useEffect( () => {
-		if ( attributes.gallery_per_page !== effectiveValues.gallery_per_page ) {
-			setAttributes( { gallery_per_page: effectiveValues.gallery_per_page } );
-		}
-	}, [ effectiveValues.gallery_per_page, attributes.gallery_per_page, setAttributes ] );
 
 	// Resolve blockGap value for use in internal grid spacing
 	const resolvedBlockGap = useMemo(() => {
@@ -112,31 +80,20 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 
 	const blockProps = useBlockProps( {
 		style: {
-			'--videopack-title-color': effectiveValues.title_color,
-			'--videopack-title-background-color': effectiveValues.title_background_color,
-			'--videopack-play-button-color': effectiveValues.play_button_color,
-			'--videopack-play-button-secondary-color': effectiveValues.play_button_secondary_color,
-			'--videopack-control-bar-bg-color': effectiveValues.control_bar_bg_color,
-			'--videopack-control-bar-color': effectiveValues.control_bar_color,
+			...contextStyle,
 			'--videopack-collection-columns': columns,
 			'--videopack-collection-gap': resolvedBlockGap,
 		},
+		className: [
+			'videopack-collection',
+			'videopack-wrapper',
+			`layout-${ layout }`,
+			`columns-${ columns }`,
+			// If no explicit align is set, apply the effective (global) align class
+			! attributes.align && effectiveValues.align ? `align${ effectiveValues.align }` : '',
+			collectionClasses,
+		].filter( Boolean ).join( ' ' ),
 	} );
-
-	const collectionClasses = [
-		'videopack-collection',
-		'videopack-wrapper',
-		`layout-${ layout }`,
-		`columns-${ columns }`,
-		// If no explicit align is set, apply the effective (global) align class
-		! attributes.align && effectiveValues.align ? `align${ effectiveValues.align }` : '',
-		effectiveValues.title_color ? 'videopack-has-title-color' : '',
-		effectiveValues.title_background_color ? 'videopack-has-title-background-color' : '',
-		effectiveValues.play_button_color ? 'videopack-has-play-button-color' : '',
-		effectiveValues.play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : '',
-		effectiveValues.control_bar_bg_color ? 'videopack-has-control-bar-bg-color' : '',
-		effectiveValues.control_bar_color ? 'videopack-has-control-bar-color' : '',
-	].filter( Boolean ).join( ' ' );
 
 	const videopackContextValue = {
 		gallery_pagination: hasPaginationBlock,
@@ -221,7 +178,7 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 				/>
 			</InspectorControls>
 
-			<div { ...blockProps } className={ ( blockProps.className || '' ) + ' ' + collectionClasses }>
+			<div { ...blockProps }>
 				<BlockContextProvider
 					value={ providedContext }
 				>

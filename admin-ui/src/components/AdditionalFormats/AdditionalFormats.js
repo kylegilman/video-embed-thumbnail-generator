@@ -15,7 +15,7 @@ import {
 import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
-import './AdditionalFormats.scss';
+
 import EncodeFormatStatus from './EncodeFormatStatus';
 import { getVideoFormats } from '../../api/gallery';
 import { enqueueJob, deleteJob } from '../../api/jobs';

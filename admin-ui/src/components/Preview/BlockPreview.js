@@ -15,14 +15,15 @@ const PREVIEW_COMPONENTS = {
 		className,
 		postId,
 		isOverlay,
-		innerBlocks,
-		video,
 		isInsideThumbnail,
-		isInsidePlayer,
+		isInsidePlayerOverlay,
+		isInsidePlayerContainer,
 		downloadlink,
 		embedcode,
 		attributes,
 		context,
+		innerBlocks,
+		video,
 		...props
 	}) => (
 		<div
@@ -60,7 +61,8 @@ const PREVIEW_COMPONENTS = {
 					starts: video?.player_vars?.starts,
 					// Prioritize video URL from resolution over the raw attribute URL
 					src: video?.url || (!attributes.id ? attributes.src : undefined),
-					'videopack/isInsidePlayer': true,
+					isInsidePlayerOverlay: true,
+					isInsidePlayerContainer: true,
 				}}
 				context={context}
 				isSelected={false}

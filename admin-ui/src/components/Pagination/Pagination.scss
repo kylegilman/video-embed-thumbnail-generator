@@ -49,7 +49,7 @@
 		min-width: 36px;
 		height: 36px;
 		padding: 0 8px;
-		border: 1px solid var(--videopack-pagination-color, colors.$gray-300);
+		border: 1px solid var(--videopack-pagination-color, colors.$gray-900);
 		border-radius: 4px;
 		background: var(--videopack-pagination-bg, colors.$white);
 		color: var(--videopack-pagination-color, colors.$gray-900);
@@ -63,15 +63,15 @@
 		appearance: none;
 
 		&:hover:not(.current):not(:disabled) {
-			border-color: var(--videopack-pagination-active-bg, colors.$gray-600);
-			color: var(--videopack-pagination-active-bg, colors.$gray-600);
+			border-color: var(--videopack-pagination-active-bg, colors.$gray-900);
+			color: var(--videopack-pagination-active-bg, colors.$gray-900);
 			background: colors.$gray-100;
 		}
 
 		&.is-active,
 		&.current {
-			background: var(--videopack-pagination-active-bg, colors.$gray-600);
-			border-color: var(--videopack-pagination-active-bg, colors.$gray-600);
+			background: var(--videopack-pagination-active-bg, colors.$gray-900);
+			border-color: var(--videopack-pagination-active-bg, colors.$gray-900);
 			color: var(--videopack-pagination-active-color, colors.$white);
 			cursor: default;
 			pointer-events: none;

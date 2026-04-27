@@ -51,6 +51,36 @@ export const getPresets = async (
 };
 
 /**
+ * Fetches already grouped and labeled video sources for a player.
+ *
+ * @param {number|string} attachmentId   Optional. The video attachment ID.
+ * @param {string}        url            Optional. The video source URL.
+ * @param {AbortSignal}   signal         Optional. Abort signal.
+ */
+export const getVideoSources = async (
+	attachmentId = null,
+	url = '',
+	signal = null
+) => {
+	try {
+		const query = {
+			attachment_id: attachmentId,
+			url,
+		};
+		return await apiFetch({
+			path: addQueryArgs('/videopack/v1/sources', query),
+			signal,
+		});
+	} catch (error) {
+		if (error.name === 'AbortError') {
+			throw error;
+		}
+		console.error('Error fetching video sources:', error);
+		throw error;
+	}
+};
+
+/**
  * Fetches available video formats and their encoding status for an attachment.
  *
  * @param {number|string} attachmentId   The video attachment ID.

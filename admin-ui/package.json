@@ -6,15 +6,13 @@
 	"license": "GPL-2.0-or-later",
 	"main": "build/videopack-video.js",
 	"scripts": {
-		"build": "wp-scripts build && npm run build:skin",
+		"build": "wp-scripts build",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
 		"start": "wp-scripts start",
-		"start:all": "wp-scripts start & npm run watch:skin",
-		"packages-update": "wp-scripts packages-update",
-		"build:skin": "npx sass ../video-js/skins/vjs-theme-videopack.scss ../video-js/skins/vjs-theme-videopack.css --style=compressed --no-source-map",
-		"watch:skin": "npx sass --watch ../video-js/skins/vjs-theme-videopack.scss ../video-js/skins/vjs-theme-videopack.css --no-source-map"
+		"start:all": "wp-scripts start",
+		"packages-update": "wp-scripts packages-update"
 	},
 	"dependencies": {
 		"@dnd-kit/core": "^6.3.1",

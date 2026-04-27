@@ -3,8 +3,18 @@ import Edit from './edit';
 import save from './save';
 import metadata from './block.json';
 import { videopack as videopackIcon } from '../../assets/icon';
+import { designAttributes, providesDesignContext } from '../shared/design-context';
 
 registerBlockType(metadata.name, {
+	...metadata,
+	attributes: {
+		...metadata.attributes,
+		...designAttributes,
+	},
+	providesContext: {
+		...metadata.providesContext,
+		...providesDesignContext,
+	},
 	edit: Edit,
 	save,
 });

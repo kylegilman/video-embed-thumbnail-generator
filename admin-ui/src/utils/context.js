@@ -38,8 +38,36 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		return globalOptions.skin || globalDefaults.skin || videopack_config?.skin || 'vjs-theme-videopack';
 	}
 
+	if (attrKey === 'align') {
+		const localValue = attributes[attrKey] || context[contextKey];
+		if (isValid(localValue)) {
+			return localValue;
+		}
+		// Collections use gallery_align as their global default
+		const isCollection = attributes.layout || context['videopack/layout'];
+		if (isCollection) {
+			return globalOptions.gallery_align || globalOptions.align || globalDefaults.align || '';
+		}
+		return globalOptions.align || globalDefaults.align || '';
+	}
+
 	const globalValue = globalOptions[attrKey] ?? globalDefaults[attrKey] ?? videopack_config?.[attrKey];
 	const finalValue = isValid(globalValue) ? globalValue : undefined;
 
 	return finalValue;
+};
+
+/**
+ * Normalizes video sources from the API into source_groups for the player.
+ *
+ * @param {Object} videoSources Grouped sources returned from the API.
+ * @return {Object} Grouped sources.
+ */
+export const normalizeSourceGroups = (videoSources) => {
+	if (!videoSources || typeof videoSources !== 'object') {
+		return {};
+	}
+
+	// If it's already in the grouped format { codecId: { label, sources } }, return it
+	return videoSources;
 };

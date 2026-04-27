@@ -7,7 +7,7 @@ import {
 	useMemo,
 	useCallback,
 } from '@wordpress/element';
-import './WatermarkPositioner.scss';
+
 
 const WatermarkPositioner = ({
 	containerDimensions,

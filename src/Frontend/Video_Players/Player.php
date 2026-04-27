@@ -125,7 +125,7 @@ class Player {
 	public function register_scripts() {
 
 		wp_register_script(
-			'videopack-frontend',
+			'videopack-core',
 			plugins_url( '/src/Frontend/js/videopack.js', VIDEOPACK_PLUGIN_FILE ),
 			$this->get_videopack_script_dependencies(),
 			VIDEOPACK_VERSION,
@@ -134,7 +134,7 @@ class Player {
 
 		if ( ! self::$script_localized ) {
 			wp_localize_script(
-				'videopack-frontend',
+				'videopack-core',
 				'videopack_l10n',
 				array(
 					'rest_url'   => rest_url(),
@@ -201,7 +201,7 @@ class Player {
 	 * @return array The style handles.
 	 */
 	public function get_player_style_handles(): array {
-		return array( 'videopack-frontend' );
+		return array( 'videopack-core' );
 	}
 
 	/**
@@ -218,7 +218,7 @@ class Player {
 	 * Enqueues frontend styles.
 	 */
 	public function enqueue_styles() {
-		wp_enqueue_style( 'videopack-frontend' );
+		wp_enqueue_style( 'videopack-core' );
 	}
 
 
@@ -236,7 +236,7 @@ class Player {
 	 */
 	public function enqueue_scripts(): void {
 		$this->enqueue_player_scripts();
-		wp_enqueue_script( 'videopack-frontend' );
+		wp_enqueue_script( 'videopack-core' );
 	}
 
 	/**
@@ -572,7 +572,7 @@ class Player {
 				(string) $video_vars['id'],
 				(string) wp_json_encode( (array) $video_vars )
 			);
-			wp_add_inline_script( 'videopack-frontend', $script );
+			wp_add_inline_script( 'videopack-core', $script );
 		}
 
 		$player_code  = '';
