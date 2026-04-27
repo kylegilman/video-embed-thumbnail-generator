@@ -1,10 +1,207 @@
-.videopack-settings-section-title{border-bottom:1px solid #e0e0e0;color:#757575;font-size:11px;font-weight:600;margin:0 0 12px!important;padding-bottom:4px;text-transform:uppercase}.videopack-color-section{margin-bottom:24px}.videopack-color-section:last-child{margin-bottom:0}.videopack-color-flex-row{align-items:flex-start;display:flex;gap:4px;justify-content:flex-start}.videopack-color-flex-row.is-pagination{justify-content:space-between}.videopack-color-flex-row.is-pagination .videopack-color-flex-item{flex:1;width:auto}.videopack-color-flex-item{width:22%}.videopack-color-picker-container{align-items:center;display:flex;flex-direction:column;gap:4px;margin-bottom:16px}.videopack-color-picker-label{align-items:center;color:#1e1e1e;display:flex;font-size:10.5px;height:31px;justify-content:center;line-height:1.2;text-align:center}.videopack-color-picker-button{border-radius:50%!important;height:auto!important;min-width:unset!important;padding:4px!important}.videopack-color-picker-palette-wrapper{padding:12px;width:280px}
-.videopack-watermark-positioner{container-type:inline-size;overflow:hidden;position:relative;-webkit-user-select:none;-moz-user-select:none;user-select:none;width:100%}.videopack-watermark-positioner .videopack-resize-handle{background-color:#fff;border:1px solid #1e1e1e;height:10px;position:absolute;width:10px;z-index:10}@container (max-width: 600px){.videopack-watermark-positioner .videopack-resize-handle{height:6px;width:6px}}.videopack-watermark-positioner .videopack-resize-handle.nw{cursor:nw-resize;left:-5px;top:-5px}@container (max-width: 600px){.videopack-watermark-positioner .videopack-resize-handle.nw{left:-3px;top:-3px}}.videopack-watermark-positioner .videopack-resize-handle.ne{cursor:ne-resize;right:-5px;top:-5px}@container (max-width: 600px){.videopack-watermark-positioner .videopack-resize-handle.ne{right:-3px;top:-3px}}.videopack-watermark-positioner .videopack-resize-handle.sw{bottom:-5px;cursor:sw-resize;left:-5px}@container (max-width: 600px){.videopack-watermark-positioner .videopack-resize-handle.sw{bottom:-3px;left:-3px}}.videopack-watermark-positioner .videopack-resize-handle.se{bottom:-5px;cursor:se-resize;right:-5px}@container (max-width: 600px){.videopack-watermark-positioner .videopack-resize-handle.se{bottom:-3px;right:-3px}}
-.videopack-watermark-settings{container-type:inline-size;max-width:1200px}@container (max-width: 600px){.videopack-watermark-settings .videopack-watermark-row{align-items:flex-start;flex-direction:column}.videopack-watermark-settings .videopack-watermark-row .components-flex{margin-bottom:0}.videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control,.videopack-watermark-settings .videopack-watermark-row .videopack-offset-control{margin-bottom:10px;width:100%}.videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control .components-select-control__input,.videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control .components-text-control__input,.videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-select-control__input,.videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-text-control__input{min-width:0;width:100%}}.videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-range-control__wrapper{min-width:100px}.videopack-watermark-settings .videopack-alignment-control .components-select-control__input{min-width:180px}.videopack-watermark-settings .videopack-offset-control .components-text-control__input{width:100px}
-.videopack-text-tracks-list .videopack-text-track-item{background:#f6f7f7;border:1px solid #ddd;border-radius:8px;margin-bottom:24px;padding:16px;transition:all .2s ease-in-out}.videopack-text-tracks-list .videopack-text-track-item:hover{border-color:#ccc;box-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06)}.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-header{align-items:center;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:8px}.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-header .videopack-text-track-label{color:#1e1e1e;font-size:13px;font-weight:600}.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .videopack-text-track-settings-row{margin-bottom:12px}.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .videopack-text-track-settings-row.videopack-text-track-settings-row-split{align-items:flex-start;display:flex;gap:12px}.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .videopack-text-track-settings-row.videopack-text-track-settings-row-split>*{flex:1;min-width:0}.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .components-base-control__label,.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings label{display:block;font-size:13px}.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .components-select-control,.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .components-text-control,.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .components-toggle-control{margin-bottom:0}.videopack-text-tracks-actions{border-top:1px solid #f0f0f0;display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;padding-top:16px}.videopack-text-tracks-actions .components-button{flex:1 1 auto;justify-content:center;min-width:-moz-fit-content;min-width:fit-content;white-space:nowrap}
-.videopack-video-settings{container-name:videopack-settings;container-type:inline-size}.videopack-video-settings .videopack-video-settings-input-wrapper{margin-bottom:16px;width:100%}.videopack-video-settings .videopack-video-settings-full-width,.videopack-video-settings .videopack-video-settings-input-wrapper .components-base-control__field{width:100%}.videopack-video-settings .components-flex{align-items:flex-start;margin-bottom:16px}.videopack-video-settings .components-flex.videopack-player-settings-flex .components-flex-item{flex:1}@container videopack-settings (max-width: 400px){.videopack-video-settings .videopack-player-settings-flex{flex-direction:column;gap:0}.videopack-video-settings .videopack-player-settings-flex .components-flex-item{margin-bottom:16px;width:100%}.videopack-video-settings .videopack-player-settings-flex .components-flex-item:last-child{margin-bottom:0}}
-.videopack-thumbnail-generator button.is-secondary{font-size:12px;margin-bottom:10px;padding:7px}.videopack-thumbnail-generator .components-base-control.components-toggle-control:where(:not(:last-child)){margin-bottom:16px}.videopack-thumbnail-generator .spinner-container{position:relative}.videopack-thumbnail-generator .spinner-container svg.components-spinner{display:none;height:33%;left:50%;margin:-11% 0 0 -16%;position:absolute;text-align:center;top:50%;width:33%}.videopack-thumbnail-generator .videopack-thumb-video-controls{align-items:center;display:flex;flex-wrap:nowrap;margin-left:auto;margin-right:auto}.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-play-pause{background:none;border:none;color:var(--wp-admin-theme-color);flex-shrink:0;margin-right:8px;padding:0}.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-thumbvideo-slider{flex-grow:1;margin-bottom:0}.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-thumbvideo-slider .components-range-control__root{margin-bottom:0}.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-popout{background:none;border:none;color:var(--wp-admin-theme-color);flex-shrink:0;margin-left:8px;padding:0}.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-popout:hover{color:var(--wp-admin-theme-color-darker)}.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-popout svg{fill:currentColor}.videopack-thumbnail-generator .videopack-thumbnail-holder.disabled img{opacity:20%;pointer-events:none}.videopack-thumbnail-generator .videopack-thumbnail{background:none;border:5px solid transparent;cursor:pointer;padding:0}.videopack-thumbnail-generator .videopack-thumbnail:hover{border-color:var(--wp-admin-theme-color)}.videopack-thumbnail-generator .videopack-thumbnail img{box-sizing:border-box;display:block;max-width:100%;position:relative;width:300px}.videopack-thumbnail-generator .videopack-placeholder-gallery-button{margin-left:12px}.videopack-thumbnail-generator .videopack-thumb-video-container{display:none}.videopack-thumbnail-generator .videopack-thumb-video-container.is-opened{display:block}.videopack-thumbnail-generator .videopack-thumb-video-panel video{display:block;margin-bottom:10px;width:100%}.videopack-thumbnail-generator .videopack-thumb-video-panel.saving,.videopack-thumbnail-generator .videopack-thumbnail.saving{opacity:20%;pointer-events:none}.videopack-thumbnail-generator .videopack-thumb-video-panel.saving svg.components-spinner,.videopack-thumbnail-generator .videopack-thumbnail.saving svg.components-spinner{display:inline-block}.videopack-thumbnail-generator .videopack-thumbnail-holder{position:relative}.videopack-thumbnail-generator .videopack-saving-overlay{background-color:hsla(0,0%,100%,.8);font-size:18pt;height:100%;padding-top:50%;position:absolute;text-align:center;width:100%;z-index:20}.videopack-thumbnail-generator .components-panel__body.videopack-thumb-video.is-opened .videopack-thumb-video-container{display:block}.videopack-thumbnail-generator .components-base-control.videopack-total-thumbnails{display:inline-block;margin:0 10px 0 0;max-width:27%}.videopack-thumbnail-generator .components-base-control.videopack-total-thumbnails .components-text-control__input:disabled{background:hsla(0,0%,100%,.5);border-color:hsla(240,3%,87%,.75);box-shadow:inset 0 1px 2px rgba(0,0,0,.04);color:rgba(44,51,56,.5)}.videopack-thumbnail-generator button.components-button.videopack-use-this-frame.is-secondary{display:block;margin-left:auto;margin-right:auto}.videopack-thumbnail-generator .videopack-security-error-notice{background-color:#fcf0f1;border-left:4px solid #d94f4f;color:#1e1e1e;font-size:13px;line-height:1.4;margin:12px 0;padding:12px}.videopack-thumbnail-generator .videopack-thumb-video-container.disabled{filter:grayscale(.5);opacity:.5;pointer-events:none}.editor-video-poster-control .components-base-control__label{display:block}.editor-video-poster-control .components-button{margin-right:10px}picture.vjs-poster{pointer-events:none}.videopack-current-thumbnail{height:auto;margin-bottom:1em;max-width:100%;width:var(--wp--style--global--content-size);width:640px}.videopack-generate{margin-right:10px}.videopack-video-modal-overlay{z-index:1000001!important}.videopack-video-modal .components-modal__content{max-width:90vw;padding:24px;width:800px}.videopack-video-modal .videopack-thumb-video-panel{display:block;padding:0}.videopack-video-modal .videopack-thumb-video-panel video{background:#1e1e1e;border-radius:4px;max-height:65vh}.videopack-video-modal .videopack-thumb-video-panel .videopack-thumb-video-controls{align-items:center;display:flex;justify-content:center;margin-top:15px}.videopack-video-modal .videopack-thumb-video-panel .videopack-thumb-video-controls .videopack-thumbvideo-slider{width:85%}.videopack-video-modal .videopack-thumb-video-panel button.components-button.videopack-use-this-frame.is-secondary{display:block;height:auto;margin:20px auto 0;padding:10px 20px}
-.videopack-formats-container{container-name:videopack-formats;container-type:inline-size;margin-bottom:20px;width:100%}.videopack-formats-list{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));list-style:none;margin:0;padding:0;width:100%}@container videopack-formats (max-width: 350px){.videopack-formats-list{grid-template-columns:1fr}}@container videopack-formats (min-width: 351px) and (max-width: 700px){.videopack-formats-list{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}.videopack-formats-list>li{background:#f6f7f7;border:1px solid #ddd;border-radius:4px;margin:0;padding:10px}.videopack-formats-list>li ul{list-style:none;margin:0;padding:0}.videopack-formats-list>li ul li button.is-secondary.is-small{margin-right:5px}.videopack-formats-list .videopack-codec-name{border-bottom:1px solid #e0e0e0;font-size:14px;font-weight:600;margin-bottom:12px;margin-top:0;padding-bottom:8px}.videopack-formats-list li label{margin-right:6px;max-width:95%}.videopack-formats-list hr{border-bottom:1px solid #e0e0e0;border-top:none;margin:.7em 0}.videopack-formats-list button.components-button.is-link.is-destructive{margin-top:3px}.videopack-formats-list .components-checkbox-control{display:inline-block;margin-bottom:7px}.videopack-formats-list span.videopack-format{display:inline-flex;margin-right:15px;vertical-align:middle}.videopack-formats-list .videopack-format-status{display:inline-flex;font-size:11px;font-weight:300;margin-right:11px;text-transform:capitalize;vertical-align:middle}.videopack-formats-list.no-ffmpeg span{margin-right:8px}.videopack-formats-list.no-ffmpeg button{font-size:inherit;height:inherit}.videopack-encode-message{color:#949494;font-style:italic;font-weight:300;margin-left:12px}.videopack-encode-button-row{justify-content:flex-start}.videopack-formats-loading{align-items:center;display:flex;flex-direction:column;justify-content:center;padding:40px 0;width:100%}.videopack-formats-loading .videopack-external-check-notice{color:#949494;font-size:13px;font-style:italic;margin-top:10px}.videopack-confirm-dialog .components-modal__frame{max-width:500px}
-.videopack-meter{background-color:#f0f0f0;border-radius:4px;height:22px;overflow:hidden;position:relative;vertical-align:middle;width:100%}.videopack-meter .videopack-meter-bar{background:linear-gradient(90deg,var(--wp-admin-theme-color,#2271b1),var(--wp-admin-theme-color-darker-10,#135e96));border-radius:inherit;height:100%;min-width:1px;transition:width .3s ease}.videopack-meter .videopack-meter-text{color:#fff;font-size:10px;line-height:22px;margin-right:5px;text-align:right}.videopack-encode-progress{container-type:inline-size;margin-top:4px;width:100%}.videopack-encode-progress .videopack-encode-progress-row{align-items:center;display:flex;flex-wrap:nowrap;gap:8px;margin-bottom:4px;width:100%}.videopack-encode-progress .videopack-meter{flex:1;margin-right:0;min-width:40px}.videopack-encode-progress .videopack-cancel-job{align-items:center;display:flex;flex:0 0 auto;height:20px;justify-content:center;overflow:hidden;padding:0 12px;transition:all .2s ease;white-space:nowrap}.videopack-encode-progress .videopack-cancel-job .videopack-button-text{padding:9px}@container (max-width: 200px){.videopack-encode-progress .videopack-cancel-job{border-radius:50%!important;height:20px!important;min-width:20px!important;padding:0!important;width:20px!important}.videopack-encode-progress .videopack-cancel-job .videopack-button-text{display:none}.videopack-encode-progress .videopack-cancel-job .components-button__icon{margin:0!important}}.videopack-encode-progress-small-text{color:#949494;display:flex;flex:0 0 100%;font-size:10px;justify-content:space-between;margin-top:2px;width:100%}.videopack-encode-progress-small-text span{margin-right:10px}
-.videopack-formats-list li.videopack-format-row:not(:last-child){border-bottom:1px solid #ddd;padding-bottom:11px;padding-top:5px}
-.wp-block-videopack-videopack-video.is-selected .components-placeholder{background-color:#fff;border:none;border-radius:2px;box-shadow:inset 0 0 0 1px #1e1e1e;color:#1e1e1e}.wp-block-videopack-videopack-video.is-selected .components-placeholder>svg{opacity:0}.wp-block-videopack-videopack-video.is-selected .components-placeholder .components-placeholder__illustration{display:none}.wp-block-videopack-videopack-video.is-selected .components-placeholder:before{opacity:0}.wp-block-videopack-videopack-video .components-button,.wp-block-videopack-videopack-video .components-placeholder__instructions,.wp-block-videopack-videopack-video .components-placeholder__label{transition:none}.videopack-block-overlay{bottom:0;left:0;position:absolute;right:0;top:0;z-index:10}.videopack-uploading-overlay-content{align-items:center;display:flex;flex-direction:column;gap:12px;margin:0 auto;max-width:300px;width:100%}.videopack-uploading-overlay-content p{font-weight:500;margin:0}.videopack-video-title-block.is-overlay{pointer-events:auto}.videopack-video-title-block.is-overlay.is-selected,.videopack-video-title-block.is-overlay:focus-within{pointer-events:auto}.videopack-video-block-container>.block-editor-inner-blocks>.block-editor-block-list__layout>.block-list-appender{align-items:center;display:flex;justify-content:center;margin:10px 0;min-height:40px;pointer-events:auto;position:relative;z-index:150}
+/*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/EncodeProgress.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-meter {
+  background-color: #f0f0f0;
+  width: 100%;
+  border-radius: 4px;
+  height: 22px;
+  overflow: hidden;
+  position: relative;
+  vertical-align: middle;
+}
+.videopack-meter .videopack-meter-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--wp-admin-theme-color, #2271b1), var(--wp-admin-theme-color-darker-10, #135e96));
+  border-radius: inherit;
+  min-width: 1px;
+  transition: width 0.3s ease;
+}
+.videopack-meter .videopack-meter-text {
+  color: #fff;
+  text-align: right;
+  margin-right: 5px;
+  line-height: 22px;
+  font-size: 10px;
+}
+.videopack-encode-progress {
+  margin-top: 4px;
+  width: 100%;
+  container-type: inline-size;
+}
+.videopack-encode-progress .videopack-encode-progress-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 4px;
+}
+.videopack-encode-progress .videopack-meter {
+  flex: 1;
+  min-width: 40px;
+  margin-right: 0;
+}
+.videopack-encode-progress .videopack-cancel-job {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0 12px;
+  height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.videopack-encode-progress .videopack-cancel-job .videopack-button-text {
+  padding: 9px;
+}
+@container (max-width: 200px) {
+  .videopack-encode-progress .videopack-cancel-job {
+    padding: 0 !important;
+    min-width: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+  }
+  .videopack-encode-progress .videopack-cancel-job .videopack-button-text {
+    display: none;
+  }
+  .videopack-encode-progress .videopack-cancel-job .components-button__icon {
+    margin: 0 !important;
+  }
+}
+.videopack-encode-progress-small-text {
+  width: 100%;
+  flex: 0 0 100%;
+  font-size: 10px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  color: #949494;
+}
+.videopack-encode-progress-small-text span {
+  margin-right: 10px;
+}
+/*!*********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/EncodeFormatStatus.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-formats-list li.videopack-format-row:not(:last-child) {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 11px;
+  padding-top: 5px;
+}
+/*!***************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/videopack-video/editor.scss ***!
+  \***************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+/**
+ * SCSS Variables.
+ *
+ * Please use variables from this sheet to ensure consistency across the UI.
+ * Don't add to this sheet unless you're pretty sure the value will be reused in many places.
+ * For example, don't add rules to this sheet that affect block visuals. It's purely for UI.
+ */
+/**
+ * Fonts & basic variables.
+ */
+/**
+ * Typography
+ */
+/**
+ * Grid System.
+ * https://make.wordpress.org/design/2019/10/31/proposal-a-consistent-spacing-system-for-wordpress/
+ */
+/**
+ * Radius scale.
+ */
+/**
+ * Elevation scale.
+ */
+/**
+ * Dimensions.
+ */
+/**
+ * Mobile specific styles
+ */
+/**
+ * Editor styles.
+ */
+/**
+ * Block & Editor UI.
+ */
+/**
+ * Block paddings.
+ */
+/**
+ * React Native specific.
+ * These variables do not appear to be used anywhere else.
+ */
+.wp-block-videopack-videopack-video.is-selected .components-placeholder {
+  color: #1e1e1e;
+  background-color: #fff;
+  box-shadow: inset 0 0 0 1px #1e1e1e;
+  border: none;
+  border-radius: 2px;
+}
+.wp-block-videopack-videopack-video.is-selected .components-placeholder > svg {
+  opacity: 0;
+}
+.wp-block-videopack-videopack-video.is-selected .components-placeholder .components-placeholder__illustration {
+  display: none;
+}
+.wp-block-videopack-videopack-video.is-selected .components-placeholder::before {
+  opacity: 0;
+}
+.wp-block-videopack-videopack-video .components-placeholder__label,
+.wp-block-videopack-videopack-video .components-placeholder__instructions,
+.wp-block-videopack-videopack-video .components-button {
+  transition: none;
+}
+.videopack-block-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+.videopack-uploading-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+.videopack-uploading-overlay-content p {
+  margin: 0;
+  font-weight: 500;
+}
+.videopack-video-title-block.is-overlay {
+  pointer-events: auto;
+}
+.videopack-video-title-block.is-overlay.is-selected, .videopack-video-title-block.is-overlay:focus-within {
+  pointer-events: auto;
+}
+.videopack-video-block-container > .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
+  position: relative;
+  z-index: 150;
+  pointer-events: auto;
+  margin: 10px 0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*# sourceMappingURL=index.css.map*/

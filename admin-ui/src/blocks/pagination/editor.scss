@@ -1,0 +1,18 @@
+.videopack-pagination-block {
+	&.is-placeholder {
+		opacity: 0.5;
+		position: relative;
+		border: 1px dashed rgba(0, 0, 0, 0.1);
+		transition: opacity 0.2s ease;
+
+		&:hover {
+			opacity: 0.8;
+			border-color: rgba(0, 0, 0, 0.2);
+		}
+
+		// Prevent clicks on placeholder pagination buttons
+		.videopack-pagination {
+			pointer-events: none;
+		}
+	}
+}

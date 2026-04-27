@@ -14,7 +14,7 @@
   ],
   "editorStyle": "file:./index.css",
   "providesContext": {
-    "videopack/isInsidePlayer": "isInsidePlayer"
+    "videopack/isInsidePlayerOverlay": "isInsidePlayerOverlay"
   },
   "usesContext": [
     "videopack/postId",
@@ -47,12 +47,12 @@
     "videopack/title_color",
     "videopack/title_background_color",
     "videopack/embed_method",
-    "videopack/isInsidePlayer",
+    "videopack/isInsidePlayerOverlay",
     "videopack/downloadlink",
     "videopack/embedcode"
   ],
   "attributes": {
-    "isInsidePlayer": {
+    "isInsidePlayerOverlay": {
       "type": "boolean",
       "default": true
     }

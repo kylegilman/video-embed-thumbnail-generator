@@ -30,13 +30,7 @@
     "videopack/gallery_pagination",
     "videopack/gallery_per_page",
     "videopack/currentPage",
-    "videopack/totalPages",
-    "videopack/title_color",
-    "videopack/title_background_color",
-    "videopack/play_button_color",
-    "videopack/play_button_secondary_color",
-    "videopack/control_bar_bg_color",
-    "videopack/control_bar_color"
+    "videopack/totalPages"
   ],
   "textdomain": "video-embed-thumbnail-generator",
   "editorScript": "file:./index.js"

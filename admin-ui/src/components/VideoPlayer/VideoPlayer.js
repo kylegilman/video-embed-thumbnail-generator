@@ -22,7 +22,7 @@ const DEFAULT_PLAYERS = {
 	'WordPress Default': WpMejsPlayer,
 	None: GenericPlayer,
 };
-import './VideoPlayer.scss';
+
 
 // Make sure to pass isSelected from the block's edit component.
 const noop = () => {};
@@ -139,9 +139,9 @@ const VideoPlayer = ({
 			incomingSources.forEach((s) => {
 				const codec = s.codec || 'h264';
 				if (!groups[codec]) {
-					groups[codec] = [];
+					groups[codec] = { sources: [], label: codec.toUpperCase() };
 				}
-				groups[codec].push(s);
+				groups[codec].sources.push(s);
 			});
 			return groups;
 		}
@@ -422,9 +422,11 @@ const VideoPlayer = ({
 
 		options.source_groups = source_groups;
 
-		const hasResolutions = finalizedSources.some((s) => s.resolution);
+		const hasMultipleSources = finalizedSources.length > 1;
+		const hasResolutions = finalizedSources.some((s) => s.resolution || s['data-res']);
+		const hasMultipleCodecs = Object.keys(source_groups).length > 1;
 
-		if (hasResolutions) {
+		if (hasResolutions || hasMultipleCodecs || hasMultipleSources) {
 			options.plugins = {
 				...options.plugins,
 				resolutionSelector: {

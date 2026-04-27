@@ -397,7 +397,7 @@ class Gallery {
 		if ( empty( $query_atts['collectionId'] ) ) {
 			$query_atts['collectionId'] = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
 		}
-		$query_atts['layout']       = ( 'gallery' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
+		$query_atts['layout']       = ( 'gallery' === $layout || 'grid' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
 
 		/**
 		 * 1. Simulate the block structure.

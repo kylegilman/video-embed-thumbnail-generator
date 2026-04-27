@@ -133,7 +133,7 @@ class Public_Controller extends Controller {
 		$page         = (int) ( $request->get_param( 'page_number' ) ?: 1 );
 		$layout = (string) $request->get_param( 'layout' );
 		if ( ! $layout ) {
-			$layout = ( isset( $gallery_atts['gallery'] ) && true === $gallery_atts['gallery'] ) ? 'gallery' : 'list';
+			$layout = $gallery_atts['layout'] ?? ( ( isset( $gallery_atts['gallery'] ) && true === $gallery_atts['gallery'] ) ? 'gallery' : 'list' );
 		}
 
 		$result   = $gallery->collection_page( $page, $gallery_atts, $layout );

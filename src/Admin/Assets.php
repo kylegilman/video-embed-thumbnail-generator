@@ -89,10 +89,10 @@ class Assets implements Hook_Subscriber {
 		$build_url = (string) plugins_url( 'admin-ui/build/', VIDEOPACK_PLUGIN_FILE );
 
 		$assets = array(
+			'videopack-core'           => 'videopack-core',
 			'videopack-admin-screens'  => 'admin-screens',
 			'videopack-media-library'  => 'media-library',
 			'videopack-classic-editor' => 'classic-editor',
-			'videopack-frontend' => 'videopack-frontend',
 		);
 
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
@@ -106,12 +106,12 @@ class Assets implements Hook_Subscriber {
 				$player_script_deps = array();
 				$player_style_deps  = array();
 
-				if ( in_array( (string) $handle, array( 'videopack-admin-screens', 'videopack-media-library', 'videopack-classic-editor', 'videopack-frontend' ), true ) ) {
+				if ( in_array( (string) $handle, array( 'videopack-admin-screens', 'videopack-media-library', 'videopack-classic-editor', 'videopack-core' ), true ) ) {
 					$player_script_deps = array_diff( (array) $player->get_player_script_handles(), array( (string) $handle ) );
 					$player_style_deps  = array_diff( (array) $player->get_player_style_handles(), array( (string) $handle ) );
 				}
 
-				if ( 'videopack-frontend' !== $handle ) {
+				if ( 'videopack-core' !== $handle ) {
 					wp_register_script(
 						(string) $handle,
 						(string) $build_url . (string) $filename . '.js',
@@ -149,7 +149,7 @@ class Assets implements Hook_Subscriber {
 			'videopack-admin-screens',
 			'videopack-media-library',
 			'videopack-classic-editor',
-			'videopack-frontend',
+			'videopack-core',
 		);
 
 		foreach ( $handles as $handle ) {
@@ -170,6 +170,7 @@ class Assets implements Hook_Subscriber {
 		// Enqueue Video.js and all available skins to support live switching in the editor.
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( 'Video.js', $this->options, new Formats\Registry( $this->options ) );
 		$player->register_scripts();
+		$player->enqueue_player_scripts();
 		$player->enqueue_styles();
 		
 		if ( method_exists( $player, 'enqueue_all_skins' ) ) {
@@ -182,12 +183,6 @@ class Assets implements Hook_Subscriber {
 			global $wp_styles;
 			if ( isset( $wp_styles->registered['video-js'] ) ) {
 				add_editor_style( $wp_styles->registered['video-js']->src );
-			}
-			$skins = array( 'vjs-theme-videopack', 'kg-video-js-skin', 'vjs-theme-city', 'vjs-theme-fantasy', 'vjs-theme-forest', 'vjs-theme-sea' );
-			foreach ( $skins as $skin ) {
-				if ( isset( $wp_styles->registered[ $skin ] ) ) {
-					add_editor_style( $wp_styles->registered[ $skin ]->src );
-				}
 			}
 		}
 	}
@@ -226,7 +221,7 @@ class Assets implements Hook_Subscriber {
 			add_editor_style( (string) includes_url( 'js/mediaelement/wp-mediaelement.css' ) );
 
 			$player        = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
-			$style_handles = array_merge( array( 'videopack-frontend', 'videopack-classic-editor' ), $player->get_player_style_handles() );
+			$style_handles = array_merge( array( 'videopack-core', 'videopack-classic-editor' ), $player->get_player_style_handles() );
 
 			global $wp_styles;
 			foreach ( $style_handles as $handle ) {
@@ -238,17 +233,6 @@ class Assets implements Hook_Subscriber {
 				}
 			}
 
-			// Add Video.js skins specifically for TinyMCE
-			if ( method_exists( $player, 'get_all_skin_handles' ) ) {
-				foreach ( $player->get_all_skin_handles() as $handle ) {
-					if ( isset( $wp_styles->registered[ $handle ] ) ) {
-						$src = $wp_styles->registered[ $handle ]->src;
-						if ( $src ) {
-							add_editor_style( $src );
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -283,8 +267,8 @@ class Assets implements Hook_Subscriber {
 	 * Enqueues base plugin scripts and styles.
 	 */
 	public function enqueue_videopack_scripts() {
-		wp_enqueue_script( 'videopack-frontend' );
-		wp_enqueue_style( 'videopack-frontend' );
+		wp_enqueue_script( 'videopack-core' );
+		wp_enqueue_style( 'videopack-core' );
 	}
 
 	/**
@@ -300,7 +284,7 @@ class Assets implements Hook_Subscriber {
 		add_editor_style( (string) includes_url( 'js/mediaelement/wp-mediaelement.css' ) );
 
 		$player        = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
-		$style_handles = array_merge( array( 'videopack-frontend', 'videopack-classic-editor' ), $player->get_player_style_handles() );
+		$style_handles = array_merge( array( 'videopack-core', 'videopack-classic-editor' ), $player->get_player_style_handles() );
 
 		global $wp_styles;
 		foreach ( $style_handles as $handle ) {

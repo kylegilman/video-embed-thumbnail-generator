@@ -56,7 +56,7 @@ export const VideoJS = (props) => {
 						options.plugins.resolutionSelector
 					);
 				} catch (e) {
-					console.warn('Video.js plugin update error:', e);
+					console.error('Videopack: Video.js plugin update error:', e);
 				}
 			}
 		}

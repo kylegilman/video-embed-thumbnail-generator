@@ -4,7 +4,7 @@ import {
 	ColorPalette,
 	Dropdown,
 } from '@wordpress/components';
-import './CompactColorPicker.scss';
+
 
 /**
  * A compact color picker using a dropdown and color palette.
@@ -77,7 +77,7 @@ const CompactColorPicker = ({
 					<div className="videopack-color-picker-palette-wrapper">
 						<ColorPalette
 							colors={colors}
-							value={hexValue}
+							value={hexValue === '' ? undefined : hexValue}
 							onChange={handleOnChange}
 							disableCustomColors={false}
 							clearable={true}

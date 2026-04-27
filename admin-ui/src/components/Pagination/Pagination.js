@@ -1,6 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { getEffectiveValue } from '../../utils/context';
-import './Pagination.scss';
+
 
 /**
  * A standardized pagination component for use in both blocks and previews.

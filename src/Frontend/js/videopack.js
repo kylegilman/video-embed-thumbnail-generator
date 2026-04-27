@@ -1297,9 +1297,9 @@
 				: galleryWrapper.querySelector('.videopack-modal-overlay');
 			const playerContainer = popup.querySelector('.modal-content');
 			const gallerySettings = JSON.parse(galleryWrapper.dataset.settingsCache || '{}');
-			let skinClass = gallerySettings.skin || 'vjs-default-skin';
+			let skinClass = gallerySettings.skin || '';
 			if (skinClass === 'default') {
-				skinClass = 'vjs-default-skin';
+				skinClass = '';
 			}
 
 			// Store a reference to the original wrapper for pagination if needed.
@@ -1395,9 +1395,6 @@
 				if (skinClass && skinClass !== 'default') {
 					videoElement.classList.add(skinClass);
 					playerWrapper.classList.add(skinClass);
-				} else {
-					videoElement.classList.add('vjs-default-skin');
-					playerWrapper.classList.add('vjs-default-skin');
 				}
 			}
 

@@ -154,28 +154,36 @@ import './tinymce.scss';
 		}
 
 		// Resolve template
-		let template =
-			type === 'Video'
-				? [
-						[
-							'videopack/videopack-video',
-							{},
-							[
-								[
-									'videopack/video-player-engine',
-									{},
-									[
-										mergedAttributes.overlay_title !== false
-											? ['videopack/video-title', {}]
-											: null,
-									].filter(Boolean),
-								],
-							],
-						],
-				  ]
-				: type === 'Gallery'
-				? getGridTemplate(mergedAttributes)
-				: getListTemplate(mergedAttributes);
+		let template;
+		if (type === 'Video') {
+			const showTitleBar = !!(
+				mergedAttributes.overlay_title !== false ||
+				mergedAttributes.downloadlink ||
+				mergedAttributes.embedcode
+			);
+
+			const engineChildren = [];
+			if (showTitleBar) {
+				engineChildren.push(['videopack/video-title', {}]);
+			}
+			if (mergedAttributes.watermark) {
+				engineChildren.push(['videopack/video-watermark', {}]);
+			}
+
+			const videoChildren = [
+				['videopack/video-player-engine', {}, engineChildren],
+			];
+
+			if (mergedAttributes.views) {
+				videoChildren.push(['videopack/view-count', {}]);
+			}
+
+			template = [['videopack/videopack-video', {}, videoChildren]];
+		} else if (type === 'Gallery') {
+			template = getGridTemplate(mergedAttributes);
+		} else {
+			template = getListTemplate(mergedAttributes);
+		}
 
 		const contextValue = {
 			...mergedAttributes,

@@ -79,9 +79,25 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 					subMenuEl.style.visibility = '';
 
 					const playerRect = this.player().el().getBoundingClientRect();
-					if (parentRect.right + subMenuWidth > playerRect.right && parentRect.left - subMenuWidth > playerRect.left) {
+					const spaceRight = playerRect.right - parentRect.right;
+					const spaceLeft = parentRect.left - playerRect.left;
+
+					// All themes except City default to opening left.
+					const isCity = this.player().hasClass('vjs-theme-city');
+					let openLeft = !isCity;
+
+					// Boundary check: If opening in preferred direction would overflow, flip it.
+					if (openLeft && spaceLeft < subMenuWidth && spaceRight > spaceLeft) {
+						openLeft = false;
+					} else if (!openLeft && spaceRight < subMenuWidth && spaceLeft > spaceRight) {
+						openLeft = true;
+					}
+
+					if (openLeft) {
 						subMenuEl.classList.add('vjs-submenu-left');
+						subMenuEl.classList.remove('vjs-submenu-right');
 					} else {
+						subMenuEl.classList.add('vjs-submenu-right');
 						subMenuEl.classList.remove('vjs-submenu-left');
 					}
 				}

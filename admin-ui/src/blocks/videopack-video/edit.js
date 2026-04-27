@@ -1,10 +1,6 @@
 /* global videopack_config */
 import { getBlobByURL, isBlobURL } from '@wordpress/blob';
-import {
-	Placeholder,
-	ProgressBar,
-	ToolbarButton,
-} from '@wordpress/components';
+import { Placeholder, ProgressBar, ToolbarButton } from '@wordpress/components';
 import {
 	BlockControls,
 	BlockIcon,
@@ -27,10 +23,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
-import {
-	caption as captionIcon,
-	undo as resetIcon,
-} from '@wordpress/icons';
+import { caption as captionIcon, undo as resetIcon } from '@wordpress/icons';
 import { createBlock } from '@wordpress/blocks';
 import apiFetch from '@wordpress/api-fetch';
 
@@ -40,6 +33,9 @@ import VideoSettings from '../../components/VideoSettings/VideoSettings.js';
 import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../components/AdditionalFormats/AdditionalFormats.js';
 import useVideoProbe from '../../hooks/useVideoProbe.js';
+import useVideopackContext, {
+	DESIGN_KEYS,
+} from '../../hooks/useVideopackContext';
 import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = ['video'];
@@ -71,6 +67,7 @@ const SingleVideoBlock = ({
 	videoData,
 	resolvedPostId,
 	resolvedAttributes = attributes,
+	context = {},
 }) => {
 	const { src, id: effectiveId } = resolvedAttributes;
 
@@ -132,28 +129,51 @@ const SingleVideoBlock = ({
 		];
 	}, []);
 
+	const {
+		resolved: effectiveDesign,
+		style: contextStyle,
+		classes: contextClasses,
+	} = useVideopackContext(attributes, context);
+
 	const contextValue = useMemo(() => {
 		const result = {
 			'videopack/postId': resolvedPostId,
-			'videopack/isInsidePlayerBlock': true,
+			'videopack/isInsidePlayerContainer': true,
+			'videopack/skin': effectiveDesign.skin,
+			'videopack/title_color': effectiveDesign.title_color,
+			'videopack/title_background_color':
+				effectiveDesign.title_background_color,
+			'videopack/play_button_color': effectiveDesign.play_button_color,
+			'videopack/play_button_secondary_color':
+				effectiveDesign.play_button_secondary_color,
+			'videopack/control_bar_bg_color':
+				effectiveDesign.control_bar_bg_color,
+			'videopack/control_bar_color': effectiveDesign.control_bar_color,
 		};
 
-		// Map all resolved attributes to videopack/ prefixed keys
+		// Map other resolved attributes
 		Object.entries(resolvedAttributes).forEach(([key, val]) => {
 			if (key === 'id') {
-				// id attribute maps to BOTH id and videopack/postId for children
 				result.id = val;
 				result['videopack/postId'] = val;
-			} else {
+			} else if (!DESIGN_KEYS.includes(key)) {
 				const contextKey = `videopack/${key}`;
-				if (val !== undefined && val !== null) {
+				// Only overwrite if the value is actually set and not an empty object/array
+				if (
+					val !== undefined &&
+					val !== null &&
+					(typeof val !== 'object' ||
+						(Array.isArray(val)
+							? val.length > 0
+							: Object.keys(val).length > 0))
+				) {
 					result[contextKey] = val;
 				}
 			}
 		});
 
 		return result;
-	}, [resolvedPostId, resolvedAttributes]);
+	}, [resolvedPostId, resolvedAttributes, effectiveDesign]);
 
 	return (
 		<>
@@ -173,8 +193,18 @@ const SingleVideoBlock = ({
 					options={options}
 					isProbing={isProbing}
 					probedMetadata={effectiveMetadata}
-					fallbackTitle={attachment?.title?.rendered || attachment?.title?.raw || resolvedAttributes.title || ''}
-					fallbackCaption={attachment?.caption?.rendered || attachment?.caption?.raw || resolvedAttributes.caption || ''}
+					fallbackTitle={
+						attachment?.title?.rendered ||
+						attachment?.title?.raw ||
+						resolvedAttributes.title ||
+						''
+					}
+					fallbackCaption={
+						attachment?.caption?.rendered ||
+						attachment?.caption?.raw ||
+						resolvedAttributes.caption ||
+						''
+					}
 					isBlockEditor={true}
 				/>
 				<AdditionalFormats
@@ -186,24 +216,18 @@ const SingleVideoBlock = ({
 				/>
 			</InspectorControls>
 			<figure
-				style={{ display: (src || effectiveId) ? 'block' : 'none' }}
+				style={{
+					...contextStyle,
+					display: src || effectiveId ? 'block' : 'none',
+				}}
 				aria-hidden={!(src || effectiveId)}
-				className={`videopack-video-block-container videopack-wrapper${
-					attributes.title_background_color
-						? ' videopack-has-title-background-color'
-						: ''
-				}${
-					attributes.play_button_color
-						? ' videopack-has-play-button-color'
-						: ''
-				}${
-					attributes.play_button_secondary_color
-						? ' videopack-has-play-button-secondary-color'
-						: ''
-				}${
-					(attributes.overlay_title ?? videopack_config?.options?.overlay_title) ||
-					(attributes.downloadlink ?? videopack_config?.options?.downloadlink) ||
-					(attributes.embedcode ?? videopack_config?.options?.embedcode)
+				className={`videopack-video-block-container videopack-wrapper ${contextClasses}${
+					(attributes.overlay_title ??
+						videopack_config?.options?.overlay_title) ||
+					(attributes.downloadlink ??
+						videopack_config?.options?.downloadlink) ||
+					(attributes.embedcode ??
+						videopack_config?.options?.embedcode)
 						? ' videopack-video-title-visible'
 						: ''
 				}`}
@@ -235,7 +259,8 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	const { id, src } = attributes;
 	const postId = context['videopack/postId'];
 	const [options, setOptions] = useState();
-	const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
+	const config =
+		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const mejsSvgPath =
 		config?.mejs_controls_svg ||
 		(typeof window !== 'undefined'
@@ -251,29 +276,32 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			'--videopack-mejs-controls-svg': mejsSvgPath
 				? `url("${mejsSvgPath}")`
 				: undefined,
-			'--videopack-play-button-color': attributes.play_button_color,
-			'--videopack-play-button-secondary-color': attributes.play_button_secondary_color,
 		},
 	});
 	const hasAttemptedInitialUpload = useRef(false);
 	const { createErrorNotice } = useDispatch(noticesStore);
 	const { insertBlock } = useDispatch(blockEditorStore);
-	const { mediaUpload, isSiteEditor, editorPostId, innerBlocks } = useSelect((select) => {
-		const editorStore = select(blockEditorStore);
-		const editor = select('core/editor');
-		const postType = editor?.getCurrentPostType();
-		return {
-			mediaUpload: editorStore.getSettings()?.mediaUpload,
-			isSiteEditor:
-				postType === 'wp_template' || postType === 'wp_template_part',
-			editorPostId: editor?.getCurrentPostId(),
-			innerBlocks: editorStore.getBlocks(clientId),
-		};
-	}, [clientId]);
+	const { mediaUpload, isSiteEditor, editorPostId, innerBlocks } = useSelect(
+		(select) => {
+			const editorStore = select(blockEditorStore);
+			const editor = select('core/editor');
+			const postType = editor?.getCurrentPostType();
+			return {
+				mediaUpload: editorStore.getSettings()?.mediaUpload,
+				isSiteEditor:
+					postType === 'wp_template' ||
+					postType === 'wp_template_part',
+				editorPostId: editor?.getCurrentPostId(),
+				innerBlocks: editorStore.getBlocks(clientId),
+			};
+		},
+		[clientId]
+	);
 
-	const isContextual = postId && (Number(postId) !== Number(editorPostId) || isSiteEditor);
+	const isContextual =
+		postId && (Number(postId) !== Number(editorPostId) || isSiteEditor);
 	const shouldPersist = !isContextual;
-	const resolvedPostId = isContextual ? postId : (id || undefined);
+	const resolvedPostId = isContextual ? postId : id || undefined;
 
 	const effectiveId = resolvedPostId;
 
@@ -322,22 +350,16 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				attachment.meta?.tracks ||
 				attributes.text_tracks ||
 				[],
-			width:
-				attachment.media_details?.width ||
-				attributes.width,
-			height:
-				attachment.media_details?.height ||
-				attributes.height,
+			width: attachment.media_details?.width || attributes.width,
+			height: attachment.media_details?.height || attributes.height,
 			sources:
 				attachment.videopack?.sources ||
 				(attachment.source_url || attachment.url
 					? [
 							{
-								src:
-									attachment.source_url ||
-									attachment.url,
+								src: attachment.source_url || attachment.url,
 							},
-					  ]
+						]
 					: attributes.sources || []),
 			source_groups:
 				(attachment.videopack?.source_groups &&
@@ -355,24 +377,36 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			fixed_aspect:
 				attachment.meta?.['_kgflashmediaplayer-fixedaspect'] ||
 				attributes.fixed_aspect,
-			fullwidth:
-				attributes.fullwidth,
+			fullwidth: attributes.fullwidth,
 			embed_method:
-				attributes.embed_method || options?.embed_method || config?.embed_method,
-			skin:
-				attributes.skin || options?.skin || config?.skin,
+				attributes.embed_method ||
+				options?.embed_method ||
+				config?.embed_method,
+			skin: attributes.skin || options?.skin || config?.skin,
 			play_button_color:
-				attributes.play_button_color || options?.play_button_color || config?.play_button_color,
+				attributes.play_button_color ||
+				options?.play_button_color ||
+				config?.play_button_color,
 			play_button_secondary_color:
-				attributes.play_button_secondary_color || options?.play_button_secondary_color || config?.play_button_secondary_color,
+				attributes.play_button_secondary_color ||
+				options?.play_button_secondary_color ||
+				config?.play_button_secondary_color,
 			control_bar_bg_color:
-				attributes.control_bar_bg_color || options?.control_bar_bg_color || config?.control_bar_bg_color,
+				attributes.control_bar_bg_color ||
+				options?.control_bar_bg_color ||
+				config?.control_bar_bg_color,
 			control_bar_color:
-				attributes.control_bar_color || options?.control_bar_color || config?.control_bar_color,
+				attributes.control_bar_color ||
+				options?.control_bar_color ||
+				config?.control_bar_color,
 			title_color:
-				attributes.title_color || options?.title_color || config?.title_color,
+				attributes.title_color ||
+				options?.title_color ||
+				config?.title_color,
 			title_background_color:
-				attributes.title_background_color || options?.title_background_color || config?.title_background_color,
+				attributes.title_background_color ||
+				options?.title_background_color ||
+				config?.title_background_color,
 		};
 	}, [attributes, attachment, options, config]);
 
@@ -421,8 +455,8 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					[],
 				embedlink: attachmentObject.link
 					? attachmentObject.link +
-					  ( attachmentObject.link.includes( '?' ) ? '&' : '?' ) +
-					  'videopack[enable]=true'
+						(attachmentObject.link.includes('?') ? '&' : '?') +
+						'videopack[enable]=true'
 					: undefined,
 				width: attachmentObject.media_details?.width,
 				height: attachmentObject.media_details?.height,
@@ -435,7 +469,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 										attachmentObject.source_url ||
 										attachmentObject.url,
 								},
-						  ]
+							]
 						: []),
 				source_groups: attachmentObject.videopack?.source_groups || {},
 				text_tracks: attachmentObject.videopack?.text_tracks || [],
@@ -500,7 +534,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				// AND they are not in the dynamicKeys list.
 				if (attachmentObject.id) {
 					dynamicKeys.forEach((key) => {
-						if (!shouldPersist || (key in filteredUpdates)) {
+						if (!shouldPersist || key in filteredUpdates) {
 							delete filteredUpdates[key];
 						}
 					});
@@ -638,7 +672,11 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			setOptions(response);
 			// Hydrate embed_method from global settings if it's missing from block attributes
 			// We skip persistence if we are in a contextual (loop) environment
-			if (response?.embed_method && !attributesRef.current.embed_method && !isContextual) {
+			if (
+				response?.embed_method &&
+				!attributesRef.current.embed_method &&
+				!isContextual
+			) {
 				// We no longer call setAttributes here to keep the block markup clean
 			}
 		});
@@ -697,7 +735,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 
 	return (
 		<figure {...blockProps}>
-			{(!src && !effectiveId) ? (
+			{!src && !effectiveId ? (
 				<MediaPlaceholder
 					icon={<BlockIcon icon={icon} />}
 					onSelect={onSelectVideo}
@@ -708,7 +746,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					onError={onUploadError}
 					placeholder={placeholder}
 				/>
-			) : (!id && src && isBlobURL(src)) ? (
+			) : !id && src && isBlobURL(src) ? (
 				<div className="components-placeholder block-editor-media-placeholder is-large has-illustration">
 					<div className="components-placeholder__label">
 						<BlockIcon icon={icon} />
@@ -745,10 +783,14 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 						/>
 						<ToolbarButton
 							icon={resetIcon}
-							label={__('Restart Video', 'video-embed-thumbnail-generator')}
+							label={__(
+								'Restart Video',
+								'video-embed-thumbnail-generator'
+							)}
 							onClick={() =>
 								setAttributes({
-									restartCount: (attributes.restartCount || 0) + 1,
+									restartCount:
+										(attributes.restartCount || 0) + 1,
 								})
 							}
 						/>
@@ -756,10 +798,14 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					<BlockControls>
 						<ToolbarButton
 							icon={captionIcon}
-							label={__('Add caption', 'video-embed-thumbnail-generator')}
+							label={__(
+								'Add caption',
+								'video-embed-thumbnail-generator'
+							)}
 							onClick={() => {
 								const hasCaption = innerBlocks.some(
-									(block) => block.name === 'videopack/video-caption'
+									(block) =>
+										block.name === 'videopack/video-caption'
 								);
 								if (!hasCaption) {
 									insertBlock(
@@ -785,6 +831,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				videoData={videoData}
 				resolvedPostId={resolvedPostId}
 				resolvedAttributes={resolvedAttributes}
+				context={context}
 			/>
 		</figure>
 	);

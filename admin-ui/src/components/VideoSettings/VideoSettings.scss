@@ -1,3 +1,5 @@
+@use '@wordpress/base-styles/colors';
+
 .videopack-video-settings {
 	container-type: inline-size;
 	container-name: videopack-settings;
@@ -41,6 +43,100 @@
 					margin-bottom: 0;
 				}
 			}
+		}
+	}
+
+	.videopack-video-stats-simple {
+		margin-top: 12px;
+		margin-bottom: 24px;
+
+		.videopack-stat-simple-row {
+			display: flex;
+			align-items: baseline;
+			gap: 8px;
+		}
+
+		.videopack-stat-label {
+			font-size: 13px;
+			color: colors.$gray-600;
+		}
+
+		.videopack-stat-value {
+			font-size: 16px;
+			font-weight: 600;
+			color: colors.$gray-900;
+			line-height: 1;
+		}
+	}
+
+	.videopack-video-stats-funnel {
+		margin-top: 12px;
+		margin-bottom: 24px;
+
+		.videopack-funnel-track {
+			display: flex;
+			justify-content: space-between;
+			position: relative;
+			padding-top: 10px;
+			overflow: hidden;
+		}
+
+		.videopack-funnel-item {
+			position: relative;
+			z-index: 2;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			flex: 1;
+			text-align: center;
+		}
+
+		.videopack-funnel-marker {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background: colors.$white;
+			border: 2px solid var(--wp-admin-theme-color);
+			margin-bottom: 8px;
+			position: relative;
+			z-index: 3;
+		}
+
+		.videopack-funnel-connector {
+			position: absolute;
+			top: 50%;
+			left: 100%;
+			width: 1000%; // Over-extended, container will clip
+			height: 2px;
+			background: colors.$gray-200;
+			z-index: 1;
+			transform: translateY(-50%);
+		}
+
+		.videopack-funnel-label {
+			font-size: 9px;
+			text-transform: uppercase;
+			color: colors.$gray-600;
+			font-weight: 600;
+			margin-bottom: 2px;
+			white-space: nowrap;
+		}
+
+		.videopack-funnel-value {
+			font-size: 13px;
+			font-weight: 500;
+			color: colors.$gray-900;
+			line-height: 1;
+		}
+
+		.videopack-funnel-retention {
+			font-size: 10px;
+			color: var(--wp-admin-theme-color);
+			font-weight: 600;
+			margin-top: 4px;
+			background: colors.$gray-100;
+			padding: 1px 4px;
+			border-radius: 4px;
 		}
 	}
 }

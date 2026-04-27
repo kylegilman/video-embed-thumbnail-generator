@@ -6,22 +6,19 @@ import {
 	store as blockEditorStore,
 	BlockControls,
 } from '@wordpress/block-editor';
-import { useMemo, useCallback, useState, useEffect, useRef } from '@wordpress/element';
+import { useMemo, useCallback, useState, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
+import { useVideoFormats } from '../../hooks/useVideoFormats.js';
+import { getEffectiveValue, normalizeSourceGroups } from '../../utils/context';
+import useVideoProbe from '../../hooks/useVideoProbe.js';
 import { getSettings } from '../../api/settings';
 import { __ } from '@wordpress/i18n';
-import {
-	ToolbarGroup,
-	ToolbarButton,
-} from '@wordpress/components';
+import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import { undo as resetIcon } from '@wordpress/icons';
-import { decodeEntities } from '@wordpress/html-entities';
-import { applyFilters } from '@wordpress/hooks';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
 import VideoSettings from '../../components/VideoSettings/VideoSettings.js';
 import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../components/AdditionalFormats/AdditionalFormats.js';
-import { getEffectiveValue } from '../../utils/context';
 import './editor.scss';
 
 const ALLOWED_BLOCKS = ['videopack/video-watermark', 'videopack/video-title'];
@@ -37,14 +34,6 @@ export default function Edit(props) {
 	const { context, isSelected, clientId } = props;
 	const [options, setOptions] = useState({});
 	const [restartCount, setRestartCount] = useState(0);
-
-	const resetPlayer = useCallback(() => {
-		setRestartCount((prev) => prev + 1);
-	}, []);
-
-	useEffect(() => {
-		getSettings().then(setOptions);
-	}, []);
 
 	const { parentClientId, parentAttributes, hasTitleBlock, isAnySelected } =
 		useSelect(
@@ -72,6 +61,14 @@ export default function Edit(props) {
 			},
 			[clientId]
 		);
+
+	const resetPlayer = useCallback(() => {
+		setRestartCount((prev) => prev + 1);
+	}, []);
+
+	useEffect(() => {
+		getSettings().then(setOptions);
+	}, []);
 
 	const { updateBlockAttributes } = useDispatch(blockEditorStore);
 
@@ -115,6 +112,14 @@ export default function Edit(props) {
 		? postId
 		: parentAttributes.id || undefined;
 
+	const src = getEffectiveValue('src', {}, context);
+	const { probedMetadata } = useVideoProbe(src);
+	const { formats: videoFormats } = useVideoFormats(resolvedPostId, src);
+	const fetchedSourceGroups = useMemo(
+		() => normalizeSourceGroups(videoFormats),
+		[videoFormats]
+	);
+
 	// Merge parent attributes with global options for mirroring panels
 	const effectiveAttributes = useMemo(() => {
 		const result = {
@@ -146,7 +151,8 @@ export default function Edit(props) {
 		return result;
 	}, [options, parentAttributes, resolvedPostId, context, isContextual]);
 
-	const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
+	const config =
+		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const mejsSvgPath =
 		config?.mejs_controls_svg ||
 		(typeof window !== 'undefined'
@@ -163,7 +169,7 @@ export default function Edit(props) {
 		const result = {
 			...context,
 			'videopack/postId': resolvedPostId,
-			'videopack/isInsidePlayer': true,
+			'videopack/isInsidePlayerOverlay': true,
 		};
 
 		// Map attributes to prefixed context for inner blocks
@@ -172,14 +178,42 @@ export default function Edit(props) {
 				result.id = val;
 				result['videopack/postId'] = val;
 			} else {
-				result[`videopack/${key}`] = val;
+				// Only overwrite context if the attribute actually has a value
+				if (
+					val !== undefined &&
+					val !== null &&
+					(typeof val !== 'object' ||
+						(Array.isArray(val)
+							? val.length > 0
+							: Object.keys(val).length > 0))
+				) {
+					result[`videopack/${key}`] = val;
+				}
 			}
 		});
 
-		return result;
-	}, [context, effectiveAttributes, resolvedPostId, isContextual]);
+		// FORCE dynamically fetched sources to take priority
+		if (
+			fetchedSourceGroups &&
+			Object.keys(fetchedSourceGroups).length > 0
+		) {
+			result['videopack/source_groups'] = fetchedSourceGroups;
+		}
 
-	const effectiveEmbedMethod = getEffectiveValue('embed_method', parentAttributes, context);
+		return result;
+	}, [
+		context,
+		effectiveAttributes,
+		resolvedPostId,
+		isContextual,
+		fetchedSourceGroups,
+	]);
+
+	const effectiveEmbedMethod = getEffectiveValue(
+		'embed_method',
+		parentAttributes,
+		context
+	);
 	const skin = getEffectiveValue('skin', parentAttributes, context);
 
 	useEffect(() => {
@@ -189,19 +223,29 @@ export default function Edit(props) {
 	const blockProps = useBlockProps({
 		className: `videopack-video-player-engine-block videopack-wrapper ${
 			effectiveEmbedMethod === 'Video.js' ? skin : ''
+		} ${hasTitleFeatures ? 'videopack-video-title-visible' : ''} ${
+			getEffectiveValue('play_button_color', {}, contextValue)
+				? 'videopack-has-play-button-color'
+				: ''
 		} ${
-			hasTitleFeatures ? 'videopack-video-title-visible' : ''
-		} ${
-			getEffectiveValue('play_button_color', {}, contextValue) ? 'videopack-has-play-button-color' : ''
-		} ${
-			getEffectiveValue('play_button_secondary_color', {}, contextValue) ? 'videopack-has-play-button-secondary-color' : ''
+			getEffectiveValue('play_button_secondary_color', {}, contextValue)
+				? 'videopack-has-play-button-secondary-color'
+				: ''
 		}`,
 		style: {
 			'--videopack-mejs-controls-svg': mejsSvgPath
 				? `url("${mejsSvgPath}")`
 				: undefined,
-			'--videopack-play-button-color': getEffectiveValue('play_button_color', {}, contextValue),
-			'--videopack-play-button-secondary-color': getEffectiveValue('play_button_secondary_color', {}, contextValue),
+			'--videopack-play-button-color': getEffectiveValue(
+				'play_button_color',
+				{},
+				contextValue
+			),
+			'--videopack-play-button-secondary-color': getEffectiveValue(
+				'play_button_secondary_color',
+				{},
+				contextValue
+			),
 		},
 	});
 
@@ -256,7 +300,11 @@ export default function Edit(props) {
 				parentAttributes,
 				contextValue
 			),
-			title_color: getEffectiveValue('title_color', parentAttributes, contextValue),
+			title_color: getEffectiveValue(
+				'title_color',
+				parentAttributes,
+				contextValue
+			),
 			title_background_color: getEffectiveValue(
 				'title_background_color',
 				parentAttributes,
@@ -264,7 +312,8 @@ export default function Edit(props) {
 			),
 			downloadlink: contextValue['videopack/downloadlink'],
 			embedcode: contextValue['videopack/embedcode'],
-			restartCount: restartCount || contextValue['videopack/restartCount'],
+			restartCount:
+				restartCount || contextValue['videopack/restartCount'],
 		};
 	}, [contextValue, resolvedPostId, restartCount]);
 
@@ -275,7 +324,10 @@ export default function Edit(props) {
 					<ToolbarGroup>
 						<ToolbarButton
 							icon={resetIcon}
-							label={__('Restart Video', 'video-embed-thumbnail-generator')}
+							label={__(
+								'Restart Video',
+								'video-embed-thumbnail-generator'
+							)}
 							onClick={resetPlayer}
 						/>
 					</ToolbarGroup>
@@ -329,10 +381,8 @@ export default function Edit(props) {
 						/>
 					</BlockContextProvider>
 				</div>
-				{!isAnySelected && (
-					<div className="videopack-block-overlay" />
-				)}
+				{!isAnySelected && <div className="videopack-block-overlay" />}
 			</VideoPlayer>
 		</div>
 	);
-};
+}

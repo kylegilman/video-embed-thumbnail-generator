@@ -14,17 +14,11 @@
   "usesContext": [
     "videopack/postId",
     "videopack/skin",
-    "videopack/title_color",
-    "videopack/title_background_color",
-    "videopack/overlay_title",
-    "videopack/downloadlink",
-    "videopack/embedcode",
-    "videopack/showBackground",
-    "videopack/textAlign",
-    "videopack/position",
     "videopack/embedlink",
+    "videopack/title",
     "videopack/isInsideThumbnail",
-    "videopack/isInsidePlayer"
+    "videopack/isInsidePlayerOverlay",
+    "videopack/isInsidePlayerContainer"
   ],
   "attributes": {
     "title": {

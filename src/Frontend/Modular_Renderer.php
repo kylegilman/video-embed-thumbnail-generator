@@ -94,8 +94,8 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_video_container( array $atts, $inner_content, $is_block = false, $options = array() ) {
-		wp_enqueue_style( 'videopack-frontend' );
-		wp_enqueue_script( 'videopack-frontend' );
+		wp_enqueue_style( 'videopack-core' );
+		wp_enqueue_script( 'videopack-core' );
 		$is_modular_engine = ! empty( $atts['is_modular_engine'] );
 		$classes           = array( 'videopack-wrapper' );
 
@@ -158,7 +158,7 @@ class Modular_Renderer {
 		);
 
 		foreach ( $colors as $variable => $attribute ) {
-				$val = ! empty( $atts[ $attribute ] ) ? $atts[ $attribute ] : ( $options[ $attribute ] ?? '' );
+				$val = array_key_exists( $attribute, $atts ) ? $atts[ $attribute ] : ( $options[ $attribute ] ?? '' );
 				if ( ! empty( $val ) ) {
 					$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
 
@@ -410,7 +410,7 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_video_title( array $atts, $source, $id ) {
-		wp_enqueue_style( 'videopack-frontend' );
+		wp_enqueue_style( 'videopack-core' );
 		$options      = get_option( 'videopack_options', array() );
 		$downloadlink = self::is_true( $atts['downloadlink'] ?? ( $options['downloadlink'] ?? false ) );
 		$embedcode    = self::is_true( $atts['embedcode'] ?? ( $options['embedcode'] ?? false ) );
@@ -637,7 +637,7 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_view_count( $source, $atts = array() ) {
-		wp_enqueue_style( 'videopack-frontend' );
+		wp_enqueue_style( 'videopack-core' );
 		if ( ! $source ) {
 			return '';
 		}
@@ -661,7 +661,7 @@ class Modular_Renderer {
 		}
 
 		$is_thumb      = ! empty( $atts['isInsideThumbnail'] );
-		$is_player     = ! empty( $atts['isInsidePlayerBlock'] ) || ! empty( $atts['isInsidePlayer'] );
+		$is_player     = ! empty( $atts['isInsidePlayerContainer'] ) || ! empty( $atts['isInsidePlayerOverlay'] );
 		$icon_html     = self::get_svg_icon( $icon_type );
 		$text_align    = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'center' : ( $is_player ? 'right' : 'left' ) );
 		$style_attrs   = array();
@@ -718,7 +718,7 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_thumbnail( array $atts, $inner_content, $options, $context = array() ) {
-		wp_enqueue_style( 'videopack-frontend' );
+		wp_enqueue_style( 'videopack-core' );
 		$thumbnail_url = $atts['poster'] ?? ( $context['poster'] ?? '' );
 		if ( ! $thumbnail_url ) {
 			return '';

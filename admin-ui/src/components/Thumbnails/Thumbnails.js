@@ -26,7 +26,7 @@ import {
 } from '../../utils/video-capture';
 
 import { chevronUp, chevronDown } from '@wordpress/icons';
-import './Thumbnails.scss';
+
 import VideoPlayerInner from './VideoPlayerInner';
 
 const Thumbnails = ({

@@ -10,7 +10,8 @@
     "videopack/postId",
     "videopack/skin",
     "videopack/isInsideThumbnail",
-    "videopack/isInsidePlayer"
+    "videopack/isInsidePlayerOverlay",
+    "videopack/isInsidePlayerContainer"
   ],
   "attributes": {
     "position": {

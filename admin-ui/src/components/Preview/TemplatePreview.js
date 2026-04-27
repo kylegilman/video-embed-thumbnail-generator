@@ -30,17 +30,19 @@ export default function TemplatePreview({
 			currentFlags.embedcode = false;
 		}
 		if (name === 'videopack/video-player-engine') {
-			currentFlags.isInsidePlayer = true;
+			currentFlags.isInsidePlayerOverlay = true;
+			currentFlags.isInsidePlayerContainer = true;
 		}
 
 		const isOverlay =
-			!!currentFlags.isInsideThumbnail || !!currentFlags.isInsidePlayer;
+			!!currentFlags.isInsideThumbnail || !!currentFlags.isInsidePlayerOverlay;
 
 		const itemContext = {
 			...context,
 			...currentFlags,
 			'videopack/isInsideThumbnail': currentFlags.isInsideThumbnail,
-			'videopack/isInsidePlayer': currentFlags.isInsidePlayer,
+			'videopack/isInsidePlayerOverlay': currentFlags.isInsidePlayerOverlay,
+			'videopack/isInsidePlayerContainer': currentFlags.isInsidePlayerContainer,
 			'videopack/downloadlink': currentFlags.downloadlink,
 			'videopack/embedcode': currentFlags.embedcode,
 			'videopack/postId': video.attachment_id,

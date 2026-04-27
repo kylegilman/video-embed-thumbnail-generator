@@ -3,7 +3,7 @@ import { useRef, useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { external } from '@wordpress/icons';
 import { play, pause } from '../../assets/icon';
-import './Thumbnails.scss';
+
 
 const VideoPlayerInner = ({
 	videoRef,

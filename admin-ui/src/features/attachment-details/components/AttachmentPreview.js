@@ -10,6 +10,7 @@ import { decodeEntities } from '@wordpress/html-entities';
 import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer.js';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe.js';
 import { getSettings } from '../../../api/settings';
+import { BlockPreview } from '../../../components/Preview';
 
 /**
  * AttachmentPreview component.
@@ -149,6 +150,8 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 					record.image?.src,
 				sources,
 				source_groups: sourceGroups,
+				embedlink: record.link,
+				count: videopackMeta.starts || 0,
 			};
 		}
 		return null;
@@ -245,27 +248,82 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 		return styles;
 	}, [videopackConfig.contentSize, videopackConfig.wideSize]);
 
+	const previewContext = useMemo(() => {
+		if (!attributes) {
+			return {};
+		}
+		const ctx = {};
+		Object.keys(attributes).forEach((key) => {
+			ctx[`videopack/${key}`] = attributes[key];
+		});
+		ctx['videopack/postId'] = attachmentId;
+		return ctx;
+	}, [attributes, attachmentId]);
+
 	// Only render once we have resolved the record and calculated initial attributes.
 	if (!hasResolved || !options || !attributes) {
 		return <Spinner />;
 	}
 
 	return (
-		<div
-			className={`wp-block-videopack-videopack-video${
-				attributes.align ? ` align${attributes.align}` : ''
-			}`}
-			style={containerStyle}
+		<PreviewIframe
+			title={__(
+				'Attachment Preview',
+				'video-embed-thumbnail-generator'
+			)}
+			resizeDependencies={[attributes.align]}
 		>
-			<PreviewIframe
-				title={__(
-					'Attachment Preview',
-					'video-embed-thumbnail-generator'
-				)}
+			<div
+				className={`wp-block-videopack-videopack-video${
+					attributes.align ? ` align${attributes.align}` : ''
+				}`}
+				style={containerStyle}
 			>
-				<VideoPlayer attributes={attributes} />
-			</PreviewIframe>
-		</div>
+				<VideoPlayer attributes={attributes}>
+					{(attributes.overlay_title ||
+						attributes.downloadlink ||
+						(attributes.embeddable && attributes.embedcode)) && (
+						<BlockPreview
+							name="videopack/video-title"
+							attributes={{
+								title: attributes.title,
+								overlay_title: !!attributes.overlay_title,
+								downloadlink: !!attributes.downloadlink,
+								embedcode: !!(
+									attributes.embeddable &&
+									attributes.embedcode
+								),
+								showBackground: true,
+							}}
+							isInsidePlayerOverlay={true}
+							isInsidePlayerContainer={true}
+							isOverlay={true}
+							context={previewContext}
+						/>
+					)}
+					{attributes.watermark && (
+						<BlockPreview
+							name="videopack/video-watermark"
+							isInsidePlayerOverlay={true}
+							isInsidePlayerContainer={true}
+							isOverlay={true}
+							context={previewContext}
+						/>
+					)}
+				</VideoPlayer>
+				{attributes.views && (
+					<BlockPreview
+						name="videopack/view-count"
+						attributes={{
+							count: attributes.count,
+							showText: true,
+							iconType: 'none',
+						}}
+						context={previewContext}
+					/>
+				)}
+			</div>
+		</PreviewIframe>
 	);
 };
 

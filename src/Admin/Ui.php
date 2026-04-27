@@ -95,6 +95,10 @@ class Ui implements Hook_Subscriber {
 				'callback' => 'conditionally_add_assets_to_block_metadata',
 			),
 			array(
+				'hook'     => 'block_type_metadata',
+				'callback' => 'inject_shared_design_metadata',
+			),
+			array(
 				'hook'     => 'mce_external_plugins',
 				'callback' => 'register_tinymce_plugin',
 			),
@@ -184,6 +188,101 @@ class Ui implements Hook_Subscriber {
 			return (array) $metadata;
 		}
 		return (array) $metadata;
+	}
+
+	/**
+	 * Dynamically injects shared design attributes and context mapping into block metadata.
+	 *
+	 * @param array $metadata The block metadata.
+	 * @return array The filtered metadata.
+	 */
+	public function inject_shared_design_metadata( $metadata ) {
+		if ( ! isset( $metadata['name'] ) || strpos( (string) $metadata['name'], 'videopack/' ) !== 0 ) {
+			return $metadata;
+		}
+
+		$design_attributes = array(
+			'skin'                        => array( 'type' => 'string' ),
+			'title_color'                 => array( 'type' => 'string' ),
+			'title_background_color'      => array( 'type' => 'string' ),
+			'play_button_color'           => array( 'type' => 'string' ),
+			'play_button_secondary_color' => array( 'type' => 'string' ),
+			'control_bar_bg_color'        => array( 'type' => 'string' ),
+			'control_bar_color'           => array( 'type' => 'string' ),
+			'pagination_color'            => array( 'type' => 'string' ),
+			'pagination_background_color' => array( 'type' => 'string' ),
+			'pagination_active_bg_color'  => array( 'type' => 'string' ),
+			'pagination_active_color'     => array( 'type' => 'string' ),
+			'sources'                     => array( 'type' => 'array' ),
+			'source_groups'               => array( 'type' => 'object' ),
+		);
+
+		$provides_context = array(
+			'videopack/skin'                        => 'skin',
+			'videopack/title_color'                 => 'title_color',
+			'videopack/title_background_color'      => 'title_background_color',
+			'videopack/play_button_color'           => 'play_button_color',
+			'videopack/play_button_secondary_color' => 'play_button_secondary_color',
+			'videopack/control_bar_bg_color'        => 'control_bar_bg_color',
+			'videopack/control_bar_color'           => 'control_bar_color',
+			'videopack/pagination_color'            => 'pagination_color',
+			'videopack/pagination_background_color' => 'pagination_background_color',
+			'videopack/pagination_active_bg_color'  => 'pagination_active_bg_color',
+			'videopack/pagination_active_color'     => 'pagination_active_color',
+			'videopack/sources'                     => 'sources',
+			'videopack/source_groups'               => 'source_groups',
+		);
+
+		$uses_context = array_merge( 
+			array_keys( $provides_context ),
+			array(
+				'videopack/postId',
+				'videopack/isInsideThumbnail',
+				'videopack/isInsidePlayerOverlay',
+				'videopack/isInsidePlayerContainer',
+				'videopack/title',
+				'videopack/embedlink',
+				'videopack/caption',
+				'videopack/textAlign',
+				'videopack/position',
+				'videopack/totalPages',
+				'videopack/currentPage',
+				'videopack/sources',
+				'videopack/source_groups',
+			)
+		);
+
+		// Blocks that PROVIDE context (Parents)
+		$providers = array(
+			'videopack/collection',
+			'videopack/videopack-video',
+			'videopack/video-loop',
+		);
+
+		// Blocks that USE context (Children/Internal)
+		$consumers = array(
+			'videopack/video-loop',
+			'videopack/thumbnail',
+			'videopack/video-title',
+			'videopack/video-duration',
+			'videopack/view-count',
+			'videopack/play-button',
+			'videopack/pagination',
+			'videopack/video-player-engine',
+			'videopack/video-watermark',
+			'videopack/video-caption',
+		);
+
+		if ( in_array( $metadata['name'], $providers, true ) ) {
+			$metadata['attributes']      = array_merge( $metadata['attributes'] ?? array(), $design_attributes );
+			$metadata['providesContext'] = array_merge( $metadata['providesContext'] ?? array(), $provides_context );
+		}
+
+		if ( in_array( $metadata['name'], $consumers, true ) ) {
+			$metadata['usesContext'] = array_values( array_unique( array_merge( $metadata['usesContext'] ?? array(), $uses_context ) ) );
+		}
+
+		return $metadata;
 	}
 
 
@@ -278,48 +377,7 @@ class Ui implements Hook_Subscriber {
 				'globalStyles'           => function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
 				'mejs_controls_svg'      => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),
 				'options'                => $options,
-				'defaults'               => array(
-					'title_color'                 => (string) ( $options['title_color'] ?? '' ),
-					'title_background_color'      => (string) ( $options['title_background_color'] ?? '' ),
-					'pagination_color'            => (string) ( $options['pagination_color'] ?? '' ),
-					'pagination_background_color' => (string) ( $options['pagination_background_color'] ?? '' ),
-					'pagination_active_bg_color'  => (string) ( $options['pagination_active_bg_color'] ?? '' ),
-					'pagination_active_color'     => (string) ( $options['pagination_active_color'] ?? '' ),
-					'play_button_color'           => (string) ( $options['play_button_color'] ?? '' ),
-					'play_button_secondary_color'      => (string) ( $options['play_button_secondary_color'] ?? '' ),
-					'control_bar_bg_color'        => (string) ( $options['control_bar_bg_color'] ?? '' ),
-					'control_bar_color'           => (string) ( $options['control_bar_color'] ?? '' ),
-					'width'                       => (int) ( $options['width'] ?? 960 ),
-					'height'                      => (int) ( $options['height'] ?? 540 ),
-					'fixed_aspect'                => (string) ( $options['fixed_aspect'] ?? 'vertical' ),
-					'default_ratio'               => (string) ( (int) ( $options['width'] ?? 960 ) ) . ' / ' . (string) ( (int) ( $options['height'] ?? 540 ) ),
-					'autoplay'                    => (bool) ( $options['autoplay'] ?? false ),
-					'loop'                        => (bool) ( $options['loop'] ?? false ),
-					'muted'                       => (bool) ( $options['muted'] ?? false ),
-					'controls'                    => (bool) ( $options['controls'] ?? true ),
-					'preload'                     => (string) ( $options['preload'] ?? 'metadata' ),
-					'playback_rate'               => (bool) ( $options['playback_rate'] ?? false ),
-					'playsinline'                 => (bool) ( $options['playsinline'] ?? true ),
-					'downloadlink'                => (bool) ( $options['downloadlink'] ?? false ),
-					'overlay_title'               => (bool) ( $options['overlay_title'] ?? false ),
-					'nativecontrolsfortouch'      => (bool) ( $options['nativecontrolsfortouch'] ?? false ),
-					'pauseothervideos'            => (bool) ( $options['pauseothervideos'] ?? true ),
-					'right_click'                 => (bool) ( $options['right_click'] ?? false ),
-					'auto_res'                    => (string) ( $options['auto_res'] ?? 'automatic' ),
-					'auto_codec'                  => (string) ( $options['auto_codec'] ?? 'h264' ),
-					'skin'                        => (string) ( ! empty( $options['skin'] ) ? $options['skin'] : 'vjs-theme-videopack' ),
-					'embed_method'                => (string) ( ! empty( $options['embed_method'] ) ? $options['embed_method'] : 'Video.js' ),
-					'watermark'                   => (string) ( ! empty( $options['watermark'] ) ? $options['watermark'] : '' ),
-					'watermark_scale'             => (int) ( ! empty( $options['watermark_styles']['scale'] ) ? $options['watermark_styles']['scale'] : 10 ),
-					'watermark_align'             => (string) ( ! empty( $options['watermark_styles']['align'] ) ? $options['watermark_styles']['align'] : 'right' ),
-					'watermark_valign'            => (string) ( ! empty( $options['watermark_styles']['valign'] ) ? $options['watermark_styles']['valign'] : 'bottom' ),
-					'watermark_x'                 => (float) ( isset( $options['watermark_styles']['x'] ) ? $options['watermark_styles']['x'] : 5.0 ),
-					'watermark_y'                 => (float) ( isset( $options['watermark_styles']['y'] ) ? $options['watermark_styles']['y'] : 7.0 ),
-					'gallery_pagination'          => (bool) ( ! empty( $options['gallery_pagination'] ) ? $options['gallery_pagination'] : false ),
-					'gallery_per_page'             => (int) ( $options['gallery_per_page'] ?? 10 ),
-					'enable_collection_video_limit' => (bool) ( $options['enable_collection_video_limit'] ?? false ),
-					'collection_video_limit'      => (int) ( $options['collection_video_limit'] ?? -1 ),
-				),
+				'defaults'               => \Videopack\Common\Defaults::get_all( $options ),
 				'classic_embed_nonce'    => wp_create_nonce( 'videopack_classic_embed' ),
 			)
 		);

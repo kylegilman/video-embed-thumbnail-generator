@@ -16,7 +16,7 @@
     "videopack/watermark_link_to",
     "videopack/watermark_styles",
     "videopack/isInsideThumbnail",
-    "videopack/isInsidePlayer"
+    "videopack/isInsidePlayerOverlay"
   ],
   "attributes": {
     "watermark": {

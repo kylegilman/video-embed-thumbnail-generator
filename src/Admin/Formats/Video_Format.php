@@ -262,6 +262,7 @@ class Video_Format {
 			'codec'             => array(
 				'id'                => $codec->get_id(),
 				'name'              => $codec->get_name(),
+				'label'             => $codec->get_label(),
 				'container'         => $codec->get_container(),
 				'mime_type'         => $codec->get_mime_type(),
 				'vcodec'            => $codec->get_vcodec(),

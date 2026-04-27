@@ -9,7 +9,6 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import {
 	Spinner,
-	Button,
 	Icon,
 	PanelBody,
 	SelectControl,
@@ -36,13 +35,10 @@ import { CSS } from '@dnd-kit/utilities';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import { useVideopackContext } from '../../utils/VideopackContext';
 import { getEffectiveValue } from '../../utils/context';
-import { VideoThumbnailPreview } from '../thumbnail/VideoThumbnailPreview';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 import { getSettings } from '../../api/settings';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
 import { BlockPreview as VideopackPreview } from '../../components/Preview';
-
-
 
 /**
  * Helper component to render a custom SVG duotone filter.
@@ -186,10 +182,7 @@ function SortableItem({
 			<button
 				className="videopack-drag-handle"
 				{...listeners}
-				title={__(
-					'Drag to reorder',
-					'video-embed-thumbnail-generator'
-				)}
+				title={__('Drag to reorder', 'video-embed-thumbnail-generator')}
 			>
 				<Icon icon={dragHandle} />
 			</button>
@@ -252,9 +245,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 	const { parentClientId } = useSelect(
 		(select) => ({
-			parentClientId: select('core/block-editor').getBlockRootClientId(
-				clientId
-			),
+			parentClientId:
+				select('core/block-editor').getBlockRootClientId(clientId),
 		}),
 		[clientId]
 	);
@@ -275,11 +267,24 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		gallery_order: context['videopack/gallery_order'],
 		gallery_include: context['videopack/gallery_include'],
 		gallery_exclude: context['videopack/gallery_exclude'],
-		gallery_pagination: vpContext.gallery_pagination ?? getEffectiveValue('gallery_pagination', attributes, context),
-		gallery_per_page: vpContext.gallery_per_page ?? getEffectiveValue('gallery_per_page', attributes, context),
-		enable_collection_video_limit: getEffectiveValue('enable_collection_video_limit', attributes, context),
-		collection_video_limit: getEffectiveValue('collection_video_limit', attributes, context),
-		page_number: vpContext.currentPage || context['videopack/currentPage'] || 1,
+		gallery_pagination:
+			vpContext.gallery_pagination ??
+			getEffectiveValue('gallery_pagination', attributes, context),
+		gallery_per_page:
+			vpContext.gallery_per_page ??
+			getEffectiveValue('gallery_per_page', attributes, context),
+		enable_collection_video_limit: getEffectiveValue(
+			'enable_collection_video_limit',
+			attributes,
+			context
+		),
+		collection_video_limit: getEffectiveValue(
+			'collection_video_limit',
+			attributes,
+			context
+		),
+		page_number:
+			vpContext.currentPage || context['videopack/currentPage'] || 1,
 	};
 
 	const {
@@ -293,7 +298,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		hasPaginationBlock,
 	} = useSelect(
 		(select) => {
-			const { getBlocks, getBlockAttributes } = select('core/block-editor');
+			const { getBlocks, getBlockAttributes } =
+				select('core/block-editor');
 			const { isSavingPost, isAutosavingPost } = select('core/editor');
 			const blocks = getBlocks(clientId) || [];
 
@@ -368,20 +374,17 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const customFilterId = useMemo(
 		() =>
 			thumbClientId
-				? `videopack-custom-duotone-${ thumbClientId.split( '-' )[ 0 ] }`
+				? `videopack-custom-duotone-${thumbClientId.split('-')[0]}`
 				: '',
-		[ thumbClientId ]
+		[thumbClientId]
 	);
 
 	// Final duotone class resolution
 	const resolvedDuotoneClass =
-		presetDuotoneClass || ( customDuotoneColors ? customFilterId : '' );
+		presetDuotoneClass || (customDuotoneColors ? customFilterId : '');
 
 	// We fetch query data to power the live preview template
-	const queryData = useVideoQuery(
-		queryAttributes,
-		previewPostId
-	);
+	const queryData = useVideoQuery(queryAttributes, previewPostId);
 	const { videoResults, isResolving } = queryData;
 
 	const layout = context['videopack/layout'] || 'grid';
@@ -459,7 +462,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							.map((id) => id.trim())
 					: (videoResults || []).map((v) =>
 							v.attachment_id.toString()
-					  );
+						);
 
 				const newInclude = currentInclude
 					.map((id) =>
@@ -598,7 +601,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					currentFlags.embedcode = false;
 				}
 				// Standardized overlay detection for display components
-				const isOverlay = !!currentFlags.isInsideThumbnail || !!currentFlags.isInsidePlayer;
+				const isOverlay =
+					!!currentFlags.isInsideThumbnail ||
+					!!currentFlags.isInsidePlayerOverlay;
 
 				return (
 					<VideopackPreview
@@ -612,8 +617,10 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						context={{
 							...previewContext,
 							...currentFlags,
-							'videopack/isInsideThumbnail': currentFlags.isInsideThumbnail,
-							'videopack/isInsidePlayer': currentFlags.isInsidePlayer,
+							'videopack/isInsideThumbnail':
+								currentFlags.isInsideThumbnail,
+							'videopack/isInsidePlayerOverlay':
+								currentFlags.isInsidePlayerOverlay,
 							'videopack/downloadlink': currentFlags.downloadlink,
 							'videopack/embedcode': currentFlags.embedcode,
 							'videopack/postId': video.attachment_id,
@@ -643,7 +650,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 								sources: video.player_vars?.sources,
 								poster: video.poster_url,
 								starts: video.player_vars?.starts,
-								'videopack/isInsidePlayer': true,
+								'videopack/isInsidePlayerOverlay': true,
 							}}
 							isSelected={false}
 						>
@@ -652,7 +659,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 									innerBlocks,
 									video,
 									previewContext,
-									{ isInsidePlayer: true }
+									{ isInsidePlayerOverlay: true }
 								)}
 						</VideoPlayer>
 					</div>
@@ -693,11 +700,17 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						value={layout}
 						options={[
 							{
-								label: __('Grid', 'video-embed-thumbnail-generator'),
+								label: __(
+									'Grid',
+									'video-embed-thumbnail-generator'
+								),
 								value: 'grid',
 							},
 							{
-								label: __('List', 'video-embed-thumbnail-generator'),
+								label: __(
+									'List',
+									'video-embed-thumbnail-generator'
+								),
 								value: 'list',
 							},
 						]}
@@ -709,7 +722,10 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					/>
 					{layout === 'grid' && (
 						<RangeControl
-							label={__('Columns', 'video-embed-thumbnail-generator')}
+							label={__(
+								'Columns',
+								'video-embed-thumbnail-generator'
+							)}
 							value={columns}
 							onChange={(value) =>
 								updateBlockAttributes(parentClientId, {
@@ -727,7 +743,10 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					setAttributes={(newAttrs) =>
 						updateBlockAttributes(parentClientId, newAttrs)
 					}
-					queryData={{ ...queryData, totalPages: context['videopack/totalPages'] }}
+					queryData={{
+						...queryData,
+						totalPages: context['videopack/totalPages'],
+					}}
 					options={options}
 					showGalleryOptions={true}
 					showPaginationToggle={false}
@@ -758,11 +777,14 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					</div>
 				)}
 
-				{isResolving && !isSaving && !isAutosaving && videos.length > 0 && (
-					<div className="videopack-loop-loading-overlay">
-						<Spinner />
-					</div>
-				)}
+				{isResolving &&
+					!isSaving &&
+					!isAutosaving &&
+					videos.length > 0 && (
+						<div className="videopack-loop-loading-overlay">
+							<Spinner />
+						</div>
+					)}
 
 				{videos.length > 0 && (
 					<DndContext
@@ -780,9 +802,14 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 									return (
 										<SortableItem
-											key={video.attachment_id || `temp-${index}`}
+											key={
+												video.attachment_id ||
+												`temp-${index}`
+											}
 											id={video.attachment_id}
-											isEditableTemplate={isEditableTemplate}
+											isEditableTemplate={
+												isEditableTemplate
+											}
 											isHoveringGallery={
 												isHovering &&
 												index === videos.length - 1
@@ -794,9 +821,12 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 											<BlockContextProvider
 												value={{
 													...context,
-													'videopack/postId': video.attachment_id || video.id,
+													'videopack/postId':
+														video.attachment_id ||
+														video.id,
 													'videopack/video': video,
-													'videopack/title': video.title,
+													'videopack/title':
+														video.title,
 												}}
 											>
 												{isEditableTemplate ? (

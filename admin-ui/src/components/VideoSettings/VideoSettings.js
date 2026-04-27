@@ -21,7 +21,7 @@ import WatermarkSettingsPanel from '../WatermarkSettingsPanel/WatermarkSettingsP
 import TextTracks from '../TextTracks/TextTracks.js';
 import { normalizeOptions } from '../../utils/helpers';
 import { getColorFallbacks } from '../../utils/colors';
-import './VideoSettings.scss';
+
 
 const VideoSettings = ({
 	attributes,
@@ -111,6 +111,101 @@ const VideoSettings = ({
 							checked={!!displayAttributes.views}
 						/>
 					</PanelRow>
+					{(() => {
+						const availableStats = [
+							{
+								key: 'starts',
+								label: __('Starts', 'video-embed-thumbnail-generator'),
+								val: displayAttributes.starts,
+							},
+							{
+								key: 'play_25',
+								label: '25%',
+								val: displayAttributes.play_25,
+							},
+							{
+								key: 'play_50',
+								label: '50%',
+								val: displayAttributes.play_50,
+							},
+							{
+								key: 'play_75',
+								label: '75%',
+								val: displayAttributes.play_75,
+							},
+							{
+								key: 'completeviews',
+								label: __('Ends', 'video-embed-thumbnail-generator'),
+								val: displayAttributes.completeviews,
+							},
+						].filter((s) => s.val > 0);
+
+						if (availableStats.length === 0) {
+							return null;
+						}
+
+						const isSingleStat = availableStats.length === 1;
+
+						return (
+							<div
+								className={`videopack-video-stats-${
+									isSingleStat ? 'simple' : 'funnel'
+								}`}
+							>
+								<p className="videopack-settings-section-title">
+									{__('Views', 'video-embed-thumbnail-generator')}
+								</p>
+								{isSingleStat ? (
+									<div className="videopack-stat-simple-row">
+										<span className="videopack-stat-label">
+											{availableStats[0].label}:
+										</span>
+										<span className="videopack-stat-value">
+											{availableStats[0].val.toLocaleString()}
+										</span>
+									</div>
+								) : (
+									<div className="videopack-funnel-track">
+										{availableStats.map((stat, idx, arr) => {
+											const retention =
+												stat.key !== 'starts' &&
+												displayAttributes.starts > 0
+													? Math.round(
+															(stat.val /
+																displayAttributes.starts) *
+																100
+													  ) + '%'
+													: null;
+
+											return (
+												<div
+													key={stat.key}
+													className="videopack-funnel-item"
+												>
+													<div className="videopack-funnel-marker">
+														{idx < arr.length - 1 && (
+															<div className="videopack-funnel-connector" />
+														)}
+													</div>
+													<div className="videopack-funnel-label">
+														{stat.label}
+													</div>
+													<div className="videopack-funnel-value">
+														{stat.val.toLocaleString()}
+													</div>
+													{retention && (
+														<div className="videopack-funnel-retention">
+															{retention}
+														</div>
+													)}
+												</div>
+											);
+										})}
+									</div>
+								)}
+							</div>
+						);
+					})()}
 				</PanelBody>
 			)}
 

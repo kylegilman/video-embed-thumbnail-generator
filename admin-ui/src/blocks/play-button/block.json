@@ -7,12 +7,7 @@
 	"icon": "controls-play",
 	"description": "Displays a play button overlay.",
 	"usesContext": [
-		"videopack/postId",
-		"videopack/skin",
-		"videopack/play_button_color",
-		"videopack/play_button_secondary_color",
-		"videopack/isInsideThumbnail",
-		"videopack/isInsidePlayer"
+		"videopack/skin"
 	],
 	"attributes": {
 		"play_button_color": {

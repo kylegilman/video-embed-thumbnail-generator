@@ -71,36 +71,6 @@
 			"type": "number",
 			"default": 1
 		},
-		"pagination_color": {
-			"type": "string"
-		},
-		"pagination_background_color": {
-			"type": "string"
-		},
-		"pagination_active_bg_color": {
-			"type": "string"
-		},
-		"pagination_active_color": {
-			"type": "string"
-		},
-		"title_color": {
-			"type": "string"
-		},
-		"title_background_color": {
-			"type": "string"
-		},
-		"play_button_color": {
-			"type": "string"
-		},
-		"play_button_secondary_color": {
-			"type": "string"
-		},
-		"control_bar_bg_color": {
-			"type": "string"
-		},
-		"control_bar_color": {
-			"type": "string"
-		},
 		"views": {
 			"type": "boolean"
 		},
@@ -118,7 +88,6 @@
 		}
 	},
 	"providesContext": {
-		"videopack/skin": "skin",
 		"videopack/layout": "layout",
 		"videopack/columns": "columns",
 		"videopack/gallery_source": "gallery_source",
@@ -133,21 +102,10 @@
 		"videopack/enable_collection_video_limit": "enable_collection_video_limit",
 		"videopack/collection_video_limit": "collection_video_limit",
 		"videopack/currentPage": "currentPage",
-		"videopack/pagination_color": "pagination_color",
-		"videopack/pagination_background_color": "pagination_background_color",
-		"videopack/pagination_active_bg_color": "pagination_active_bg_color",
-		"videopack/pagination_active_color": "pagination_active_color",
-		"videopack/title_color": "title_color",
-		"videopack/title_background_color": "title_background_color",
-		"videopack/play_button_color": "play_button_color",
-		"videopack/play_button_secondary_color": "play_button_secondary_color",
-		"videopack/control_bar_bg_color": "control_bar_bg_color",
-		"videopack/control_bar_color": "control_bar_color",
 		"videopack/views": "views",
 		"videopack/overlay_title": "overlay_title"
 	},
 	"textdomain": "video-embed-thumbnail-generator",
 	"editorScript": "file:./index.js",
-	"style": "file:./style.scss",
 	"editorStyle": "file:./index.css"
 }
