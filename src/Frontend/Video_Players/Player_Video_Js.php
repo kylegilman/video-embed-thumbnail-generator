@@ -47,11 +47,7 @@ class Player_Video_Js extends Player {
 	 * @return array The style handles.
 	 */
 	public function get_player_style_handles(): array {
-		$handles = array_merge( parent::get_player_style_handles(), array( 'video-js' ) );
-		if ( ! empty( $this->options['skin'] ) && 'default' !== $this->options['skin'] ) {
-			$handles[] = (string) $this->options['skin'];
-		}
-		return $handles;
+		return array_merge( parent::get_player_style_handles(), array( 'video-js' ) );
 	}
 
 	/**
@@ -86,18 +82,6 @@ class Player_Video_Js extends Player {
 		wp_add_inline_script( 'video-js-quality-selector', (string) $inline_script );
 
 		wp_register_style( 'video-js', plugins_url( 'video-js/video-js.min.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VIDEOJS_VERSION );
-
-		$js_skins = array(
-			'vjs-theme-videopack',
-			'kg-video-js-skin',
-			'vjs-theme-city',
-			'vjs-theme-fantasy',
-			'vjs-theme-forest',
-			'vjs-theme-sea',
-		);
-		foreach ( $js_skins as $skin ) {
-			wp_register_style( $skin, plugins_url( 'video-js/skins/' . $skin . '.css', VIDEOPACK_PLUGIN_FILE ), array( 'video-js' ), VIDEOPACK_VERSION );
-		}
 	}
 
 	/**
@@ -114,10 +98,6 @@ class Player_Video_Js extends Player {
 		// Add style dependencies.
 		$metadata = $this->ensure_array_and_append( $metadata, 'style', 'video-js' );
 
-		if ( ! empty( $this->options['skin'] ) && 'default' !== $this->options['skin'] ) {
-			$metadata = $this->ensure_array_and_append( $metadata, 'style', (string) $this->options['skin'] );
-		}
-
 		return (array) $metadata;
 	}
 
@@ -130,10 +110,6 @@ class Player_Video_Js extends Player {
 		wp_enqueue_script( 'video-js-quality-selector' );
 		wp_enqueue_style( 'video-js' );
 
-		if ( ! empty( $this->options['skin'] ) ) {
-			wp_enqueue_style( $this->options['skin'] );
-		}
-
 		if ( wp_script_is( 'videojs-l10n', 'registered' ) ) {
 			wp_enqueue_script( 'videojs-l10n' );
 		}
@@ -142,21 +118,10 @@ class Player_Video_Js extends Player {
 	/**
 	 * Enqueues all available skins for Video.js.
 	 *
-	 * This is used primarily in the admin setting page to support live previews
-	 * when different skins are selected by the user.
+	 * DEPRECATED: Skins are now consolidated into the main plugin stylesheet.
 	 */
 	public function enqueue_all_skins(): void {
-		$js_skins = array(
-			'vjs-theme-videopack',
-			'kg-video-js-skin',
-			'vjs-theme-city',
-			'vjs-theme-fantasy',
-			'vjs-theme-forest',
-			'vjs-theme-sea',
-		);
-		foreach ( $js_skins as $skin ) {
-			wp_enqueue_style( $skin );
-		}
+		// No-op.
 	}
 
 	/**
@@ -210,10 +175,13 @@ class Player_Video_Js extends Player {
 	public static function filter_video_classes( $classes, $atts ): array {
 
 		$classes[] = 'video-js';
-		$skin      = $atts['skin'] ?? 'vjs-default-skin';
+		$skin      = $atts['skin'] ?? '';
 		if ( empty( $skin ) ) {
-			$skin = 'vjs-default-skin';
+			$skin = '';
 		}
+
+		// Video.js themes in Videopack usually expect centering by default.
+		$classes[] = 'vjs-big-play-centered';
 
 		// Allow user to set skin for individual videos using the skin="" attribute.
 		$classes[] = $skin;
