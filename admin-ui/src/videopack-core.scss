@@ -1,0 +1,16 @@
+@use "./components/VideoPlayer/VideoPlayer.scss";
+@use "./components/common/CollectionLayout.scss";
+@use "./components/common/Lightbox.scss";
+@use "./components/common/Overlays.scss";
+@use "./components/common/PlayButton.scss";
+@use "./components/Pagination/Pagination.scss";
+@use "./components/Thumbnails/Thumbnails.scss";
+@use "./components/WatermarkPositioner/WatermarkPositioner.scss";
+@use "./components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss";
+@use "./components/VideoSettings/VideoSettings.scss";
+@use "./components/AdditionalFormats/AdditionalFormats.scss";
+@use "./components/AdditionalFormats/EncodeFormatStatus.scss";
+@use "./components/AdditionalFormats/EncodeProgress.scss";
+@use "./components/CompactColorPicker/CompactColorPicker.scss";
+@use "./components/TextTracks/TextTracks.scss";
+@use "./components/InspectorControls/CollectionSettingsPanel.scss";
