@@ -243,11 +243,11 @@ function SortableItem({
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const vpContext = useVideopackContext(attributes, context);
+
 	const isEditingAllPages = context['videopack/isEditingAllPages'] || false;
 	const [options, setOptions] = useState({});
 	const [isHovering, setIsHovering] = useState(false);
 	const { updateBlockAttributes } = useDispatch('core/block-editor');
-
 	const { parentClientId } = useSelect(
 		(select) => ({
 			parentClientId:
@@ -289,7 +289,19 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			context
 		),
 		page_number: isEditingAllPages ? 1 : (vpContext.currentPage || context['videopack/currentPage'] || 1),
+		prioritizePostData: vpContext.resolved.prioritizePostData,
 	};
+
+	const { videoResults: queryVideos, isResolving: isResolvingQuery } = useVideoQuery(
+		vpContext.videos ? null : queryAttributes
+	);
+	const videos = vpContext.videos || queryVideos;
+	const isResolving = vpContext.videos ? false : isResolvingQuery;
+
+
+
+
+
 
 	const {
 		presetDuotoneClass,
@@ -389,14 +401,14 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 	// We fetch query data to power the live preview template
 	const queryData = useVideoQuery(queryAttributes, previewPostId);
-	const { videoResults, isResolving } = queryData;
+	const { videoResults: previewVideos, isResolving: isPreviewResolving } = queryData;
 
 	const layout = context['videopack/layout'] || 'grid';
 	const columns = context['videopack/columns'] || 3;
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-loop layout-${layout} columns-${columns} ${
-			isResolving && !isSaving && !isAutosaving ? 'is-loading' : ''
+			isPreviewResolving && !isSaving && !isAutosaving ? 'is-loading' : ''
 		} ${isEditingAllPages ? 'is-editing-all-pages' : ''}`,
 		onMouseEnter: () => setIsHovering(true),
 		onMouseLeave: () => setIsHovering(false),
@@ -410,8 +422,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	// Universal Solution: Fetch the actual attachment records to hydrate the store.
 	// This ensures that BlockEdit and any inner blocks have the 'real' data they need.
 	const videoIds = useMemo(() => {
-		return (videoResults || []).map((v) => v.attachment_id).filter(Boolean);
-	}, [videoResults]);
+		return (previewVideos || []).map((v) => v.attachment_id).filter(Boolean);
+	}, [previewVideos]);
 
 	const attachmentRecords = useSelect(
 		(select) => {
@@ -479,7 +491,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					currentInclude = (response.videos || []).map((v) => v.attachment_id.toString());
 				} catch (error) {
 					console.error('Failed to fetch full collection IDs:', error);
-					currentInclude = (videoResults || []).map((v) => v.attachment_id.toString());
+					currentInclude = (videos || []).map((v) => v.attachment_id.toString());
 				}
 			}
 
@@ -524,7 +536,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		},
 		[
 			queryAttributes,
-			videoResults,
+			videos,
 			parentClientId,
 			updateBlockAttributes,
 		]
@@ -554,7 +566,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			} catch (error) {
 				console.error('Failed to fetch full collection IDs:', error);
 				// Fallback to current page results if fetch fails
-				currentInclude = (videoResults || []).map((v) => v.attachment_id.toString());
+				currentInclude = (videos || []).map((v) => v.attachment_id.toString());
 				console.log('[Videopack Debug] Fallback to current page IDs:', currentInclude.length, currentInclude);
 			}
 		} else {
@@ -596,7 +608,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		frame.open();
 	}, [
 		queryAttributes,
-		videoResults,
+		videos,
 		parentClientId,
 		updateBlockAttributes,
 	]);
@@ -631,7 +643,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							'Failed to fetch full collection IDs for drag:',
 							error
 						);
-						fullIds = (videoResults || []).map((v) =>
+						fullIds = (videos || []).map((v) =>
 							v.attachment_id.toString()
 						);
 					}
@@ -656,7 +668,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				}
 			}
 		},
-		[queryAttributes, videoResults, parentClientId, updateBlockAttributes]
+		[queryAttributes, videos, parentClientId, updateBlockAttributes]
 	);
 
 	/**
@@ -674,6 +686,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		previewContext,
 		parentFlags = {}
 	) => {
+		const targetPostId = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? video.parent_id : ( video.attachment_id || video.id );
+		const targetPostType = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? 'post' : 'attachment';
+
 		return previewBlocks.map((block) => {
 			const {
 				name,
@@ -701,7 +716,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						key={itemKey}
 						name={name}
 						attributes={blockAttrs}
-						postId={video.attachment_id}
+						postId={targetPostId}
+						postType={targetPostType}
 						isOverlay={isOverlay}
 						{...currentFlags}
 						resolvedDuotoneClass={resolvedDuotoneClass}
@@ -714,9 +730,12 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 								currentFlags.isInsidePlayerOverlay,
 							'videopack/downloadlink': currentFlags.downloadlink,
 							'videopack/embedcode': currentFlags.embedcode,
-							'videopack/postId': video.attachment_id,
-							postId: video.attachment_id,
-							postType: 'attachment',
+							'videopack/postId': targetPostId,
+							'videopack/postType': targetPostType,
+							'videopack/attachmentId': video.attachment_id || video.id,
+							postId: targetPostId,
+							postType: targetPostType,
+							'videopack/parentPostId': video.parent_id,
 						}}
 					>
 						{innerBlocks?.length > 0 &&
@@ -738,12 +757,13 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					video={video}
 					previewContext={previewContext}
 					parentFlags={parentFlags}
+					vpContext={vpContext}
 				/>
 			);
 		});
 	};
 
-	const videos = videoResults || [];
+
 
 	return (
 		<>
@@ -762,7 +782,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			</InspectorControls>
 
 			<figure {...blockProps} style={computedStyle}>
-				{!videoResults ? (
+				{!videos ? (
 					<div className="videopack-collection-loading">
 						<Spinner />
 					</div>
@@ -781,6 +801,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							<div className="videopack-collection-grid">
 								{videos.map((video, index) => {
 									const isEditableTemplate = index === 0;
+									const targetPostId = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? video.parent_id : ( video.attachment_id || video.id );
+									const targetPostType = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? 'post' : 'attachment';
 
 									return (
 										<SortableItem
@@ -800,19 +822,19 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 											onEdit={handleEditItem}
 											onAddVideo={handleAddVideo}
 										>
+
 											<BlockContextProvider
 												value={{
 													...context,
-													'videopack/postId':
-														video.attachment_id ||
-														video.id,
-													postId:
-														video.attachment_id ||
-														video.id,
-													postType: 'attachment',
+													postId: targetPostId,
+													postType: targetPostType,
+													'videopack/postId': targetPostId,
+													'videopack/postType': targetPostType,
+													'videopack/attachmentId': video.attachment_id || video.id,
+													'videopack/title': video.title,
+													'videopack/embedlink': video.player_vars?.full_player_html || '',
+													'videopack/parentPostId': video.parent_id,
 													'videopack/video': video,
-													'videopack/title':
-														video.title,
 												}}
 											>
 												{isEditableTemplate ? (
@@ -827,7 +849,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 														templateBlocks,
 														video,
 														context,
-														{}
+														{},
+														vpContext
 													)
 												)}
 											</BlockContextProvider>
@@ -846,7 +869,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 /**
  * Renders a single block preview item.
  */
-const PreviewItem = ({ block, video, previewContext, parentFlags }) => {
+const PreviewItem = ({ block, video, previewContext, parentFlags, vpContext }) => {
 	const [width, setWidth] = useState(400);
 	const containerRef = useRef();
 	const ActualBlockPreview = BlockPreview || __experimentalBlockPreview;
@@ -881,15 +904,22 @@ const PreviewItem = ({ block, video, previewContext, parentFlags }) => {
 		return <div>{block.name}</div>;
 	}
 
+	const targetPostId = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? video.parent_id : ( video.attachment_id || video.id );
+	const targetPostType = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? 'post' : 'attachment';
+
 	return (
 		<div ref={containerRef} className="videopack-block-preview-external">
 			<BlockContextProvider
 				value={{
 					...previewContext,
 					...parentFlags,
-					'videopack/postId': video.attachment_id,
-					postId: video.attachment_id,
-					postType: 'attachment',
+					postId: targetPostId,
+					postType: targetPostType,
+					'videopack/postId': targetPostId,
+					'videopack/postType': targetPostType,
+					'videopack/attachmentId': video.attachment_id || video.id,
+					'videopack/parentPostId': video.parent_id,
+					'videopack/video': video,
 				}}
 			>
 				<ActualBlockPreview
@@ -898,12 +928,16 @@ const PreviewItem = ({ block, video, previewContext, parentFlags }) => {
 					context={{
 						...previewContext,
 						...parentFlags,
-						'videopack/postId': video.attachment_id,
-						postId: video.attachment_id,
-						postType: 'attachment',
+						postId: targetPostId,
+						postType: targetPostType,
+						'videopack/postId': targetPostId,
+						'videopack/postType': targetPostType,
+						'videopack/attachmentId': video.attachment_id || video.id,
+						'videopack/parentPostId': video.parent_id,
 					}}
 				/>
 			</BlockContextProvider>
 		</div>
 	);
 };
+

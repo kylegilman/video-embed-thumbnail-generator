@@ -19,6 +19,7 @@ export default function CollectionQuerySettings({
 	hasPaginationBlock = true,
 }) {
 	const {
+		gallery_source,
 		gallery_include,
 		gallery_orderby,
 		gallery_order,
@@ -84,6 +85,20 @@ export default function CollectionQuerySettings({
 				showArchiveSource={isSiteEditor}
 				showManualSource={showManualSource}
 			/>
+
+			{gallery_source === 'archive' && (
+				<ToggleControl
+					label={__('Prioritize Post Data', 'video-embed-thumbnail-generator')}
+					help={__(
+						'Use the title and date from the original post instead of the video attachment.',
+						'video-embed-thumbnail-generator'
+					)}
+					checked={!!attributes.prioritizePostData}
+					onChange={(val) =>
+						setAttributes({ prioritizePostData: val })
+					}
+				/>
+			)}
 
 			<div className="videopack-sort-control-wrapper">
 				<SelectControl

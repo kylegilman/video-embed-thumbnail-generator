@@ -92,6 +92,10 @@
 		"isEditingAllPages": {
 			"type": "boolean",
 			"default": false
+		},
+		"prioritizePostData": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"providesContext": {
@@ -112,7 +116,8 @@
 		"videopack/currentPage": "currentPage",
 		"videopack/views": "views",
 		"videopack/overlay_title": "overlay_title",
-		"videopack/isEditingAllPages": "isEditingAllPages"
+		"videopack/isEditingAllPages": "isEditingAllPages",
+		"videopack/prioritizePostData": "prioritizePostData"
 	},
 	"textdomain": "video-embed-thumbnail-generator",
 	"editorScript": "file:./index.js",

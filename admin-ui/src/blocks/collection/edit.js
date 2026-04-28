@@ -101,6 +101,7 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 		gallery_per_page: effectiveValues.gallery_per_page,
 		totalPages: queryData.maxNumPages,
 		currentPage: currentPage,
+		videos: queryData.videoResults,
 	};
 
 	const providedContext = {
@@ -127,7 +128,8 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 		'videopack/control_bar_bg_color': effectiveValues.control_bar_bg_color,
 		'videopack/control_bar_color': effectiveValues.control_bar_color,
 		'videopack/views': effectiveValues.views,
-		'videopack/overlay_title': effectiveValues.overlay_title,
+		'videopack/isEditingAllPages': attributes.isEditingAllPages,
+		'videopack/prioritizePostData': attributes.prioritizePostData,
 		'videopack/totalPages': queryData.maxNumPages,
 	};
 

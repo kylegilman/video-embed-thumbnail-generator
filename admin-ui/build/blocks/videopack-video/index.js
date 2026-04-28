@@ -1212,7 +1212,7 @@ const SingleVideoBlock = ({
     record: attachment
   } = videoData;
   const editorPostId = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_5__.useSelect)(select => select('core/editor')?.getCurrentPostId(), []);
-  const effectivePostId = attachment?.id || attributes.id || editorPostId;
+  const effectivePostId = attachment?.id || attributes.id || resolvedPostId || editorPostId;
   const {
     isProbing,
     probedMetadata
@@ -1358,7 +1358,6 @@ const Edit = ({
     id,
     src
   } = attributes;
-  const postId = context['videopack/postId'];
   const [options, setOptions] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)();
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const mejsSvgPath = config?.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
@@ -1393,10 +1392,15 @@ const Edit = ({
       innerBlocks: editorStore.getBlocks(clientId)
     };
   }, [clientId]);
-  const isContextual = postId && (Number(postId) !== Number(editorPostId) || isSiteEditor);
+  const vpContext = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_17__["default"])(attributes, context);
+  const {
+    attachmentId: resolvedAttachmentId,
+    postId: resolvedPostIdFromContext,
+    isDiscovering
+  } = vpContext.resolved;
+  const isContextual = resolvedPostIdFromContext && (Number(resolvedPostIdFromContext) !== Number(editorPostId) || isSiteEditor);
   const shouldPersist = !isContextual;
-  const resolvedPostId = isContextual ? postId : id || undefined;
-  const effectiveId = resolvedPostId;
+  const effectiveId = resolvedAttachmentId;
   const [attachment, setAttachment] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(null);
   const [hasResolved, setHasResolved] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(false);
   const videoData = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useMemo)(() => ({
@@ -1554,7 +1558,7 @@ const Edit = ({
       setHasResolved(false);
       lastFetchedIdRef.current = null;
     }
-  }, [effectiveId, id, postId, setAttributesFromMedia, setAttributes, attachment]);
+  }, [effectiveId, id, resolvedPostIdFromContext, setAttributesFromMedia, setAttributes, attachment]);
   const onUploadError = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useCallback)(message => {
     createErrorNotice(message, {
       type: 'snackbar'
@@ -1647,7 +1651,18 @@ const Edit = ({
   };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxs)("figure", {
     ...blockProps,
-    children: [!src && !effectiveId ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.MediaPlaceholder, {
+    children: [isDiscovering && !effectiveId ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)("div", {
+      className: "videopack-video-discovery-loading",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Placeholder, {
+        icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockIcon, {
+          icon: _assets_icon__WEBPACK_IMPORTED_MODULE_12__.videopack
+        }),
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Videopack Video', 'video-embed-thumbnail-generator'),
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)("p", {
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Searching for attached video...', 'video-embed-thumbnail-generator')
+        })]
+      })
+    }) : !src && !effectiveId ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.MediaPlaceholder, {
       icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_19__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockIcon, {
         icon: _assets_icon__WEBPACK_IMPORTED_MODULE_12__.videopack
       }),
@@ -1716,7 +1731,7 @@ const Edit = ({
       options: options,
       isSelected: isSelected,
       videoData: videoData,
-      resolvedPostId: resolvedPostId,
+      resolvedPostId: resolvedPostIdFromContext,
       resolvedAttributes: resolvedAttributes,
       context: context
     })]
@@ -5438,10 +5453,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/context */ "./src/utils/context.js");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/context */ "./src/utils/context.js");
 
 
-const DESIGN_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'enable_collection_video_limit', 'collection_video_limit'];
+
+const DESIGN_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -5451,12 +5469,13 @@ const DESIGN_KEYS = ['skin', 'title_color', 'title_background_color', 'play_butt
  * @return {Object} Resolved values, styles, and classes.
  */
 function useVideopackContext(attributes, context) {
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+  // 1. Initial Synchronous Resolution
+  const initial = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const resolved = {};
     const style = {};
     const classes = [];
     DESIGN_KEYS.forEach(key => {
-      const value = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)(key, attributes, context);
+      const value = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)(key, attributes, context);
       resolved[key] = value;
       if (value) {
         const cssKey = key.replace(/_/g, '-');
@@ -5514,6 +5533,13 @@ function useVideopackContext(attributes, context) {
         });
       }
     }
+    resolved.isEditingAllPages = !!(0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('isEditingAllPages', attributes, context);
+    resolved.prioritizePostData = !!(0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('prioritizePostData', attributes, context);
+
+    // Core data identification
+    resolved.postId = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('postId', attributes, context);
+    resolved.attachmentId = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('attachmentId', attributes, context);
+    resolved.postType = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('postType', attributes, context);
 
     // Handle Gutenberg Typography Classes (Presets)
     if (attributes.fontSize) {
@@ -5525,9 +5551,79 @@ function useVideopackContext(attributes, context) {
     return {
       resolved,
       style,
-      classes: classes.join(' ')
+      classes
     };
   }, [attributes, context]);
+
+  // 2. Automatic Video Discovery
+  // If we have a postId but no attachmentId, try to find the first video attachment.
+  const {
+    discoveredAttachmentId,
+    isDiscovering
+  } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.useSelect)(select => {
+    const {
+      resolved
+    } = initial;
+
+    // If we already have an attachmentId, we're not discovering.
+    if (resolved.attachmentId) {
+      return {
+        discoveredAttachmentId: resolved.attachmentId,
+        isDiscovering: false
+      };
+    }
+
+    // If we don't even have a postId, we can't discover anything.
+    if (!resolved.postId || resolved.postId < 1) {
+      return {
+        discoveredAttachmentId: null,
+        isDiscovering: false
+      };
+    }
+
+    // If the postId itself IS an attachment, then that's our attachmentId.
+    if (resolved.postType === 'attachment') {
+      return {
+        discoveredAttachmentId: resolved.postId,
+        isDiscovering: false
+      };
+    }
+
+    // Otherwise, try to find the first video attachment for this post.
+    const {
+      getEntityRecords
+    } = select('core');
+    const query = {
+      parent: resolved.postId,
+      mime_type: 'video',
+      per_page: 1,
+      _fields: 'id'
+    };
+    const attachments = getEntityRecords('postType', 'attachment', query);
+    const isResolving = select('core/data').isResolving('core', 'getEntityRecords', ['postType', 'attachment', query]);
+    const foundId = attachments?.[0]?.id || null;
+    return {
+      discoveredAttachmentId: foundId,
+      isDiscovering: isResolving || !foundId && attachments === undefined
+    };
+  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType]);
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    const rawAttachmentId = discoveredAttachmentId || initial.resolved.attachmentId;
+
+    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // and we know the post is NOT an attachment, then it's a false resolution.
+    const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' ? null : rawAttachmentId;
+    const finalResolved = {
+      ...initial.resolved,
+      attachmentId: finalAttachmentId,
+      isDiscovering
+    };
+    return {
+      resolved: finalResolved,
+      style: initial.style,
+      classes: initial.classes.join(' ')
+    };
+  }, [initial, discoveredAttachmentId, isDiscovering]);
 }
 
 /***/ },
@@ -5638,10 +5734,21 @@ const getEffectiveValue = (key, attributes = {}, context = {}) => {
   if (isValid(attributes[attrKey])) {
     return attributes[attrKey];
   }
+  if (attrKey === 'attachmentId' && isValid(attributes.id)) {
+    return attributes.id;
+  }
+  if (attrKey === 'postId' && isValid(attributes.id)) {
+    return attributes.id;
+  }
 
   // 2. Check inherited context (from Collection or Video block)
   if (isValid(context[contextKey])) {
     return context[contextKey];
+  }
+
+  // 2b. Check standard Gutenberg context fallbacks
+  if ((attrKey === 'postId' || attrKey === 'postType') && isValid(context[attrKey])) {
+    return context[attrKey];
   }
 
   // 3. Fallback to global plugin defaults
@@ -6478,7 +6585,7 @@ var undo_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE
   \***********************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/videopack-video","title":"Videopack Video Player","category":"media","icon":"format-video","description":"Embed a single video with Videopack features.","usesContext":["videopack/postId","videopack/skin","videopack/views","videopack/overlay_title","videopack/title_color","videopack/title_background_color","videopack/downloadlink","videopack/embedcode","videopack/play_button_color","videopack/play_button_secondary_color","videopack/control_bar_bg_color","videopack/control_bar_color"],"providesContext":{"videopack/postId":"id","videopack/downloadlink":"downloadlink","videopack/embedcode":"embedcode","videopack/autoplay":"autoplay","videopack/controls":"controls","videopack/loop":"loop","videopack/muted":"muted","videopack/playsinline":"playsinline","videopack/preload":"preload","videopack/volume":"volume","videopack/isInsidePlayerOverlay":"isInsidePlayerOverlay","videopack/isInsidePlayerContainer":"isInsidePlayerContainer","videopack/watermark":"watermark","videopack/watermark_styles":"watermark_styles","videopack/watermark_link_to":"watermark_link_to","videopack/views":"views","videopack/overlay_title":"overlay_title","videopack/showBackground":"showBackground","videopack/sources":"sources","videopack/source_groups":"source_groups","videopack/text_tracks":"text_tracks","videopack/width":"width","videopack/height":"height","videopack/embed_method":"embed_method"},"supports":{"html":false,"align":true,"dimensions":{"aspectRatio":false,"height":false,"minHeight":false,"width":false},"spacing":{"margin":true,"padding":true},"filter":{"duotone":true}},"selectors":{"filter":{"duotone":".wp-block-videopack-videopack-video .vjs-poster img, .wp-block-videopack-videopack-video .mejs-poster img, .wp-block-videopack-videopack-video .mejs-poster"}},"example":{"attributes":{"src":"videopack-preview-video","title":"Sample Video","overlay_title":true}},"attributes":{"id":{"type":"number"},"src":{"type":"string"},"poster":{"type":"string"},"title":{"type":"string"},"caption":{"type":"string"},"width":{"type":"number"},"height":{"type":"number"},"autoplay":{"type":"boolean","default":false},"controls":{"type":"boolean","default":true},"loop":{"type":"boolean","default":false},"muted":{"type":"boolean","default":false},"playsinline":{"type":"boolean","default":false},"preload":{"type":"string","default":"metadata"},"volume":{"type":"number","default":1},"auto_res":{"type":"string"},"auto_codec":{"type":"string"},"sources":{"type":"array","default":[]},"source_groups":{"type":"object","default":{}},"text_tracks":{"type":"array","default":[]},"playback_rate":{"type":"boolean","default":false},"watermark":{"type":"string"},"watermark_styles":{"type":"object","default":{}},"watermark_link_to":{"type":"string","default":""},"default_ratio":{"type":"string","default":"16 / 9"},"fixed_aspect":{"type":"string","default":"false"},"fullwidth":{"type":"boolean","default":false},"textAlign":{"type":"string"},"downloadlink":{"type":"boolean"},"overlay_title":{"type":"boolean"},"views":{"type":"boolean"},"embedcode":{"type":"boolean"},"embedlink":{"type":"string"},"embed_method":{"type":"string"},"showCaption":{"type":"boolean","default":false},"showBackground":{"type":"boolean"},"title_position":{"type":"string","default":"top"},"isInsidePlayerOverlay":{"type":"boolean","default":false},"restartCount":{"type":"number","default":0},"isInsidePlayerContainer":{"type":"boolean","default":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/videopack-video","title":"Videopack Video Player","category":"media","icon":"format-video","description":"Embed a single video with Videopack features.","usesContext":["videopack/postId","videopack/skin","videopack/views","videopack/overlay_title","videopack/title_color","videopack/title_background_color","videopack/downloadlink","videopack/embedcode","videopack/play_button_color","videopack/play_button_secondary_color","videopack/control_bar_bg_color","videopack/control_bar_color","postId","postType"],"providesContext":{"videopack/postId":"id","videopack/downloadlink":"downloadlink","videopack/embedcode":"embedcode","videopack/autoplay":"autoplay","videopack/controls":"controls","videopack/loop":"loop","videopack/muted":"muted","videopack/playsinline":"playsinline","videopack/preload":"preload","videopack/volume":"volume","videopack/isInsidePlayerOverlay":"isInsidePlayerOverlay","videopack/isInsidePlayerContainer":"isInsidePlayerContainer","videopack/watermark":"watermark","videopack/watermark_styles":"watermark_styles","videopack/watermark_link_to":"watermark_link_to","videopack/views":"views","videopack/overlay_title":"overlay_title","videopack/showBackground":"showBackground","videopack/sources":"sources","videopack/source_groups":"source_groups","videopack/text_tracks":"text_tracks","videopack/width":"width","videopack/height":"height","videopack/embed_method":"embed_method"},"supports":{"html":false,"align":true,"dimensions":{"aspectRatio":false,"height":false,"minHeight":false,"width":false},"spacing":{"margin":true,"padding":true},"filter":{"duotone":true}},"selectors":{"filter":{"duotone":".wp-block-videopack-videopack-video .vjs-poster img, .wp-block-videopack-videopack-video .mejs-poster img, .wp-block-videopack-videopack-video .mejs-poster"}},"example":{"attributes":{"src":"videopack-preview-video","title":"Sample Video","overlay_title":true}},"attributes":{"id":{"type":"number"},"src":{"type":"string"},"poster":{"type":"string"},"title":{"type":"string"},"caption":{"type":"string"},"width":{"type":"number"},"height":{"type":"number"},"autoplay":{"type":"boolean","default":false},"controls":{"type":"boolean","default":true},"loop":{"type":"boolean","default":false},"muted":{"type":"boolean","default":false},"playsinline":{"type":"boolean","default":false},"preload":{"type":"string","default":"metadata"},"volume":{"type":"number","default":1},"auto_res":{"type":"string"},"auto_codec":{"type":"string"},"sources":{"type":"array","default":[]},"source_groups":{"type":"object","default":{}},"text_tracks":{"type":"array","default":[]},"playback_rate":{"type":"boolean","default":false},"watermark":{"type":"string"},"watermark_styles":{"type":"object","default":{}},"watermark_link_to":{"type":"string","default":""},"default_ratio":{"type":"string","default":"16 / 9"},"fixed_aspect":{"type":"string","default":"false"},"fullwidth":{"type":"boolean","default":false},"textAlign":{"type":"string"},"downloadlink":{"type":"boolean"},"overlay_title":{"type":"boolean"},"views":{"type":"boolean"},"embedcode":{"type":"boolean"},"embedlink":{"type":"string"},"embed_method":{"type":"string"},"showCaption":{"type":"boolean","default":false},"showBackground":{"type":"boolean"},"title_position":{"type":"string","default":"top"},"isInsidePlayerOverlay":{"type":"boolean","default":false},"restartCount":{"type":"number","default":0},"isInsidePlayerContainer":{"type":"boolean","default":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 
 /***/ }
 

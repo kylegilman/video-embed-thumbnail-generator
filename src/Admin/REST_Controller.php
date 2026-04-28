@@ -123,6 +123,10 @@ class REST_Controller extends \WP_REST_Controller {
 					'gallery_category'   => array( 'type' => 'string' ),
 					'gallery_tag'        => array( 'type' => 'string' ),
 					'layout'             => array( 'type' => 'string' ),
+					'prioritizePostData' => array( 
+						'type'              => 'boolean',
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
 				),
 			)
 		);

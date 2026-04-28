@@ -1,4 +1,5 @@
 import { useMemo } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 import { getEffectiveValue } from '../utils/context';
 
 export const DESIGN_KEYS = [
@@ -20,6 +21,8 @@ export const DESIGN_KEYS = [
 	'gallery_per_page',
 	'enable_collection_video_limit',
 	'collection_video_limit',
+	'prioritizePostData',
+	'embed_method',
 ];
 
 /**
@@ -30,7 +33,8 @@ export const DESIGN_KEYS = [
  * @return {Object} Resolved values, styles, and classes.
  */
 export default function useVideopackContext(attributes, context) {
-	return useMemo(() => {
+	// 1. Initial Synchronous Resolution
+	const initial = useMemo(() => {
 		const resolved = {};
 		const style = {};
 		const classes = [];
@@ -98,6 +102,14 @@ export default function useVideopackContext(attributes, context) {
 			}
 		}
 
+		resolved.isEditingAllPages = !!getEffectiveValue('isEditingAllPages', attributes, context);
+		resolved.prioritizePostData = !!getEffectiveValue('prioritizePostData', attributes, context);
+
+		// Core data identification
+		resolved.postId = getEffectiveValue('postId', attributes, context);
+		resolved.attachmentId = getEffectiveValue('attachmentId', attributes, context);
+		resolved.postType = getEffectiveValue('postType', attributes, context);
+
 		// Handle Gutenberg Typography Classes (Presets)
 		if (attributes.fontSize) {
 			classes.push(`has-${attributes.fontSize}-font-size`);
@@ -106,10 +118,67 @@ export default function useVideopackContext(attributes, context) {
 			classes.push(`has-${attributes.fontFamily}-font-family`);
 		}
 
-		return {
-			resolved,
-			style,
-			classes: classes.join(' '),
-		};
+		return { resolved, style, classes };
 	}, [attributes, context]);
+
+	// 2. Automatic Video Discovery
+	// If we have a postId but no attachmentId, try to find the first video attachment.
+	const { discoveredAttachmentId, isDiscovering } = useSelect((select) => {
+		const { resolved } = initial;
+		
+		// If we already have an attachmentId, we're not discovering.
+		if (resolved.attachmentId) {
+			return { discoveredAttachmentId: resolved.attachmentId, isDiscovering: false };
+		}
+
+		// If we don't even have a postId, we can't discover anything.
+		if (!resolved.postId || resolved.postId < 1) {
+			return { discoveredAttachmentId: null, isDiscovering: false };
+		}
+
+		// If the postId itself IS an attachment, then that's our attachmentId.
+		if (resolved.postType === 'attachment') {
+			return { discoveredAttachmentId: resolved.postId, isDiscovering: false };
+		}
+
+		// Otherwise, try to find the first video attachment for this post.
+		const { getEntityRecords } = select('core');
+		const query = {
+			parent: resolved.postId,
+			mime_type: 'video',
+			per_page: 1,
+			_fields: 'id',
+		};
+		const attachments = getEntityRecords('postType', 'attachment', query);
+		const isResolving = select('core/data').isResolving('core', 'getEntityRecords', ['postType', 'attachment', query]);
+
+		const foundId = attachments?.[0]?.id || null;
+
+		return {
+			discoveredAttachmentId: foundId,
+			isDiscovering: isResolving || ( !foundId && attachments === undefined )
+		};
+	}, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType]);
+
+	return useMemo(() => {
+		const rawAttachmentId = discoveredAttachmentId || initial.resolved.attachmentId;
+		
+		// Safety: If the resolved attachment ID is the same as the post ID, 
+		// and we know the post is NOT an attachment, then it's a false resolution.
+		const finalAttachmentId = ( rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' )
+			? null 
+			: rawAttachmentId;
+
+		const finalResolved = { 
+			...initial.resolved,
+			attachmentId: finalAttachmentId,
+			isDiscovering
+		};
+
+		return {
+			resolved: finalResolved,
+			style: initial.style,
+			classes: initial.classes.join(' '),
+		};
+	}, [initial, discoveredAttachmentId, isDiscovering]);
 }

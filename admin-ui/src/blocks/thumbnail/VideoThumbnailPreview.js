@@ -1,6 +1,6 @@
 import { useSelect } from '@wordpress/data';
 import { Spinner } from '@wordpress/components';
-import { getEffectiveValue } from '../../utils/context';
+import useVideopackContext from '../../hooks/useVideopackContext';
 
 /**
  * Shared Video Thumbnail Component for Edit/Preview
@@ -13,14 +13,17 @@ import { getEffectiveValue } from '../../utils/context';
  * @return {Element} VideoThumbnail component
  */
 export function VideoThumbnailPreview({
-	postId,
+	postId: propPostId,
+	linkTo: propLinkTo,
 	children,
 	resolvedDuotoneClass,
 	context = {},
 	video: manualVideo = {},
 }) {
+	const vpContext = useVideopackContext({}, context);
 	const video = (manualVideo && Object.keys(manualVideo).length > 0) ? manualVideo : (context['videopack/video'] || {});
-	const effectiveSkin = getEffectiveValue('skin', {}, context);
+	const postId = vpContext.resolved.attachmentId || propPostId;
+	const effectiveSkin = vpContext.resolved.skin;
 	const { thumbnailMedia, posterUrl, isResolving } = useSelect(
 		(select) => {
 			if (!postId || postId < 1) {
@@ -68,22 +71,11 @@ export function VideoThumbnailPreview({
 		thumbnailMedia?.source_url ||
 		defaultNoThumb;
 
-	const play_button_color = getEffectiveValue(
-		'play_button_color',
-		{},
-		context
-	);
-	const play_button_secondary_color = getEffectiveValue(
-		'play_button_secondary_color',
-		{},
-		context
-	);
-
-	const effectiveEmbedMethod = getEffectiveValue(
-		'embed_method',
-		{},
-		context
-	);
+	const {
+		play_button_color,
+		play_button_secondary_color,
+		embed_method: effectiveEmbedMethod,
+	} = vpContext.resolved;
 	const containerClass = `gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${
 		effectiveEmbedMethod === 'Video.js' ? (effectiveSkin || '') : ''
 	} ${resolvedDuotoneClass || ''} ${
@@ -92,6 +84,8 @@ export function VideoThumbnailPreview({
 		play_button_secondary_color
 			? 'videopack-has-play-button-secondary-color'
 			: ''
+	} ${
+		(vpContext.resolved.linkTo || propLinkTo) !== 'none' ? 'has-link' : ''
 	}`.trim();
 	const imgStyle = resolvedDuotoneClass
 		? { filter: `url(#${resolvedDuotoneClass})` }

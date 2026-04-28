@@ -43,7 +43,6 @@ class Video_Source_Finder {
 
 		$response_code = wp_remote_retrieve_response_code( $response );
 		$is_ok         = false;
-		error_log( $url );
 		if ( $response_code >= 200 && $response_code < 300 ) {
 			$content_type = wp_remote_retrieve_header( $response, 'content-type' );
 			$is_ok        = true;

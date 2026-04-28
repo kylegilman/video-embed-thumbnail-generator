@@ -9,10 +9,13 @@
 	"description": "Displays the view count of the video.",
 	"usesContext": [
 		"videopack/postId",
+		"videopack/attachmentId",
 		"videopack/skin",
 		"videopack/isInsideThumbnail",
 		"videopack/isInsidePlayerOverlay",
-		"videopack/isInsidePlayerContainer"
+		"videopack/isInsidePlayerContainer",
+		"postId",
+		"postType"
 	],
 	"attributes": {
 		"iconType": {

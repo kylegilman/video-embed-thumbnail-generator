@@ -8,10 +8,13 @@
   "description": "Displays the video duration.",
   "usesContext": [
     "videopack/postId",
+    "videopack/attachmentId",
     "videopack/skin",
     "videopack/isInsideThumbnail",
     "videopack/isInsidePlayerOverlay",
-    "videopack/isInsidePlayerContainer"
+    "videopack/isInsidePlayerContainer",
+    "postId",
+    "postType"
   ],
   "attributes": {
     "position": {

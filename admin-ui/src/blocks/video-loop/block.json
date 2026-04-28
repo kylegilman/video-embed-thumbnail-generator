@@ -30,7 +30,8 @@
 		"videopack/gallery_per_page",
 		"videopack/currentPage",
 		"videopack/totalPages",
-		"videopack/isEditingAllPages"
+		"videopack/isEditingAllPages",
+		"videopack/prioritizePostData"
 	],
 	"textdomain": "video-embed-thumbnail-generator",
 	"editorScript": "file:./index.js",

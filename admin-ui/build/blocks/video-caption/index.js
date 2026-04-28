@@ -16,27 +16,56 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
 /* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/html-entities */ "@wordpress/html-entities");
+/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
+
+
 
 
 
 function Edit({
   attributes,
-  setAttributes
+  setAttributes,
+  context
 }) {
   const {
-    caption
+    caption: manualCaption
   } = attributes;
+  const {
+    postId,
+    postType,
+    'videopack/caption': contextCaption
+  } = context;
+  const {
+    fetchedExcerpt
+  } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_2__.useSelect)(select => {
+    if (!postId) {
+      return {
+        fetchedExcerpt: ''
+      };
+    }
+    const record = select('core').getEntityRecord('postType', postType || 'attachment', postId);
+    return {
+      fetchedExcerpt: record?.excerpt?.rendered || record?.caption?.rendered || ''
+    };
+  }, [postId, postType]);
+  const {
+    resolved: vpContext
+  } = useVideopackContext(attributes, context);
+  const displayCaption = (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_3__.decodeEntities)(manualCaption || (vpContext.prioritizePostData || vpContext.resolved.prioritizePostData ? fetchedExcerpt || contextCaption : contextCaption || fetchedExcerpt) || '');
   const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps)({
     className: 'videopack-video-caption-block'
   });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
     ...blockProps,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.RichText, {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.RichText, {
       tagName: "figcaption",
       className: "wp-element-caption videopack-video-caption",
-      value: caption,
+      value: displayCaption,
       onChange: value => setAttributes({
         caption: value
       }),
@@ -110,6 +139,26 @@ module.exports = window["wp"]["blocks"];
 
 /***/ },
 
+/***/ "@wordpress/data"
+/*!******************************!*\
+  !*** external ["wp","data"] ***!
+  \******************************/
+(module) {
+
+module.exports = window["wp"]["data"];
+
+/***/ },
+
+/***/ "@wordpress/html-entities"
+/*!**************************************!*\
+  !*** external ["wp","htmlEntities"] ***!
+  \**************************************/
+(module) {
+
+module.exports = window["wp"]["htmlEntities"];
+
+/***/ },
+
 /***/ "@wordpress/i18n"
 /*!******************************!*\
   !*** external ["wp","i18n"] ***!
@@ -126,7 +175,7 @@ module.exports = window["wp"]["i18n"];
   \*********************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/video-caption","title":"Video Caption","category":"media","parent":["videopack/videopack-video","videopack/video-loop"],"icon":"text","description":"Add a caption to your video.","attributes":{"caption":{"type":"string"}},"supports":{"html":false,"reusable":false,"multiple":true,"interactivity":{"clientNavigation":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/video-caption","title":"Video Caption","category":"media","parent":["videopack/videopack-video","videopack/video-loop"],"icon":"text","description":"Add a caption to your video.","usesContext":["postId","postType","videopack/postId","videopack/parentPostId","videopack/prioritizePostData","videopack/caption"],"attributes":{"caption":{"type":"string"}},"supports":{"html":false,"reusable":false,"multiple":true,"interactivity":{"clientNavigation":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 
 /***/ }
 

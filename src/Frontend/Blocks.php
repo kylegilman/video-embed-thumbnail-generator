@@ -129,6 +129,73 @@ class Blocks implements Hook_Subscriber {
 	}
 
 	/**
+	 * Resolves the final attachment ID for a block, handling auto-discovery if needed.
+	 *
+	 * @param array $attributes Block attributes.
+	 * @param array $context    Block context.
+	 * @return int|null The resolved attachment ID.
+	 */
+	public function get_effective_attachment_id( $attributes, $context ) {
+		// 1. Explicit ID in attributes.
+		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? null );
+		
+		// 2. ID from Videopack context (passed by parent blocks).
+		if ( ! $post_id ) {
+			$post_id = $context['videopack/postId'] ?? null;
+		}
+
+		// 3. Fallback to current post ID (standard WordPress context).
+		if ( ! $post_id ) {
+			$post_id = $context['postId'] ?? get_the_ID();
+		}
+
+		if ( ! $post_id || ! is_numeric( $post_id ) ) {
+			return null;
+		}
+
+		$post_id = (int) $post_id;
+
+		// 4. Check if this is already an attachment.
+		if ( 'attachment' === get_post_type( $post_id ) ) {
+			// Ensure it's a video.
+			if ( 0 === strpos( (string) get_post_mime_type( $post_id ), 'video/' ) ) {
+				return $post_id;
+			}
+		}
+
+		// 5. If it's a regular post, try to find the first attached video.
+		return $this->get_first_video_child( $post_id );
+	}
+
+	/**
+	 * Retrieves the ID of the first video attachment for a given post.
+	 *
+	 * @param int $post_id The parent post ID.
+	 * @return int|null The video attachment ID or null if not found.
+	 */
+	protected function get_first_video_child( $post_id ) {
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'video',
+			'post_status'    => 'inherit',
+			'posts_per_page' => 1,
+			'post_parent'    => (int) $post_id,
+			'fields'         => 'ids',
+			'orderby'        => 'menu_order ID',
+			'order'          => 'ASC',
+			'meta_query'     => array(
+				array(
+					'key'     => '_kgflashmediaplayer-format',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		);
+
+		$children = get_posts( $args );
+		return ! empty( $children ) ? (int) $children[0] : null;
+	}
+
+	/**
 	 * Generic player renderer for the main Videopack block.
 	 *
 	 * @param array $attributes Block attributes.
@@ -143,12 +210,8 @@ class Blocks implements Hook_Subscriber {
 		$block->context['videopack/instanceId']          = $instance_id;
 		$block->context['videopack/isInsidePlayerContainer'] = true;
 
-		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? null ) );
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
 		
-		if ( ! $post_id && is_attachment() ) {
-			$post_id = get_the_ID();
-		}
-
 		if ( $post_id ) {
 			$block->context['videopack/postId'] = (int) $post_id;
 		}
@@ -183,7 +246,7 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_player_engine( $attributes, $content, $block ) {
-		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? get_the_ID() ) );
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
 		
 		// Safety check: skip rendering if we can't find a valid video ID.
 		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
@@ -285,6 +348,8 @@ class Blocks implements Hook_Subscriber {
 				$cloned_block->context['videopack/queryPosts']           = $post_ids;
 				$cloned_block->context['videopack/collectionId']         = $collection_id;
 				$cloned_block->context['videopack/collectionAttributes'] = $normalized_attributes;
+				$cloned_block->context['videopack/videoToPostMapping']   = $gallery_handler->video_to_post_mapping;
+				$cloned_block->context['videopack/prioritizePostData']   = ! empty( $attributes['prioritizePostData'] );
 				$cloned_block->context['videopack/currentPage']          = $paged;
 				$cloned_block->context['videopack/totalPages']           = $total_pages;
 				$cloned_block->context['videopack/skin']                 = $skin;
@@ -381,10 +446,14 @@ class Blocks implements Hook_Subscriber {
 			}
 
 			// Prepare the context for this specific loop item
+			$parent_post_id = $block->context['videopack/videoToPostMapping'][ (int) $post_id ] ?? null;
+			$prioritize     = ! empty( $block->context['videopack/prioritizePostData'] );
+
 			$item_context = array_merge( $block->context, array(
-				'postId'                  => (int) $post_id,
-				'postType'                => 'attachment',
+				'postId'                  => ( $prioritize && $parent_post_id ) ? (int) $parent_post_id : (int) $post_id,
+				'postType'                => ( $prioritize && $parent_post_id ) ? get_post_type( $parent_post_id ) : 'attachment',
 				'videopack/postId'       => (int) $post_id,
+				'videopack/parentPostId' => (int) $parent_post_id,
 				'videopack/isInLoop'     => true,
 				'videopack/instanceId'   => 'vp_' . \Videopack\Admin\Ui::$instance_counter++,
 			) );
@@ -442,7 +511,7 @@ class Blocks implements Hook_Subscriber {
 		$settings   = Context_Manager::resolve( $attributes, $block->context, $this->options );
 		$attributes = array_merge( $this->options, $attributes, $settings['resolved'] );
 
-		$post_id       = $block->context['videopack/postId'] ?? get_the_ID();
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
 		if ( ! $post_id ) {
 			return '';
 		}
@@ -503,8 +572,9 @@ class Blocks implements Hook_Subscriber {
 		foreach ( $block->inner_blocks as $inner_block ) {
 			$cloned_inner = clone $inner_block;
 			$cloned_inner->context['videopack/postId']            = $post_id;
-			$cloned_inner->context['postId']                      = $post_id;
-			$cloned_inner->context['postType']                    = 'attachment';
+			$cloned_inner->context['postId']                      = $block->context['postId'] ?? (int) $post_id;
+			$cloned_inner->context['postType']                    = $block->context['postType'] ?? 'attachment';
+			$cloned_inner->context['videopack/parentPostId']     = $block->context['videopack/parentPostId'] ?? null;
 			$cloned_inner->context['videopack/isInsideThumbnail'] = true;
 			
 			foreach ( $settings['resolved'] as $key => $val ) {
@@ -517,6 +587,9 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		$classes    = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item', $settings['classes'] );
+		if ( 'none' !== $link_to ) {
+			$classes[] = 'has-link';
+		}
 		$style_vars = array( $settings['style'] );
 		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
 
@@ -558,9 +631,21 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_video_title( $attributes, $content, $block ) {
-		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? get_the_ID() ) );
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
 		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
 			return '';
+		}
+
+		if ( ! empty( $block->context['videopack/prioritizePostData'] ) || ! empty( $attributes['usePostTitle'] ) ) {
+			$display_post_id = $block->context['postId'] ?? get_the_ID();
+			if ( (int) $display_post_id !== (int) $post_id || ! empty( $attributes['usePostTitle'] ) ) {
+				$attributes['title'] = get_the_title( (int) $display_post_id );
+			}
+		}
+
+		if ( ! empty( $attributes['linkToPost'] ) ) {
+			$link_post_id = $block->context['postId'] ?? get_the_ID();
+			$attributes['link_url'] = get_permalink( (int) $link_post_id );
 		}
 
 		$source   = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
@@ -589,7 +674,7 @@ class Blocks implements Hook_Subscriber {
 				'style_vars'    => $settings['style'],
 			) ), 
 			$source, 
-			(string) ( $block->context['videopack/postId'] ?? uniqid() ) 
+			(string) ( $block->context['videopack/instanceId'] ?? ( $block->context['videopack/postId'] ?? $post_id ) ) 
 		);
 	}
 
@@ -602,7 +687,7 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_video_duration( $attributes, $content, $block ) {
-		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? get_the_ID() ) );
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
 		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
 			return '';
 		}
@@ -660,7 +745,7 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_view_count( $attributes, $content, $block ) {
-		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? ( $block->context['videopack/postId'] ?? get_the_ID() ) );
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
 		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
 			return '';
 		}
@@ -735,8 +820,26 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_video_caption( $attributes, $content, $block ) {
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
+
 		// Priority: Block Attribute > Context inheritance.
 		$caption = $attributes['caption'] ?? ( $block->context['videopack/caption'] ?? '' );
+
+		if ( ! empty( $block->context['videopack/prioritizePostData'] ) ) {
+			$display_post_id = $block->context['postId'] ?? ( $block->context['videopack/postId'] ?? null );
+			if ( $display_post_id ) {
+				$post_excerpt = get_the_excerpt( (int) $display_post_id );
+				if ( ! empty( $post_excerpt ) ) {
+					$caption = $post_excerpt;
+				}
+			}
+		}
+
+		if ( empty( $caption ) && $post_id ) {
+			$video_post = get_post( $post_id );
+			$caption    = $video_post->post_excerpt ?? '';
+		}
+
 		return Modular_Renderer::render_video_caption( $caption );
 	}
 

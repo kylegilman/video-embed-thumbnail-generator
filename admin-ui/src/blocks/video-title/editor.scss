@@ -64,3 +64,11 @@
 		pointer-events: auto; // Ensure it captures clicks when selected
 	}
 }
+
+.videopack-video-title,
+.videopack-thumbnail-title-text {
+	&.is-link {
+		text-decoration: underline;
+		cursor: pointer;
+	}
+}

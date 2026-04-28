@@ -18,7 +18,9 @@
     "videopack/play_button_color",
     "videopack/play_button_secondary_color",
     "videopack/control_bar_bg_color",
-    "videopack/control_bar_color"
+    "videopack/control_bar_color",
+    "postId",
+    "postType"
   ],
   "providesContext": {
     "videopack/postId": "id",

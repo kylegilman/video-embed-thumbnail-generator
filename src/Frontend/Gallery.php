@@ -47,6 +47,13 @@ class Gallery {
 	protected $attachment_meta;
 
 	/**
+	 * Mapping of video attachment ID to parent post ID (for global query inheritance).
+	 *
+	 * @var array $video_to_post_mapping
+	 */
+	public $video_to_post_mapping = array();
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array                                  $options         Videopack options array.
@@ -150,12 +157,62 @@ class Gallery {
 					return new \WP_Query( $args );
 				}
 			} elseif ( 'archive' === (string) $query_atts['gallery_source'] ) {
-				if ( is_category() ) {
+				global $wp_query;
+				if ( ! is_admin() && $wp_query && $wp_query->is_main_query() && 'attachment' !== $wp_query->get( 'post_type' ) && is_array( $wp_query->posts ) ) {
+					$attachment_ids = array();
+					foreach ( $wp_query->posts as $q_post ) {
+						$video_id = $this->get_first_video_child( $q_post->ID );
+						if ( $video_id ) {
+							$attachment_ids[] = (int) $video_id;
+							$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
+						}
+					}
+					if ( ! empty( $attachment_ids ) ) {
+						$args['post__in'] = $attachment_ids;
+						$args['orderby'] = 'post__in';
+						unset( $args['post_parent'] );
+						$has_archive_source = false; // We already handled it.
+					}
+				} elseif ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+					// Editor preview: fetch recent posts and map to their first videos.
+					$preview_post_args = array(
+						'post_type'      => 'post',
+						'posts_per_page' => (int) ( $query_atts['gallery_per_page'] ?? 6 ),
+						'post_status'    => 'publish',
+					);
+					if ( ! empty( $query_atts['gallery_category'] ) ) {
+						$preview_post_args['cat'] = $query_atts['gallery_category'];
+					} elseif ( ! empty( $query_atts['gallery_tag'] ) ) {
+						$preview_post_args['tag_id'] = $query_atts['gallery_tag'];
+					}
+
+					$preview_posts = get_posts( $preview_post_args );
+					$attachment_ids = array();
+					if ( is_array( $preview_posts ) ) {
+						foreach ( $preview_posts as $q_post ) {
+							$video_id = $this->get_first_video_child( $q_post->ID );
+							if ( $video_id ) {
+								$attachment_ids[] = (int) $video_id;
+								$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
+							}
+						}
+					}
+
+
+					if ( ! empty( $attachment_ids ) ) {
+						$args['post__in'] = $attachment_ids;
+						$args['orderby']  = 'post__in';
+						unset( $args['post_parent'] );
+						$has_archive_source = false;
+					} else {
+						$has_archive_source = true; // Fallback to attachments if no post-videos found.
+					}
+				} elseif ( is_category() ) {
 					$archive_args['cat'] = get_queried_object_id();
 					$has_archive_source  = true;
 				} elseif ( is_tag() ) {
 					$archive_args['tag_id'] = get_queried_object_id();
-					$has_archive_source     = true;
+					$has_archive_source  = true;
 				} elseif ( is_tax() ) {
 					$queried_object = get_queried_object();
 					if ( $queried_object instanceof \WP_Term ) {
@@ -195,7 +252,7 @@ class Gallery {
 			$include_arr = (array) wp_parse_id_list( (string) $query_atts['gallery_include'] );
 			if ( ! empty( $include_arr ) ) {
 				$gallery_per_page = (int) ( $query_atts['gallery_per_page'] ?? -1 );
-				
+
 				// Ensure string 'false' from REST is evaluated as boolean false
 				$gallery_pagination = $query_atts['gallery_pagination'] ?? true;
 				if ( is_string( $gallery_pagination ) && 'false' === strtolower( trim( $gallery_pagination ) ) ) {
@@ -235,6 +292,34 @@ class Gallery {
 				'post__in' => array( 0 ), // No post has the ID of 0.
 			)
 		);
+	}
+
+	/**
+	 * Retrieves the ID of the first video attachment for a given post.
+	 *
+	 * @param int $post_id The parent post ID.
+	 * @return int|null The video attachment ID or null if not found.
+	 */
+	public function get_first_video_child( $post_id ) {
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'video',
+			'post_status'    => 'inherit',
+			'posts_per_page' => 1,
+			'post_parent'    => (int) $post_id,
+			'fields'         => 'ids',
+			'orderby'        => 'menu_order ID',
+			'order'          => 'ASC',
+			'meta_query'     => array(
+				array(
+					'key'     => '_kgflashmediaplayer-format',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		);
+
+		$children = get_posts( $args );
+		return ! empty( $children ) ? (int) $children[0] : null;
 	}
 
 	/**
@@ -337,7 +422,7 @@ class Gallery {
 		self::$player_instance_counter++;
 		$instance_id = (string) self::$player_instance_counter;
 		$player      = Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
-		
+
 		$collection_id = $final_atts['collection_id'] ?? $query_atts['collectionId'] ?? 'vp_gallery_default';
 		$player->set_id( "gallery_{$data['id']}_{$collection_id}" );
 		$player->set_source( $source );
@@ -364,6 +449,9 @@ class Gallery {
 		$player_vars['sources']          = (array) $player->get_flat_sources();
 		$player_vars['poster']           = $poster_url;
 		$player_vars['attachment']       = (int) $data['id'];
+		$player_vars['attachment_id']    = (int) $data['id'];
+		$player_vars['parent_id']        = $this->video_to_post_mapping[ (int) $data['id'] ] ?? null;
+
 
 		// Retrieve video statistics from attachment metadata if available.
 		$video_meta = get_post_meta( (int) $data['id'], '_videopack-meta', true );
@@ -380,6 +468,7 @@ class Gallery {
 			'poster_url'    => (string) $poster_url,
 			'poster_srcset' => $poster_id ? (string) wp_get_attachment_image_srcset( (int) $poster_id, 'medium_large' ) : '',
 			'player_vars'   => (array) $player_vars,
+			'parent_id'     => $player_vars['parent_id'],
 		);
 
 		if ( ! empty( $video_meta['duration'] ) ) {
@@ -440,14 +529,14 @@ class Gallery {
 			$inner_blocks .= sprintf( '<!-- wp:videopack/thumbnail {"linkTo":"%s"} -->', esc_attr( $link_to ) );
 			$inner_blocks .= '<!-- wp:videopack/play-button /-->';
 			$inner_blocks .= '<!-- wp:videopack/video-title {"isOverlay":true} /-->';
-			
+
 			if ( $show_duration ) {
 				$inner_blocks .= '<!-- wp:videopack/video-duration /-->';
 			}
 			if ( $show_views ) {
 				$inner_blocks .= '<!-- wp:videopack/view-count /-->';
 			}
-			
+
 			$inner_blocks .= '<!-- /wp:videopack/thumbnail -->';
 			$inner_blocks .= '<!-- /wp:videopack/video-loop -->';
 
@@ -469,8 +558,8 @@ class Gallery {
 
 		/**
 		 * 3. Return video data for AJAX lifecycle (lightbox init, etc).
-		 * 
-		 * Even though we render via blocks now, we still need to return the array of 
+		 *
+		 * Even though we render via blocks now, we still need to return the array of
 		 * video metadata for videopack.js to pick up and process.
 		 */
 		$attachments = $this->get_gallery_videos( $page_number, $query_atts );

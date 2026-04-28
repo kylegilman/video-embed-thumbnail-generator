@@ -311,10 +311,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/context */ "./src/utils/context.js");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/context */ "./src/utils/context.js");
 
 
-const DESIGN_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'enable_collection_video_limit', 'collection_video_limit'];
+
+const DESIGN_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -324,12 +327,13 @@ const DESIGN_KEYS = ['skin', 'title_color', 'title_background_color', 'play_butt
  * @return {Object} Resolved values, styles, and classes.
  */
 function useVideopackContext(attributes, context) {
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+  // 1. Initial Synchronous Resolution
+  const initial = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const resolved = {};
     const style = {};
     const classes = [];
     DESIGN_KEYS.forEach(key => {
-      const value = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)(key, attributes, context);
+      const value = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)(key, attributes, context);
       resolved[key] = value;
       if (value) {
         const cssKey = key.replace(/_/g, '-');
@@ -387,6 +391,13 @@ function useVideopackContext(attributes, context) {
         });
       }
     }
+    resolved.isEditingAllPages = !!(0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('isEditingAllPages', attributes, context);
+    resolved.prioritizePostData = !!(0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('prioritizePostData', attributes, context);
+
+    // Core data identification
+    resolved.postId = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('postId', attributes, context);
+    resolved.attachmentId = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('attachmentId', attributes, context);
+    resolved.postType = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('postType', attributes, context);
 
     // Handle Gutenberg Typography Classes (Presets)
     if (attributes.fontSize) {
@@ -398,9 +409,79 @@ function useVideopackContext(attributes, context) {
     return {
       resolved,
       style,
-      classes: classes.join(' ')
+      classes
     };
   }, [attributes, context]);
+
+  // 2. Automatic Video Discovery
+  // If we have a postId but no attachmentId, try to find the first video attachment.
+  const {
+    discoveredAttachmentId,
+    isDiscovering
+  } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.useSelect)(select => {
+    const {
+      resolved
+    } = initial;
+
+    // If we already have an attachmentId, we're not discovering.
+    if (resolved.attachmentId) {
+      return {
+        discoveredAttachmentId: resolved.attachmentId,
+        isDiscovering: false
+      };
+    }
+
+    // If we don't even have a postId, we can't discover anything.
+    if (!resolved.postId || resolved.postId < 1) {
+      return {
+        discoveredAttachmentId: null,
+        isDiscovering: false
+      };
+    }
+
+    // If the postId itself IS an attachment, then that's our attachmentId.
+    if (resolved.postType === 'attachment') {
+      return {
+        discoveredAttachmentId: resolved.postId,
+        isDiscovering: false
+      };
+    }
+
+    // Otherwise, try to find the first video attachment for this post.
+    const {
+      getEntityRecords
+    } = select('core');
+    const query = {
+      parent: resolved.postId,
+      mime_type: 'video',
+      per_page: 1,
+      _fields: 'id'
+    };
+    const attachments = getEntityRecords('postType', 'attachment', query);
+    const isResolving = select('core/data').isResolving('core', 'getEntityRecords', ['postType', 'attachment', query]);
+    const foundId = attachments?.[0]?.id || null;
+    return {
+      discoveredAttachmentId: foundId,
+      isDiscovering: isResolving || !foundId && attachments === undefined
+    };
+  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType]);
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    const rawAttachmentId = discoveredAttachmentId || initial.resolved.attachmentId;
+
+    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // and we know the post is NOT an attachment, then it's a false resolution.
+    const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' ? null : rawAttachmentId;
+    const finalResolved = {
+      ...initial.resolved,
+      attachmentId: finalAttachmentId,
+      isDiscovering
+    };
+    return {
+      resolved: finalResolved,
+      style: initial.style,
+      classes: initial.classes.join(' ')
+    };
+  }, [initial, discoveredAttachmentId, isDiscovering]);
 }
 
 /***/ },
@@ -511,10 +592,21 @@ const getEffectiveValue = (key, attributes = {}, context = {}) => {
   if (isValid(attributes[attrKey])) {
     return attributes[attrKey];
   }
+  if (attrKey === 'attachmentId' && isValid(attributes.id)) {
+    return attributes.id;
+  }
+  if (attrKey === 'postId' && isValid(attributes.id)) {
+    return attributes.id;
+  }
 
   // 2. Check inherited context (from Collection or Video block)
   if (isValid(context[contextKey])) {
     return context[contextKey];
+  }
+
+  // 2b. Check standard Gutenberg context fallbacks
+  if ((attrKey === 'postId' || attrKey === 'postType') && isValid(context[attrKey])) {
+    return context[attrKey];
   }
 
   // 3. Fallback to global plugin defaults
@@ -610,6 +702,16 @@ module.exports = window["wp"]["blocks"];
 (module) {
 
 module.exports = window["wp"]["components"];
+
+/***/ },
+
+/***/ "@wordpress/data"
+/*!******************************!*\
+  !*** external ["wp","data"] ***!
+  \******************************/
+(module) {
+
+module.exports = window["wp"]["data"];
 
 /***/ },
 

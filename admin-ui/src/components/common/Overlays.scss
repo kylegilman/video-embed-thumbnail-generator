@@ -159,6 +159,16 @@ $badge-selectors: (
 	// Standard Title Text Logic (when not an overlay)
 	:is(.videopack-title, .videopack-thumbnail-title-text) {
 		color: inherit;
+		
+		&.is-link, 
+		.videopack-title-link {
+			color: inherit;
+			text-decoration: none;
+			
+			&:hover {
+				text-decoration: underline;
+			}
+		}
 	}
 
 	// Meta Icons Logic
@@ -319,9 +329,7 @@ $badge-selectors: (
 :is(.videopack-wrapper,
 	.videopack-gallery-wrapper,
 	.videopack-gallery-item,
-	.gallery-thumbnail,
 	.videopack-player,
-	.videopack-thumbnail-wrapper,
 	.videopack-thumbnail-block,
 	.videopack-video-block,
 	.videopack-collection,
@@ -339,9 +347,7 @@ $badge-selectors: (
 	.videopack-video-title,
 	.videopack-gallery-wrapper,
 	.videopack-gallery-item,
-	.gallery-thumbnail,
 	.videopack-player,
-	.videopack-thumbnail-wrapper,
 	.videopack-thumbnail-block,
 	.videopack-video-block,
 	.videopack-collection,
@@ -377,15 +383,11 @@ $badge-selectors: (
 	}
 }
 
-// 2. Focused Thumbnail Layout (Needs explicit 16:9 box logic)
-:is(.gallery-thumbnail,
-	.videopack-thumbnail-wrapper,
-	.videopack-thumbnail-holder,
-	.videopack-thumbnail-block:not(.is-full-width)) {
+// 2. Focused Thumbnail Layout (Logic moved to Thumbnail.scss)
+:is(.videopack-thumbnail-holder) {
 	width: 100%;
 	padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
 	height: 0;
-	cursor: pointer;
 	overflow: hidden;
 	background: #000;
 }
@@ -459,27 +461,7 @@ $badge-selectors: (
 // Frontend Container Parity
 // ---------------------------------------------------------------------------
 
-.videopack-thumbnail-wrapper {
-	position: relative;
-	display: block;
-	width: 100%;
-	padding-bottom: 56.25%; /* 16:9 Aspect Ratio parity */
-	height: 0;
-	overflow: hidden;
-	container-type: inline-size;
-
-	.videopack-inner-blocks-container {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		z-index: 10;
-		& > * {
-			pointer-events: auto;
-		}
-	}
-}
+// Logic moved to Thumbnail.scss
 
 .gallery-item-clickable-area,
 .videopack-thumbnail-holder {
@@ -488,7 +470,6 @@ $badge-selectors: (
 	left: 0;
 	width: 100%;
 	height: 100%;
-	cursor: pointer;
 }
 
 // ---------------------------------------------------------------------------
