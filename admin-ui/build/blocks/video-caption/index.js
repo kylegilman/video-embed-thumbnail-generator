@@ -126,7 +126,7 @@ module.exports = window["wp"]["i18n"];
   \*********************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/video-caption","title":"Video Caption","category":"media","parent":["videopack/videopack-video"],"icon":"text","description":"Add a caption to your video.","attributes":{"caption":{"type":"string"}},"supports":{"html":false,"reusable":false,"multiple":true,"interactivity":{"clientNavigation":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/video-caption","title":"Video Caption","category":"media","parent":["videopack/videopack-video","videopack/video-loop"],"icon":"text","description":"Add a caption to your video.","attributes":{"caption":{"type":"string"}},"supports":{"html":false,"reusable":false,"multiple":true,"interactivity":{"clientNavigation":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 
 /***/ }
 

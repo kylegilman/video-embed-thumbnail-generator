@@ -1,0 +1,232 @@
+.wp-block-videopack-video-loop {
+	.videopack-collection-item {
+		// Actions
+		.gallery-item-remove,
+		.gallery-item-edit,
+		.videopack-drag-handle,
+		.gallery-add-button,
+		.videopack-edit-item,
+		.videopack-remove-item {
+			position: absolute;
+			z-index: 150;
+			background: rgba(0, 0, 0, 0.7) !important;
+			border: none !important;
+			border-radius: 50% !important;
+			width: 26px !important;
+			height: 26px !important;
+			display: none;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			color: #fff !important;
+			padding: 0;
+			transition: background-color 0.2s ease;
+			pointer-events: all;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+
+			svg {
+				width: 16px;
+				height: 16px;
+				fill: currentColor;
+			}
+		}
+
+		// Positional wrappers
+		.gallery-item-remove,
+		.gallery-item-edit,
+		.videopack-drag-handle {
+			top: 10px;
+			display: none;
+		}
+
+		.gallery-add-button {
+			bottom: 10px;
+			right: 10px;
+			display: none;
+			background: var(--wp-admin-theme-color) !important;
+			opacity: 0.8;
+
+			&:hover {
+				opacity: 1;
+			}
+		}
+
+		.videopack-drag-handle {
+			left: 10px;
+			cursor: grab;
+
+			&:active {
+				cursor: grabbing;
+			}
+
+			&:hover {
+				background: var(--wp-admin-theme-color) !important;
+			}
+		}
+
+		.gallery-item-remove {
+			right: 10px;
+
+			.videopack-remove-item {
+				position: static;
+				display: flex;
+				background: transparent !important;
+				box-shadow: none;
+			}
+
+			&:hover {
+				background: rgba(220, 30, 30, 0.9) !important;
+			}
+		}
+
+		.gallery-item-edit {
+			right: 42px; // Space for the remove button
+
+			.videopack-edit-item {
+				position: static;
+				display: flex;
+				background: transparent !important;
+				box-shadow: none;
+			}
+
+			&:hover {
+				background: var(--wp-admin-theme-color) !important;
+			}
+		}
+
+		// Show actions on hover
+		&:hover {
+			.gallery-item-remove,
+			.gallery-item-edit,
+			.gallery-add-button,
+			.videopack-drag-handle {
+				display: flex;
+			}
+		}
+	}
+
+	&.is-editing-all-pages {
+		border: 1px dashed var(--wp-admin-theme-color);
+		background: rgba(var(--wp-admin-theme-color-rgb), 0.05);
+		border-radius: 4px;
+		padding: 10px;
+	}
+
+	.videopack-collection-item.is-preview {
+		cursor: default;
+		position: relative;
+		margin-bottom: 5px;
+	}
+
+	.videopack-collection-item.is-editable {
+		position: relative;
+		min-height: 120px; // Prevent collapse and match approximate height in grid
+		display: flex;
+		flex-direction: column;
+		background: rgba(0, 0, 0, 0.03);
+		border-radius: 8px;
+		border: 2px dashed rgba(0, 0, 0, 0.05);
+		transition: all 0.2s ease;
+		padding: 0;
+		overflow: visible;
+
+		&:hover {
+			background: rgba(0, 0, 0, 0.05);
+			border-color: rgba(var(--wp-admin-theme-color-rgb), 0.3);
+		}
+
+		// Ensure InnerBlocks wrapper fills the space (direct children only)
+		& > .block-editor-inner-blocks,
+		& > .block-editor-inner-blocks > .block-editor-block-list__layout {
+			width: 100%;
+			height: 100%;
+			min-height: inherit;
+		}
+
+		// Move the Video Loop's template appender to the bottom center
+		// We target the appender that is NOT inside a thumbnail container
+		& > .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
+			position: absolute;
+			bottom: -15px; // Positioned outside the box as requested
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 110;
+			display: flex;
+			justify-content: center;
+			width: auto;
+			margin: 0;
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 0.2s ease, visibility 0.2s ease;
+
+			.block-editor-button-block-appender {
+				background: #fff !important;
+				color: var(--wp-admin-theme-color) !important;
+				border: 1px solid var(--wp-admin-theme-color) !important;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+				width: 28px;
+				height: 28px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				&:hover {
+					background: var(--wp-admin-theme-color) !important;
+					color: #fff !important;
+				}
+			}
+		}
+
+		// Show appender when selected or hovered
+		&:is(:hover, :focus-within) > .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender,
+		:where(.is-selected, .has-child-selected) & > .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
+			opacity: 1;
+			visibility: visible;
+		}
+
+		// Ensure the thumbnail within the editable template doesn't cut off our appender
+		.wp-block-videopack-thumbnail {
+			margin-bottom: 5px;
+		}
+
+		// Non-Videopack block preview containers
+		.videopack-block-preview-external {
+			width: 100%;
+			min-height: 20px;
+			margin: 5px 0;
+			position: relative;
+
+			// We use a CSS trick to neutralize the core BlockPreview scaling logic
+			// since we are forcing viewportWidth = currentWidth in JS.
+			.block-editor-block-preview__container {
+				transform: none !important;
+				width: 100% !important;
+				height: auto !important;
+			}
+
+			.block-editor-block-preview__content {
+				transform: none !important;
+				width: 100% !important;
+				height: auto !important;
+				opacity: 1 !important;
+				visibility: visible !important;
+
+				iframe {
+					width: 100% !important;
+					height: auto !important;
+					position: static !important;
+					pointer-events: none;
+					transform: none !important;
+				}
+			}
+		}
+
+		.videopack-block-preview-fallback {
+			font-size: 10px;
+			color: #999;
+			padding: 5px;
+			border: 1px dashed #eee;
+			text-align: center;
+		}
+	}
+}

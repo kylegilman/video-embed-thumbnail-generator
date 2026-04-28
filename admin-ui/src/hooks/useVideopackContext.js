@@ -58,6 +58,54 @@ export default function useVideopackContext(attributes, context) {
 			classes.push(resolved.skin);
 		}
 
+		// Handle Gutenberg "style" attribute (typography, spacing, etc).
+		if (attributes.style && typeof attributes.style === 'object') {
+			// Typography Support
+			if (attributes.style.typography) {
+				const { fontSize, lineHeight, letterSpacing } =
+					attributes.style.typography;
+				if (fontSize) {
+					if (fontSize.startsWith('var:preset|font-size|')) {
+						const slug = fontSize.split('|').pop();
+						style.fontSize = `var(--wp--preset--font-size--${slug})`;
+					} else {
+						style.fontSize = fontSize;
+					}
+				}
+				if (lineHeight) style.lineHeight = lineHeight;
+				if (letterSpacing) style.letterSpacing = letterSpacing;
+			}
+
+			// Spacing Support (Margin/Padding)
+			if (attributes.style.spacing) {
+				Object.entries(attributes.style.spacing).forEach(
+					([type, values]) => {
+						if (values && typeof values === 'object') {
+							Object.entries(values).forEach(([dir, val]) => {
+								let finalVal = val;
+								if (
+									typeof val === 'string' &&
+									val.startsWith('var:preset|spacing|')
+								) {
+									const slug = val.split('|').pop();
+									finalVal = `var(--wp--preset--spacing--${slug})`;
+								}
+								style[`${type}${dir.charAt(0).toUpperCase()}${dir.slice(1)}`] = finalVal;
+							});
+						}
+					}
+				);
+			}
+		}
+
+		// Handle Gutenberg Typography Classes (Presets)
+		if (attributes.fontSize) {
+			classes.push(`has-${attributes.fontSize}-font-size`);
+		}
+		if (attributes.fontFamily) {
+			classes.push(`has-${attributes.fontFamily}-font-family`);
+		}
+
 		return {
 			resolved,
 			style,

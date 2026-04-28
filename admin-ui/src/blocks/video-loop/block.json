@@ -13,6 +13,7 @@
 		"inserter": false
 	},
 	"usesContext": [
+		"videopack/collectionId",
 		"videopack/postId",
 		"videopack/skin",
 		"videopack/layout",
@@ -28,8 +29,10 @@
 		"videopack/gallery_pagination",
 		"videopack/gallery_per_page",
 		"videopack/currentPage",
-		"videopack/totalPages"
+		"videopack/totalPages",
+		"videopack/isEditingAllPages"
 	],
 	"textdomain": "video-embed-thumbnail-generator",
-	"editorScript": "file:./index.js"
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css"
 }

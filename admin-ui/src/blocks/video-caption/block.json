@@ -4,7 +4,7 @@
 	"name": "videopack/video-caption",
 	"title": "Video Caption",
 	"category": "media",
-	"parent": ["videopack/videopack-video"],
+	"parent": ["videopack/videopack-video", "videopack/video-loop"],
 	"icon": "text",
 	"description": "Add a caption to your video.",
 	"attributes": {

@@ -12,6 +12,9 @@ export default function CollectionColorSettings({
 	options = {},
 	blockType = 'gallery',
 	showPaginationSettings = true,
+	showTitleSettings = true,
+	showPlayerSettings = true,
+	showSkinSettings = true,
 }) {
 	const {
 		skin,
@@ -43,7 +46,7 @@ export default function CollectionColorSettings({
 
 	return (
 		<>
-			{isGalleryOrList && (
+			{isGalleryOrList && showSkinSettings && (
 				<div className="videopack-skin-section" style={{ marginBottom: '16px' }}>
 					<SelectControl
 						label={__('Player Skin', 'video-embed-thumbnail-generator')}
@@ -62,7 +65,7 @@ export default function CollectionColorSettings({
 				</div>
 			)}
 
-			{isGalleryOrList && (
+			{isGalleryOrList && showTitleSettings && (
 				<div className="videopack-color-section">
 					<p className="videopack-settings-section-title">
 						{__('Titles', 'video-embed-thumbnail-generator')}
@@ -90,7 +93,7 @@ export default function CollectionColorSettings({
 				</div>
 			)}
 
-			{isGalleryOrList && (
+			{isGalleryOrList && showPlayerSettings && (
 				<div className="videopack-color-section">
 					<p className="videopack-settings-section-title">
 						{__('Player', 'video-embed-thumbnail-generator')}

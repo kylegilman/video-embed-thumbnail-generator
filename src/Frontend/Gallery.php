@@ -195,7 +195,17 @@ class Gallery {
 			$include_arr = (array) wp_parse_id_list( (string) $query_atts['gallery_include'] );
 			if ( ! empty( $include_arr ) ) {
 				$gallery_per_page = (int) ( $query_atts['gallery_per_page'] ?? -1 );
-				if ( $gallery_per_page > 0 && count( (array) $include_arr ) > $gallery_per_page ) {
+				
+				// Ensure string 'false' from REST is evaluated as boolean false
+				$gallery_pagination = $query_atts['gallery_pagination'] ?? true;
+				if ( is_string( $gallery_pagination ) && 'false' === strtolower( trim( $gallery_pagination ) ) ) {
+					$gallery_pagination = false;
+				} else {
+					$gallery_pagination = filter_var( $gallery_pagination, FILTER_VALIDATE_BOOLEAN );
+				}
+				$bypass_pagination = false === $gallery_pagination;
+
+				if ( ! $bypass_pagination && $gallery_per_page > 0 && count( (array) $include_arr ) > $gallery_per_page ) {
 					$total_pages      = (int) ceil( count( (array) $include_arr ) / $gallery_per_page );
 					$offset           = (int) ( ( (int) $page_number - 1 ) * $gallery_per_page );
 					$args['post__in'] = (array) array_slice( (array) $include_arr, $offset, $gallery_per_page );
@@ -366,6 +376,7 @@ class Gallery {
 		$video_data = array(
 			'attachment_id' => (int) $data['id'],
 			'title'         => (string) $data['title'],
+			'date'          => (string) get_the_date( 'c', $data['id'] ),
 			'poster_url'    => (string) $poster_url,
 			'poster_srcset' => $poster_id ? (string) wp_get_attachment_image_srcset( (int) $poster_id, 'medium_large' ) : '',
 			'player_vars'   => (array) $player_vars,

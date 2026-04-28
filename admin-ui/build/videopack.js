@@ -1179,7 +1179,10 @@ function CollectionColorSettings({
   setAttributes,
   options = {},
   blockType = 'gallery',
-  showPaginationSettings = true
+  showPaginationSettings = true,
+  showTitleSettings = true,
+  showPlayerSettings = true,
+  showSkinSettings = true
 }) {
   const {
     skin,
@@ -1202,7 +1205,7 @@ function CollectionColorSettings({
   const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
   const isGalleryOrList = blockType === 'gallery' || blockType === 'list' || blockType === 'grid';
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
-    children: [isGalleryOrList && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+    children: [isGalleryOrList && showSkinSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
       className: "videopack-skin-section",
       style: {
         marginBottom: '16px'
@@ -1236,7 +1239,7 @@ function CollectionColorSettings({
           skin: value
         })
       })
-    }), isGalleryOrList && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+    }), isGalleryOrList && showTitleSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "videopack-color-section",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
         className: "videopack-settings-section-title",
@@ -1267,7 +1270,7 @@ function CollectionColorSettings({
           })
         })]
       })]
-    }), isGalleryOrList && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+    }), isGalleryOrList && showPlayerSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "videopack-color-section",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
         className: "videopack-settings-section-title",
@@ -1723,6 +1726,9 @@ function CollectionSettingsPanel({
   showManualSource = true,
   showLayoutSettings = true,
   showPaginationSettings = true,
+  showTitleSettings = true,
+  showPlayerSettings = true,
+  showSkinSettings = true,
   hasPaginationBlock = true
 }) {
   const {
@@ -1760,7 +1766,10 @@ function CollectionSettingsPanel({
         setAttributes: setAttributes,
         options: options,
         blockType: blockType,
-        showPaginationSettings: showPaginationSettings
+        showPaginationSettings: showPaginationSettings,
+        showTitleSettings: showTitleSettings,
+        showPlayerSettings: showPlayerSettings,
+        showSkinSettings: showSkinSettings
       })
     })]
   });
@@ -1876,8 +1885,11 @@ function QuerySettings({
         const newAttributes = {
           gallery_source: value
         };
-        if (value !== 'custom') {
+        if (value !== 'custom' && value !== 'manual') {
           newAttributes.gallery_id = 0;
+        }
+        if (value !== 'manual') {
+          newAttributes.gallery_include = '';
         }
         setAttributes(newAttributes);
       }

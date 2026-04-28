@@ -356,9 +356,8 @@ class Public_Controller extends Controller {
 	private function sanitize_blocks_recursive( array $blocks ) {
 		$sanitized = array();
 		foreach ( $blocks as $block ) {
-			// Security: strictly reject any blocks that are not part of Videopack
-			// to prevent arbitrary core block or shortcode execution.
-			if ( ! isset( $block['blockName'] ) || strpos( $block['blockName'], 'videopack/' ) !== 0 ) {
+			// Security: allow any registered block.
+			if ( ! isset( $block['blockName'] ) ) {
 				continue;
 			}
 			

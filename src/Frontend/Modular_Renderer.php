@@ -49,7 +49,7 @@ class Modular_Renderer {
 		$is_inside_thumb = ! empty( $context['isInsideThumbnail'] );
 		$is_overlay      = $is_inside_thumb || ! empty( $context['skin'] );
 		$position        = $atts['position'] ?? ( $context['position'] ?? ( $is_inside_thumb ? 'top' : 'bottom' ) );
-		$text_align      = $atts['textAlign'] ?? ( $is_inside_thumb ? 'center' : 'left' );
+		$text_align      = $atts['textAlign'] ?? ( $is_inside_thumb ? 'right' : 'left' );
 
 		$class  = 'videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
 		$class .= ' position-' . esc_attr( $position );
@@ -449,8 +449,23 @@ class Modular_Renderer {
 			if ( $show_background && ! empty( $atts['title_background_color'] ) ) {
 				$style_attrs[] = 'background-color:' . $atts['title_background_color'];
 			}
-			$style = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', $style_attrs ) ) . '"' : '';
+
+			// Merge in styles resolved from context/Gutenberg attributes.
+			if ( ! empty( $atts['style_vars'] ) ) {
+				if ( is_array( $atts['style_vars'] ) ) {
+					$style_attrs = array_merge( $style_attrs, $atts['style_vars'] );
+				} else {
+					$style_attrs[] = $atts['style_vars'];
+				}
+			}
+
+			$style = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', array_filter( $style_attrs ) ) ) . '"' : '';
 			$class = 'videopack-video-title has-text-align-' . esc_attr( $text_align ) . ( $show_background ? '' : ' has-no-background' );
+
+			if ( ! empty( $atts['wrapper_class'] ) ) {
+				$class .= ' ' . $atts['wrapper_class'];
+			}
+
 			return '<' . esc_attr( $tag ) . ' class="' . esc_attr( $class ) . '"' . $style . '>' . esc_html( (string) $title ) . '</' . esc_attr( $tag ) . '>';
 		}
 
@@ -467,8 +482,22 @@ class Modular_Renderer {
 		if ( ! empty( $atts['title_color'] ) ) {
 			$title_style_attrs[] = 'color:' . $atts['title_color'];
 		}
-		$title_style = ! empty( $title_style_attrs ) ? ' style="' . esc_attr( implode( ';', $title_style_attrs ) ) . '"' : '';
+
+		// Merge in styles resolved from context/Gutenberg attributes.
+		if ( ! empty( $atts['style_vars'] ) ) {
+			if ( is_array( $atts['style_vars'] ) ) {
+				$title_style_attrs = array_merge( $title_style_attrs, $atts['style_vars'] );
+			} else {
+				$title_style_attrs[] = $atts['style_vars'];
+			}
+		}
+
+		$title_style = ! empty( $title_style_attrs ) ? ' style="' . esc_attr( implode( ';', array_filter( $title_style_attrs ) ) ) . '"' : '';
 		$title_classes = 'videopack-title has-text-align-' . esc_attr( $text_align );
+
+		if ( ! empty( $atts['wrapper_class'] ) ) {
+			$title_classes .= ' ' . $atts['wrapper_class'];
+		}
 
 		$bg_color          = ! empty( $atts['title_background_color'] ) ? $atts['title_background_color'] : null;
 		$skin              = $atts['skin'] ?? ( $options['skin'] ?? 'default' );
@@ -498,8 +527,19 @@ class Modular_Renderer {
 			$wrapper_style_vars[] = '--videopack-title-background-color: ' . $atts['title_background_color'];
 		}
 		$wrapper_style = ! empty( $wrapper_style_vars ) ? ' style="' . esc_attr( implode( ';', $wrapper_style_vars ) ) . '"' : '';
+		$wrapper_class = 'videopack-meta-wrapper';
+		if ( $is_overlay ) {
+			$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
+		}
+		if ( ! empty( $atts['wrapper_class'] ) ) {
+			$wrapper_class .= ' ' . $atts['wrapper_class'];
+		}
 
-		$html  = '<div id="video_' . esc_attr( (string) $id ) . '_meta" class="videopack-meta-wrapper" data-id="' . esc_attr( (string) $id ) . '" data-post-id="' . esc_attr( (string) $id ) . '"' . $wrapper_style . '>';
+		if ( $is_inside_thumbnail ) {
+			$wrapper_class .= ' videopack-thumbnail-title';
+		}
+
+		$html  = '<div id="video_' . esc_attr( (string) $id ) . '_meta" class="' . esc_attr( $wrapper_class ) . '" data-id="' . esc_attr( (string) $id ) . '" data-post-id="' . esc_attr( (string) $id ) . '"' . $wrapper_style . '>';
 		$html .= '<div class="' . esc_attr( $bar_class ) . '"' . $bar_style . '>' . "\n";
 
 		if ( $show_title ) {
@@ -663,7 +703,7 @@ class Modular_Renderer {
 		$is_thumb      = ! empty( $atts['isInsideThumbnail'] );
 		$is_player     = ! empty( $atts['isInsidePlayerContainer'] ) || ! empty( $atts['isInsidePlayerOverlay'] );
 		$icon_html     = self::get_svg_icon( $icon_type );
-		$text_align    = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'center' : ( $is_player ? 'right' : 'left' ) );
+		$text_align    = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'right' : ( $is_player ? 'right' : 'left' ) );
 		$style_attrs   = array();
 
 		$has_custom_bg    = ! empty( $atts['title_background_color'] );
@@ -683,8 +723,21 @@ class Modular_Renderer {
 			}
 		}
 
-		$style   = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', $style_attrs ) ) . '"' : '';
+		// Merge in styles resolved from context/Gutenberg attributes.
+		if ( ! empty( $atts['style_vars'] ) ) {
+			if ( is_array( $atts['style_vars'] ) ) {
+				$style_attrs = array_merge( $style_attrs, $atts['style_vars'] );
+			} else {
+				$style_attrs[] = $atts['style_vars'];
+			}
+		}
+
+		$style   = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', array_filter( $style_attrs ) ) ) . '"' : '';
 		$classes = 'videopack-view-count has-text-align-' . esc_attr( $text_align );
+
+		if ( ! empty( $atts['wrapper_class'] ) ) {
+			$classes .= ' ' . $atts['wrapper_class'];
+		}
 		
 		if ( $is_overlay ) {
 			$classes .= ' is-overlay is-badge';

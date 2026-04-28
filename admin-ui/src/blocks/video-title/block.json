@@ -4,7 +4,7 @@
 	"name": "videopack/video-title",
 	"title": "Video Title",
 	"category": "media",
-	"parent": [ "videopack/videopack-video", "videopack/video-player-engine", "videopack/thumbnail" ],
+	"parent": [ "videopack/videopack-video", "videopack/video-player-engine", "videopack/thumbnail", "videopack/video-loop" ],
 
 	"icon": "heading",
 	"description": "Overlay title and action buttons for the video player.",
