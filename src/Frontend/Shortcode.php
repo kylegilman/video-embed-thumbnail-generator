@@ -446,6 +446,8 @@ class Shortcode implements Hook_Subscriber {
 					$query_atts[ (string) $key ] = false;
 				} elseif ( is_string( $query_atts[ $key ] ) && 'true' === strtolower( (string) $query_atts[ $key ] ) ) {
 					$query_atts[ (string) $key ] = true;
+				} elseif ( is_string( $query_atts[ $key ] ) && 'false' === strtolower( (string) $query_atts[ $key ] ) ) {
+					$query_atts[ (string) $key ] = false;
 				}
 			}
 		}

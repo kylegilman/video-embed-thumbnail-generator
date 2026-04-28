@@ -542,7 +542,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _api_settings__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../api/settings */ "./src/api/settings.js");
 /* harmony import */ var _hooks_useVideoQuery__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../hooks/useVideoQuery */ "./src/hooks/useVideoQuery.js");
-/* harmony import */ var _components_InspectorControls_CollectionSettingsPanel__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../components/InspectorControls/CollectionSettingsPanel */ "./src/components/InspectorControls/CollectionSettingsPanel.js");
+/* harmony import */ var _components_InspectorControls_CollectionInspectorControls__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../components/InspectorControls/CollectionInspectorControls */ "./src/components/InspectorControls/CollectionInspectorControls.js");
 /* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
 /* harmony import */ var _utils_VideopackContext__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../utils/VideopackContext */ "./src/utils/VideopackContext.js");
 /* harmony import */ var _utils_templates__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../utils/templates */ "./src/utils/templates.js");
@@ -573,7 +573,8 @@ function Edit({
   const {
     layout = 'grid',
     columns = 3,
-    currentPage = 1
+    currentPage = 1,
+    isEditingAllPages = false
   } = attributes;
 
   // Resolve Effective Values for design and pagination (these follow global settings)
@@ -688,42 +689,16 @@ function Edit({
     });
   }
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.Fragment, {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InspectorControls, {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Layout Settings', 'video-embed-thumbnail-generator'),
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Layout', 'video-embed-thumbnail-generator'),
-          value: layout,
-          options: [{
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Grid', 'video-embed-thumbnail-generator'),
-            value: 'grid'
-          }, {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('List', 'video-embed-thumbnail-generator'),
-            value: 'list'
-          }],
-          onChange: value => setAttributes({
-            layout: value
-          })
-        }), layout === 'grid' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Columns', 'video-embed-thumbnail-generator'),
-          value: columns,
-          onChange: value => setAttributes({
-            columns: value
-          }),
-          min: 1,
-          max: 6
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_InspectorControls_CollectionSettingsPanel__WEBPACK_IMPORTED_MODULE_7__["default"], {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InspectorControls, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_components_InspectorControls_CollectionInspectorControls__WEBPACK_IMPORTED_MODULE_7__["default"], {
+        clientId: clientId,
         attributes: attributes,
         setAttributes: setAttributes,
         queryData: queryData,
         options: options,
-        showGalleryOptions: true,
-        showPaginationToggle: false,
-        showLayoutSettings: false,
-        showPaginationSettings: true,
-        hasPaginationBlock: hasPaginationBlock
-      })]
+        hasPaginationBlock: hasPaginationBlock,
+        isEditingAllPages: isEditingAllPages
+      })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
       ...blockProps,
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.BlockContextProvider, {
@@ -961,7 +936,10 @@ function CollectionColorSettings({
   setAttributes,
   options = {},
   blockType = 'gallery',
-  showPaginationSettings = true
+  showPaginationSettings = true,
+  showTitleSettings = true,
+  showPlayerSettings = true,
+  showSkinSettings = true
 }) {
   const {
     skin,
@@ -984,7 +962,7 @@ function CollectionColorSettings({
   const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
   const isGalleryOrList = blockType === 'gallery' || blockType === 'list' || blockType === 'grid';
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.Fragment, {
-    children: [isGalleryOrList && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+    children: [isGalleryOrList && showSkinSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
       className: "videopack-skin-section",
       style: {
         marginBottom: '16px'
@@ -1018,7 +996,7 @@ function CollectionColorSettings({
           skin: value
         })
       })
-    }), isGalleryOrList && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+    }), isGalleryOrList && showTitleSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "videopack-color-section",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
         className: "videopack-settings-section-title",
@@ -1049,7 +1027,7 @@ function CollectionColorSettings({
           })
         })]
       })]
-    }), isGalleryOrList && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
+    }), isGalleryOrList && showPlayerSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "videopack-color-section",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
         className: "videopack-settings-section-title",
@@ -1243,6 +1221,141 @@ function CollectionFilterSettings({
           showTooltip: true
         })]
       }, video.id))
+    })]
+  });
+}
+
+/***/ },
+
+/***/ "./src/components/InspectorControls/CollectionInspectorControls.js"
+/*!*************************************************************************!*\
+  !*** ./src/components/InspectorControls/CollectionInspectorControls.js ***!
+  \*************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ CollectionInspectorControls)
+/* harmony export */ });
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _CollectionSettingsPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./CollectionSettingsPanel */ "./src/components/InspectorControls/CollectionSettingsPanel.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+/**
+ * Shared Inspector controls for Videopack collections.
+ * Used by both the Collection parent block and the Video Loop child block.
+ */
+
+function CollectionInspectorControls({
+  clientId,
+  // The collection block's clientId
+  attributes,
+  setAttributes,
+  queryData,
+  options,
+  hasPaginationBlock,
+  isEditingAllPages
+}) {
+  const {
+    layout = 'grid',
+    columns = 3
+  } = attributes;
+  const {
+    showPaginationSettings,
+    showTitleSettings,
+    showPlayerSettings,
+    showSkinSettings
+  } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_0__.useSelect)(select => {
+    const {
+      getBlocks
+    } = select('core/block-editor');
+    const blocks = getBlocks(clientId) || [];
+    const findBlockRecursive = (blockList, name) => {
+      for (const block of blockList) {
+        if (block.name === name) {
+          return block;
+        }
+        if (block.innerBlocks && block.innerBlocks.length > 0) {
+          const found = findBlockRecursive(block.innerBlocks, name);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null;
+    };
+    const hasPagination = blocks.some(b => b.name === 'videopack/pagination');
+    const thumbnailBlock = findBlockRecursive(blocks, 'videopack/thumbnail');
+    const isLightbox = thumbnailBlock?.attributes?.linkTo === 'lightbox';
+
+    // Check if specific blocks are INSIDE the thumbnail block
+    const hasOverlayBlockInsideThumbnail = thumbnailBlock?.innerBlocks?.some(b => ['videopack/video-title', 'videopack/video-duration', 'videopack/view-count'].includes(b.name)) || false;
+    const showTitleSettings = isLightbox || hasOverlayBlockInsideThumbnail;
+    const showPlayerSettings = isLightbox;
+    const showPaginationSettings = hasPagination;
+    return {
+      showPaginationSettings,
+      showTitleSettings,
+      showPlayerSettings,
+      showSkinSettings: showTitleSettings || showPlayerSettings || showPaginationSettings
+    };
+  }, [clientId]);
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Layout Settings', 'video-embed-thumbnail-generator'),
+      children: [attributes.gallery_source === 'manual' && hasPaginationBlock && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Edit All Pages', 'video-embed-thumbnail-generator'),
+        help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Show all videos in the collection at once for easier reordering.', 'video-embed-thumbnail-generator'),
+        checked: isEditingAllPages,
+        onChange: value => setAttributes({
+          isEditingAllPages: value
+        }),
+        __nextHasNoMarginBottom: true
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.SelectControl, {
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Layout', 'video-embed-thumbnail-generator'),
+        value: layout,
+        options: [{
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Grid', 'video-embed-thumbnail-generator'),
+          value: 'grid'
+        }, {
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('List', 'video-embed-thumbnail-generator'),
+          value: 'list'
+        }],
+        onChange: value => setAttributes({
+          layout: value
+        })
+      }), layout === 'grid' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.RangeControl, {
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Columns', 'video-embed-thumbnail-generator'),
+        value: columns,
+        onChange: value => setAttributes({
+          columns: value
+        }),
+        min: 1,
+        max: 6
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_CollectionSettingsPanel__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      attributes: attributes,
+      setAttributes: setAttributes,
+      queryData: queryData,
+      options: options,
+      showGalleryOptions: true,
+      showPaginationToggle: false,
+      showLayoutSettings: false,
+      showPaginationSettings: showPaginationSettings,
+      showTitleSettings: showTitleSettings,
+      showPlayerSettings: showPlayerSettings,
+      showSkinSettings: showSkinSettings,
+      hasPaginationBlock: hasPaginationBlock
     })]
   });
 }
@@ -1505,6 +1618,9 @@ function CollectionSettingsPanel({
   showManualSource = true,
   showLayoutSettings = true,
   showPaginationSettings = true,
+  showTitleSettings = true,
+  showPlayerSettings = true,
+  showSkinSettings = true,
   hasPaginationBlock = true
 }) {
   const {
@@ -1542,7 +1658,10 @@ function CollectionSettingsPanel({
         setAttributes: setAttributes,
         options: options,
         blockType: blockType,
-        showPaginationSettings: showPaginationSettings
+        showPaginationSettings: showPaginationSettings,
+        showTitleSettings: showTitleSettings,
+        showPlayerSettings: showPlayerSettings,
+        showSkinSettings: showSkinSettings
       })
     })]
   });
@@ -1658,8 +1777,11 @@ function QuerySettings({
         const newAttributes = {
           gallery_source: value
         };
-        if (value !== 'custom') {
+        if (value !== 'custom' && value !== 'manual') {
           newAttributes.gallery_id = 0;
+        }
+        if (value !== 'manual') {
+          newAttributes.gallery_include = '';
         }
         setAttributes(newAttributes);
       }
@@ -2011,6 +2133,52 @@ function useVideopackContext(attributes, context) {
     // Special handling for skin class
     if (resolved.skin && resolved.skin !== 'default') {
       classes.push(resolved.skin);
+    }
+
+    // Handle Gutenberg "style" attribute (typography, spacing, etc).
+    if (attributes.style && typeof attributes.style === 'object') {
+      // Typography Support
+      if (attributes.style.typography) {
+        const {
+          fontSize,
+          lineHeight,
+          letterSpacing
+        } = attributes.style.typography;
+        if (fontSize) {
+          if (fontSize.startsWith('var:preset|font-size|')) {
+            const slug = fontSize.split('|').pop();
+            style.fontSize = `var(--wp--preset--font-size--${slug})`;
+          } else {
+            style.fontSize = fontSize;
+          }
+        }
+        if (lineHeight) style.lineHeight = lineHeight;
+        if (letterSpacing) style.letterSpacing = letterSpacing;
+      }
+
+      // Spacing Support (Margin/Padding)
+      if (attributes.style.spacing) {
+        Object.entries(attributes.style.spacing).forEach(([type, values]) => {
+          if (values && typeof values === 'object') {
+            Object.entries(values).forEach(([dir, val]) => {
+              let finalVal = val;
+              if (typeof val === 'string' && val.startsWith('var:preset|spacing|')) {
+                const slug = val.split('|').pop();
+                finalVal = `var(--wp--preset--spacing--${slug})`;
+              }
+              style[`${type}${dir.charAt(0).toUpperCase()}${dir.slice(1)}`] = finalVal;
+            });
+          }
+        });
+      }
+    }
+
+    // Handle Gutenberg Typography Classes (Presets)
+    if (attributes.fontSize) {
+      classes.push(`has-${attributes.fontSize}-font-size`);
+    }
+    if (attributes.fontFamily) {
+      classes.push(`has-${attributes.fontFamily}-font-family`);
     }
     return {
       resolved,
@@ -2453,7 +2621,7 @@ var close_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODUL
   \******************************************/
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/collection","title":"Videopack Collection","category":"media","icon":"grid-view","description":"A composable grid or list layout for displaying videos.","supports":{"html":false,"align":["left","right","center","wide","full"],"color":{"background":true,"text":true,"link":true},"spacing":{"margin":true,"padding":true,"blockGap":true}},"attributes":{"skin":{"type":"string"},"layout":{"type":"string","default":"grid"},"columns":{"type":"number","default":3},"gallery_source":{"type":"string","default":"current"},"gallery_id":{"type":"number","default":0},"gallery_category":{"type":"string","default":""},"gallery_tag":{"type":"string","default":""},"gallery_orderby":{"type":"string","default":"post_date"},"gallery_order":{"type":"string","default":"DESC"},"gallery_include":{"type":"string","default":""},"gallery_exclude":{"type":"string","default":""},"gallery_per_page":{"type":"number"},"currentPage":{"type":"number","default":1},"views":{"type":"boolean"},"overlay_title":{"type":"boolean"},"gallery_align":{"type":"string"},"enable_collection_video_limit":{"type":"boolean"},"collection_video_limit":{"type":"number"}},"providesContext":{"videopack/layout":"layout","videopack/columns":"columns","videopack/gallery_source":"gallery_source","videopack/gallery_id":"gallery_id","videopack/gallery_category":"gallery_category","videopack/gallery_tag":"gallery_tag","videopack/gallery_orderby":"gallery_orderby","videopack/gallery_order":"gallery_order","videopack/gallery_include":"gallery_include","videopack/gallery_exclude":"gallery_exclude","videopack/gallery_per_page":"gallery_per_page","videopack/enable_collection_video_limit":"enable_collection_video_limit","videopack/collection_video_limit":"collection_video_limit","videopack/currentPage":"currentPage","videopack/views":"views","videopack/overlay_title":"overlay_title"},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/collection","title":"Videopack Collection","category":"media","icon":"grid-view","description":"A composable grid or list layout for displaying videos.","supports":{"html":false,"align":["left","right","center","wide","full"],"color":{"background":true,"text":true,"link":true},"spacing":{"margin":true,"padding":true,"blockGap":true}},"attributes":{"skin":{"type":"string"},"layout":{"type":"string","default":"grid"},"columns":{"type":"number","default":3},"gallery_source":{"type":"string","default":"current"},"gallery_id":{"type":"number","default":0},"gallery_category":{"type":"string","default":""},"gallery_tag":{"type":"string","default":""},"gallery_orderby":{"type":"string","default":"post_date"},"gallery_order":{"type":"string","default":"DESC"},"gallery_include":{"type":"string","default":""},"gallery_exclude":{"type":"string","default":""},"gallery_per_page":{"type":"number"},"currentPage":{"type":"number","default":1},"views":{"type":"boolean"},"overlay_title":{"type":"boolean"},"gallery_align":{"type":"string"},"enable_collection_video_limit":{"type":"boolean"},"collection_video_limit":{"type":"number"},"collectionId":{"type":"string"},"isEditingAllPages":{"type":"boolean","default":false}},"providesContext":{"videopack/collectionId":"collectionId","videopack/layout":"layout","videopack/columns":"columns","videopack/gallery_source":"gallery_source","videopack/gallery_id":"gallery_id","videopack/gallery_category":"gallery_category","videopack/gallery_tag":"gallery_tag","videopack/gallery_orderby":"gallery_orderby","videopack/gallery_order":"gallery_order","videopack/gallery_include":"gallery_include","videopack/gallery_exclude":"gallery_exclude","videopack/gallery_per_page":"gallery_per_page","videopack/enable_collection_video_limit":"enable_collection_video_limit","videopack/collection_video_limit":"collection_video_limit","videopack/currentPage":"currentPage","videopack/views":"views","videopack/overlay_title":"overlay_title","videopack/isEditingAllPages":"isEditingAllPages"},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 
 /***/ }
 

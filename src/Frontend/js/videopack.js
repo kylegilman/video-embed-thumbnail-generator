@@ -1628,6 +1628,7 @@
 			e.preventDefault();
 			const attachmentId = trigger.dataset.attachmentId;
 			const videopackId = trigger.dataset.videopackId;
+			
 			let videoData = (window.videopack && window.videopack.player_data) ? window.videopack.player_data[videopackId] : null;
 			
 			// Fallback 1: try prefixed version if raw ID failed.

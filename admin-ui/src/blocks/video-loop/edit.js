@@ -3,18 +3,20 @@ import {
 	InnerBlocks,
 	BlockContextProvider,
 	InspectorControls,
-	__experimentalBlockPreview as BlockPreview,
+	BlockPreview,
+	__experimentalBlockPreview,
 } from '@wordpress/block-editor';
+import { getBlockType } from '@wordpress/blocks';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import {
 	Spinner,
 	Icon,
 	PanelBody,
-	SelectControl,
-	RangeControl,
+	Disabled,
 } from '@wordpress/components';
-import { useMemo, useState, useEffect, useCallback } from '@wordpress/element';
+import { EntityProvider } from '@wordpress/core-data';
+import { useMemo, useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { pencil, close, dragHandle, create } from '@wordpress/icons';
 import {
 	DndContext,
@@ -33,12 +35,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import useVideoQuery from '../../hooks/useVideoQuery';
-import { useVideopackContext } from '../../utils/VideopackContext';
+import useVideopackContext from '../../hooks/useVideopackContext';
 import { getEffectiveValue } from '../../utils/context';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 import { getSettings } from '../../api/settings';
-import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
+import { getVideoGallery } from '../../api/gallery';
+import CollectionInspectorControls from '../../components/InspectorControls/CollectionInspectorControls';
 import { BlockPreview as VideopackPreview } from '../../components/Preview';
+import './editor.scss';
 
 /**
  * Helper component to render a custom SVG duotone filter.
@@ -238,7 +242,8 @@ function SortableItem({
  * @return {Element}              The rendered component.
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
-	const vpContext = useVideopackContext();
+	const vpContext = useVideopackContext(attributes, context);
+	const isEditingAllPages = context['videopack/isEditingAllPages'] || false;
 	const [options, setOptions] = useState({});
 	const [isHovering, setIsHovering] = useState(false);
 	const { updateBlockAttributes } = useDispatch('core/block-editor');
@@ -267,12 +272,12 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		gallery_order: context['videopack/gallery_order'],
 		gallery_include: context['videopack/gallery_include'],
 		gallery_exclude: context['videopack/gallery_exclude'],
-		gallery_pagination:
-			vpContext.gallery_pagination ??
-			getEffectiveValue('gallery_pagination', attributes, context),
-		gallery_per_page:
-			vpContext.gallery_per_page ??
-			getEffectiveValue('gallery_per_page', attributes, context),
+		gallery_pagination: isEditingAllPages 
+			? false 
+			: (vpContext.gallery_pagination ?? getEffectiveValue('gallery_pagination', attributes, context)),
+		gallery_per_page: isEditingAllPages 
+			? -1 
+			: (vpContext.gallery_per_page ?? getEffectiveValue('gallery_per_page', attributes, context)),
 		enable_collection_video_limit: getEffectiveValue(
 			'enable_collection_video_limit',
 			attributes,
@@ -283,8 +288,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			attributes,
 			context
 		),
-		page_number:
-			vpContext.currentPage || context['videopack/currentPage'] || 1,
+		page_number: isEditingAllPages ? 1 : (vpContext.currentPage || context['videopack/currentPage'] || 1),
 	};
 
 	const {
@@ -393,10 +397,32 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const blockProps = useBlockProps({
 		className: `videopack-video-loop layout-${layout} columns-${columns} ${
 			isResolving && !isSaving && !isAutosaving ? 'is-loading' : ''
-		}`,
+		} ${isEditingAllPages ? 'is-editing-all-pages' : ''}`,
 		onMouseEnter: () => setIsHovering(true),
 		onMouseLeave: () => setIsHovering(false),
 	});
+
+	const computedStyle = {};
+	if (columns && layout === 'grid') {
+		computedStyle['--videopack-collection-columns'] = columns;
+	}
+
+	// Universal Solution: Fetch the actual attachment records to hydrate the store.
+	// This ensures that BlockEdit and any inner blocks have the 'real' data they need.
+	const videoIds = useMemo(() => {
+		return (videoResults || []).map((v) => v.attachment_id).filter(Boolean);
+	}, [videoResults]);
+
+	const attachmentRecords = useSelect(
+		(select) => {
+			if (!videoIds.length) return null;
+			return select('core').getEntityRecords('postType', 'attachment', {
+				include: videoIds,
+				per_page: -1,
+			});
+		},
+		[videoIds]
+	);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -434,7 +460,29 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	);
 
 	const handleEditItem = useCallback(
-		(oldId) => {
+		async (oldId) => {
+			let currentInclude = queryAttributes.gallery_include
+				? queryAttributes.gallery_include
+						.split(',')
+						.map((id) => id.trim())
+				: [];
+
+			if (queryAttributes.gallery_source !== 'manual') {
+				try {
+					const response = await getVideoGallery({
+						...queryAttributes,
+						gallery_id: queryAttributes.gallery_id || previewPostId,
+						gallery_per_page: -1,
+						page_number: undefined,
+						gallery_pagination: false,
+					});
+					currentInclude = (response.videos || []).map((v) => v.attachment_id.toString());
+				} catch (error) {
+					console.error('Failed to fetch full collection IDs:', error);
+					currentInclude = (videoResults || []).map((v) => v.attachment_id.toString());
+				}
+			}
+
 			const frame = window.wp.media({
 				title: __('Edit Video', 'video-embed-thumbnail-generator'),
 				button: {
@@ -456,13 +504,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					.get('selection')
 					.first()
 					.toJSON();
-				const currentInclude = queryAttributes.gallery_include
-					? queryAttributes.gallery_include
-							.split(',')
-							.map((id) => id.trim())
-					: (videoResults || []).map((v) =>
-							v.attachment_id.toString()
-						);
 
 				const newInclude = currentInclude
 					.map((id) =>
@@ -482,14 +523,44 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			frame.open();
 		},
 		[
-			queryAttributes.gallery_include,
+			queryAttributes,
 			videoResults,
 			parentClientId,
 			updateBlockAttributes,
 		]
 	);
 
-	const handleAddVideo = useCallback(() => {
+	const handleAddVideo = useCallback(async () => {
+		let currentInclude = queryAttributes.gallery_include
+			? queryAttributes.gallery_include
+					.split(',')
+					.map((id) => id.trim())
+			: [];
+
+		// If we're not already in manual mode, we need to fetch ALL current IDs 
+		// from the server to ensure we don't lose items on other pages when freezing.
+		if (queryAttributes.gallery_source !== 'manual') {
+			try {
+				console.log('[Videopack Debug] Fetching full collection IDs for freeze. Query:', queryAttributes);
+				const response = await getVideoGallery({
+					...queryAttributes,
+					gallery_id: queryAttributes.gallery_id || previewPostId,
+					gallery_per_page: -1, // Get all IDs
+					page_number: undefined, // Remove page limit
+					gallery_pagination: false,
+				});
+				currentInclude = (response.videos || []).map((v) => v.attachment_id.toString());
+				console.log('[Videopack Debug] Fetched IDs:', currentInclude.length, currentInclude);
+			} catch (error) {
+				console.error('Failed to fetch full collection IDs:', error);
+				// Fallback to current page results if fetch fails
+				currentInclude = (videoResults || []).map((v) => v.attachment_id.toString());
+				console.log('[Videopack Debug] Fallback to current page IDs:', currentInclude.length, currentInclude);
+			}
+		} else {
+			console.log('[Videopack Debug] Already manual. currentInclude:', currentInclude.length, currentInclude);
+		}
+
 		const frame = window.wp.media({
 			title: __(
 				'Add Videos to Collection',
@@ -510,11 +581,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			const newIds = selection.map((attachment) =>
 				attachment.id.toString()
 			);
-			const currentInclude = queryAttributes.gallery_include
-				? queryAttributes.gallery_include
-						.split(',')
-						.map((id) => id.trim())
-				: (videoResults || []).map((v) => v.attachment_id.toString());
 
 			const combinedInclude = [
 				...new Set([...currentInclude, ...newIds]),
@@ -529,33 +595,58 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 		frame.open();
 	}, [
-		queryAttributes.gallery_include,
+		queryAttributes,
 		videoResults,
 		parentClientId,
 		updateBlockAttributes,
 	]);
 
 	const handleDragEnd = useCallback(
-		(event) => {
+		async (event) => {
 			const { active, over } = event;
 			if (active && over && active.id !== over.id) {
-				const currentVideos = videoResults || [];
-				const oldIndex = currentVideos.findIndex(
-					(v) => v.attachment_id === active.id
+				let fullIds = [];
+				if (
+					queryAttributes.gallery_source === 'manual' &&
+					queryAttributes.gallery_include
+				) {
+					fullIds = queryAttributes.gallery_include
+						.split(',')
+						.map((id) => id.trim());
+				} else {
+					// If dynamic, fetch full collection before freezing
+					try {
+						const response = await getVideoGallery({
+							...queryAttributes,
+							gallery_id: queryAttributes.gallery_id || previewPostId,
+							gallery_per_page: -1,
+							page_number: undefined,
+							gallery_pagination: false,
+						});
+						fullIds = (response.videos || []).map((v) =>
+							v.attachment_id.toString()
+						);
+					} catch (error) {
+						console.error(
+							'Failed to fetch full collection IDs for drag:',
+							error
+						);
+						fullIds = (videoResults || []).map((v) =>
+							v.attachment_id.toString()
+						);
+					}
+				}
+
+				const oldIndex = fullIds.findIndex(
+					(id) => parseInt(id, 10) === active.id
 				);
-				const newIndex = currentVideos.findIndex(
-					(v) => v.attachment_id === over.id
+				const newIndex = fullIds.findIndex(
+					(id) => parseInt(id, 10) === over.id
 				);
 
 				if (oldIndex !== -1 && newIndex !== -1) {
-					const newVideos = arrayMove(
-						currentVideos,
-						oldIndex,
-						newIndex
-					);
-					const newInclude = newVideos
-						.map((v) => v.attachment_id)
-						.join(',');
+					const newIds = arrayMove(fullIds, oldIndex, newIndex);
+					const newInclude = newIds.join(',');
 
 					updateBlockAttributes(parentClientId, {
 						gallery_include: newInclude,
@@ -565,7 +656,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				}
 			}
 		},
-		[videoResults, parentClientId, updateBlockAttributes]
+		[queryAttributes, videoResults, parentClientId, updateBlockAttributes]
 	);
 
 	/**
@@ -624,6 +715,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							'videopack/downloadlink': currentFlags.downloadlink,
 							'videopack/embedcode': currentFlags.embedcode,
 							'videopack/postId': video.attachment_id,
+							postId: video.attachment_id,
+							postType: 'attachment',
 						}}
 					>
 						{innerBlocks?.length > 0 &&
@@ -637,48 +730,14 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				);
 			}
 
-			// Core/Player engine fallback
-			if (name === 'videopack/video-player-engine') {
-				return (
-					<div key={itemKey} className="videopack-video-preview">
-						<VideoPlayer
-							attributes={{
-								...options,
-								...blockAttrs,
-								id: video.attachment_id,
-								title: video.title,
-								sources: video.player_vars?.sources,
-								poster: video.poster_url,
-								starts: video.player_vars?.starts,
-								'videopack/isInsidePlayerOverlay': true,
-							}}
-							isSelected={false}
-						>
-							{innerBlocks?.length > 0 &&
-								renderBlockPreview(
-									innerBlocks,
-									video,
-									previewContext,
-									{ isInsidePlayerOverlay: true }
-								)}
-						</VideoPlayer>
-					</div>
-				);
-			}
-
 			// Fallback for any other block (Core blocks, 3rd party, etc)
-			if (!BlockPreview) {
-				return null;
-			}
-
 			return (
-				<BlockPreview
+				<PreviewItem
 					key={itemKey}
-					blocks={[block]}
-					context={{
-						...previewContext,
-						'videopack/postId': video.attachment_id,
-					}}
+					block={block}
+					video={video}
+					previewContext={previewContext}
+					parentFlags={parentFlags}
 				/>
 			);
 		});
@@ -689,111 +748,34 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody
-					title={__(
-						'Layout Settings',
-						'video-embed-thumbnail-generator'
-					)}
-				>
-					<SelectControl
-						label={__('Layout', 'video-embed-thumbnail-generator')}
-						value={layout}
-						options={[
-							{
-								label: __(
-									'Grid',
-									'video-embed-thumbnail-generator'
-								),
-								value: 'grid',
-							},
-							{
-								label: __(
-									'List',
-									'video-embed-thumbnail-generator'
-								),
-								value: 'list',
-							},
-						]}
-						onChange={(value) =>
-							updateBlockAttributes(parentClientId, {
-								layout: value,
-							})
-						}
-					/>
-					{layout === 'grid' && (
-						<RangeControl
-							label={__(
-								'Columns',
-								'video-embed-thumbnail-generator'
-							)}
-							value={columns}
-							onChange={(value) =>
-								updateBlockAttributes(parentClientId, {
-									columns: value,
-								})
-							}
-							min={1}
-							max={6}
-						/>
-					)}
-				</PanelBody>
-
-				<CollectionSettingsPanel
+				<CollectionInspectorControls
+					clientId={parentClientId}
 					attributes={parentAttributes}
 					setAttributes={(newAttrs) =>
 						updateBlockAttributes(parentClientId, newAttrs)
 					}
-					queryData={{
-						...queryData,
-						totalPages: context['videopack/totalPages'],
-					}}
+					queryData={queryData}
 					options={options}
-					showGalleryOptions={true}
-					showPaginationToggle={false}
-					showLayoutSettings={false}
-					showPaginationSettings={true}
 					hasPaginationBlock={hasPaginationBlock}
+					isEditingAllPages={isEditingAllPages}
 				/>
 			</InspectorControls>
 
-			<figure {...blockProps}>
-				<CustomDuotoneFilter
-					colors={customDuotoneColors}
-					id={customFilterId}
-				/>
-
-				{isResolving && videos.length === 0 && (
+			<figure {...blockProps} style={computedStyle}>
+				{!videoResults ? (
 					<div className="videopack-collection-loading">
 						<Spinner />
 					</div>
-				)}
-
-				{!isResolving && videos.length === 0 && (
-					<div className="videopack-no-videos">
-						{__(
-							'No videos found for this source.',
-							'video-embed-thumbnail-generator'
-						)}
-					</div>
-				)}
-
-				{isResolving &&
-					!isSaving &&
-					!isAutosaving &&
-					videos.length > 0 && (
-						<div className="videopack-loop-loading-overlay">
-							<Spinner />
-						</div>
-					)}
-
-				{videos.length > 0 && (
+				) : (
 					<DndContext
 						sensors={sensors}
 						collisionDetection={closestCenter}
 						onDragEnd={handleDragEnd}
 					>
 						<SortableContext
-							items={videos.map((v) => v.attachment_id)}
+							items={videos.map(
+								(v, i) => v.attachment_id || `temp-${i}`
+							)}
 							strategy={rectSortingStrategy}
 						>
 							<div className="videopack-collection-grid">
@@ -824,6 +806,10 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 													'videopack/postId':
 														video.attachment_id ||
 														video.id,
+													postId:
+														video.attachment_id ||
+														video.id,
+													postType: 'attachment',
 													'videopack/video': video,
 													'videopack/title':
 														video.title,
@@ -840,7 +826,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 													renderBlockPreview(
 														templateBlocks,
 														video,
-														context
+														context,
+														{}
 													)
 												)}
 											</BlockContextProvider>
@@ -855,3 +842,68 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		</>
 	);
 }
+
+/**
+ * Renders a single block preview item.
+ */
+const PreviewItem = ({ block, video, previewContext, parentFlags }) => {
+	const [width, setWidth] = useState(400);
+	const containerRef = useRef();
+	const ActualBlockPreview = BlockPreview || __experimentalBlockPreview;
+
+	useEffect(() => {
+		if (!containerRef.current) return;
+		let timeoutId;
+		const observer = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				if (entry.contentRect.width > 0) {
+					const newWidth = entry.contentRect.width;
+					clearTimeout(timeoutId);
+					timeoutId = setTimeout(() => {
+						setWidth((prev) => {
+							if (Math.abs(prev - newWidth) > 2) {
+								return newWidth;
+							}
+							return prev;
+						});
+					}, 100);
+				}
+			}
+		});
+		observer.observe(containerRef.current);
+		return () => {
+			observer.disconnect();
+			clearTimeout(timeoutId);
+		};
+	}, []);
+
+	if (!ActualBlockPreview) {
+		return <div>{block.name}</div>;
+	}
+
+	return (
+		<div ref={containerRef} className="videopack-block-preview-external">
+			<BlockContextProvider
+				value={{
+					...previewContext,
+					...parentFlags,
+					'videopack/postId': video.attachment_id,
+					postId: video.attachment_id,
+					postType: 'attachment',
+				}}
+			>
+				<ActualBlockPreview
+					blocks={[block]}
+					viewportWidth={width}
+					context={{
+						...previewContext,
+						...parentFlags,
+						'videopack/postId': video.attachment_id,
+						postId: video.attachment_id,
+						postType: 'attachment',
+					}}
+				/>
+			</BlockContextProvider>
+		</div>
+	);
+};

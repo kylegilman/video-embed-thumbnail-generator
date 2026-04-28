@@ -18,6 +18,7 @@
 		}
 	},
 	"usesContext": [
+		"videopack/collectionId",
 		"videopack/postId",
 		"videopack/skin"
 	],

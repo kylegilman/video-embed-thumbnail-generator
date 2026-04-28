@@ -7,7 +7,9 @@ import {
 	InspectorControls,
 	Spinner,
 } from '@wordpress/block-editor';
-import { PanelBody } from '@wordpress/components';
+import {
+	PanelBody,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
 import { getEffectiveValue } from '../../utils/context';
@@ -30,9 +32,16 @@ export function VideoDuration({
 	attributes,
 	context,
 }) {
-	const actualIsOverlay =
-		isOverlay !== undefined ? isOverlay : isInsideThumbnail;
 	const vpContext = useVideopackContext(attributes, context);
+
+	const actualIsOverlay =
+		isOverlay !== undefined
+			? isOverlay
+			: isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'];
+	const isInsidePlayerContainer =
+		!!context['videopack/isInsidePlayerContainer'];
+	const defaultAlign =
+		actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
 
 	const { duration, isResolving } = useSelect(
 		(select) => {
@@ -82,7 +91,7 @@ export function VideoDuration({
 
 	return (
 		<div
-			className={`videopack-video-duration-block videopack-video-duration ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${position || 'top'} has-text-align-${textAlign || 'right'}`}
+			className={`videopack-video-duration-block videopack-video-duration ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${position || 'top'} has-text-align-${textAlign || defaultAlign}`}
 			style={vpContext.style}
 		>
 			{duration ? formatDuration(duration) : '0:00'}
@@ -109,7 +118,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 
 	const defaultAlign = isOverlay
 		? isInsideThumbnail
-			? 'center'
+			? 'right'
 			: 'left'
 		: isInsidePlayerContainer
 			? 'right'

@@ -25,7 +25,7 @@
 	.videopack-modal-container {
 		position: relative;
 		background-color: transparent;
-		width: 90vw;
+		width: calc(100vw - 150px);
 		max-width: 1200px;
 		max-height: 90vh;
 		display: flex;

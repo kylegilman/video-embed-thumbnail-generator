@@ -43,11 +43,11 @@ export function VideoTitle({
 	tagName: Tag = 'h3',
 	textAlign,
 	isOverlay = false,
-	downloadlink = false,
-	embedcode = false,
+	downloadlink,
+	embedcode,
 	embedlink,
-	overlay_title = true,
-	showBackground = true,
+	overlay_title,
+	showBackground,
 	onTitleChange,
 	isInsideThumbnail,
 	isInsidePlayerOverlay,
@@ -139,7 +139,14 @@ export function VideoTitle({
 	}
 
 	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
-	const finalTextAlign = textAlign || (isInsideThumbnail ? 'center' : isOverlay ? 'left' : undefined);
+	const defaultAlign = isInsideThumbnail ? 'center' : (isOverlay ? 'left' : 'left');
+	const finalTextAlign = textAlign || defaultAlign;
+
+	const globalOptions = videopack_config?.options || {};
+	const finalDownloadLink = isInsideThumbnail ? false : (downloadlink !== undefined ? downloadlink : !!globalOptions.downloadlink);
+	const finalEmbedCode = isInsideThumbnail ? false : (embedcode !== undefined ? embedcode : !!globalOptions.embedcode);
+	const finalOverlayTitle = overlay_title !== undefined ? overlay_title : (globalOptions.overlay_title !== undefined ? !!globalOptions.overlay_title : true);
+	const finalShowBackground = showBackground !== undefined ? showBackground : (globalOptions.showBackground !== undefined ? !!globalOptions.showBackground : true);
 
 	let placeholder = __('Video Title', 'video-embed-thumbnail-generator');
 	if (postId) {
@@ -184,10 +191,11 @@ export function VideoTitle({
 				)}
 			/>
 			<div className={`${barClass} has-text-align-${finalTextAlign}`}>
-				{overlay_title && (
+				{finalOverlayTitle && (
 					<RichText
 						tagName={Tag}
-						className={titleClass}
+						className={`${titleClass} ${vpContext.classes}`}
+						style={vpContext.style}
 						value={displayTitle}
 						onChange={onTitleChange}
 						placeholder={placeholder}
@@ -195,42 +203,42 @@ export function VideoTitle({
 				)}
 				{isOverlay && (
 					<div className={iconsClass}>
-						{embedcode && (
-							<button
-								className={`videopack-icons ${
-									shareIsOpen ? 'close' : 'share'
-								}`}
-								onClick={() => setShareIsOpen(!shareIsOpen)}
-								title={
-									shareIsOpen
-										? __(
-												'Close',
-												'video-embed-thumbnail-generator'
-										  )
-										: __(
-												'Share',
-												'video-embed-thumbnail-generator'
-										  )
-								}
-							>
-								<Icon
-									icon={shareIsOpen ? closeIcon : shareIcon}
-									className="videopack-icon-svg"
-								/>
-							</button>
-						)}
-						{downloadlink && (
-							<button className="videopack-icons download">
-								<Icon
-									icon={downloadIcon}
-									className="videopack-icon-svg"
-								/>
-							</button>
-						)}
+						{finalEmbedCode && (
+								<button
+									className={`videopack-icons ${
+										shareIsOpen ? 'close' : 'share'
+									}`}
+									onClick={() => setShareIsOpen(!shareIsOpen)}
+									title={
+										shareIsOpen
+											? __(
+													'Close',
+													'video-embed-thumbnail-generator'
+											  )
+											: __(
+													'Share',
+													'video-embed-thumbnail-generator'
+											  )
+									}
+								>
+									<Icon
+										icon={shareIsOpen ? closeIcon : shareIcon}
+										className="videopack-icon-svg"
+									/>
+								</button>
+							)}
+							{finalDownloadLink && (
+								<button className="videopack-icons download">
+									<Icon
+										icon={downloadIcon}
+										className="videopack-icon-svg"
+									/>
+								</button>
+							)}
 					</div>
 				)}
 			</div>
-			{isOverlay && embedcode && (
+			{isOverlay && finalEmbedCode && (
 				<div
 					className={`videopack-share-container${
 						shareIsOpen ? ' is-visible' : ''
@@ -312,6 +320,12 @@ export default function Edit(props) {
 	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
 	const textAlign = attrTextAlign || (isInsideThumbnail ? 'center' : 'left');
 
+	const globalOptions = videopack_config?.options || {};
+	const finalDownloadLink = downloadlink !== undefined ? downloadlink : !!globalOptions.downloadlink;
+	const finalEmbedCode = embedcode !== undefined ? embedcode : !!globalOptions.embedcode;
+	const finalOverlayTitle = overlay_title !== undefined ? overlay_title : (globalOptions.overlay_title !== undefined ? !!globalOptions.overlay_title : true);
+	const finalShowBackground = showBackground !== undefined ? showBackground : (globalOptions.showBackground !== undefined ? !!globalOptions.showBackground : true);
+
 	// For thumbnails, we only disable share and download features
 	useEffect(() => {
 		if (isInsideThumbnail) {
@@ -384,7 +398,7 @@ export default function Edit(props) {
 						<ToolbarButton
 							icon={titleIcon}
 							label={
-								overlay_title
+								finalOverlayTitle
 									? __(
 											'Hide Title',
 											'video-embed-thumbnail-generator'
@@ -394,9 +408,9 @@ export default function Edit(props) {
 											'video-embed-thumbnail-generator'
 									  )
 							}
-							isPressed={overlay_title}
+							isPressed={finalOverlayTitle}
 							onClick={() =>
-								setAttributes({ overlay_title: !overlay_title })
+								setAttributes({ overlay_title: !finalOverlayTitle })
 							}
 						/>
 						<ToolbarButton
@@ -405,9 +419,9 @@ export default function Edit(props) {
 								'Embed/Share Button',
 								'video-embed-thumbnail-generator'
 							)}
-							isPressed={embedcode}
+							isPressed={finalEmbedCode}
 							onClick={() =>
-								setAttributes({ embedcode: !embedcode })
+								setAttributes({ embedcode: !finalEmbedCode })
 							}
 						/>
 						<ToolbarButton
@@ -416,15 +430,15 @@ export default function Edit(props) {
 								'Download Button',
 								'video-embed-thumbnail-generator'
 							)}
-							isPressed={downloadlink}
+							isPressed={finalDownloadLink}
 							onClick={() =>
-								setAttributes({ downloadlink: !downloadlink })
+								setAttributes({ downloadlink: !finalDownloadLink })
 							}
 						/>
 						<ToolbarButton
 							icon={backgroundIcon}
 							label={
-								showBackground
+								finalShowBackground
 									? __(
 											'Hide Background Bar',
 											'video-embed-thumbnail-generator'
@@ -434,10 +448,10 @@ export default function Edit(props) {
 											'video-embed-thumbnail-generator'
 									  )
 							}
-							isPressed={showBackground}
+							isPressed={finalShowBackground}
 							onClick={() =>
 								setAttributes({
-									showBackground: !showBackground,
+									showBackground: !finalShowBackground,
 								})
 							}
 						/>

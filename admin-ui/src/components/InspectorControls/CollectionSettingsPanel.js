@@ -17,6 +17,9 @@ export default function CollectionSettingsPanel({
 	showManualSource = true,
 	showLayoutSettings = true,
 	showPaginationSettings = true,
+	showTitleSettings = true,
+	showPlayerSettings = true,
+	showSkinSettings = true,
 	hasPaginationBlock = true,
 }) {
 	const { excludedVideos } = queryData;
@@ -72,6 +75,9 @@ export default function CollectionSettingsPanel({
 					options={options}
 					blockType={blockType}
 					showPaginationSettings={showPaginationSettings}
+					showTitleSettings={showTitleSettings}
+					showPlayerSettings={showPlayerSettings}
+					showSkinSettings={showSkinSettings}
 				/>
 			</PanelBody>
 		</>

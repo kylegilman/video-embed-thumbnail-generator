@@ -28,7 +28,15 @@
     }
   },
   "supports": {
-    "html": false
+    "html": false,
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    },
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
   },
   "textdomain": "video-embed-thumbnail-generator",
   "editorScript": "file:./index.js"

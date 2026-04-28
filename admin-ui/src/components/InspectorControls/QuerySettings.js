@@ -101,8 +101,11 @@ export default function QuerySettings({
 				].filter(Boolean)}
 				onChange={(value) => {
 					const newAttributes = { gallery_source: value };
-					if (value !== 'custom') {
+					if (value !== 'custom' && value !== 'manual') {
 						newAttributes.gallery_id = 0;
+					}
+					if (value !== 'manual') {
+						newAttributes.gallery_include = '';
 					}
 					setAttributes(newAttributes);
 				}}

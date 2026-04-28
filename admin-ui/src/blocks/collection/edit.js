@@ -1,11 +1,11 @@
 import { InspectorControls, useBlockProps, InnerBlocks, BlockContextProvider } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import { useEffect, useState, useMemo } from '@wordpress/element';
-import { PanelBody, SelectControl, RangeControl, Spinner } from '@wordpress/components';
+import { PanelBody, Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { getSettings } from '../../api/settings';
 import useVideoQuery from '../../hooks/useVideoQuery';
-import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
+import CollectionInspectorControls from '../../components/InspectorControls/CollectionInspectorControls';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import { VideopackProvider } from '../../utils/VideopackContext';
 import { getGridTemplate, getListTemplate } from '../../utils/templates';
@@ -20,6 +20,7 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 		layout = 'grid',
 		columns = 3,
 		currentPage = 1,
+		isEditingAllPages = false,
 	} = attributes;
 
 	// Resolve Effective Values for design and pagination (these follow global settings)
@@ -145,36 +146,14 @@ export default function Edit( { attributes, setAttributes, clientId, context } )
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Layout Settings', 'video-embed-thumbnail-generator' ) }>
-					<SelectControl
-						label={ __( 'Layout', 'video-embed-thumbnail-generator' ) }
-						value={ layout }
-						options={ [
-							{ label: __( 'Grid', 'video-embed-thumbnail-generator' ), value: 'grid' },
-							{ label: __( 'List', 'video-embed-thumbnail-generator' ), value: 'list' },
-						] }
-						onChange={ ( value ) => setAttributes( { layout: value } ) }
-					/>
-					{ layout === 'grid' && (
-						<RangeControl
-							label={ __( 'Columns', 'video-embed-thumbnail-generator' ) }
-							value={ columns }
-							onChange={ ( value ) => setAttributes( { columns: value } ) }
-							min={ 1 }
-							max={ 6 }
-						/>
-					) }
-				</PanelBody>
-				<CollectionSettingsPanel
-					attributes={ attributes }
-					setAttributes={ setAttributes }
-					queryData={ queryData }
-					options={ options }
-					showGalleryOptions={ true }
-					showPaginationToggle={ false }
-					showLayoutSettings={ false }
-					showPaginationSettings={ true }
-					hasPaginationBlock={ hasPaginationBlock }
+				<CollectionInspectorControls
+					clientId={clientId}
+					attributes={attributes}
+					setAttributes={setAttributes}
+					queryData={queryData}
+					options={options}
+					hasPaginationBlock={hasPaginationBlock}
+					isEditingAllPages={isEditingAllPages}
 				/>
 			</InspectorControls>
 

@@ -63,6 +63,16 @@ class Context_Manager {
 			}
 		}
 
+		// Handle Gutenberg Typography Classes (Presets).
+		$font_size   = $normalized_attributes['font_size'] ?? ( $attributes['fontSize'] ?? null );
+		$font_family = $normalized_attributes['font_family'] ?? ( $attributes['fontFamily'] ?? null );
+		if ( ! empty( $font_size ) ) {
+			$classes[] = 'has-' . $font_size . '-font-size';
+		}
+		if ( ! empty( $font_family ) ) {
+			$classes[] = 'has-' . $font_family . '-font-family';
+		}
+
 		foreach ( $design_keys as $key ) {
 			$context_key = "videopack/{$key}";
 
@@ -92,10 +102,54 @@ class Context_Manager {
 			}
 		}
 
+		// Handle Gutenberg "style" attribute (typography, spacing, etc).
+		$style_attr = $normalized_attributes['style'] ?? ( $attributes['style'] ?? null );
+		if ( ! empty( $style_attr ) ) {
+			if ( is_string( $style_attr ) ) {
+				$decoded = json_decode( $style_attr, true );
+				if ( is_array( $decoded ) ) {
+					$style_attr = $decoded;
+				}
+			}
+
+			if ( is_array( $style_attr ) ) {
+				// Typography Support.
+				if ( ! empty( $style_attr['typography'] ) ) {
+					foreach ( $style_attr['typography'] as $type_key => $type_val ) {
+						if ( 'fontSize' === $type_key ) {
+							if ( preg_match( '/^var:preset\|font-size\|(.*)$/', (string) $type_val, $matches ) ) {
+								$style_vars[] = 'font-size: var(--wp--preset--font-size--' . $matches[1] . ')';
+							} else {
+								$style_vars[] = 'font-size: ' . $type_val;
+							}
+						} elseif ( 'lineHeight' === $type_key ) {
+							$style_vars[] = 'line-height: ' . $type_val;
+						} elseif ( 'letterSpacing' === $type_key ) {
+							$style_vars[] = 'letter-spacing: ' . $type_val;
+						}
+					}
+				}
+
+				// Spacing Support (Margin/Padding).
+				if ( ! empty( $style_attr['spacing'] ) ) {
+					foreach ( $style_attr['spacing'] as $space_key => $space_vals ) {
+						if ( is_array( $space_vals ) ) {
+							foreach ( $space_vals as $dir => $val ) {
+								if ( preg_match( '/^var:preset\|spacing\|(.*)$/', (string) $val, $matches ) ) {
+									$val = 'var(--wp--preset--spacing--' . $matches[1] . ')';
+								}
+								$style_vars[] = "{$space_key}-{$dir}: {$val}";
+							}
+						}
+					}
+				}
+			}
+		}
+
 		return array(
 			'resolved' => $resolved,
-			'style'    => implode( '; ', $style_vars ),
-			'classes'  => implode( ' ', $classes ),
+			'style'    => implode( '; ', array_filter( $style_vars ) ),
+			'classes'  => implode( ' ', array_unique( array_filter( $classes ) ) ),
 		);
 	}
 }

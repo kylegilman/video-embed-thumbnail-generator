@@ -38,11 +38,12 @@ export function ViewCount({
 	count,
 	isInsideThumbnail = false,
 	isOverlay = false,
-	textAlign = 'right',
+	textAlign,
 	position = 'top',
+	attributes = {},
 	context = {},
 }) {
-	const vpContext = useVideopackContext({}, context);
+	const vpContext = useVideopackContext(attributes, context);
 	const { views, isResolving } = useSelect(
 		(select) => {
 			if (!postId || count !== undefined) {
@@ -63,13 +64,15 @@ export function ViewCount({
 		[postId, count]
 	);
 
-	const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail;
+	const actualIsOverlay = isOverlay !== undefined ? isOverlay : (isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay']);
+	const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
+	const defaultAlign = isInsideThumbnail || actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
 
 	const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${
 		actualIsOverlay ? 'is-overlay is-badge' : ''
 	} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 		actualIsOverlay ? `position-${position || 'top'}` : ''
-	} has-text-align-${textAlign || (actualIsOverlay ? 'right' : 'left')}`;
+	} has-text-align-${textAlign || defaultAlign}`;
 
 	const finalBlockProps = blockProps || {
 		className: wrapperClass,
@@ -161,7 +164,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 		[context]
 	);
 
-	const defaultAlign = isInsideThumbnail ? 'center' : ( ( isInsidePlayerOverlay || isInsidePlayerContainer ) ? 'right' : 'left' );
+	const defaultAlign = isInsideThumbnail ? 'right' : ( ( isInsidePlayerOverlay || isInsidePlayerContainer ) ? 'right' : 'left' );
 	const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
 
 	const position = attributes.position || context['videopack/position'] || 'top';
