@@ -16,9 +16,12 @@ import {
 	notAllowed as noneIcon,
 	video as videoIcon,
 	post as parentIcon,
+	video as placeholderIcon,
 } from '@wordpress/icons';
+import { Spinner } from '@wordpress/components';
 import { VideoThumbnailPreview } from './VideoThumbnailPreview';
 
+import useVideopackContext from '../../hooks/useVideopackContext';
 import './editor.scss';
 
 /**
@@ -32,7 +35,9 @@ import './editor.scss';
  * @return {Element} Thumbnail edit component
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
-	const postId = context['videopack/postId'];
+	const vpContext = useVideopackContext(attributes, context);
+	const attachmentId = vpContext.resolved.attachmentId;
+	const isDiscovering = vpContext.resolved.isDiscovering;
 	const { linkTo, style } = attributes;
 
 	const blockProps = useBlockProps();
@@ -110,28 +115,36 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					(blockProps.className || '') + ' videopack-thumbnail-block'
 				}
 			>
-				{!postId ? (
+				{isDiscovering && !attachmentId ? (
+					<div className="videopack-thumbnail-discovery-loading">
+						<Spinner />
+						<p>{__('Searching for attached video...', 'video-embed-thumbnail-generator')}</p>
+					</div>
+				) : !attachmentId ? (
 					<Placeholder
-						icon="format-video"
+						icon={placeholderIcon}
 						label={__(
 							'Video Thumbnail',
 							'video-embed-thumbnail-generator'
 						)}
 						instructions={__(
-							'This block displays the video thumbnail when placed inside a Videopack Collection.',
+							'This block displays a video thumbnail. Place it inside a Videopack Collection or a post with attached videos.',
 							'video-embed-thumbnail-generator'
 						)}
 					/>
 				) : (
 					<VideoThumbnailPreview
-						postId={postId}
-						resolvedDuotoneClass={resolvedDuotoneClass}
+						postId={attachmentId}
+						linkTo={linkTo}
 						context={context}
+						className="videopack-thumbnail-preview"
+						resolvedDuotoneClass={resolvedDuotoneClass}
 					>
 						<BlockContextProvider
 							value={{
 								...context,
 								'videopack/isInsideThumbnail': true,
+								'videopack/attachmentId': attachmentId,
 								'videopack/downloadlink': false,
 								'videopack/embedcode': false,
 							}}
@@ -145,7 +158,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				)}
 
 				{/* Ensure InnerBlocks is always present for Gutenberg validation, even if visually hidden. */}
-				{!postId && (
+				{!attachmentId && (
 					<div style={{ display: 'none' }}>
 						<BlockContextProvider
 							value={{

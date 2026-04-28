@@ -543,7 +543,11 @@ class Modular_Renderer {
 		$html .= '<div class="' . esc_attr( $bar_class ) . '"' . $bar_style . '>' . "\n";
 
 		if ( $show_title ) {
-			$html .= '<' . esc_attr( $tag ) . ' class="' . esc_attr( $title_classes ) . '"' . $title_style . '>' . esc_html( (string) $title ) . '</' . esc_attr( $tag ) . '>' . "\n";
+			$title_text = esc_html( (string) $title );
+			if ( ! empty( $atts['link_url'] ) ) {
+				$title_text = sprintf( '<a href="%s" class="videopack-title-link">%s</a>', esc_url( $atts['link_url'] ), $title_text );
+			}
+			$html .= '<' . esc_attr( $tag ) . ' class="' . esc_attr( $title_classes ) . '"' . $title_style . '>' . $title_text . '</' . esc_attr( $tag ) . '>' . "\n";
 		}
 
 		$html .= '<div class="videopack-meta-icons">';

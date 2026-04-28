@@ -15,6 +15,7 @@ import {
 	ToolbarButton,
 	Icon,
 	PanelBody,
+	ToggleControl,
 } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
@@ -26,9 +27,9 @@ import {
 	code as embedIcon,
 	title as titleIcon,
 	background as backgroundIcon,
+	post as postIcon,
 } from '@wordpress/icons';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
-import { getEffectiveValue } from '../../utils/context';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import './editor.scss';
@@ -38,7 +39,8 @@ import './editor.scss';
  */
 export function VideoTitle({
 	blockProps,
-	postId,
+	postId: propPostId,
+	postType: propPostType,
 	title: manualTitle,
 	tagName: Tag = 'h3',
 	textAlign,
@@ -53,9 +55,28 @@ export function VideoTitle({
 	isInsidePlayerOverlay,
 	position: attrPosition,
 	attributes = {},
-	context = {}
+	context = {},
+	usePostTitle = false,
+	linkToPost = false,
 }) {
 	const vpContext = useVideopackContext(attributes, context);
+	const {
+		postId: resolvedPostId,
+		attachmentId: resolvedAttachmentId,
+		postType: resolvedPostType,
+		prioritizePostData,
+	} = vpContext.resolved;
+
+	const postId = (prioritizePostData || usePostTitle)
+		? resolvedPostId || propPostId
+		: resolvedAttachmentId || resolvedPostId || propPostId;
+
+	const postType = (prioritizePostData || usePostTitle)
+		? resolvedPostType || propPostType
+		: resolvedAttachmentId
+		? 'attachment'
+		: resolvedPostType || propPostType;
+
 	const { attachmentTitle, isResolving } = useSelect(
 		(select) => {
 			if (!postId || postId < 1) {
@@ -63,12 +84,12 @@ export function VideoTitle({
 			}
 			const { getEntityRecord, isResolving: isResolvingSelector } =
 				select('core');
-			const record = getEntityRecord('postType', 'attachment', postId);
+			const record = getEntityRecord('postType', postType, postId);
 			return {
 				attachmentTitle: record?.title?.rendered,
 				isResolving: isResolvingSelector('getEntityRecord', [
 					'postType',
-					'attachment',
+					postType,
 					postId,
 				]),
 			};
@@ -91,8 +112,15 @@ export function VideoTitle({
 	const [currentEmbedCode, setCurrentEmbedCode] = useState(baseEmbedLink());
 
 	const titleFromContext = context['videopack/title'];
+	
+	// If prioritizing post data, we use the title we fetched for the postId (which will be the parent post).
+	// Otherwise, we prefer the title specifically passed in context (the video title).
 	const displayTitle = decodeEntities(
-		manualTitle || titleFromContext || attachmentTitle || ''
+		manualTitle ||
+			( (vpContext.resolved.prioritizePostData || usePostTitle)
+				? attachmentTitle || titleFromContext
+				: titleFromContext || attachmentTitle ) ||
+			''
 	);
 
 	useEffect(() => {
@@ -194,11 +222,12 @@ export function VideoTitle({
 				{finalOverlayTitle && (
 					<RichText
 						tagName={Tag}
-						className={`${titleClass} ${vpContext.classes}`}
+						className={`${titleClass} ${vpContext.classes} ${linkToPost ? 'is-link' : ''}`}
 						style={vpContext.style}
 						value={displayTitle}
 						onChange={onTitleChange}
 						placeholder={placeholder}
+						allowedFormats={ [ 'core/bold', 'core/italic', 'core/strikethrough' ] }
 					/>
 				)}
 				{isOverlay && (
@@ -294,7 +323,8 @@ export function VideoTitle({
 
 export default function Edit(props) {
 	const { clientId, attributes, setAttributes, context } = props;
-	const postId = context['videopack/postId'];
+	const vpContext = useVideopackContext(attributes, context);
+	const { postId, postType } = vpContext.resolved;
 	const embedlink = context['videopack/embedlink'];
 	const {
 		title,
@@ -308,9 +338,9 @@ export default function Edit(props) {
 		title_background_color,
 		overlay_title,
 		showBackground,
+		usePostTitle,
+		linkToPost,
 	} = attributes;
-
-	const vpContext = useVideopackContext(attributes, context);
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
@@ -351,10 +381,10 @@ export default function Edit(props) {
 	const colorFallbacks = useMemo(
 		() =>
 			getColorFallbacks({
-				title_color: getEffectiveValue('title_color', {}, context),
-				title_background_color: getEffectiveValue('title_background_color', {}, context),
+				title_color: vpContext.resolved.title_color,
+				title_background_color: vpContext.resolved.title_background_color,
 			}),
-		[context]
+		[vpContext.resolved.title_color, vpContext.resolved.title_background_color]
 	);
 
 	const blockProps = useBlockProps({
@@ -461,6 +491,42 @@ export default function Edit(props) {
 			<InspectorControls>
 				<PanelBody
 					title={__(
+						'Data Settings',
+						'video-embed-thumbnail-generator'
+					)}
+					initialOpen={true}
+				>
+					<ToggleControl
+						label={__(
+							'Use Post Title',
+							'video-embed-thumbnail-generator'
+						)}
+						help={__(
+							'When enabled, this block will display the title of the parent post instead of the video title.',
+							'video-embed-thumbnail-generator'
+						)}
+						checked={usePostTitle}
+						onChange={(value) =>
+							setAttributes({ usePostTitle: value })
+						}
+					/>
+					<ToggleControl
+						label={__(
+							'Make title a link',
+							'video-embed-thumbnail-generator'
+						)}
+						help={__(
+							'When enabled, the title will link to the parent post.',
+							'video-embed-thumbnail-generator'
+						)}
+						checked={linkToPost}
+						onChange={(value) =>
+							setAttributes({ linkToPost: value })
+						}
+					/>
+				</PanelBody>
+				<PanelBody
+					title={__(
 						'Colors',
 						'video-embed-thumbnail-generator'
 					)}
@@ -511,14 +577,15 @@ export default function Edit(props) {
 				blockProps={blockProps}
 				attributes={attributes}
 				postId={postId}
-				title={title}
+				postType={postType}
 				clientId={clientId}
 				isInsideThumbnail={isInsideThumbnail}
 				isInsidePlayerOverlay={isInsidePlayerOverlay}
 				isOverlay={isOverlay}
-				{...attributes}
 				context={context}
 				onTitleChange={(newTitle) => setAttributes({ title: newTitle })}
+				usePostTitle={usePostTitle}
+				linkToPost={linkToPost}
 			/>
 		</>
 	);

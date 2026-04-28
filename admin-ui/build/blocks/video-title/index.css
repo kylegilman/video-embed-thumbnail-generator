@@ -54,4 +54,10 @@
   pointer-events: auto;
 }
 
+.videopack-video-title.is-link,
+.videopack-thumbnail-title-text.is-link {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /*# sourceMappingURL=index.css.map*/

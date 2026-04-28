@@ -7,6 +7,14 @@
 	"parent": ["videopack/videopack-video", "videopack/video-loop"],
 	"icon": "text",
 	"description": "Add a caption to your video.",
+	"usesContext": [
+		"postId",
+		"postType",
+		"videopack/postId",
+		"videopack/parentPostId",
+		"videopack/prioritizePostData",
+		"videopack/caption"
+	],
 	"attributes": {
 		"caption": {
 			"type": "string"

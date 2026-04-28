@@ -22,7 +22,6 @@ import {
 	playOutline as playOutlineIcon,
 } from '../../assets/icon';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
-import { getEffectiveValue } from '../../utils/context';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import './index.css';
@@ -34,7 +33,7 @@ export function ViewCount({
 	blockProps,
 	iconType = 'none',
 	showText = true,
-	postId,
+	postId: propPostId,
 	count,
 	isInsideThumbnail = false,
 	isOverlay = false,
@@ -44,24 +43,25 @@ export function ViewCount({
 	context = {},
 }) {
 	const vpContext = useVideopackContext(attributes, context);
+	const attachmentId = vpContext.resolved.attachmentId;
 	const { views, isResolving } = useSelect(
 		(select) => {
-			if (!postId || count !== undefined) {
+			if (!attachmentId || count !== undefined) {
 				return { views: count || 0, isResolving: false };
 			}
 			const { getEntityRecord, isResolving: isResolvingSelector } =
 				select('core');
-			const media = getEntityRecord('postType', 'attachment', postId);
+			const media = getEntityRecord('postType', 'attachment', attachmentId);
 			return {
 				views: media?.meta?.['_videopack-meta']?.starts,
 				isResolving: isResolvingSelector('getEntityRecord', [
 					'postType',
 					'attachment',
-					postId,
+					attachmentId,
 				]),
 			};
 		},
-		[postId, count]
+		[attachmentId, count]
 	);
 
 	const actualIsOverlay = isOverlay !== undefined ? isOverlay : (isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay']);
@@ -78,6 +78,18 @@ export function ViewCount({
 		className: wrapperClass,
 		style: vpContext.style,
 	};
+
+	if (vpContext.resolved.isDiscovering && !attachmentId) {
+		return (
+			<div {...finalBlockProps}>
+				<Spinner />
+			</div>
+		);
+	}
+
+	if (!attachmentId && count === undefined) {
+		return null;
+	}
 
 	if (isResolving) {
 		return (
@@ -139,7 +151,8 @@ export function ViewCount({
 }
 
 export default function Edit({ attributes, setAttributes, context }) {
-	const postId = context['videopack/postId'];
+	const vpContext = useVideopackContext(attributes, context);
+	const postId = vpContext.resolved.attachmentId;
 	const {
 		iconType,
 		showText,
@@ -147,8 +160,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 		title_color,
 		title_background_color,
 	} = attributes;
-
-	const vpContext = useVideopackContext(attributes, context);
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
@@ -158,10 +169,10 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const colorFallbacks = useMemo(
 		() =>
 			getColorFallbacks({
-				title_color: getEffectiveValue('title_color', {}, context),
-				title_background_color: getEffectiveValue('title_background_color', {}, context),
+				title_color: vpContext.resolved.title_color,
+				title_background_color: vpContext.resolved.title_background_color,
 			}),
-		[context]
+		[vpContext.resolved.title_color, vpContext.resolved.title_background_color]
 	);
 
 	const defaultAlign = isInsideThumbnail ? 'right' : ( ( isInsidePlayerOverlay || isInsidePlayerContainer ) ? 'right' : 'left' );

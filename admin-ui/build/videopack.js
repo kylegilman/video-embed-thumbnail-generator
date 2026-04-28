@@ -1579,6 +1579,7 @@ function CollectionQuerySettings({
   hasPaginationBlock = true
 }) {
   const {
+    gallery_source,
     gallery_include,
     gallery_orderby,
     gallery_order,
@@ -1625,6 +1626,13 @@ function CollectionQuerySettings({
       queryData: queryData,
       showArchiveSource: isSiteEditor,
       showManualSource: showManualSource
+    }), gallery_source === 'archive' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
+      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Prioritize Post Data', 'video-embed-thumbnail-generator'),
+      help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Use the title and date from the original post instead of the video attachment.', 'video-embed-thumbnail-generator'),
+      checked: !!attributes.prioritizePostData,
+      onChange: val => setAttributes({
+        prioritizePostData: val
+      })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "videopack-sort-control-wrapper",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.SelectControl, {
@@ -2941,10 +2949,21 @@ const getEffectiveValue = (key, attributes = {}, context = {}) => {
   if (isValid(attributes[attrKey])) {
     return attributes[attrKey];
   }
+  if (attrKey === 'attachmentId' && isValid(attributes.id)) {
+    return attributes.id;
+  }
+  if (attrKey === 'postId' && isValid(attributes.id)) {
+    return attributes.id;
+  }
 
   // 2. Check inherited context (from Collection or Video block)
   if (isValid(context[contextKey])) {
     return context[contextKey];
+  }
+
+  // 2b. Check standard Gutenberg context fallbacks
+  if ((attrKey === 'postId' || attrKey === 'postType') && isValid(context[attrKey])) {
+    return context[attrKey];
   }
 
   // 3. Fallback to global plugin defaults

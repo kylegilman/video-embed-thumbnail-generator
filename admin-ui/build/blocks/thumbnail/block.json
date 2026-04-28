@@ -20,7 +20,11 @@
   "usesContext": [
     "videopack/collectionId",
     "videopack/postId",
-    "videopack/skin"
+    "videopack/attachmentId",
+    "videopack/postType",
+    "videopack/skin",
+    "postId",
+    "postType"
   ],
   "providesContext": {
     "videopack/isInsideThumbnail": "isInsideThumbnail"

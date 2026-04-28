@@ -152,6 +152,12 @@
   background: rgba(var(--wp-admin-theme-color-rgb), 0.05);
   pointer-events: auto;
 }
+
+.videopack-video-title.is-link,
+.videopack-thumbnail-title-text.is-link {
+  text-decoration: underline;
+  cursor: pointer;
+}
 /*!*************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[2].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[2].use[2]!./src/blocks/view-count/index.css ***!
   \*************************************************************************************************************************************************************************************/

@@ -6311,10 +6311,21 @@ const getEffectiveValue = (key, attributes = {}, context = {}) => {
   if (isValid(attributes[attrKey])) {
     return attributes[attrKey];
   }
+  if (attrKey === 'attachmentId' && isValid(attributes.id)) {
+    return attributes.id;
+  }
+  if (attrKey === 'postId' && isValid(attributes.id)) {
+    return attributes.id;
+  }
 
   // 2. Check inherited context (from Collection or Video block)
   if (isValid(context[contextKey])) {
     return context[contextKey];
+  }
+
+  // 2b. Check standard Gutenberg context fallbacks
+  if ((attrKey === 'postId' || attrKey === 'postType') && isValid(context[attrKey])) {
+    return context[attrKey];
   }
 
   // 3. Fallback to global plugin defaults

@@ -325,6 +325,7 @@ class Public_Controller extends Controller {
 			),
 			'collectionId'       => array( 'type' => 'string' ),
 			'id'                 => array( 'type' => array( 'number', 'null' ) ),
+			'prioritizePostData' => array( 'type' => 'boolean' ),
 		);
 	}
 

@@ -5,14 +5,13 @@ import {
 	BlockVerticalAlignmentControl,
 	AlignmentControl,
 	InspectorControls,
-	Spinner,
 } from '@wordpress/block-editor';
 import {
+	Spinner,
 	PanelBody,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
-import { getEffectiveValue } from '../../utils/context';
 import { getColorFallbacks } from '../../utils/colors';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 
@@ -24,15 +23,50 @@ import useVideopackContext from '../../hooks/useVideopackContext';
  * A internal component to display the video duration with correct formatting and data.
  */
 export function VideoDuration({
-	postId,
+	postId: propPostId,
 	isOverlay,
 	isInsideThumbnail,
 	textAlign,
 	position,
 	attributes,
-	context,
+	context = {},
 }) {
 	const vpContext = useVideopackContext(attributes, context);
+	const attachmentId = vpContext.resolved.attachmentId;
+
+	const { duration, isResolving } = useSelect(
+		(select) => {
+			if (!attachmentId) {
+				return { duration: null, isResolving: false };
+			}
+			const { getEntityRecord, isResolving: isResolvingSelector } =
+				select('core');
+			const record = getEntityRecord('postType', 'attachment', attachmentId);
+			return {
+				duration: record?.meta?.['_videopack-meta']?.duration,
+				isResolving: isResolvingSelector('getEntityRecord', [
+					'postType',
+					'attachment',
+					attachmentId,
+				]),
+			};
+		},
+		[attachmentId]
+	);
+
+	if (vpContext.resolved.isDiscovering && !attachmentId) {
+		return (
+			<div
+				className={`videopack-video-duration ${isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'] ? 'is-overlay' : ''}`}
+			>
+				<Spinner />
+			</div>
+		);
+	}
+
+	if (!attachmentId) {
+		return null;
+	}
 
 	const actualIsOverlay =
 		isOverlay !== undefined
@@ -42,26 +76,6 @@ export function VideoDuration({
 		!!context['videopack/isInsidePlayerContainer'];
 	const defaultAlign =
 		actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
-
-	const { duration, isResolving } = useSelect(
-		(select) => {
-			if (!postId) {
-				return { duration: null, isResolving: false };
-			}
-			const { getEntityRecord, isResolving: isResolvingSelector } =
-				select('core');
-			const record = getEntityRecord('postType', 'attachment', postId);
-			return {
-				duration: record?.meta?.['_videopack-meta']?.duration,
-				isResolving: isResolvingSelector('getEntityRecord', [
-					'postType',
-					'attachment',
-					postId,
-				]),
-			};
-		},
-		[postId]
-	);
 
 	if (isResolving) {
 		return (
@@ -100,15 +114,14 @@ export function VideoDuration({
 }
 
 export default function Edit({ attributes, setAttributes, context }) {
-	const postId = context['videopack/postId'];
+	const vpContext = useVideopackContext(attributes, context);
+	const postId = vpContext.resolved.attachmentId;
 	const {
 		textAlign,
 		position: attrPosition,
 		title_color,
 		title_background_color,
 	} = attributes;
-
-	const vpContext = useVideopackContext(attributes, context);
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
@@ -132,14 +145,10 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const colorFallbacks = useMemo(
 		() =>
 			getColorFallbacks({
-				title_color: getEffectiveValue('title_color', {}, context),
-				title_background_color: getEffectiveValue(
-					'title_background_color',
-					{},
-					context
-				),
+				title_color: vpContext.resolved.title_color,
+				title_background_color: vpContext.resolved.title_background_color,
 			}),
-		[context]
+		[vpContext.resolved.title_color, vpContext.resolved.title_background_color]
 	);
 
 	const blockProps = useBlockProps({

@@ -25,6 +25,7 @@ export default function useVideoQuery(attributes, previewPostId) {
 		page_number = 1,
 		enable_collection_video_limit = false,
 		collection_video_limit = 6,
+		prioritizePostData,
 		id,
 	} = attributes;
 
@@ -101,7 +102,10 @@ export default function useVideoQuery(attributes, previewPostId) {
 			gallery_category,
 			gallery_tag,
 			gallery_pagination,
+			prioritizePostData,
 		};
+
+
 
 		// Skip query if required parameters for the source are missing
 		const isMissingCustomId = gallery_source === 'custom' && !gallery_id;
@@ -147,6 +151,10 @@ export default function useVideoQuery(attributes, previewPostId) {
 		gallery_per_page,
 		page_number,
 		previewPostId,
+		prioritizePostData,
+		enable_collection_video_limit,
+		collection_video_limit,
+		id,
 	]);
 
 	const { searchResults, currentPost, isResolvingSearch } = useSelect(

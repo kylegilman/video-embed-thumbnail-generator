@@ -9,7 +9,12 @@
 	"icon": "heading",
 	"description": "Overlay title and action buttons for the video player.",
 	"usesContext": [
+		"postId",
+		"postType",
 		"videopack/postId",
+		"videopack/postType",
+		"videopack/parentPostId",
+		"videopack/prioritizePostData",
 		"videopack/skin",
 		"videopack/embedlink",
 		"videopack/title",
@@ -55,6 +60,14 @@
 		},
 		"showBackground": {
 			"type": "boolean"
+		},
+		"usePostTitle": {
+			"type": "boolean",
+			"default": false
+		},
+		"linkToPost": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

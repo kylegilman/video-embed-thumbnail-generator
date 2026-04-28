@@ -1,6 +1,6 @@
 /* global videopack_config */
 import { getBlobByURL, isBlobURL } from '@wordpress/blob';
-import { Placeholder, ProgressBar, ToolbarButton } from '@wordpress/components';
+import { Placeholder, ProgressBar, ToolbarButton, Spinner } from '@wordpress/components';
 import {
 	BlockControls,
 	BlockIcon,
@@ -76,7 +76,7 @@ const SingleVideoBlock = ({
 		(select) => select('core/editor')?.getCurrentPostId(),
 		[]
 	);
-	const effectivePostId = attachment?.id || attributes.id || editorPostId;
+	const effectivePostId = attachment?.id || attributes.id || resolvedPostId || editorPostId;
 
 	const { isProbing, probedMetadata } = useVideoProbe(src);
 	const [probedMetadataOverride, setProbedMetadataOverride] = useState(null);
@@ -257,7 +257,6 @@ const SingleVideoBlock = ({
  */
 const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	const { id, src } = attributes;
-	const postId = context['videopack/postId'];
 	const [options, setOptions] = useState();
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
@@ -298,12 +297,20 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 		[clientId]
 	);
 
-	const isContextual =
-		postId && (Number(postId) !== Number(editorPostId) || isSiteEditor);
-	const shouldPersist = !isContextual;
-	const resolvedPostId = isContextual ? postId : id || undefined;
+	const vpContext = useVideopackContext(attributes, context);
+	const {
+		attachmentId: resolvedAttachmentId,
+		postId: resolvedPostIdFromContext,
+		isDiscovering,
+	} = vpContext.resolved;
 
-	const effectiveId = resolvedPostId;
+	const isContextual =
+		resolvedPostIdFromContext &&
+		(Number(resolvedPostIdFromContext) !== Number(editorPostId) ||
+			isSiteEditor);
+	const shouldPersist = !isContextual;
+
+	const effectiveId = resolvedAttachmentId;
 
 	const [attachment, setAttachment] = useState(null);
 	const [hasResolved, setHasResolved] = useState(false);
@@ -600,7 +607,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	}, [
 		effectiveId,
 		id,
-		postId,
+		resolvedPostIdFromContext,
 		setAttributesFromMedia,
 		setAttributes,
 		attachment,
@@ -735,7 +742,17 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 
 	return (
 		<figure {...blockProps}>
-			{!src && !effectiveId ? (
+			{isDiscovering && !effectiveId ? (
+				<div className="videopack-video-discovery-loading">
+					<Placeholder
+						icon={<BlockIcon icon={icon} />}
+						label={__('Videopack Video', 'video-embed-thumbnail-generator')}
+					>
+						<Spinner />
+						<p>{__('Searching for attached video...', 'video-embed-thumbnail-generator')}</p>
+					</Placeholder>
+				</div>
+			) : !src && !effectiveId ? (
 				<MediaPlaceholder
 					icon={<BlockIcon icon={icon} />}
 					onSelect={onSelectVideo}
@@ -829,7 +846,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				options={options}
 				isSelected={isSelected}
 				videoData={videoData}
-				resolvedPostId={resolvedPostId}
+				resolvedPostId={resolvedPostIdFromContext}
 				resolvedAttributes={resolvedAttributes}
 				context={context}
 			/>
