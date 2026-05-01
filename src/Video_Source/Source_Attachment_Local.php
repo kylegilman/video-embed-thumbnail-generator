@@ -185,7 +185,7 @@ class Source_Attachment_Local extends Source {
 	 * Sets the parent ID.
 	 */
 	protected function set_parent_id(): void {
-		$parent_id = wp_get_post_parent_id( $this->source );
+		$parent_id = wp_get_post_parent_id( $this->get_id() );
 		if ( ! $parent_id ) {
 			$parent_id = $this->get_current_post_id();
 		}
@@ -196,14 +196,14 @@ class Source_Attachment_Local extends Source {
 	 * Sets the descriptive title of the video.
 	 */
 	protected function set_title(): void {
-		$this->title = get_the_title( $this->source );
+		$this->title = get_the_title( $this->get_id() );
 	}
 
 	/**
 	 * Sets the MIME type of the video.
 	 */
 	protected function set_mime_type(): void {
-		$this->mime_type = get_post_mime_type( $this->source );
+		$this->mime_type = get_post_mime_type( $this->get_id() );
 
 		// For remote attachments, post_mime_type might be empty or generic.
 		// If we have an external URL, double check the file extension.

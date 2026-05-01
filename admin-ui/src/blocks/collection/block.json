@@ -8,7 +8,13 @@
 	"description": "A composable grid or list layout for displaying videos.",
 	"supports": {
 		"html": false,
-		"align": ["left", "right", "center", "wide", "full"],
+		"align": [
+			"left",
+			"right",
+			"center",
+			"wide",
+			"full"
+		],
 		"color": {
 			"background": true,
 			"text": true,
@@ -18,6 +24,14 @@
 			"margin": true,
 			"padding": true,
 			"blockGap": true
+		},
+		"filter": {
+			"duotone": true
+		}
+	},
+	"selectors": {
+		"filter": {
+			"duotone": ".wp-block-videopack-collection .videopack-thumbnail, .wp-block-videopack-collection .vjs-poster img, .wp-block-videopack-collection .vjs-poster, .wp-block-videopack-collection .mejs-poster img, .wp-block-videopack-collection .mejs-poster"
 		}
 	},
 	"attributes": {
@@ -65,7 +79,8 @@
 			"default": ""
 		},
 		"gallery_per_page": {
-			"type": "number"
+			"type": "number",
+			"default": 0
 		},
 		"currentPage": {
 			"type": "number",
@@ -96,28 +111,25 @@
 		"prioritizePostData": {
 			"type": "boolean",
 			"default": false
+		},
+		"variation": {
+			"type": "string"
+		},
+		"isPreview": {
+			"type": "boolean",
+			"default": false
+		},
+		"videos": {
+			"type": "array"
 		}
 	},
-	"providesContext": {
-		"videopack/collectionId": "collectionId",
-		"videopack/layout": "layout",
-		"videopack/columns": "columns",
-		"videopack/gallery_source": "gallery_source",
-		"videopack/gallery_id": "gallery_id",
-		"videopack/gallery_category": "gallery_category",
-		"videopack/gallery_tag": "gallery_tag",
-		"videopack/gallery_orderby": "gallery_orderby",
-		"videopack/gallery_order": "gallery_order",
-		"videopack/gallery_include": "gallery_include",
-		"videopack/gallery_exclude": "gallery_exclude",
-		"videopack/gallery_per_page": "gallery_per_page",
-		"videopack/enable_collection_video_limit": "enable_collection_video_limit",
-		"videopack/collection_video_limit": "collection_video_limit",
-		"videopack/currentPage": "currentPage",
-		"videopack/views": "views",
-		"videopack/overlay_title": "overlay_title",
-		"videopack/isEditingAllPages": "isEditingAllPages",
-		"videopack/prioritizePostData": "prioritizePostData"
+	"example": {
+		"attributes": {
+			"gallery_source": "recent",
+			"gallery_per_page": 2,
+			"columns": 2,
+			"isPreview": true
+		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",
 	"editorScript": "file:./index.js",

@@ -129,13 +129,12 @@
 .videopack-video-title.has-no-background {
   background: transparent !important;
 }
-:is(.videopack-wrapper:not(.videopack-collection-wrapper):not(.videopack-video-title-visible):not(:hover),
-.videopack-video-block:not(.videopack-video-title-visible):not(:hover)) :is(.videopack-video-title.is-overlay, .videopack-meta-wrapper):not(.videopack-thumbnail-title) {
+.videopack-video-title.is-overlay:not(.videopack-video-title-visible):not(.videopack-thumbnail-title) {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
-:is(.videopack-wrapper:not(.videopack-collection-wrapper):hover, .videopack-video-block:hover, .videopack-player:hover) :is(.videopack-video-title.is-overlay, .videopack-meta-wrapper):not(.videopack-thumbnail-title) {
+:is(.videopack-wrapper:hover, .videopack-player:hover, .videopack-video-block:hover) .videopack-video-title.is-overlay {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
@@ -926,26 +925,26 @@
   background-color: rgba(65, 118, 188, 0.8);
 }
 /* Main Gutenberg Block Wrapper */
-.wp-block-videopack-videopack-video {
+.wp-block-videopack-player-container {
   width: 100%;
   max-width: var(--wp--style--global--content-size);
   margin-top: 1em;
   margin-bottom: 1em;
 }
-.wp-block-videopack-videopack-video.alignwide {
+.wp-block-videopack-player-container.alignwide {
   max-width: var(--wp--style--global--wide-size);
 }
-.videopack-collection-item .wp-block-videopack-videopack-video {
+.videopack-collection-item .wp-block-videopack-player-container {
   max-width: 100%;
 }
-.wp-block-videopack-videopack-video.alignfull {
+.wp-block-videopack-player-container.alignfull {
   max-width: none;
 }
-.wp-block-videopack-videopack-video.aligncenter {
+.wp-block-videopack-player-container.aligncenter {
   margin-right: auto;
   margin-left: auto;
 }
-.wp-block-videopack-videopack-video .videopack-wrapper,
+.wp-block-videopack-player-container .videopack-wrapper,
 .videopack-collection-item .videopack-wrapper,
 .videopack-collection-grid .videopack-wrapper,
 .videopack-video-loop .videopack-wrapper {
@@ -2360,6 +2359,89 @@
   .layout-grid .videopack-gallery-wrapper,
   .videopack-gallery-wrapper.layout-grid).columns-6) {
     grid-template-columns: 1fr !important;
+  }
+  :is(.is-preview :is(.columns-2 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), .columns-3 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), .columns-4 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), .columns-5 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), .columns-6 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-2, :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-3, :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-4, :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-5, :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-6), :is(.columns-2 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), .columns-3 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), .columns-4 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), .columns-5 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), .columns-6 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-2, :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-3, :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-4, :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-5, :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
+  .layout-grid .videopack-collection-grid,
+  .videopack-collection-grid.layout-grid,
+  .layout-grid .videopack-gallery-wrapper,
+  .videopack-gallery-wrapper.layout-grid).columns-6).is-preview) {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 :is(.layout-list .videopack-collection-inner, .videopack-collection-inner.layout-list,

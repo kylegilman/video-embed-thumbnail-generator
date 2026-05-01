@@ -1,0 +1,89 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "videopack/title",
+  "title": "Videopack Title",
+  "category": "media",
+  "parent": [
+    "videopack/player-container",
+    "videopack/player",
+    "videopack/thumbnail",
+    "videopack/loop"
+  ],
+  "icon": "heading",
+  "description": "Overlay title and action buttons for the video player.",
+  "usesContext": [
+    "postId",
+    "postType"
+  ],
+  "attributes": {
+    "title": {
+      "type": "string",
+      "default": ""
+    },
+    "tagName": {
+      "type": "string",
+      "default": "h3"
+    },
+    "isOverlay": {
+      "type": "boolean"
+    },
+    "title_color": {
+      "type": "string"
+    },
+    "title_background_color": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string"
+    },
+    "textAlign": {
+      "type": "string"
+    },
+    "embedlink": {
+      "type": "string"
+    },
+    "embedcode": {
+      "type": "boolean"
+    },
+    "downloadlink": {
+      "type": "boolean"
+    },
+    "overlay_title": {
+      "type": "boolean"
+    },
+    "showBackground": {
+      "type": "boolean"
+    },
+    "usePostTitle": {
+      "type": "boolean",
+      "default": false
+    },
+    "linkToPost": {
+      "type": "boolean",
+      "default": false
+    },
+    "isPreview": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "example": {
+    "attributes": {
+      "title": "Sample Video Title",
+      "isOverlay": true,
+      "isPreview": true
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    }
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css"
+}

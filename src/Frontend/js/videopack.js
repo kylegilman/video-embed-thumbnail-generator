@@ -578,21 +578,26 @@
 		 * @param {object}      videoVars     The video variables.
 		 */
 		setupVideoTitle: function (playerWrapper, player, videoVars) {
-			const playerId = playerWrapper.dataset.id;
-			const wrapper = playerWrapper.closest('.videopack-wrapper');
-
-			if (!wrapper) {
-				return;
-			}
+			const getMetaElements = () => {
+				// Search both inside the player and in the immediate parent (for cases where they aren't moved yet)
+				const elements = Array.from(playerWrapper.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper'));
+				const parent = playerWrapper.closest('.videopack-wrapper');
+				if (parent) {
+					Array.from(parent.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper')).forEach((el) => {
+						if (!elements.includes(el)) elements.push(el);
+					});
+				}
+				return elements;
+			};
 
 			const isMejs = 'WordPress Default' === videoVars.embed_method;
 			const video = isMejs ? player.media : player.el().querySelector('video');
 
 			const showMeta = () => {
-				wrapper.classList.add('videopack-video-title-visible');
+				getMetaElements().forEach((el) => el.classList.add('videopack-video-title-visible'));
 			};
 			const hideMeta = () => {
-				wrapper.classList.remove('videopack-video-title-visible');
+				getMetaElements().forEach((el) => el.classList.remove('videopack-video-title-visible'));
 			};
 
 			if (isMejs && video) {

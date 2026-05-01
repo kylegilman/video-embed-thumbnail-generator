@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "videopack/thumbnail",
-	"title": "Video Thumbnail",
+	"title": "Videopack Thumbnail",
 	"category": "media",
 	"icon": "format-image",
 	"editorStyle": "file:./index.css",
@@ -15,20 +15,21 @@
 		"isInsideThumbnail": {
 			"type": "boolean",
 			"default": true
+		},
+		"isPreview": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"example": {
+		"attributes": {
+			"isPreview": true
 		}
 	},
 	"usesContext": [
-		"videopack/collectionId",
-		"videopack/postId",
-		"videopack/attachmentId",
-		"videopack/postType",
-		"videopack/skin",
 		"postId",
 		"postType"
 	],
-	"providesContext": {
-		"videopack/isInsideThumbnail": "isInsideThumbnail"
-	},
 	"supports": {
 		"html": false,
 		"align": true,

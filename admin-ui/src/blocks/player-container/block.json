@@ -1,0 +1,191 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "videopack/player-container",
+	"title": "Videopack Video",
+	"category": "media",
+	"icon": "format-video",
+	"description": "Embed a single video with Videopack features.",
+	"usesContext": [
+		"postId",
+		"postType"
+	],
+	"supports": {
+		"html": false,
+		"align": true,
+		"dimensions": {
+			"aspectRatio": false,
+			"height": false,
+			"minHeight": false,
+			"width": false
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"filter": {
+			"duotone": true
+		}
+	},
+	"selectors": {
+		"filter": {
+			"duotone": ".wp-block-videopack-player-container .vjs-poster img, .wp-block-videopack-player-container .mejs-poster img, .wp-block-videopack-player-container .mejs-poster"
+		}
+	},
+	"example": {
+		"attributes": {
+			"src": "videopack-preview-video",
+			"title": "Sample Video",
+			"overlay_title": true,
+			"isPreview": true
+		}
+	},
+	"attributes": {
+		"id": {
+			"type": "number"
+		},
+		"src": {
+			"type": "string"
+		},
+		"poster": {
+			"type": "string"
+		},
+		"title": {
+			"type": "string"
+		},
+		"caption": {
+			"type": "string"
+		},
+		"width": {
+			"type": "number"
+		},
+		"height": {
+			"type": "number"
+		},
+		"autoplay": {
+			"type": "boolean",
+			"default": false
+		},
+		"controls": {
+			"type": "boolean",
+			"default": true
+		},
+		"loop": {
+			"type": "boolean",
+			"default": false
+		},
+		"muted": {
+			"type": "boolean",
+			"default": false
+		},
+		"playsinline": {
+			"type": "boolean",
+			"default": false
+		},
+		"preload": {
+			"type": "string",
+			"default": "metadata"
+		},
+		"volume": {
+			"type": "number",
+			"default": 1
+		},
+		"auto_res": {
+			"type": "string"
+		},
+		"auto_codec": {
+			"type": "string"
+		},
+		"sources": {
+			"type": "array",
+			"default": []
+		},
+		"source_groups": {
+			"type": "object",
+			"default": {}
+		},
+		"text_tracks": {
+			"type": "array",
+			"default": []
+		},
+		"playback_rate": {
+			"type": "boolean",
+			"default": false
+		},
+		"watermark": {
+			"type": "string"
+		},
+		"watermark_styles": {
+			"type": "object",
+			"default": {}
+		},
+		"watermark_link_to": {
+			"type": "string",
+			"default": ""
+		},
+		"default_ratio": {
+			"type": "string",
+			"default": "16 / 9"
+		},
+		"fixed_aspect": {
+			"type": "string",
+			"default": "false"
+		},
+		"fullwidth": {
+			"type": "boolean",
+			"default": false
+		},
+		"textAlign": {
+			"type": "string"
+		},
+		"downloadlink": {
+			"type": "boolean"
+		},
+		"overlay_title": {
+			"type": "boolean"
+		},
+		"views": {
+			"type": "boolean"
+		},
+		"embedcode": {
+			"type": "boolean"
+		},
+		"embedlink": {
+			"type": "string"
+		},
+		"embed_method": {
+			"type": "string"
+		},
+		"showCaption": {
+			"type": "boolean",
+			"default": false
+		},
+		"showBackground": {
+			"type": "boolean"
+		},
+		"title_position": {
+			"type": "string",
+			"default": "top"
+		},
+		"isInsidePlayerOverlay": {
+			"type": "boolean",
+			"default": false
+		},
+		"restartCount": {
+			"type": "number",
+			"default": 0
+		},
+		"isInsidePlayerContainer": {
+			"type": "boolean",
+			"default": true
+		},
+		"isPreview": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css"
+}

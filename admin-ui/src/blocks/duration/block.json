@@ -1,0 +1,49 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "videopack/duration",
+	"title": "Videopack Duration",
+	"category": "media",
+	"icon": "clock",
+	"description": "Displays the video duration.",
+	"usesContext": [
+		"postId",
+		"postType"
+	],
+	"attributes": {
+		"position": {
+			"type": "string"
+		},
+		"textAlign": {
+			"type": "string"
+		},
+		"title_color": {
+			"type": "string"
+		},
+		"title_background_color": {
+			"type": "string"
+		},
+		"isPreview": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"example": {
+		"attributes": {
+			"isPreview": true
+		}
+	},
+	"supports": {
+		"html": false,
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js"
+}

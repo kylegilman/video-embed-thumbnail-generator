@@ -88,7 +88,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 	const galleryTemplate = useMemo(() => {
 		const template = [
 			[
-				'videopack/video-loop',
+				'videopack/loop',
 				{},
 				[
 					[
@@ -97,7 +97,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						[
 							['videopack/play-button', {}],
 							gallery_title
-								? ['videopack/video-title', {}]
+								? ['videopack/title', {}]
 								: null,
 						].filter(Boolean),
 					],

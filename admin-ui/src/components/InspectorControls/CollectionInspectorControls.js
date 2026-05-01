@@ -49,7 +49,7 @@ export default function CollectionInspectorControls({
 
 			// Check if specific blocks are INSIDE the thumbnail block
 			const hasOverlayBlockInsideThumbnail = thumbnailBlock?.innerBlocks?.some((b) =>
-				['videopack/video-title', 'videopack/video-duration', 'videopack/view-count'].includes(b.name)
+				['videopack/title', 'videopack/duration', 'videopack/view-count'].includes(b.name)
 			) || false;
 
 			const showTitleSettings = isLightbox || hasOverlayBlockInsideThumbnail;

@@ -107,9 +107,7 @@ class Modular_Renderer {
 			$classes[] = $atts['wrapper_class'];
 		}
 
-		if ( self::is_true( $atts['overlay_title'] ?? ( $options['overlay_title'] ?? true ) ) || self::is_true( $atts['downloadlink'] ?? ( $options['downloadlink'] ?? false ) ) ) {
-			$classes[] = 'videopack-video-title-visible';
-		}
+		// Title visibility is now managed by the title/meta bars themselves.
 
 		$align = (string) ( $atts['align'] ?? '' );
 		if ( empty( $align ) ) {
@@ -506,7 +504,7 @@ class Modular_Renderer {
 		
 		$bar_style = '';
 		$skin_class = ( 'Video.js' === ( $options['embed_method'] ?? 'Video.js' ) ) ? $skin : '';
-		$bar_class = 'videopack-video-title is-overlay ' . esc_attr( $skin_class ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' );
+		$bar_class = 'videopack-video-title is-overlay videopack-video-title-visible ' . esc_attr( $skin_class ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' );
 		
 		if ( $is_inside_thumbnail ) {
 			$bar_class .= ' videopack-thumbnail-title';
@@ -527,7 +525,7 @@ class Modular_Renderer {
 			$wrapper_style_vars[] = '--videopack-title-background-color: ' . $atts['title_background_color'];
 		}
 		$wrapper_style = ! empty( $wrapper_style_vars ) ? ' style="' . esc_attr( implode( ';', $wrapper_style_vars ) ) . '"' : '';
-		$wrapper_class = 'videopack-meta-wrapper';
+		$wrapper_class = 'videopack-meta-wrapper videopack-video-title-visible';
 		if ( $is_overlay ) {
 			$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
 		}

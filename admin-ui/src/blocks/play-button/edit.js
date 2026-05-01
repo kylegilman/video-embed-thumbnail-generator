@@ -123,13 +123,14 @@ export default function Edit({ attributes, setAttributes, context }) {
 	);
 
 	const overlayStyles = {};
-	if (isInsidePlayerOverlay || isInsideThumbnail) {
+	if (isInsidePlayerOverlay || isInsideThumbnail || context.isPreview) {
 		overlayStyles.position = 'absolute';
 		overlayStyles.top = 0;
 		overlayStyles.left = 0;
 		overlayStyles.right = 0;
 		overlayStyles.bottom = 0;
 		overlayStyles.zIndex = 115;
+		overlayStyles.minHeight = '100px'; // Ensure it's visible in inserter
 	}
 
 	const blockProps = useBlockProps({

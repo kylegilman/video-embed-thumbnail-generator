@@ -164,21 +164,21 @@ import './tinymce.scss';
 
 			const engineChildren = [];
 			if (showTitleBar) {
-				engineChildren.push(['videopack/video-title', {}]);
+				engineChildren.push(['videopack/title', {}]);
 			}
 			if (mergedAttributes.watermark) {
-				engineChildren.push(['videopack/video-watermark', {}]);
+				engineChildren.push(['videopack/watermark', {}]);
 			}
 
 			const videoChildren = [
-				['videopack/video-player-engine', {}, engineChildren],
+				['videopack/player', {}, engineChildren],
 			];
 
 			if (mergedAttributes.views) {
 				videoChildren.push(['videopack/view-count', {}]);
 			}
 
-			template = [['videopack/videopack-video', {}, videoChildren]];
+			template = [['videopack/player-container', {}, videoChildren]];
 		} else if (type === 'Gallery') {
 			template = getGridTemplate(mergedAttributes);
 		} else {

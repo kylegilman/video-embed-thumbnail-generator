@@ -10,14 +10,17 @@ import { getVideoGallery } from '../api/gallery';
  * @param {number} previewPostId The ID of the post being previewed.
  * @return {Object} Query results including search results, categories, and tags.
  */
-export default function useVideoQuery(attributes, previewPostId) {
+export default function useVideoQuery(attributes = {}, previewPostId) {
+	if ( ! attributes ) {
+		attributes = {};
+	}
 	const {
 		gallery_id,
-		gallery_source,
+		gallery_source = 'current',
 		gallery_category,
 		gallery_tag,
-		gallery_orderby,
-		gallery_order,
+		gallery_orderby = 'post_date',
+		gallery_order = 'DESC',
 		gallery_include,
 		gallery_exclude,
 		gallery_pagination,
@@ -25,23 +28,7 @@ export default function useVideoQuery(attributes, previewPostId) {
 		page_number = 1,
 		enable_collection_video_limit = false,
 		collection_video_limit = 6,
-		prioritizePostData,
-		id,
 	} = attributes;
-
-	const { categories, tags } = useSelect((select) => {
-		const core = select('core');
-		if (!core) {
-			return { categories: [], tags: [] };
-		}
-		const { getEntityRecords } = core;
-		return {
-			categories: getEntityRecords('taxonomy', 'category', {
-				per_page: -1,
-			}),
-			tags: getEntityRecords('taxonomy', 'post_tag', { per_page: -1 }),
-		};
-	}, []);
 
 	const [searchString, setSearchString] = useState('');
 	const debouncedSetSearchString = useDebounce(setSearchString, 500);
@@ -69,11 +56,8 @@ export default function useVideoQuery(attributes, previewPostId) {
 		[]
 	);
 
-	const searchableTypes = useMemo(() => {
-		if (!postTypes) {
-			return ['post', 'page'];
-		}
-		return postTypes
+	const viewablePostTypes = useMemo(() => {
+		return (postTypes || [])
 			.filter((type) => type.viewable && type.slug !== 'attachment')
 			.map((type) => type.slug);
 	}, [postTypes]);
@@ -91,21 +75,21 @@ export default function useVideoQuery(attributes, previewPostId) {
 		const args = {
 			gallery_orderby: gallery_orderby || 'post_date',
 			gallery_order: gallery_order || 'DESC',
-			gallery_per_page: gallery_pagination 
-				? (parseInt(gallery_per_page, 10) || 6) 
-				: (enable_collection_video_limit ? (parseInt(collection_video_limit, 10) || 6) : -1),
+			gallery_per_page: parseInt(gallery_per_page, 10) || 6,
 			page_number: parseInt(page_number, 10) || 1,
-			gallery_id: gallery_id ? parseInt(gallery_id, 10) : (previewPostId ? parseInt(previewPostId, 10) : undefined),
-			gallery_include: gallery_include || id,
-			gallery_exclude,
-			gallery_source,
-			gallery_category,
-			gallery_tag,
-			gallery_pagination,
-			prioritizePostData,
+			gallery_id: (['current', 'custom'].includes(gallery_source)) 
+				? (gallery_id ? parseInt(gallery_id, 10) : (previewPostId ? parseInt(previewPostId, 10) : undefined))
+				: undefined,
+			gallery_exclude: gallery_exclude || '',
+			gallery_source: gallery_source || 'current',
+			gallery_category: gallery_category || '',
+			gallery_tag: gallery_tag || '',
+			gallery_pagination: gallery_pagination ?? false,
+			gallery_include: gallery_include || '',
+			id: previewPostId,
+			prioritizePostData: attributes.prioritizePostData || false,
+			skip_html: true,
 		};
-
-
 
 		// Skip query if required parameters for the source are missing
 		const isMissingCustomId = gallery_source === 'custom' && !gallery_id;
@@ -114,7 +98,11 @@ export default function useVideoQuery(attributes, previewPostId) {
 		const isMissingCurrentId = gallery_source === 'current' && !gallery_id && !previewPostId;
 		const isMissingManualInclude = gallery_source === 'manual' && !gallery_include;
 
-		if (isMissingCustomId || isMissingCategoryId || isMissingTagId || isMissingCurrentId || isMissingManualInclude) {
+		const canQuery = ['recent', 'all'].includes(gallery_source) || (
+			gallery_source && !isMissingCustomId && !isMissingCategoryId && !isMissingTagId && !isMissingCurrentId && !isMissingManualInclude
+		);
+
+		if (!canQuery) {
 			setVideoResults([]);
 			setTotalResults(0);
 			setMaxNumPages(1);
@@ -130,10 +118,7 @@ export default function useVideoQuery(attributes, previewPostId) {
 				setMaxNumPages(response.max_num_pages || 1);
 			})
 			.catch((error) => {
-				console.error('Error fetching videos:', error);
-				setVideoResults([]);
-				setTotalResults(0);
-				setMaxNumPages(1);
+				console.error('Video Query Error:', error);
 			})
 			.finally(() => {
 				setIsResolvingVideos(false);
@@ -150,129 +135,69 @@ export default function useVideoQuery(attributes, previewPostId) {
 		gallery_pagination,
 		gallery_per_page,
 		page_number,
-		previewPostId,
-		prioritizePostData,
 		enable_collection_video_limit,
 		collection_video_limit,
-		id,
+		previewPostId,
+		attributes.prioritizePostData,
+		isSaving,
+		isAutosaving,
 	]);
 
-	const { searchResults, currentPost, isResolvingSearch } = useSelect(
+	const searchResults = useSelect(
 		(select) => {
-			const core = select('core');
-			if (!core) {
-				return {
-					searchResults: [],
-					currentPost: null,
-					isResolvingSearch: false,
-				};
-			}
-			const { getEntityRecord, getEntityRecords, isResolving: checkResolving } = core;
-			const results = [];
-			let resolving = false;
-
-			if (searchString) {
-				const query = {
-					search: searchString,
-					per_page: 20,
-					status: 'publish',
-				};
-
-				searchableTypes.forEach((type) => {
-					const records = getEntityRecords('postType', type, query);
-					if (records) {
-						results.push(...records);
-					}
-					if (checkResolving('getEntityRecords', ['postType', type, query])) {
-						resolving = true;
-					}
-				});
-			} else {
-				const query = { per_page: 5, status: 'publish' };
-				searchableTypes.forEach((type) => {
-					const records = getEntityRecords('postType', type, query);
-					if (records) {
-						results.push(...records);
-					}
-					if (checkResolving('getEntityRecords', ['postType', type, query])) {
-						resolving = true;
-					}
-				});
-			}
-
-			let current = null;
-			if (gallery_id) {
-				// Use a plural query with a dummy ID (-1) to "force" the REST API to return an empty array 
-				// instead of a 404 error if the ID doesn't exist for the specific post type.
-				// We also use context="view" and _fields for better performance and silence.
-				const query = { 
-					include: [gallery_id, -1], 
-					per_page: 2, 
-					context: 'view', 
-					_fields: 'id,title,type' 
-				};
-
-				searchableTypes.forEach((type) => {
-					if (current) return;
-					const records = getEntityRecords('postType', type, query);
-					if (records && records.length > 0) {
-						current = records.find((r) => r.id === gallery_id);
-					}
-				});
-			}
-
-			return {
-				searchResults: results,
-				currentPost: current,
-				isResolvingSearch: resolving,
-			};
-		},
-		[searchString, gallery_id, searchableTypes]
-	);
-
-	const excludedIds = useMemo(() => {
-		return gallery_exclude
-			? gallery_exclude.split(',').map((id) => parseInt(id, 10))
-			: [];
-	}, [gallery_exclude]);
-
-	const excludedVideos = useSelect(
-		(select) => {
-			if (excludedIds.length === 0) {
+			if (!searchString) {
 				return [];
 			}
-			const core = select('core');
-			if (!core) {
+			const { getEntityRecords } = select('core');
+			return getEntityRecords('postType', viewablePostTypes, {
+				s: searchString,
+				per_page: 20,
+			});
+		},
+		[searchString, viewablePostTypes]
+	);
+
+	const categories = useSelect((select) => {
+		const { getEntityRecords } = select('core');
+		return getEntityRecords('taxonomy', 'category', { per_page: -1 });
+	}, []);
+
+	const tags = useSelect((select) => {
+		const { getEntityRecords } = select('core');
+		return getEntityRecords('taxonomy', 'post_tag', { per_page: -1 });
+	}, []);
+
+	const manualVideos = useSelect(
+		(select) => {
+			if (gallery_source !== 'manual' || !gallery_include) {
 				return [];
 			}
-			const records = core.getEntityRecords(
-				'postType',
-				'attachment',
-				{
-					include: excludedIds,
-					per_page: -1,
-					media_type: 'video',
-				}
-			);
-			return records || [];
+			const { getEntityRecords } = select('core');
+			return getEntityRecords('postType', 'attachment', {
+				include: gallery_include,
+				per_page: -1,
+			});
 		},
-		[excludedIds]
+		[gallery_source, gallery_include]
 	);
+
+	const customGalleries = useSelect((select) => {
+		const { getEntityRecords } = select('core');
+		return getEntityRecords('postType', 'videopack_gallery', {
+			per_page: -1,
+		});
+	}, []);
 
 	return {
-		categories,
-		tags,
-		searchString,
-		setSearchString,
-		debouncedSetSearchString,
+		isResolving: isResolvingVideos,
 		videoResults,
-		searchResults,
-		currentPost,
 		totalResults,
 		maxNumPages,
-		isResolving: isResolvingVideos,
-		isResolvingSearch,
-		excludedIds,
-		excludedVideos,
+		searchResults,
+		categories,
+		tags,
+		manualVideos,
+		customGalleries,
+		setSearch: debouncedSetSearchString,
 	};
 }
