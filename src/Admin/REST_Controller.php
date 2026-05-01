@@ -847,20 +847,8 @@ class REST_Controller extends \WP_REST_Controller {
 			$gallery_atts['gallery_id'] = '';
 		}
 
-		$attachments   = $gallery->get_gallery_videos( $page, $gallery_atts );
-		$videos_data   = array();
-		$max_num_pages = (int) ( $attachments->max_num_pages ?? 1 );
-
-		if ( $attachments instanceof \WP_Query && $attachments->have_posts() ) {
-			foreach ( $attachments->posts as $attachment ) {
-				$video_data = (array) $gallery->prepare_video_data_for_js( $attachment, $gallery_atts );
-				if ( ! empty( $video_data ) ) {
-					$videos_data[] = $video_data;
-				}
-			}
-		}
-
-		$result = (array) $gallery->collection_page( $page, $gallery_atts, $layout );
+		$skip_html = (bool) $request->get_param( 'skip_html' );
+		$result    = (array) $gallery->collection_page( $page, $gallery_atts, $layout, $skip_html );
 
 		$response = array(
 			'videos'        => (array) $result['videos'],

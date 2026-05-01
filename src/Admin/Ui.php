@@ -96,7 +96,7 @@ class Ui implements Hook_Subscriber {
 			),
 			array(
 				'hook'     => 'block_type_metadata',
-				'callback' => 'inject_shared_design_metadata',
+				'callback' => 'register_videopack_block_context',
 			),
 			array(
 				'hook'     => 'mce_external_plugins',
@@ -147,7 +147,7 @@ class Ui implements Hook_Subscriber {
 	 * @return void
 	 */
 	public function block_init() {
-		register_block_type( (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-video' );
+		register_block_type( (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/player-container' );
 
 		// Register modular / inner blocks.
 		$modular_blocks = array(
@@ -155,13 +155,13 @@ class Ui implements Hook_Subscriber {
 			'play-button',
 			'thumbnail',
 			'view-count',
-			'video-duration',
-			'video-title',
-			'video-loop',
+			'duration',
+			'title',
+			'loop',
 			'pagination',
-			'video-player-engine',
-			'video-watermark',
-			'video-caption',
+			'player',
+			'watermark',
+			'caption',
 		);
 
 		foreach ( $modular_blocks as $block_name ) {
@@ -180,7 +180,7 @@ class Ui implements Hook_Subscriber {
 	 */
 	public function conditionally_add_assets_to_block_metadata( $metadata ) {
 		if ( isset( $metadata['name'] )
-			&& in_array( (string) $metadata['name'], array( 'videopack/videopack-video', 'videopack/collection', 'videopack/video-player-engine' ), true )
+			&& in_array( (string) $metadata['name'], array( 'videopack/player-container', 'videopack/collection', 'videopack/player' ), true )
 		) {
 			$player   = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
 			$metadata = (array) $player->filter_block_metadata( (array) $metadata );
@@ -191,17 +191,17 @@ class Ui implements Hook_Subscriber {
 	}
 
 	/**
-	 * Dynamically injects shared design attributes and context mapping into block metadata.
+	 * Dynamically injects shared attributes and context mapping into block metadata.
 	 *
 	 * @param array $metadata The block metadata.
 	 * @return array The filtered metadata.
 	 */
-	public function inject_shared_design_metadata( $metadata ) {
+	public function register_videopack_block_context( $metadata ) {
 		if ( ! isset( $metadata['name'] ) || strpos( (string) $metadata['name'], 'videopack/' ) !== 0 ) {
 			return $metadata;
 		}
 
-		$design_attributes = array(
+		$shared_attributes = array(
 			'skin'                        => array( 'type' => 'string' ),
 			'title_color'                 => array( 'type' => 'string' ),
 			'title_background_color'      => array( 'type' => 'string' ),
@@ -233,49 +233,121 @@ class Ui implements Hook_Subscriber {
 			'videopack/source_groups'               => 'source_groups',
 		);
 
+		// Only map these to providesContext if the block actually has the attribute.
+		// Otherwise, Gutenberg will provide 'undefined' and potentially shadow 
+		// manual BlockContextProvider values.
+		$metadata_attributes = isset( $metadata['attributes'] ) ? $metadata['attributes'] : array();
+		$mappings = array(
+			'videopack/postId'       => 'id',
+			'videopack/attachmentId' => 'id',
+			'videopack/isStandalone' => 'isStandalone',
+			'videopack/postType'     => 'postType',
+		);
+
+		// Only map content attributes to providesContext on the frontend.
+		// In the editor, we handle these manually via VideopackContextBridge 
+		// to allow for hydration of 'lean' blocks.
+		if ( ! is_admin() ) {
+			$mappings['videopack/src']     = 'src';
+			$mappings['videopack/poster']  = 'poster';
+			$mappings['videopack/title']   = 'title';
+			$mappings['videopack/caption'] = 'caption';
+		}
+
+		// Add general mappings for attributes that might exist on any block
+		$mappings['videopack/isInsidePlayerOverlay'] = 'isInsidePlayerOverlay';
+		$mappings['videopack/isInsidePlayerContainer'] = 'isInsidePlayerContainer';
+		$mappings['videopack/isInsideThumbnail'] = 'isInsideThumbnail';
+		
+		foreach ( $mappings as $context_key => $attr_name ) {
+			if ( isset( $metadata_attributes[ $attr_name ] ) ) {
+				$provides_context[ $context_key ] = $attr_name;
+			}
+		}
+
 		$uses_context = array_merge( 
 			array_keys( $provides_context ),
 			array(
 				'videopack/postId',
+				'videopack/attachmentId',
+				'videopack/postType',
+				'videopack/isStandalone',
+				'videopack/prioritizePostData',
 				'videopack/isInsideThumbnail',
 				'videopack/isInsidePlayerOverlay',
 				'videopack/isInsidePlayerContainer',
+				'videopack/src',
+				'videopack/poster',
 				'videopack/title',
-				'videopack/embedlink',
 				'videopack/caption',
+				'videopack/width',
+				'videopack/height',
+				'videopack/autoplay',
+				'videopack/controls',
+				'videopack/loop',
+				'videopack/muted',
+				'videopack/playsinline',
+				'videopack/preload',
+				'videopack/volume',
+				'videopack/auto_res',
+				'videopack/auto_codec',
+				'videopack/sources',
+				'videopack/source_groups',
+				'videopack/text_tracks',
+				'videopack/playback_rate',
+				'videopack/downloadlink',
+				'videopack/embedcode',
+				'videopack/embedlink',
+				'videopack/showCaption',
+				'videopack/showBackground',
+				'videopack/title_position',
+				'videopack/restartCount',
 				'videopack/textAlign',
 				'videopack/position',
 				'videopack/totalPages',
 				'videopack/currentPage',
-				'videopack/sources',
-				'videopack/source_groups',
 			)
 		);
 
-		// Blocks that PROVIDE context (Parents)
-		$providers = array(
+		// Blocks that get shared attributes injected
+		$receives_shared_attributes = array(
 			'videopack/collection',
-			'videopack/videopack-video',
-			'videopack/video-loop',
+			'videopack/player-container',
+			'videopack/loop',
 		);
 
 		// Blocks that USE context (Children/Internal)
 		$consumers = array(
-			'videopack/video-loop',
+			'videopack/loop',
 			'videopack/thumbnail',
-			'videopack/video-title',
-			'videopack/video-duration',
+			'videopack/title',
+			'videopack/duration',
 			'videopack/view-count',
 			'videopack/play-button',
 			'videopack/pagination',
-			'videopack/video-player-engine',
-			'videopack/video-watermark',
-			'videopack/video-caption',
+			'videopack/player',
+			'videopack/watermark',
+			'videopack/caption',
 		);
 
-		if ( in_array( $metadata['name'], $providers, true ) ) {
-			$metadata['attributes']      = array_merge( $metadata['attributes'] ?? array(), $design_attributes );
+		if ( in_array( $metadata['name'], $receives_shared_attributes, true ) ) {
+			$metadata['attributes'] = array_merge( $metadata_attributes, $shared_attributes );
+			// If it receives shared attributes, it should provide them to children
 			$metadata['providesContext'] = array_merge( $metadata['providesContext'] ?? array(), $provides_context );
+		} else {
+			// For all other blocks, only provide context for attributes they natively possess
+			if ( ! empty( $provides_context ) ) {
+				// Strip out design context if this block doesn't natively have those attributes
+				$native_provides = array();
+				foreach ( $provides_context as $context_key => $attr_name ) {
+					if ( isset( $metadata_attributes[ $attr_name ] ) ) {
+						$native_provides[ $context_key ] = $attr_name;
+					}
+				}
+				if ( ! empty( $native_provides ) ) {
+					$metadata['providesContext'] = array_merge( $metadata['providesContext'] ?? array(), $native_provides );
+				}
+			}
 		}
 
 		if ( in_array( $metadata['name'], $consumers, true ) ) {

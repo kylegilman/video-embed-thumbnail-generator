@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "videopack/loop",
+  "version": "0.1.0",
+  "title": "Videopack Loop",
+  "category": "theme",
+  "parent": [
+    "videopack/collection"
+  ],
+  "description": "Video loop template.",
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "inserter": false,
+    "filter": {
+      "duotone": true
+    }
+  },
+  "selectors": {
+    "filter": {
+      "duotone": ".wp-block-videopack-loop .videopack-thumbnail, .wp-block-videopack-loop .vjs-poster img, .wp-block-videopack-loop .vjs-poster, .wp-block-videopack-loop .mejs-poster img, .wp-block-videopack-loop .mejs-poster"
+    }
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css"
+}

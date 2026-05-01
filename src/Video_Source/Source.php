@@ -581,7 +581,7 @@ abstract class Source {
 	 * Sets the descriptive title of the video.
 	 */
 	protected function set_title(): void {
-		$filename    = basename( $this->source );
+		$filename    = basename( $this->get_url() );
 		$path_parts  = pathinfo( $filename );
 		$title       = $path_parts['filename'];
 		$this->title = str_replace( '-', ' ', $title );
@@ -744,7 +744,7 @@ abstract class Source {
 			if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/media.php';
 			}
-			$video_metadata = wp_read_video_metadata( $this->source );
+			$video_metadata = wp_read_video_metadata( $this->get_direct_path() );
 		}
 
 		if ( isset( $video_metadata['codec'] ) ) {

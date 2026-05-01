@@ -2,7 +2,7 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "videopack/pagination",
-  "title": "Pagination",
+  "title": "Videopack Pagination",
   "category": "media",
   "icon": "ellipsis",
   "description": "Displays pagination for the video collection.",
@@ -18,20 +18,17 @@
     },
     "pagination_active_color": {
       "type": "string"
+    },
+    "isPreview": {
+      "type": "boolean",
+      "default": false
     }
   },
-  "usesContext": [
-    "videopack/gallery_id",
-    "videopack/gallery_source",
-    "videopack/gallery_pagination",
-    "videopack/gallery_per_page",
-    "videopack/currentPage",
-    "videopack/totalPages",
-    "videopack/pagination_color",
-    "videopack/pagination_background_color",
-    "videopack/pagination_active_bg_color",
-    "videopack/pagination_active_color"
-  ],
+  "example": {
+    "attributes": {
+      "isPreview": true
+    }
+  },
   "supports": {
     "html": false,
     "color": {

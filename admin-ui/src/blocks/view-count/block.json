@@ -2,18 +2,12 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "videopack/view-count",
-	"title": "View Count",
+	"title": "Videopack View Count",
 	"category": "media",
 	"icon": "visibility",
 	"editorStyle": "file:./index.css",
 	"description": "Displays the view count of the video.",
 	"usesContext": [
-		"videopack/postId",
-		"videopack/attachmentId",
-		"videopack/skin",
-		"videopack/isInsideThumbnail",
-		"videopack/isInsidePlayerOverlay",
-		"videopack/isInsidePlayerContainer",
 		"postId",
 		"postType"
 	],
@@ -34,6 +28,16 @@
 		},
 		"title_background_color": {
 			"type": "string"
+		},
+		"isPreview": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"example": {
+		"attributes": {
+			"iconType": "playOutline",
+			"isPreview": true
 		}
 	},
 	"supports": {

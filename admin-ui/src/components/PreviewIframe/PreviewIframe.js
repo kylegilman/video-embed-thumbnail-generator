@@ -128,7 +128,7 @@ const PreviewIframe = ({
 					}
 					/* Ensure some common block editor wrapper behaviors */
 					.wp-block-videopack-videopack-gallery,
-					.wp-block-videopack-videopack-video {
+					.wp-block-videopack-player-container {
 						max-width: 100% !important;
 					}
 					/* Prevent player children from inflating height during measurement */

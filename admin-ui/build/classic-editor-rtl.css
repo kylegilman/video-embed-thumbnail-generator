@@ -222,9 +222,9 @@ body.videopack-is-editing #media-upload-header {
   display: flex;
   justify-content: flex-end;
 }
-/*!***********************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/video-title/editor.scss ***!
-  \***********************************************************************************************************************************************************************************************************************************************************/
+/*!*****************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/title/editor.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************/
 .videopack-video-title-block .videopack-video-title {
   pointer-events: auto;
   position: relative !important;
@@ -310,9 +310,22 @@ body.videopack-is-editing #media-upload-header {
     white-space: nowrap;
 }
 
-/*!***************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/video-watermark/editor.scss ***!
-  \***************************************************************************************************************************************************************************************************************************************************************/
+/* Preview specific styling for visibility */
+
+.videopack-view-count-block.is-preview {
+    color: #333 !important;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(0,0,0,0.1);
+    font-weight: 500;
+}
+
+/*!*********************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/watermark/editor.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************************/
 .videopack-video-watermark-block.is-overlay {
   z-index: 110;
   pointer-events: none;

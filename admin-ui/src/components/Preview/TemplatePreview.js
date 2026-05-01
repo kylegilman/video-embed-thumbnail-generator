@@ -29,7 +29,7 @@ export default function TemplatePreview({
 			currentFlags.downloadlink = false;
 			currentFlags.embedcode = false;
 		}
-		if (name === 'videopack/video-player-engine') {
+		if (name === 'videopack/player') {
 			currentFlags.isInsidePlayerOverlay = true;
 			currentFlags.isInsidePlayerContainer = true;
 		}

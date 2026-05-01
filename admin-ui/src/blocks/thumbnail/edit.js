@@ -19,6 +19,7 @@ import {
 	video as placeholderIcon,
 } from '@wordpress/icons';
 import { Spinner } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
 import { VideoThumbnailPreview } from './VideoThumbnailPreview';
 
 import useVideopackContext from '../../hooks/useVideopackContext';
@@ -41,23 +42,23 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const { linkTo, style } = attributes;
 
 	const blockProps = useBlockProps();
+	const { latestVideoId } = useSelect((select) => {
+		if (!vpContext.resolved.isPreview) return { latestVideoId: null };
+		const { getEntityRecords } = select('core');
+		const query = {
+			post_type: 'attachment',
+			mime_type: 'video',
+			per_page: 1,
+			_fields: 'id',
+		};
+		const media = getEntityRecords('postType', 'attachment', query);
+		return { latestVideoId: media?.[0]?.id };
+	}, [vpContext.resolved.isPreview]);
 
-	/**
-	 * For the template preview itself, we can derive the duotone class from attributes.
-	 * This is essentially a local version of the sync logic in VideoLoop.
-	 */
-	const duotone = style?.color?.duotone;
-	let resolvedDuotoneClass = '';
-	if (
-		typeof duotone === 'string' &&
-		duotone.startsWith('var:preset|duotone|')
-	) {
-		resolvedDuotoneClass = `wp-duotone-${duotone.split('|').pop()}`;
-	} else if (Array.isArray(duotone)) {
-		// For custom duotones in the template, we'll let Gutenberg's native block-item class handle the filter.
-		// However, we use a stable prefix for previews to match VideoLoop's custom filter logic.
-		resolvedDuotoneClass = `videopack-custom-duotone-${clientId.split('-')[0]}`;
-	}
+	const effectiveAttachmentId = attachmentId || latestVideoId;
+
+	// Note: resolvedDuotoneClass is now computed internally by VideoThumbnailPreview
+	// from the style attribute.
 
 	return (
 		<>
@@ -120,7 +121,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						<Spinner />
 						<p>{__('Searching for attached video...', 'video-embed-thumbnail-generator')}</p>
 					</div>
-				) : !attachmentId ? (
+				) : !attachmentId && !vpContext.resolved.isPreview ? (
 					<Placeholder
 						icon={placeholderIcon}
 						label={__(
@@ -134,11 +135,13 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					/>
 				) : (
 					<VideoThumbnailPreview
-						postId={attachmentId}
+						postId={effectiveAttachmentId}
+						video={ ( vpContext.resolved.isPreview && ! effectiveAttachmentId ) ? { poster_url: videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg' } : {}}
 						linkTo={linkTo}
 						context={context}
 						className="videopack-thumbnail-preview"
-						resolvedDuotoneClass={resolvedDuotoneClass}
+						resolvedDuotoneClass={undefined}
+						clientId={clientId}
 					>
 						<BlockContextProvider
 							value={{

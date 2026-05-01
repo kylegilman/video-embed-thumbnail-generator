@@ -761,17 +761,17 @@ class Shortcode implements Hook_Subscriber {
 		}
 
 		// Build serialized block string using correctly nested structure matching the block editor's templates.
-		$inner_blocks = '<!-- wp:videopack/video-loop -->';
+		$inner_blocks = '<!-- wp:videopack/loop -->';
 
 		if ( $is_gallery ) {
 			// Use the Grid/Gallery template (thumbnails) matching getGridTemplate in templates.js.
 			$thumbnail_inner  = '<!-- wp:videopack/play-button /-->';
 			if ( ( $query_atts['gallery_title'] ?? true ) !== false ) {
-				$thumbnail_inner .= '<!-- wp:videopack/video-title {"isOverlay":true} /-->';
+				$thumbnail_inner .= '<!-- wp:videopack/title {"isOverlay":true} /-->';
 			}
 			
 			if ( ! empty( $query_atts['showDuration'] ) ) {
-				$thumbnail_inner .= '<!-- wp:videopack/video-duration /-->';
+				$thumbnail_inner .= '<!-- wp:videopack/duration /-->';
 			}
 			
 			$inner_blocks .= sprintf( '<!-- wp:videopack/thumbnail {"linkTo":"lightbox"} -->%s<!-- /wp:videopack/thumbnail -->', $thumbnail_inner );
@@ -780,26 +780,26 @@ class Shortcode implements Hook_Subscriber {
 			$item_atts = $query_atts;
 			unset( $item_atts['id'], $item_atts['src'] ); // Item IDs come from loop context.
 
-			$inner_blocks .= sprintf( '<!-- wp:videopack/videopack-video %s -->', wp_json_encode( $item_atts ) );
+			$inner_blocks .= sprintf( '<!-- wp:videopack/player-container %s -->', wp_json_encode( $item_atts ) );
 			
 			$engine_inner = '';
 			if ( ( $query_atts['overlay_title'] ?? true ) !== false || ! empty( $query_atts['downloadlink'] ) || ! empty( $query_atts['embedcode'] ) ) {
-				$engine_inner .= '<!-- wp:videopack/video-title /-->';
+				$engine_inner .= '<!-- wp:videopack/title /-->';
 			}
 			if ( ! empty( $query_atts['watermark'] ) ) {
-				$engine_inner .= '<!-- wp:videopack/video-watermark /-->';
+				$engine_inner .= '<!-- wp:videopack/watermark /-->';
 			}
 			
-			$inner_blocks .= sprintf( '<!-- wp:videopack/video-player-engine -->%s<!-- /wp:videopack/video-player-engine -->', $engine_inner );
+			$inner_blocks .= sprintf( '<!-- wp:videopack/player -->%s<!-- /wp:videopack/player -->', $engine_inner );
 			
 			if ( ! empty( $block_atts['views'] ) ) {
 				$inner_blocks .= '<!-- wp:videopack/view-count /-->';
 			}
 			
-			$inner_blocks .= '<!-- /wp:videopack/videopack-video -->';
+			$inner_blocks .= '<!-- /wp:videopack/player-container -->';
 		}
 
-		$inner_blocks .= '<!-- /wp:videopack/video-loop -->';
+		$inner_blocks .= '<!-- /wp:videopack/loop -->';
 
 		if ( ! empty( $query_atts['gallery_pagination'] ) ) {
 			$inner_blocks .= '<!-- wp:videopack/pagination /-->';
@@ -818,7 +818,7 @@ class Shortcode implements Hook_Subscriber {
 	 * Simulates a videopack/player block.
 	 */
 	/**
-	 * Simulates a videopack/videopack-video block for a single video.
+	 * Simulates a videopack/player-container block for a single video.
 	 *
 	 * @param array  $query_atts The shortcode attributes.
 	 * @param string $src        The video source (ID or URL).
@@ -842,21 +842,21 @@ class Shortcode implements Hook_Subscriber {
 		}
 
 		// Build nested structure matching getListTemplate in templates.js.
-		$inner_blocks  = '<!-- wp:videopack/video-player-engine {"lock":{"remove":true,"move":false}} -->';
+		$inner_blocks  = '<!-- wp:videopack/player {"lock":{"remove":true,"move":false}} -->';
 		if ( ( $query_atts['overlay_title'] ?? true ) !== false || ! empty( $query_atts['downloadlink'] ) || ! empty( $query_atts['embedcode'] ) ) {
-			$inner_blocks .= '<!-- wp:videopack/video-title /-->';
+			$inner_blocks .= '<!-- wp:videopack/title /-->';
 		}
 		if ( ! empty( $query_atts['watermark'] ) ) {
-			$inner_blocks .= '<!-- wp:videopack/video-watermark /-->';
+			$inner_blocks .= '<!-- wp:videopack/watermark /-->';
 		}
-		$inner_blocks .= '<!-- /wp:videopack/video-player-engine -->';
+		$inner_blocks .= '<!-- /wp:videopack/player -->';
 
 		if ( ! empty( $block_atts['views'] ) ) {
 			$inner_blocks .= '<!-- wp:videopack/view-count /-->';
 		}
 
 		$serialized = sprintf(
-			'<!-- wp:videopack/videopack-video %s -->%s<!-- /wp:videopack/videopack-video -->',
+			'<!-- wp:videopack/player-container %s -->%s<!-- /wp:videopack/player-container -->',
 			wp_json_encode( $block_atts ),
 			$inner_blocks
 		);

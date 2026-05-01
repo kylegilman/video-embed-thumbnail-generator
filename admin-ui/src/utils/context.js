@@ -1,6 +1,19 @@
 /* global videopack_config */
 
 /**
+ * Helper to check if a value is truthy, handling both booleans and string values from PHP.
+ *
+ * @param {*} val Value to check.
+ * @return {boolean} True if truthy.
+ */
+export const isTrue = (val) => {
+	if (val === true || val === 'true' || val === 1 || val === '1' || val === 'on' || val === 'yes') {
+		return true;
+	}
+	return false;
+};
+
+/**
  * Resolves an effective design value by checking local overrides, inherited context,
  * and finally global plugin defaults.
  *
@@ -14,16 +27,20 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	const attrKey = key.includes('/') ? key.split('/')[1] : key;
 
 	// Helper to check if a value is valid (not undefined, null, or empty string)
-	const isValid = (val) => val !== undefined && val !== null;
+	const isValid = (val) => val !== undefined && val !== null && val !== '';
 
 	// 1. Check local attribute override
 	if (isValid(attributes[attrKey])) {
+		// Special case for isPreview: if local is false but context is true, prefer context true
+		if (attrKey === 'isPreview' && !attributes[attrKey] && isTrue(context[contextKey])) {
+			return true;
+		}
 		return attributes[attrKey];
 	}
-	if (attrKey === 'attachmentId' && isValid(attributes.id)) {
+	if (attrKey === 'postId' && isValid(attributes.id) && !isValid(context[contextKey])) {
 		return attributes.id;
 	}
-	if (attrKey === 'postId' && isValid(attributes.id)) {
+	if (attrKey === 'attachmentId' && isValid(attributes.id)) {
 		return attributes.id;
 	}
 
@@ -32,7 +49,20 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		return context[contextKey];
 	}
 
+	// If we are resolving postType and we have an attachmentId but no explicit postType context,
+	// assume it's an attachment.
+	if (attrKey === 'postType') {
+		const attachmentId = getEffectiveValue('attachmentId', attributes, context);
+		const postId = getEffectiveValue('postId', attributes, context);
+		if (attachmentId && attachmentId === postId && !isValid(context[contextKey])) {
+			return 'attachment';
+		}
+	}
+
 	// 2b. Check standard Gutenberg context fallbacks
+	if (attrKey === 'postType' && isValid(attributes.id) && !isValid(context[contextKey])) {
+		return 'attachment';
+	}
 	if ((attrKey === 'postId' || attrKey === 'postType') && isValid(context[attrKey])) {
 		return context[attrKey];
 	}

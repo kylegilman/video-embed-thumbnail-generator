@@ -284,7 +284,7 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 						attributes.downloadlink ||
 						(attributes.embeddable && attributes.embedcode)) && (
 						<BlockPreview
-							name="videopack/video-title"
+							name="videopack/title"
 							attributes={{
 								title: attributes.title,
 								overlay_title: !!attributes.overlay_title,
@@ -303,7 +303,7 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 					)}
 					{attributes.watermark && (
 						<BlockPreview
-							name="videopack/video-watermark"
+							name="videopack/watermark"
 							isInsidePlayerOverlay={true}
 							isInsidePlayerContainer={true}
 							isOverlay={true}

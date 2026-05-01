@@ -2,19 +2,25 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "videopack/play-button",
-	"title": "Play Button",
+	"title": "Videopack Play Button",
 	"category": "media",
 	"icon": "controls-play",
 	"description": "Displays a play button overlay.",
-	"usesContext": [
-		"videopack/skin"
-	],
 	"attributes": {
 		"play_button_color": {
 			"type": "string"
 		},
 		"play_button_secondary_color": {
 			"type": "string"
+		},
+		"isPreview": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"example": {
+		"attributes": {
+			"isPreview": true
 		}
 	},
 	"supports": {

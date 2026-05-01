@@ -15,12 +15,12 @@ export const getGridTemplate = (options) => {
 			{ linkTo: 'lightbox' },
 			[
 				['videopack/play-button', {}],
-				options?.overlay_title !== false ? ['videopack/video-title', {}] : null,
+				options?.overlay_title !== false ? ['videopack/title', {}] : null,
 			].filter(Boolean),
 		],
 	];
 
-	const template = [['videopack/video-loop', {}, loopChildren]];
+	const template = [['videopack/loop', {}, loopChildren]];
 
 	if (options?.gallery_pagination) {
 		template.push(['videopack/pagination', {}]);
@@ -43,15 +43,15 @@ export const getListTemplate = (options) => {
 
 	const engineChildren = [];
 	if (showTitleBar) {
-		engineChildren.push(['videopack/video-title', {}]);
+		engineChildren.push(['videopack/title', {}]);
 	}
 	if (options?.watermark) {
-		engineChildren.push(['videopack/video-watermark', {}]);
+		engineChildren.push(['videopack/watermark', {}]);
 	}
 
 	const videoChildren = [
 		[
-			'videopack/video-player-engine',
+			'videopack/player',
 			{ lock: { remove: true, move: false } },
 			engineChildren,
 		],
@@ -61,9 +61,37 @@ export const getListTemplate = (options) => {
 		videoChildren.push(['videopack/view-count', {}]);
 	}
 
-	const loopChildren = [['videopack/videopack-video', {}, videoChildren]];
+	const loopChildren = [['videopack/player-container', {}, videoChildren]];
 
-	const template = [['videopack/video-loop', {}, loopChildren]];
+	const template = [['videopack/loop', {}, loopChildren]];
+
+	if (options?.gallery_pagination) {
+		template.push(['videopack/pagination', {}]);
+	}
+
+	return template;
+};
+/**
+ * Returns the template for a feed layout (rich metadata).
+ *
+ * @param {Object} options Plugin or block options.
+ * @return {Array} The block template.
+ */
+export const getFeedTemplate = (options) => {
+	const loopChildren = [
+		[
+			'videopack/thumbnail',
+			{ linkTo: 'parent' },
+			[
+				['videopack/duration', { position: 'bottom', style: { typography: { fontSize: '14px' } } }],
+			]
+		],
+		['videopack/title', {}],
+		['core/post-date', { metadata: { bindings: { datetime: { source: 'core/post-data', args: { field: 'date' } } } } }],
+		['videopack/view-count', { iconType: 'playOutline' }],
+	];
+
+	const template = [['videopack/loop', {}, loopChildren]];
 
 	if (options?.gallery_pagination) {
 		template.push(['videopack/pagination', {}]);

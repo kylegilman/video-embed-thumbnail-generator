@@ -24,6 +24,7 @@ import {
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
+import useVideopackData from '../../hooks/useVideopackData';
 import './index.css';
 
 /**
@@ -43,26 +44,8 @@ export function ViewCount({
 	context = {},
 }) {
 	const vpContext = useVideopackContext(attributes, context);
+	const { data: views, isResolving } = useVideopackData('views', context);
 	const attachmentId = vpContext.resolved.attachmentId;
-	const { views, isResolving } = useSelect(
-		(select) => {
-			if (!attachmentId || count !== undefined) {
-				return { views: count || 0, isResolving: false };
-			}
-			const { getEntityRecord, isResolving: isResolvingSelector } =
-				select('core');
-			const media = getEntityRecord('postType', 'attachment', attachmentId);
-			return {
-				views: media?.meta?.['_videopack-meta']?.starts,
-				isResolving: isResolvingSelector('getEntityRecord', [
-					'postType',
-					'attachment',
-					attachmentId,
-				]),
-			};
-		},
-		[attachmentId, count]
-	);
 
 	const actualIsOverlay = isOverlay !== undefined ? isOverlay : (isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay']);
 	const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
@@ -72,7 +55,9 @@ export function ViewCount({
 		actualIsOverlay ? 'is-overlay is-badge' : ''
 	} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 		actualIsOverlay ? `position-${position || 'top'}` : ''
-	} has-text-align-${textAlign || defaultAlign}`;
+	} has-text-align-${textAlign || defaultAlign} ${
+		vpContext.resolved.isPreview ? 'is-preview' : ''
+	}`;
 
 	const finalBlockProps = blockProps || {
 		className: wrapperClass,
@@ -87,7 +72,7 @@ export function ViewCount({
 		);
 	}
 
-	if (!attachmentId && count === undefined) {
+	if (!attachmentId && count === undefined && !vpContext.resolved.isPreview) {
 		return null;
 	}
 
@@ -178,6 +163,21 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const defaultAlign = isInsideThumbnail ? 'right' : ( ( isInsidePlayerOverlay || isInsidePlayerContainer ) ? 'right' : 'left' );
 	const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
 
+	const { latestVideoId } = useSelect((select) => {
+		if (!vpContext.resolved.isPreview) return { latestVideoId: null };
+		const { getEntityRecords } = select('core');
+		const query = {
+			post_type: 'attachment',
+			mime_type: 'video',
+			per_page: 1,
+			_fields: 'id',
+		};
+		const media = getEntityRecords('postType', 'attachment', query);
+		return { latestVideoId: media?.[0]?.id };
+	}, [vpContext.resolved.isPreview]);
+
+	const effectiveAttachmentId = postId || latestVideoId;
+
 	const position = attributes.position || context['videopack/position'] || 'top';
 
 	const blockProps = useBlockProps({
@@ -185,7 +185,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 			isOverlay ? `is-overlay position-${position}` : ''
 		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${!postId ? 'no-title' : ''} has-text-align-${finalTextAlign}`,
+		} ${!effectiveAttachmentId ? 'no-title' : ''} has-text-align-${finalTextAlign}`,
 		style: vpContext.style,
 	});
 
@@ -326,7 +326,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 				blockProps={blockProps}
 				iconType={iconType}
 				showText={showText}
-				postId={postId}
+				postId={effectiveAttachmentId}
 				isInsideThumbnail={isInsideThumbnail}
 				context={context}
 			/>

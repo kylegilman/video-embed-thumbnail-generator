@@ -34,6 +34,11 @@
 		@container (max-width: 500px) {
 			:is(.columns-2 &, .columns-3 &, .columns-4 &, .columns-5 &, .columns-6 &, &.columns-2, &.columns-3, &.columns-4, &.columns-5, &.columns-6) {
 				grid-template-columns: 1fr !important;
+				
+				// Bypass collapse in inserter previews to show side-by-side (2 columns)
+				:is(.is-preview &, &.is-preview) {
+					grid-template-columns: repeat(2, 1fr) !important;
+				}
 			}
 		}
 	}

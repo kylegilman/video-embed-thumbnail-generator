@@ -73,7 +73,7 @@ class Video_Finder {
 	protected static function extract_from_blocks( array $blocks ): array {
 		$found = array();
 		foreach ( $blocks as $block ) {
-			if ( 'videopack/videopack-video' === ( $block['blockName'] ?? '' ) ) {
+			if ( 'videopack/player-container' === ( $block['blockName'] ?? '' ) ) {
 				$found[] = $block['attrs'] ?? array();
 			}
 			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
@@ -91,7 +91,7 @@ class Video_Finder {
 	 */
 	protected static function find_first_block( array $blocks ): ?array {
 		foreach ( $blocks as $block ) {
-			if ( 'videopack/videopack-video' === ( $block['blockName'] ?? '' ) ) {
+			if ( 'videopack/player-container' === ( $block['blockName'] ?? '' ) ) {
 				return $block['attrs'] ?? array();
 			}
 			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {

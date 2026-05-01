@@ -1,0 +1,62 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "videopack/watermark",
+	"title": "Videopack Watermark",
+	"category": "media",
+	"icon": "art",
+	"description": "Displays a watermark overlay on the video.",
+	"parent": [
+		"videopack/player-container",
+		"videopack/player"
+	],
+	"attributes": {
+		"watermark": {
+			"type": "string"
+		},
+		"watermark_link_to": {
+			"type": "string",
+			"default": "false"
+		},
+		"watermark_url": {
+			"type": "string"
+		},
+		"watermark_align": {
+			"type": "string",
+			"default": "right"
+		},
+		"watermark_valign": {
+			"type": "string",
+			"default": "bottom"
+		},
+		"watermark_scale": {
+			"type": "number",
+			"default": 10
+		},
+		"watermark_x": {
+			"type": "number",
+			"default": 5
+		},
+		"watermark_y": {
+			"type": "number",
+			"default": 7
+		},
+		"isPreview": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"example": {
+		"attributes": {
+			"watermark": "https://s.w.org/style/images/about/WordPress-logotype-wmark.png",
+			"isPreview": true
+		}
+	},
+	"supports": {
+		"html": false,
+		"reusable": false
+	},
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css"
+}

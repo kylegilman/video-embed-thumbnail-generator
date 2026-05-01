@@ -16,6 +16,7 @@ import { getEffectiveValue } from '../../utils/context';
 import GenericPlayer from './GenericPlayer.js';
 import VideoJS from './VideoJs.js';
 import WpMejsPlayer from './WpMejsPlayer.js';
+import CustomDuotoneFilter from '../Duotone/CustomDuotoneFilter';
 
 const DEFAULT_PLAYERS = {
 	'Video.js': VideoJS,
@@ -159,6 +160,23 @@ const VideoPlayer = ({
 	const control_bar_color = getEffectiveValue('control_bar_color', attributes, context);
 	const title_color = getEffectiveValue('title_color', attributes, context);
 	const title_background_color = getEffectiveValue('title_background_color', attributes, context);
+	
+	// Duotone resolution
+	const duotone = attributes?.style?.color?.duotone || attributes?.duotone;
+	const instanceId = useMemo(() => {
+		return `vp-player-${Math.random().toString(36).substr(2, 9)}`;
+	}, []);
+
+	let resolvedDuotoneClass = '';
+	const loopDuotoneId = getEffectiveValue('loopDuotoneId', attributes, context);
+
+	if (loopDuotoneId) {
+		resolvedDuotoneClass = loopDuotoneId;
+	} else if (typeof duotone === 'string' && duotone.startsWith('var:preset|duotone|')) {
+		resolvedDuotoneClass = `wp-duotone-${duotone.split('|').pop()}`;
+	} else if (Array.isArray(duotone)) {
+		resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
+	}
 
 	const players = useMemo(
 		() => applyFilters('videopack_admin_players', DEFAULT_PLAYERS),
@@ -271,11 +289,12 @@ const VideoPlayer = ({
 		} else if (aspectRatio) {
 			styles.aspectRatio = aspectRatio.replace(':', ' / ');
 		}
+
 		return styles;
 	}, [isFixedAspect, default_ratio, aspectRatio]);
 
 	const wrapperClasses = useMemo(() => {
-		const classes = ['videopack-video-block-container', 'videopack-wrapper', 'videopack-video-title-visible'];
+		const classes = ['videopack-video-block-container', 'videopack-wrapper'];
 		if (embed_method === 'Video.js' && skin) {
 			classes.push(skin);
 		}
@@ -303,6 +322,9 @@ const VideoPlayer = ({
 		if (title_background_color) {
 			classes.push('videopack-has-title-background-color');
 		}
+		if (resolvedDuotoneClass && !loopDuotoneId) {
+			classes.push(resolvedDuotoneClass);
+		}
 		return classes.join(' ');
 	}, [
 		play_button_color,
@@ -315,6 +337,7 @@ const VideoPlayer = ({
 		aspectRatio,
 		skin,
 		embed_method,
+		resolvedDuotoneClass,
 	]);
 
 	const actualAutoplay = useMemo(() => {
@@ -460,15 +483,15 @@ const VideoPlayer = ({
 
 	const handlePlay = useCallback(() => {
 		if (wrapperRef.current) {
-			wrapperRef.current.classList.remove(
-				'videopack-video-title-visible'
-			);
+			const metaElements = wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper');
+			metaElements.forEach((el) => el.classList.remove('videopack-video-title-visible'));
 		}
 	}, []);
 
 	const handlePause = useCallback(() => {
 		if (wrapperRef.current) {
-			wrapperRef.current.classList.add('videopack-video-title-visible');
+			const metaElements = wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper');
+			metaElements.forEach((el) => el.classList.add('videopack-video-title-visible'));
 		}
 	}, []);
 
@@ -518,11 +541,11 @@ const VideoPlayer = ({
 	}
 
 	return (
-		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles}>
+		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles} id={instanceId}>
 			<div
 				className={`videopack-player ${
 					embed_method === 'Video.js' ? skin || '' : ''
-				}`}
+				} ${!loopDuotoneId && resolvedDuotoneClass ? resolvedDuotoneClass : ''}`}
 				style={{ ...innerPlayerStyles, position: 'relative' }}
 				data-id={attributes.id}
 			>
@@ -588,6 +611,24 @@ const VideoPlayer = ({
 						/>
 					);
 				})()}
+				{Array.isArray(duotone) && resolvedDuotoneClass && !loopDuotoneId && (
+					<>
+						<CustomDuotoneFilter colors={duotone} id={resolvedDuotoneClass} />
+						<style>
+							{`
+								.${resolvedDuotoneClass} .vjs-poster:not(.vjs-poster .vjs-poster),
+								.${resolvedDuotoneClass} .mejs-poster:not(.mejs-poster .mejs-poster),
+								#${instanceId} .vjs-poster:not(.vjs-poster .vjs-poster),
+								#${instanceId} .mejs-poster:not(.mejs-poster .mejs-poster) {
+									filter: url(#${resolvedDuotoneClass}) !important;
+								}
+								#${instanceId} {
+									filter: none !important;
+								}
+							`}
+						</style>
+					</>
+				)}
 				{children}
 			</div>
 		</div>

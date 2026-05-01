@@ -25,3 +25,16 @@
     white-space: nowrap;
 }
 
+/* Preview specific styling for visibility */
+
+.videopack-view-count-block.is-preview {
+    color: #333 !important;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(0,0,0,0.1);
+    font-weight: 500;
+}
+

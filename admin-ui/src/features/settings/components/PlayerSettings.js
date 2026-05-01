@@ -501,7 +501,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 									downloadlink ||
 									(embeddable && embedcode)) && (
 									<BlockPreview
-										name="videopack/video-title"
+										name="videopack/title"
 										attributes={{ 
 											title: 'Sample Video',
 											overlay_title: !!overlay_title,
@@ -517,7 +517,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								)}
 								{watermark && (
 									<BlockPreview
-										name="videopack/video-watermark"
+										name="videopack/watermark"
 										isInsidePlayerOverlay={true}
 										isInsidePlayerContainer={true}
 										isOverlay={true}

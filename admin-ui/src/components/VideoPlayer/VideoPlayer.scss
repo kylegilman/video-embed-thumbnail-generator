@@ -4,7 +4,7 @@
 @use "../common/PlayButton.scss" as *;
 
 /* Main Gutenberg Block Wrapper */
-.wp-block-videopack-videopack-video {
+.wp-block-videopack-player-container {
 	width: 100%;
 	max-width: var(--wp--style--global--content-size);
 	margin-top: 1em;
@@ -30,7 +30,7 @@
 
 // Reset margin for video blocks inside loops/collections to defer to container spacing.
 // Also reset margin for interior wrapper when inside a Gutenberg block to avoid doubling.
-.wp-block-videopack-videopack-video .videopack-wrapper,
+.wp-block-videopack-player-container .videopack-wrapper,
 .videopack-collection-item .videopack-wrapper,
 .videopack-collection-grid .videopack-wrapper,
 .videopack-video-loop .videopack-wrapper {

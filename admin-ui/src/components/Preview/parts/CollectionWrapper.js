@@ -12,6 +12,12 @@ export default function CollectionWrapper({ children, attributes = {}, context =
 		attributes.play_button_secondary_color ||
 		context['videopack/play_button_secondary_color'];
 
+	const duotone = attributes?.style?.color?.duotone || attributes?.duotone || context['videopack/duotone'];
+	let duotoneClass = '';
+	if (duotone && typeof duotone === 'string' && duotone.startsWith('var:preset|duotone|')) {
+		duotoneClass = `wp-duotone-${duotone.split('|').pop()}`;
+	}
+
 	return (
 		<div
 			className={`videopack-collection videopack-wrapper layout-${layout} columns-${columns}${
@@ -22,9 +28,7 @@ export default function CollectionWrapper({ children, attributes = {}, context =
 				play_button_secondary_color
 					? 'videopack-has-play-button-secondary-color'
 					: ''
-			} ${
-				(attributes.overlay_title !== false || attributes.downloadlink) ? 'videopack-video-title-visible' : ''
-			}`}
+			} ${duotoneClass}`}
 			style={{
 				'--videopack-collection-columns': columns,
 				'--videopack-title-color':

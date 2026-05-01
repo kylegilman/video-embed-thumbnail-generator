@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "videopack/player",
+  "title": "Videopack Player",
+  "category": "media",
+  "icon": "format-video",
+  "parent": [
+    "videopack/player-container"
+  ],
+  "allowedBlocks": [
+    "videopack/watermark",
+    "videopack/title"
+  ],
+  "editorStyle": "file:./index.css",
+  "attributes": {
+    "isInsidePlayerOverlay": {
+      "type": "boolean",
+      "default": true
+    },
+    "isPreview": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "example": {
+    "attributes": {
+      "isPreview": true
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "lock": true
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:./index.js"
+}

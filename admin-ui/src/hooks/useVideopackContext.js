@@ -1,8 +1,9 @@
 import { useMemo } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import { getEffectiveValue } from '../utils/context';
+import { getEffectiveValue, isTrue } from '../utils/context';
+export { isTrue };
 
-export const DESIGN_KEYS = [
+export const VIDEOPACK_CONTEXT_KEYS = [
 	'skin',
 	'title_color',
 	'title_background_color',
@@ -19,10 +20,51 @@ export const DESIGN_KEYS = [
 	'watermark_link_to',
 	'align',
 	'gallery_per_page',
+	'gallery_source',
+	'gallery_id',
+	'gallery_category',
+	'gallery_tag',
+	'gallery_orderby',
+	'gallery_order',
+	'gallery_include',
+	'gallery_exclude',
+	'layout',
+	'columns',
 	'enable_collection_video_limit',
 	'collection_video_limit',
 	'prioritizePostData',
 	'embed_method',
+	'isPreview',
+	'isStandalone',
+	'src',
+	'poster',
+	'title',
+	'caption',
+	'width',
+	'height',
+	'autoplay',
+	'controls',
+	'loop',
+	'muted',
+	'playsinline',
+	'preload',
+	'volume',
+	'auto_res',
+	'auto_codec',
+	'sources',
+	'source_groups',
+	'text_tracks',
+	'playback_rate',
+	'downloadlink',
+	'embedcode',
+	'embedlink',
+	'showCaption',
+	'showBackground',
+	'title_position',
+	'restartCount',
+	'duotone',
+	'style',
+	'loopDuotoneId',
 ];
 
 /**
@@ -39,7 +81,7 @@ export default function useVideopackContext(attributes, context) {
 		const style = {};
 		const classes = [];
 
-		DESIGN_KEYS.forEach((key) => {
+		VIDEOPACK_CONTEXT_KEYS.forEach((key) => {
 			const value = getEffectiveValue(key, attributes, context);
 			resolved[key] = value;
 
@@ -102,9 +144,9 @@ export default function useVideopackContext(attributes, context) {
 			}
 		}
 
-		resolved.isEditingAllPages = !!getEffectiveValue('isEditingAllPages', attributes, context);
-		resolved.prioritizePostData = !!getEffectiveValue('prioritizePostData', attributes, context);
-
+		resolved.isEditingAllPages = isTrue(getEffectiveValue('isEditingAllPages', attributes, context));
+		resolved.prioritizePostData = isTrue(getEffectiveValue('prioritizePostData', attributes, context));
+		resolved.isStandalone = isTrue(getEffectiveValue('isStandalone', attributes, context));
 		// Core data identification
 		resolved.postId = getEffectiveValue('postId', attributes, context);
 		resolved.attachmentId = getEffectiveValue('attachmentId', attributes, context);
@@ -126,9 +168,12 @@ export default function useVideopackContext(attributes, context) {
 	const { discoveredAttachmentId, isDiscovering } = useSelect((select) => {
 		const { resolved } = initial;
 		
-		// If we already have an attachmentId, we're not discovering.
-		if (resolved.attachmentId) {
-			return { discoveredAttachmentId: resolved.attachmentId, isDiscovering: false };
+		// If we already have an attachmentId, a manual src, or a saved id, we're not discovering.
+		if (resolved.attachmentId || attributes.src || attributes.id) {
+			return {
+				discoveredAttachmentId: resolved.attachmentId || attributes.id,
+				isDiscovering: false,
+			};
 		}
 
 		// If we don't even have a postId, we can't discover anything.
@@ -136,36 +181,60 @@ export default function useVideopackContext(attributes, context) {
 			return { discoveredAttachmentId: null, isDiscovering: false };
 		}
 
+		// Avoid duplicates: Find IDs already used by other blocks
+		const { getBlocks } = select('core/block-editor');
+		const allBlocks = getBlocks();
+		
+		const usedIds = new Set();
+		const findUsedIds = (blocks) => {
+			blocks.forEach((block) => {
+				if (block.name === 'videopack/player-container' && block.attributes.id) {
+					usedIds.add(Number(block.attributes.id));
+				}
+				if (block.innerBlocks) {
+					findUsedIds(block.innerBlocks);
+				}
+			});
+		};
+		findUsedIds(allBlocks);
+
 		// If the postId itself IS an attachment, then that's our attachmentId.
 		if (resolved.postType === 'attachment') {
-			return { discoveredAttachmentId: resolved.postId, isDiscovering: false };
+			const id = Number(resolved.postId);
+			// Only use it if it's not already taken by another block
+			if (!usedIds.has(id)) {
+				return { discoveredAttachmentId: id, isDiscovering: false };
+			}
 		}
 
-		// Otherwise, try to find the first video attachment for this post.
+		// Otherwise, try to find a video attachment for this post that isn't already used.
 		const { getEntityRecords } = select('core');
 		const query = {
 			parent: resolved.postId,
-			mime_type: 'video',
-			per_page: 1,
-			_fields: 'id',
+			media_type: 'video',
+			per_page: 20, // Fetch more to allow skipping duplicates and non-videos
+			_fields: 'id,mime_type',
 		};
 		const attachments = getEntityRecords('postType', 'attachment', query);
 		const isResolving = select('core/data').isResolving('core', 'getEntityRecords', ['postType', 'attachment', query]);
 
-		const foundId = attachments?.[0]?.id || null;
+		// Pick the first one that is a video AND isn't already used
+		const foundId = attachments?.find((a) => 
+			a.mime_type?.startsWith('video/') && !usedIds.has(Number(a.id))
+		)?.id || null;
 
 		return {
 			discoveredAttachmentId: foundId,
 			isDiscovering: isResolving || ( !foundId && attachments === undefined )
 		};
-	}, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType]);
+	}, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
 
 	return useMemo(() => {
-		const rawAttachmentId = discoveredAttachmentId || initial.resolved.attachmentId;
+		const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 		
 		// Safety: If the resolved attachment ID is the same as the post ID, 
 		// and we know the post is NOT an attachment, then it's a false resolution.
-		const finalAttachmentId = ( rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' )
+		const finalAttachmentId = ( rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id )
 			? null 
 			: rawAttachmentId;
 
@@ -175,10 +244,27 @@ export default function useVideopackContext(attributes, context) {
 			isDiscovering
 		};
 
+		// 3. Generate Shared Context Bridge
+		const sharedContext = {};
+		VIDEOPACK_CONTEXT_KEYS.forEach((key) => {
+			if (finalResolved[key] !== undefined && finalResolved[key] !== null) {
+				sharedContext[`videopack/${key}`] = finalResolved[key];
+			}
+		});
+		
+		// Add core metadata to shared context
+		sharedContext['videopack/postId'] = finalResolved.postId;
+		sharedContext['videopack/attachmentId'] = finalResolved.attachmentId;
+		sharedContext['videopack/postType'] = finalResolved.postType;
+		sharedContext['videopack/isEditingAllPages'] = finalResolved.isEditingAllPages;
+		sharedContext['videopack/prioritizePostData'] = finalResolved.prioritizePostData;
+		sharedContext['videopack/isStandalone'] = finalResolved.isStandalone;
+
 		return {
 			resolved: finalResolved,
 			style: initial.style,
 			classes: initial.classes.join(' '),
+			sharedContext,
 		};
 	}, [initial, discoveredAttachmentId, isDiscovering]);
 }

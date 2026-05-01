@@ -36,6 +36,15 @@ export const designAttributes = {
 	pagination_active_color: {
 		type: 'string',
 	},
+	watermark: {
+		type: 'string',
+	},
+	watermark_styles: {
+		type: 'object',
+	},
+	watermark_link_to: {
+		type: 'string',
+	},
 };
 
 export const providesDesignContext = {
@@ -50,6 +59,9 @@ export const providesDesignContext = {
 	'videopack/pagination_background_color': 'pagination_background_color',
 	'videopack/pagination_active_bg_color': 'pagination_active_bg_color',
 	'videopack/pagination_active_color': 'pagination_active_color',
+	'videopack/watermark': 'watermark',
+	'videopack/watermark_styles': 'watermark_styles',
+	'videopack/watermark_link_to': 'watermark_link_to',
 };
 
 export const usesDesignContext = [
@@ -64,4 +76,7 @@ export const usesDesignContext = [
 	'videopack/pagination_background_color',
 	'videopack/pagination_active_bg_color',
 	'videopack/pagination_active_color',
+	'videopack/watermark',
+	'videopack/watermark_styles',
+	'videopack/watermark_link_to',
 ];
