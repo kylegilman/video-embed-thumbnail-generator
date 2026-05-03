@@ -65,6 +65,10 @@ export const VIDEOPACK_CONTEXT_KEYS = [
 	'duotone',
 	'style',
 	'loopDuotoneId',
+	'fixed_aspect',
+	'fullwidth',
+	'rotate',
+	'default_ratio',
 ];
 
 /**
@@ -72,9 +76,15 @@ export const VIDEOPACK_CONTEXT_KEYS = [
  *
  * @param {Object} attributes Block attributes.
  * @param {Object} context    Block context.
+ * @param {Object} options    Optional configuration.
  * @return {Object} Resolved values, styles, and classes.
  */
-export default function useVideopackContext(attributes, context) {
+export default function useVideopackContext(attributes, context, options = {}) {
+	const { excludeHoverTrigger: optionsExclude = false } = options;
+	// The hover trigger exclusion should NOT be inherited from parents by default,
+	// as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
+	const excludeHoverTrigger = optionsExclude || attributes.exclude_hover_trigger || false;
+
 	// 1. Initial Synchronous Resolution
 	const initial = useMemo(() => {
 		const resolved = {};
@@ -160,8 +170,12 @@ export default function useVideopackContext(attributes, context) {
 			classes.push(`has-${attributes.fontFamily}-font-family`);
 		}
 
+		if (!excludeHoverTrigger) {
+			classes.push('videopack-hover-trigger');
+		}
+
 		return { resolved, style, classes };
-	}, [attributes, context]);
+	}, [attributes, context, excludeHoverTrigger]);
 
 	// 2. Automatic Video Discovery
 	// If we have a postId but no attachmentId, try to find the first video attachment.
@@ -266,5 +280,5 @@ export default function useVideopackContext(attributes, context) {
 			classes: initial.classes.join(' '),
 			sharedContext,
 		};
-	}, [initial, discoveredAttachmentId, isDiscovering]);
+	}, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
 }

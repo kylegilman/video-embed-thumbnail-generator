@@ -42,7 +42,7 @@
 
 			// Keep the inner block preview content inert to prevent selection/accidental clicks
 			// while allowing the parent card to respond to mouse moves.
-			> div:not([class*="videopack-gallery-item"]):not([class*="videopack-drag-handle"]):not([class*="gallery-add-button"]) {
+			> div:not([class*="videopack-gallery-item"]):not([class*="videopack-drag-handle"]):not([class*="gallery-add-button"]):not([class*="videopack-video-block-container"]):not([class*="videopack-wrapper"]) {
 				pointer-events: none;
 			}
 

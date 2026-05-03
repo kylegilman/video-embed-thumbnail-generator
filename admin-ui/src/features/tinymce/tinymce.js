@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { BlockPreview, TemplatePreview } from '../../components/Preview';
 import { getGridTemplate, getListTemplate } from '../../utils/templates';
-import { getEffectiveValue } from '../../utils/context';
+import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import { normalizeOptions } from '../../utils/helpers';
 /* global videopack_config, tinymce, MutationObserver */
@@ -74,36 +74,26 @@ import './tinymce.scss';
 	const PlaceHolderWrapper = ({ type, attributes, mountNode }) => {
 		const [fullAttributes, setFullAttributes] = useState(attributes);
 		const activePostId = useMemo(() => detectPostId(), []);
-		const effectiveOptions = useMemo(
-			() => ({
-				embed_method: videopack_config?.embed_method,
-				...(videopack_config?.options || {}),
-				...(videopack_config?.defaults || {}),
-			}),
-			[]
-		);
-
-		// Normalize attributes and merging defaults
+		// Use unified context hook for all design and behavior resolution.
+		// TinyMCE doesn't have block context, so we pass an empty object.
+		const vpContext = useVideopackContext(attributes, {}, { excludeHoverTrigger: true });
 		const mergedAttributes = useMemo(() => {
-			const merged = {
-				...effectiveOptions,
-				...fullAttributes,
-				autoplay: false, // Never autoplay in TinyMCE preview
-			};
+			const resolved = { ...vpContext.resolved };
+			resolved.autoplay = false; // Never autoplay in TinyMCE preview
 
 			// Fix for gallery_source="current" in TinyMCE/REST context where get_the_ID() is 0.
 			if (
-				merged.gallery_source === 'current' &&
-				(!merged.gallery_id ||
-					merged.gallery_id === '0' ||
-					parseInt(merged.gallery_id, 10) === 0)
+				resolved.gallery_source === 'current' &&
+				(!resolved.gallery_id ||
+					resolved.gallery_id === '0' ||
+					parseInt(resolved.gallery_id, 10) === 0)
 			) {
 				if (activePostId) {
-					merged.gallery_id = activePostId;
+					resolved.gallery_id = activePostId;
 				}
 			}
-			return normalizeOptions(merged);
-		}, [effectiveOptions, fullAttributes, activePostId]);
+			return resolved;
+		}, [vpContext.resolved, activePostId]);
 
 		const { videoResults, isResolving, maxNumPages } = useVideoQuery(
 			{ ...mergedAttributes, page_number: 1 },
@@ -186,21 +176,10 @@ import './tinymce.scss';
 		}
 
 		const contextValue = {
-			...mergedAttributes,
+			...vpContext.sharedContext,
 			'videopack/videos': videoResults,
 			'videopack/layout': type === 'Gallery' ? 'grid' : 'list',
 			'videopack/columns': parseInt(mergedAttributes.gallery_columns, 10) || 3,
-			'videopack/skin': getEffectiveValue('skin', mergedAttributes, {}),
-			'videopack/play_button_color': getEffectiveValue('play_button_color', mergedAttributes, {}),
-			'videopack/play_button_secondary_color': getEffectiveValue('play_button_secondary_color', mergedAttributes, {}),
-			'videopack/title_color': getEffectiveValue('title_color', mergedAttributes, {}),
-			'videopack/title_background_color': getEffectiveValue('title_background_color', mergedAttributes, {}),
-			'videopack/gallery_pagination': mergedAttributes.gallery_pagination,
-			'videopack/gallery_per_page': mergedAttributes.gallery_per_page,
-			'videopack/pagination_color': getEffectiveValue('pagination_color', mergedAttributes, {}),
-			'videopack/pagination_background_color': getEffectiveValue('pagination_background_color', mergedAttributes, {}),
-			'videopack/pagination_active_color': getEffectiveValue('pagination_active_color', mergedAttributes, {}),
-			'videopack/pagination_active_bg_color': getEffectiveValue('pagination_active_bg_color', mergedAttributes, {}),
 			'videopack/totalPages': maxNumPages,
 			'videopack/currentPage': 1,
 		};

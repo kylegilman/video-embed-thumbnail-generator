@@ -85,7 +85,11 @@ export function ViewCount({
 	}
 
 	const safeViews =
-		views !== undefined && views !== null ? Number(views) : 0;
+		count !== undefined
+			? Number(count)
+			: views !== undefined && views !== null
+			? Number(views)
+			: 0;
 
 	const displayValue = showText
 		? sprintf(

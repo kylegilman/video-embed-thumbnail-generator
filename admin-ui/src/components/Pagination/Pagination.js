@@ -1,5 +1,5 @@
 import { __ } from '@wordpress/i18n';
-import { getEffectiveValue } from '../../utils/context';
+import useVideopackContext from '../../hooks/useVideopackContext';
 
 
 /**
@@ -20,20 +20,24 @@ export default function Pagination({
 	context = {},
 	style: propStyle,
 }) {
+	const vpContext = useVideopackContext(attributes, context);
+
 	if (totalPages <= 1) {
 		return null;
 	}
 
-	const paginationColor = getEffectiveValue('pagination_color', attributes, context);
-	const paginationBg = getEffectiveValue('pagination_background_color', attributes, context);
-	const paginationActiveBg = getEffectiveValue('pagination_active_bg_color', attributes, context);
-	const paginationActiveColor = getEffectiveValue('pagination_active_color', attributes, context);
+	const {
+		pagination_color,
+		pagination_background_color,
+		pagination_active_bg_color,
+		pagination_active_color,
+	} = vpContext.resolved;
 
 	const style = {
-		'--videopack-pagination-color': paginationColor,
-		'--videopack-pagination-bg': paginationBg,
-		'--videopack-pagination-active-bg': paginationActiveBg,
-		'--videopack-pagination-active-color': paginationActiveColor,
+		'--videopack-pagination-color': pagination_color,
+		'--videopack-pagination-bg': pagination_background_color,
+		'--videopack-pagination-active-bg': pagination_active_bg_color,
+		'--videopack-pagination-active-color': pagination_active_color,
 		...propStyle,
 	};
 

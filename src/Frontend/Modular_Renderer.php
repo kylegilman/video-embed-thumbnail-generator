@@ -97,7 +97,11 @@ class Modular_Renderer {
 		wp_enqueue_style( 'videopack-core' );
 		wp_enqueue_script( 'videopack-core' );
 		$is_modular_engine = ! empty( $atts['is_modular_engine'] );
+		$exclude_hover     = ! empty( $atts['exclude_hover_trigger'] );
 		$classes           = array( 'videopack-wrapper' );
+		if ( ! $exclude_hover ) {
+			$classes[] = 'videopack-hover-trigger';
+		}
 
 		if ( $is_block ) {
 			$classes[] = 'videopack-video-block-container';
@@ -785,7 +789,12 @@ class Modular_Renderer {
 		$instance_id   = $context['videopackId'] ?? ( $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() ) );
 
 		$style_vars     = array();
+		$exclude_hover  = ! empty( $atts['exclude_hover_trigger'] ) || ! empty( $context['exclude_hover_trigger'] );
 		$classes        = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
+		if ( ! $exclude_hover ) {
+			$classes[] = 'videopack-hover-trigger';
+		}
+
 		if ( 'Video.js' === ( $options['embed_method'] ?? 'Video.js' ) ) {
 			$classes[] = $skin;
 		}

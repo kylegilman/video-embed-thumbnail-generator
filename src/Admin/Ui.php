@@ -276,6 +276,7 @@ class Ui implements Hook_Subscriber {
 				'videopack/isInsideThumbnail',
 				'videopack/isInsidePlayerOverlay',
 				'videopack/isInsidePlayerContainer',
+				'videopack/exclude_hover_trigger',
 				'videopack/src',
 				'videopack/poster',
 				'videopack/title',

@@ -5,9 +5,9 @@ import { useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import Pagination from '../../components/Pagination/Pagination';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
-import { getEffectiveValue } from '../../utils/context';
-import { useVideopackContext } from '../../utils/VideopackContext';
 import { getColorFallbacks } from '../../utils/colors';
+import { useVideopackContext } from '../../utils/VideopackContext';
+import useVideopackResolution from '../../hooks/useVideopackContext';
 
 /* global videopack_config */
 
@@ -26,6 +26,7 @@ export default function Edit({
 	} = attributes;
 
 	const vpContext = useVideopackContext();
+	const { resolved } = useVideopackResolution(attributes, context);
 	const currentPage =
 		vpContext.currentPage || context['videopack/currentPage'] || 1;
 	const totalPages =
@@ -93,11 +94,7 @@ export default function Edit({
 										fallbackValue={
 											pagination_color === ''
 												? fallbacks.pagination_color
-												: getEffectiveValue(
-														'pagination_color',
-														{},
-														context
-													) ||
+												: resolved.pagination_color ||
 													fallbacks.pagination_color
 										}
 									/>
@@ -119,11 +116,7 @@ export default function Edit({
 										fallbackValue={
 											pagination_background_color === ''
 												? fallbacks.pagination_background_color
-												: getEffectiveValue(
-														'pagination_background_color',
-														{},
-														context
-													) ||
+												: resolved.pagination_background_color ||
 													fallbacks.pagination_background_color
 										}
 									/>
@@ -145,11 +138,7 @@ export default function Edit({
 										fallbackValue={
 											pagination_active_bg_color === ''
 												? fallbacks.pagination_active_bg_color
-												: getEffectiveValue(
-														'pagination_active_bg_color',
-														{},
-														context
-													) ||
+												: resolved.pagination_active_bg_color ||
 													fallbacks.pagination_active_bg_color
 										}
 									/>
@@ -170,11 +159,7 @@ export default function Edit({
 										fallbackValue={
 											pagination_active_color === ''
 												? fallbacks.pagination_active_color
-												: getEffectiveValue(
-														'pagination_active_color',
-														{},
-														context
-													) ||
+												: resolved.pagination_active_color ||
 													fallbacks.pagination_active_color
 										}
 									/>

@@ -850,9 +850,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _components_Pagination_Pagination__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../components/Pagination/Pagination */ "./src/components/Pagination/Pagination.js");
 /* harmony import */ var _components_CompactColorPicker_CompactColorPicker__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../components/CompactColorPicker/CompactColorPicker */ "./src/components/CompactColorPicker/CompactColorPicker.js");
-/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
+/* harmony import */ var _utils_colors__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../utils/colors */ "./src/utils/colors.js");
 /* harmony import */ var _utils_VideopackContext__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils/VideopackContext */ "./src/utils/VideopackContext.js");
-/* harmony import */ var _utils_colors__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../utils/colors */ "./src/utils/colors.js");
+/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__);
 
@@ -882,6 +882,9 @@ function Edit({
     pagination_active_color
   } = attributes;
   const vpContext = (0,_utils_VideopackContext__WEBPACK_IMPORTED_MODULE_8__.useVideopackContext)();
+  const {
+    resolved
+  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_9__["default"])(attributes, context);
   const currentPage = vpContext.currentPage || context['videopack/currentPage'] || 1;
   const totalPages = vpContext.totalPages || context['videopack/totalPages'] || 1;
   const THEME_COLORS = videopack_config?.themeColors || [];
@@ -895,7 +898,7 @@ function Edit({
       parentClientId: select('core/block-editor').getBlockRootClientId(clientId)
     };
   }, [clientId]);
-  const fallbacks = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useMemo)(() => (0,_utils_colors__WEBPACK_IMPORTED_MODULE_9__.getColorFallbacks)(attributes), [attributes]);
+  const fallbacks = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useMemo)(() => (0,_utils_colors__WEBPACK_IMPORTED_MODULE_7__.getColorFallbacks)(attributes), [attributes]);
   const handlePageChange = newPage => {
     if (parentClientId) {
       updateBlockAttributes(parentClientId, {
@@ -926,7 +929,7 @@ function Edit({
                   pagination_color: value
                 }),
                 colors: THEME_COLORS,
-                fallbackValue: pagination_color === '' ? fallbacks.pagination_color : (0,_utils_context__WEBPACK_IMPORTED_MODULE_7__.getEffectiveValue)('pagination_color', {}, context) || fallbacks.pagination_color
+                fallbackValue: pagination_color === '' ? fallbacks.pagination_color : resolved.pagination_color || fallbacks.pagination_color
               })
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
               className: "videopack-color-flex-item",
@@ -937,7 +940,7 @@ function Edit({
                   pagination_background_color: value
                 }),
                 colors: THEME_COLORS,
-                fallbackValue: pagination_background_color === '' ? fallbacks.pagination_background_color : (0,_utils_context__WEBPACK_IMPORTED_MODULE_7__.getEffectiveValue)('pagination_background_color', {}, context) || fallbacks.pagination_background_color
+                fallbackValue: pagination_background_color === '' ? fallbacks.pagination_background_color : resolved.pagination_background_color || fallbacks.pagination_background_color
               })
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
               className: "videopack-color-flex-item",
@@ -948,7 +951,7 @@ function Edit({
                   pagination_active_bg_color: value
                 }),
                 colors: THEME_COLORS,
-                fallbackValue: pagination_active_bg_color === '' ? fallbacks.pagination_active_bg_color : (0,_utils_context__WEBPACK_IMPORTED_MODULE_7__.getEffectiveValue)('pagination_active_bg_color', {}, context) || fallbacks.pagination_active_bg_color
+                fallbackValue: pagination_active_bg_color === '' ? fallbacks.pagination_active_bg_color : resolved.pagination_active_bg_color || fallbacks.pagination_active_bg_color
               })
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
               className: "videopack-color-flex-item",
@@ -959,7 +962,7 @@ function Edit({
                   pagination_active_color: value
                 }),
                 colors: THEME_COLORS,
-                fallbackValue: pagination_active_color === '' ? fallbacks.pagination_active_color : (0,_utils_context__WEBPACK_IMPORTED_MODULE_7__.getEffectiveValue)('pagination_active_color', {}, context) || fallbacks.pagination_active_color
+                fallbackValue: pagination_active_color === '' ? fallbacks.pagination_active_color : resolved.pagination_active_color || fallbacks.pagination_active_color
               })
             })]
           })]
@@ -1115,7 +1118,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
+/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
 
@@ -1140,18 +1143,21 @@ function Pagination({
   context = {},
   style: propStyle
 }) {
+  const vpContext = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_1__["default"])(attributes, context);
   if (totalPages <= 1) {
     return null;
   }
-  const paginationColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)('pagination_color', attributes, context);
-  const paginationBg = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)('pagination_background_color', attributes, context);
-  const paginationActiveBg = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)('pagination_active_bg_color', attributes, context);
-  const paginationActiveColor = (0,_utils_context__WEBPACK_IMPORTED_MODULE_1__.getEffectiveValue)('pagination_active_color', attributes, context);
+  const {
+    pagination_color,
+    pagination_background_color,
+    pagination_active_bg_color,
+    pagination_active_color
+  } = vpContext.resolved;
   const style = {
-    '--videopack-pagination-color': paginationColor,
-    '--videopack-pagination-bg': paginationBg,
-    '--videopack-pagination-active-bg': paginationActiveBg,
-    '--videopack-pagination-active-color': paginationActiveColor,
+    '--videopack-pagination-color': pagination_color,
+    '--videopack-pagination-bg': pagination_background_color,
+    '--videopack-pagination-active-bg': pagination_active_bg_color,
+    '--videopack-pagination-active-color': pagination_active_color,
     ...propStyle
   };
   const getPageNumbers = () => {
@@ -1237,6 +1243,249 @@ function Pagination({
 
 /***/ },
 
+/***/ "./src/hooks/useVideopackContext.js"
+/*!******************************************!*\
+  !*** ./src/hooks/useVideopackContext.js ***!
+  \******************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   VIDEOPACK_CONTEXT_KEYS: () => (/* binding */ VIDEOPACK_CONTEXT_KEYS),
+/* harmony export */   "default": () => (/* binding */ useVideopackContext),
+/* harmony export */   isTrue: () => (/* reexport safe */ _utils_context__WEBPACK_IMPORTED_MODULE_2__.isTrue)
+/* harmony export */ });
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/context */ "./src/utils/context.js");
+
+
+
+
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
+
+/**
+ * Hook to resolve Videopack design context and generate styles/classes.
+ *
+ * @param {Object} attributes Block attributes.
+ * @param {Object} context    Block context.
+ * @param {Object} options    Optional configuration.
+ * @return {Object} Resolved values, styles, and classes.
+ */
+function useVideopackContext(attributes, context, options = {}) {
+  const {
+    excludeHoverTrigger: optionsExclude = false
+  } = options;
+  // The hover trigger exclusion should NOT be inherited from parents by default,
+  // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
+  const excludeHoverTrigger = optionsExclude || attributes.exclude_hover_trigger || false;
+
+  // 1. Initial Synchronous Resolution
+  const initial = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    const resolved = {};
+    const style = {};
+    const classes = [];
+    VIDEOPACK_CONTEXT_KEYS.forEach(key => {
+      const value = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)(key, attributes, context);
+      resolved[key] = value;
+      if (value) {
+        const cssKey = key.replace(/_/g, '-');
+        if (typeof value === 'string' || typeof value === 'number') {
+          const cssVar = `--videopack-${cssKey}`;
+          style[cssVar] = value;
+        }
+
+        // Only add classes for colors/styles that are actually set
+        if (key !== 'skin') {
+          classes.push(`videopack-has-${cssKey}`);
+        }
+      }
+    });
+
+    // Special handling for skin class
+    if (resolved.skin && resolved.skin !== 'default') {
+      classes.push(resolved.skin);
+    }
+
+    // Handle Gutenberg "style" attribute (typography, spacing, etc).
+    if (attributes.style && typeof attributes.style === 'object') {
+      // Typography Support
+      if (attributes.style.typography) {
+        const {
+          fontSize,
+          lineHeight,
+          letterSpacing
+        } = attributes.style.typography;
+        if (fontSize) {
+          if (fontSize.startsWith('var:preset|font-size|')) {
+            const slug = fontSize.split('|').pop();
+            style.fontSize = `var(--wp--preset--font-size--${slug})`;
+          } else {
+            style.fontSize = fontSize;
+          }
+        }
+        if (lineHeight) style.lineHeight = lineHeight;
+        if (letterSpacing) style.letterSpacing = letterSpacing;
+      }
+
+      // Spacing Support (Margin/Padding)
+      if (attributes.style.spacing) {
+        Object.entries(attributes.style.spacing).forEach(([type, values]) => {
+          if (values && typeof values === 'object') {
+            Object.entries(values).forEach(([dir, val]) => {
+              let finalVal = val;
+              if (typeof val === 'string' && val.startsWith('var:preset|spacing|')) {
+                const slug = val.split('|').pop();
+                finalVal = `var(--wp--preset--spacing--${slug})`;
+              }
+              style[`${type}${dir.charAt(0).toUpperCase()}${dir.slice(1)}`] = finalVal;
+            });
+          }
+        });
+      }
+    }
+    resolved.isEditingAllPages = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.isTrue)((0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('isEditingAllPages', attributes, context));
+    resolved.prioritizePostData = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.isTrue)((0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('prioritizePostData', attributes, context));
+    resolved.isStandalone = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.isTrue)((0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('isStandalone', attributes, context));
+    // Core data identification
+    resolved.postId = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('postId', attributes, context);
+    resolved.attachmentId = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('attachmentId', attributes, context);
+    resolved.postType = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('postType', attributes, context);
+
+    // Handle Gutenberg Typography Classes (Presets)
+    if (attributes.fontSize) {
+      classes.push(`has-${attributes.fontSize}-font-size`);
+    }
+    if (attributes.fontFamily) {
+      classes.push(`has-${attributes.fontFamily}-font-family`);
+    }
+    if (!excludeHoverTrigger) {
+      classes.push('videopack-hover-trigger');
+    }
+    return {
+      resolved,
+      style,
+      classes
+    };
+  }, [attributes, context, excludeHoverTrigger]);
+
+  // 2. Automatic Video Discovery
+  // If we have a postId but no attachmentId, try to find the first video attachment.
+  const {
+    discoveredAttachmentId,
+    isDiscovering
+  } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.useSelect)(select => {
+    const {
+      resolved
+    } = initial;
+
+    // If we already have an attachmentId, a manual src, or a saved id, we're not discovering.
+    if (resolved.attachmentId || attributes.src || attributes.id) {
+      return {
+        discoveredAttachmentId: resolved.attachmentId || attributes.id,
+        isDiscovering: false
+      };
+    }
+
+    // If we don't even have a postId, we can't discover anything.
+    if (!resolved.postId || resolved.postId < 1) {
+      return {
+        discoveredAttachmentId: null,
+        isDiscovering: false
+      };
+    }
+
+    // Avoid duplicates: Find IDs already used by other blocks
+    const {
+      getBlocks
+    } = select('core/block-editor');
+    const allBlocks = getBlocks();
+    const usedIds = new Set();
+    const findUsedIds = blocks => {
+      blocks.forEach(block => {
+        if (block.name === 'videopack/player-container' && block.attributes.id) {
+          usedIds.add(Number(block.attributes.id));
+        }
+        if (block.innerBlocks) {
+          findUsedIds(block.innerBlocks);
+        }
+      });
+    };
+    findUsedIds(allBlocks);
+
+    // If the postId itself IS an attachment, then that's our attachmentId.
+    if (resolved.postType === 'attachment') {
+      const id = Number(resolved.postId);
+      // Only use it if it's not already taken by another block
+      if (!usedIds.has(id)) {
+        return {
+          discoveredAttachmentId: id,
+          isDiscovering: false
+        };
+      }
+    }
+
+    // Otherwise, try to find a video attachment for this post that isn't already used.
+    const {
+      getEntityRecords
+    } = select('core');
+    const query = {
+      parent: resolved.postId,
+      media_type: 'video',
+      per_page: 20,
+      // Fetch more to allow skipping duplicates and non-videos
+      _fields: 'id,mime_type'
+    };
+    const attachments = getEntityRecords('postType', 'attachment', query);
+    const isResolving = select('core/data').isResolving('core', 'getEntityRecords', ['postType', 'attachment', query]);
+
+    // Pick the first one that is a video AND isn't already used
+    const foundId = attachments?.find(a => a.mime_type?.startsWith('video/') && !usedIds.has(Number(a.id)))?.id || null;
+    return {
+      discoveredAttachmentId: foundId,
+      isDiscovering: isResolving || !foundId && attachments === undefined
+    };
+  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
+
+    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // and we know the post is NOT an attachment, then it's a false resolution.
+    const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id ? null : rawAttachmentId;
+    const finalResolved = {
+      ...initial.resolved,
+      attachmentId: finalAttachmentId,
+      isDiscovering
+    };
+
+    // 3. Generate Shared Context Bridge
+    const sharedContext = {};
+    VIDEOPACK_CONTEXT_KEYS.forEach(key => {
+      if (finalResolved[key] !== undefined && finalResolved[key] !== null) {
+        sharedContext[`videopack/${key}`] = finalResolved[key];
+      }
+    });
+
+    // Add core metadata to shared context
+    sharedContext['videopack/postId'] = finalResolved.postId;
+    sharedContext['videopack/attachmentId'] = finalResolved.attachmentId;
+    sharedContext['videopack/postType'] = finalResolved.postType;
+    sharedContext['videopack/isEditingAllPages'] = finalResolved.isEditingAllPages;
+    sharedContext['videopack/prioritizePostData'] = finalResolved.prioritizePostData;
+    sharedContext['videopack/isStandalone'] = finalResolved.isStandalone;
+    return {
+      resolved: finalResolved,
+      style: initial.style,
+      classes: initial.classes.join(' '),
+      sharedContext
+    };
+  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
+}
+
+/***/ },
+
 /***/ "./src/utils/VideopackContext.js"
 /*!***************************************!*\
   !*** ./src/utils/VideopackContext.js ***!
@@ -1280,16 +1529,16 @@ const getColorFallbacks = settings => {
     skin = 'vjs-theme-videopack'
   } = settings || {};
   const fallbacks = {
-    title_color: settings?.title_color || '#ffffff',
-    title_background_color: settings?.title_background_color || '#2b333f',
-    play_button_color: settings?.play_button_color || '#ffffff',
-    play_button_secondary_color: settings?.play_button_secondary_color || '#ffffff',
-    control_bar_bg_color: settings?.control_bar_bg_color || '#2b333f',
-    control_bar_color: settings?.control_bar_color || '#ffffff',
-    pagination_color: settings?.pagination_color || '#1e1e1e',
-    pagination_background_color: settings?.pagination_background_color || '#ffffff',
-    pagination_active_bg_color: settings?.pagination_active_bg_color || '#1e1e1e',
-    pagination_active_color: settings?.pagination_active_color || '#ffffff'
+    title_color: '#ffffff',
+    title_background_color: '#2b333f',
+    play_button_color: '#ffffff',
+    play_button_secondary_color: '#ffffff',
+    control_bar_bg_color: '#2b333f',
+    control_bar_color: '#ffffff',
+    pagination_color: '#1e1e1e',
+    pagination_background_color: '#ffffff',
+    pagination_active_bg_color: '#1e1e1e',
+    pagination_active_color: '#ffffff'
   };
   if (embed_method === 'WordPress Default') {
     fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
@@ -1305,30 +1554,31 @@ const getColorFallbacks = settings => {
       case 'vjs-theme-city':
         fallbacks.title_background_color = '#bf3b4d';
         fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#bf3b4d';
+        fallbacks.pagination_active_bg_color = '#bf3b4d';
         break;
       case 'vjs-theme-fantasy':
         fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_secondary_color = '#9f44b4';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#9f44b4';
+        fallbacks.play_button_color = '#9f44b4';
+        fallbacks.play_button_secondary_color = '#ffffff';
+        fallbacks.pagination_active_bg_color = '#9f44b4';
         break;
       case 'vjs-theme-forest':
         fallbacks.title_background_color = '#6fb04e';
         fallbacks.play_button_secondary_color = '#6fb04e';
         fallbacks.control_bar_bg_color = 'transparent';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#6fb04e';
+        fallbacks.pagination_active_bg_color = '#6fb04e';
         break;
       case 'vjs-theme-sea':
         fallbacks.title_background_color = '#4176bc';
         fallbacks.play_button_secondary_color = '#4176bc';
         fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#4176bc';
+        fallbacks.pagination_active_bg_color = '#4176bc';
         break;
       case 'kg-video-js-skin':
         fallbacks.title_background_color = '#000000';
         fallbacks.play_button_secondary_color = '#000000';
         fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#000000';
+        fallbacks.pagination_active_bg_color = '#000000';
         break;
     }
   }

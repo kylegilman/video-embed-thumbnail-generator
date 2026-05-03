@@ -12,6 +12,7 @@ export default function CollectionWrapper({ children, attributes = {}, context =
 		attributes.play_button_secondary_color ||
 		context['videopack/play_button_secondary_color'];
 
+	const skin = attributes.skin || context['videopack/skin'] || '';
 	const duotone = attributes?.style?.color?.duotone || attributes?.duotone || context['videopack/duotone'];
 	let duotoneClass = '';
 	if (duotone && typeof duotone === 'string' && duotone.startsWith('var:preset|duotone|')) {
@@ -22,7 +23,7 @@ export default function CollectionWrapper({ children, attributes = {}, context =
 		<div
 			className={`videopack-collection videopack-wrapper layout-${layout} columns-${columns}${
 				align ? ` align${align}` : ''
-			} ${
+			} ${skin} ${
 				play_button_color ? 'videopack-has-play-button-color' : ''
 			} ${
 				play_button_secondary_color

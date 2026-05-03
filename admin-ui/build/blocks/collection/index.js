@@ -1251,7 +1251,9 @@ function Edit({
   } = attributes;
 
   // Resolve Effective Values for design and pagination (these follow global settings)
-  const vpContext = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_8__["default"])(attributes, context);
+  const vpContext = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_8__["default"])(attributes, context, {
+    excludeHoverTrigger: true
+  });
   const {
     resolved: effectiveValues,
     style: contextStyle,
@@ -2819,16 +2821,24 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId'];
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
  *
  * @param {Object} attributes Block attributes.
  * @param {Object} context    Block context.
+ * @param {Object} options    Optional configuration.
  * @return {Object} Resolved values, styles, and classes.
  */
-function useVideopackContext(attributes, context) {
+function useVideopackContext(attributes, context, options = {}) {
+  const {
+    excludeHoverTrigger: optionsExclude = false
+  } = options;
+  // The hover trigger exclusion should NOT be inherited from parents by default,
+  // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
+  const excludeHoverTrigger = optionsExclude || attributes.exclude_hover_trigger || false;
+
   // 1. Initial Synchronous Resolution
   const initial = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const resolved = {};
@@ -2908,12 +2918,15 @@ function useVideopackContext(attributes, context) {
     if (attributes.fontFamily) {
       classes.push(`has-${attributes.fontFamily}-font-family`);
     }
+    if (!excludeHoverTrigger) {
+      classes.push('videopack-hover-trigger');
+    }
     return {
       resolved,
       style,
       classes
     };
-  }, [attributes, context]);
+  }, [attributes, context, excludeHoverTrigger]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
@@ -3025,7 +3038,7 @@ function useVideopackContext(attributes, context) {
       classes: initial.classes.join(' '),
       sharedContext
     };
-  }, [initial, discoveredAttachmentId, isDiscovering]);
+  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
 }
 
 /***/ },
@@ -3073,16 +3086,16 @@ const getColorFallbacks = settings => {
     skin = 'vjs-theme-videopack'
   } = settings || {};
   const fallbacks = {
-    title_color: settings?.title_color || '#ffffff',
-    title_background_color: settings?.title_background_color || '#2b333f',
-    play_button_color: settings?.play_button_color || '#ffffff',
-    play_button_secondary_color: settings?.play_button_secondary_color || '#ffffff',
-    control_bar_bg_color: settings?.control_bar_bg_color || '#2b333f',
-    control_bar_color: settings?.control_bar_color || '#ffffff',
-    pagination_color: settings?.pagination_color || '#1e1e1e',
-    pagination_background_color: settings?.pagination_background_color || '#ffffff',
-    pagination_active_bg_color: settings?.pagination_active_bg_color || '#1e1e1e',
-    pagination_active_color: settings?.pagination_active_color || '#ffffff'
+    title_color: '#ffffff',
+    title_background_color: '#2b333f',
+    play_button_color: '#ffffff',
+    play_button_secondary_color: '#ffffff',
+    control_bar_bg_color: '#2b333f',
+    control_bar_color: '#ffffff',
+    pagination_color: '#1e1e1e',
+    pagination_background_color: '#ffffff',
+    pagination_active_bg_color: '#1e1e1e',
+    pagination_active_color: '#ffffff'
   };
   if (embed_method === 'WordPress Default') {
     fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
@@ -3098,30 +3111,31 @@ const getColorFallbacks = settings => {
       case 'vjs-theme-city':
         fallbacks.title_background_color = '#bf3b4d';
         fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#bf3b4d';
+        fallbacks.pagination_active_bg_color = '#bf3b4d';
         break;
       case 'vjs-theme-fantasy':
         fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_secondary_color = '#9f44b4';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#9f44b4';
+        fallbacks.play_button_color = '#9f44b4';
+        fallbacks.play_button_secondary_color = '#ffffff';
+        fallbacks.pagination_active_bg_color = '#9f44b4';
         break;
       case 'vjs-theme-forest':
         fallbacks.title_background_color = '#6fb04e';
         fallbacks.play_button_secondary_color = '#6fb04e';
         fallbacks.control_bar_bg_color = 'transparent';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#6fb04e';
+        fallbacks.pagination_active_bg_color = '#6fb04e';
         break;
       case 'vjs-theme-sea':
         fallbacks.title_background_color = '#4176bc';
         fallbacks.play_button_secondary_color = '#4176bc';
         fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#4176bc';
+        fallbacks.pagination_active_bg_color = '#4176bc';
         break;
       case 'kg-video-js-skin':
         fallbacks.title_background_color = '#000000';
         fallbacks.play_button_secondary_color = '#000000';
         fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = settings?.pagination_active_bg_color || '#000000';
+        fallbacks.pagination_active_bg_color = '#000000';
         break;
     }
   }

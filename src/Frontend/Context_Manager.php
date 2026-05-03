@@ -48,6 +48,7 @@ class Context_Manager {
 			'pagination_background_color',
 			'pagination_active_bg_color',
 			'pagination_active_color',
+			'exclude_hover_trigger',
 		);
 
 		$resolved   = array();

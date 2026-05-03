@@ -362,12 +362,21 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	);
 
 	const previewContext = useMemo(() => {
-		const ctx = {};
+		const ctx = {
+			'videopack/isInsidePlayerContainer': true,
+		};
+		// Add fallbacks first
+		Object.keys(PLAYER_COLOR_FALLBACKS).forEach((key) => {
+			ctx[`videopack/${key}`] = PLAYER_COLOR_FALLBACKS[key];
+		});
+		// Override with actual settings
 		Object.keys(settings).forEach((key) => {
-			ctx[`videopack/${key}`] = settings[key];
+			if (settings[key] !== undefined && settings[key] !== null && settings[key] !== '') {
+				ctx[`videopack/${key}`] = settings[key];
+			}
 		});
 		return ctx;
-	}, [settings]);
+	}, [settings, PLAYER_COLOR_FALLBACKS]);
 
 	return (
 		<>
@@ -460,7 +469,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							</FlexBlock>
 						</Flex>
 					</PanelRow>
-
 					<PreviewIframe
 						title={__(
 							'Video Player Preview',
@@ -468,46 +476,55 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 						resizeDependencies={[align]}
 					>
-						<div
-							className={`wp-block-videopack-videopack-video${
-								align ? ` align${align}` : ''
-							}`}
+						<BlockPreview
+							name="videopack/player-container"
+							attributes={{
+								id: 'sample-video',
+								src:
+									videopack_config.url +
+									'/src/images/Adobestock_469037984.mp4',
+								title: 'Sample Video',
+								overlay_title,
+								width: undefined,
+								height: undefined,
+								starts: 23,
+								embedlink: 'https://www.website.com/embed/',
+								caption: __(
+									"If text is entered in the attachment's caption field it is displayed here automatically."
+								),
+							}}
+							context={previewContext}
 						>
-							<VideoPlayer
-								attributes={{
-									...settings,
-									sources: [
-										{
-											src:
-												videopack_config.url +
-												'/src/images/Adobestock_469037984.mp4',
-											type: 'video/mp4',
-										},
-									],
-									id: 'sample-video',
+							<BlockPreview
+								name="videopack/player"
+								video={{
+									attachment_id: 'sample-video',
 									title: 'Sample Video',
-									overlay_title,
-									width: undefined,
-									height: undefined,
-									starts: 23,
-									embedlink: 'https://www.website.com/embed/',
-									caption: __(
-										"If text is entered in the attachment's caption field it is displayed here automatically."
-									),
+									player_vars: {
+										sources: [
+											{
+												src:
+													videopack_config.url +
+													'/src/images/Adobestock_469037984.mp4',
+												type: 'video/mp4',
+											},
+										],
+										starts: 23,
+									},
 								}}
-								onReady={handleVideoPlayerReady}
+								context={previewContext}
 							>
 								{(overlay_title ||
 									downloadlink ||
 									(embeddable && embedcode)) && (
 									<BlockPreview
 										name="videopack/title"
-										attributes={{ 
+										attributes={{
 											title: 'Sample Video',
 											overlay_title: !!overlay_title,
 											downloadlink: !!downloadlink,
 											embedcode: !!(embeddable && embedcode),
-											showBackground: true
+											showBackground: true,
 										}}
 										isInsidePlayerOverlay={true}
 										isInsidePlayerContainer={true}
@@ -524,19 +541,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 										context={previewContext}
 									/>
 								)}
-							</VideoPlayer>
+							</BlockPreview>
 							{views && (
 								<BlockPreview
 									name="videopack/view-count"
-									attributes={{ 
-										count: 1234, 
+									attributes={{
+										count: 1234,
 										showText: true,
-										iconType: 'none'
+										iconType: 'none',
 									}}
 									context={previewContext}
 								/>
 							)}
-						</div>
+						</BlockPreview>
 					</PreviewIframe>
 
 					<PanelRow className="videopack-flex-right">

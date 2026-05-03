@@ -28,7 +28,8 @@ import {
 	post as parentIcon,
 	notAllowed as noneIcon,
 } from '@wordpress/icons';
-import { getEffectiveValue } from '../../utils/context';
+import { normalizeSourceGroups } from '../../utils/context';
+import useVideopackContext from '../../hooks/useVideopackContext';
 import './editor.scss';
 
 /**
@@ -39,70 +40,24 @@ import './editor.scss';
  * @return {Object} The rendered component.
  */
 export function VideoWatermark({
-	watermark,
-	watermark_scale,
-	watermark_align,
-	watermark_valign,
-	watermark_x,
-	watermark_y,
+	attributes = {},
 	context = {},
 	isBlockEditor = false,
 	onDimensions = null,
 }) {
-	const watermarkProps = {
-		watermark,
-		watermark_scale,
-		watermark_align,
-		watermark_valign,
-		watermark_x,
-		watermark_y,
-	};
-	const effectiveUrl = getEffectiveValue('watermark', { watermark }, context);
+	const { resolved } = useVideopackContext(attributes, context);
 
-	const getEffective = (attrKey, contextKey, fallback) => {
-		if (
-			watermarkProps[attrKey] !== undefined &&
-			watermarkProps[attrKey] !== null &&
-			watermarkProps[attrKey] !== ''
-		) {
-			return watermarkProps[attrKey];
-		}
-		const styles = getEffectiveValue('watermark_styles', {}, context);
-		if (
-			styles &&
-			typeof styles === 'object' &&
-			styles[contextKey] !== undefined
-		) {
-			return styles[contextKey];
-		}
-		return (
-			getEffectiveValue(`watermark_${contextKey}`, {}, context) ??
-			fallback
-		);
-	};
+	const {
+		watermark: effectiveUrl,
+		watermark_scale: actualScale = 10,
+		watermark_align: actualAlign = 'right',
+		watermark_valign: actualValign = 'bottom',
+		watermark_x: actualX = 5,
+		watermark_y: actualY = 7,
+		skin,
+	} = resolved;
 
-	const effectiveScale = getEffective('watermark_scale', 'scale', 10);
-	const effectiveAlign = getEffective('watermark_align', 'align', 'right');
-	const effectiveValign = getEffective(
-		'watermark_valign',
-		'valign',
-		'bottom'
-	);
-	const effectiveX = getEffective('watermark_x', 'x', 5);
-	const effectiveY = getEffective('watermark_y', 'y', 7);
 
-	const skin = getEffectiveValue('skin', {}, context);
-
-	const actualAlign = effectiveAlign || 'right';
-	const actualValign = effectiveValign || 'bottom';
-	const actualX =
-		effectiveX !== undefined && effectiveX !== '' ? effectiveX : 5;
-	const actualY =
-		effectiveY !== undefined && effectiveY !== '' ? effectiveY : 7;
-	const actualScale =
-		effectiveScale !== undefined && effectiveScale !== ''
-			? effectiveScale
-			: 10;
 
 	const style = {
 		position: isBlockEditor ? 'relative' : 'absolute',
@@ -173,48 +128,19 @@ export function VideoWatermark({
 /**
  * Helper to calculate watermark positioning styles for the block wrapper.
  */
-export function getWatermarkBlockStyles(attributes, context) {
+export function getWatermarkBlockStyles(resolved) {
+	const {
+		watermark: effectiveUrl,
+		watermark_scale: effectiveScale = 10,
+		watermark_align: effectiveAlign = 'right',
+		watermark_valign: effectiveValign = 'bottom',
+		watermark_x: effectiveX = 5,
+		watermark_y: effectiveY = 7,
+	} = resolved;
 
-	const effectiveUrl = getEffectiveValue('watermark', attributes, context);
 	if (!effectiveUrl) {
 		return {};
 	}
-
-	const getEffective = (attrKey, contextKey, fallback) => {
-		if (
-			attributes[attrKey] !== undefined &&
-			attributes[attrKey] !== null &&
-			attributes[attrKey] !== ''
-		) {
-			return attributes[attrKey];
-		}
-		const styles = getEffectiveValue(
-			'watermark_styles',
-			attributes,
-			context
-		);
-		if (
-			styles &&
-			typeof styles === 'object' &&
-			styles[contextKey] !== undefined
-		) {
-			return styles[contextKey];
-		}
-		return (
-			getEffectiveValue(`watermark_${contextKey}`, attributes, context) ??
-			fallback
-		);
-	};
-
-	const effectiveScale = getEffective('watermark_scale', 'scale', 10);
-	const effectiveAlign = getEffective('watermark_align', 'align', 'right');
-	const effectiveValign = getEffective(
-		'watermark_valign',
-		'valign',
-		'bottom'
-	);
-	const effectiveX = getEffective('watermark_x', 'x', 5);
-	const effectiveY = getEffective('watermark_y', 'y', 7);
 
 	const style = {
 		position: 'absolute',
@@ -317,59 +243,26 @@ export default function Edit({
 		watermark_url = '',
 	} = attributes;
 
-	// Resolve effective values with correct priority:
-	// Individual attribute -> Composite context object -> Individual context key -> Default
-	const getEffective = (attrKey, contextKey, fallback) => {
-		// 1. Local attribute ALWAYS wins if it's explicitly set (and not just defaulting)
-		if (
-			attributes[attrKey] !== undefined &&
-			attributes[attrKey] !== null &&
-			attributes[attrKey] !== ''
-		) {
-			return attributes[attrKey];
-		}
-		// 2. Try the composite styles object from context
-		const styles = getEffectiveValue(
-			'watermark_styles',
-			attributes,
-			context
-		);
-		if (
-			styles &&
-			typeof styles === 'object' &&
-			styles[contextKey] !== undefined
-		) {
-			return styles[contextKey];
-		}
-		// 3. Try individual context key
-		return (
-			getEffectiveValue(`watermark_${contextKey}`, attributes, context) ??
-			fallback
-		);
-	};
+	// Use unified context hook for all design and behavior resolution
+	const { resolved } = useVideopackContext(attributes, context);
 
-	const effectiveUrl = getEffectiveValue('watermark', attributes, context);
-	const effectiveScale = getEffective('watermark_scale', 'scale', 10);
-	const effectiveAlign = getEffective('watermark_align', 'align', 'right');
-	const effectiveValign = getEffective(
-		'watermark_valign',
-		'valign',
-		'bottom'
-	);
-	const effectiveX = getEffective('watermark_x', 'x', 5);
-	const effectiveY = getEffective('watermark_y', 'y', 7);
-
-	const effectiveLinkToType =
-		getEffectiveValue('watermark_link_to', attributes, context) || 'false';
-	const effectiveCustomLinkUrl =
-		getEffectiveValue('watermark_url', attributes, context) || '';
+	const {
+		watermark: effectiveUrl,
+		watermark_scale: effectiveScale = 10,
+		watermark_align: effectiveAlign = 'right',
+		watermark_valign: effectiveValign = 'bottom',
+		watermark_x: effectiveX = 5,
+		watermark_y: effectiveY = 7,
+		watermark_link_to: effectiveLinkToType = 'false',
+		watermark_url: effectiveCustomLinkUrl = '',
+	} = resolved;
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
 	const isOverlay = isInsideThumbnail || isInsidePlayerOverlay;
 
 	const overlayStyles = isOverlay || context.isPreview
-		? getWatermarkBlockStyles(attributes, context)
+		? getWatermarkBlockStyles(resolved)
 		: {};
 
 	// Implementation of Full-Frame Selection mode:
@@ -738,12 +631,7 @@ export default function Edit({
 						aspectRatio={detectedAspectRatio}
 					>
 						<VideoWatermark
-							watermark={watermark}
-							watermark_scale={watermark_scale}
-							watermark_align={watermark_align}
-							watermark_valign={watermark_valign}
-							watermark_x={watermark_x}
-							watermark_y={watermark_y}
+							attributes={attributes}
 							context={context}
 							isBlockEditor={true}
 							onDimensions={setDetectedAspectRatio}
@@ -764,12 +652,7 @@ export default function Edit({
 					}}
 				>
 					<VideoWatermark
-						watermark={watermark}
-						watermark_scale={watermark_scale}
-						watermark_align={watermark_align}
-						watermark_valign={watermark_valign}
-						watermark_x={watermark_x}
-						watermark_y={watermark_y}
+						attributes={attributes}
 						context={context}
 						isBlockEditor={isOverlay}
 						onDimensions={setDetectedAspectRatio}

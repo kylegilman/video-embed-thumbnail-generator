@@ -37,7 +37,7 @@ import { CSS } from '@dnd-kit/utilities';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import { useVideopackContext as useVideopackData } from '../../utils/VideopackContext';
-import { getEffectiveValue, isTrue } from '../../utils/context';
+import { isTrue } from '../../utils/context';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 import { getSettings } from '../../api/settings';
 import { getVideoGallery } from '../../api/gallery';
@@ -80,7 +80,7 @@ function SortableItem({
 			ref={setNodeRef}
 			style={style}
 			{...sortableAttributes}
-			className={`videopack-collection-item ${
+			className={`videopack-collection-item videopack-hover-trigger ${
 				(isEditableTemplate && !isPreview) ? 'is-editable' : 'is-preview'
 			} ${isDragging ? 'is-dragging' : ''}`}
 		>
@@ -144,11 +144,10 @@ function SortableItem({
  * @return {Element}              The rendered component.
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, { excludeHoverTrigger: true });
 	const vpData = useVideopackData();
 
 	const [options, setOptions] = useState({});
-	const [isHovering, setIsHovering] = useState(false);
 	const { updateBlockAttributes } = useDispatch('core/block-editor');
 	const prevInheritedDuotone = useRef();
 
@@ -223,11 +222,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				childBlocks?.attributes?.style?.color?.duotone ||
 				childBlocks?.attributes?.duotone;
 
-			const isEditingAll = !!getEffectiveValue(
-				'isEditingAllPages',
-				parentAttrs,
-				context
-			);
+			const isEditingAll = !!parentAttrs.isEditingAllPages;
 
 			return {
 				effectiveDuotone: presetDuotone,
@@ -264,20 +259,12 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		gallery_exclude: context['videopack/gallery_exclude'],
 		gallery_pagination: isEditingAllPages
 			? false
-			: (vpContext.gallery_pagination ?? getEffectiveValue('gallery_pagination', attributes, context)),
+			: vpContext.resolved.gallery_pagination,
 		gallery_per_page: isEditingAllPages
 			? -1
-			: (vpContext.gallery_per_page ?? getEffectiveValue('gallery_per_page', attributes, context)),
-		enable_collection_video_limit: getEffectiveValue(
-			'enable_collection_video_limit',
-			attributes,
-			context
-		),
-		collection_video_limit: getEffectiveValue(
-			'collection_video_limit',
-			attributes,
-			context
-		),
+			: vpContext.resolved.gallery_per_page,
+		enable_collection_video_limit: vpContext.resolved.enable_collection_video_limit,
+		collection_video_limit: vpContext.resolved.collection_video_limit,
 		page_number: isEditingAllPages ? 1 : (vpContext.currentPage || context['videopack/currentPage'] || 1),
 		prioritizePostData: vpContext.resolved.prioritizePostData,
 	};
@@ -314,8 +301,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		className: `videopack-video-loop layout-${layout} columns-${columns} ${
 			isPreviewResolving && !isSaving && !isAutosaving ? 'has-loading-state' : ''
 		} ${isEditingAllPages ? 'is-editing-all-pages' : ''}`,
-		onMouseEnter: () => setIsHovering(true),
-		onMouseLeave: () => setIsHovering(false),
 	});
 
 	// Find the duotone class that Gutenberg has applied to our block props.
@@ -857,7 +842,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 											onRemove={handleRemoveItem}
 											onEdit={handleEditItem}
 											onAddVideo={handleAddVideo}
-											isHoveringGallery={isHovering}
+											isHoveringGallery={false}
 										>
 											<BlockContextProvider
 												value={{
