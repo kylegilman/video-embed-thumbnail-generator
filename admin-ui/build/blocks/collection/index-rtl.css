@@ -399,7 +399,7 @@
 .videopack-collection .videopack-collection-item.is-preview {
   pointer-events: auto;
 }
-.videopack-collection .videopack-collection-item.is-preview > div:not([class*=videopack-gallery-item]):not([class*=videopack-drag-handle]):not([class*=gallery-add-button]) {
+.videopack-collection .videopack-collection-item.is-preview > div:not([class*=videopack-gallery-item]):not([class*=videopack-drag-handle]):not([class*=gallery-add-button]):not([class*=videopack-video-block-container]):not([class*=videopack-wrapper]) {
   pointer-events: none;
 }
 .videopack-collection .videopack-collection-item.is-preview {

@@ -9,7 +9,8 @@ import VideopackContextBridge from '../../components/VideopackContextBridge';
 import { useMemo, useCallback, useState, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { useVideoFormats } from '../../hooks/useVideoFormats.js';
-import { getEffectiveValue, normalizeSourceGroups } from '../../utils/context';
+import { normalizeSourceGroups } from '../../utils/context';
+import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideoProbe from '../../hooks/useVideoProbe.js';
 import { getSettings } from '../../api/settings';
 import { __ } from '@wordpress/i18n';
@@ -112,51 +113,37 @@ export default function Edit(props) {
 		? postId
 		: parentAttributes.id || undefined;
 
-	const isPreview = context.isPreview;
-	const src = getEffectiveValue('src', {}, context);
+	// Use unified context hook for all design and behavior resolution
+	const {
+		resolved,
+		style: contextStyles,
+		classes: contextClasses,
+	} = useVideopackContext({ ...parentAttributes, restartCount }, context);
+
+	const { src, skin } = resolved;
 	const { probedMetadata } = useVideoProbe(src);
 	const { formats: videoFormats } = useVideoFormats(resolvedPostId, src);
-	const fetchedSourceGroups = useMemo(
-		() => normalizeSourceGroups(videoFormats),
-		[videoFormats]
-	);
+
+	useEffect(() => {
+		resetPlayer();
+	}, [skin, resetPlayer]);
 
 	// Merge parent attributes with global options for mirroring panels
 	const effectiveAttributes = useMemo(() => {
 		const result = {
 			...options,
 			...parentAttributes,
+			...resolved, // Include all resolved values
 			id: resolvedPostId,
 		};
 
-		// Prioritize fresh data from context (either from parent hydration or loop context)
-		const overrides = {
-			src: context['videopack/src'],
-			poster: context['videopack/poster'],
-			width: context['videopack/width'],
-			height: context['videopack/height'],
-			sources: context['videopack/sources'],
-			source_groups: context['videopack/source_groups'],
-			text_tracks: context['videopack/text_tracks'],
-			default_ratio: context['videopack/default_ratio'],
-			fixed_aspect: context['videopack/fixed_aspect'],
-			fullwidth: context['videopack/fullwidth'],
-			isPreview: context.isPreview,
-		};
-
-		if (isPreview) {
+		if (context.isPreview) {
 			result.src = videopack_config.url + '/src/images/Adobestock_469037984.mp4';
 			result.poster = videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg';
 		}
 
-		Object.entries(overrides).forEach(([key, val]) => {
-			if (val !== undefined && val !== null) {
-				result[key] = val;
-			}
-		});
-
 		return result;
-	}, [options, parentAttributes, resolvedPostId, context, isContextual]);
+	}, [options, parentAttributes, resolved, resolvedPostId, context.isPreview]);
 
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
@@ -165,83 +152,6 @@ export default function Edit(props) {
 		(typeof window !== 'undefined'
 			? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
 			: '');
-
-	const hasTitleFeatures = !!(
-		effectiveAttributes.overlay_title ||
-		effectiveAttributes.downloadlink ||
-		effectiveAttributes.embedcode
-	);
-
-	// Map context back to attributes for the VideoPlayer component
-	const attributes = useMemo(() => {
-		const result = {
-			'videopack/postId': resolvedPostId,
-			embed_method: getEffectiveValue(
-				'embed_method',
-				parentAttributes,
-				context
-			),
-			skin: getEffectiveValue('skin', parentAttributes, context),
-			autoplay: context['videopack/autoplay'],
-			controls: context['videopack/controls'],
-			loop: context['videopack/loop'],
-			muted: context['videopack/muted'],
-			playsinline: context['videopack/playsinline'],
-			poster: context['videopack/poster'],
-			preload: context['videopack/preload'],
-			src: context['videopack/src'],
-			volume: context['videopack/volume'],
-			auto_res: context['videopack/auto_res'],
-			auto_codec: context['videopack/auto_codec'],
-			sources: context['videopack/sources'],
-			source_groups: context['videopack/source_groups'],
-			text_tracks: context['videopack/text_tracks'],
-			playback_rate: context['videopack/playback_rate'],
-			watermark: context['videopack/watermark'],
-			watermark_styles: context['videopack/watermark_styles'],
-			watermark_link_to: context['videopack/watermark_link_to'],
-			default_ratio: context['videopack/default_ratio'],
-			fixed_aspect: context['videopack/fixed_aspect'],
-			fullwidth: context['videopack/fullwidth'],
-			play_button_color: getEffectiveValue(
-				'play_button_color',
-				parentAttributes,
-				context
-			),
-			play_button_secondary_color: getEffectiveValue(
-				'play_button_secondary_color',
-				parentAttributes,
-				context
-			),
-			control_bar_bg_color: getEffectiveValue(
-				'control_bar_bg_color',
-				parentAttributes,
-				context
-			),
-			control_bar_color: getEffectiveValue(
-				'control_bar_color',
-				parentAttributes,
-				context
-			),
-			title_color: getEffectiveValue(
-				'title_color',
-				parentAttributes,
-				context
-			),
-			title_background_color: getEffectiveValue(
-				'title_background_color',
-				parentAttributes,
-				context
-			),
-			downloadlink: context['videopack/downloadlink'],
-			embedcode: context['videopack/embedcode'],
-			restartCount:
-				restartCount || context['videopack/restartCount'],
-			duotone: context['videopack/duotone'],
-			style: context['videopack/style'],
-		};
-		return result;
-	}, [context, parentAttributes, resolvedPostId, restartCount]);
 
 	const bridgeOverrides = useMemo(() => {
 		return {
@@ -254,43 +164,13 @@ export default function Edit(props) {
 		};
 	}, [context, effectiveAttributes.id]);
 
-	const effectiveEmbedMethod = getEffectiveValue(
-		'embed_method',
-		parentAttributes,
-		context
-	);
-	const skin = getEffectiveValue('skin', parentAttributes, context);
-
-	useEffect(() => {
-		resetPlayer();
-	}, [skin, resetPlayer]);
-
 	const blockProps = useBlockProps({
-		className: `videopack-video-player-engine-block videopack-wrapper ${
-			effectiveEmbedMethod === 'Video.js' ? skin : ''
-		} ${
-			getEffectiveValue('play_button_color', {}, effectiveAttributes)
-				? 'videopack-has-play-button-color'
-				: ''
-		} ${
-			getEffectiveValue('play_button_secondary_color', {}, effectiveAttributes)
-				? 'videopack-has-play-button-secondary-color'
-				: ''
-		}`,
+		className: `videopack-video-player-engine-block videopack-wrapper ${contextClasses}`,
 		style: {
+			...contextStyles,
 			'--videopack-mejs-controls-svg': mejsSvgPath
 				? `url("${mejsSvgPath}")`
 				: undefined,
-			'--videopack-play-button-color': getEffectiveValue(
-				'play_button_color',
-				{},
-				effectiveAttributes
-			),
-			'--videopack-play-button-secondary-color': getEffectiveValue(
-				'play_button_secondary_color',
-				{},
-				effectiveAttributes
-			),
 		},
 	});
 
@@ -332,7 +212,7 @@ export default function Edit(props) {
 				/>
 			</InspectorControls>
 			<VideoPlayer
-				attributes={attributes}
+				attributes={{ ...parentAttributes, restartCount }}
 				context={context}
 				isSelected={isSelected}
 				hideStaticOverlays={true}
@@ -345,7 +225,7 @@ export default function Edit(props) {
 				>
 					<VideopackContextBridge
 						key={resolvedPostId}
-						attributes={attributes}
+						attributes={parentAttributes}
 						context={context}
 						overrides={bridgeOverrides}
 					>

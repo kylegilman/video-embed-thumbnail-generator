@@ -1,5 +1,6 @@
 import { useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 import {
 	PanelBody,
 	SelectControl,
@@ -53,7 +54,58 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		pagination_background_color,
 		pagination_active_bg_color,
 		pagination_active_color,
+		skin,
 	} = settings;
+
+	const skinOptions = useMemo(() => {
+		const options = [
+			{
+				value: 'vjs-theme-videopack',
+				label: __('Videopack', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'kg-video-js-skin',
+				label: __(
+					'Videopack Classic',
+					'video-embed-thumbnail-generator'
+				),
+			},
+			{
+				value: 'default',
+				label: __(
+					'Video.js default',
+					'video-embed-thumbnail-generator'
+				),
+			},
+			{
+				value: 'vjs-theme-city',
+				label: __('City', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'vjs-theme-fantasy',
+				label: __('Fantasy', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'vjs-theme-forest',
+				label: __('Forest', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'vjs-theme-sea',
+				label: __('Sea', 'video-embed-thumbnail-generator'),
+			},
+		];
+
+		const config =
+			typeof window !== 'undefined' ? window.videopack_config : undefined;
+		const embed_method =
+			typeof config !== 'undefined' ? config.embed_method : 'Video.js';
+
+		return applyFilters(
+			'videopack_player_skin_options',
+			options,
+			embed_method
+		);
+	}, []);
 
 	const previewQueryAttributes = useMemo(() => {
 		const isPaginationEnabled =
@@ -113,7 +165,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 	}, [gallery_title, gallery_pagination]);
 
 	const previewContext = useMemo(() => {
-		return {
+		const ctx = {
 			'videopack/layout': 'grid',
 			'videopack/columns': gallery_columns,
 			'videopack/videos': videoResults,
@@ -122,22 +174,35 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			'videopack/currentPage': currentPage,
 			'videopack/totalPages': maxNumPages,
 			'videopack/onPageChange': (page) => setCurrentPage(page),
-			'videopack/title_color': title_color,
-			'videopack/title_background_color': title_background_color,
-			'videopack/play_button_color': play_button_color,
-			'videopack/play_button_secondary_color': play_button_secondary_color,
-			'videopack/pagination_color':
-				pagination_color || colorFallbacks.pagination_color,
-			'videopack/pagination_background_color':
-				pagination_background_color ||
-				colorFallbacks.pagination_background_color,
-			'videopack/pagination_active_bg_color':
-				pagination_active_bg_color ||
-				colorFallbacks.pagination_active_bg_color,
-			'videopack/pagination_active_color':
-				pagination_active_color ||
-				colorFallbacks.pagination_active_color,
 		};
+
+		// Pass all global settings into the context bridge for child blocks
+		Object.keys(settings).forEach((key) => {
+			ctx[`videopack/${key}`] = settings[key];
+		});
+
+		// Ensure specific color fallbacks are applied for the preview bridge
+		ctx['videopack/play_button_color'] =
+			play_button_color || colorFallbacks.play_button_color;
+		ctx['videopack/play_button_secondary_color'] =
+			play_button_secondary_color ||
+			colorFallbacks.play_button_secondary_color;
+		ctx['videopack/title_color'] = title_color || colorFallbacks.title_color;
+		ctx['videopack/title_background_color'] =
+			title_background_color || colorFallbacks.title_background_color;
+
+		ctx['videopack/pagination_color'] =
+			pagination_color || colorFallbacks.pagination_color;
+		ctx['videopack/pagination_background_color'] =
+			pagination_background_color ||
+			colorFallbacks.pagination_background_color;
+		ctx['videopack/pagination_active_bg_color'] =
+			pagination_active_bg_color ||
+			colorFallbacks.pagination_active_bg_color;
+		ctx['videopack/pagination_active_color'] =
+			pagination_active_color || colorFallbacks.pagination_active_color;
+
+		return ctx;
 	}, [
 		settings,
 		gallery_columns,
@@ -425,7 +490,21 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 				</div>
 				<PanelBody
 					title={__('Colors', 'video-embed-thumbnail-generator')}
+					initialOpen={true}
 				>
+					<div className="videopack-setting-reduced-width">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'Skin',
+								'video-embed-thumbnail-generator'
+							)}
+							value={skin}
+							onChange={changeHandlerFactory.skin}
+							options={skinOptions}
+						/>
+					</div>
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
 							{__('Title', 'video-embed-thumbnail-generator')}

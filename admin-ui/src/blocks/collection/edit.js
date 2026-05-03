@@ -33,7 +33,7 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 	} = attributes;
 
 	// Resolve Effective Values for design and pagination (these follow global settings)
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, { excludeHoverTrigger: true });
 	const {
 		resolved: effectiveValues,
 		style: contextStyle,

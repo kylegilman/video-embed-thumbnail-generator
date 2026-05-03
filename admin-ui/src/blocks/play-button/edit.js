@@ -2,7 +2,6 @@ import { useMemo } from '@wordpress/element';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { getEffectiveValue } from '../../utils/context';
 import { getColorFallbacks } from '../../utils/colors';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import useVideopackContext from '../../hooks/useVideopackContext';
@@ -105,21 +104,15 @@ export default function Edit({ attributes, setAttributes, context }) {
 		typeof config !== 'undefined' ? config.embed_method : 'Video.js';
 	const THEME_COLORS = config?.themeColors;
 
+	const { resolved } = useVideopackContext(attributes, context);
+
 	const colorFallbacks = useMemo(
 		() =>
 			getColorFallbacks({
-				play_button_color: getEffectiveValue(
-					'play_button_color',
-					{},
-					context
-				),
-				play_button_secondary_color: getEffectiveValue(
-					'play_button_secondary_color',
-					{},
-					context
-				),
+				play_button_color: resolved.play_button_color,
+				play_button_secondary_color: resolved.play_button_secondary_color,
 			}),
-		[context]
+		[resolved.play_button_color, resolved.play_button_secondary_color]
 	);
 
 	const overlayStyles = {};

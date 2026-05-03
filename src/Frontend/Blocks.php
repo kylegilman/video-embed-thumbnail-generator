@@ -446,6 +446,7 @@ class Blocks implements Hook_Subscriber {
 				'inner_blocks_template' => $inner_blocks_template,
 				'totalPages'            => $total_pages,
 				'currentPage'           => $paged,
+				'exclude_hover_trigger' => true,
 			) ),
 			'<div class="videopack-collection-inner">' . $loop_content . '</div>' . $other_content,
 			true
@@ -499,8 +500,8 @@ class Blocks implements Hook_Subscriber {
 				'postType'                => ( $prioritize && $parent_post_id ) ? get_post_type( $parent_post_id ) : 'attachment',
 				'videopack/postId'       => (int) $post_id,
 				'videopack/parentPostId' => (int) $parent_post_id,
-				'videopack/isInLoop'     => true,
-				'videopack/instanceId'   => 'vp_' . \Videopack\Admin\Ui::$instance_counter++,
+				'videopack/isInLoop'            => true,
+				'videopack/instanceId'          => 'vp_' . \Videopack\Admin\Ui::$instance_counter++,
 			) );
 
 			foreach ( $block->inner_blocks as $inner_block ) {
@@ -635,7 +636,13 @@ class Blocks implements Hook_Subscriber {
 			$inner_content .= $cloned_inner->render();
 		}
 
-		$classes    = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item', $settings['classes'] );
+		$exclude_hover = ! empty( $settings['resolved']['exclude_hover_trigger'] );
+		$classes       = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
+		if ( ! $exclude_hover ) {
+			$classes[] = 'videopack-hover-trigger';
+		}
+		$classes[] = $settings['classes'];
+
 		if ( 'none' !== $link_to ) {
 			$classes[] = 'has-link';
 		}

@@ -10,79 +10,189 @@ import CollectionWrapper from './parts/CollectionWrapper';
 import VideoLoop from './parts/VideoLoop';
 import Pagination from './parts/Pagination';
 
-const PREVIEW_COMPONENTS = {
-	'videopack/player-container': ({
-		children,
-		className,
-		postId,
-		postType,
-		isOverlay,
-		isInsideThumbnail,
-		isInsidePlayerOverlay,
-		isInsidePlayerContainer,
-		downloadlink,
-		embedcode,
-		attributes,
-		context,
-		innerBlocks,
-		video,
-		resolvedDuotoneClass,
-		isPreview,
-		// Catch-all for other non-DOM attributes that might leak
-		...props
-	}) => {
-		// Clean props for DOM element - Filter out block attributes and internal state flags
-		const domProps = Object.keys(props).reduce((acc, key) => {
-			const isBlockAttr = [
-				'autoplay', 'playsinline', 'playback_rate', 'fullwidth', 
-				'showCaption', 'restartCount', 'loop', 'muted', 'preload',
-				'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups',
-				'text_tracks', 'default_ratio', 'fixed_aspect', 'embed_method',
-				'skin', 'play_button_color', 'play_button_secondary_color',
-				'control_bar_bg_color', 'control_bar_color', 'title_color',
-				'title_background_color', 'overlay_title', 'downloadlink',
-				'embedcode', 'watermark', 'views', 'variation', 'id', 'src', 'poster', 'title', 'duotone'
-			].includes(key);
+import playerContainerMetadata from '../../blocks/player-container/block.json';
+import thumbnailMetadata from '../../blocks/thumbnail/block.json';
+import titleMetadata from '../../blocks/title/block.json';
+import durationMetadata from '../../blocks/duration/block.json';
+import viewCountMetadata from '../../blocks/view-count/block.json';
+import watermarkMetadata from '../../blocks/watermark/block.json';
+import playButtonMetadata from '../../blocks/play-button/block.json';
+import { designAttributes } from '../../blocks/shared/design-context';
 
-			if (!key.startsWith('videopack/') && !isBlockAttr) {
-				acc[key] = props[key];
+const BLOCK_METADATA = {
+	'videopack/player-container': playerContainerMetadata,
+	'videopack/thumbnail': thumbnailMetadata,
+	'videopack/title': titleMetadata,
+	'videopack/duration': durationMetadata,
+	'videopack/view-count': viewCountMetadata,
+	'videopack/watermark': watermarkMetadata,
+	'videopack/play-button': playButtonMetadata,
+};
+
+/**
+ * Get all registered attributes for a block name, including shared design attributes.
+ */
+const getBlockAttributes = (name) => {
+	const metadata = BLOCK_METADATA[name];
+	const keys = [];
+	
+	if (metadata?.attributes) {
+		keys.push(...Object.keys(metadata.attributes));
+	}
+	
+	// Add shared design attributes that blocks might use via context but pass as props
+	keys.push(...Object.keys(designAttributes || {}));
+	
+	// Global internal keys that should never hit the DOM
+	keys.push('variation', 'isPreview', 'isOverlay', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer');
+	
+	return [...new Set(keys)];
+};
+
+const PREVIEW_COMPONENTS = {
+	'videopack/player-container': (props) => {
+		const name = 'videopack/player-container';
+		const {
+			children,
+			className,
+			postId,
+			postType,
+			isOverlay,
+			isInsideThumbnail,
+			isInsidePlayerOverlay,
+			isInsidePlayerContainer,
+			downloadlink,
+			embedcode,
+			attributes = {},
+			context = {},
+			innerBlocks,
+			video,
+			resolvedDuotoneClass,
+			isPreview,
+			tagName: Tag = 'div',
+			// Catch-all for everything else
+			...allProps
+		} = props;
+
+		// 1. Identify which keys are valid block attributes that should NOT go to the DOM
+		const blockAttributeKeys = getBlockAttributes(name);
+
+		// 2. Separate DOM props from Block props
+		const cleanDomProps = {};
+		const blockProps = {};
+
+		Object.keys(allProps).forEach((key) => {
+			if (blockAttributeKeys.includes(key)) {
+				blockProps[key] = allProps[key];
+			} else if (
+				!key.startsWith('videopack/') && 
+				typeof allProps[key] !== 'object' && 
+				typeof allProps[key] !== 'function'
+			) {
+				// Only standard primitives that aren't videopack-internal keys go to DOM
+				cleanDomProps[key] = allProps[key];
 			}
-			return acc;
-		}, {});
+		});
 
 		const loopDuotoneId = context['videopack/loopDuotoneId'];
-		const duotone = props.duotone || attributes?.style?.color?.duotone || attributes?.duotone;
+		const activeDuotone = blockProps.duotone || attributes?.style?.color?.duotone || attributes?.duotone;
 		let finalDuotoneClass = resolvedDuotoneClass || '';
 		
 		if (loopDuotoneId) {
 			finalDuotoneClass = ''; // Loop handles the filter via its own class on the parent
-		} else if (!finalDuotoneClass && duotone) {
-			if (typeof duotone === 'string' && duotone.startsWith('var:preset|duotone|')) {
-				finalDuotoneClass = `wp-duotone-${duotone.split('|').pop()}`;
-			} else if (Array.isArray(duotone)) {
+		} else if (!finalDuotoneClass && activeDuotone) {
+			if (typeof activeDuotone === 'string' && activeDuotone.startsWith('var:preset|duotone|')) {
+				finalDuotoneClass = `wp-duotone-${activeDuotone.split('|').pop()}`;
+			} else if (Array.isArray(activeDuotone)) {
 				const idPrefix = Math.random().toString(36).substr(2, 9);
 				finalDuotoneClass = `videopack-custom-duotone-${idPrefix}`;
 			}
 		}
 
 		return (
-			<div
+			<Tag
 				className={`videopack-video-block-container videopack-wrapper ${className || ''} ${finalDuotoneClass}`}
-				{...domProps}
+				{...cleanDomProps}
 			>
 				{children}
-			</div>
+			</Tag>
 		);
 	},
 	'videopack/collection': CollectionWrapper,
 	'videopack/loop': VideoLoop,
 	'videopack/pagination': Pagination,
-	'videopack/thumbnail': VideoThumbnailPreview,
-	'videopack/title': VideoTitle,
-	'videopack/duration': VideoDuration,
-	'videopack/view-count': ViewCount,
-	'videopack/play-button': PlayButton,
-	'videopack/watermark': VideoWatermark,
+	'videopack/thumbnail': (props) => {
+		const name = 'videopack/thumbnail';
+		const { attributes = {}, ...allProps } = props;
+		const blockAttributeKeys = getBlockAttributes(name);
+		const cleanDomProps = {};
+		Object.keys(allProps).forEach((key) => {
+			if (!blockAttributeKeys.includes(key) && !key.startsWith('videopack/') && typeof allProps[key] !== 'object' && typeof allProps[key] !== 'function') {
+				cleanDomProps[key] = allProps[key];
+			}
+		});
+		return <VideoThumbnailPreview {...props} {...cleanDomProps} />;
+	},
+	'videopack/title': (props) => {
+		const name = 'videopack/title';
+		const { attributes = {}, ...allProps } = props;
+		const blockAttributeKeys = getBlockAttributes(name);
+		const cleanDomProps = {};
+		Object.keys(allProps).forEach((key) => {
+			if (!blockAttributeKeys.includes(key) && !key.startsWith('videopack/') && typeof allProps[key] !== 'object' && typeof allProps[key] !== 'function') {
+				cleanDomProps[key] = allProps[key];
+			}
+		});
+		return <VideoTitle {...props} {...cleanDomProps} />;
+	},
+	'videopack/duration': (props) => {
+		const name = 'videopack/duration';
+		const { attributes = {}, ...allProps } = props;
+		const blockAttributeKeys = getBlockAttributes(name);
+		const cleanDomProps = {};
+		Object.keys(allProps).forEach((key) => {
+			if (!blockAttributeKeys.includes(key) && !key.startsWith('videopack/') && typeof allProps[key] !== 'object' && typeof allProps[key] !== 'function') {
+				cleanDomProps[key] = allProps[key];
+			}
+		});
+		return <VideoDuration {...props} {...cleanDomProps} />;
+	},
+	'videopack/view-count': (props) => {
+		const name = 'videopack/view-count';
+		const { attributes = {}, ...allProps } = props;
+		const blockAttributeKeys = getBlockAttributes(name);
+		const cleanDomProps = {};
+		Object.keys(allProps).forEach((key) => {
+			if (!blockAttributeKeys.includes(key) && !key.startsWith('videopack/') && typeof allProps[key] !== 'object' && typeof allProps[key] !== 'function') {
+				cleanDomProps[key] = allProps[key];
+			}
+		});
+		return <ViewCount {...props} {...cleanDomProps} />;
+	},
+	'videopack/play-button': (props) => {
+		const name = 'videopack/play-button';
+		const { attributes = {}, ...allProps } = props;
+		const blockAttributeKeys = getBlockAttributes(name);
+		const cleanDomProps = {};
+		Object.keys(allProps).forEach((key) => {
+			if (!blockAttributeKeys.includes(key) && !key.startsWith('videopack/') && typeof allProps[key] !== 'object' && typeof allProps[key] !== 'function') {
+				cleanDomProps[key] = allProps[key];
+			}
+		});
+		return <PlayButton {...props} {...cleanDomProps} />;
+	},
+	'videopack/watermark': (props) => {
+		const name = 'videopack/watermark';
+		const { attributes = {}, ...allProps } = props;
+		const blockAttributeKeys = getBlockAttributes(name);
+		const cleanDomProps = {};
+		Object.keys(allProps).forEach((key) => {
+			if (!blockAttributeKeys.includes(key) && !key.startsWith('videopack/') && typeof allProps[key] !== 'object' && typeof allProps[key] !== 'function') {
+				cleanDomProps[key] = allProps[key];
+			}
+		});
+		return <VideoWatermark {...props} {...cleanDomProps} />;
+	},
 	'videopack/player': ({
 		children,
 		attributes,

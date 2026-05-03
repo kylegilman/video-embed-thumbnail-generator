@@ -12,7 +12,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
 import { applyFilters } from '@wordpress/hooks';
-import { getEffectiveValue } from '../../utils/context';
+import useVideopackContext from '../../hooks/useVideopackContext';
 import GenericPlayer from './GenericPlayer.js';
 import VideoJS from './VideoJs.js';
 import WpMejsPlayer from './WpMejsPlayer.js';
@@ -42,14 +42,30 @@ const noop = () => {};
  * @return {Element|null} The rendered component.
  */
 const VideoPlayer = ({
-	attributes,
+	attributes = {},
 	context = {},
 	setAttributes = noop,
 	onReady = noop,
 	isSelected = false,
 	hideStaticOverlays = false,
 	children,
+	// Catch-all for non-DOM attributes that might leak from settings/block spreading
+	...otherProps
 }) => {
+	// Standardize attributes to ensure all block-level settings are here
+	const blockAttributes = useMemo(() => ({
+		...attributes,
+		// If props are passed directly (e.g. from BlockPreview spreading), prioritize them
+		...otherProps,
+	}), [attributes, otherProps]);
+
+	// Use unified context hook for all design and behavior resolution
+	const {
+		resolved,
+		style: contextStyles,
+		classes: contextClasses,
+	} = useVideopackContext(blockAttributes, context);
+
 	const wrapperRef = useRef(null);
 	const [detectedDimensions, setDetectedDimensions] = useState({
 		width: null,
@@ -65,7 +81,7 @@ const VideoPlayer = ({
 
 	// Reset dimensions when src changes
 	useEffect(() => {
-		const { src } = attributes || {};
+		const { src } = blockAttributes || {};
 		if (src !== detectedDimensions.src) {
 			setDetectedDimensions({
 				width: null,
@@ -73,40 +89,30 @@ const VideoPlayer = ({
 				src,
 			});
 		}
-	}, [attributes, detectedDimensions.src]);
+	}, [blockAttributes, detectedDimensions.src]);
 
 	// Handle external restart requests
 	useEffect(() => {
-		if (attributes?.restartCount > 0) {
+		if (blockAttributes?.restartCount > 0) {
 			resetPlayer();
 		}
-	}, [attributes?.restartCount, resetPlayer]);
+	}, [blockAttributes?.restartCount, resetPlayer]);
 
 	const onMetadataLoaded = useCallback(
 		(dimensions) => {
 			if (
 				dimensions.width === detectedDimensions.width &&
 				dimensions.height === detectedDimensions.height &&
-				attributes.src === detectedDimensions.src
+				blockAttributes.src === detectedDimensions.src
 			) {
 				return;
 			}
 			setDetectedDimensions({
 				...dimensions,
-				src: attributes.src,
+				src: blockAttributes.src,
 			});
 		},
-		[detectedDimensions, attributes.src, setDetectedDimensions]
-	);
-
-	const decodedAttributes = useMemo(
-		() => ({
-			...attributes,
-			title: attributes.title
-				? decodeEntities(attributes.title)
-				: attributes.title,
-		}),
-		[attributes]
+		[detectedDimensions, blockAttributes.src, setDetectedDimensions]
 	);
 
 	const {
@@ -126,7 +132,25 @@ const VideoPlayer = ({
 		text_tracks = [],
 		playback_rate,
 		default_ratio,
-	} = decodedAttributes;
+		// Design settings resolved from context
+		play_button_color,
+		play_button_secondary_color,
+		control_bar_bg_color,
+		control_bar_color,
+		title_color,
+		title_background_color,
+		skin,
+		embed_method = 'Video.js',
+		duotone,
+		title: rawTitle,
+		caption,
+		fixed_aspect,
+		fullwidth,
+		rotate,
+		loopDuotoneId,
+	} = resolved;
+
+	const title = rawTitle ? decodeEntities(rawTitle) : rawTitle;
 
 	const source_groups = useMemo(() => {
 		// If we have valid groups, use them (handle empty array vs object)
@@ -151,30 +175,28 @@ const VideoPlayer = ({
 	}, [incomingSourceGroups, incomingSources]);
 
 
-	const raw_embed_method = getEffectiveValue('embed_method', attributes, context);
-	const embed_method = raw_embed_method || videopack_config?.embed_method || 'Video.js';
-	const skin = getEffectiveValue('skin', attributes, context);
-	const play_button_color = getEffectiveValue('play_button_color', attributes, context);
-	const play_button_secondary_color = getEffectiveValue('play_button_secondary_color', attributes, context);
-	const control_bar_bg_color = getEffectiveValue('control_bar_bg_color', attributes, context);
-	const control_bar_color = getEffectiveValue('control_bar_color', attributes, context);
-	const title_color = getEffectiveValue('title_color', attributes, context);
-	const title_background_color = getEffectiveValue('title_background_color', attributes, context);
+	const final_embed_method = embed_method;
+	const final_skin = skin;
+	const final_play_button_color = play_button_color;
+	const final_play_button_secondary_color = play_button_secondary_color;
+	const final_control_bar_bg_color = control_bar_bg_color;
+	const final_control_bar_color = control_bar_color;
+	const final_title_color = title_color;
+	const final_title_background_color = title_background_color;
 	
 	// Duotone resolution
-	const duotone = attributes?.style?.color?.duotone || attributes?.duotone;
+	const final_duotone = blockAttributes?.style?.color?.duotone || duotone;
 	const instanceId = useMemo(() => {
 		return `vp-player-${Math.random().toString(36).substr(2, 9)}`;
 	}, []);
 
 	let resolvedDuotoneClass = '';
-	const loopDuotoneId = getEffectiveValue('loopDuotoneId', attributes, context);
 
 	if (loopDuotoneId) {
 		resolvedDuotoneClass = loopDuotoneId;
-	} else if (typeof duotone === 'string' && duotone.startsWith('var:preset|duotone|')) {
-		resolvedDuotoneClass = `wp-duotone-${duotone.split('|').pop()}`;
-	} else if (Array.isArray(duotone)) {
+	} else if (typeof final_duotone === 'string' && final_duotone.startsWith('var:preset|duotone|')) {
+		resolvedDuotoneClass = `wp-duotone-${final_duotone.split('|').pop()}`;
+	} else if (Array.isArray(final_duotone)) {
 		resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
 	}
 
@@ -191,32 +213,32 @@ const VideoPlayer = ({
 		} else {
 			// Fallback to database metadata
 			vertical =
-				Number(decodedAttributes.height) >
-					Number(decodedAttributes.width) ||
-				[90, 270].includes(Number(decodedAttributes.rotate));
+				Number(resolved.height) >
+					Number(resolved.width) ||
+				[90, 270].includes(Number(resolved.rotate));
 		}
 
 		return vertical;
 	}, [
 		detectedDimensions.width,
 		detectedDimensions.height,
-		decodedAttributes.width,
-		decodedAttributes.height,
-		decodedAttributes.rotate,
+		resolved.width,
+		resolved.height,
+		resolved.rotate,
 	]);
 
 	const isFixedAspect = useMemo(() => {
 		const verticalFixed =
-			decodedAttributes.fixed_aspect === 'vertical' && isVertical;
-		const alwaysFixed = decodedAttributes.fixed_aspect === 'always';
+			fixed_aspect === 'vertical' && isVertical;
+		const alwaysFixed = fixed_aspect === 'always';
 
 		return (
 			(alwaysFixed || verticalFixed) &&
-			(decodedAttributes.fullwidth !== true || verticalFixed)
+			(fullwidth !== true || verticalFixed)
 		);
 	}, [
-		decodedAttributes.fixed_aspect,
-		decodedAttributes.fullwidth,
+		fixed_aspect,
+		fullwidth,
 		isVertical,
 	]);
 
@@ -227,8 +249,8 @@ const VideoPlayer = ({
 		} else if (detectedDimensions.width && detectedDimensions.height) {
 			// If we have browser-detected dimensions and they aren't forced to fixed, use them
 			ratio = `${detectedDimensions.width}:${detectedDimensions.height}`;
-		} else if (decodedAttributes.width && decodedAttributes.height) {
-			ratio = `${decodedAttributes.width}:${decodedAttributes.height}`;
+		} else if (resolved.width && resolved.height) {
+			ratio = `${resolved.width}:${resolved.height}`;
 		}
 
 		return ratio;
@@ -237,50 +259,9 @@ const VideoPlayer = ({
 		default_ratio,
 		detectedDimensions.width,
 		detectedDimensions.height,
-		decodedAttributes.width,
-		decodedAttributes.height,
+		resolved.width,
+		resolved.height,
 	]);
-
-	const playerStyles = useMemo(() => {
-		const styles = {};
-		const config = window.videopack_config || {};
-		const mejsSvgPath = config.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
-
-		if (embed_method === 'WordPress Default' && mejsSvgPath) {
-			styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
-		}
-		if (play_button_color) {
-			styles['--videopack-play-button-color'] = play_button_color;
-		}
-		if (play_button_secondary_color) {
-			styles['--videopack-play-button-secondary-color'] =
-				play_button_secondary_color;
-		}
-		if (control_bar_bg_color) {
-			styles['--videopack-control-bar-bg-color'] = control_bar_bg_color;
-		}
-		if (control_bar_color) {
-			styles['--videopack-control-bar-color'] = control_bar_color;
-		}
-		if (title_color) {
-			styles['--videopack-title-color'] = title_color;
-		}
-		if (title_background_color) {
-			styles['--videopack-title-background-color'] =
-				title_background_color;
-		}
-
-		return styles;
-	}, [
-		play_button_color,
-		play_button_secondary_color,
-		control_bar_bg_color,
-		control_bar_color,
-		title_color,
-		title_background_color,
-		embed_method,
-	]);
-
 	const innerPlayerStyles = useMemo(() => {
 		const styles = {};
 		// Apply aspect ratio to the inner player if we know it (fixed or native)
@@ -293,51 +274,39 @@ const VideoPlayer = ({
 		return styles;
 	}, [isFixedAspect, default_ratio, aspectRatio]);
 
-	const wrapperClasses = useMemo(() => {
-		const classes = ['videopack-video-block-container', 'videopack-wrapper'];
-		if (embed_method === 'Video.js' && skin) {
-			classes.push(skin);
+	const playerStyles = useMemo(() => {
+		const styles = { ...contextStyles };
+		const config = window.videopack_config || {};
+		const mejsSvgPath = config.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
+		if (final_embed_method === 'WordPress Default' && mejsSvgPath) {
+			styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
 		}
+
+		return styles;
+	}, [final_embed_method, contextStyles]);
+
+	const wrapperClasses = useMemo(() => {
+		const classes = [...contextClasses, 'videopack-video-block-container', 'videopack-wrapper'];
+		
 		if (isFixedAspect || aspectRatio) {
 			classes.push('videopack-has-aspect-ratio');
 			if (isFixedAspect) {
 				classes.push('videopack-is-fixed-aspect');
 			}
 		}
-		if (play_button_color) {
-			classes.push('videopack-has-play-button-color');
-		}
-		if (play_button_secondary_color) {
-			classes.push('videopack-has-play-button-secondary-color');
-		}
-		if (control_bar_bg_color) {
-			classes.push('videopack-has-control-bar-bg-color');
-		}
-		if (control_bar_color) {
-			classes.push('videopack-has-control-bar-color');
-		}
-		if (title_color) {
-			classes.push('videopack-has-title-color');
-		}
-		if (title_background_color) {
-			classes.push('videopack-has-title-background-color');
-		}
+
 		if (resolvedDuotoneClass && !loopDuotoneId) {
 			classes.push(resolvedDuotoneClass);
 		}
-		return classes.join(' ');
+		
+		// Ensure unique classes and join
+		return [...new Set(classes)].join(' ');
 	}, [
-		play_button_color,
-		play_button_secondary_color,
-		control_bar_bg_color,
-		control_bar_color,
-		title_color,
-		title_background_color,
+		contextClasses,
 		isFixedAspect,
 		aspectRatio,
-		skin,
-		embed_method,
 		resolvedDuotoneClass,
+		loopDuotoneId,
 	]);
 
 	const actualAutoplay = useMemo(() => {
@@ -367,11 +336,11 @@ const VideoPlayer = ({
 	}, [source_groups, incomingSources, src]);
 
 	const uniqueKey = useMemo(() => {
-		const sourceStr = (finalizedSources || [])
-			.map((s) => (s && typeof s === 'object' ? s.src : String(s || '')))
-			.join(',');
-		return `${skin}-${actualAutoplay}-${loop}-${muted}-${preload}-${sourceStr}-${Object.keys(source_groups).join(',')}`;
-	}, [skin, actualAutoplay, loop, muted, preload, finalizedSources, source_groups]);
+		if (blockAttributes.id) {
+			return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
+		}
+		return Math.random().toString(36).substr(2, 9);
+	}, [blockAttributes.id, source_groups]);
 
 	const genericPlayerOptions = useMemo(
 		() => ({
@@ -387,7 +356,7 @@ const VideoPlayer = ({
 			tracks: text_tracks,
 			volume,
 			autoPlay:
-				embed_method === 'WordPress Default' ? false : actualAutoplay,
+				final_embed_method === 'WordPress Default' ? false : actualAutoplay,
 		}),
 		[
 			poster,
@@ -401,15 +370,15 @@ const VideoPlayer = ({
 			src,
 			finalizedSources,
 			text_tracks,
-			embed_method,
+			final_embed_method,
 		] // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
 	const videoJsOptions = useMemo(() => {
 		const isVjs = applyFilters(
 			'videopack_is_videojs_player',
-			embed_method === 'Video.js',
-			embed_method
+			final_embed_method === 'Video.js',
+			final_embed_method
 		);
 		if (!isVjs) {
 			return null;
@@ -463,7 +432,7 @@ const VideoPlayer = ({
 
 		return options;
 	}, [
-		embed_method,
+		final_embed_method,
 		actualAutoplay,
 		controls,
 		muted,
@@ -501,20 +470,20 @@ const VideoPlayer = ({
 	}, [onReady]);
 
 	useEffect(() => {
-		if (typeof window !== 'undefined' && attributes.id) {
+		if (typeof window !== 'undefined' && blockAttributes.id) {
 			window.videopack = window.videopack || {};
 			window.videopack.player_data = window.videopack.player_data || {};
-			window.videopack.player_data[`videopack_player_${attributes.id}`] = {
+			window.videopack.player_data[`videopack_player_${blockAttributes.id}`] = {
 				source_groups,
 			};
 		}
-	}, [attributes.id, source_groups]);
+	}, [blockAttributes.id, source_groups]);
 
 	const handleVideoPlayerReady = useCallback(
 		(player) => {
 			player.on('loadedmetadata', () => {
 				if (onReadyRef.current) {
-					if (embed_method === 'Video.js') {
+					if (final_embed_method === 'Video.js') {
 						onReadyRef.current(player.el().firstChild);
 					} else {
 						onReadyRef.current(player);
@@ -525,7 +494,7 @@ const VideoPlayer = ({
 				}
 			});
 		},
-		[embed_method, actualAutoplay, handlePlay]
+		[final_embed_method, actualAutoplay, handlePlay]
 	);
 
 	const handleMejsReady = useCallback((player) => {
@@ -533,6 +502,7 @@ const VideoPlayer = ({
 			onReadyRef.current(player);
 		}
 	}, []);
+
 
 	const renderReady = src || (finalizedSources && finalizedSources.length > 0);
 
@@ -544,23 +514,23 @@ const VideoPlayer = ({
 		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles} id={instanceId}>
 			<div
 				className={`videopack-player ${
-					embed_method === 'Video.js' ? skin || '' : ''
+					final_embed_method === 'Video.js' ? final_skin || '' : ''
 				} ${!loopDuotoneId && resolvedDuotoneClass ? resolvedDuotoneClass : ''}`}
 				style={{ ...innerPlayerStyles, position: 'relative' }}
-				data-id={attributes.id}
+				data-id={blockAttributes.id}
 			>
 				{/* Overlays and interactive elements move outside player div for better layout control */}
 				{(() => {
-					const PlayerComponent = players[embed_method] || players.None;
+					const PlayerComponent = players[final_embed_method] || players.None;
 
-					if (embed_method === 'Video.js' && videoJsOptions) {
+					if (final_embed_method === 'Video.js') {
 						return (
 							<PlayerComponent
 								key={`videojs-${src}-${resetKey}-${uniqueKey}-${
-									attributes.restartCount || 0
+									blockAttributes.restartCount || 0
 								}`}
 								options={videoJsOptions}
-								skin={skin}
+								skin={final_skin}
 								onPlay={handlePlay}
 								onPause={handlePause}
 								onReady={handleVideoPlayerReady}
@@ -569,11 +539,11 @@ const VideoPlayer = ({
 						);
 					}
 
-					if (embed_method === 'WordPress Default') {
+					if (final_embed_method === 'WordPress Default') {
 						return (
 							<PlayerComponent
 								key={`wpvideo-${src}-${resetKey}-${uniqueKey}-${
-									attributes.restartCount || 0
+									blockAttributes.restartCount || 0
 								}`}
 								options={genericPlayerOptions}
 								controls={controls}
@@ -590,8 +560,8 @@ const VideoPlayer = ({
 
 					return (
 						<PlayerComponent
-							key={`${embed_method}-${src}-${resetKey}-${uniqueKey}-${
-								attributes.restartCount || 0
+							key={`${final_embed_method}-${src}-${resetKey}-${uniqueKey}-${
+								blockAttributes.restartCount || 0
 							}`}
 							options={
 								PlayerComponent === VideoJS ||
@@ -602,7 +572,7 @@ const VideoPlayer = ({
 							{...(PlayerComponent === GenericPlayer
 								? genericPlayerOptions
 								: {})}
-							skin={skin}
+							skin={final_skin}
 							onPlay={handlePlay}
 							onPause={handlePause}
 							onReady={handleVideoPlayerReady}
@@ -611,9 +581,9 @@ const VideoPlayer = ({
 						/>
 					);
 				})()}
-				{Array.isArray(duotone) && resolvedDuotoneClass && !loopDuotoneId && (
+				{Array.isArray(final_duotone) && resolvedDuotoneClass && !loopDuotoneId && (
 					<>
-						<CustomDuotoneFilter colors={duotone} id={resolvedDuotoneClass} />
+						<CustomDuotoneFilter colors={final_duotone} id={resolvedDuotoneClass} />
 						<style>
 							{`
 								.${resolvedDuotoneClass} .vjs-poster:not(.vjs-poster .vjs-poster),

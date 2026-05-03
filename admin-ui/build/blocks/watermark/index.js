@@ -857,10 +857,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/page.mjs");
 /* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/post.mjs");
 /* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/watermark/editor.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/watermark/editor.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__);
 /* global ResizeObserver */
+
 
 
 
@@ -880,48 +882,23 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function VideoWatermark({
-  watermark,
-  watermark_scale,
-  watermark_align,
-  watermark_valign,
-  watermark_x,
-  watermark_y,
+  attributes = {},
   context = {},
   isBlockEditor = false,
   onDimensions = null
 }) {
-  const watermarkProps = {
-    watermark,
-    watermark_scale,
-    watermark_align,
-    watermark_valign,
-    watermark_x,
-    watermark_y
-  };
-  const effectiveUrl = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('watermark', {
-    watermark
-  }, context);
-  const getEffective = (attrKey, contextKey, fallback) => {
-    if (watermarkProps[attrKey] !== undefined && watermarkProps[attrKey] !== null && watermarkProps[attrKey] !== '') {
-      return watermarkProps[attrKey];
-    }
-    const styles = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('watermark_styles', {}, context);
-    if (styles && typeof styles === 'object' && styles[contextKey] !== undefined) {
-      return styles[contextKey];
-    }
-    return (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)(`watermark_${contextKey}`, {}, context) ?? fallback;
-  };
-  const effectiveScale = getEffective('watermark_scale', 'scale', 10);
-  const effectiveAlign = getEffective('watermark_align', 'align', 'right');
-  const effectiveValign = getEffective('watermark_valign', 'valign', 'bottom');
-  const effectiveX = getEffective('watermark_x', 'x', 5);
-  const effectiveY = getEffective('watermark_y', 'y', 7);
-  const skin = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('skin', {}, context);
-  const actualAlign = effectiveAlign || 'right';
-  const actualValign = effectiveValign || 'bottom';
-  const actualX = effectiveX !== undefined && effectiveX !== '' ? effectiveX : 5;
-  const actualY = effectiveY !== undefined && effectiveY !== '' ? effectiveY : 7;
-  const actualScale = effectiveScale !== undefined && effectiveScale !== '' ? effectiveScale : 10;
+  const {
+    resolved
+  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_13__["default"])(attributes, context);
+  const {
+    watermark: effectiveUrl,
+    watermark_scale: actualScale = 10,
+    watermark_align: actualAlign = 'right',
+    watermark_valign: actualValign = 'bottom',
+    watermark_x: actualX = 5,
+    watermark_y: actualY = 7,
+    skin
+  } = resolved;
   const style = {
     position: isBlockEditor ? 'relative' : 'absolute',
     width: effectiveUrl ? `${actualScale}%` : '260px',
@@ -962,10 +939,10 @@ function VideoWatermark({
   if (!effectiveUrl) {
     return null;
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)("div", {
     className: `videopack-video-watermark ${skin}`,
     style: style,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("img", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)("img", {
       src: effectiveUrl,
       alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark', 'video-embed-thumbnail-generator'),
       style: {
@@ -986,26 +963,18 @@ function VideoWatermark({
 /**
  * Helper to calculate watermark positioning styles for the block wrapper.
  */
-function getWatermarkBlockStyles(attributes, context) {
-  const effectiveUrl = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('watermark', attributes, context);
+function getWatermarkBlockStyles(resolved) {
+  const {
+    watermark: effectiveUrl,
+    watermark_scale: effectiveScale = 10,
+    watermark_align: effectiveAlign = 'right',
+    watermark_valign: effectiveValign = 'bottom',
+    watermark_x: effectiveX = 5,
+    watermark_y: effectiveY = 7
+  } = resolved;
   if (!effectiveUrl) {
     return {};
   }
-  const getEffective = (attrKey, contextKey, fallback) => {
-    if (attributes[attrKey] !== undefined && attributes[attrKey] !== null && attributes[attrKey] !== '') {
-      return attributes[attrKey];
-    }
-    const styles = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('watermark_styles', attributes, context);
-    if (styles && typeof styles === 'object' && styles[contextKey] !== undefined) {
-      return styles[contextKey];
-    }
-    return (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)(`watermark_${contextKey}`, attributes, context) ?? fallback;
-  };
-  const effectiveScale = getEffective('watermark_scale', 'scale', 10);
-  const effectiveAlign = getEffective('watermark_align', 'align', 'right');
-  const effectiveValign = getEffective('watermark_valign', 'valign', 'bottom');
-  const effectiveX = getEffective('watermark_x', 'x', 5);
-  const effectiveY = getEffective('watermark_y', 'y', 7);
   const style = {
     position: 'absolute',
     width: `${effectiveScale}%`,
@@ -1095,33 +1064,24 @@ function Edit({
     watermark_url = ''
   } = attributes;
 
-  // Resolve effective values with correct priority:
-  // Individual attribute -> Composite context object -> Individual context key -> Default
-  const getEffective = (attrKey, contextKey, fallback) => {
-    // 1. Local attribute ALWAYS wins if it's explicitly set (and not just defaulting)
-    if (attributes[attrKey] !== undefined && attributes[attrKey] !== null && attributes[attrKey] !== '') {
-      return attributes[attrKey];
-    }
-    // 2. Try the composite styles object from context
-    const styles = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('watermark_styles', attributes, context);
-    if (styles && typeof styles === 'object' && styles[contextKey] !== undefined) {
-      return styles[contextKey];
-    }
-    // 3. Try individual context key
-    return (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)(`watermark_${contextKey}`, attributes, context) ?? fallback;
-  };
-  const effectiveUrl = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('watermark', attributes, context);
-  const effectiveScale = getEffective('watermark_scale', 'scale', 10);
-  const effectiveAlign = getEffective('watermark_align', 'align', 'right');
-  const effectiveValign = getEffective('watermark_valign', 'valign', 'bottom');
-  const effectiveX = getEffective('watermark_x', 'x', 5);
-  const effectiveY = getEffective('watermark_y', 'y', 7);
-  const effectiveLinkToType = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('watermark_link_to', attributes, context) || 'false';
-  const effectiveCustomLinkUrl = (0,_utils_context__WEBPACK_IMPORTED_MODULE_12__.getEffectiveValue)('watermark_url', attributes, context) || '';
+  // Use unified context hook for all design and behavior resolution
+  const {
+    resolved
+  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_13__["default"])(attributes, context);
+  const {
+    watermark: effectiveUrl,
+    watermark_scale: effectiveScale = 10,
+    watermark_align: effectiveAlign = 'right',
+    watermark_valign: effectiveValign = 'bottom',
+    watermark_x: effectiveX = 5,
+    watermark_y: effectiveY = 7,
+    watermark_link_to: effectiveLinkToType = 'false',
+    watermark_url: effectiveCustomLinkUrl = ''
+  } = resolved;
   const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
   const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
   const isOverlay = isInsideThumbnail || isInsidePlayerOverlay;
-  const overlayStyles = isOverlay || context.isPreview ? getWatermarkBlockStyles(attributes, context) : {};
+  const overlayStyles = isOverlay || context.isPreview ? getWatermarkBlockStyles(resolved) : {};
 
   // Implementation of Full-Frame Selection mode:
   // When selected, the block expands to fill the entire container to allow dragging everywhere.
@@ -1143,10 +1103,10 @@ function Edit({
     style: activeOverlayStyles
   });
   if (!effectiveUrl) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)("div", {
       ...blockProps,
       className: "videopack-video-watermark-placeholder",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaPlaceholder, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaPlaceholder, {
         icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_7__["default"],
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark Image', 'video-embed-thumbnail-generator'),
         onSelect: media => setAttributes({
@@ -1157,10 +1117,10 @@ function Edit({
       })
     });
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsxs)("div", {
     ...blockProps,
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.BlockControls, {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaReplaceFlow, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.BlockControls, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaReplaceFlow, {
         mediaURL: watermark,
         allowedTypes: ['image'],
         accept: "image/*",
@@ -1168,44 +1128,44 @@ function Edit({
           watermark: media.url
         }),
         name: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace Watermark', 'video-embed-thumbnail-generator')
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarGroup, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarGroup, {
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link To', 'video-embed-thumbnail-generator'),
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
           icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_9__["default"],
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('No Link', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
             watermark_link_to: 'false'
           }),
           isPressed: effectiveLinkToType === 'false'
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
           icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_6__["default"],
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link to Home Page', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
             watermark_link_to: 'home'
           }),
           isPressed: effectiveLinkToType === 'home'
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
           icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_11__["default"],
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link to Parent Post', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
             watermark_link_to: 'parent'
           }),
           isPressed: effectiveLinkToType === 'parent'
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
           icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_5__["default"],
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Download Video', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
             watermark_link_to: 'download'
           }),
           isPressed: effectiveLinkToType === 'download'
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
           icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"],
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link to Attachment Page', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
             watermark_link_to: 'attachment'
           }),
           isPressed: effectiveLinkToType === 'attachment'
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Dropdown, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Dropdown, {
           popoverProps: {
             position: 'bottom center',
             className: 'videopack-url-popover'
@@ -1213,7 +1173,7 @@ function Edit({
           renderToggle: ({
             isOpen,
             onToggle
-          }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
+          }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToolbarButton, {
             icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_8__["default"],
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link to Custom URL', 'video-embed-thumbnail-generator'),
             onClick: () => {
@@ -1225,12 +1185,12 @@ function Edit({
             "aria-expanded": isOpen,
             isPressed: effectiveLinkToType === 'custom'
           }),
-          renderContent: () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", {
+          renderContent: () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)("div", {
             style: {
               padding: '12px',
               minWidth: '260px'
             },
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
               __nextHasNoMarginBottom: true,
               __next40pxDefaultSize: true,
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Custom URL', 'video-embed-thumbnail-generator'),
@@ -1243,11 +1203,11 @@ function Edit({
           })
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.InspectorControls, {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.InspectorControls, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
         title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark Settings', 'video-embed-thumbnail-generator'),
         initialOpen: true,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Scale (%)', 'video-embed-thumbnail-generator'),
           value: effectiveScale,
           onChange: value => setAttributes({
@@ -1255,12 +1215,12 @@ function Edit({
           }),
           min: 1,
           max: 100
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsxs)("div", {
           style: {
             display: 'flex',
             gap: '10px'
           },
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Horizontal Align', 'video-embed-thumbnail-generator'),
             value: effectiveAlign,
             options: [{
@@ -1279,7 +1239,7 @@ function Edit({
             style: {
               flex: 1
             }
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Vertical Align', 'video-embed-thumbnail-generator'),
             value: effectiveValign,
             options: [{
@@ -1299,7 +1259,7 @@ function Edit({
               flex: 1
             }
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Horizontal Offset (%)', 'video-embed-thumbnail-generator'),
           value: effectiveX,
           onChange: value => setAttributes({
@@ -1308,7 +1268,7 @@ function Edit({
           min: 0,
           max: 100,
           step: 0.01
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Vertical Offset (%)', 'video-embed-thumbnail-generator'),
           value: effectiveY,
           onChange: value => setAttributes({
@@ -1317,7 +1277,7 @@ function Edit({
           min: 0,
           max: 100,
           step: 0.01
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link to', 'video-embed-thumbnail-generator'),
@@ -1344,7 +1304,7 @@ function Edit({
             value: 'custom',
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Custom URL', 'video-embed-thumbnail-generator')
           }]
-        }), effectiveLinkToType === 'custom' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
+        }), effectiveLinkToType === 'custom' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark URL', 'video-embed-thumbnail-generator'),
@@ -1354,7 +1314,7 @@ function Edit({
           })
         })]
       })
-    }), isOverlay && containerDimensions && isSelected ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", {
+    }), isOverlay && containerDimensions && isSelected ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)("div", {
       ref: containerRef,
       style: {
         width: '100%',
@@ -1364,26 +1324,21 @@ function Edit({
         left: 0,
         pointerEvents: 'auto'
       },
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_components_WatermarkPositioner_WatermarkPositioner__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_components_WatermarkPositioner_WatermarkPositioner__WEBPACK_IMPORTED_MODULE_4__["default"], {
         containerDimensions: containerDimensions,
         settings: attributes,
         onChange: newAttrs => setAttributes(newAttrs),
         isSelected: isSelected,
         showBackground: false,
         aspectRatio: detectedAspectRatio,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(VideoWatermark, {
-          watermark: watermark,
-          watermark_scale: watermark_scale,
-          watermark_align: watermark_align,
-          watermark_valign: watermark_valign,
-          watermark_x: watermark_x,
-          watermark_y: watermark_y,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(VideoWatermark, {
+          attributes: attributes,
           context: context,
           isBlockEditor: true,
           onDimensions: setDetectedAspectRatio
         })
       })
-    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", {
+    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)("div", {
       ref: containerRef,
       style: {
         ...(isOverlay ? {
@@ -1392,13 +1347,8 @@ function Edit({
           position: 'relative'
         } : {})
       },
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(VideoWatermark, {
-        watermark: watermark,
-        watermark_scale: watermark_scale,
-        watermark_align: watermark_align,
-        watermark_valign: watermark_valign,
-        watermark_x: watermark_x,
-        watermark_y: watermark_y,
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(VideoWatermark, {
+        attributes: attributes,
         context: context,
         isBlockEditor: isOverlay,
         onDimensions: setDetectedAspectRatio
@@ -2003,6 +1953,249 @@ const WatermarkPositioner = ({
 
 /***/ },
 
+/***/ "./src/hooks/useVideopackContext.js"
+/*!******************************************!*\
+  !*** ./src/hooks/useVideopackContext.js ***!
+  \******************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   VIDEOPACK_CONTEXT_KEYS: () => (/* binding */ VIDEOPACK_CONTEXT_KEYS),
+/* harmony export */   "default": () => (/* binding */ useVideopackContext),
+/* harmony export */   isTrue: () => (/* reexport safe */ _utils_context__WEBPACK_IMPORTED_MODULE_2__.isTrue)
+/* harmony export */ });
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/context */ "./src/utils/context.js");
+
+
+
+
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
+
+/**
+ * Hook to resolve Videopack design context and generate styles/classes.
+ *
+ * @param {Object} attributes Block attributes.
+ * @param {Object} context    Block context.
+ * @param {Object} options    Optional configuration.
+ * @return {Object} Resolved values, styles, and classes.
+ */
+function useVideopackContext(attributes, context, options = {}) {
+  const {
+    excludeHoverTrigger: optionsExclude = false
+  } = options;
+  // The hover trigger exclusion should NOT be inherited from parents by default,
+  // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
+  const excludeHoverTrigger = optionsExclude || attributes.exclude_hover_trigger || false;
+
+  // 1. Initial Synchronous Resolution
+  const initial = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    const resolved = {};
+    const style = {};
+    const classes = [];
+    VIDEOPACK_CONTEXT_KEYS.forEach(key => {
+      const value = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)(key, attributes, context);
+      resolved[key] = value;
+      if (value) {
+        const cssKey = key.replace(/_/g, '-');
+        if (typeof value === 'string' || typeof value === 'number') {
+          const cssVar = `--videopack-${cssKey}`;
+          style[cssVar] = value;
+        }
+
+        // Only add classes for colors/styles that are actually set
+        if (key !== 'skin') {
+          classes.push(`videopack-has-${cssKey}`);
+        }
+      }
+    });
+
+    // Special handling for skin class
+    if (resolved.skin && resolved.skin !== 'default') {
+      classes.push(resolved.skin);
+    }
+
+    // Handle Gutenberg "style" attribute (typography, spacing, etc).
+    if (attributes.style && typeof attributes.style === 'object') {
+      // Typography Support
+      if (attributes.style.typography) {
+        const {
+          fontSize,
+          lineHeight,
+          letterSpacing
+        } = attributes.style.typography;
+        if (fontSize) {
+          if (fontSize.startsWith('var:preset|font-size|')) {
+            const slug = fontSize.split('|').pop();
+            style.fontSize = `var(--wp--preset--font-size--${slug})`;
+          } else {
+            style.fontSize = fontSize;
+          }
+        }
+        if (lineHeight) style.lineHeight = lineHeight;
+        if (letterSpacing) style.letterSpacing = letterSpacing;
+      }
+
+      // Spacing Support (Margin/Padding)
+      if (attributes.style.spacing) {
+        Object.entries(attributes.style.spacing).forEach(([type, values]) => {
+          if (values && typeof values === 'object') {
+            Object.entries(values).forEach(([dir, val]) => {
+              let finalVal = val;
+              if (typeof val === 'string' && val.startsWith('var:preset|spacing|')) {
+                const slug = val.split('|').pop();
+                finalVal = `var(--wp--preset--spacing--${slug})`;
+              }
+              style[`${type}${dir.charAt(0).toUpperCase()}${dir.slice(1)}`] = finalVal;
+            });
+          }
+        });
+      }
+    }
+    resolved.isEditingAllPages = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.isTrue)((0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('isEditingAllPages', attributes, context));
+    resolved.prioritizePostData = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.isTrue)((0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('prioritizePostData', attributes, context));
+    resolved.isStandalone = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.isTrue)((0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('isStandalone', attributes, context));
+    // Core data identification
+    resolved.postId = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('postId', attributes, context);
+    resolved.attachmentId = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('attachmentId', attributes, context);
+    resolved.postType = (0,_utils_context__WEBPACK_IMPORTED_MODULE_2__.getEffectiveValue)('postType', attributes, context);
+
+    // Handle Gutenberg Typography Classes (Presets)
+    if (attributes.fontSize) {
+      classes.push(`has-${attributes.fontSize}-font-size`);
+    }
+    if (attributes.fontFamily) {
+      classes.push(`has-${attributes.fontFamily}-font-family`);
+    }
+    if (!excludeHoverTrigger) {
+      classes.push('videopack-hover-trigger');
+    }
+    return {
+      resolved,
+      style,
+      classes
+    };
+  }, [attributes, context, excludeHoverTrigger]);
+
+  // 2. Automatic Video Discovery
+  // If we have a postId but no attachmentId, try to find the first video attachment.
+  const {
+    discoveredAttachmentId,
+    isDiscovering
+  } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.useSelect)(select => {
+    const {
+      resolved
+    } = initial;
+
+    // If we already have an attachmentId, a manual src, or a saved id, we're not discovering.
+    if (resolved.attachmentId || attributes.src || attributes.id) {
+      return {
+        discoveredAttachmentId: resolved.attachmentId || attributes.id,
+        isDiscovering: false
+      };
+    }
+
+    // If we don't even have a postId, we can't discover anything.
+    if (!resolved.postId || resolved.postId < 1) {
+      return {
+        discoveredAttachmentId: null,
+        isDiscovering: false
+      };
+    }
+
+    // Avoid duplicates: Find IDs already used by other blocks
+    const {
+      getBlocks
+    } = select('core/block-editor');
+    const allBlocks = getBlocks();
+    const usedIds = new Set();
+    const findUsedIds = blocks => {
+      blocks.forEach(block => {
+        if (block.name === 'videopack/player-container' && block.attributes.id) {
+          usedIds.add(Number(block.attributes.id));
+        }
+        if (block.innerBlocks) {
+          findUsedIds(block.innerBlocks);
+        }
+      });
+    };
+    findUsedIds(allBlocks);
+
+    // If the postId itself IS an attachment, then that's our attachmentId.
+    if (resolved.postType === 'attachment') {
+      const id = Number(resolved.postId);
+      // Only use it if it's not already taken by another block
+      if (!usedIds.has(id)) {
+        return {
+          discoveredAttachmentId: id,
+          isDiscovering: false
+        };
+      }
+    }
+
+    // Otherwise, try to find a video attachment for this post that isn't already used.
+    const {
+      getEntityRecords
+    } = select('core');
+    const query = {
+      parent: resolved.postId,
+      media_type: 'video',
+      per_page: 20,
+      // Fetch more to allow skipping duplicates and non-videos
+      _fields: 'id,mime_type'
+    };
+    const attachments = getEntityRecords('postType', 'attachment', query);
+    const isResolving = select('core/data').isResolving('core', 'getEntityRecords', ['postType', 'attachment', query]);
+
+    // Pick the first one that is a video AND isn't already used
+    const foundId = attachments?.find(a => a.mime_type?.startsWith('video/') && !usedIds.has(Number(a.id)))?.id || null;
+    return {
+      discoveredAttachmentId: foundId,
+      isDiscovering: isResolving || !foundId && attachments === undefined
+    };
+  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
+
+    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // and we know the post is NOT an attachment, then it's a false resolution.
+    const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id ? null : rawAttachmentId;
+    const finalResolved = {
+      ...initial.resolved,
+      attachmentId: finalAttachmentId,
+      isDiscovering
+    };
+
+    // 3. Generate Shared Context Bridge
+    const sharedContext = {};
+    VIDEOPACK_CONTEXT_KEYS.forEach(key => {
+      if (finalResolved[key] !== undefined && finalResolved[key] !== null) {
+        sharedContext[`videopack/${key}`] = finalResolved[key];
+      }
+    });
+
+    // Add core metadata to shared context
+    sharedContext['videopack/postId'] = finalResolved.postId;
+    sharedContext['videopack/attachmentId'] = finalResolved.attachmentId;
+    sharedContext['videopack/postType'] = finalResolved.postType;
+    sharedContext['videopack/isEditingAllPages'] = finalResolved.isEditingAllPages;
+    sharedContext['videopack/prioritizePostData'] = finalResolved.prioritizePostData;
+    sharedContext['videopack/isStandalone'] = finalResolved.isStandalone;
+    return {
+      resolved: finalResolved,
+      style: initial.style,
+      classes: initial.classes.join(' '),
+      sharedContext
+    };
+  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
+}
+
+/***/ },
+
 /***/ "./src/utils/context.js"
 /*!******************************!*\
   !*** ./src/utils/context.js ***!
@@ -2177,6 +2370,16 @@ module.exports = window["wp"]["blocks"];
 (module) {
 
 module.exports = window["wp"]["components"];
+
+/***/ },
+
+/***/ "@wordpress/data"
+/*!******************************!*\
+  !*** external ["wp","data"] ***!
+  \******************************/
+(module) {
+
+module.exports = window["wp"]["data"];
 
 /***/ },
 
