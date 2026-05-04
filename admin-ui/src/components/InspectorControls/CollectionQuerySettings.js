@@ -88,7 +88,10 @@ export default function CollectionQuerySettings({
 
 			{gallery_source === 'archive' && (
 				<ToggleControl
-					label={__('Prioritize Post Data', 'video-embed-thumbnail-generator')}
+					label={__(
+						'Prioritize Post Data',
+						'video-embed-thumbnail-generator'
+					)}
 					help={__(
 						'Use the title and date from the original post instead of the video attachment.',
 						'video-embed-thumbnail-generator'
@@ -108,22 +111,28 @@ export default function CollectionQuerySettings({
 					options={orderbyOptions}
 				/>
 				<Button
-					icon={gallery_order === 'asc' ? sortAscending : sortDescending}
+					icon={
+						gallery_order === 'asc' ? sortAscending : sortDescending
+					}
 					label={
 						gallery_order === 'asc'
 							? __('Ascending', 'video-embed-thumbnail-generator')
-							: __('Descending', 'video-embed-thumbnail-generator')
+							: __(
+									'Descending',
+									'video-embed-thumbnail-generator'
+								)
 					}
 					onClick={() =>
 						setAttributes({
-							gallery_order: gallery_order === 'asc' ? 'desc' : 'asc',
+							gallery_order:
+								gallery_order === 'asc' ? 'desc' : 'asc',
 						})
 					}
 					showTooltip
 				/>
 			</div>
 
-			{(!!gallery_pagination || !!hasPaginationBlock) ? (
+			{!!gallery_pagination || !!hasPaginationBlock ? (
 				<TextControl
 					label={__(
 						'Number of videos per page',
@@ -151,9 +160,7 @@ export default function CollectionQuerySettings({
 							};
 							if (!val) {
 								updates.collection_video_limit = -1;
-							} else if (
-								Number(collection_video_limit) === -1
-							) {
+							} else if (Number(collection_video_limit) === -1) {
 								updates.collection_video_limit = 12;
 							}
 							setAttributes(updates);

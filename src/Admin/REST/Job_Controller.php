@@ -116,10 +116,12 @@ class Job_Controller extends Controller {
 
 	/**
 	 * REST callback to create encoding jobs.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function jobs_create( \WP_REST_Request $request ) {
-		$input     = $request->get_param( 'input' );
-		$outputs   = (array) $request->get_param( 'outputs' );
+		$input         = $request->get_param( 'input' );
+		$outputs       = (array) $request->get_param( 'outputs' );
 		$attachment_id = is_numeric( $input ) ? (int) $input : 0;
 		$input_url     = $attachment_id ? (string) wp_get_attachment_url( $attachment_id ) : (string) esc_url_raw( (string) $input );
 
@@ -128,18 +130,39 @@ class Job_Controller extends Controller {
 		}
 
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
-		$result = $queue_controller->enqueue_encodes( array( 'id' => $attachment_id ?: $input_url, 'url' => $input_url, 'formats' => $outputs ) );
+		$result           = $queue_controller->enqueue_encodes(
+			array(
+				'id'      => $attachment_id ? $attachment_id : $input_url,
+				'url'     => $input_url,
+				'formats' => $outputs,
+			)
+		);
 
 		if ( empty( $result['results'] ) ) {
 			return new \WP_Error( 'enqueue_failed', 'Failed to enqueue any jobs.', array( 'status' => 500 ) );
 		}
 
-		$created_jobs = $queue_controller->get_jobs_list_data( $queue_controller->get_queue_items( get_current_blog_id() ), $attachment_id ?: $input_url );
-		return apply_filters( 'videopack_rest_jobs_create', new \WP_REST_Response( array_merge( $result, array( 'attachment_id' => $attachment_id, 'jobs' => $created_jobs ) ), 201 ), $request );
+		$created_jobs = $queue_controller->get_jobs_list_data( $queue_controller->get_queue_items( get_current_blog_id() ), $attachment_id ? $attachment_id : $input_url );
+		return apply_filters(
+			'videopack_rest_jobs_create',
+			new \WP_REST_Response(
+				array_merge(
+					$result,
+					array(
+						'attachment_id' => $attachment_id,
+						'jobs'          => $created_jobs,
+					)
+				),
+				201
+			),
+			$request
+		);
 	}
 
 	/**
 	 * REST callback to list jobs.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function jobs_list( \WP_REST_Request $request ) {
 		$input            = $request->get_param( 'input' );
@@ -150,6 +173,8 @@ class Job_Controller extends Controller {
 
 	/**
 	 * REST callback to control queue.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function jobs_control( \WP_REST_Request $request ) {
 		$action           = (string) $request->get_param( 'action' );
@@ -166,6 +191,8 @@ class Job_Controller extends Controller {
 
 	/**
 	 * REST callback to clear jobs.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function jobs_clear( \WP_REST_Request $request ) {
 		$type             = (string) $request->get_param( 'type' );
@@ -177,6 +204,8 @@ class Job_Controller extends Controller {
 
 	/**
 	 * REST callback to get a job.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function job_get( \WP_REST_Request $request ) {
 		$id               = (int) $request->get_param( 'id' );
@@ -190,6 +219,8 @@ class Job_Controller extends Controller {
 
 	/**
 	 * REST callback to delete a job.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function job_delete( \WP_REST_Request $request ) {
 		$id               = (int) $request->get_param( 'id' );
@@ -205,11 +236,23 @@ class Job_Controller extends Controller {
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
-		return apply_filters( 'videopack_rest_job_delete', new \WP_REST_Response( array( 'deleted' => true, 'job_id' => $id ), 200 ), $request );
+		return apply_filters(
+			'videopack_rest_job_delete',
+			new \WP_REST_Response(
+				array(
+					'deleted' => true,
+					'job_id'  => $id,
+				),
+				200
+			),
+			$request
+		);
 	}
 
 	/**
 	 * REST callback to retry a job.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function job_retry( \WP_REST_Request $request ) {
 		$id               = (int) $request->get_param( 'id' );
@@ -219,6 +262,16 @@ class Job_Controller extends Controller {
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
-		return apply_filters( 'videopack_rest_job_retry', new \WP_REST_Response( array( 'retried' => true, 'job_id' => $id ), 200 ), $request );
+		return apply_filters(
+			'videopack_rest_job_retry',
+			new \WP_REST_Response(
+				array(
+					'retried' => true,
+					'job_id'  => $id,
+				),
+				200
+			),
+			$request
+		);
 	}
 }

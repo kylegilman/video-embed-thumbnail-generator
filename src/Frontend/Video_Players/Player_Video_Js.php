@@ -69,8 +69,8 @@ class Player_Video_Js extends Player {
 		wp_register_script( 'video-js', plugins_url( 'video-js/video.min.js', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VIDEOJS_VERSION, true );
 		wp_register_script( 'video-js-quality-selector', plugins_url( 'video-js/video-quality-selector.js', VIDEOPACK_PLUGIN_FILE ), array( 'video-js' ), VIDEOPACK_VERSION, true );
 
-		$locale         = self::get_videojs_locale();
-		$translations   = array(
+		$locale        = self::get_videojs_locale();
+		$translations  = array(
 			'Quality' => esc_html_x( 'Quality', 'text above list of video resolutions', 'video-embed-thumbnail-generator' ),
 			'Full'    => esc_html_x( 'Full', 'Full resolution', 'video-embed-thumbnail-generator' ),
 		);

@@ -8,8 +8,8 @@ import { getVideoSources } from '../api/gallery';
 /**
  * Hook to fetch and manage video sources for a given attachment.
  *
- * @param {number}  id             The attachment ID.
- * @param {string}  src            The video source URL.
+ * @param {number} id  The attachment ID.
+ * @param {string} src The video source URL.
  * @return {Object} Video sources data and loading state.
  */
 export const useVideoFormats = (id, src) => {
@@ -27,7 +27,10 @@ export const useVideoFormats = (id, src) => {
 				setSources(data);
 			} catch (error) {
 				if (error.name !== 'AbortError') {
-					console.error('Videopack: Error fetching video sources:', error);
+					console.error(
+						'Videopack: Error fetching video sources:',
+						error
+					);
 				}
 			} finally {
 				setIsLoading(false);

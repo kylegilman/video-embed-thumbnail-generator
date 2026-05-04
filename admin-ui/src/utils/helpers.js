@@ -34,7 +34,11 @@ export const normalizeOptions = (options) => {
 		if (Object.prototype.hasOwnProperty.call(normalized, key)) {
 			const val = normalized[key];
 			normalized[key] =
-				val === 'true' || val === true || val === '1' || val === 1 || val === 'on';
+				val === 'true' ||
+				val === true ||
+				val === '1' ||
+				val === 1 ||
+				val === 'on';
 		}
 	});
 

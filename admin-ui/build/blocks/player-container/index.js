@@ -74,9 +74,9 @@ const getPresets = async (attachmentId = null, url = '', probedMetadata = null, 
 /**
  * Fetches already grouped and labeled video sources for a player.
  *
- * @param {number|string} attachmentId   Optional. The video attachment ID.
- * @param {string}        url            Optional. The video source URL.
- * @param {AbortSignal}   signal         Optional. Abort signal.
+ * @param {number|string} attachmentId Optional. The video attachment ID.
+ * @param {string}        url          Optional. The video source URL.
+ * @param {AbortSignal}   signal       Optional. Abort signal.
  */
 const getVideoSources = async (attachmentId = null, url = '', signal = null) => {
   try {
@@ -1730,7 +1730,7 @@ const playOutline = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "default": () => (/* binding */ Edit)
 /* harmony export */ });
 /* harmony import */ var _wordpress_blob__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/blob */ "@wordpress/blob");
 /* harmony import */ var _wordpress_blob__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_blob__WEBPACK_IMPORTED_MODULE_0__);
@@ -1790,21 +1790,19 @@ const ALLOWED_BLOCKS = ['videopack/player', 'videopack/view-count', 'videopack/c
 /**
  * Edit component for the Videopack Video block.
  *
- * @param {Object}   props               Component props.
- * @param {Object}   props.attributes    Block attributes.
- * @param {string}   props.clientId      Block client ID.
- * @param {Function} props.setAttributes Function to update block attributes.
- * @param {boolean}  props.isSelected    Whether the block is currently selected.
- * @param {Object}   props.context       Block context.
- * @return {Object}                      The rendered component.
+ * @param {Object}   root0               Component props.
+ * @param {Object}   root0.attributes    Block attributes.
+ * @param {string}   root0.clientId      Block client ID.
+ * @param {Function} root0.setAttributes Attribute setter.
+ * @param {Object}   root0.context       Block context.
+ * @return {Element}                     The rendered component.
  */
-const Edit = ({
-  clientId,
+function Edit({
   attributes,
   setAttributes,
-  isSelected,
-  context
-}) => {
+  context,
+  clientId
+}) {
   const {
     id,
     src
@@ -1845,20 +1843,17 @@ const Edit = ({
   }, [clientId]);
   const vpContext = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_18__["default"])(attributes, context);
   const {
-    resolved: {
-      attachmentId: resolvedAttachmentId,
-      postId: resolvedPostIdFromContext,
-      postType: resolvedPostType,
-      isStandalone: inheritedIsStandalone,
-      isDiscovering
-    },
     resolved: effectiveDesign,
     style: contextStyle,
     classes: contextClasses
   } = vpContext;
+  const {
+    attachmentId: resolvedAttachmentId,
+    postId: resolvedPostIdFromContext,
+    isDiscovering
+  } = effectiveDesign;
   const isDynamic = (context['videopack/postId'] || context.postId) && (Number(context['videopack/postId'] || context.postId) !== Number(editorPostId) || isSiteEditor);
   const isStandalone = !isDynamic;
-  const shouldPersist = isStandalone;
   const effectiveId = resolvedAttachmentId;
   const [attachment, setAttachment] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(null);
   const [hasResolved, setHasResolved] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(false);
@@ -1899,10 +1894,7 @@ const Edit = ({
       control_bar_color: attributes.control_bar_color || options?.control_bar_color || config?.control_bar_color,
       title_color: attributes.title_color || options?.title_color || config?.title_color,
       title_background_color: attributes.title_background_color || effectiveDesign.title_background_color,
-      embedlink: context['videopack/embedlink'] || attachment?.videopack?.embed_url || attributes.embedlink,
-      sources: attachment?.videopack?.sources || attributes.sources || [],
-      source_groups: attachment?.videopack?.source_groups || attributes.source_groups || {},
-      text_tracks: attachment?.videopack?.text_tracks || attributes.text_tracks || []
+      embedlink: context['videopack/embedlink'] || attachment?.videopack?.embed_url || attributes.embedlink
     };
   }, [attributes, attachment, options, config, context, effectiveDesign]);
   const attributesRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useRef)(attributes);
@@ -1917,7 +1909,7 @@ const Edit = ({
       isMountedRef.current = false;
     };
   }, []);
-  const setAttributesFromMedia = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useCallback)((attachmentObject, shouldPersist = true) => {
+  const setAttributesFromMedia = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useCallback)((attachmentObject, forcePersist = true) => {
     if (!isMountedRef.current) {
       return;
     }
@@ -1934,34 +1926,20 @@ const Edit = ({
       embedlink: attachmentObject.link ? attachmentObject.link + (attachmentObject.link.includes('?') ? '&' : '?') + 'videopack[enable]=true' : undefined,
       width: attachmentObject.media_details?.width,
       height: attachmentObject.media_details?.height,
-      sources: attachmentObject.videopack?.sources || (attachmentObject.source_url || attachmentObject.url ? [{
-        src: attachmentObject.source_url || attachmentObject.url
-      }] : []),
-      source_groups: attachmentObject.videopack?.source_groups || {},
-      text_tracks: attachmentObject.videopack?.text_tracks || [],
       showCaption: !!(attachmentObject.caption?.raw ?? attachmentObject.caption?.rendered)
     };
     const updatedAttributes = Object.keys(media_attributes).reduce((acc, key) => {
       const newVal = media_attributes[key];
       const oldVal = attributesRef.current[key];
-
-      // Handle deep comparison for arrays (e.g., text_tracks)
       const isDifferent = Array.isArray(newVal) ? JSON.stringify(newVal) !== JSON.stringify(oldVal) : newVal !== oldVal;
       if (newVal !== undefined && newVal !== null && isDifferent) {
-        // For metadata that can be manually edited (title, caption),
-        // we only want to overwrite if the current attribute is EMPTY.
-        // This prevents background "hydration" from wiping out user edits.
         const isMetadata = ['title', 'caption'].includes(key);
         if (isMetadata) {
           if (!oldVal) {
             acc[key] = newVal;
           }
-        } else {
-          // For core attributes (id, src, etc), we persist if standalone
-          // or if the current value is missing.
-          if (shouldPersist || !oldVal) {
-            acc[key] = newVal;
-          }
+        } else if (forcePersist || !oldVal) {
+          acc[key] = newVal;
         }
       }
       return acc;
@@ -1971,14 +1949,8 @@ const Edit = ({
       const filteredUpdates = {
         ...updatedAttributes
       };
-
-      // We always want to persist the ID if it's being set.
-      // For other attributes, we only persist them if we are NOT in a contextual loop
-      // AND they are not in the dynamicKeys list.
       if (attachmentObject.id) {
         dynamicKeys.forEach(key => {
-          // Always strip dynamic attributes if we have an ID to keep the block markup lean.
-          // The frontend and editor will resolve these dynamically from the ID.
           if (key in filteredUpdates) {
             delete filteredUpdates[key];
           }
@@ -1988,11 +1960,9 @@ const Edit = ({
         setAttributes(filteredUpdates);
       }
     }
-  }, [setAttributes, shouldPersist]);
+  }, [setAttributes]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
     if (effectiveId && typeof effectiveId === 'number') {
-      // Avoid redundant fetches if we already have the correct attachment
-      // or if we've already tried fetching this specific ID.
       if (attachment?.id === effectiveId || lastFetchedIdRef.current === effectiveId) {
         if (attachment?.id === effectiveId) {
           setHasResolved(true);
@@ -2009,8 +1979,6 @@ const Edit = ({
         }
         setAttachment(record);
         setHasResolved(true);
-        // Always hydrate missing metadata from the record to ensure the context
-        // provided to inner blocks (like the player engine) is complete.
         setAttributesFromMedia(record, isStandalone);
       }).catch(error => {
         if (!isMountedRef.current) {
@@ -2033,7 +2001,7 @@ const Edit = ({
       setHasResolved(false);
       lastFetchedIdRef.current = null;
     }
-  }, [effectiveId, id, resolvedPostIdFromContext, setAttributesFromMedia, setAttributes, attachment]);
+  }, [effectiveId, id, resolvedPostIdFromContext, setAttributesFromMedia, setAttributes, attachment, isStandalone]);
   const onUploadError = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useCallback)(message => {
     createErrorNotice(message, {
       type: 'snackbar'
@@ -2065,7 +2033,7 @@ const Edit = ({
       }
       try {
         filename = decodeURIComponent(filename);
-      } catch (e) {
+      } catch {
         // Ignore decoding errors
       }
       setAttributes({
@@ -2082,11 +2050,6 @@ const Edit = ({
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
     (0,_api_settings__WEBPACK_IMPORTED_MODULE_12__.getSettings)().then(response => {
       setOptions(response);
-      // Hydrate embed_method from global settings if it's missing from block attributes
-      // We skip persistence if we are in a contextual (loop) environment
-      if (response?.embed_method && !attributesRef.current.embed_method && isStandalone) {
-        // We no longer call setAttributes here to keep the block markup clean
-      }
     });
     if (!hasAttemptedInitialUpload.current && !id && (0,_wordpress_blob__WEBPACK_IMPORTED_MODULE_0__.isBlobURL)(src)) {
       hasAttemptedInitialUpload.current = true;
@@ -2119,8 +2082,6 @@ const Edit = ({
     probedMetadata
   } = (0,_hooks_useVideoProbe_js__WEBPACK_IMPORTED_MODULE_17__["default"])(src);
   const [probedMetadataOverride, setProbedMetadataOverride] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(null);
-
-  // Sync metadata from attachment records when it loads
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
     if (attachment?.media_details && !probedMetadata) {
       const {
@@ -2132,7 +2093,7 @@ const Edit = ({
         width,
         height,
         duration,
-        isTainted: false // Internal media tags are never tainted
+        isTainted: false
       });
     } else if (!src) {
       setProbedMetadataOverride(null);
@@ -2174,6 +2135,106 @@ const Edit = ({
       children: content
     });
   };
+  let blockContent;
+  if (isDiscovering && !effectiveId) {
+    blockContent = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("div", {
+      className: "videopack-video-discovery-loading",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Placeholder, {
+        icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockIcon, {
+          icon: _assets_icon__WEBPACK_IMPORTED_MODULE_13__.videopackVideo
+        }),
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Videopack Video', 'video-embed-thumbnail-generator'),
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("p", {
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Searching for attached video…', 'video-embed-thumbnail-generator')
+        })]
+      })
+    });
+  } else if (!src && !effectiveId) {
+    blockContent = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.MediaPlaceholder, {
+      icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockIcon, {
+        icon: _assets_icon__WEBPACK_IMPORTED_MODULE_13__.videopackVideo
+      }),
+      onSelect: onSelectVideo,
+      onSelectURL: onSelectURL,
+      accept: "video/*",
+      allowedTypes: ALLOWED_MEDIA_TYPES,
+      value: attributes,
+      onError: onUploadError,
+      placeholder: placeholder
+    });
+  } else if (!id && src && (0,_wordpress_blob__WEBPACK_IMPORTED_MODULE_0__.isBlobURL)(src)) {
+    blockContent = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)("div", {
+      className: "components-placeholder block-editor-media-placeholder is-large has-illustration",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)("div", {
+        className: "components-placeholder__label",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockIcon, {
+          icon: _assets_icon__WEBPACK_IMPORTED_MODULE_13__.videopackVideo
+        }), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Videopack Video', 'video-embed-thumbnail-generator')]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("div", {
+        className: "components-placeholder__fieldset",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)("div", {
+          className: "videopack-uploading-overlay-content",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("p", {
+            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Uploading…', 'video-embed-thumbnail-generator')
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("div", {
+            className: "videopack-progress-bar-container",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ProgressBar, {})
+          })]
+        })
+      })]
+    });
+  } else {
+    blockContent = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.Fragment, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockControls, {
+        group: "other",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.MediaReplaceFlow, {
+          mediaId: id,
+          mediaURL: src,
+          allowedTypes: ALLOWED_MEDIA_TYPES,
+          accept: "video/*",
+          onSelect: onSelectVideo,
+          onSelectURL: onSelectURL,
+          onError: onUploadError
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToolbarButton, {
+          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_9__["default"],
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Restart Video', 'video-embed-thumbnail-generator'),
+          onClick: () => setAttributes({
+            restartCount: (attributes.restartCount || 0) + 1
+          })
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockControls, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToolbarButton, {
+          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_8__["default"],
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Add caption', 'video-embed-thumbnail-generator'),
+          onClick: () => {
+            const hasCaption = innerBlocks.some(block => block.name === 'videopack/caption');
+            if (!hasCaption) {
+              insertBlock((0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_10__.createBlock)('videopack/caption', {
+                caption: attributes.caption || ''
+              }), innerBlocks.length, clientId);
+            }
+          }
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("figure", {
+        style: {
+          ...contextStyle,
+          display: src || effectiveId ? 'block' : 'none'
+        },
+        "aria-hidden": !(src || effectiveId),
+        className: `videopack-video-block-container videopack-wrapper ${contextClasses}${effectiveDesign.isPreview ? ' is-preview' : ''}`,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_components_VideopackContextBridge__WEBPACK_IMPORTED_MODULE_3__["default"], {
+          attributes: resolvedAttributes,
+          context: context,
+          overrides: bridgeOverrides,
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InnerBlocks, {
+            template: template,
+            templateLock: false,
+            allowedBlocks: ALLOWED_BLOCKS
+          })
+        }, effectiveId || resolvedPostIdFromContext)
+      })]
+    });
+  }
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InspectorControls, {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_components_Thumbnails_Thumbnails_js__WEBPACK_IMPORTED_MODULE_15__["default"], {
@@ -2201,101 +2262,10 @@ const Edit = ({
       }, attributes.id || src)]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("figure", {
       ...blockProps,
-      children: isDiscovering && !effectiveId ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("div", {
-        className: "videopack-video-discovery-loading",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Placeholder, {
-          icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockIcon, {
-            icon: _assets_icon__WEBPACK_IMPORTED_MODULE_13__.videopackVideo
-          }),
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Videopack Video', 'video-embed-thumbnail-generator'),
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("p", {
-            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Searching for attached video…', 'video-embed-thumbnail-generator')
-          })]
-        })
-      }) : !src && !effectiveId ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.MediaPlaceholder, {
-        icon: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockIcon, {
-          icon: _assets_icon__WEBPACK_IMPORTED_MODULE_13__.videopackVideo
-        }),
-        onSelect: onSelectVideo,
-        onSelectURL: onSelectURL,
-        accept: "video/*",
-        allowedTypes: ALLOWED_MEDIA_TYPES,
-        value: attributes,
-        onError: onUploadError,
-        placeholder: placeholder
-      }) : !id && src && (0,_wordpress_blob__WEBPACK_IMPORTED_MODULE_0__.isBlobURL)(src) ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)("div", {
-        className: "components-placeholder block-editor-media-placeholder is-large has-illustration",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)("div", {
-          className: "components-placeholder__label",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockIcon, {
-            icon: _assets_icon__WEBPACK_IMPORTED_MODULE_13__.videopackVideo
-          }), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Videopack Video', 'video-embed-thumbnail-generator')]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("div", {
-          className: "components-placeholder__fieldset",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)("div", {
-            className: "videopack-uploading-overlay-content",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("p", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Uploading…', 'video-embed-thumbnail-generator')
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("div", {
-              className: "videopack-progress-bar-container",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ProgressBar, {})
-            })]
-          })
-        })]
-      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.Fragment, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockControls, {
-          group: "other",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.MediaReplaceFlow, {
-            mediaId: id,
-            mediaURL: src,
-            allowedTypes: ALLOWED_MEDIA_TYPES,
-            accept: "video/*",
-            onSelect: onSelectVideo,
-            onSelectURL: onSelectURL,
-            onError: onUploadError
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToolbarButton, {
-            icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_9__["default"],
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Restart Video', 'video-embed-thumbnail-generator'),
-            onClick: () => setAttributes({
-              restartCount: (attributes.restartCount || 0) + 1
-            })
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.BlockControls, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToolbarButton, {
-            icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_8__["default"],
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Add caption', 'video-embed-thumbnail-generator'),
-            onClick: () => {
-              const hasCaption = innerBlocks.some(block => block.name === 'videopack/caption');
-              if (!hasCaption) {
-                insertBlock((0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_10__.createBlock)('videopack/caption', {
-                  caption: attributes.caption || ''
-                }), innerBlocks.length, clientId);
-              }
-            }
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)("figure", {
-          style: {
-            ...contextStyle,
-            display: src || effectiveId ? 'block' : 'none'
-          },
-          "aria-hidden": !(src || effectiveId),
-          className: `videopack-video-block-container videopack-wrapper ${contextClasses}${effectiveDesign.isPreview ? ' is-preview' : ''}`,
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_components_VideopackContextBridge__WEBPACK_IMPORTED_MODULE_3__["default"], {
-            attributes: resolvedAttributes,
-            context: context,
-            overrides: bridgeOverrides,
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_20__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InnerBlocks, {
-              template: template,
-              templateLock: false,
-              allowedBlocks: ALLOWED_BLOCKS
-            })
-          }, effectiveId || resolvedPostIdFromContext)
-        })]
-      })
+      children: blockContent
     })]
   });
-};
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Edit);
+}
 
 /***/ },
 
@@ -2514,7 +2484,7 @@ const AdditionalFormats = ({
     if (src) {
       try {
         isSrcExternal = new URL(src).origin !== window.location.origin;
-      } catch (e) {
+      } catch {
         // Relative URLs or invalid URLs are considered internal
       }
     }
@@ -3441,15 +3411,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/media-utils */ "@wordpress/media-utils");
-/* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/close.mjs");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/plus.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
-
+/* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/media-utils */ "@wordpress/media-utils");
+/* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/close.mjs");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/plus.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__);
 
 
 
@@ -3459,7 +3426,6 @@ const TextTracks = ({
   tracks = [],
   onChange
 }) => {
-  const [isAdding, setIsAdding] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
   const updateTrack = (index, newValues) => {
     const newTracks = [...tracks];
     newTracks[index] = {
@@ -3475,7 +3441,6 @@ const TextTracks = ({
   const addTrack = track => {
     const newTracks = [...tracks, track];
     onChange(newTracks);
-    setIsAdding(false);
   };
   const handleMediaSelect = media => {
     addTrack({
@@ -3486,30 +3451,30 @@ const TextTracks = ({
       default: false
     });
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Text Tracks', 'video-embed-thumbnail-generator'),
     initialOpen: false,
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
       className: "videopack-text-tracks-list",
-      children: tracks.map((track, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+      children: tracks.map((track, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "videopack-text-track-item",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
           className: "videopack-text-track-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
             className: "videopack-text-track-label",
             children: track.label || track.src.split('/').pop() || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Untitled Track', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
-            icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__["default"],
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remove Track', 'video-embed-thumbnail-generator'),
             onClick: () => removeTrack(index),
             isDestructive: true,
             className: "videopack-remove-track"
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
           className: "videopack-text-track-settings",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
             className: "videopack-text-track-settings-row",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Source URL', 'video-embed-thumbnail-generator'),
               value: track.src,
               onChange: value => updateTrack(index, {
@@ -3517,9 +3482,9 @@ const TextTracks = ({
               }),
               __nextHasNoMarginBottom: true
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "videopack-text-track-settings-row videopack-text-track-settings-row-split",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.SelectControl, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.SelectControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Kind', 'video-embed-thumbnail-generator'),
               value: track.kind,
               options: [{
@@ -3542,7 +3507,7 @@ const TextTracks = ({
                 kind: value
               }),
               __nextHasNoMarginBottom: true
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Language', 'video-embed-thumbnail-generator'),
               value: track.srclang,
               onChange: value => updateTrack(index, {
@@ -3551,9 +3516,9 @@ const TextTracks = ({
               placeholder: "en",
               __nextHasNoMarginBottom: true
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
             className: "videopack-text-track-settings-row",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Label', 'video-embed-thumbnail-generator'),
               value: track.label,
               onChange: value => updateTrack(index, {
@@ -3562,8 +3527,8 @@ const TextTracks = ({
               placeholder: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('e.g. English Subtitles', 'video-embed-thumbnail-generator'),
               __nextHasNoMarginBottom: true
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Default', 'video-embed-thumbnail-generator'),
               checked: track.default,
               onChange: value => {
@@ -3579,21 +3544,21 @@ const TextTracks = ({
           })]
         })]
       }, index))
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "videopack-text-tracks-actions",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__.MediaUpload, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__.MediaUpload, {
         onSelect: handleMediaSelect,
         allowedTypes: ['text/vtt', 'application/vtt', 'text/plain'] // VTT files often detected as text/plain
         ,
         render: ({
           open
-        }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+        }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
           variant: "secondary",
-          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_5__["default"],
+          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
           onClick: open,
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Add from Library', 'video-embed-thumbnail-generator')
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
         variant: "tertiary",
         onClick: () => addTrack({
           src: '',
@@ -3759,7 +3724,7 @@ const Thumbnails = ({
     try {
       const url = new URL(src, window.location.origin);
       return url.origin !== window.location.origin;
-    } catch (e) {
+    } catch {
       return false;
     }
   })();
@@ -3819,7 +3784,7 @@ const Thumbnails = ({
               newThumbCanvases.push(thumb);
               setThumbChoices([...newThumbCanvases]);
             }
-          } catch (ffmpegError) {
+          } catch {
             // Silently handle FFmpeg fallback errors
           }
         }
@@ -4063,8 +4028,8 @@ const Thumbnails = ({
           } else {
             setIsSaving(false);
           }
-        } catch (ffmpegError) {
-          console.error('FFmpeg pinpoint capture failed:', ffmpegError);
+        } catch {
+          console.error('FFmpeg pinpoint capture failed');
           setIsSaving(false);
         }
       } else {
@@ -4926,13 +4891,13 @@ __webpack_require__.r(__webpack_exports__);
 
 /**
  * A wrapper component that resolves Videopack context and bridges it into Gutenberg's block context.
- * 
- * @param {Object} props
- * @param {Object} props.attributes The block attributes.
- * @param {Object} props.context    The block context.
- * @param {Object} [props.overrides] Optional context overrides to merge into the shared context.
- * @param {React.ReactNode} props.children
- * @return {React.ReactElement}
+ *
+ * @param {Object} root0             Component props.
+ * @param {Object} root0.attributes  The block attributes.
+ * @param {Object} root0.context     The block context.
+ * @param {Object} [root0.overrides] Optional context overrides to merge into the shared context.
+ * @param {Node}   root0.children    Children.
+ * @return {Element} The rendered component with context bridge.
  */
 
 function VideopackContextBridge({
@@ -5027,11 +4992,6 @@ const WatermarkPositioner = ({
     wmStyle,
     wmWidth,
     wmHeight,
-    x,
-    y,
-    scale,
-    alignment,
-    valign,
     aspectRatio
   } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
     if (!containerDimensions) {
@@ -5039,11 +4999,6 @@ const WatermarkPositioner = ({
         wmStyle: {},
         wmWidth: 0,
         wmHeight: 0,
-        x: 0,
-        y: 0,
-        scale: 10,
-        alignment: 'center',
-        valign: 'center',
         aspectRatio: 1
       };
     }
@@ -5086,11 +5041,6 @@ const WatermarkPositioner = ({
       wmStyle: style,
       wmWidth: w,
       wmHeight: h,
-      x: currentX,
-      y: currentY,
-      scale: currentScale,
-      alignment: currentAlign,
-      valign: currentValign,
       aspectRatio: ratio
     };
   }, [containerDimensions, watermarkImage, settings, transientScale, transientPercentages]);
@@ -5106,16 +5056,18 @@ const WatermarkPositioner = ({
       wmWidth,
       wmHeight,
       aspectRatio,
-      baseDeltaX: x,
-      baseDeltaY: y
+      baseDeltaX: Number(settings.x || settings.watermark_x || 0),
+      baseDeltaY: Number(settings.y || settings.watermark_y || 0)
     };
-  }, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, x, y, aspectRatio]);
+  }, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, aspectRatio]);
   const onChangeRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(onChange);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
   const handleMouseDown = e => {
-    if (!isSelected) return;
+    if (!isSelected) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     if (watermarkRef.current) {
@@ -5178,14 +5130,14 @@ const WatermarkPositioner = ({
     const finalX = s.transientPercentages.x;
     const finalY = s.transientPercentages.y;
     const finalScale = wasResizing && s.transientScale !== null ? s.transientScale : Number(s.settings.scale || s.settings.watermark_scale || 10);
-    const aspectRatio = s.aspectRatio;
+    const currentRatio = s.aspectRatio;
     const {
       width: containerWidth,
       height: containerHeight
     } = s.containerDimensions;
 
     // Preserve attributes based on what's being used (settings vs block-editor styles)
-    const isBlock = s.settings.hasOwnProperty('watermark_scale') || s.settings.hasOwnProperty('watermark');
+    const isBlock = Object.prototype.hasOwnProperty.call(s.settings, 'watermark_scale') || Object.prototype.hasOwnProperty.call(s.settings, 'watermark');
     const currentAlign = s.settings.align || s.settings.watermark_align || 'center';
     const currentValign = s.settings.valign || s.settings.watermark_valign || 'bottom';
 
@@ -5196,7 +5148,7 @@ const WatermarkPositioner = ({
     } else if (currentAlign === 'center') {
       L = 50 - finalScale / 2 - finalX;
     }
-    const vScale = finalScale * (containerWidth / containerHeight) / aspectRatio;
+    const vScale = finalScale * (containerWidth / containerHeight) / currentRatio;
     let T = finalY;
     if (currentValign === 'bottom') {
       T = 100 - vScale - finalY;
@@ -5252,7 +5204,7 @@ const WatermarkPositioner = ({
 
     // Remove global listeners
     window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [handleMouseMove]);
 
   // Finalize interaction when selection is lost while dragging/resizing
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
@@ -5300,20 +5252,20 @@ const WatermarkPositioner = ({
     const stepPx = e.shiftKey ? 10 : 1;
     const stepXPct = stepPx / containerDimensions.width * 100;
     const stepYPct = stepPx / containerDimensions.height * 100;
-    const alignment = settings.align || settings.watermark_align || 'center';
-    const verticalAlignment = settings.valign || settings.watermark_valign || 'center';
+    const currentAlignment = settings.align || settings.watermark_align || 'center';
+    const currentVerticalAlignment = settings.valign || settings.watermark_valign || 'center';
     switch (e.key) {
       case 'ArrowUp':
-        newY += verticalAlignment === 'top' ? -stepYPct : stepYPct;
+        newY += currentVerticalAlignment === 'top' ? -stepYPct : stepYPct;
         break;
       case 'ArrowDown':
-        newY += verticalAlignment === 'top' ? stepYPct : -stepYPct;
+        newY += currentVerticalAlignment === 'top' ? stepYPct : -stepYPct;
         break;
       case 'ArrowLeft':
-        newX += alignment === 'left' ? -stepXPct : stepXPct;
+        newX += currentAlignment === 'left' ? -stepXPct : stepXPct;
         break;
       case 'ArrowRight':
-        newX += alignment === 'left' ? stepXPct : -stepXPct;
+        newX += currentAlignment === 'left' ? stepXPct : -stepXPct;
         break;
     }
     setTransientPercentages({
@@ -5321,7 +5273,7 @@ const WatermarkPositioner = ({
       y: newY
     });
   };
-  const handleResizeKeyDown = (e, handle) => {
+  const handleResizeKeyDown = e => {
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       return;
     }
@@ -5346,17 +5298,17 @@ const WatermarkPositioner = ({
     const dxPct = dxCanvas / containerWidth * 100;
     const dyPct = dyCanvas / containerHeight * 100;
     if (s.isDragging) {
-      const alignment = s.settings.align || s.settings.watermark_align || 'center';
-      const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'bottom';
+      const currentAlignment = s.settings.align || s.settings.watermark_align || 'center';
+      const currentVerticalAlignment = s.settings.valign || s.settings.watermark_valign || 'bottom';
       let newX = dragStart.initialX;
       let newY = dragStart.initialY;
-      if (alignment === 'left') {
+      if (currentAlignment === 'left') {
         newX = dragStart.initialX + dxPct;
       } else {
         // right or center offsets increase as we move left (negative dx)
         newX = dragStart.initialX - dxPct;
       }
-      if (verticalAlignment === 'top') {
+      if (currentVerticalAlignment === 'top') {
         newY = dragStart.initialY + dyPct;
       } else {
         // bottom or center offsets increase as we move up (negative dy)
@@ -5369,70 +5321,52 @@ const WatermarkPositioner = ({
     } else if (s.isResizing) {
       const {
         initialScale,
-        initialLeft,
-        initialTop,
-        aspectRatio,
+        aspectRatio: currentRatio,
         handle
       } = dragStart;
-      const initialWidth = containerWidth * initialScale / 100;
-      const initialHeight = initialWidth / aspectRatio;
-      let newWidth = initialWidth;
+      let newWidth;
       if (handle === 'se' || handle === 'ne') {
-        newWidth = initialWidth + dxCanvas;
+        newWidth = containerWidth * initialScale / 100 + dxCanvas;
       } else {
-        newWidth = initialWidth - dxCanvas;
+        newWidth = containerWidth * initialScale / 100 - dxCanvas;
       }
       let newScale = newWidth / containerWidth * 100;
       newScale = Math.round(newScale * 100) / 100;
       newScale = Math.max(1, Math.min(100, newScale));
-      const alignment = s.settings.align || s.settings.watermark_align || 'center';
-      const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
+      const currentAlignment = s.settings.align || s.settings.watermark_align || 'center';
+      const currentVerticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
       let newX = dragStart.initialX;
       let newY = dragStart.initialY;
       const scaleDiff = newScale - initialScale;
-      const vScaleFactor = containerWidth / containerHeight / aspectRatio;
+      const vScaleFactor = containerWidth / containerHeight / currentRatio;
       const vScaleDiff = scaleDiff * vScaleFactor;
 
       // Horizontal anchoring
       if (handle === 'se' || handle === 'ne') {
         // Dragging Right side -> NW or SW corner fixed
-        if (alignment === 'left') {
-          // Left anchored -> X is fixed
-        } else if (alignment === 'right') {
+        if (currentAlignment === 'right') {
           newX = dragStart.initialX - scaleDiff;
-        } else {
+        } else if (currentAlignment === 'center') {
           newX = dragStart.initialX - scaleDiff / 2;
         }
-      } else {
-        // Dragging Left side -> NE or SE corner fixed
-        if (alignment === 'left') {
-          newX = dragStart.initialX + scaleDiff;
-        } else if (alignment === 'right') {
-          // Right anchored -> X is fixed
-        } else {
-          newX = dragStart.initialX + scaleDiff / 2;
-        }
+      } else if (currentAlignment === 'left') {
+        newX = dragStart.initialX + scaleDiff;
+      } else if (currentAlignment === 'center') {
+        newX = dragStart.initialX + scaleDiff / 2;
       }
 
       // Vertical anchoring
       if (handle === 'se' || handle === 'sw') {
         // Dragging Bottom side -> NW or NE corner fixed
-        if (verticalAlignment === 'top') {
-          // Top anchored -> Y is fixed
-        } else if (verticalAlignment === 'bottom') {
+        if (currentVerticalAlignment === 'bottom') {
           newY = dragStart.initialY - vScaleDiff;
-        } else {
+        } else if (currentVerticalAlignment === 'center') {
           newY = dragStart.initialY - vScaleDiff / 2;
         }
-      } else {
-        // Dragging Top side -> SW or SE corner fixed
-        if (verticalAlignment === 'top') {
-          newY = dragStart.initialY + vScaleDiff;
-        } else if (verticalAlignment === 'bottom') {
-          // Bottom anchored -> Y is fixed
-        } else {
-          newY = dragStart.initialY + vScaleDiff / 2;
-        }
+      } else if (currentVerticalAlignment === 'top') {
+        newY = dragStart.initialY + vScaleDiff;
+      } else if (currentVerticalAlignment === 'center') {
+        newY = dragStart.initialY + vScaleDiff / 2;
       }
       setTransientScale(newScale);
       setTransientPercentages({
@@ -5451,6 +5385,12 @@ const WatermarkPositioner = ({
   const containerWidth = containerDimensions.width;
   const containerHeight = containerDimensions.height;
   const showHandles = isSelected || isFocused;
+  let watermarkCursor = 'default';
+  if (isDragging) {
+    watermarkCursor = 'grabbing';
+  } else if (isSelected) {
+    watermarkCursor = 'move';
+  }
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
     ref: containerRef,
     className: "videopack-watermark-positioner",
@@ -5459,10 +5399,12 @@ const WatermarkPositioner = ({
       height: `${containerHeight}px`,
       backgroundImage: showBackground && backgroundDataUrl ? `url(${backgroundDataUrl})` : 'none',
       backgroundSize: 'contain',
-      backgroundRepeat: 'no-repeat'
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center'
     },
     children: [(isDragging || isResizing) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
       className: "videopack-interaction-overlay",
+      role: "presentation",
       style: {
         position: 'fixed',
         top: 0,
@@ -5480,10 +5422,10 @@ const WatermarkPositioner = ({
       style: {
         ...wmStyle,
         outline: showHandles ? '1px dashed #757575' : 'none',
-        cursor: isDragging ? 'grabbing' : isSelected ? 'move' : 'default'
+        cursor: watermarkCursor
       },
       role: "button",
-      tabIndex: isSelected ? "0" : "-1",
+      tabIndex: isSelected ? '0' : '-1',
       "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Move watermark', 'video-embed-thumbnail-generator'),
       onMouseDown: handleMouseDown,
       onKeyDown: handleDragKeyDown,
@@ -5899,7 +5841,7 @@ function useVideoProbe(videoUrl) {
       try {
         const parsed = new URL(url);
         return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-      } catch (e) {
+      } catch {
         return false;
       }
     };
@@ -5991,10 +5933,10 @@ const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted'
 /**
  * Hook to manage video settings and synchronize them with attachment metadata.
  *
- * @param {Object}   attributes    Block attributes.
- * @param {Function} setAttributes Function to update block attributes.
- * @param {Object}   options       Global options/settings.
- * @param {Object}   hookOptions   Hook options.
+ * @param {Object}   attributes           Block attributes.
+ * @param {Function} setAttributes        Function to update block attributes.
+ * @param {Object}   options              Global options/settings.
+ * @param {Object}   hookOptions          Hook options.
  * @param {boolean}  hookOptions.autoSave Whether to automatically save to the REST API.
  * @return {Object} Setting change handlers and options.
  */
@@ -6024,7 +5966,6 @@ const useVideoSettings = (attributes, setAttributes, options = {}, {
           [key]: value
         }
       }).catch(() => {
-        // eslint-disable-next-line no-console
         console.error(`Failed to update attachment ${id}`);
       });
     }
@@ -6064,7 +6005,6 @@ const useVideoSettings = (attributes, setAttributes, options = {}, {
           }
         }
       }).catch(() => {
-        // eslint-disable-next-line no-console
         console.error(`Failed to update _videopack-meta for attachment ${id}`);
       });
     }
@@ -6155,7 +6095,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -6217,8 +6157,12 @@ function useVideopackContext(attributes, context, options = {}) {
             style.fontSize = fontSize;
           }
         }
-        if (lineHeight) style.lineHeight = lineHeight;
-        if (letterSpacing) style.letterSpacing = letterSpacing;
+        if (lineHeight) {
+          style.lineHeight = lineHeight;
+        }
+        if (letterSpacing) {
+          style.letterSpacing = letterSpacing;
+        }
       }
 
       // Spacing Support (Margin/Padding)
@@ -6338,11 +6282,11 @@ function useVideopackContext(attributes, context, options = {}) {
       discoveredAttachmentId: foundId,
       isDiscovering: isResolving || !foundId && attachments === undefined
     };
-  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
+  }, [attributes.src, attributes.id, initial]);
   return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 
-    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // Safety: If the resolved attachment ID is the same as the post ID,
     // and we know the post is NOT an attachment, then it's a false resolution.
     const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id ? null : rawAttachmentId;
     const finalResolved = {
@@ -6372,7 +6316,7 @@ function useVideopackContext(attributes, context, options = {}) {
       classes: initial.classes.join(' '),
       sharedContext
     };
-  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
+  }, [initial, discoveredAttachmentId, isDiscovering, attributes.id]);
 }
 
 /***/ },
@@ -6482,7 +6426,7 @@ const isTrue = val => {
  * Resolves an effective design value by checking local overrides, inherited context,
  * and finally global plugin defaults.
  *
- * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {string} key        The key to resolve (e.g., 'skin', 'title_color').
  * @param {Object} attributes The block's own attributes.
  * @param {Object} context    The inherited block context.
  * @return {*} The resolved value.
@@ -6940,7 +6884,7 @@ const checkCanvasTaint = (source, signal = null) => {
         canvas.toDataURL(); // This throws SecurityError if tainted
         cleanup();
         resolve(false);
-      } catch (e) {
+      } catch {
         cleanup();
         resolve(true);
       }

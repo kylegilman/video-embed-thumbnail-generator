@@ -8,13 +8,7 @@
 	"description": "A composable grid or list layout for displaying videos.",
 	"supports": {
 		"html": false,
-		"align": [
-			"left",
-			"right",
-			"center",
-			"wide",
-			"full"
-		],
+		"align": ["left", "right", "center", "wide", "full"],
 		"color": {
 			"background": true,
 			"text": true,

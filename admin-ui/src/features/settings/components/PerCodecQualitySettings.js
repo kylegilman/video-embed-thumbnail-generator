@@ -305,7 +305,7 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 			}
 		});
 		setBitrates(newBitrates);
-	}, [localVbr, codec]);
+	}, [localVbr, codec, resolutions]);
 
 	return (
 		<div key={codec.id} className="videopack-per-codec-quality-settings">

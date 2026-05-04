@@ -553,7 +553,7 @@ class FFmpeg_Thumbnails {
 					}
 				}
 
-				$is_featured              = $force_featured_bool !== null ? $force_featured_bool : (bool) ( $current_meta['featured'] ?? ( $this->options['featured'] ?? true ) );
+				$is_featured = $force_featured_bool !== null ? $force_featured_bool : (bool) ( $current_meta['featured'] ?? ( $this->options['featured'] ?? true ) );
 
 				if ( $is_featured ) {
 					set_post_thumbnail( (int) $attachment_id, (int) $thumb_id );

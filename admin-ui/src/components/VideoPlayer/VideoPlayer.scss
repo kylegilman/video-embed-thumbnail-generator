@@ -1,6 +1,6 @@
 @use "sass:string";
-@use "../common/Overlays.scss" as *;
 @use "@wordpress/base-styles/colors";
+@use "../common/Overlays.scss" as *;
 @use "../common/PlayButton.scss" as *;
 
 /* Main Gutenberg Block Wrapper */
@@ -102,12 +102,6 @@
 		width: 100%;
 		height: auto;
 		min-height: 1px;
-	}
-
-	// Standard overlay block behavior is handled in Overlays.scss
-	// We only keep player-specific extensions here.
-	.videopack-video-title:not(.videopack-thumbnail-title):not([class*="has-text-align-"]) {
-		// Anchors icons to right when title is hidden and no alignment is set
 	}
 
 	// Global Icon Normalization

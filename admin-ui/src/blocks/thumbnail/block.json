@@ -26,10 +26,7 @@
 			"isPreview": true
 		}
 	},
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"usesContext": ["postId", "postType"],
 	"supports": {
 		"html": false,
 		"align": true,

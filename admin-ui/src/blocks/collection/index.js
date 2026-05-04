@@ -2,7 +2,7 @@ import { registerBlockType, registerBlockVariation } from '@wordpress/blocks';
 import Edit from './edit';
 import save from './save';
 import metadata from './block.json';
-import { 
+import {
 	videopackCollection as icon,
 	videopackGallery,
 	videopackList,
@@ -26,7 +26,7 @@ registerBlockVariation(metadata.name, [
 		title: 'Videopack Gallery',
 		description: 'Display a modular grid of videos.',
 		icon: videopackGallery,
-		attributes: { 
+		attributes: {
 			layout: 'grid',
 			variation: 'gallery',
 		},
@@ -47,7 +47,7 @@ registerBlockVariation(metadata.name, [
 		title: 'Videopack List',
 		description: 'Display a modular list of videos with overlays.',
 		icon: videopackList,
-		attributes: { 
+		attributes: {
 			layout: 'list',
 			variation: 'list',
 		},

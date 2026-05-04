@@ -713,7 +713,7 @@ class Shortcode implements Hook_Subscriber {
 
 		// 1. Check if this is a collection (gallery, list, or query).
 		$is_gallery = ! empty( $query_atts['gallery'] ) && true === $query_atts['gallery'];
-		
+
 		// Replicate tinymce.js logic for detecting a collection (List) vs a single video player.
 		// We check for explicit attributes in the raw $atts array to distinguish intended collections.
 		$has_multiple_ids     = ! empty( $query_atts['id'] ) && strpos( (string) $query_atts['id'], ',' ) !== false;
@@ -730,6 +730,8 @@ class Shortcode implements Hook_Subscriber {
 
 	/**
 	 * Simulates a videopack/collection block.
+	 *
+	 * @param array $query_atts The shortcode attributes.
 	 */
 	private function simulate_collection_block( $query_atts ) {
 		$is_gallery = ! empty( $query_atts['gallery'] ) && true === $query_atts['gallery'];
@@ -738,12 +740,14 @@ class Shortcode implements Hook_Subscriber {
 			$layout = $is_gallery ? 'grid' : 'list';
 		}
 
-		
 		// Map shortcode to block attributes.
-		$block_atts = array_merge( $query_atts, array(
-			'layout'  => $layout,
-			'columns' => (int) ( $query_atts['gallery_columns'] ?? 3 ),
-		) );
+		$block_atts = array_merge(
+			$query_atts,
+			array(
+				'layout'  => $layout,
+				'columns' => (int) ( $query_atts['gallery_columns'] ?? 3 ),
+			)
+		);
 
 		// If IDs were provided without a gallery=true flag, assume we want to include those IDs in the list.
 		if ( ! $is_gallery && ! empty( $query_atts['id'] ) ) {
@@ -757,7 +761,7 @@ class Shortcode implements Hook_Subscriber {
 
 		// Special case: gallery_source might need current page ID.
 		if ( 'current' === ( $block_atts['gallery_source'] ?? '' ) && empty( $block_atts['gallery_id'] ) ) {
-			$block_atts['gallery_id'] = get_the_ID() ?: get_queried_object_id();
+			$block_atts['gallery_id'] = get_the_ID() ? get_the_ID() : get_queried_object_id();
 		}
 
 		// Build serialized block string using correctly nested structure matching the block editor's templates.
@@ -765,15 +769,15 @@ class Shortcode implements Hook_Subscriber {
 
 		if ( $is_gallery ) {
 			// Use the Grid/Gallery template (thumbnails) matching getGridTemplate in templates.js.
-			$thumbnail_inner  = '<!-- wp:videopack/play-button /-->';
+			$thumbnail_inner = '<!-- wp:videopack/play-button /-->';
 			if ( ( $query_atts['gallery_title'] ?? true ) !== false ) {
 				$thumbnail_inner .= '<!-- wp:videopack/title {"isOverlay":true} /-->';
 			}
-			
+
 			if ( ! empty( $query_atts['showDuration'] ) ) {
 				$thumbnail_inner .= '<!-- wp:videopack/duration /-->';
 			}
-			
+
 			$inner_blocks .= sprintf( '<!-- wp:videopack/thumbnail {"linkTo":"lightbox"} -->%s<!-- /wp:videopack/thumbnail -->', $thumbnail_inner );
 		} else {
 			// Use the List template (full players) matching getListTemplate in templates.js.
@@ -781,7 +785,7 @@ class Shortcode implements Hook_Subscriber {
 			unset( $item_atts['id'], $item_atts['src'] ); // Item IDs come from loop context.
 
 			$inner_blocks .= sprintf( '<!-- wp:videopack/player-container %s -->', wp_json_encode( $item_atts ) );
-			
+
 			$engine_inner = '';
 			if ( ( $query_atts['overlay_title'] ?? true ) !== false || ! empty( $query_atts['downloadlink'] ) || ! empty( $query_atts['embedcode'] ) ) {
 				$engine_inner .= '<!-- wp:videopack/title /-->';
@@ -789,13 +793,13 @@ class Shortcode implements Hook_Subscriber {
 			if ( ! empty( $query_atts['watermark'] ) ) {
 				$engine_inner .= '<!-- wp:videopack/watermark /-->';
 			}
-			
+
 			$inner_blocks .= sprintf( '<!-- wp:videopack/player -->%s<!-- /wp:videopack/player -->', $engine_inner );
-			
+
 			if ( ! empty( $block_atts['views'] ) ) {
 				$inner_blocks .= '<!-- wp:videopack/view-count /-->';
 			}
-			
+
 			$inner_blocks .= '<!-- /wp:videopack/player-container -->';
 		}
 
@@ -831,10 +835,13 @@ class Shortcode implements Hook_Subscriber {
 			return $prepared ? $prepared['player']->get_player_code( $this->get_final_atts( $query_atts, $prepared['source'] ) ) : '';
 		}
 
-		$block_atts = array_merge( $query_atts, array(
-			'id'  => $src,
-			'src' => $src,
-		) );
+		$block_atts = array_merge(
+			$query_atts,
+			array(
+				'id'  => $src,
+				'src' => $src,
+			)
+		);
 
 		// Map legacy view count attributes.
 		if ( ! empty( $query_atts['view_count'] ) || ! empty( $query_atts['count_views'] ) ) {
@@ -842,7 +849,7 @@ class Shortcode implements Hook_Subscriber {
 		}
 
 		// Build nested structure matching getListTemplate in templates.js.
-		$inner_blocks  = '<!-- wp:videopack/player {"lock":{"remove":true,"move":false}} -->';
+		$inner_blocks = '<!-- wp:videopack/player {"lock":{"remove":true,"move":false}} -->';
 		if ( ( $query_atts['overlay_title'] ?? true ) !== false || ! empty( $query_atts['downloadlink'] ) || ! empty( $query_atts['embedcode'] ) ) {
 			$inner_blocks .= '<!-- wp:videopack/title /-->';
 		}

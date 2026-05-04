@@ -12,7 +12,6 @@ import { captureVideoFrame } from '../../utils/video-capture';
 import SelectFromLibrary from '../../features/settings/components/SelectFromLibrary';
 import WatermarkPositioner from '../WatermarkPositioner/WatermarkPositioner';
 
-
 const WatermarkSettingsPanel = ({
 	watermarkSettings,
 	onChange,

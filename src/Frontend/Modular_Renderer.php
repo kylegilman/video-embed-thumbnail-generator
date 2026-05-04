@@ -45,7 +45,7 @@ class Modular_Renderer {
 		}
 
 		$duration_text = self::format_duration( $seconds );
-		
+
 		$is_inside_thumb = ! empty( $context['isInsideThumbnail'] );
 		$is_overlay      = $is_inside_thumb || ! empty( $context['skin'] );
 		$position        = $atts['position'] ?? ( $context['position'] ?? ( $is_inside_thumb ? 'top' : 'bottom' ) );
@@ -54,7 +54,7 @@ class Modular_Renderer {
 		$class  = 'videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
 		$class .= ' position-' . esc_attr( $position );
 		$class .= ' has-text-align-' . esc_attr( $text_align );
-		
+
 		$style_vars = array();
 		if ( $is_overlay ) {
 			if ( ! empty( $context['title_background_color'] ) ) {
@@ -72,9 +72,14 @@ class Modular_Renderer {
 
 	/**
 	 * Formats seconds into HH:MM:SS or MM:SS.
+	 *
+	 * @param int $seconds The duration in seconds.
+	 * @return string
 	 */
 	private static function format_duration( $seconds ) {
-		if ( ! $seconds ) return '0:00';
+		if ( ! $seconds ) {
+			return '0:00';
+		}
 		$h = floor( $seconds / 3600 );
 		$m = floor( ( $seconds % 3600 ) / 60 );
 		$s = $seconds % 60;
@@ -116,8 +121,8 @@ class Modular_Renderer {
 		$align = (string) ( $atts['align'] ?? '' );
 		if ( empty( $align ) ) {
 			// Fallback to gallery_align for collections, or standard align for players.
-			$align = ( ! empty( $atts['wrapper_class'] ) && strpos( $atts['wrapper_class'], 'collection' ) !== false ) 
-				? ( $options['gallery_align'] ?? '' ) 
+			$align = ( ! empty( $atts['wrapper_class'] ) && strpos( $atts['wrapper_class'], 'collection' ) !== false )
+				? ( $options['gallery_align'] ?? '' )
 				: ( $options['align'] ?? '' );
 		}
 
@@ -151,8 +156,8 @@ class Modular_Renderer {
 
 		$style_vars = array();
 		$colors     = array(
-			'title-color'            => 'title_color',
-			'title-background-color' => 'title_background_color',
+			'title-color'                 => 'title_color',
+			'title-background-color'      => 'title_background_color',
 			'play-button-color'           => 'play_button_color',
 			'play-button-secondary-color' => 'play_button_secondary_color',
 			'control-bar-bg-color'        => 'control_bar_bg_color',
@@ -161,30 +166,30 @@ class Modular_Renderer {
 
 		foreach ( $colors as $variable => $attribute ) {
 				$val = array_key_exists( $attribute, $atts ) ? $atts[ $attribute ] : ( $options[ $attribute ] ?? '' );
-				if ( ! empty( $val ) ) {
-					$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
+			if ( ! empty( $val ) ) {
+				$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
 
-					// Suppress background color variable if showBackground is false.
-					if ( 'title-background-color' === $variable && ! $show_bg ) {
-						continue;
-					}
-
-					$style_vars[] = "--videopack-{$variable}: " . $val;
-
-					if ( 'title-background-color' === $variable ) {
-						$classes[] = 'videopack-has-title-background-color';
-					} elseif ( 'title-color' === $variable ) {
-						$classes[] = 'videopack-has-title-color';
-					} elseif ( 'play-button-color' === $variable ) {
-						$classes[] = 'videopack-has-play-button-color';
-					} elseif ( 'play-button-secondary-color' === $variable ) {
-						$classes[] = 'videopack-has-play-button-secondary-color';
-					} elseif ( 'control-bar-bg-color' === $variable ) {
-						$classes[] = 'videopack-has-control-bar-bg-color';
-					} elseif ( 'control-bar-color' === $variable ) {
-						$classes[] = 'videopack-has-control-bar-color';
-					}
+				// Suppress background color variable if showBackground is false.
+				if ( 'title-background-color' === $variable && ! $show_bg ) {
+					continue;
 				}
+
+				$style_vars[] = "--videopack-{$variable}: " . $val;
+
+				if ( 'title-background-color' === $variable ) {
+					$classes[] = 'videopack-has-title-background-color';
+				} elseif ( 'title-color' === $variable ) {
+					$classes[] = 'videopack-has-title-color';
+				} elseif ( 'play-button-color' === $variable ) {
+					$classes[] = 'videopack-has-play-button-color';
+				} elseif ( 'play-button-secondary-color' === $variable ) {
+					$classes[] = 'videopack-has-play-button-secondary-color';
+				} elseif ( 'control-bar-bg-color' === $variable ) {
+					$classes[] = 'videopack-has-control-bar-bg-color';
+				} elseif ( 'control-bar-color' === $variable ) {
+					$classes[] = 'videopack-has-control-bar-color';
+				}
+			}
 		}
 
 		if ( ! empty( $atts['block_gap'] ) ) {
@@ -198,19 +203,40 @@ class Modular_Renderer {
 		if ( ! empty( $atts['wrapper_class'] ) && strpos( $atts['wrapper_class'], 'collection' ) !== false ) {
 			// Ensure we pass back the settings for AJAX pagination.
 			// We only include attributes that are relevant to the video query to keep it clean.
-			$query_keys = array(
-				'gallery_id', 'gallery_source', 'gallery_pagination', 'gallery_per_page',
-				'gallery_include', 'gallery_exclude', 'gallery_orderby', 'gallery_order',
-				'gallery_category', 'gallery_tag', 'relation',
-				'columns', 'layout', 'skin',
-				'pagination_color', 'pagination_background_color',
-				'pagination_active_bg_color', 'pagination_active_color',
-				'title_color', 'title_background_color',
-				'play_button_color', 'play_button_secondary_color',
-				'control_bar_bg_color', 'control_bar_color',
-				'views', 'overlay_title',
-				'enable_collection_video_limit', 'collection_video_limit',
-				'grid_metadata', 'grid_link_to', 'inner_blocks_template', 'collectionId', 'gallery_end'
+			$query_keys     = array(
+				'gallery_id',
+				'gallery_source',
+				'gallery_pagination',
+				'gallery_per_page',
+				'gallery_include',
+				'gallery_exclude',
+				'gallery_orderby',
+				'gallery_order',
+				'gallery_category',
+				'gallery_tag',
+				'relation',
+				'columns',
+				'layout',
+				'skin',
+				'pagination_color',
+				'pagination_background_color',
+				'pagination_active_bg_color',
+				'pagination_active_color',
+				'title_color',
+				'title_background_color',
+				'play_button_color',
+				'play_button_secondary_color',
+				'control_bar_bg_color',
+				'control_bar_color',
+				'views',
+				'overlay_title',
+				'enable_collection_video_limit',
+				'collection_video_limit',
+				'grid_metadata',
+				'grid_link_to',
+				'inner_blocks_template',
+				'collectionId',
+				'gallery_end',
 			);
 			$query_settings = array();
 			foreach ( $query_keys as $key ) {
@@ -218,7 +244,7 @@ class Modular_Renderer {
 					$query_settings[ $key ] = $atts[ $key ];
 				}
 			}
-			$json = wp_json_encode( $query_settings );
+			$json                               = wp_json_encode( $query_settings );
 			$extra_attrs['data-settings-cache'] = $json;
 			$extra_attrs['data-layout']         = $atts['layout'] ?? 'grid';
 			$extra_attrs['data-total-pages']    = $atts['totalPages'] ?? 1;
@@ -417,9 +443,9 @@ class Modular_Renderer {
 		$downloadlink = self::is_true( $atts['downloadlink'] ?? ( $options['downloadlink'] ?? false ) );
 		$embedcode    = self::is_true( $atts['embedcode'] ?? ( $options['embedcode'] ?? false ) );
 
-		$title        = ! empty( $atts['title'] ) ? $atts['title'] : ( $source ? $source->get_title() : '' );
-		$tag          = $atts['tagName'] ?? 'h3';
-		
+		$title = ! empty( $atts['title'] ) ? $atts['title'] : ( $source ? $source->get_title() : '' );
+		$tag   = $atts['tagName'] ?? 'h3';
+
 		$is_inside_thumbnail = ! empty( $atts['isInsideThumbnail'] );
 		$position            = ! empty( $atts['position'] ) ? $atts['position'] : ( $is_inside_thumbnail ? 'bottom' : 'top' );
 
@@ -431,7 +457,6 @@ class Modular_Renderer {
 		if ( isset( $atts['showBackground'] ) ) {
 			$show_background = self::is_true( $atts['showBackground'] );
 		}
-
 
 		// Resolve Embed Link.
 		$embedlink = $atts['embedlink'] ?? '';
@@ -494,26 +519,26 @@ class Modular_Renderer {
 			}
 		}
 
-		$title_style = ! empty( $title_style_attrs ) ? ' style="' . esc_attr( implode( ';', array_filter( $title_style_attrs ) ) ) . '"' : '';
+		$title_style   = ! empty( $title_style_attrs ) ? ' style="' . esc_attr( implode( ';', array_filter( $title_style_attrs ) ) ) . '"' : '';
 		$title_classes = 'videopack-title has-text-align-' . esc_attr( $text_align );
 
 		if ( ! empty( $atts['wrapper_class'] ) ) {
 			$title_classes .= ' ' . $atts['wrapper_class'];
 		}
 
-		$bg_color          = ! empty( $atts['title_background_color'] ) ? $atts['title_background_color'] : null;
-		$skin              = $atts['skin'] ?? ( $options['skin'] ?? 'default' );
-		$has_custom_bg     = ! empty( $atts['title_background_color'] );
-		$has_custom_color  = ! empty( $atts['title_color'] );
-		
-		$bar_style = '';
+		$bg_color         = ! empty( $atts['title_background_color'] ) ? $atts['title_background_color'] : null;
+		$skin             = $atts['skin'] ?? ( $options['skin'] ?? 'default' );
+		$has_custom_bg    = ! empty( $atts['title_background_color'] );
+		$has_custom_color = ! empty( $atts['title_color'] );
+
+		$bar_style  = '';
 		$skin_class = ( 'Video.js' === ( $options['embed_method'] ?? 'Video.js' ) ) ? $skin : '';
-		$bar_class = 'videopack-video-title is-overlay videopack-video-title-visible ' . esc_attr( $skin_class ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' );
-		
+		$bar_class  = 'videopack-video-title is-overlay videopack-video-title-visible ' . esc_attr( $skin_class ) . ' position-' . esc_attr( $position ) . ( $show_background ? '' : ' has-no-background' );
+
 		if ( $is_inside_thumbnail ) {
 			$bar_class .= ' videopack-thumbnail-title';
 		}
-		
+
 		if ( $has_custom_bg ) {
 			$bar_class .= ' videopack-has-title-background-color';
 		}
@@ -570,7 +595,7 @@ class Modular_Renderer {
 				'data-alt_link="' . esc_attr( $source->get_download_url() ) . '"',
 				'title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"',
 			);
-			$html .= '<a ' . implode( ' ', $download_attributes ) . '>' . "\n";
+			$html               .= '<a ' . implode( ' ', $download_attributes ) . '>' . "\n";
 			$html               .= '<span class="videopack-icons download">' . "\n" . $download_svg . "\n" . '</span>' . "\n";
 			$html               .= '</a>' . "\n";
 		}
@@ -578,8 +603,8 @@ class Modular_Renderer {
 		$html .= '</div>' . "\n";
 
 		if ( $has_embed ) {
-			$html .= '<button class="videopack-click-trap"></button>' . "\n";
-			$html .= '<div class="videopack-share-container">' . "\n";
+			$html        .= '<button class="videopack-click-trap"></button>' . "\n";
+			$html        .= '<div class="videopack-share-container">' . "\n";
 			$iframe_title = sprintf(
 				/* translators: %s is the video title */
 				__( 'Video Player - %s', 'video-embed-thumbnail-generator' ),
@@ -588,7 +613,7 @@ class Modular_Renderer {
 			$allow_policy   = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
 			$sandbox_policy = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms';
 
-			$embed_code = sprintf(
+			$embed_code  = sprintf(
 				'<iframe src="%1$s" width="%2$s" height="%3$s" style="border:0; width:100%%; aspect-ratio:%2$s/%3$s;" allow="%4$s" allowfullscreen credentialless sandbox="%5$s" loading="lazy" title="%6$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
 				esc_url( $embedlink ),
 				esc_attr( (string) ( $atts['width'] ?? 960 ) ),
@@ -597,7 +622,7 @@ class Modular_Renderer {
 				esc_attr( $sandbox_policy ),
 				esc_attr( $iframe_title )
 			);
-			$html .= '<span class="videopack-embedcode-container">' . "\n" .
+			$html       .= '<span class="videopack-embedcode-container">' . "\n" .
 				'<span class="videopack-icons embed">' . "\n" . $embed_svg . "\n" . '</span>' . "\n" .
 				'<span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span>' . "\n" .
 				'<span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span>' . "\n" .
@@ -608,7 +633,7 @@ class Modular_Renderer {
 				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label>' . "\n" .
 				'<input type="text" class="videopack-start-at" value="00:00" />' . "\n" .
 				'</span>' . "\n";
-			$html .= '</div>' . "\n";
+			$html       .= '</div>' . "\n";
 		}
 
 		$html .= '</div>' . "\n";
@@ -616,6 +641,12 @@ class Modular_Renderer {
 		return $html;
 	}
 
+	/**
+	 * Renders the video caption HTML.
+	 *
+	 * @param string $caption The caption text.
+	 * @return string The rendered HTML.
+	 */
 	public static function render_video_caption( $caption ) {
 		if ( empty( $caption ) ) {
 			return '';
@@ -636,8 +667,8 @@ class Modular_Renderer {
 	 * @return string The rendered HTML.
 	 */
 	public static function render_player_engine( $player, $atts, $inner_content = '', $options = array() ) {
-		$style_vars     = array();
-		$classes        = array( 'videopack-player-relative-wrapper' );
+		$style_vars = array();
+		$classes    = array( 'videopack-player-relative-wrapper' );
 
 		$embed_method = $options['embed_method'] ?? 'Video.js';
 		if ( ! empty( $atts['skin'] ) && 'Video.js' === $embed_method ) {
@@ -645,12 +676,12 @@ class Modular_Renderer {
 		}
 
 		$colors = array(
-			'title-color'            => 'title_color',
-			'title-background-color' => 'title_background_color',
-			'play-button-color'      => 'play_button_color',
+			'title-color'                 => 'title_color',
+			'title-background-color'      => 'title_background_color',
+			'play-button-color'           => 'play_button_color',
 			'play-button-secondary-color' => 'play_button_secondary_color',
-			'control-bar-bg-color'   => 'control_bar_bg_color',
-			'control-bar-color'      => 'control_bar_color',
+			'control-bar-bg-color'        => 'control_bar_bg_color',
+			'control-bar-color'           => 'control_bar_color',
 		);
 
 		foreach ( $colors as $variable => $attribute ) {
@@ -706,11 +737,11 @@ class Modular_Renderer {
 			$display_value = number_format_i18n( $safe_views );
 		}
 
-		$is_thumb      = ! empty( $atts['isInsideThumbnail'] );
-		$is_player     = ! empty( $atts['isInsidePlayerContainer'] ) || ! empty( $atts['isInsidePlayerOverlay'] );
-		$icon_html     = self::get_svg_icon( $icon_type );
-		$text_align    = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'right' : ( $is_player ? 'right' : 'left' ) );
-		$style_attrs   = array();
+		$is_thumb    = ! empty( $atts['isInsideThumbnail'] );
+		$is_player   = ! empty( $atts['isInsidePlayerContainer'] ) || ! empty( $atts['isInsidePlayerOverlay'] );
+		$icon_html   = self::get_svg_icon( $icon_type );
+		$text_align  = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'right' : ( $is_player ? 'right' : 'left' ) );
+		$style_attrs = array();
 
 		$has_custom_bg    = ! empty( $atts['title_background_color'] );
 		$has_custom_color = ! empty( $atts['title_color'] );
@@ -719,9 +750,9 @@ class Modular_Renderer {
 			$style_attrs[] = '--videopack-title-color:' . $atts['title_color'];
 			$style_attrs[] = 'color: var(--videopack-title-color)';
 		}
-		
+
 		$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
-		
+
 		if ( $show_bg && $has_custom_bg ) {
 			$style_attrs[] = '--videopack-title-background-color:' . $atts['title_background_color'];
 			if ( $is_overlay ) {
@@ -744,13 +775,13 @@ class Modular_Renderer {
 		if ( ! empty( $atts['wrapper_class'] ) ) {
 			$classes .= ' ' . $atts['wrapper_class'];
 		}
-		
+
 		if ( $is_overlay ) {
 			$classes .= ' is-overlay is-badge';
 		} else {
 			$classes .= ' is-not-overlay';
 		}
-		
+
 		if ( $has_custom_bg ) {
 			$classes .= ' videopack-has-title-background-color';
 		}
@@ -773,7 +804,7 @@ class Modular_Renderer {
 	 * @param array  $atts          Thumbnail attributes.
 	 * @param string $inner_content Content to render inside the thumbnail overlay.
 	 * @param array  $options       Global plugin options.
-	 * @param array  $context       Context variables (skin, id, etc.)
+	 * @param array  $context       Context variables (skin, id, etc.).
 	 * @return string The rendered HTML.
 	 */
 	public static function render_thumbnail( array $atts, $inner_content, $options, $context = array() ) {
@@ -783,14 +814,14 @@ class Modular_Renderer {
 			return '';
 		}
 
-		$link_to       = $atts['linkTo'] ?? ( $atts['link_to'] ?? 'none' );
-		$skin          = $context['skin'] ?? ( $atts['skin'] ?? ( $options['skin'] ?? 'vjs-theme-videopack' ) );
-		$post_id       = $context['postId'] ?? ( $atts['id'] ?? 0 );
-		$instance_id   = $context['videopackId'] ?? ( $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() ) );
+		$link_to     = $atts['linkTo'] ?? ( $atts['link_to'] ?? 'none' );
+		$skin        = $context['skin'] ?? ( $atts['skin'] ?? ( $options['skin'] ?? 'vjs-theme-videopack' ) );
+		$post_id     = $context['postId'] ?? ( $atts['id'] ?? 0 );
+		$instance_id = $context['videopackId'] ?? ( $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() ) );
 
-		$style_vars     = array();
-		$exclude_hover  = ! empty( $atts['exclude_hover_trigger'] ) || ! empty( $context['exclude_hover_trigger'] );
-		$classes        = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
+		$style_vars    = array();
+		$exclude_hover = ! empty( $atts['exclude_hover_trigger'] ) || ! empty( $context['exclude_hover_trigger'] );
+		$classes       = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
 		if ( ! $exclude_hover ) {
 			$classes[] = 'videopack-hover-trigger';
 		}
@@ -800,8 +831,8 @@ class Modular_Renderer {
 		}
 
 		$colors = array(
-			'title-color'            => 'title_color',
-			'title-background-color' => 'title_background_color',
+			'title-color'                 => 'title_color',
+			'title-background-color'      => 'title_background_color',
 			'play-button-color'           => 'play_button_color',
 			'play-button-secondary-color' => 'play_button_secondary_color',
 			'control-bar-bg-color'        => 'control_bar_bg_color',
@@ -851,14 +882,14 @@ class Modular_Renderer {
 	/**
 	 * Renders a modular play button.
 	 *
-	 * @param array  $atts    Button attributes (color, etc.)
+	 * @param array  $atts    Button attributes (color, etc.).
 	 * @param array  $options Global plugin options.
 	 * @param string $skin    Current skin class.
 	 * @return string The rendered HTML.
 	 */
 	public static function render_play_button( array $atts, array $options, $skin = '' ) {
 		$embed_method = $options['embed_method'] ?? 'Video.js';
-		
+
 		// Map shorthand attributes if present.
 		$play_button_color           = $atts['play_button_color'] ?? ( $atts['color'] ?? '' );
 		$play_button_secondary_color = $atts['play_button_secondary_color'] ?? ( $atts['secondary_color'] ?? '' );
@@ -921,9 +952,9 @@ class Modular_Renderer {
 			$player_content = sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $inner_content );
 		} else {
 			// Auto-assembly logic for standalone players/legacy shortcodes.
-			
+
 			// Video Title / Social Bar.
-			$title_atts = array_merge( $atts, array( 'isOverlay' => true ) );
+			$title_atts      = array_merge( $atts, array( 'isOverlay' => true ) );
 			$player_content .= self::render_video_title( $title_atts, $source, $player->get_id() );
 
 			// Watermark.
@@ -931,7 +962,7 @@ class Modular_Renderer {
 
 			// Core Player.
 			$player_content .= $player->get_player_code( $atts );
-			
+
 			// Wrap in relative container.
 			$player_content = sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $player_content );
 
@@ -952,9 +983,10 @@ class Modular_Renderer {
 	/**
 	 * Renders the pagination HTML for the gallery.
 	 *
-	 * @param int $current_page The current active page.
-	 * @param int $total_pages  The maximum number of pages.
-	 * @return string The rendered pagination HTML.
+	 * @param int   $current_page The current active page.
+	 * @param int   $total_pages  The maximum number of pages.
+	 * @param array $atts         Optional. Attributes for styling.
+	 * @return string The rendered HTML.
 	 */
 	public static function render_pagination( $current_page, $total_pages, $atts = array() ) {
 		$total_pages  = (int) $total_pages;
@@ -996,7 +1028,7 @@ class Modular_Renderer {
 			$pages[] = $total_pages;
 		}
 
-		$styles = array();
+		$styles     = array();
 		$color_keys = array(
 			'pagination_color'            => '--videopack-pagination-color',
 			'pagination_background_color' => '--videopack-pagination-bg',
@@ -1013,7 +1045,7 @@ class Modular_Renderer {
 
 		ob_start();
 		?>
-		<nav class="videopack-pagination" aria-label="<?php esc_attr_e( 'Pagination', 'video-embed-thumbnail-generator' ); ?>"<?php echo $style_attr; ?>>
+		<nav class="videopack-pagination" aria-label="<?php esc_attr_e( 'Pagination', 'video-embed-thumbnail-generator' ); ?>"<?php echo $style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<ul class="videopack-pagination-list">
 				<li class="videopack-pagination-item">
 					<button class="prev page-numbers videopack-pagination-button <?php echo $current_page <= 1 ? 'is-hidden videopack-hidden' : ''; ?>" data-page="<?php echo esc_attr( (string) ( $current_page - 1 ) ); ?>" aria-label="<?php esc_attr_e( 'Previous Page', 'video-embed-thumbnail-generator' ); ?>">
@@ -1049,5 +1081,4 @@ class Modular_Renderer {
 		<?php
 		return (string) ob_get_clean();
 	}
-
 }

@@ -5,9 +5,7 @@
 	"version": "0.1.0",
 	"title": "Videopack Loop",
 	"category": "theme",
-	"parent": [
-		"videopack/collection"
-	],
+	"parent": ["videopack/collection"],
 	"description": "Video loop template.",
 	"supports": {
 		"html": false,

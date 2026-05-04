@@ -173,7 +173,6 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 						? JSON.parse(modelAttrsRaw || '{}')
 						: modelAttrsRaw || {};
 			} catch (e) {
-				// eslint-disable-next-line no-console
 				console.error('Failed to parse videopack_attributes', e);
 			}
 
@@ -267,10 +266,7 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 
 	return (
 		<PreviewIframe
-			title={__(
-				'Attachment Preview',
-				'video-embed-thumbnail-generator'
-			)}
+			title={__('Attachment Preview', 'video-embed-thumbnail-generator')}
 			resizeDependencies={[attributes.align]}
 		>
 			<div

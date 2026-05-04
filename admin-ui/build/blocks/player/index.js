@@ -74,9 +74,9 @@ const getPresets = async (attachmentId = null, url = '', probedMetadata = null, 
 /**
  * Fetches already grouped and labeled video sources for a player.
  *
- * @param {number|string} attachmentId   Optional. The video attachment ID.
- * @param {string}        url            Optional. The video source URL.
- * @param {AbortSignal}   signal         Optional. Abort signal.
+ * @param {number|string} attachmentId Optional. The video attachment ID.
+ * @param {string}        url          Optional. The video source URL.
+ * @param {AbortSignal}   signal       Optional. Abort signal.
  */
 const getVideoSources = async (attachmentId = null, url = '', signal = null) => {
   try {
@@ -1740,23 +1740,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
 /* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _hooks_useVideoFormats_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../hooks/useVideoFormats.js */ "./src/hooks/useVideoFormats.js");
-/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
-/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
-/* harmony import */ var _hooks_useVideoProbe_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../hooks/useVideoProbe.js */ "./src/hooks/useVideoProbe.js");
-/* harmony import */ var _api_settings__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../api/settings */ "./src/api/settings.js");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_10__);
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/undo.mjs");
-/* harmony import */ var _components_VideoPlayer_VideoPlayer__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../components/VideoPlayer/VideoPlayer */ "./src/components/VideoPlayer/VideoPlayer.js");
-/* harmony import */ var _components_VideoSettings_VideoSettings_js__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../components/VideoSettings/VideoSettings.js */ "./src/components/VideoSettings/VideoSettings.js");
-/* harmony import */ var _components_Thumbnails_Thumbnails_js__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../components/Thumbnails/Thumbnails.js */ "./src/components/Thumbnails/Thumbnails.js");
-/* harmony import */ var _components_AdditionalFormats_AdditionalFormats_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../components/AdditionalFormats/AdditionalFormats.js */ "./src/components/AdditionalFormats/AdditionalFormats.js");
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/player/editor.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__);
-
+/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
+/* harmony import */ var _hooks_useVideoProbe_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../hooks/useVideoProbe.js */ "./src/hooks/useVideoProbe.js");
+/* harmony import */ var _api_settings__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../api/settings */ "./src/api/settings.js");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/undo.mjs");
+/* harmony import */ var _components_VideoPlayer_VideoPlayer__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../components/VideoPlayer/VideoPlayer */ "./src/components/VideoPlayer/VideoPlayer.js");
+/* harmony import */ var _components_VideoSettings_VideoSettings_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../components/VideoSettings/VideoSettings.js */ "./src/components/VideoSettings/VideoSettings.js");
+/* harmony import */ var _components_Thumbnails_Thumbnails_js__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../components/Thumbnails/Thumbnails.js */ "./src/components/Thumbnails/Thumbnails.js");
+/* harmony import */ var _components_AdditionalFormats_AdditionalFormats_js__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../components/AdditionalFormats/AdditionalFormats.js */ "./src/components/AdditionalFormats/AdditionalFormats.js");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/player/editor.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__);
+/* global videopack_config */
 
 
 
@@ -1817,7 +1816,7 @@ function Edit(props) {
     setRestartCount(prev => prev + 1);
   }, []);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
-    (0,_api_settings__WEBPACK_IMPORTED_MODULE_8__.getSettings)().then(setOptions);
+    (0,_api_settings__WEBPACK_IMPORTED_MODULE_7__.getSettings)().then(setOptions);
   }, []);
   const {
     updateBlockAttributes
@@ -1855,7 +1854,7 @@ function Edit(props) {
     resolved,
     style: contextStyles,
     classes: contextClasses
-  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_6__["default"])({
+  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_5__["default"])({
     ...parentAttributes,
     restartCount
   }, context);
@@ -1863,12 +1862,8 @@ function Edit(props) {
     src,
     skin
   } = resolved;
-  const {
-    probedMetadata
-  } = (0,_hooks_useVideoProbe_js__WEBPACK_IMPORTED_MODULE_7__["default"])(src);
-  const {
-    formats: videoFormats
-  } = (0,_hooks_useVideoFormats_js__WEBPACK_IMPORTED_MODULE_4__.useVideoFormats)(resolvedPostId, src);
+  (0,_hooks_useVideoProbe_js__WEBPACK_IMPORTED_MODULE_6__["default"])(src);
+  (0,_hooks_useVideoFormats_js__WEBPACK_IMPORTED_MODULE_4__.useVideoFormats)(resolvedPostId, src);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
     resetPlayer();
   }, [skin, resetPlayer]);
@@ -1907,35 +1902,35 @@ function Edit(props) {
       '--videopack-mejs-controls-svg': mejsSvgPath ? `url("${mejsSvgPath}")` : undefined
     }
   });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)("div", {
     ...blockProps,
-    children: [isSelected && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.BlockControls, {
+    children: [isSelected && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.BlockControls, {
       group: "other",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_10__.ToolbarGroup, {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_10__.ToolbarButton, {
-          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_11__["default"],
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_9__.__)('Restart Video', 'video-embed-thumbnail-generator'),
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_9__.ToolbarGroup, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_9__.ToolbarButton, {
+          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"],
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_8__.__)('Restart Video', 'video-embed-thumbnail-generator'),
           onClick: resetPlayer
         })
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InspectorControls, {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_Thumbnails_Thumbnails_js__WEBPACK_IMPORTED_MODULE_14__["default"], {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InspectorControls, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_components_Thumbnails_Thumbnails_js__WEBPACK_IMPORTED_MODULE_13__["default"], {
         setAttributes: setParentAttributes,
         attributes: effectiveAttributes,
         videoData: videoData,
         options: options,
         parentId: parentAttributes.id || 0
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_VideoSettings_VideoSettings_js__WEBPACK_IMPORTED_MODULE_13__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_components_VideoSettings_VideoSettings_js__WEBPACK_IMPORTED_MODULE_12__["default"], {
         setAttributes: setParentAttributes,
         attributes: effectiveAttributes,
         options: options,
         fallbackTitle: parentAttributes.title || '',
         isBlockEditor: true
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_AdditionalFormats_AdditionalFormats_js__WEBPACK_IMPORTED_MODULE_15__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_components_AdditionalFormats_AdditionalFormats_js__WEBPACK_IMPORTED_MODULE_14__["default"], {
         attributes: effectiveAttributes,
         options: options
       }, parentAttributes.id || parentAttributes.src)]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)(_components_VideoPlayer_VideoPlayer__WEBPACK_IMPORTED_MODULE_12__["default"], {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)(_components_VideoPlayer_VideoPlayer__WEBPACK_IMPORTED_MODULE_11__["default"], {
       attributes: {
         ...parentAttributes,
         restartCount
@@ -1944,19 +1939,19 @@ function Edit(props) {
       isSelected: isSelected,
       hideStaticOverlays: true,
       onReady: () => {},
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("div", {
         className: `videopack-inner-blocks-overlay ${hasTitleBlock ? 'videopack-has-title-block' : ''}`,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_components_VideopackContextBridge__WEBPACK_IMPORTED_MODULE_1__["default"], {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_components_VideopackContextBridge__WEBPACK_IMPORTED_MODULE_1__["default"], {
           attributes: parentAttributes,
           context: context,
           overrides: bridgeOverrides,
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InnerBlocks, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InnerBlocks, {
             allowedBlocks: filteredAllowedBlocks,
             templateLock: false,
             renderAppender: isSelected ? _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_0__.InnerBlocks.ButtonBlockAppender : undefined
           })
         }, resolvedPostId)
-      }), !isAnySelected && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
+      }), !isAnySelected && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("div", {
         className: "videopack-block-overlay"
       })]
     })]
@@ -2100,7 +2095,7 @@ const AdditionalFormats = ({
     if (src) {
       try {
         isSrcExternal = new URL(src).origin !== window.location.origin;
-      } catch (e) {
+      } catch {
         // Relative URLs or invalid URLs are considered internal
       }
     }
@@ -3032,21 +3027,24 @@ __webpack_require__.r(__webpack_exports__);
 
 /**
  * Helper to parse hex/rgb colors into 0-1 range for SVG filters.
+ * @param {string} color The color string to parse.
  */
 
 const parseColor = color => {
-  if (!color) return {
-    r: 0,
-    g: 0,
-    b: 0,
-    a: 1
-  };
+  if (!color) {
+    return {
+      r: 0,
+      g: 0,
+      b: 0,
+      a: 1
+    };
+  }
   if (color.startsWith('#')) {
     const hex = color.slice(1);
     let r = 0,
       g = 0,
-      b = 0,
-      a = 255;
+      b = 0;
+    const a = 255;
     if (hex.length === 3) {
       r = parseInt(hex[0] + hex[0], 16);
       g = parseInt(hex[1] + hex[1], 16);
@@ -3093,7 +3091,9 @@ const CustomDuotoneFilter = ({
   id
 }) => {
   const filterData = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
-    if (!colors || colors.length < 2) return null;
+    if (!colors || colors.length < 2) {
+      return null;
+    }
     const c1 = parseColor(colors[0]);
     const c2 = parseColor(colors[1]);
     return {
@@ -3103,7 +3103,9 @@ const CustomDuotoneFilter = ({
       aValues: `${c1.a} ${c2.a}`
     };
   }, [colors]);
-  if (!filterData) return null;
+  if (!filterData) {
+    return null;
+  }
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("svg", {
     style: {
       position: 'absolute',
@@ -3154,15 +3156,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/media-utils */ "@wordpress/media-utils");
-/* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/close.mjs");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/plus.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
-
+/* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/media-utils */ "@wordpress/media-utils");
+/* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/close.mjs");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/plus.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__);
 
 
 
@@ -3172,7 +3171,6 @@ const TextTracks = ({
   tracks = [],
   onChange
 }) => {
-  const [isAdding, setIsAdding] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
   const updateTrack = (index, newValues) => {
     const newTracks = [...tracks];
     newTracks[index] = {
@@ -3188,7 +3186,6 @@ const TextTracks = ({
   const addTrack = track => {
     const newTracks = [...tracks, track];
     onChange(newTracks);
-    setIsAdding(false);
   };
   const handleMediaSelect = media => {
     addTrack({
@@ -3199,30 +3196,30 @@ const TextTracks = ({
       default: false
     });
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Text Tracks', 'video-embed-thumbnail-generator'),
     initialOpen: false,
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
       className: "videopack-text-tracks-list",
-      children: tracks.map((track, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+      children: tracks.map((track, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
         className: "videopack-text-track-item",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
           className: "videopack-text-track-header",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("span", {
             className: "videopack-text-track-label",
             children: track.label || track.src.split('/').pop() || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Untitled Track', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
-            icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+            icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__["default"],
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remove Track', 'video-embed-thumbnail-generator'),
             onClick: () => removeTrack(index),
             isDestructive: true,
             className: "videopack-remove-track"
           })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
           className: "videopack-text-track-settings",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
             className: "videopack-text-track-settings-row",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Source URL', 'video-embed-thumbnail-generator'),
               value: track.src,
               onChange: value => updateTrack(index, {
@@ -3230,9 +3227,9 @@ const TextTracks = ({
               }),
               __nextHasNoMarginBottom: true
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
             className: "videopack-text-track-settings-row videopack-text-track-settings-row-split",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.SelectControl, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.SelectControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Kind', 'video-embed-thumbnail-generator'),
               value: track.kind,
               options: [{
@@ -3255,7 +3252,7 @@ const TextTracks = ({
                 kind: value
               }),
               __nextHasNoMarginBottom: true
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Language', 'video-embed-thumbnail-generator'),
               value: track.srclang,
               onChange: value => updateTrack(index, {
@@ -3264,9 +3261,9 @@ const TextTracks = ({
               placeholder: "en",
               __nextHasNoMarginBottom: true
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
             className: "videopack-text-track-settings-row",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Label', 'video-embed-thumbnail-generator'),
               value: track.label,
               onChange: value => updateTrack(index, {
@@ -3275,8 +3272,8 @@ const TextTracks = ({
               placeholder: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('e.g. English Subtitles', 'video-embed-thumbnail-generator'),
               __nextHasNoMarginBottom: true
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Default', 'video-embed-thumbnail-generator'),
               checked: track.default,
               onChange: value => {
@@ -3292,21 +3289,21 @@ const TextTracks = ({
           })]
         })]
       }, index))
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "videopack-text-tracks-actions",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__.MediaUpload, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__.MediaUpload, {
         onSelect: handleMediaSelect,
         allowedTypes: ['text/vtt', 'application/vtt', 'text/plain'] // VTT files often detected as text/plain
         ,
         render: ({
           open
-        }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+        }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
           variant: "secondary",
-          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_5__["default"],
+          icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
           onClick: open,
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Add from Library', 'video-embed-thumbnail-generator')
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
         variant: "tertiary",
         onClick: () => addTrack({
           src: '',
@@ -3472,7 +3469,7 @@ const Thumbnails = ({
     try {
       const url = new URL(src, window.location.origin);
       return url.origin !== window.location.origin;
-    } catch (e) {
+    } catch {
       return false;
     }
   })();
@@ -3532,7 +3529,7 @@ const Thumbnails = ({
               newThumbCanvases.push(thumb);
               setThumbChoices([...newThumbCanvases]);
             }
-          } catch (ffmpegError) {
+          } catch {
             // Silently handle FFmpeg fallback errors
           }
         }
@@ -3776,8 +3773,8 @@ const Thumbnails = ({
           } else {
             setIsSaving(false);
           }
-        } catch (ffmpegError) {
-          console.error('FFmpeg pinpoint capture failed:', ffmpegError);
+        } catch {
+          console.error('FFmpeg pinpoint capture failed');
           setIsSaving(false);
         }
       } else {
@@ -4122,19 +4119,19 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * GenericPlayer component.
  *
- * @param {Object}      props             Component props.
- * @param {string}      props.poster      URL for the video poster image.
- * @param {boolean}     props.loop        Whether the video should loop.
- * @param {boolean}     props.autoPlay    Whether the video should autoplay.
- * @param {string}      props.preload     Preload setting (auto, metadata, none).
- * @param {boolean}     props.controls    Whether to show video controls.
- * @param {boolean}     props.muted       Whether the video is muted.
- * @param {boolean}     props.playsInline Whether the video should play inline on mobile.
- * @param {string}      props.className   Additional CSS classes.
- * @param {Array}       props.sources     List of video source objects.
- * @param {string}      props.src         Primary video source URL.
- * @param {Array}       props.tracks      List of text track (label, src, kind, etc.) objects.
- * @param {React.Ref}   ref               Reference to the video element.
+ * @param {Object}    props             Component props.
+ * @param {string}    props.poster      URL for the video poster image.
+ * @param {boolean}   props.loop        Whether the video should loop.
+ * @param {boolean}   props.autoPlay    Whether the video should autoplay.
+ * @param {string}    props.preload     Preload setting (auto, metadata, none).
+ * @param {boolean}   props.controls    Whether to show video controls.
+ * @param {boolean}   props.muted       Whether the video is muted.
+ * @param {boolean}   props.playsInline Whether the video should play inline on mobile.
+ * @param {string}    props.className   Additional CSS classes.
+ * @param {Array}     props.sources     List of video source objects.
+ * @param {string}    props.src         Primary video source URL.
+ * @param {Array}     props.tracks      List of text track (label, src, kind, etc.) objects.
+ * @param {React.Ref} ref               Reference to the video element.
  * @return {Element} The rendered component.
  */
 
@@ -4431,19 +4428,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/html-entities */ "@wordpress/html-entities");
-/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
-/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
-/* harmony import */ var _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./GenericPlayer.js */ "./src/components/VideoPlayer/GenericPlayer.js");
-/* harmony import */ var _VideoJs_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./VideoJs.js */ "./src/components/VideoPlayer/VideoJs.js");
-/* harmony import */ var _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./WpMejsPlayer.js */ "./src/components/VideoPlayer/WpMejsPlayer.js");
-/* harmony import */ var _Duotone_CustomDuotoneFilter__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../Duotone/CustomDuotoneFilter */ "./src/components/Duotone/CustomDuotoneFilter.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
+/* harmony import */ var _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./GenericPlayer.js */ "./src/components/VideoPlayer/GenericPlayer.js");
+/* harmony import */ var _VideoJs_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./VideoJs.js */ "./src/components/VideoPlayer/VideoJs.js");
+/* harmony import */ var _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./WpMejsPlayer.js */ "./src/components/VideoPlayer/WpMejsPlayer.js");
+/* harmony import */ var _Duotone_CustomDuotoneFilter__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Duotone/CustomDuotoneFilter */ "./src/components/Duotone/CustomDuotoneFilter.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__);
 /**
  * Main VideoPlayer component that orchestrates different player engines and UI overlays.
  */
@@ -4456,12 +4449,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 const DEFAULT_PLAYERS = {
-  'Video.js': _VideoJs_js__WEBPACK_IMPORTED_MODULE_6__["default"],
-  'WordPress Default': _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_7__["default"],
-  None: _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_5__["default"]
+  'Video.js': _VideoJs_js__WEBPACK_IMPORTED_MODULE_4__["default"],
+  'WordPress Default': _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_5__["default"],
+  None: _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_3__["default"]
 };
 
 // Make sure to pass isSelected from the block's edit component.
@@ -4470,23 +4461,20 @@ const noop = () => {};
 /**
  * VideoPlayer component.
  *
- * @param {Object}   props               Component props.
- * @param {Object}   props.attributes    Block attributes.
- * @param {Object}   props.context       Inherited block context.
- * @param {Function} props.setAttributes Function to update block attributes.
- * @param {boolean}  props.isSelected    Whether the block is selected.
+ * @param {Object}   props                    Component props.
+ * @param {Object}   props.attributes         Block attributes.
+ * @param {Object}   props.context            Inherited block context.
+ * @param {Function} props.setAttributes      Function to update block attributes.
+ * @param {boolean}  props.isSelected         Whether the block is selected.
  * @param {boolean}  props.hideStaticOverlays Whether to hide site-wide static overlays (watermark, title).
- * @param {Function} props.onReady       Callback fired when the player engine is ready.
- * @param {Object}   props.children      Child components (InnerBlocks).
+ * @param {Function} props.onReady            Callback fired when the player engine is ready.
+ * @param {Object}   props.children           Child components (InnerBlocks).
  * @return {Element|null} The rendered component.
  */
 const VideoPlayer = ({
   attributes = {},
   context = {},
-  setAttributes = noop,
   onReady = noop,
-  isSelected = false,
-  hideStaticOverlays = false,
   children,
   // Catch-all for non-DOM attributes that might leak from settings/block spreading
   ...otherProps
@@ -4503,7 +4491,7 @@ const VideoPlayer = ({
     resolved,
     style: contextStyles,
     classes: contextClasses
-  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_4__["default"])(blockAttributes, context);
+  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_2__["default"])(blockAttributes, context);
   const wrapperRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   const [detectedDimensions, setDetectedDimensions] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)({
     width: null,
@@ -4562,23 +4550,13 @@ const VideoPlayer = ({
     playback_rate,
     default_ratio,
     // Design settings resolved from context
-    play_button_color,
-    play_button_secondary_color,
-    control_bar_bg_color,
-    control_bar_color,
-    title_color,
-    title_background_color,
     skin,
     embed_method = 'Video.js',
     duotone,
-    title: rawTitle,
-    caption,
     fixed_aspect,
     fullwidth,
-    rotate,
     loopDuotoneId
   } = resolved;
-  const title = rawTitle ? (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_2__.decodeEntities)(rawTitle) : rawTitle;
   const source_groups = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     // If we have valid groups, use them (handle empty array vs object)
     if (incomingSourceGroups && !Array.isArray(incomingSourceGroups) && Object.keys(incomingSourceGroups).length > 0) {
@@ -4604,12 +4582,6 @@ const VideoPlayer = ({
   }, [incomingSourceGroups, incomingSources]);
   const final_embed_method = embed_method;
   const final_skin = skin;
-  const final_play_button_color = play_button_color;
-  const final_play_button_secondary_color = play_button_secondary_color;
-  const final_control_bar_bg_color = control_bar_bg_color;
-  const final_control_bar_color = control_bar_color;
-  const final_title_color = title_color;
-  const final_title_background_color = title_background_color;
 
   // Duotone resolution
   const final_duotone = blockAttributes?.style?.color?.duotone || duotone;
@@ -4624,7 +4596,7 @@ const VideoPlayer = ({
   } else if (Array.isArray(final_duotone)) {
     resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
   }
-  const players = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_3__.applyFilters)('videopack_admin_players', DEFAULT_PLAYERS), []);
+  const players = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__.applyFilters)('videopack_admin_players', DEFAULT_PLAYERS), []);
   const isVertical = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     let vertical = false;
     // Use browser-detected dimensions if available
@@ -4692,12 +4664,13 @@ const VideoPlayer = ({
   const actualAutoplay = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     return autoplay;
   }, [autoplay]);
-  const videoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   const finalizedSources = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     // Priority 1: Sources from groups
     if (Object.keys(source_groups).length > 0) {
       const groupedSources = Object.values(source_groups).flatMap(g => g.sources || []);
-      if (groupedSources.length > 0) return groupedSources.filter(s => s && s.src);
+      if (groupedSources.length > 0) {
+        return groupedSources.filter(s => s && s.src);
+      }
     }
 
     // Priority 2: Flat sources array
@@ -4733,10 +4706,9 @@ const VideoPlayer = ({
     tracks: text_tracks,
     volume,
     autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
-  }), [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method] // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  }), [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method]);
   const videoJsOptions = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
-    const isVjs = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_3__.applyFilters)('videopack_is_videojs_player', final_embed_method === 'Video.js', final_embed_method);
+    const isVjs = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__.applyFilters)('videopack_is_videojs_player', final_embed_method === 'Video.js', final_embed_method);
     if (!isVjs) {
       return null;
     }
@@ -4785,8 +4757,7 @@ const VideoPlayer = ({
       };
     }
     return options;
-  }, [final_embed_method, actualAutoplay, controls, muted, preload, poster, loop, playback_rate, playsinline, volume, auto_res, auto_codec, finalizedSources, source_groups, text_tracks, aspectRatio]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  }, [final_embed_method, actualAutoplay, controls, muted, preload, poster, loop, playback_rate, playsinline, volume, auto_res, auto_codec, finalizedSources, source_groups, text_tracks, aspectRatio]);
   const handlePlay = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
     if (wrapperRef.current) {
       const metaElements = wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper');
@@ -4835,12 +4806,12 @@ const VideoPlayer = ({
   if (!renderReady) {
     return null; // Or a loading spinner
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
     className: wrapperClasses,
     ref: wrapperRef,
     style: playerStyles,
     id: instanceId,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
       className: `videopack-player ${final_embed_method === 'Video.js' ? final_skin || '' : ''} ${!loopDuotoneId && resolvedDuotoneClass ? resolvedDuotoneClass : ''}`,
       style: {
         ...innerPlayerStyles,
@@ -4850,7 +4821,7 @@ const VideoPlayer = ({
       children: [(() => {
         const PlayerComponent = players[final_embed_method] || players.None;
         if (final_embed_method === 'Video.js') {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(PlayerComponent, {
             options: videoJsOptions,
             skin: final_skin,
             onPlay: handlePlay,
@@ -4860,7 +4831,7 @@ const VideoPlayer = ({
           }, `videojs-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
         }
         if (final_embed_method === 'WordPress Default') {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(PlayerComponent, {
             options: genericPlayerOptions,
             controls: controls,
             actualAutoplay: actualAutoplay,
@@ -4872,9 +4843,9 @@ const VideoPlayer = ({
             source_groups: source_groups
           }, `wpvideo-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
         }
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(PlayerComponent, {
-          options: PlayerComponent === _VideoJs_js__WEBPACK_IMPORTED_MODULE_6__["default"] || PlayerComponent === _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_7__["default"] ? videoJsOptions || genericPlayerOptions : undefined,
-          ...(PlayerComponent === _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_5__["default"] ? genericPlayerOptions : {}),
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(PlayerComponent, {
+          options: PlayerComponent === _VideoJs_js__WEBPACK_IMPORTED_MODULE_4__["default"] || PlayerComponent === _WpMejsPlayer_js__WEBPACK_IMPORTED_MODULE_5__["default"] ? videoJsOptions || genericPlayerOptions : undefined,
+          ...(PlayerComponent === _GenericPlayer_js__WEBPACK_IMPORTED_MODULE_3__["default"] ? genericPlayerOptions : {}),
           skin: final_skin,
           onPlay: handlePlay,
           onPause: handlePause,
@@ -4882,11 +4853,11 @@ const VideoPlayer = ({
           onMetadataLoaded: onMetadataLoaded,
           source_groups: source_groups
         }, `${final_embed_method}-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
-      })(), Array.isArray(final_duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_Duotone_CustomDuotoneFilter__WEBPACK_IMPORTED_MODULE_8__["default"], {
+      })(), Array.isArray(final_duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.Fragment, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Duotone_CustomDuotoneFilter__WEBPACK_IMPORTED_MODULE_6__["default"], {
           colors: final_duotone,
           id: resolvedDuotoneClass
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("style", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("style", {
           children: `
 								.${resolvedDuotoneClass} .vjs-poster:not(.vjs-poster .vjs-poster),
 								.${resolvedDuotoneClass} .mejs-poster:not(.mejs-poster .mejs-poster),
@@ -4959,7 +4930,9 @@ const WpMejsPlayer = props => {
     sources: options.sources,
     tracks: options.tracks,
     controls,
-    actualAutoplay
+    actualAutoplay,
+    source_groups,
+    option_source_groups: options.source_groups
   });
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     let isMounted = true;
@@ -4978,7 +4951,7 @@ const WpMejsPlayer = props => {
             }
             playerRef.current.remove();
           }
-        } catch (e) {
+        } catch {
           // Ignore
         }
         playerRef.current = null;
@@ -5088,7 +5061,7 @@ const WpMejsPlayer = props => {
           if (curAutoplay && playerRef.current) {
             try {
               playerRef.current.play();
-            } catch (e) {
+            } catch {
               // Browser blocked autoplay
             }
           }
@@ -5148,7 +5121,7 @@ const WpMejsPlayer = props => {
                         height: mediaHeight
                       });
                     }
-                  } catch (e) {
+                  } catch {
                     targetPlayer.setPlayerSize();
                   }
                 } else {
@@ -5173,7 +5146,7 @@ const WpMejsPlayer = props => {
                           }
                         }
                       }
-                    } catch (err) {
+                    } catch {
                       // Silence metadata errors
                     }
                     if (media) {
@@ -5182,7 +5155,7 @@ const WpMejsPlayer = props => {
                   };
                   media.addEventListener('loadedmetadata', sizeOnMetadata);
                 }
-              } catch (outerErr) {
+              } catch {
                 // Silence dimension detection errors
               }
             }
@@ -5194,7 +5167,7 @@ const WpMejsPlayer = props => {
         if (isMounted && container.ownerDocument.body.contains(container)) {
           $videoElement.mediaelementplayer(mejsOptions);
         }
-      } catch (e) {
+      } catch {
         // Silence init errors
       }
     }, 100);
@@ -5205,7 +5178,7 @@ const WpMejsPlayer = props => {
       }
       cleanupPlayer();
     };
-  }, [uniqueKey]);
+  }, [uniqueKey, options.src, options.source_groups, source_groups]);
 
   // Reactive updates for volume and muted without recreating the player.
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
@@ -5774,13 +5747,13 @@ __webpack_require__.r(__webpack_exports__);
 
 /**
  * A wrapper component that resolves Videopack context and bridges it into Gutenberg's block context.
- * 
- * @param {Object} props
- * @param {Object} props.attributes The block attributes.
- * @param {Object} props.context    The block context.
- * @param {Object} [props.overrides] Optional context overrides to merge into the shared context.
- * @param {React.ReactNode} props.children
- * @return {React.ReactElement}
+ *
+ * @param {Object} root0             Component props.
+ * @param {Object} root0.attributes  The block attributes.
+ * @param {Object} root0.context     The block context.
+ * @param {Object} [root0.overrides] Optional context overrides to merge into the shared context.
+ * @param {Node}   root0.children    Children.
+ * @return {Element} The rendered component with context bridge.
  */
 
 function VideopackContextBridge({
@@ -5875,11 +5848,6 @@ const WatermarkPositioner = ({
     wmStyle,
     wmWidth,
     wmHeight,
-    x,
-    y,
-    scale,
-    alignment,
-    valign,
     aspectRatio
   } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
     if (!containerDimensions) {
@@ -5887,11 +5855,6 @@ const WatermarkPositioner = ({
         wmStyle: {},
         wmWidth: 0,
         wmHeight: 0,
-        x: 0,
-        y: 0,
-        scale: 10,
-        alignment: 'center',
-        valign: 'center',
         aspectRatio: 1
       };
     }
@@ -5934,11 +5897,6 @@ const WatermarkPositioner = ({
       wmStyle: style,
       wmWidth: w,
       wmHeight: h,
-      x: currentX,
-      y: currentY,
-      scale: currentScale,
-      alignment: currentAlign,
-      valign: currentValign,
       aspectRatio: ratio
     };
   }, [containerDimensions, watermarkImage, settings, transientScale, transientPercentages]);
@@ -5954,16 +5912,18 @@ const WatermarkPositioner = ({
       wmWidth,
       wmHeight,
       aspectRatio,
-      baseDeltaX: x,
-      baseDeltaY: y
+      baseDeltaX: Number(settings.x || settings.watermark_x || 0),
+      baseDeltaY: Number(settings.y || settings.watermark_y || 0)
     };
-  }, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, x, y, aspectRatio]);
+  }, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, aspectRatio]);
   const onChangeRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(onChange);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
   const handleMouseDown = e => {
-    if (!isSelected) return;
+    if (!isSelected) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     if (watermarkRef.current) {
@@ -6026,14 +5986,14 @@ const WatermarkPositioner = ({
     const finalX = s.transientPercentages.x;
     const finalY = s.transientPercentages.y;
     const finalScale = wasResizing && s.transientScale !== null ? s.transientScale : Number(s.settings.scale || s.settings.watermark_scale || 10);
-    const aspectRatio = s.aspectRatio;
+    const currentRatio = s.aspectRatio;
     const {
       width: containerWidth,
       height: containerHeight
     } = s.containerDimensions;
 
     // Preserve attributes based on what's being used (settings vs block-editor styles)
-    const isBlock = s.settings.hasOwnProperty('watermark_scale') || s.settings.hasOwnProperty('watermark');
+    const isBlock = Object.prototype.hasOwnProperty.call(s.settings, 'watermark_scale') || Object.prototype.hasOwnProperty.call(s.settings, 'watermark');
     const currentAlign = s.settings.align || s.settings.watermark_align || 'center';
     const currentValign = s.settings.valign || s.settings.watermark_valign || 'bottom';
 
@@ -6044,7 +6004,7 @@ const WatermarkPositioner = ({
     } else if (currentAlign === 'center') {
       L = 50 - finalScale / 2 - finalX;
     }
-    const vScale = finalScale * (containerWidth / containerHeight) / aspectRatio;
+    const vScale = finalScale * (containerWidth / containerHeight) / currentRatio;
     let T = finalY;
     if (currentValign === 'bottom') {
       T = 100 - vScale - finalY;
@@ -6100,7 +6060,7 @@ const WatermarkPositioner = ({
 
     // Remove global listeners
     window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [handleMouseMove]);
 
   // Finalize interaction when selection is lost while dragging/resizing
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
@@ -6148,20 +6108,20 @@ const WatermarkPositioner = ({
     const stepPx = e.shiftKey ? 10 : 1;
     const stepXPct = stepPx / containerDimensions.width * 100;
     const stepYPct = stepPx / containerDimensions.height * 100;
-    const alignment = settings.align || settings.watermark_align || 'center';
-    const verticalAlignment = settings.valign || settings.watermark_valign || 'center';
+    const currentAlignment = settings.align || settings.watermark_align || 'center';
+    const currentVerticalAlignment = settings.valign || settings.watermark_valign || 'center';
     switch (e.key) {
       case 'ArrowUp':
-        newY += verticalAlignment === 'top' ? -stepYPct : stepYPct;
+        newY += currentVerticalAlignment === 'top' ? -stepYPct : stepYPct;
         break;
       case 'ArrowDown':
-        newY += verticalAlignment === 'top' ? stepYPct : -stepYPct;
+        newY += currentVerticalAlignment === 'top' ? stepYPct : -stepYPct;
         break;
       case 'ArrowLeft':
-        newX += alignment === 'left' ? -stepXPct : stepXPct;
+        newX += currentAlignment === 'left' ? -stepXPct : stepXPct;
         break;
       case 'ArrowRight':
-        newX += alignment === 'left' ? stepXPct : -stepXPct;
+        newX += currentAlignment === 'left' ? stepXPct : -stepXPct;
         break;
     }
     setTransientPercentages({
@@ -6169,7 +6129,7 @@ const WatermarkPositioner = ({
       y: newY
     });
   };
-  const handleResizeKeyDown = (e, handle) => {
+  const handleResizeKeyDown = e => {
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       return;
     }
@@ -6194,17 +6154,17 @@ const WatermarkPositioner = ({
     const dxPct = dxCanvas / containerWidth * 100;
     const dyPct = dyCanvas / containerHeight * 100;
     if (s.isDragging) {
-      const alignment = s.settings.align || s.settings.watermark_align || 'center';
-      const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'bottom';
+      const currentAlignment = s.settings.align || s.settings.watermark_align || 'center';
+      const currentVerticalAlignment = s.settings.valign || s.settings.watermark_valign || 'bottom';
       let newX = dragStart.initialX;
       let newY = dragStart.initialY;
-      if (alignment === 'left') {
+      if (currentAlignment === 'left') {
         newX = dragStart.initialX + dxPct;
       } else {
         // right or center offsets increase as we move left (negative dx)
         newX = dragStart.initialX - dxPct;
       }
-      if (verticalAlignment === 'top') {
+      if (currentVerticalAlignment === 'top') {
         newY = dragStart.initialY + dyPct;
       } else {
         // bottom or center offsets increase as we move up (negative dy)
@@ -6217,70 +6177,52 @@ const WatermarkPositioner = ({
     } else if (s.isResizing) {
       const {
         initialScale,
-        initialLeft,
-        initialTop,
-        aspectRatio,
+        aspectRatio: currentRatio,
         handle
       } = dragStart;
-      const initialWidth = containerWidth * initialScale / 100;
-      const initialHeight = initialWidth / aspectRatio;
-      let newWidth = initialWidth;
+      let newWidth;
       if (handle === 'se' || handle === 'ne') {
-        newWidth = initialWidth + dxCanvas;
+        newWidth = containerWidth * initialScale / 100 + dxCanvas;
       } else {
-        newWidth = initialWidth - dxCanvas;
+        newWidth = containerWidth * initialScale / 100 - dxCanvas;
       }
       let newScale = newWidth / containerWidth * 100;
       newScale = Math.round(newScale * 100) / 100;
       newScale = Math.max(1, Math.min(100, newScale));
-      const alignment = s.settings.align || s.settings.watermark_align || 'center';
-      const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
+      const currentAlignment = s.settings.align || s.settings.watermark_align || 'center';
+      const currentVerticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
       let newX = dragStart.initialX;
       let newY = dragStart.initialY;
       const scaleDiff = newScale - initialScale;
-      const vScaleFactor = containerWidth / containerHeight / aspectRatio;
+      const vScaleFactor = containerWidth / containerHeight / currentRatio;
       const vScaleDiff = scaleDiff * vScaleFactor;
 
       // Horizontal anchoring
       if (handle === 'se' || handle === 'ne') {
         // Dragging Right side -> NW or SW corner fixed
-        if (alignment === 'left') {
-          // Left anchored -> X is fixed
-        } else if (alignment === 'right') {
+        if (currentAlignment === 'right') {
           newX = dragStart.initialX - scaleDiff;
-        } else {
+        } else if (currentAlignment === 'center') {
           newX = dragStart.initialX - scaleDiff / 2;
         }
-      } else {
-        // Dragging Left side -> NE or SE corner fixed
-        if (alignment === 'left') {
-          newX = dragStart.initialX + scaleDiff;
-        } else if (alignment === 'right') {
-          // Right anchored -> X is fixed
-        } else {
-          newX = dragStart.initialX + scaleDiff / 2;
-        }
+      } else if (currentAlignment === 'left') {
+        newX = dragStart.initialX + scaleDiff;
+      } else if (currentAlignment === 'center') {
+        newX = dragStart.initialX + scaleDiff / 2;
       }
 
       // Vertical anchoring
       if (handle === 'se' || handle === 'sw') {
         // Dragging Bottom side -> NW or NE corner fixed
-        if (verticalAlignment === 'top') {
-          // Top anchored -> Y is fixed
-        } else if (verticalAlignment === 'bottom') {
+        if (currentVerticalAlignment === 'bottom') {
           newY = dragStart.initialY - vScaleDiff;
-        } else {
+        } else if (currentVerticalAlignment === 'center') {
           newY = dragStart.initialY - vScaleDiff / 2;
         }
-      } else {
-        // Dragging Top side -> SW or SE corner fixed
-        if (verticalAlignment === 'top') {
-          newY = dragStart.initialY + vScaleDiff;
-        } else if (verticalAlignment === 'bottom') {
-          // Bottom anchored -> Y is fixed
-        } else {
-          newY = dragStart.initialY + vScaleDiff / 2;
-        }
+      } else if (currentVerticalAlignment === 'top') {
+        newY = dragStart.initialY + vScaleDiff;
+      } else if (currentVerticalAlignment === 'center') {
+        newY = dragStart.initialY + vScaleDiff / 2;
       }
       setTransientScale(newScale);
       setTransientPercentages({
@@ -6299,6 +6241,12 @@ const WatermarkPositioner = ({
   const containerWidth = containerDimensions.width;
   const containerHeight = containerDimensions.height;
   const showHandles = isSelected || isFocused;
+  let watermarkCursor = 'default';
+  if (isDragging) {
+    watermarkCursor = 'grabbing';
+  } else if (isSelected) {
+    watermarkCursor = 'move';
+  }
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
     ref: containerRef,
     className: "videopack-watermark-positioner",
@@ -6307,10 +6255,12 @@ const WatermarkPositioner = ({
       height: `${containerHeight}px`,
       backgroundImage: showBackground && backgroundDataUrl ? `url(${backgroundDataUrl})` : 'none',
       backgroundSize: 'contain',
-      backgroundRepeat: 'no-repeat'
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center'
     },
     children: [(isDragging || isResizing) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
       className: "videopack-interaction-overlay",
+      role: "presentation",
       style: {
         position: 'fixed',
         top: 0,
@@ -6328,10 +6278,10 @@ const WatermarkPositioner = ({
       style: {
         ...wmStyle,
         outline: showHandles ? '1px dashed #757575' : 'none',
-        cursor: isDragging ? 'grabbing' : isSelected ? 'move' : 'default'
+        cursor: watermarkCursor
       },
       role: "button",
-      tabIndex: isSelected ? "0" : "-1",
+      tabIndex: isSelected ? '0' : '-1',
       "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Move watermark', 'video-embed-thumbnail-generator'),
       onMouseDown: handleMouseDown,
       onKeyDown: handleDragKeyDown,
@@ -6733,8 +6683,8 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Hook to fetch and manage video sources for a given attachment.
  *
- * @param {number}  id             The attachment ID.
- * @param {string}  src            The video source URL.
+ * @param {number} id  The attachment ID.
+ * @param {string} src The video source URL.
  * @return {Object} Video sources data and loading state.
  */
 const useVideoFormats = (id, src) => {
@@ -6807,7 +6757,7 @@ function useVideoProbe(videoUrl) {
       try {
         const parsed = new URL(url);
         return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-      } catch (e) {
+      } catch {
         return false;
       }
     };
@@ -6899,10 +6849,10 @@ const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted'
 /**
  * Hook to manage video settings and synchronize them with attachment metadata.
  *
- * @param {Object}   attributes    Block attributes.
- * @param {Function} setAttributes Function to update block attributes.
- * @param {Object}   options       Global options/settings.
- * @param {Object}   hookOptions   Hook options.
+ * @param {Object}   attributes           Block attributes.
+ * @param {Function} setAttributes        Function to update block attributes.
+ * @param {Object}   options              Global options/settings.
+ * @param {Object}   hookOptions          Hook options.
  * @param {boolean}  hookOptions.autoSave Whether to automatically save to the REST API.
  * @return {Object} Setting change handlers and options.
  */
@@ -6932,7 +6882,6 @@ const useVideoSettings = (attributes, setAttributes, options = {}, {
           [key]: value
         }
       }).catch(() => {
-        // eslint-disable-next-line no-console
         console.error(`Failed to update attachment ${id}`);
       });
     }
@@ -6972,7 +6921,6 @@ const useVideoSettings = (attributes, setAttributes, options = {}, {
           }
         }
       }).catch(() => {
-        // eslint-disable-next-line no-console
         console.error(`Failed to update _videopack-meta for attachment ${id}`);
       });
     }
@@ -7063,7 +7011,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -7125,8 +7073,12 @@ function useVideopackContext(attributes, context, options = {}) {
             style.fontSize = fontSize;
           }
         }
-        if (lineHeight) style.lineHeight = lineHeight;
-        if (letterSpacing) style.letterSpacing = letterSpacing;
+        if (lineHeight) {
+          style.lineHeight = lineHeight;
+        }
+        if (letterSpacing) {
+          style.letterSpacing = letterSpacing;
+        }
       }
 
       // Spacing Support (Margin/Padding)
@@ -7246,11 +7198,11 @@ function useVideopackContext(attributes, context, options = {}) {
       discoveredAttachmentId: foundId,
       isDiscovering: isResolving || !foundId && attachments === undefined
     };
-  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
+  }, [attributes.src, attributes.id, initial]);
   return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 
-    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // Safety: If the resolved attachment ID is the same as the post ID,
     // and we know the post is NOT an attachment, then it's a false resolution.
     const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id ? null : rawAttachmentId;
     const finalResolved = {
@@ -7280,7 +7232,7 @@ function useVideopackContext(attributes, context, options = {}) {
       classes: initial.classes.join(' '),
       sharedContext
     };
-  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
+  }, [initial, discoveredAttachmentId, isDiscovering, attributes.id]);
 }
 
 /***/ },
@@ -7390,7 +7342,7 @@ const isTrue = val => {
  * Resolves an effective design value by checking local overrides, inherited context,
  * and finally global plugin defaults.
  *
- * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {string} key        The key to resolve (e.g., 'skin', 'title_color').
  * @param {Object} attributes The block's own attributes.
  * @param {Object} context    The inherited block context.
  * @return {*} The resolved value.
@@ -7848,7 +7800,7 @@ const checkCanvasTaint = (source, signal = null) => {
         canvas.toDataURL(); // This throws SecurityError if tainted
         cleanup();
         resolve(false);
-      } catch (e) {
+      } catch {
         cleanup();
         resolve(true);
       }
@@ -8029,16 +7981,6 @@ module.exports = window["wp"]["element"];
 (module) {
 
 module.exports = window["wp"]["hooks"];
-
-/***/ },
-
-/***/ "@wordpress/html-entities"
-/*!**************************************!*\
-  !*** external ["wp","htmlEntities"] ***!
-  \**************************************/
-(module) {
-
-module.exports = window["wp"]["htmlEntities"];
 
 /***/ },
 

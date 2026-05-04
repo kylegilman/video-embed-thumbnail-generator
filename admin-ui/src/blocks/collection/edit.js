@@ -1,3 +1,4 @@
+/* global videopack_config */
 import {
 	InspectorControls,
 	useBlockProps,
@@ -33,7 +34,9 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 	} = attributes;
 
 	// Resolve Effective Values for design and pagination (these follow global settings)
-	const vpContext = useVideopackContext(attributes, context, { excludeHoverTrigger: true });
+	const vpContext = useVideopackContext(attributes, context, {
+		excludeHoverTrigger: true,
+	});
 	const {
 		resolved: effectiveValues,
 		style: contextStyle,
@@ -65,18 +68,35 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 		[]
 	);
 
-	const queryParams = {
-		...attributes,
-		gallery_pagination: hasPaginationBlock,
-		gallery_per_page: effectiveValues.isPreview
-			? 2
-			: hasPaginationBlock
-				? gallery_per_page || effectiveValues.gallery_per_page
-				: effectiveValues.enable_collection_video_limit
-					? effectiveValues.collection_video_limit || effectiveValues.gallery_per_page
-					: -1,
-		page_number: currentPage || 1,
-	};
+	const queryParams = useMemo(() => {
+		let galleryPerPage = -1;
+		if (effectiveValues.isPreview) {
+			galleryPerPage = 2;
+		} else if (hasPaginationBlock) {
+			galleryPerPage =
+				gallery_per_page || effectiveValues.gallery_per_page;
+		} else if (effectiveValues.enable_collection_video_limit) {
+			galleryPerPage =
+				effectiveValues.collection_video_limit ||
+				effectiveValues.gallery_per_page;
+		}
+
+		return {
+			...attributes,
+			gallery_pagination: hasPaginationBlock,
+			gallery_per_page: galleryPerPage,
+			page_number: currentPage || 1,
+		};
+	}, [
+		attributes,
+		hasPaginationBlock,
+		effectiveValues.isPreview,
+		effectiveValues.gallery_per_page,
+		effectiveValues.enable_collection_video_limit,
+		effectiveValues.collection_video_limit,
+		gallery_per_page,
+		currentPage,
+	]);
 	// We fetch query data to power the live preview template and pagination info
 	const queryData = useVideoQuery(queryParams, previewPostId);
 
@@ -144,108 +164,116 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 			.join(' '),
 	});
 
-	
-	const videos = queryData.videoResults && queryData.videoResults.length > 0
-		? queryData.videoResults
-		: effectiveValues.isPreview
-			? [
-					{
-						attachment_id: 10001,
-						title: 'Sample Video 1',
-						poster_url:
-							videopack_config.url +
-							'/src/images/Adobestock_469037984_thumb1.jpg',
-						url:
-							videopack_config.url +
-							'/src/images/Adobestock_469037984.mp4',
-						player_vars: {
-							sources: [
-								{
-									src:
-										videopack_config.url +
-										'/src/images/Adobestock_469037984.mp4',
-								},
-							],
-						},
-					},
-					{
-						attachment_id: 10002,
-						title: 'Sample Video 2',
-						poster_url:
-							videopack_config.url +
-							'/src/images/Adobestock_287460179_thumb1.jpg',
-						url:
-							videopack_config.url +
-							'/src/images/Adobestock_287460179.mp4',
-						player_vars: {
-							sources: [
-								{
-									src:
-										videopack_config.url +
-										'/src/images/Adobestock_287460179.mp4',
-								},
-							],
-						},
-					},
-					{
-						attachment_id: 10003,
-						title: 'Sample Video 3',
-						poster_url:
-							videopack_config.url +
-							'/src/images/Adobestock_469037984_thumb1.jpg',
-						url:
-							videopack_config.url +
-							'/src/images/Adobestock_469037984.mp4',
-					},
-					{
-						attachment_id: 10004,
-						title: 'Sample Video 4',
-						poster_url:
-							videopack_config.url +
-							'/src/images/Adobestock_287460179_thumb1.jpg',
-						url:
-							videopack_config.url +
-							'/src/images/Adobestock_287460179.mp4',
-					},
-					{
-						attachment_id: 10005,
-						title: 'Sample Video 5',
-						poster_url:
-							videopack_config.url +
-							'/src/images/Adobestock_469037984_thumb1.jpg',
-						url:
-							videopack_config.url +
-							'/src/images/Adobestock_469037984.mp4',
-					},
-					{
-						attachment_id: 10006,
-						title: 'Sample Video 6',
-						poster_url:
-							videopack_config.url +
-							'/src/images/Adobestock_287460179_thumb1.jpg',
-						url:
-							videopack_config.url +
-							'/src/images/Adobestock_287460179.mp4',
-					},
-				]
-			: [];
+	const videos = useMemo(() => {
+		if (queryData.videoResults && queryData.videoResults.length > 0) {
+			return queryData.videoResults;
+		}
 
-	// The 'videos' array is used for live preview only and should not be persisted 
+		if (effectiveValues.isPreview) {
+			return [
+				{
+					attachment_id: 10001,
+					title: 'Sample Video 1',
+					poster_url:
+						videopack_config.url +
+						'/src/images/Adobestock_469037984_thumb1.jpg',
+					url:
+						videopack_config.url +
+						'/src/images/Adobestock_469037984.mp4',
+					player_vars: {
+						sources: [
+							{
+								src:
+									videopack_config.url +
+									'/src/images/Adobestock_469037984.mp4',
+							},
+						],
+					},
+				},
+				{
+					attachment_id: 10002,
+					title: 'Sample Video 2',
+					poster_url:
+						videopack_config.url +
+						'/src/images/Adobestock_287460179_thumb1.jpg',
+					url:
+						videopack_config.url +
+						'/src/images/Adobestock_287460179.mp4',
+					player_vars: {
+						sources: [
+							{
+								src:
+									videopack_config.url +
+									'/src/images/Adobestock_287460179.mp4',
+							},
+						],
+					},
+				},
+				{
+					attachment_id: 10003,
+					title: 'Sample Video 3',
+					poster_url:
+						videopack_config.url +
+						'/src/images/Adobestock_469037984_thumb1.jpg',
+					url:
+						videopack_config.url +
+						'/src/images/Adobestock_469037984.mp4',
+				},
+				{
+					attachment_id: 10004,
+					title: 'Sample Video 4',
+					poster_url:
+						videopack_config.url +
+						'/src/images/Adobestock_287460179_thumb1.jpg',
+					url:
+						videopack_config.url +
+						'/src/images/Adobestock_287460179.mp4',
+				},
+				{
+					attachment_id: 10005,
+					title: 'Sample Video 5',
+					poster_url:
+						videopack_config.url +
+						'/src/images/Adobestock_469037984_thumb1.jpg',
+					url:
+						videopack_config.url +
+						'/src/images/Adobestock_469037984.mp4',
+				},
+				{
+					attachment_id: 10006,
+					title: 'Sample Video 6',
+					poster_url:
+						videopack_config.url +
+						'/src/images/Adobestock_287460179_thumb1.jpg',
+					url:
+						videopack_config.url +
+						'/src/images/Adobestock_287460179.mp4',
+				},
+			];
+		}
+
+		return [];
+	}, [queryData.videoResults, effectiveValues.isPreview]);
+
+	// The 'videos' array is used for live preview only and should not be persisted
 	// to block attributes to avoid bloat. The PHP renderer fetches these dynamically.
 
 	const videopackContextValue = {
 		gallery_pagination: hasPaginationBlock,
 		gallery_per_page: effectiveValues.gallery_per_page,
 		totalPages: queryData.maxNumPages,
-		currentPage: currentPage,
-		videos: videos,
+		currentPage,
+		videos,
 	};
 
-	const bridgeOverrides = useMemo(() => ({
-		'videopack/gallery_pagination': hasPaginationBlock,
-		'videopack/totalPages': queryData.maxNumPages,
-		'videopack/videos': videos,
-	}), [hasPaginationBlock, queryData.maxNumPages, videos]);
+	const bridgeOverrides = useMemo(
+		() => ({
+			'videopack/gallery_pagination': hasPaginationBlock,
+			'videopack/totalPages': queryData.maxNumPages,
+			'videopack/videos': videos,
+		}),
+		[hasPaginationBlock, queryData.maxNumPages, videos]
+	);
 
 	// If options haven't loaded yet for a newly inserted block, don't render InnerBlocks
 	// to prevent the wrong template from being applied.
@@ -280,7 +308,11 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 			</InspectorControls>
 
 			<div {...blockProps}>
-				<VideopackContextBridge attributes={attributes} context={context} overrides={bridgeOverrides}>
+				<VideopackContextBridge
+					attributes={attributes}
+					context={context}
+					overrides={bridgeOverrides}
+				>
 					<VideopackProvider value={videopackContextValue}>
 						<InnerBlocks
 							allowedBlocks={ALLOWED_BLOCKS}

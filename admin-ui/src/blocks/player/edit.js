@@ -1,3 +1,4 @@
+/* global videopack_config */
 import {
 	useBlockProps,
 	InnerBlocks,
@@ -9,7 +10,6 @@ import VideopackContextBridge from '../../components/VideopackContextBridge';
 import { useMemo, useCallback, useState, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { useVideoFormats } from '../../hooks/useVideoFormats.js';
-import { normalizeSourceGroups } from '../../utils/context';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideoProbe from '../../hooks/useVideoProbe.js';
 import { getSettings } from '../../api/settings';
@@ -84,9 +84,7 @@ export default function Edit(props) {
 
 	const filteredAllowedBlocks = useMemo(() => {
 		if (hasTitleBlock) {
-			return ALLOWED_BLOCKS.filter(
-				(name) => name !== 'videopack/title'
-			);
+			return ALLOWED_BLOCKS.filter((name) => name !== 'videopack/title');
 		}
 		return ALLOWED_BLOCKS;
 	}, [hasTitleBlock]);
@@ -121,8 +119,8 @@ export default function Edit(props) {
 	} = useVideopackContext({ ...parentAttributes, restartCount }, context);
 
 	const { src, skin } = resolved;
-	const { probedMetadata } = useVideoProbe(src);
-	const { formats: videoFormats } = useVideoFormats(resolvedPostId, src);
+	useVideoProbe(src);
+	useVideoFormats(resolvedPostId, src);
 
 	useEffect(() => {
 		resetPlayer();
@@ -138,12 +136,21 @@ export default function Edit(props) {
 		};
 
 		if (context.isPreview) {
-			result.src = videopack_config.url + '/src/images/Adobestock_469037984.mp4';
-			result.poster = videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg';
+			result.src =
+				videopack_config.url + '/src/images/Adobestock_469037984.mp4';
+			result.poster =
+				videopack_config.url +
+				'/src/images/Adobestock_469037984_thumb1.jpg';
 		}
 
 		return result;
-	}, [options, parentAttributes, resolved, resolvedPostId, context.isPreview]);
+	}, [
+		options,
+		parentAttributes,
+		resolved,
+		resolvedPostId,
+		context.isPreview,
+	]);
 
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
@@ -155,12 +162,17 @@ export default function Edit(props) {
 
 	const bridgeOverrides = useMemo(() => {
 		return {
-			'videopack/isInsidePlayerContainer': context['videopack/isInsidePlayerContainer'],
+			'videopack/isInsidePlayerContainer':
+				context['videopack/isInsidePlayerContainer'],
 			'videopack/isStandalone': context['videopack/isStandalone'],
-			'videopack/attachmentId': context['videopack/attachmentId'] || effectiveAttributes.id,
-			'videopack/postType': context['videopack/isStandalone'] ? 'attachment' : (context['videopack/postType'] || 'post'),
+			'videopack/attachmentId':
+				context['videopack/attachmentId'] || effectiveAttributes.id,
+			'videopack/postType': context['videopack/isStandalone']
+				? 'attachment'
+				: context['videopack/postType'] || 'post',
 			'videopack/isInsidePlayerOverlay': true,
-			'videopack/postId': context['videopack/attachmentId'] || effectiveAttributes.id,
+			'videopack/postId':
+				context['videopack/attachmentId'] || effectiveAttributes.id,
 		};
 	}, [context, effectiveAttributes.id]);
 

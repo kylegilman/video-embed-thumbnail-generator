@@ -4,16 +4,10 @@
 	"name": "videopack/caption",
 	"title": "Videopack Caption",
 	"category": "media",
-	"parent": [
-		"videopack/player-container",
-		"videopack/loop"
-	],
+	"parent": ["videopack/player-container", "videopack/loop"],
 	"icon": "text",
 	"description": "Add a caption to your video.",
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"usesContext": ["postId", "postType"],
 	"attributes": {
 		"caption": {
 			"type": "string"

@@ -101,7 +101,7 @@ class Assets implements Hook_Subscriber {
 		foreach ( $assets as $handle => $filename ) {
 			$asset_file = (string) $build_dir . (string) $filename . '.asset.php';
 			if ( file_exists( $asset_file ) ) {
-				$asset  = (array) require $asset_file;
+				$asset = (array) require $asset_file;
 
 				$player_script_deps = array();
 				$player_style_deps  = array();
@@ -172,7 +172,7 @@ class Assets implements Hook_Subscriber {
 		$player->register_scripts();
 		$player->enqueue_player_scripts();
 		$player->enqueue_styles();
-		
+
 		if ( method_exists( $player, 'enqueue_all_skins' ) ) {
 			$player->enqueue_all_skins();
 
@@ -232,7 +232,6 @@ class Assets implements Hook_Subscriber {
 					}
 				}
 			}
-
 		}
 	}
 

@@ -1,0 +1,27 @@
+﻿
+> videopack-admin@0.2.0 lint:js
+> wp-scripts lint-js src/blocks/collection/edit.js
+
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\collection\edit.js
+   73:21  error    Do not nest ternary expressions                                                                                                                                                        no-nested-ternary
+   75:6   error    Do not nest ternary expressions                                                                                                                                                        no-nested-ternary
+  150:8   warning  The 'videos' conditional could make the dependencies of useMemo Hook (at line 253) change on every render. To fix this, wrap the initialization of 'videos' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  151:3   error    Do not nest ternary expressions                                                                                                                                                        no-nested-ternary
+  159:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  162:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  168:12  error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  178:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  181:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  187:12  error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  197:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  200:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  207:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  210:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  217:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  220:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  227:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  230:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+
+Γ£û 18 problems (17 errors, 1 warning)
+

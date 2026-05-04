@@ -29,7 +29,10 @@ export default function CollectionSettingsPanel({
 			<PanelBody
 				title={
 					showGalleryOptions
-						? __('Query Settings', 'video-embed-thumbnail-generator')
+						? __(
+								'Query Settings',
+								'video-embed-thumbnail-generator'
+							)
 						: __('List Settings', 'video-embed-thumbnail-generator')
 				}
 			>
@@ -54,7 +57,10 @@ export default function CollectionSettingsPanel({
 
 			{showLayoutSettings && showGalleryOptions && (
 				<PanelBody
-					title={__('Layout Settings', 'video-embed-thumbnail-generator')}
+					title={__(
+						'Layout Settings',
+						'video-embed-thumbnail-generator'
+					)}
 					initialOpen={showGalleryOptions}
 				>
 					<CollectionLayoutSettings

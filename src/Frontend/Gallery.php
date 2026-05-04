@@ -171,13 +171,13 @@ class Gallery {
 					foreach ( $wp_query->posts as $q_post ) {
 						$video_id = $this->get_first_video_child( $q_post->ID );
 						if ( $video_id ) {
-							$attachment_ids[] = (int) $video_id;
+							$attachment_ids[]                               = (int) $video_id;
 							$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
 						}
 					}
 					if ( ! empty( $attachment_ids ) ) {
 						$args['post__in'] = $attachment_ids;
-						$args['orderby'] = 'post__in';
+						$args['orderby']  = 'post__in';
 						unset( $args['post_parent'] );
 						$has_archive_source = false; // We already handled it.
 					}
@@ -194,18 +194,17 @@ class Gallery {
 						$preview_post_args['tag_id'] = $query_atts['gallery_tag'];
 					}
 
-					$preview_posts = get_posts( $preview_post_args );
+					$preview_posts  = get_posts( $preview_post_args );
 					$attachment_ids = array();
 					if ( is_array( $preview_posts ) ) {
 						foreach ( $preview_posts as $q_post ) {
 							$video_id = $this->get_first_video_child( $q_post->ID );
 							if ( $video_id ) {
-								$attachment_ids[] = (int) $video_id;
+								$attachment_ids[]                               = (int) $video_id;
 								$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
 							}
 						}
 					}
-
 
 					if ( ! empty( $attachment_ids ) ) {
 						$args['post__in'] = $attachment_ids;
@@ -220,7 +219,7 @@ class Gallery {
 					$has_archive_source  = true;
 				} elseif ( is_tag() ) {
 					$archive_args['tag_id'] = get_queried_object_id();
-					$has_archive_source  = true;
+					$has_archive_source     = true;
 				} elseif ( is_tax() ) {
 					$queried_object = get_queried_object();
 					if ( $queried_object instanceof \WP_Term ) {
@@ -261,7 +260,7 @@ class Gallery {
 			if ( ! empty( $include_arr ) ) {
 				$gallery_per_page = (int) ( $query_atts['gallery_per_page'] ?? -1 );
 
-				// Ensure string 'false' from REST is evaluated as boolean false
+				// Ensure string 'false' from REST is evaluated as boolean false.
 				$gallery_pagination = $query_atts['gallery_pagination'] ?? true;
 				if ( is_string( $gallery_pagination ) && 'false' === strtolower( trim( $gallery_pagination ) ) ) {
 					$gallery_pagination = false;
@@ -336,6 +335,7 @@ class Gallery {
 	 * @param array  $video      Video data array.
 	 * @param array  $final_atts Final shortcode attributes.
 	 * @param string $layout     Optional. The gallery layout. Default 'gallery'.
+	 * @param bool   $skip_html  Optional. Whether to skip generating HTML. Default false.
 	 * @return array Prepared video data.
 	 */
 	public function prepare_video_data_for_js( $video, $final_atts, $layout = 'gallery', $skip_html = false ) {
@@ -428,7 +428,7 @@ class Gallery {
 		if ( empty( $poster_url ) ) {
 			$poster_url = '';
 		}
-		self::$player_instance_counter++;
+		++self::$player_instance_counter;
 		$instance_id = (string) self::$player_instance_counter;
 		$player      = Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
 
@@ -452,18 +452,17 @@ class Gallery {
 			)
 		);
 
-		$player_vars                     = (array) $player->prepare_video_vars();
+		$player_vars = (array) $player->prepare_video_vars();
 		$player->enqueue_scripts();
 		if ( ! $skip_html ) {
 			$player_vars['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_player_assembly( $player, $player->get_atts(), $source, $this->options );
 		}
-		$player_vars['sources']          = (array) $player->get_flat_sources();
-		$player_vars['poster']           = $poster_url;
-		$player_vars['attachment']       = (int) $data['id'];
-		$player_vars['attachment_id']    = (int) $data['id'];
-		$player_vars['parent_id']        = $this->video_to_post_mapping[ (int) $data['id'] ] ?? null;
-		$player_vars['embed_url']        = (string) add_query_arg( 'videopack[enable]', 'true', (string) get_attachment_link( (int) $data['id'] ) );
-
+		$player_vars['sources']       = (array) $player->get_flat_sources();
+		$player_vars['poster']        = $poster_url;
+		$player_vars['attachment']    = (int) $data['id'];
+		$player_vars['attachment_id'] = (int) $data['id'];
+		$player_vars['parent_id']     = $this->video_to_post_mapping[ (int) $data['id'] ] ?? null;
+		$player_vars['embed_url']     = (string) add_query_arg( 'videopack[enable]', 'true', (string) get_attachment_link( (int) $data['id'] ) );
 
 		// Retrieve video statistics from attachment metadata if available.
 		$video_meta = get_post_meta( (int) $data['id'], '_videopack-meta', true );
@@ -497,6 +496,7 @@ class Gallery {
 	 * @param int|string $page_number The current page number.
 	 * @param array      $query_atts  The query attributes.
 	 * @param string     $layout      The layout type ('gallery' or 'list').
+	 * @param bool       $skip_html   Optional. Whether to skip generating HTML. Default false.
 	 * @return array {
 	 *     @type string $html          The rendered HTML.
 	 *     @type array  $videos        The prepared video data for JS.
@@ -506,20 +506,24 @@ class Gallery {
 	 */
 	public function collection_page( $page_number, array $query_atts, $layout = 'gallery', $skip_html = false ) {
 		$page_number               = (int) $page_number;
-		$query_atts['currentPage']  = $page_number;
+		$query_atts['currentPage'] = $page_number;
 		if ( empty( $query_atts['collectionId'] ) ) {
 			$query_atts['collectionId'] = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
 		}
-		$query_atts['layout']       = ( 'gallery' === $layout || 'grid' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
+		$query_atts['layout'] = ( 'gallery' === $layout || 'grid' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
 
 		/**
 		 * 1. Simulate the block structure.
 		 */
 		$collection_id = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
-		$block_atts = array_merge( $this->options, $query_atts, array(
-			'columns'      => (int) ( $query_atts['gallery_columns'] ?? 3 ),
-			'collectionId' => $collection_id,
-		) );
+		$block_atts    = array_merge(
+			$this->options,
+			$query_atts,
+			array(
+				'columns'      => (int) ( $query_atts['gallery_columns'] ?? 3 ),
+				'collectionId' => $collection_id,
+			)
+		);
 
 		$inner_blocks_json = (string) ( $query_atts['inner_blocks_template'] ?? '' );
 		$inner_blocks      = '';
@@ -538,7 +542,7 @@ class Gallery {
 			$show_views    = strpos( $grid_metadata, 'views' ) !== false || ! empty( $query_atts['views'] );
 			$link_to       = $query_atts['grid_link_to'] ?? 'lightbox';
 
-			$inner_blocks = '<!-- wp:videopack/loop -->';
+			$inner_blocks  = '<!-- wp:videopack/loop -->';
 			$inner_blocks .= sprintf( '<!-- wp:videopack/thumbnail {"linkTo":"%s"} -->', esc_attr( $link_to ) );
 			$inner_blocks .= '<!-- wp:videopack/play-button /-->';
 			$inner_blocks .= '<!-- wp:videopack/title {"isOverlay":true} /-->';
@@ -578,8 +582,8 @@ class Gallery {
 		 * Even though we render via blocks now, we still need to return the array of
 		 * video metadata for videopack.js to pick up and process.
 		 */
-		$attachments = $this->get_gallery_videos( $page_number, $query_atts );
-		$videos_data = array();
+		$attachments   = $this->get_gallery_videos( $page_number, $query_atts );
+		$videos_data   = array();
 		$max_num_pages = (int) ( $attachments->max_num_pages ?? 1 );
 
 		if ( (bool) $attachments->have_posts() ) {

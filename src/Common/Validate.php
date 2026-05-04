@@ -28,7 +28,7 @@ class Validate {
 		$allowed_html = (array) wp_kses_allowed_html( 'post' );
 
 		$videopack_allowed_html = array(
-			'div'     => array(
+			'div'                => array(
 				'class'     => true,
 				'style'     => true,
 				'id'        => true,
@@ -39,7 +39,7 @@ class Validate {
 				'onclick'   => true,
 				'role'      => true,
 			),
-			'span'    => array(
+			'span'               => array(
 				'id'          => true,
 				'class'       => true,
 				'onclick'     => true,
@@ -51,11 +51,11 @@ class Validate {
 				'aria-hidden' => true,
 				'focusable'   => true,
 			),
-			'meta'    => array(
+			'meta'               => array(
 				'itemprop' => true,
 				'content'  => true,
 			),
-			'video'   => array(
+			'video'              => array(
 				'class'       => true,
 				'id'          => true,
 				'width'       => true,
@@ -69,12 +69,12 @@ class Validate {
 				'src'         => true,
 				'playsinline' => true,
 			),
-			'source'  => array(
+			'source'             => array(
 				'src'    => true,
 				'data-*' => true,
 				'type'   => true,
 			),
-			'track'   => array(
+			'track'              => array(
 				'id'      => true,
 				'kind'    => true,
 				'src'     => true,
@@ -82,7 +82,7 @@ class Validate {
 				'label'   => true,
 				'default' => true,
 			),
-			'a'       => array(
+			'a'                  => array(
 				'href'     => true,
 				'title'    => true,
 				'onclick'  => true,
@@ -91,7 +91,7 @@ class Validate {
 				'class'    => true,
 				'download' => true,
 			),
-			'input'   => array(
+			'input'              => array(
 				'class'      => true,
 				'type'       => true,
 				'value'      => true,
@@ -105,12 +105,12 @@ class Validate {
 				'aria-label' => true,
 				'readonly'   => true,
 			),
-			'img'     => array(
+			'img'                => array(
 				'src'    => true,
 				'srcset' => true,
 				'alt'    => true,
 			),
-			'button'  => array(
+			'button'             => array(
 				'class'        => true,
 				'style'        => true,
 				'onclick'      => true,
@@ -125,7 +125,7 @@ class Validate {
 				'role'         => true,
 				'tabindex'     => true,
 			),
-			'svg'     => array(
+			'svg'                => array(
 				'class'       => true,
 				'xmlns'       => true,
 				'viewbox'     => true,
@@ -134,36 +134,36 @@ class Validate {
 				'aria-hidden' => true,
 				'focusable'   => true,
 			),
-			'path'    => array(
+			'path'               => array(
 				'd' => true,
 			),
-			'circle'  => array(
+			'circle'             => array(
 				'class' => true,
 				'cx'    => true,
 				'cy'    => true,
 				'r'     => true,
 			),
-			'polygon' => array(
+			'polygon'            => array(
 				'class'  => true,
 				'points' => true,
 			),
-			'iframe'  => array(
-				'src'              => true,
-				'width'            => true,
-				'height'           => true,
-				'style'            => true,
-				'allow'            => true,
-				'allowfullscreen'  => true,
-				'credentialless'   => true,
-				'sandbox'          => true,
-				'loading'          => true,
-				'title'            => true,
-				'referrerpolicy'   => true,
+			'iframe'             => array(
+				'src'             => true,
+				'width'           => true,
+				'height'          => true,
+				'style'           => true,
+				'allow'           => true,
+				'allowfullscreen' => true,
+				'credentialless'  => true,
+				'sandbox'         => true,
+				'loading'         => true,
+				'title'           => true,
+				'referrerpolicy'  => true,
 			),
-			'video-player' => array(
+			'video-player'       => array(
 				'features' => true,
 			),
-			'video-skin' => array(
+			'video-skin'         => array(
 				'features' => true,
 			),
 			'video-minimal-skin' => array(

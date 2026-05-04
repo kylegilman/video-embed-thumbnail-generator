@@ -419,8 +419,8 @@ class Attachment_Processor implements Hook_Subscriber {
 			$total_count += $count;
 			if ( $count > 0 && $total_count < 2 ) {
 				$last_match = (string) end( $matches[0] );
-				$end   = strrpos( $chunk, $last_match ) + strlen( $last_match );
-				$chunk = substr( $chunk, $end );
+				$end        = strrpos( $chunk, $last_match ) + strlen( $last_match );
+				$chunk      = substr( $chunk, $end );
 			}
 		}
 		fclose( $fh );

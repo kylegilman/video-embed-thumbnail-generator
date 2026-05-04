@@ -60,27 +60,27 @@ class Attachment_Media_Library implements Hook_Subscriber {
 				'callback' => 'cron_check_post_parent_handler',
 			),
 			array(
-				'hook'     => 'updated_post_meta',
-				'callback' => 'clear_browser_thumb_flag',
-				'priority' => 10,
+				'hook'          => 'updated_post_meta',
+				'callback'      => 'clear_browser_thumb_flag',
+				'priority'      => 10,
 				'accepted_args' => 4,
 			),
 			array(
-				'hook'     => 'added_post_meta',
-				'callback' => 'clear_browser_thumb_flag',
-				'priority' => 10,
+				'hook'          => 'added_post_meta',
+				'callback'      => 'clear_browser_thumb_flag',
+				'priority'      => 10,
 				'accepted_args' => 4,
 			),
 			array(
-				'hook'     => 'videopack_set_featured_image',
-				'callback' => 'execute_featured_image_action',
-				'priority' => 10,
+				'hook'          => 'videopack_set_featured_image',
+				'callback'      => 'execute_featured_image_action',
+				'priority'      => 10,
 				'accepted_args' => 2,
 			),
 			array(
-				'hook'     => 'videopack_switch_thumbnail_parent',
-				'callback' => 'execute_switch_parent_action',
-				'priority' => 10,
+				'hook'          => 'videopack_switch_thumbnail_parent',
+				'callback'      => 'execute_switch_parent_action',
+				'priority'      => 10,
 				'accepted_args' => 4,
 			),
 		);
@@ -143,7 +143,12 @@ class Attachment_Media_Library implements Hook_Subscriber {
 			foreach ( $thumbnails as $thumbnail ) {
 				if ( (int) $thumbnail->post_parent !== (int) $parent_id ) {
 					$new_parent = empty( $parent_id ) ? (int) $post_id : (int) $parent_id;
-					wp_update_post( array( 'ID' => $thumbnail->ID, 'post_parent' => $new_parent ) );
+					wp_update_post(
+						array(
+							'ID'          => $thumbnail->ID,
+							'post_parent' => $new_parent,
+						)
+					);
 				}
 			}
 		}
@@ -168,6 +173,11 @@ class Attachment_Media_Library implements Hook_Subscriber {
 
 	/**
 	 * Clears the 'needs browser thumb' flag when a thumbnail is set.
+	 *
+	 * @param int    $meta_id    The meta ID.
+	 * @param int    $object_id  The object ID.
+	 * @param string $meta_key   The meta key.
+	 * @param mixed  $meta_value The meta value.
 	 */
 	public function clear_browser_thumb_flag( $meta_id, $object_id, $meta_key, $meta_value ) {
 		if ( '_thumbnail_id' === $meta_key ) {
@@ -177,6 +187,9 @@ class Attachment_Media_Library implements Hook_Subscriber {
 
 	/**
 	 * Action Scheduler callback to set the featured image.
+	 *
+	 * @param int $parent_id The parent post ID.
+	 * @param int $poster_id The poster image attachment ID.
 	 */
 	public function execute_featured_image_action( $parent_id, $poster_id ) {
 		set_post_thumbnail( (int) $parent_id, (int) $poster_id );
@@ -184,9 +197,19 @@ class Attachment_Media_Library implements Hook_Subscriber {
 
 	/**
 	 * Action Scheduler callback to switch the parent of a thumbnail.
+	 *
+	 * @param int    $thumbnail_id The thumbnail attachment ID.
+	 * @param string $target_type  The target parent type ('post' or 'attachment').
+	 * @param int    $target_id    The target parent ID.
+	 * @param int    $video_id     The video attachment ID.
 	 */
 	public function execute_switch_parent_action( $thumbnail_id, $target_type, $target_id, $video_id = 0 ) {
-		wp_update_post( array( 'ID' => (int) $thumbnail_id, 'post_parent' => (int) $target_id ) );
+		wp_update_post(
+			array(
+				'ID'          => (int) $thumbnail_id,
+				'post_parent' => (int) $target_id,
+			)
+		);
 		if ( 'post' === $target_type && $video_id ) {
 			update_post_meta( (int) $thumbnail_id, '_kgflashmediaplayer-video-id', (int) $video_id );
 		}
@@ -235,7 +258,7 @@ class Attachment_Media_Library implements Hook_Subscriber {
 			$target_parent = $this->options['thumb_parent'] ?? 'post';
 		}
 
-		$args   = array(
+		$args       = array(
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'image',
 			'numberposts'    => -1,

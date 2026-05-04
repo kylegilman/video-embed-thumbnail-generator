@@ -5,7 +5,6 @@ import {
 	Dropdown,
 } from '@wordpress/components';
 
-
 /**
  * A compact color picker using a dropdown and color palette.
  *

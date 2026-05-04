@@ -5,12 +5,8 @@
 	"title": "Videopack View Count",
 	"category": "media",
 	"icon": "visibility",
-	"editorStyle": "file:./index.css",
 	"description": "Displays the view count of the video.",
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"usesContext": ["postId", "postType"],
 	"attributes": {
 		"iconType": {
 			"type": "string",

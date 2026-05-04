@@ -4,7 +4,6 @@ import { __ } from '@wordpress/i18n';
 import { external } from '@wordpress/icons';
 import { play, pause } from '../../assets/icon';
 
-
 const VideoPlayerInner = ({
 	videoRef,
 	panelRef,

@@ -27,6 +27,5 @@
     "html": false
   },
   "textdomain": "video-embed-thumbnail-generator",
-  "editorScript": "file:./index.js",
-  "editorStyle": "file:./index.css"
+  "editorScript": "file:./index.js"
 }

@@ -28,107 +28,17 @@ import {
 	post as parentIcon,
 	notAllowed as noneIcon,
 } from '@wordpress/icons';
-import { normalizeSourceGroups } from '../../utils/context';
 import useVideopackContext from '../../hooks/useVideopackContext';
+import VideoWatermark from '../../components/VideoWatermark/VideoWatermark';
 import './editor.scss';
 
 /**
- * Internal component to display the watermark with correct positioning and fallback.
- *
- * @param {Object} props         Component props.
- * @param {Object} props.context Block context.
- * @return {Object} The rendered component.
- */
-export function VideoWatermark({
-	attributes = {},
-	context = {},
-	isBlockEditor = false,
-	onDimensions = null,
-}) {
-	const { resolved } = useVideopackContext(attributes, context);
-
-	const {
-		watermark: effectiveUrl,
-		watermark_scale: actualScale = 10,
-		watermark_align: actualAlign = 'right',
-		watermark_valign: actualValign = 'bottom',
-		watermark_x: actualX = 5,
-		watermark_y: actualY = 7,
-		skin,
-	} = resolved;
-
-
-
-	const style = {
-		position: isBlockEditor ? 'relative' : 'absolute',
-		width: effectiveUrl ? `${actualScale}%` : '260px',
-		height: 'auto',
-		pointerEvents: 'auto',
-		transform: '',
-	};
-
-	// X Positioning
-	if (actualAlign === 'center') {
-		style.left = '50%';
-		style.transform += 'translateX(-50%) ';
-		style.marginLeft = `${-actualX}%`;
-	} else {
-		style[actualAlign] = `${actualX}%`;
-	}
-
-	// Y Positioning
-	if (actualValign === 'center') {
-		style.top = '50%';
-		style.transform += 'translateY(-50%) ';
-		style.marginTop = `${-actualY}%`;
-	} else {
-		style[actualValign] = `${actualY}%`;
-	}
-
-	if (!style.transform || isBlockEditor) {
-		delete style.transform;
-	}
-
-	if (isBlockEditor) {
-		delete style.left;
-		delete style.right;
-		delete style.top;
-		delete style.bottom;
-		delete style.marginLeft;
-		delete style.marginTop;
-		style.width = '100%'; // Inner container fills the outer block
-	}
-
-	if (!effectiveUrl) {
-		return null;
-	}
-
-	return (
-		<div className={`videopack-video-watermark ${skin}`} style={style}>
-			<img
-				src={effectiveUrl}
-				alt={__('Watermark', 'video-embed-thumbnail-generator')}
-				style={{ display: 'block', width: '100%', height: 'auto' }}
-				onLoad={(e) => {
-					if (
-						onDimensions &&
-						e.target.naturalWidth &&
-						e.target.naturalHeight
-					) {
-						const ratio =
-							e.target.naturalWidth / e.target.naturalHeight;
-						onDimensions(ratio);
-					}
-				}}
-			/>
-		</div>
-	);
-}
-
-/**
  * Helper to calculate watermark positioning styles for the block wrapper.
+ *
+ * @param {Object} resolved Resolved context attributes.
+ * @return {Object} Style object for the block wrapper.
  */
-export function getWatermarkBlockStyles(resolved) {
+function getWatermarkBlockStyles(resolved) {
 	const {
 		watermark: effectiveUrl,
 		watermark_scale: effectiveScale = 10,
@@ -167,20 +77,22 @@ export function getWatermarkBlockStyles(resolved) {
 		style[effectiveValign] = `${effectiveY}%`;
 	}
 
-	if (!style.transform) delete style.transform;
+	if (!style.transform) {
+		delete style.transform;
+	}
 
 	return style;
 }
 
 /**
- * Edit component for the Video Watermark block.
+ * Watermark Edit Component.
  *
- * @param {Object}   props               Component props.
- * @param {Object}   props.attributes    Block attributes.
- * @param {Function} props.setAttributes Function to update block attributes.
- * @param {Object}   props.context       Block context.
- *
- * @return {Object} The component.
+ * @param {Object}   root0               Component props.
+ * @param {Object}   root0.attributes    Block attributes.
+ * @param {Function} root0.setAttributes Attribute setter.
+ * @param {Object}   root0.context       Block context.
+ * @param {boolean}  root0.isSelected    Whether the block is selected.
+ * @return {Element} Watermark edit component.
  */
 export default function Edit({
 	attributes,
@@ -232,17 +144,6 @@ export default function Edit({
 		return () => observer.disconnect();
 	}, []);
 
-	const {
-		watermark,
-		watermark_scale = 10,
-		watermark_align = 'right',
-		watermark_valign = 'bottom',
-		watermark_x = 5,
-		watermark_y = 7,
-		watermark_link_to = 'false',
-		watermark_url = '',
-	} = attributes;
-
 	// Use unified context hook for all design and behavior resolution
 	const { resolved } = useVideopackContext(attributes, context);
 
@@ -261,9 +162,8 @@ export default function Edit({
 	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
 	const isOverlay = isInsideThumbnail || isInsidePlayerOverlay;
 
-	const overlayStyles = isOverlay || context.isPreview
-		? getWatermarkBlockStyles(resolved)
-		: {};
+	const overlayStyles =
+		isOverlay || context.isPreview ? getWatermarkBlockStyles(resolved) : {};
 
 	// Implementation of Full-Frame Selection mode:
 	// When selected, the block expands to fill the entire container to allow dragging everywhere.
@@ -317,7 +217,7 @@ export default function Edit({
 		<div {...blockProps}>
 			<BlockControls>
 				<MediaReplaceFlow
-					mediaURL={watermark}
+					mediaURL={effectiveUrl}
 					allowedTypes={['image']}
 					accept="image/*"
 					onSelect={(media) =>
@@ -414,7 +314,7 @@ export default function Edit({
 										'Custom URL',
 										'video-embed-thumbnail-generator'
 									)}
-									value={watermark_url}
+									value={effectiveCustomLinkUrl}
 									placeholder="https://..."
 									onChange={(value) =>
 										setAttributes({ watermark_url: value })

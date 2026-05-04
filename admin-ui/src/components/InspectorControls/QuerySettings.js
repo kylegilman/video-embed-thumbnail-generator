@@ -6,7 +6,6 @@ export default function QuerySettings({
 	attributes,
 	setAttributes,
 	queryData,
-	showArchiveSource = true,
 	showManualSource = true,
 }) {
 	const { gallery_source, gallery_id, gallery_category, gallery_tag } =

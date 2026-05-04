@@ -166,7 +166,7 @@ class Ui implements Hook_Subscriber {
 
 		foreach ( $modular_blocks as $block_name ) {
 			// We register the block types here, but we NO LONGER specify render_callbacks.
-			// The consolidated Videopack\Frontend\Blocks class now handles all rendering 
+			// The consolidated Videopack\Frontend\Blocks class now handles all rendering
 			// via the block_type_metadata_settings filter for maximum architectural parity.
 			register_block_type( (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/' . (string) $block_name );
 		}
@@ -234,10 +234,10 @@ class Ui implements Hook_Subscriber {
 		);
 
 		// Only map these to providesContext if the block actually has the attribute.
-		// Otherwise, Gutenberg will provide 'undefined' and potentially shadow 
+		// Otherwise, Gutenberg will provide 'undefined' and potentially shadow
 		// manual BlockContextProvider values.
 		$metadata_attributes = isset( $metadata['attributes'] ) ? $metadata['attributes'] : array();
-		$mappings = array(
+		$mappings            = array(
 			'videopack/postId'       => 'id',
 			'videopack/attachmentId' => 'id',
 			'videopack/isStandalone' => 'isStandalone',
@@ -245,7 +245,7 @@ class Ui implements Hook_Subscriber {
 		);
 
 		// Only map content attributes to providesContext on the frontend.
-		// In the editor, we handle these manually via VideopackContextBridge 
+		// In the editor, we handle these manually via VideopackContextBridge
 		// to allow for hydration of 'lean' blocks.
 		if ( ! is_admin() ) {
 			$mappings['videopack/src']     = 'src';
@@ -254,18 +254,18 @@ class Ui implements Hook_Subscriber {
 			$mappings['videopack/caption'] = 'caption';
 		}
 
-		// Add general mappings for attributes that might exist on any block
-		$mappings['videopack/isInsidePlayerOverlay'] = 'isInsidePlayerOverlay';
+		// Add general mappings for attributes that might exist on any block.
+		$mappings['videopack/isInsidePlayerOverlay']   = 'isInsidePlayerOverlay';
 		$mappings['videopack/isInsidePlayerContainer'] = 'isInsidePlayerContainer';
-		$mappings['videopack/isInsideThumbnail'] = 'isInsideThumbnail';
-		
+		$mappings['videopack/isInsideThumbnail']       = 'isInsideThumbnail';
+
 		foreach ( $mappings as $context_key => $attr_name ) {
 			if ( isset( $metadata_attributes[ $attr_name ] ) ) {
 				$provides_context[ $context_key ] = $attr_name;
 			}
 		}
 
-		$uses_context = array_merge( 
+		$uses_context = array_merge(
 			array_keys( $provides_context ),
 			array(
 				'videopack/postId',
@@ -310,14 +310,14 @@ class Ui implements Hook_Subscriber {
 			)
 		);
 
-		// Blocks that get shared attributes injected
+		// Blocks that get shared attributes injected.
 		$receives_shared_attributes = array(
 			'videopack/collection',
 			'videopack/player-container',
 			'videopack/loop',
 		);
 
-		// Blocks that USE context (Children/Internal)
+		// Blocks that USE context (Children/Internal).
 		$consumers = array(
 			'videopack/loop',
 			'videopack/thumbnail',
@@ -333,21 +333,19 @@ class Ui implements Hook_Subscriber {
 
 		if ( in_array( $metadata['name'], $receives_shared_attributes, true ) ) {
 			$metadata['attributes'] = array_merge( $metadata_attributes, $shared_attributes );
-			// If it receives shared attributes, it should provide them to children
+			// If it receives shared attributes, it should provide them to children.
 			$metadata['providesContext'] = array_merge( $metadata['providesContext'] ?? array(), $provides_context );
-		} else {
-			// For all other blocks, only provide context for attributes they natively possess
-			if ( ! empty( $provides_context ) ) {
-				// Strip out design context if this block doesn't natively have those attributes
-				$native_provides = array();
-				foreach ( $provides_context as $context_key => $attr_name ) {
-					if ( isset( $metadata_attributes[ $attr_name ] ) ) {
-						$native_provides[ $context_key ] = $attr_name;
-					}
+		} elseif ( ! empty( $provides_context ) ) {
+			// For all other blocks, only provide context for attributes they natively possess.
+			// Strip out design context if this block doesn't natively have those attributes.
+			$native_provides = array();
+			foreach ( $provides_context as $context_key => $attr_name ) {
+				if ( isset( $metadata_attributes[ $attr_name ] ) ) {
+					$native_provides[ $context_key ] = $attr_name;
 				}
-				if ( ! empty( $native_provides ) ) {
-					$metadata['providesContext'] = array_merge( $metadata['providesContext'] ?? array(), $native_provides );
-				}
+			}
+			if ( ! empty( $native_provides ) ) {
+				$metadata['providesContext'] = array_merge( $metadata['providesContext'] ?? array(), $native_provides );
 			}
 		}
 
@@ -444,8 +442,8 @@ class Ui implements Hook_Subscriber {
 				'rest_url_render'        => (string) get_rest_url( null, 'videopack/v1/render-shortcode' ),
 				'replace_preview_video'  => (bool) ( $options['replace_preview_video'] ?? true ),
 				'align'                  => (string) ( $options['align'] ?? '' ),
-				'postId'                 => (int) ( is_admin() ? ( $_GET['post'] ?? get_queried_object_id() ?: get_the_ID() ) : get_the_ID() ),
-				'videopack/postId'       => (int) ( is_admin() ? ( $_GET['post'] ?? get_queried_object_id() ?: get_the_ID() ) : get_the_ID() ),
+				'postId'                 => (int) ( is_admin() ? absint( wp_unslash( $_GET['post'] ?? ( get_queried_object_id() ? get_queried_object_id() : get_the_ID() ) ) ) : get_the_ID() ),
+				'videopack/postId'       => (int) ( is_admin() ? absint( wp_unslash( $_GET['post'] ?? ( get_queried_object_id() ? get_queried_object_id() : get_the_ID() ) ) ) : get_the_ID() ),
 				'themeColors'            => $theme_colors,
 				'globalStyles'           => function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
 				'mejs_controls_svg'      => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),

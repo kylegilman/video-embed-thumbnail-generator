@@ -66,10 +66,11 @@ const PreviewIframe = ({
 		});
 	}, [contentRef, mountNode, fullScreen]);
 
+	const resizeDependenciesString = JSON.stringify(resizeDependencies);
 	// Trigger resize when dependencies change (e.g. alignment).
 	useEffect(() => {
 		resizeIframe();
-	}, [resizeIframe, ...resizeDependencies]);
+	}, [resizeIframe, resizeDependenciesString]);
 
 	const handleIframeLoad = useCallback(() => {
 		if (contentRef) {

@@ -15,7 +15,9 @@ export const getGridTemplate = (options) => {
 			{ linkTo: 'lightbox' },
 			[
 				['videopack/play-button', {}],
-				options?.overlay_title !== false ? ['videopack/title', {}] : null,
+				options?.overlay_title !== false
+					? ['videopack/title', {}]
+					: null,
 			].filter(Boolean),
 		],
 	];
@@ -83,11 +85,29 @@ export const getFeedTemplate = (options) => {
 			'videopack/thumbnail',
 			{ linkTo: 'parent' },
 			[
-				['videopack/duration', { position: 'bottom', style: { typography: { fontSize: '14px' } } }],
-			]
+				[
+					'videopack/duration',
+					{
+						position: 'bottom',
+						style: { typography: { fontSize: '14px' } },
+					},
+				],
+			],
 		],
 		['videopack/title', {}],
-		['core/post-date', { metadata: { bindings: { datetime: { source: 'core/post-data', args: { field: 'date' } } } } }],
+		[
+			'core/post-date',
+			{
+				metadata: {
+					bindings: {
+						datetime: {
+							source: 'core/post-data',
+							args: { field: 'date' },
+						},
+					},
+				},
+			},
+		],
 		['videopack/view-count', { iconType: 'playOutline' }],
 	];
 

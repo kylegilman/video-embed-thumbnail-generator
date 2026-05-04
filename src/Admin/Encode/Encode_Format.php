@@ -149,7 +149,7 @@ class Encode_Format {
 	 * @var string $temp_watermark_path
 	 */
 	private $temp_watermark_path;
- 
+
 	/**
 	 * Video title.
 	 *
@@ -258,10 +258,10 @@ class Encode_Format {
 		$format->set_job_id( $format->set_or_null( $data, 'id' ) ); // Use 'id' from DB as job_id.
 		$format->set_id( $format->set_or_null( $data, 'output_attachment_id' ) );
 		$format->set_temp_watermark_path( $format->set_or_null( $data, 'temp_watermark_path' ) );
- 
+
 		$format->set_video_title( $format->set_or_null( $data, 'video_title' ) );
 		$format->set_video_duration( (int) $format->set_or_null( $data, 'video_duration' ) );
- 
+
 		$format->attachment_id = $format->set_or_null( $data, 'attachment_id' );
 		$format->input_url     = $format->set_or_null( $data, 'input_url' );
 		$format->blog_id       = $format->set_or_null( $data, 'blog_id' );
@@ -508,7 +508,7 @@ class Encode_Format {
 	public function get_video_duration() {
 		return (int) $this->video_duration;
 	}
- 
+
 	/**
 	 * Get the video title.
 	 *
@@ -517,7 +517,7 @@ class Encode_Format {
 	public function get_video_title() {
 		return (string) $this->video_title;
 	}
- 
+
 	/**
 	 * Set the video title.
 	 *

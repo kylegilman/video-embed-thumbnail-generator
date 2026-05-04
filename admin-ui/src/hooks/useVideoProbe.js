@@ -24,7 +24,7 @@ export default function useVideoProbe(videoUrl) {
 				return (
 					parsed.protocol === 'http:' || parsed.protocol === 'https:'
 				);
-			} catch (e) {
+			} catch {
 				return false;
 			}
 		};

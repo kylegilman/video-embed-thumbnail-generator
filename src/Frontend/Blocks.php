@@ -67,18 +67,18 @@ class Blocks implements Hook_Subscriber {
 	 */
 	public function inject_render_callbacks( $settings, $metadata ) {
 		$block_map = array(
-			'videopack/player-container'     => 'render_player',
-			'videopack/player' => 'render_player_engine',
-			'videopack/watermark'     => 'render_video_watermark',
-			'videopack/collection'          => 'render_collection',
-			'videopack/thumbnail'           => 'render_thumbnail',
-			'videopack/title'         => 'render_video_title',
-			'videopack/duration'      => 'render_video_duration',
-			'videopack/view-count'          => 'render_view_count',
-			'videopack/play-button'         => 'render_play_button',
-			'videopack/pagination'          => 'render_pagination',
-			'videopack/loop'          => 'render_video_loop',
-			'videopack/caption'       => 'render_video_caption',
+			'videopack/player-container' => 'render_player',
+			'videopack/player'           => 'render_player_engine',
+			'videopack/watermark'        => 'render_video_watermark',
+			'videopack/collection'       => 'render_collection',
+			'videopack/thumbnail'        => 'render_thumbnail',
+			'videopack/title'            => 'render_video_title',
+			'videopack/duration'         => 'render_video_duration',
+			'videopack/view-count'       => 'render_view_count',
+			'videopack/play-button'      => 'render_play_button',
+			'videopack/pagination'       => 'render_pagination',
+			'videopack/loop'             => 'render_video_loop',
+			'videopack/caption'          => 'render_video_caption',
 		);
 
 		$name = $metadata['name'] ?? '';
@@ -113,8 +113,7 @@ class Blocks implements Hook_Subscriber {
 	 * @return array
 	 */
 	public function get_filters(): array {
-		return array(
-		);
+		return array();
 	}
 
 	/**
@@ -137,7 +136,7 @@ class Blocks implements Hook_Subscriber {
 	 */
 	public function get_effective_attachment_id( $attributes, $context ) {
 		// 1. Explicit ID in attributes.
-		$post_id = $attributes['postId'] ?? ( $attributes['id'] ?? null );
+		$post_id     = $attributes['postId'] ?? ( $attributes['id'] ?? null );
 		$is_explicit = ! empty( $post_id );
 
 		// 2. ID from Videopack context (passed by parent blocks).
@@ -225,16 +224,16 @@ class Blocks implements Hook_Subscriber {
 	/**
 	 * Generic player renderer for the main Videopack block.
 	 *
-	 * @param array $attributes Block attributes.
-	 * @param string $content Block content.
+	 * @param array     $attributes Block attributes.
+	 * @param string    $content Block content.
 	 * @param \WP_Block $block The block instance.
 	 * @return string Rendered HTML.
 	 */
 	public function render_player( $attributes, $content, $block ) {
-		self::$instance_counter++;
+		++self::$instance_counter;
 		$instance_id = 'vp_' . self::$instance_counter;
 
-		$block->context['videopack/instanceId']          = $instance_id;
+		$block->context['videopack/instanceId']              = $instance_id;
 		$block->context['videopack/isInsidePlayerContainer'] = true;
 
 		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
@@ -245,19 +244,22 @@ class Blocks implements Hook_Subscriber {
 
 		$source = $post_id ? \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry ) : null;
 
-		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
+		$settings          = Context_Manager::resolve( $attributes, $block->context, $this->options );
 		$merged_attributes = array_merge( $attributes, $settings['resolved'] );
 
-		// Propagate watermark settings (these are not part of the standard design context yet)
+		// Propagate watermark settings (these are not part of the standard design context yet).
 		$block->context['videopack/watermark']         = $attributes['watermark'] ?? ( $this->options['watermark'] ?? '' );
 		$block->context['videopack/watermark_styles']  = $attributes['watermark_styles'] ?? ( $this->options['watermark_styles'] ?? array() );
 		$block->context['videopack/watermark_link_to'] = $attributes['watermark_link_to'] ?? ( $this->options['watermark_link_to'] ?? 'false' );
 
 		return Modular_Renderer::render_video_container(
-			array_merge( $merged_attributes, array(
-				'wrapper_class' => $settings['classes'],
-				'style_vars'    => $settings['style'],
-			) ),
+			array_merge(
+				$merged_attributes,
+				array(
+					'wrapper_class' => $settings['classes'],
+					'style_vars'    => $settings['style'],
+				)
+			),
 			$content,
 			true,
 			$this->options
@@ -267,8 +269,8 @@ class Blocks implements Hook_Subscriber {
 	/**
 	 * Renders the Video Player Engine block.
 	 *
-	 * @param array $attributes Block attributes.
-	 * @param string $content Block content.
+	 * @param array     $attributes Block attributes.
+	 * @param string    $content Block content.
 	 * @param \WP_Block $block The block instance.
 	 * @return string Rendered HTML.
 	 */
@@ -284,20 +286,20 @@ class Blocks implements Hook_Subscriber {
 		$settings          = Context_Manager::resolve( $attributes, $block->context, $this->options );
 
 		// Pull content attributes from context if not in attributes (essential for external URLs).
-		$content_keys = array( 'src', 'poster', 'title', 'caption' );
+		$content_keys    = array( 'src', 'poster', 'title', 'caption' );
 		$context_content = array();
 		foreach ( $content_keys as $ck ) {
-			if ( isset( $block->context["videopack/{$ck}"] ) ) {
-				$context_content[ $ck ] = $block->context["videopack/{$ck}"];
+			if ( isset( $block->context[ "videopack/{$ck}" ] ) ) {
+				$context_content[ $ck ] = $block->context[ "videopack/{$ck}" ];
 			}
 		}
 
-		$merged_attributes = array_merge( 
-			$this->options, 
-			$settings['resolved'], 
-			$context_content, 
-			$attributes, 
-			array( 'id' => is_numeric( $post_id ) ? (int) $post_id : 0 ) 
+		$merged_attributes = array_merge(
+			$this->options,
+			$settings['resolved'],
+			$context_content,
+			$attributes,
+			array( 'id' => is_numeric( $post_id ) ? (int) $post_id : 0 )
 		);
 		$player            = $shortcode_handler->prepare_player( $merged_attributes );
 
@@ -307,8 +309,8 @@ class Blocks implements Hook_Subscriber {
 
 		// Ensure children know they are inside a player engine and have the correct video context.
 		$block->context['videopack/isInsidePlayerOverlay'] = true;
-		$block->context['videopack/postId'] = (int) $post_id;
-		$block->context['videopack/attachmentId'] = (int) $post_id;
+		$block->context['videopack/postId']                = (int) $post_id;
+		$block->context['videopack/attachmentId']          = (int) $post_id;
 
 		return Modular_Renderer::render_player_engine( $player['player'], $player['final_atts'], $content, $this->options );
 	}
@@ -335,11 +337,11 @@ class Blocks implements Hook_Subscriber {
 
 		$instance_id = $attributes['instanceId'] ?? 'vp_' . \Videopack\Admin\Ui::$instance_counter;
 		if ( ! isset( $attributes['instanceId'] ) ) {
-			\Videopack\Admin\Ui::$instance_counter++;
+			++\Videopack\Admin\Ui::$instance_counter;
 			$instance_id = 'vp_' . \Videopack\Admin\Ui::$instance_counter;
 		}
-		$collection_id = $attributes['collectionId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
-		$attributes['collectionId'] = $collection_id;
+		$collection_id                                     = $attributes['collectionId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
+		$attributes['collectionId']                        = $collection_id;
 		self::$collection_metadata_cache[ $collection_id ] = array();
 
 		$gallery_handler = new Gallery( $this->options, $this->format_registry );
@@ -352,7 +354,7 @@ class Blocks implements Hook_Subscriber {
 		$total_pages = (int) $query->max_num_pages;
 		$skin        = $attributes['skin'] ?? ( $this->options['skin'] ?? 'vjs-theme-videopack' );
 
-		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
+		$settings              = Context_Manager::resolve( $attributes, $block->context, $this->options );
 		$normalized_attributes = array_merge( $this->options, $attributes, $settings['resolved'] );
 
 		// 1. Pre-fetch and cache metadata for all videos in this page of the collection.
@@ -364,11 +366,14 @@ class Blocks implements Hook_Subscriber {
 			$player->set_source( $source );
 
 			// Lightbox always needs controls and title.
-			$lightbox_atts = array_merge( $normalized_attributes, array(
-				'id'            => $attachment_id,
-				'controls'      => true,
-				'overlay_title' => true,
-			) );
+			$lightbox_atts = array_merge(
+				$normalized_attributes,
+				array(
+					'id'            => $attachment_id,
+					'controls'      => true,
+					'overlay_title' => true,
+				)
+			);
 			$player->set_atts( $lightbox_atts );
 
 			$item_metadata = $player->prepare_video_vars();
@@ -414,10 +419,10 @@ class Blocks implements Hook_Subscriber {
 		// Render non-loop blocks (like pagination).
 		foreach ( $block->inner_blocks as $inner_block ) {
 			if ( 'videopack/loop' !== $inner_block->name ) {
-				$cloned_block = clone $inner_block;
+				$cloned_block                                   = clone $inner_block;
 				$cloned_block->context['videopack/currentPage'] = $paged;
 				$cloned_block->context['videopack/totalPages']  = $total_pages;
-				$other_content .= $cloned_block->render();
+				$other_content                                 .= $cloned_block->render();
 			}
 		}
 
@@ -439,15 +444,19 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		$output = Modular_Renderer::render_video_container(
-			array_merge( $this->options, $attributes, array(
-				'align'                 => $attributes['align'] ?? ( $this->options['gallery_align'] ?? 'wide' ),
-				'block_gap'             => $block_gap,
-				'wrapper_class'         => 'videopack-collection-wrapper',
-				'inner_blocks_template' => $inner_blocks_template,
-				'totalPages'            => $total_pages,
-				'currentPage'           => $paged,
-				'exclude_hover_trigger' => true,
-			) ),
+			array_merge(
+				$this->options,
+				$attributes,
+				array(
+					'align'                 => $attributes['align'] ?? ( $this->options['gallery_align'] ?? 'wide' ),
+					'block_gap'             => $block_gap,
+					'wrapper_class'         => 'videopack-collection-wrapper',
+					'inner_blocks_template' => $inner_blocks_template,
+					'totalPages'            => $total_pages,
+					'currentPage'           => $paged,
+					'exclude_hover_trigger' => true,
+				)
+			),
 			'<div class="videopack-collection-inner">' . $loop_content . '</div>' . $other_content,
 			true
 		);
@@ -486,23 +495,27 @@ class Blocks implements Hook_Subscriber {
 
 			global $post;
 			$original_post = $post;
-			$post          = get_post( $post_id );
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			$post = get_post( $post_id );
 			if ( $post ) {
 				setup_postdata( $post );
 			}
 
-			// Prepare the context for this specific loop item
+			// Prepare the context for this specific loop item.
 			$parent_post_id = $block->context['videopack/videoToPostMapping'][ (int) $post_id ] ?? null;
 			$prioritize     = ! empty( $block->context['videopack/prioritizePostData'] );
 
-			$item_context = array_merge( $block->context, array(
-				'postId'                  => ( $prioritize && $parent_post_id ) ? (int) $parent_post_id : (int) $post_id,
-				'postType'                => ( $prioritize && $parent_post_id ) ? get_post_type( $parent_post_id ) : 'attachment',
-				'videopack/postId'       => (int) $post_id,
-				'videopack/parentPostId' => (int) $parent_post_id,
-				'videopack/isInLoop'            => true,
-				'videopack/instanceId'          => 'vp_' . \Videopack\Admin\Ui::$instance_counter++,
-			) );
+			$item_context = array_merge(
+				$block->context,
+				array(
+					'postId'                 => ( $prioritize && $parent_post_id ) ? (int) $parent_post_id : (int) $post_id,
+					'postType'               => ( $prioritize && $parent_post_id ) ? get_post_type( $parent_post_id ) : 'attachment',
+					'videopack/postId'       => (int) $post_id,
+					'videopack/parentPostId' => (int) $parent_post_id,
+					'videopack/isInLoop'     => true,
+					'videopack/instanceId'   => 'vp_' . \Videopack\Admin\Ui::$instance_counter++,
+				)
+			);
 
 			foreach ( $block->inner_blocks as $inner_block ) {
 				if ( empty( $inner_block->name ) ) {
@@ -525,6 +538,7 @@ class Blocks implements Hook_Subscriber {
 			}
 
 			wp_reset_postdata();
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 			$post = $original_post;
 
 			$inner_content .= '<div class="videopack-collection-item">' . $item_content . '</div>';
@@ -576,7 +590,7 @@ class Blocks implements Hook_Subscriber {
 			}
 		}
 
-		$instance_id = $instance_id ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
+		$instance_id  = $instance_id ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
 		$videopack_id = $collection_id ? "videopack_player_gallery_{$post_id}_{$collection_id}" : "videopack_player_{$instance_id}";
 
 		$player_data = null;
@@ -603,7 +617,7 @@ class Blocks implements Hook_Subscriber {
 
 		if ( $player_data ) {
 			$player_data['id'] = $videopack_id;
-			$script = sprintf(
+			$script            = sprintf(
 				'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["%s"] = %s;',
 				esc_js( $videopack_id ),
 				wp_json_encode( $player_data )
@@ -620,11 +634,11 @@ class Blocks implements Hook_Subscriber {
 
 		$inner_content = '';
 		foreach ( $block->inner_blocks as $inner_block ) {
-			$cloned_inner = clone $inner_block;
-			$cloned_inner->context['videopack/postId']            = $post_id;
-			$cloned_inner->context['postId']                      = $block->context['postId'] ?? (int) $post_id;
-			$cloned_inner->context['postType']                    = $block->context['postType'] ?? 'attachment';
-			$cloned_inner->context['videopack/parentPostId']     = $block->context['videopack/parentPostId'] ?? null;
+			$cloned_inner                                    = clone $inner_block;
+			$cloned_inner->context['videopack/postId']       = $post_id;
+			$cloned_inner->context['postId']                 = $block->context['postId'] ?? (int) $post_id;
+			$cloned_inner->context['postType']               = $block->context['postType'] ?? 'attachment';
+			$cloned_inner->context['videopack/parentPostId'] = $block->context['videopack/parentPostId'] ?? null;
 			$cloned_inner->context['videopack/isInsideThumbnail'] = true;
 
 			foreach ( $settings['resolved'] as $key => $val ) {
@@ -646,7 +660,7 @@ class Blocks implements Hook_Subscriber {
 		if ( 'none' !== $link_to ) {
 			$classes[] = 'has-link';
 		}
-		$style_vars = array( $settings['style'] );
+		$style_vars   = array( $settings['style'] );
 		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
 
 		$wrapper_attributes = get_block_wrapper_attributes(
@@ -662,7 +676,7 @@ class Blocks implements Hook_Subscriber {
 		$html = sprintf( '<div %s>', $wrapper_attributes );
 
 		if ( 'none' !== $link_to ) {
-			$url = 'lightbox' === $link_to ? '#' : ( 'parent' === $link_to ? ( wp_get_post_parent_id( $post_id ) ? get_permalink( wp_get_post_parent_id( $post_id ) ) : get_permalink( $post_id ) ) : get_permalink( $post_id ) );
+			$url   = 'lightbox' === $link_to ? '#' : ( 'parent' === $link_to ? ( wp_get_post_parent_id( $post_id ) ? get_permalink( wp_get_post_parent_id( $post_id ) ) : get_permalink( $post_id ) ) : get_permalink( $post_id ) );
 			$html .= sprintf( '<a href="%s" class="videopack-thumbnail-link %s" data-videopack-link-to="%s">', esc_url( $url ), ( 'lightbox' === $link_to ? 'videopack-lightbox' : '' ), esc_attr( $link_to ) );
 		}
 
@@ -702,16 +716,16 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		if ( ! empty( $attributes['linkToPost'] ) ) {
-			$link_post_id = $block->context['postId'] ?? get_the_ID();
+			$link_post_id           = $block->context['postId'] ?? get_the_ID();
 			$attributes['link_url'] = get_permalink( (int) $link_post_id );
 		}
 
 		// Pull content attributes from context if not in attributes.
-		$content_keys = array( 'title', 'caption', 'src' );
+		$content_keys    = array( 'title', 'caption', 'src' );
 		$context_content = array();
 		foreach ( $content_keys as $ck ) {
-			if ( isset( $block->context["videopack/{$ck}"] ) ) {
-				$context_content[ $ck ] = $block->context["videopack/{$ck}"];
+			if ( isset( $block->context[ "videopack/{$ck}" ] ) ) {
+				$context_content[ $ck ] = $block->context[ "videopack/{$ck}" ];
 			}
 		}
 
@@ -725,12 +739,16 @@ class Blocks implements Hook_Subscriber {
 			$context_content,
 			$attributes,
 			array(
-				'isOverlay'         => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayerOverlay'] ) ),
-				'isInsideThumbnail' => ! empty( $block->context['videopack/isInsideThumbnail'] ),
+				'isOverlay'               => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayerOverlay'] ) ),
+				'isInsideThumbnail'       => ! empty( $block->context['videopack/isInsideThumbnail'] ),
 				'isInsidePlayerOverlay'   => ! empty( $block->context['videopack/isInsidePlayerOverlay'] ),
 				'isInsidePlayerContainer' => ! empty( $block->context['videopack/isInsidePlayerContainer'] ),
 			),
-			array_filter( (array) $attributes, function( $v ) { return ! is_null( $v ) && '' !== $v; } )
+			array_filter(
+				(array) $attributes,
+				function ( $v ) {
+					return ! is_null( $v ) && '' !== $v; }
+			)
 		);
 
 		// If embedcode is on, ensure we have an embedlink.
@@ -739,10 +757,13 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		return Modular_Renderer::render_video_title(
-			array_merge( $merged_attributes, array(
-				'wrapper_class' => $settings['classes'] . ' videopack-video-title-block',
-				'style_vars'    => $settings['style'],
-			) ),
+			array_merge(
+				$merged_attributes,
+				array(
+					'wrapper_class' => $settings['classes'] . ' videopack-video-title-block',
+					'style_vars'    => $settings['style'],
+				)
+			),
 			$source,
 			(string) ( $block->context['videopack/instanceId'] ?? ( $block->context['videopack/postId'] ?? $post_id ) )
 		);
@@ -770,19 +791,19 @@ class Blocks implements Hook_Subscriber {
 
 		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
 
-		$duration_text      = $this->format_duration( (int) $seconds );
-		$is_inside_thumb    = ! empty( $block->context['videopack/isInsideThumbnail'] );
-		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
-		$is_overlay         = $is_inside_thumb || $is_inside_player_overlay;
+		$duration_text            = $this->format_duration( (int) $seconds );
+		$is_inside_thumb          = ! empty( $block->context['videopack/isInsideThumbnail'] );
+		$is_inside_player_overlay = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
+		$is_overlay               = $is_inside_thumb || $is_inside_player_overlay;
 
-		$position           = $attributes['position'] ?? ( $block->context['videopack/position'] ?? ( $is_inside_thumb ? 'top' : 'bottom' ) );
-		$is_inside_player_container   = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
-		$text_align         = ! empty( $attributes['textAlign'] ) ? $attributes['textAlign'] : ( $is_inside_thumb ? 'right' : ( $is_inside_player_container ? 'right' : 'left' ) );
+		$position                   = $attributes['position'] ?? ( $block->context['videopack/position'] ?? ( $is_inside_thumb ? 'top' : 'bottom' ) );
+		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
+		$text_align                 = ! empty( $attributes['textAlign'] ) ? $attributes['textAlign'] : ( $is_inside_thumb ? 'right' : ( $is_inside_player_container ? 'right' : 'left' ) );
 
-		$class              = 'videopack-video-duration-block videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
-		$class             .= ' ' . $settings['classes'];
-		$class             .= ' position-' . esc_attr( $position );
-		$class             .= ' has-text-align-' . esc_attr( $text_align );
+		$class  = 'videopack-video-duration-block videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
+		$class .= ' ' . $settings['classes'];
+		$class .= ' position-' . esc_attr( $position );
+		$class .= ' has-text-align-' . esc_attr( $text_align );
 
 		return sprintf( '<div class="%s" style="%s">%s</div>', esc_attr( $class ), esc_attr( $settings['style'] ), esc_html( $duration_text ) );
 	}
@@ -798,10 +819,14 @@ class Blocks implements Hook_Subscriber {
 	public function render_play_button( $attributes, $content, $block ) {
 		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
 
-		$merged_attributes = array_merge( $attributes, $settings['resolved'], array(
-			'wrapper_class' => $settings['classes'],
-			'style_vars'    => $settings['style'],
-		) );
+		$merged_attributes = array_merge(
+			$attributes,
+			$settings['resolved'],
+			array(
+				'wrapper_class' => $settings['classes'],
+				'style_vars'    => $settings['style'],
+			)
+		);
 
 		return Modular_Renderer::render_play_button( $merged_attributes, $this->options, $merged_attributes['skin'] );
 	}
@@ -825,15 +850,19 @@ class Blocks implements Hook_Subscriber {
 
 		$merged_attributes = array_merge(
 			$settings['resolved'],
-			array_filter( (array) $attributes, function( $v ) { return ! is_null( $v ); } ),
+			array_filter(
+				(array) $attributes,
+				function ( $v ) {
+					return ! is_null( $v ); }
+			),
 			array(
-				'isOverlay'         => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayerOverlay'] ) ),
-				'isInsideThumbnail' => ! empty( $block->context['videopack/isInsideThumbnail'] ),
+				'isOverlay'               => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayerOverlay'] ) ),
+				'isInsideThumbnail'       => ! empty( $block->context['videopack/isInsideThumbnail'] ),
 				'isInsidePlayerOverlay'   => ! empty( $block->context['videopack/isInsidePlayerOverlay'] ),
 				'isInsidePlayerContainer' => ! empty( $block->context['videopack/isInsidePlayerContainer'] ),
-				'textAlign'         => $attributes['textAlign'] ?? ( $block->context['videopack/textAlign'] ?? null ),
-				'wrapper_class'     => $settings['classes'] . ' videopack-view-count-block',
-				'style_vars'        => $settings['style'],
+				'textAlign'               => $attributes['textAlign'] ?? ( $block->context['videopack/textAlign'] ?? null ),
+				'wrapper_class'           => $settings['classes'] . ' videopack-view-count-block',
+				'style_vars'              => $settings['style'],
 			)
 		);
 
@@ -849,7 +878,7 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_video_watermark( $attributes, $content, $block ) {
-		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
+		$settings          = Context_Manager::resolve( $attributes, $block->context, $this->options );
 		$merged_attributes = array_merge(
 			$this->options,
 			$settings['resolved'],
@@ -871,7 +900,7 @@ class Blocks implements Hook_Subscriber {
 		$current_page = $block->context['videopack/currentPage'] ?? 1;
 		$total_pages  = $block->context['videopack/totalPages'] ?? 1;
 
-		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
+		$settings          = Context_Manager::resolve( $attributes, $block->context, $this->options );
 		$merged_attributes = array_merge(
 			$this->options,
 			$settings['resolved'],
@@ -915,9 +944,13 @@ class Blocks implements Hook_Subscriber {
 
 	/**
 	 * Formats seconds into HH:MM:SS or MM:SS.
+	 *
+	 * @param int $seconds The number of seconds.
 	 */
 	private function format_duration( $seconds ) {
-		if ( ! $seconds ) return '0:00';
+		if ( ! $seconds ) {
+			return '0:00';
+		}
 		$h = floor( $seconds / 3600 );
 		$m = floor( ( $seconds % 3600 ) / 60 );
 		$s = $seconds % 60;
@@ -967,5 +1000,4 @@ class Blocks implements Hook_Subscriber {
 		</div>
 		<?php
 	}
-
 }

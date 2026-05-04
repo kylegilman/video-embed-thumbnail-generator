@@ -22,7 +22,6 @@ import TextTracks from '../TextTracks/TextTracks.js';
 import { normalizeOptions } from '../../utils/helpers';
 import { getColorFallbacks } from '../../utils/colors';
 
-
 const VideoSettings = ({
 	attributes,
 	setAttributes,
@@ -115,7 +114,10 @@ const VideoSettings = ({
 						const availableStats = [
 							{
 								key: 'starts',
-								label: __('Starts', 'video-embed-thumbnail-generator'),
+								label: __(
+									'Starts',
+									'video-embed-thumbnail-generator'
+								),
 								val: displayAttributes.starts,
 							},
 							{
@@ -135,7 +137,10 @@ const VideoSettings = ({
 							},
 							{
 								key: 'completeviews',
-								label: __('Ends', 'video-embed-thumbnail-generator'),
+								label: __(
+									'Ends',
+									'video-embed-thumbnail-generator'
+								),
 								val: displayAttributes.completeviews,
 							},
 						].filter((s) => s.val > 0);
@@ -153,7 +158,10 @@ const VideoSettings = ({
 								}`}
 							>
 								<p className="videopack-settings-section-title">
-									{__('Views', 'video-embed-thumbnail-generator')}
+									{__(
+										'Views',
+										'video-embed-thumbnail-generator'
+									)}
 								</p>
 								{isSingleStat ? (
 									<div className="videopack-stat-simple-row">
@@ -166,41 +174,45 @@ const VideoSettings = ({
 									</div>
 								) : (
 									<div className="videopack-funnel-track">
-										{availableStats.map((stat, idx, arr) => {
-											const retention =
-												stat.key !== 'starts' &&
-												displayAttributes.starts > 0
-													? Math.round(
-															(stat.val /
-																displayAttributes.starts) *
-																100
-													  ) + '%'
-													: null;
+										{availableStats.map(
+											(stat, idx, arr) => {
+												const retention =
+													stat.key !== 'starts' &&
+													displayAttributes.starts > 0
+														? Math.round(
+																(stat.val /
+																	displayAttributes.starts) *
+																	100
+															) + '%'
+														: null;
 
-											return (
-												<div
-													key={stat.key}
-													className="videopack-funnel-item"
-												>
-													<div className="videopack-funnel-marker">
-														{idx < arr.length - 1 && (
-															<div className="videopack-funnel-connector" />
+												return (
+													<div
+														key={stat.key}
+														className="videopack-funnel-item"
+													>
+														<div className="videopack-funnel-marker">
+															{idx <
+																arr.length -
+																	1 && (
+																<div className="videopack-funnel-connector" />
+															)}
+														</div>
+														<div className="videopack-funnel-label">
+															{stat.label}
+														</div>
+														<div className="videopack-funnel-value">
+															{stat.val.toLocaleString()}
+														</div>
+														{retention && (
+															<div className="videopack-funnel-retention">
+																{retention}
+															</div>
 														)}
 													</div>
-													<div className="videopack-funnel-label">
-														{stat.label}
-													</div>
-													<div className="videopack-funnel-value">
-														{stat.val.toLocaleString()}
-													</div>
-													{retention && (
-														<div className="videopack-funnel-retention">
-															{retention}
-														</div>
-													)}
-												</div>
-											);
-										})}
+												);
+											}
+										)}
 									</div>
 								)}
 							</div>
@@ -238,7 +250,7 @@ const VideoSettings = ({
 										!displayAttributes.muted
 											? __(
 													'Autoplay is disabled while editing unless muted.'
-											  )
+												)
 											: null
 									}
 								/>
@@ -369,27 +381,78 @@ const VideoSettings = ({
 				title={__('Colors', 'video-embed-thumbnail-generator')}
 				initialOpen={false}
 			>
-				<div className="videopack-skin-section" style={{ marginBottom: '16px' }}>
+				<div
+					className="videopack-skin-section"
+					style={{ marginBottom: '16px' }}
+				>
 					<SelectControl
-						label={ __( 'Player Skin', 'video-embed-thumbnail-generator' ) }
-						value={ attributes.skin || options.skin || '' }
-						options={ [
-							{ label: __( 'Videopack', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-videopack' },
-							{ label: __( 'Videopack Classic', 'video-embed-thumbnail-generator' ), value: 'kg-video-js-skin' },
-							{ label: __( 'Video.js default', 'video-embed-thumbnail-generator' ), value: 'default' },
-							{ label: __( 'City', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-city' },
-							{ label: __( 'Fantasy', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-fantasy' },
-							{ label: __( 'Forest', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-forest' },
-							{ label: __( 'Sea', 'video-embed-thumbnail-generator' ), value: 'vjs-theme-sea' },
-						] }
-						onChange={ ( value ) => handleSettingChange( 'skin', value ) }
+						label={__(
+							'Player Skin',
+							'video-embed-thumbnail-generator'
+						)}
+						value={attributes.skin || options.skin || ''}
+						options={[
+							{
+								label: __(
+									'Videopack',
+									'video-embed-thumbnail-generator'
+								),
+								value: 'vjs-theme-videopack',
+							},
+							{
+								label: __(
+									'Videopack Classic',
+									'video-embed-thumbnail-generator'
+								),
+								value: 'kg-video-js-skin',
+							},
+							{
+								label: __(
+									'Video.js default',
+									'video-embed-thumbnail-generator'
+								),
+								value: 'default',
+							},
+							{
+								label: __(
+									'City',
+									'video-embed-thumbnail-generator'
+								),
+								value: 'vjs-theme-city',
+							},
+							{
+								label: __(
+									'Fantasy',
+									'video-embed-thumbnail-generator'
+								),
+								value: 'vjs-theme-fantasy',
+							},
+							{
+								label: __(
+									'Forest',
+									'video-embed-thumbnail-generator'
+								),
+								value: 'vjs-theme-forest',
+							},
+							{
+								label: __(
+									'Sea',
+									'video-embed-thumbnail-generator'
+								),
+								value: 'vjs-theme-sea',
+							},
+						]}
+						onChange={(value) => handleSettingChange('skin', value)}
 					/>
 				</div>
 
 				{!isBlockEditor && (
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
-							{__('Title overlay', 'video-embed-thumbnail-generator')}
+							{__(
+								'Title overlay',
+								'video-embed-thumbnail-generator'
+							)}
 						</p>
 						<div className="videopack-color-flex-row">
 							<div className="videopack-color-flex-item">
@@ -400,7 +463,10 @@ const VideoSettings = ({
 									)}
 									value={displayAttributes.title_color}
 									onChange={(value) =>
-										handleSettingChange('title_color', value)
+										handleSettingChange(
+											'title_color',
+											value
+										)
 									}
 									colors={THEME_COLORS}
 									fallbackValue={
@@ -414,7 +480,9 @@ const VideoSettings = ({
 										'Background',
 										'video-embed-thumbnail-generator'
 									)}
-									value={displayAttributes.title_background_color}
+									value={
+										displayAttributes.title_background_color
+									}
 									onChange={(value) =>
 										handleSettingChange(
 											'title_background_color',
@@ -441,8 +509,14 @@ const VideoSettings = ({
 								label={
 									displayAttributes.embed_method ===
 									'WordPress Default'
-										? __('Play Button Color', 'video-embed-thumbnail-generator')
-										: __('Play Button Icon', 'video-embed-thumbnail-generator')
+										? __(
+												'Play Button Color',
+												'video-embed-thumbnail-generator'
+											)
+										: __(
+												'Play Button Icon',
+												'video-embed-thumbnail-generator'
+											)
 								}
 								value={displayAttributes.play_button_color}
 								onChange={(value) =>
@@ -462,10 +536,18 @@ const VideoSettings = ({
 								label={
 									displayAttributes.embed_method ===
 									'WordPress Default'
-										? __('Play Button Hover', 'video-embed-thumbnail-generator')
-										: __('Play Button Accent', 'video-embed-thumbnail-generator')
+										? __(
+												'Play Button Hover',
+												'video-embed-thumbnail-generator'
+											)
+										: __(
+												'Play Button Accent',
+												'video-embed-thumbnail-generator'
+											)
 								}
-								value={displayAttributes.play_button_secondary_color}
+								value={
+									displayAttributes.play_button_secondary_color
+								}
 								onChange={(value) =>
 									handleSettingChange(
 										'play_button_secondary_color',
@@ -549,11 +631,11 @@ const VideoSettings = ({
 														'video-embed-thumbnail-generator'
 													),
 													videopack_config.contentSize
-											  )
+												)
 											: __(
 													"None (use theme's default width)",
 													'video-embed-thumbnail-generator'
-											  ),
+												),
 									},
 									{
 										value: 'wide',
@@ -565,11 +647,11 @@ const VideoSettings = ({
 														'video-embed-thumbnail-generator'
 													),
 													videopack_config.wideSize
-											  )
+												)
 											: __(
 													"Wide (use theme's wide width)",
 													'video-embed-thumbnail-generator'
-											  ),
+												),
 									},
 									{
 										value: 'full',
@@ -750,10 +832,14 @@ const VideoSettings = ({
 									'video-embed-thumbnail-generator'
 								)}
 								value={
-									displayAttributes.watermark_link_to || 'false'
+									displayAttributes.watermark_link_to ||
+									'false'
 								}
 								onChange={(value) =>
-									handleSettingChange('watermark_link_to', value)
+									handleSettingChange(
+										'watermark_link_to',
+										value
+									)
 								}
 								options={[
 									{
@@ -791,9 +877,14 @@ const VideoSettings = ({
 										'Watermark URL',
 										'video-embed-thumbnail-generator'
 									)}
-									value={displayAttributes.watermark_url || ''}
+									value={
+										displayAttributes.watermark_url || ''
+									}
 									onChange={(value) =>
-										handleSettingChange('watermark_url', value)
+										handleSettingChange(
+											'watermark_url',
+											value
+										)
 									}
 								/>
 							</PanelRow>

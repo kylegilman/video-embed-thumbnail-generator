@@ -4,13 +4,11 @@
 
 import { createRoot, useState, useEffect, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import apiFetch from '@wordpress/api-fetch';
-import { BlockPreview, TemplatePreview } from '../../components/Preview';
+import { TemplatePreview } from '../../components/Preview';
 import { getGridTemplate, getListTemplate } from '../../utils/templates';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideoQuery from '../../hooks/useVideoQuery';
-import { normalizeOptions } from '../../utils/helpers';
-/* global videopack_config, tinymce, MutationObserver */
+/* global videopack_config, tinymce, MutationObserver, videojs */
 import './tinymce.scss';
 
 (function () {
@@ -45,7 +43,7 @@ import './tinymce.scss';
 				results.parentWpMedia =
 					window.parent.wp?.media?.view?.settings?.post?.id;
 			}
-		} catch (e) {
+		} catch {
 			// Cross-origin issues, ignore
 		}
 
@@ -57,7 +55,7 @@ import './tinymce.scss';
 					.select('core/editor')
 					?.getCurrentPostId();
 			}
-		} catch (e) {
+		} catch {
 			// ignore
 		}
 
@@ -72,11 +70,14 @@ import './tinymce.scss';
 	};
 
 	const PlaceHolderWrapper = ({ type, attributes, mountNode }) => {
-		const [fullAttributes, setFullAttributes] = useState(attributes);
 		const activePostId = useMemo(() => detectPostId(), []);
 		// Use unified context hook for all design and behavior resolution.
 		// TinyMCE doesn't have block context, so we pass an empty object.
-		const vpContext = useVideopackContext(attributes, {}, { excludeHoverTrigger: true });
+		const vpContext = useVideopackContext(
+			attributes,
+			{},
+			{ excludeHoverTrigger: true }
+		);
 		const mergedAttributes = useMemo(() => {
 			const resolved = { ...vpContext.resolved };
 			resolved.autoplay = false; // Never autoplay in TinyMCE preview
@@ -160,9 +161,7 @@ import './tinymce.scss';
 				engineChildren.push(['videopack/watermark', {}]);
 			}
 
-			const videoChildren = [
-				['videopack/player', {}, engineChildren],
-			];
+			const videoChildren = [['videopack/player', {}, engineChildren]];
 
 			if (mergedAttributes.views) {
 				videoChildren.push(['videopack/view-count', {}]);
@@ -179,13 +178,17 @@ import './tinymce.scss';
 			...vpContext.sharedContext,
 			'videopack/videos': videoResults,
 			'videopack/layout': type === 'Gallery' ? 'grid' : 'list',
-			'videopack/columns': parseInt(mergedAttributes.gallery_columns, 10) || 3,
+			'videopack/columns':
+				parseInt(mergedAttributes.gallery_columns, 10) || 3,
 			'videopack/totalPages': maxNumPages,
 			'videopack/currentPage': 1,
 		};
 
 		return (
-			<div className="videopack-tinymce-wrapper" style={themePresetsStyle}>
+			<div
+				className="videopack-tinymce-wrapper"
+				style={themePresetsStyle}
+			>
 				{videopack_config?.globalStyles && (
 					<style
 						dangerouslySetInnerHTML={{
@@ -205,12 +208,6 @@ import './tinymce.scss';
 		);
 	};
 
-	/**
-	 * Mounts a React component to a specific mount node within a container.
-	 *
-	 * @param {HTMLElement} container The container element (usually a WP View).
-	 * @param {Object}      shortcode The shortcode object.
-	 */
 	/**
 	 * Mounts a React component to a specific mount node within a container.
 	 *
@@ -241,7 +238,6 @@ import './tinymce.scss';
 				? shortcode.attrs.named
 				: shortcode.attrs || {}),
 		};
-		const tag = shortcode.tag;
 
 		// If the shortcode has content (e.g. [videopack]URL[/videopack]), map it to the src attribute ONLY if id is missing
 		if (shortcode.content && !attrs.id && !attrs.src) {
@@ -250,13 +246,15 @@ import './tinymce.scss';
 
 		let type = 'Video';
 		// [videopack] or legacy aliases
-		const isGallery =
-			attrs.gallery === 'true' || attrs.gallery === true;
+		const isGallery = attrs.gallery === 'true' || attrs.gallery === true;
 		if (isGallery) {
 			type = 'Gallery';
 		} else {
 			// Detect if it should be a list
-			const hasMultipleIds = attrs.id && (typeof attrs.id === 'string' && attrs.id.includes(','));
+			const hasMultipleIds =
+				attrs.id &&
+				typeof attrs.id === 'string' &&
+				attrs.id.includes(',');
 			const hasQuerySource =
 				attrs.gallery_source ||
 				attrs.gallery_category ||
@@ -295,8 +293,8 @@ import './tinymce.scss';
 				/>
 			);
 			mountNode.dataset.videopackMounted = 'true';
-		} catch (e) {
-			console.error('Videopack TinyMCE React render error:', e);
+		} catch (error) {
+			console.error('Videopack TinyMCE React render error:', error);
 			mountNode.innerHTML =
 				'<div class="videopack-render-error">Error rendering preview</div>';
 		}
@@ -333,12 +331,7 @@ import './tinymce.scss';
 					}
 
 					const shortcodeText = decodeURIComponent(viewText);
-					const tags = [
-						'videopack',
-						'KGVID',
-						'VIDEOPACK',
-						'FMP',
-					];
+					const tags = ['videopack', 'KGVID', 'VIDEOPACK', 'FMP'];
 
 					let shortcodeMatch = null;
 					for (const tag of tags) {
@@ -357,8 +350,8 @@ import './tinymce.scss';
 					if (shortcodeMatch) {
 						mountReactToNode(container, shortcodeMatch);
 					}
-				} catch (e) {
-					console.error('Videopack scanAndMountAll error:', e);
+				} catch (error) {
+					console.error('Videopack scanAndMountAll error:', error);
 				}
 			});
 		});
@@ -432,7 +425,9 @@ import './tinymce.scss';
 					try {
 						mountNode.__reactRoot.unmount();
 						delete mountNode.__reactRoot;
-					} catch (e) {}
+					} catch {
+						// ignore
+					}
 				}
 			},
 
@@ -659,12 +654,7 @@ import './tinymce.scss';
 			},
 		};
 
-		const tags = [
-			'videopack',
-			'VIDEOPACK',
-			'KGVID',
-			'FMP',
-		];
+		const tags = ['videopack', 'VIDEOPACK', 'KGVID', 'FMP'];
 		tags.forEach((tag) => {
 			if (window.wp.mce.views.get(tag)) {
 				window.wp.mce.views.unregister(tag);
@@ -733,8 +723,8 @@ import './tinymce.scss';
 			}
 		};
 
-		tinymce.on('AddEditor', (e) => {
-			initEditor(e.editor);
+		tinymce.on('AddEditor', (event) => {
+			initEditor(event.editor);
 		});
 
 		// Initialize existing editors

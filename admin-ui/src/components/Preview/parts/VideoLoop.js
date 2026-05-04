@@ -1,9 +1,16 @@
 import { useMemo } from '@wordpress/element';
 import TemplatePreview from '../TemplatePreview';
 import CustomDuotoneFilter from '../../Duotone/CustomDuotoneFilter';
+import useVideopackContext from '../../../hooks/useVideopackContext';
 
 /**
  * Loop component for rendering multiple Videopack items.
+ *
+ * @param {Object} root0             Component props.
+ * @param {Node}   root0.children    Children.
+ * @param {Object} root0.attributes  Block attributes.
+ * @param {Object} root0.context     Block context.
+ * @param {Array}  root0.innerBlocks Inner blocks data.
  */
 export default function VideoLoop({
 	children,
@@ -11,25 +18,30 @@ export default function VideoLoop({
 	context = {},
 	innerBlocks,
 }) {
-	const videos = context['videopack/videos'] || attributes.videos || [];
-	const layout = context['videopack/layout'] || 'grid';
-	const columns = context['videopack/columns'] || 3;
+	const { resolved, style, classes } = useVideopackContext(
+		attributes,
+		context
+	);
+	const { videos = [], layout = 'grid', columns = 3, duotone } = resolved;
 
-	const play_button_color = attributes.play_button_color || context['videopack/play_button_color'];
-	const play_button_secondary_color = attributes.play_button_secondary_color || context['videopack/play_button_secondary_color'];
-
-	const duotone = attributes?.style?.color?.duotone || attributes?.duotone || context['videopack/duotone'];
 	const loopDuotoneId = useMemo(() => {
-		if (!duotone || !Array.isArray(duotone)) return null;
+		if (!duotone || !Array.isArray(duotone)) {
+			return null;
+		}
 		return `videopack-loop-duotone-${Math.random().toString(36).substr(2, 9)}`;
 	}, [duotone]);
 
-	const loopPresetClass = (duotone && typeof duotone === 'string' && duotone.startsWith('var:preset|duotone|')) 
-		? `wp-duotone-${duotone.split('|').pop()}` 
-		: '';
+	const loopPresetClass =
+		duotone &&
+		typeof duotone === 'string' &&
+		duotone.startsWith('var:preset|duotone|')
+			? `wp-duotone-${duotone.split('|').pop()}`
+			: '';
 
 	const loopContext = useMemo(() => {
-		if (!loopDuotoneId) return context;
+		if (!loopDuotoneId) {
+			return context;
+		}
 		return {
 			...context,
 			'videopack/loopDuotoneId': loopDuotoneId,
@@ -38,17 +50,8 @@ export default function VideoLoop({
 
 	return (
 		<div
-			className={`videopack-video-loop layout-${layout} columns-${columns} ${
-				play_button_color ? 'videopack-has-play-button-color' : ''
-			} ${
-				play_button_secondary_color ? 'videopack-has-play-button-secondary-color' : ''
-			} ${loopDuotoneId || ''} ${loopPresetClass}`}
-			style={{
-				'--videopack-play-button-color': play_button_color || undefined,
-				'--videopack-play-button-secondary-color': play_button_secondary_color || undefined,
-				'--videopack-title-color': context['videopack/title_color'] || undefined,
-				'--videopack-title-background-color': context['videopack/title_background_color'] || undefined,
-			}}
+			className={`videopack-video-loop layout-${layout} columns-${columns} ${classes} ${loopDuotoneId || ''} ${loopPresetClass}`}
+			style={style}
 		>
 			{loopDuotoneId && (
 				<>

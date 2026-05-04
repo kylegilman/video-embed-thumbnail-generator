@@ -47,7 +47,7 @@ class Video_Source_Finder {
 			$content_type = wp_remote_retrieve_header( $response, 'content-type' );
 			$is_ok        = true;
 
-			// Detect soft-404s where the server returns a 200 OK HTML page instead of a video
+			// Detect soft-404s where the server returns a 200 OK HTML page instead of a video.
 			if ( ! empty( $content_type ) && strpos( $content_type, 'text/html' ) !== false ) {
 				$is_ok = false;
 			}

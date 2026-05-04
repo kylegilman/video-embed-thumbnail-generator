@@ -1,1 +1,85 @@
-.videopack-sort-control-wrapper{align-items:flex-end;display:flex;gap:8px;margin-bottom:16px}.videopack-sort-control-wrapper .components-base-control{flex-grow:1;margin-bottom:0}.videopack-sort-control-wrapper .components-button.has-icon{margin-bottom:14px}.videopack-excluded-videos{border-top:1px solid #ddd;margin-top:20px;padding-top:10px}.videopack-excluded-videos p{font-weight:500;margin-bottom:10px}.videopack-excluded-videos .videopack-excluded-list{display:flex;flex-direction:column;gap:8px}.videopack-excluded-videos .videopack-excluded-item{align-items:center;background:#f0f0f0;border-radius:4px;display:flex;gap:10px;padding:5px}.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail{align-items:center;background:#ccc;border-radius:2px;display:flex;flex-shrink:0;justify-content:center;overflow:hidden;width:60px}.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail img{height:100%;-o-object-fit:cover;object-fit:cover;width:100%}.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail svg{height:16px;width:16px}.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-title{flex-grow:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item{background:transparent;color:#949494;min-width:24px;padding:0}.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item:hover{background:#e0e0e0;color:#cc1818}.components-base-control.components-toggle-control:where(:not(:last-child)),.components-base-control:has(.components-select-control__input),.components-base-control:has(.components-text-control__input){margin-bottom:16px}
+/*!**************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/InspectorControls/CollectionSettingsPanel.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-sort-control-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.videopack-sort-control-wrapper .components-base-control {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+.videopack-sort-control-wrapper .components-button.has-icon {
+  margin-bottom: 14px;
+}
+.videopack-excluded-videos {
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+.videopack-excluded-videos p {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.videopack-excluded-videos .videopack-excluded-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.videopack-excluded-videos .videopack-excluded-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f0f0;
+  padding: 5px;
+  border-radius: 4px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail {
+  width: 60px;
+  background: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail svg {
+  width: 16px;
+  height: 16px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-title {
+  flex-grow: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item {
+  min-width: 24px;
+  padding: 0;
+  color: #949494;
+  background: transparent;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item:hover {
+  color: #cc1818;
+  background: #e0e0e0;
+}
+.components-base-control:has(.components-text-control__input),
+.components-base-control:has(.components-select-control__input),
+.components-base-control.components-toggle-control:where(:not(:last-child)) {
+  margin-bottom: 16px;
+}
+
+/*# sourceMappingURL=videopack.css.map*/

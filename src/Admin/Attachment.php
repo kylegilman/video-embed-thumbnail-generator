@@ -149,7 +149,7 @@ class Attachment implements Hook_Subscriber {
 					}
 				}
 			} catch ( \Exception $e ) {
-				// Fall back to manual check.
+				unset( $e ); // Imagick failed; fall back to manual GIF header check.
 			}
 		}
 
@@ -259,7 +259,12 @@ class Attachment implements Hook_Subscriber {
 		if ( ! empty( $existing ) ) {
 			$attachment_id = (int) $existing[0];
 			if ( $parent_id && (int) wp_get_post_parent_id( $attachment_id ) !== (int) $parent_id ) {
-				wp_update_post( array( 'ID' => $attachment_id, 'post_parent' => (int) $parent_id ) );
+				wp_update_post(
+					array(
+						'ID'          => $attachment_id,
+						'post_parent' => (int) $parent_id,
+					)
+				);
 			}
 			return $attachment_id;
 		}
@@ -367,7 +372,7 @@ class Attachment implements Hook_Subscriber {
 	 * @return string The sanitized URL for transient use.
 	 */
 	protected function get_transient_name( $url ) {
-		$url = str_replace( ' ', '', (string) $url );
+		$url        = str_replace( ' ', '', (string) $url );
 		$search_url = (string) preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . (string) pathinfo( $url, PATHINFO_EXTENSION ), $url );
 		return $search_url;
 	}

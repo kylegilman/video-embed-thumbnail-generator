@@ -1,0 +1,23 @@
+﻿
+> videopack-admin@0.2.0 lint:js
+> wp-scripts lint-js src/blocks/loop/edit.js
+
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\loop\edit.js
+    47:1   error    Expected JSDoc block lines to be aligned                                                                                                                          jsdoc/check-line-alignment
+   103:5   error    Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                    jsx-a11y/click-events-have-key-events
+   118:4   error    Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                    jsx-a11y/click-events-have-key-events
+   251:1   error    Missing JSDoc @param "props.attributes" type                                                                                                                      jsdoc/require-param-type
+   252:1   error    Missing JSDoc @param "props.setAttributes" type                                                                                                                   jsdoc/require-param-type
+   277:11  error    Replace `ΓÅÄΓå╣Γå╣Γå╣Γå╣getBlocks,ΓÅÄΓå╣Γå╣Γå╣Γå╣getBlockAttributes,ΓÅÄΓå╣Γå╣Γå╣Γå╣getBlockRootClientId,` with `┬╖getBlocks,┬╖getBlockAttributes,┬╖getBlockRootClientId┬╖}┬╖=`                       prettier/prettier
+   281:4   error    Replace `}┬╖=┬╖` with `Γå╣`                                                                                                                                           prettier/prettier
+   346:3   warning  React Hook useSelect has missing dependencies: 'attributes?.duotone' and 'attributes?.style?.color?.duotone'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   377:31  error    Replace `┬╖context['videopack/currentPage']┬╖||┬╖` with `ΓÅÄΓå╣Γå╣Γå╣Γå╣Γå╣context['videopack/currentPage']┬╖||ΓÅÄΓå╣Γå╣Γå╣Γå╣Γå╣`                                                            prettier/prettier
+   574:14  error    'e' is defined but never used                                                                                                                                     no-unused-vars
+   648:13  error    'e' is defined but never used                                                                                                                                     no-unused-vars
+   725:15  error    'e' is defined but never used                                                                                                                                     no-unused-vars
+  1107:1   error    Delete `ΓÅÄ`                                                                                                                                                        prettier/prettier
+
+Γ£û 13 problems (12 errors, 1 warning)
+  5 errors and 0 warnings potentially fixable with the `--fix` option.
+

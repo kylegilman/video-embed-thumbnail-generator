@@ -56,7 +56,10 @@ export const VideoJS = (props) => {
 						options.plugins.resolutionSelector
 					);
 				} catch (e) {
-					console.error('Videopack: Video.js plugin update error:', e);
+					console.error(
+						'Videopack: Video.js plugin update error:',
+						e
+					);
 				}
 			}
 		}
@@ -84,7 +87,9 @@ export const VideoJS = (props) => {
 					videoRef.current.removeChild(videoRef.current.firstChild);
 				}
 
-				const doc = videoRef.current ? videoRef.current.ownerDocument : document;
+				const doc = videoRef.current
+					? videoRef.current.ownerDocument
+					: document;
 				const win = doc.defaultView || window;
 				const vjs = win.videojs || videojs;
 
@@ -99,21 +104,25 @@ export const VideoJS = (props) => {
 					fluid: options.fluid !== undefined ? options.fluid : true,
 				};
 
-				playerRef.current = vjs(videoElement, playerOptions, function () {
-					if (onReady) {
-						onReady(this);
-					}
-					this.on('play', onPlay);
-					this.on('pause', onPause);
-					this.on('loadedmetadata', function () {
-						if (typeof onMetadataLoaded === 'function') {
-							onMetadataLoaded({
-								width: this.videoWidth(),
-								height: this.videoHeight(),
-							});
+				playerRef.current = vjs(
+					videoElement,
+					playerOptions,
+					function () {
+						if (onReady) {
+							onReady(this);
 						}
-					});
-				});
+						this.on('play', onPlay);
+						this.on('pause', onPause);
+						this.on('loadedmetadata', function () {
+							if (typeof onMetadataLoaded === 'function') {
+								onMetadataLoaded({
+									width: this.videoWidth(),
+									height: this.videoHeight(),
+								});
+							}
+						});
+					}
+				);
 			}, 250);
 		} else if (player && !player.isDisposed()) {
 			player.ready(function () {

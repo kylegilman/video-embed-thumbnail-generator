@@ -6,10 +6,7 @@
 	"category": "media",
 	"icon": "art",
 	"description": "Displays a watermark overlay on the video.",
-	"parent": [
-		"videopack/player-container",
-		"videopack/player"
-	],
+	"parent": ["videopack/player-container", "videopack/player"],
 	"attributes": {
 		"watermark": {
 			"type": "string"

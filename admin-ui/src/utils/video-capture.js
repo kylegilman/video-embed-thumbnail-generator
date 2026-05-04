@@ -286,7 +286,7 @@ export const checkCanvasTaint = (source, signal = null) => {
 				canvas.toDataURL(); // This throws SecurityError if tainted
 				cleanup();
 				resolve(false);
-			} catch (e) {
+			} catch {
 				cleanup();
 				resolve(true);
 			}

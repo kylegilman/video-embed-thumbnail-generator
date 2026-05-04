@@ -159,7 +159,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 		try {
 			const parsed = new URL(url);
 			return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-		} catch (e) {
+		} catch {
 			return false;
 		}
 	};
@@ -202,7 +202,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 				if (error.name === 'AbortError') {
 					return;
 				}
-				// eslint-disable-next-line no-console
+
 				console.error('Error resolving video URL:', error);
 				setResolvedId(null);
 			})
@@ -390,184 +390,186 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 		<div className="videopack-classic-embed-outer">
 			<div className="videopack-classic-embed">
 				<div className="videopack-tab-content">
-				{activeTab === 'single' && (
-					<>
-						<PanelBody
-							title={__(
-								'Video URL',
-								'video-embed-thumbnail-generator'
-							)}
-						>
-							<TextControl
-								label={__(
-									'URL',
+					{activeTab === 'single' && (
+						<>
+							<PanelBody
+								title={__(
+									'Video URL',
 									'video-embed-thumbnail-generator'
 								)}
-								value={videoUrl}
-								onChange={(newUrl) => {
-									setVideoUrl(newUrl);
-									// Immediately clear ID and metadata to prevent stale association
-									setResolvedId(null);
-									setSingleAttributes((prev) => ({
-										...prev,
-										id: 0,
-										poster: undefined,
-										poster_id: undefined,
-										title: undefined,
-										caption: undefined,
-									}));
-								}}
-								help={__(
-									'Enter the URL of the video file (e.g., .mp4, .webm).',
-									'video-embed-thumbnail-generator'
-								)}
-							/>
-							{urlError && (
-								<div
-									style={{
-										color: '#d94f4f',
-										marginTop: '8px',
-										fontSize: '13px',
+							>
+								<TextControl
+									label={__(
+										'URL',
+										'video-embed-thumbnail-generator'
+									)}
+									value={videoUrl}
+									onChange={(newUrl) => {
+										setVideoUrl(newUrl);
+										// Immediately clear ID and metadata to prevent stale association
+										setResolvedId(null);
+										setSingleAttributes((prev) => ({
+											...prev,
+											id: 0,
+											poster: undefined,
+											poster_id: undefined,
+											title: undefined,
+											caption: undefined,
+										}));
+									}}
+									help={__(
+										'Enter the URL of the video file (e.g., .mp4, .webm).',
+										'video-embed-thumbnail-generator'
+									)}
+								/>
+								{urlError && (
+									<div
+										style={{
+											color: '#d94f4f',
+											marginTop: '8px',
+											fontSize: '13px',
 										}}
+									>
+										{urlError}
+									</div>
+								)}
+							</PanelBody>
+							{debouncedVideoUrl &&
+								isValidUrl(debouncedVideoUrl) &&
+								!isResolving && (
+									<>
+										<Thumbnails
+											attributes={singleAttributes}
+											src={debouncedVideoUrl}
+											setAttributes={(newAttrs) =>
+												setSingleAttributes((prev) => ({
+													...prev,
+													...newAttrs,
+												}))
+											}
+											videoData={videoData}
+											options={options}
+											parentId={postId || 0}
+											isProbing={isProbing}
+											probedMetadata={effectiveMetadata}
+										/>
+										<VideoSettings
+											attributes={singleAttributes}
+											setAttributes={(newAttrs) =>
+												setSingleAttributes((prev) => ({
+													...prev,
+													...newAttrs,
+												}))
+											}
+											options={options}
+											isProbing={isProbing}
+											probedMetadata={effectiveMetadata}
+										/>
+										<AdditionalFormats
+											attributes={singleAttributes}
+											src={debouncedVideoUrl}
+											setAttributes={(newAttrs) =>
+												setSingleAttributes((prev) => ({
+													...prev,
+													...newAttrs,
+												}))
+											}
+											options={options}
+											parentId={postId || 0}
+											probedMetadata={effectiveMetadata}
+											isProbing={isProbing}
+										/>
+									</>
+								)}
+							<div className="videopack-insert-button-wrapper">
+								<Button
+									variant="primary"
+									onClick={() => onInsert('single')}
+									disabled={
+										!videoUrl || !isValidUrl(videoUrl)
+									}
 								>
-									{urlError}
-								</div>
-							)}
-						</PanelBody>
-						{debouncedVideoUrl &&
-							isValidUrl(debouncedVideoUrl) &&
-							!isResolving && (
-								<>
-									<Thumbnails
-										attributes={singleAttributes}
-										src={debouncedVideoUrl}
-										setAttributes={(newAttrs) =>
-											setSingleAttributes((prev) => ({
-												...prev,
-												...newAttrs,
-											}))
-										}
-										videoData={videoData}
-										options={options}
-										parentId={postId || 0}
-										isProbing={isProbing}
-										probedMetadata={effectiveMetadata}
-									/>
-									<VideoSettings
-										attributes={singleAttributes}
-										setAttributes={(newAttrs) =>
-											setSingleAttributes((prev) => ({
-												...prev,
-												...newAttrs,
-											}))
-										}
-										options={options}
-										isProbing={isProbing}
-										probedMetadata={effectiveMetadata}
-									/>
-									<AdditionalFormats
-										attributes={singleAttributes}
-										src={debouncedVideoUrl}
-										setAttributes={(newAttrs) =>
-											setSingleAttributes((prev) => ({
-												...prev,
-												...newAttrs,
-											}))
-										}
-										options={options}
-										parentId={postId || 0}
-										probedMetadata={effectiveMetadata}
-										isProbing={isProbing}
-									/>
-								</>
-							)}
-						<div className="videopack-insert-button-wrapper">
-							<Button
-								variant="primary"
-								onClick={() => onInsert('single')}
-								disabled={!videoUrl || !isValidUrl(videoUrl)}
-							>
-								{editAttributes.tinymce_edit
-									? __(
-											'Update',
-											'video-embed-thumbnail-generator'
-										)
-									: __(
-											'Insert into Post',
-											'video-embed-thumbnail-generator'
-										)}
-							</Button>
-						</div>
-					</>
-				)}
-				{activeTab === 'gallery' && (
-					<>
-						<CollectionSettingsPanel
-							attributes={galleryAttributes}
-							setAttributes={(newAttrs) =>
-								setGalleryAttributes((prev) => ({
-									...prev,
-									...newAttrs,
-								}))
-							}
-							queryData={queryData}
-							options={normalizedOptions}
-							showGalleryOptions={true}
-							showManualSource={false}
-							hasPaginationBlock={false}
-						/>
-						<div className="videopack-insert-button-wrapper">
-							<Button
-								variant="primary"
-								onClick={() => onInsert('gallery')}
-							>
-								{editAttributes.tinymce_edit
-									? __(
-											'Update',
-											'video-embed-thumbnail-generator'
-										)
-									: __(
-											'Insert into Post',
-											'video-embed-thumbnail-generator'
-										)}
-							</Button>
-						</div>
-					</>
-				)}
-				{activeTab === 'list' && (
-					<>
-						<CollectionSettingsPanel
-							attributes={listAttributes}
-							setAttributes={(newAttrs) =>
-								setListAttributes((prev) => ({
-									...prev,
-									...newAttrs,
-								}))
-							}
-							queryData={queryData}
-							options={normalizedOptions}
-							showGalleryOptions={false}
-							showManualSource={false}
-							hasPaginationBlock={false}
-						/>
-						<div className="videopack-insert-button-wrapper">
-							<Button
-								variant="primary"
-								onClick={() => onInsert('list')}
-							>
-								{editAttributes.tinymce_edit
-									? __(
-											'Update',
-											'video-embed-thumbnail-generator'
-										)
-									: __(
-											'Insert into Post',
-											'video-embed-thumbnail-generator'
-										)}
-							</Button>
-						</div>
-					</>
-				)}
+									{editAttributes.tinymce_edit
+										? __(
+												'Update',
+												'video-embed-thumbnail-generator'
+											)
+										: __(
+												'Insert into Post',
+												'video-embed-thumbnail-generator'
+											)}
+								</Button>
+							</div>
+						</>
+					)}
+					{activeTab === 'gallery' && (
+						<>
+							<CollectionSettingsPanel
+								attributes={galleryAttributes}
+								setAttributes={(newAttrs) =>
+									setGalleryAttributes((prev) => ({
+										...prev,
+										...newAttrs,
+									}))
+								}
+								queryData={queryData}
+								options={normalizedOptions}
+								showGalleryOptions={true}
+								showManualSource={false}
+								hasPaginationBlock={false}
+							/>
+							<div className="videopack-insert-button-wrapper">
+								<Button
+									variant="primary"
+									onClick={() => onInsert('gallery')}
+								>
+									{editAttributes.tinymce_edit
+										? __(
+												'Update',
+												'video-embed-thumbnail-generator'
+											)
+										: __(
+												'Insert into Post',
+												'video-embed-thumbnail-generator'
+											)}
+								</Button>
+							</div>
+						</>
+					)}
+					{activeTab === 'list' && (
+						<>
+							<CollectionSettingsPanel
+								attributes={listAttributes}
+								setAttributes={(newAttrs) =>
+									setListAttributes((prev) => ({
+										...prev,
+										...newAttrs,
+									}))
+								}
+								queryData={queryData}
+								options={normalizedOptions}
+								showGalleryOptions={false}
+								showManualSource={false}
+								hasPaginationBlock={false}
+							/>
+							<div className="videopack-insert-button-wrapper">
+								<Button
+									variant="primary"
+									onClick={() => onInsert('list')}
+								>
+									{editAttributes.tinymce_edit
+										? __(
+												'Update',
+												'video-embed-thumbnail-generator'
+											)
+										: __(
+												'Insert into Post',
+												'video-embed-thumbnail-generator'
+											)}
+								</Button>
+							</div>
+						</>
+					)}
 				</div>
 			</div>
 		</div>

@@ -23,17 +23,14 @@ import { getColorFallbacks } from '../../../utils/colors';
 // Color fallbacks are now handled by getColorFallbacks utility.
 
 const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
-	const config =
-		typeof window !== 'undefined' ? window.videopack_config : undefined;
-	const embed_method =
-		typeof config !== 'undefined' ? config.embed_method : 'Video.js';
+	const config = videopack_config;
+	const embed_method = config?.embed_method || 'Video.js';
 
 	const colorFallbacks = useMemo(
 		() => getColorFallbacks(settings),
 		[settings]
 	);
 	const [currentPage, setCurrentPage] = useState(1);
-	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const {
 		enable_collection_video_limit,
@@ -95,17 +92,12 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			},
 		];
 
-		const config =
-			typeof window !== 'undefined' ? window.videopack_config : undefined;
-		const embed_method =
-			typeof config !== 'undefined' ? config.embed_method : 'Video.js';
-
 		return applyFilters(
 			'videopack_player_skin_options',
 			options,
 			embed_method
 		);
-	}, []);
+	}, [embed_method]);
 
 	const previewQueryAttributes = useMemo(() => {
 		const isPaginationEnabled =
@@ -148,9 +140,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						{ linkTo: 'none' },
 						[
 							['videopack/play-button', {}],
-							gallery_title
-								? ['videopack/title', {}]
-								: null,
+							gallery_title ? ['videopack/title', {}] : null,
 						].filter(Boolean),
 					],
 				],
@@ -187,7 +177,8 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		ctx['videopack/play_button_secondary_color'] =
 			play_button_secondary_color ||
 			colorFallbacks.play_button_secondary_color;
-		ctx['videopack/title_color'] = title_color || colorFallbacks.title_color;
+		ctx['videopack/title_color'] =
+			title_color || colorFallbacks.title_color;
 		ctx['videopack/title_background_color'] =
 			title_background_color || colorFallbacks.title_background_color;
 
@@ -206,10 +197,20 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 	}, [
 		settings,
 		gallery_columns,
+		gallery_pagination,
+		gallery_per_page,
 		videoResults,
 		maxNumPages,
 		currentPage,
 		colorFallbacks,
+		play_button_color,
+		play_button_secondary_color,
+		title_color,
+		title_background_color,
+		pagination_color,
+		pagination_background_color,
+		pagination_active_bg_color,
+		pagination_active_color,
 	]);
 
 	const galleryEndOptions = [
@@ -303,27 +304,6 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			label: __('Right', 'video-embed-thumbnail-generator'),
 		},
 	];
-
-	const customStyles = {
-		'--videopack-title-color': title_color || colorFallbacks.title_color,
-		'--videopack-title-background-color':
-			title_background_color || colorFallbacks.title_background_color,
-		'--videopack-play-button-color':
-			play_button_color || colorFallbacks.play_button_color,
-		'--videopack-play-button-secondary-color':
-			play_button_secondary_color ||
-			colorFallbacks.play_button_secondary_color,
-		'--videopack-pagination-color':
-			pagination_color || colorFallbacks.pagination_color,
-		'--videopack-pagination-bg':
-			pagination_background_color ||
-			colorFallbacks.pagination_background_color,
-		'--videopack-pagination-active-bg':
-			pagination_active_bg_color ||
-			colorFallbacks.pagination_active_bg_color,
-		'--videopack-pagination-active-color':
-			pagination_active_color || colorFallbacks.pagination_active_color,
-	};
 
 	return (
 		<PanelBody>
@@ -695,7 +675,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									'video-embed-thumbnail-generator'
 								)}
 								resizeDependencies={[gallery_align]}
-								fullScreen={isModalOpen}
+								fullScreen={false}
 							>
 								<div className="videopack-preview-content-container">
 									{isResolving && (

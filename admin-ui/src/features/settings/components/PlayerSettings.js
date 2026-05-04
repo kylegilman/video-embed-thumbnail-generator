@@ -18,7 +18,6 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { volumeUp, volumeDown } from '../../../assets/icon';
-import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe';
 import CompactColorPicker from '../../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../../utils/colors';
@@ -202,7 +201,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		},
 		{
 			value: 'attachment',
-			label: __('Video attachment page', 'video-embed-thumbnail-generator'),
+			label: __(
+				'Video attachment page',
+				'video-embed-thumbnail-generator'
+			),
 		},
 		{
 			value: 'custom',
@@ -343,8 +345,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		return items;
 	};
 
-	const handleVideoPlayerReady = () => {};
-
 	const watermarkSettings = {
 		url: watermark,
 		...watermark_styles,
@@ -371,7 +371,11 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		});
 		// Override with actual settings
 		Object.keys(settings).forEach((key) => {
-			if (settings[key] !== undefined && settings[key] !== null && settings[key] !== '') {
+			if (
+				settings[key] !== undefined &&
+				settings[key] !== null &&
+				settings[key] !== ''
+			) {
 				ctx[`videopack/${key}`] = settings[key];
 			}
 		});
@@ -523,7 +527,9 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 											title: 'Sample Video',
 											overlay_title: !!overlay_title,
 											downloadlink: !!downloadlink,
-											embedcode: !!(embeddable && embedcode),
+											embedcode: !!(
+												embeddable && embedcode
+											),
 											showBackground: true,
 										}}
 										isInsidePlayerOverlay={true}
@@ -633,8 +639,14 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							<CompactColorPicker
 								label={
 									embed_method === 'WordPress Default'
-										? __('Play Button Color', 'video-embed-thumbnail-generator')
-										: __('Play Button Icon', 'video-embed-thumbnail-generator')
+										? __(
+												'Play Button Color',
+												'video-embed-thumbnail-generator'
+											)
+										: __(
+												'Play Button Icon',
+												'video-embed-thumbnail-generator'
+											)
 								}
 								value={play_button_color}
 								onChange={
@@ -650,8 +662,14 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							<CompactColorPicker
 								label={
 									embed_method === 'WordPress Default'
-										? __('Play Button Hover', 'video-embed-thumbnail-generator')
-										: __('Play Button Accent', 'video-embed-thumbnail-generator')
+										? __(
+												'Play Button Hover',
+												'video-embed-thumbnail-generator'
+											)
+										: __(
+												'Play Button Accent',
+												'video-embed-thumbnail-generator'
+											)
 								}
 								value={play_button_secondary_color}
 								onChange={

@@ -8,8 +8,10 @@ import { RichText } from '@wordpress/block-editor';
 /**
  * BelowVideo component.
  *
- * @param {Object} props            Component props.
- * @param {Object} props.attributes Block attributes.
+ * @param {Object}   props               Component props.
+ * @param {Object}   props.attributes    Block attributes.
+ * @param {Function} props.setAttributes Attribute setter.
+ * @param {boolean}  props.isSelected    Whether the block is selected.
  * @return {Element|null} The rendered component.
  */
 const BelowVideo = ({ attributes, setAttributes, isSelected }) => {
@@ -43,8 +45,13 @@ const BelowVideo = ({ attributes, setAttributes, isSelected }) => {
 							tagName="div"
 							className="wp-element-caption"
 							value={caption}
-							onChange={(value) => setAttributes({ caption: value })}
-							placeholder={__('Write caption…', 'video-embed-thumbnail-generator')}
+							onChange={(value) =>
+								setAttributes({ caption: value })
+							}
+							placeholder={__(
+								'Write caption…',
+								'video-embed-thumbnail-generator'
+							)}
 							inlineToolbar
 						/>
 					)}

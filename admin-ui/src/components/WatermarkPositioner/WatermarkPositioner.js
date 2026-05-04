@@ -8,7 +8,6 @@ import {
 	useCallback,
 } from '@wordpress/element';
 
-
 const WatermarkPositioner = ({
 	containerDimensions,
 	settings,
@@ -32,7 +31,8 @@ const WatermarkPositioner = ({
 	const lastAspectRatioRef = useRef(propAspectRatio || 1);
 	useEffect(() => {
 		if (watermarkImage) {
-			lastAspectRatioRef.current = watermarkImage.width / watermarkImage.height;
+			lastAspectRatioRef.current =
+				watermarkImage.width / watermarkImage.height;
 		} else if (propAspectRatio) {
 			lastAspectRatioRef.current = propAspectRatio;
 		}
@@ -53,19 +53,14 @@ const WatermarkPositioner = ({
 		}
 	}, [effectiveImageUrl]);
 
-	const {
-		wmStyle,
-		wmWidth,
-		wmHeight,
-		x,
-		y,
-		scale,
-		alignment,
-		valign,
-		aspectRatio,
-	} = useMemo(() => {
+	const { wmStyle, wmWidth, wmHeight, aspectRatio } = useMemo(() => {
 		if (!containerDimensions) {
-			return { wmStyle: {}, wmWidth: 0, wmHeight: 0, x: 0, y: 0, scale: 10, alignment: 'center', valign: 'center', aspectRatio: 1 };
+			return {
+				wmStyle: {},
+				wmWidth: 0,
+				wmHeight: 0,
+				aspectRatio: 1,
+			};
 		}
 
 		const containerWidth = containerDimensions.width;
@@ -76,15 +71,21 @@ const WatermarkPositioner = ({
 				? transientScale
 				: Number(settings.scale || settings.watermark_scale || 10);
 
-		const currentX = transientPercentages?.x !== undefined && transientPercentages !== null
-			? transientPercentages.x
-			: Number(settings.x || settings.watermark_x || 0);
-		const currentY = transientPercentages?.y !== undefined && transientPercentages !== null
-			? transientPercentages.y
-			: Number(settings.y || settings.watermark_y || 0);
+		const currentX =
+			transientPercentages?.x !== undefined &&
+			transientPercentages !== null
+				? transientPercentages.x
+				: Number(settings.x || settings.watermark_x || 0);
+		const currentY =
+			transientPercentages?.y !== undefined &&
+			transientPercentages !== null
+				? transientPercentages.y
+				: Number(settings.y || settings.watermark_y || 0);
 
-		const currentAlign = settings.align || settings.watermark_align || 'center';
-		const currentValign = settings.valign || settings.watermark_valign || 'center';
+		const currentAlign =
+			settings.align || settings.watermark_align || 'center';
+		const currentValign =
+			settings.valign || settings.watermark_valign || 'center';
 
 		const style = {
 			position: 'absolute',
@@ -116,22 +117,23 @@ const WatermarkPositioner = ({
 
 		const w = (containerWidth * currentScale) / 100;
 		const ratio = watermarkImage
-			? (watermarkImage.width / watermarkImage.height)
-			: (lastAspectRatioRef.current || 1);
+			? watermarkImage.width / watermarkImage.height
+			: lastAspectRatioRef.current || 1;
 		const h = w / ratio;
 
 		return {
 			wmStyle: style,
 			wmWidth: w,
 			wmHeight: h,
-			x: currentX,
-			y: currentY,
-			scale: currentScale,
-			alignment: currentAlign,
-			valign: currentValign,
-			aspectRatio: ratio
+			aspectRatio: ratio,
 		};
-	}, [containerDimensions, watermarkImage, settings, transientScale, transientPercentages]);
+	}, [
+		containerDimensions,
+		watermarkImage,
+		settings,
+		transientScale,
+		transientPercentages,
+	]);
 
 	useEffect(() => {
 		stateRef.current = {
@@ -145,10 +147,21 @@ const WatermarkPositioner = ({
 			wmWidth,
 			wmHeight,
 			aspectRatio,
-			baseDeltaX: x,
-			baseDeltaY: y
+			baseDeltaX: Number(settings.x || settings.watermark_x || 0),
+			baseDeltaY: Number(settings.y || settings.watermark_y || 0),
 		};
-	}, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, x, y, aspectRatio]);
+	}, [
+		transientPercentages,
+		transientScale,
+		isDragging,
+		isResizing,
+		settings,
+		containerDimensions,
+		watermarkImage,
+		wmWidth,
+		wmHeight,
+		aspectRatio,
+	]);
 
 	const onChangeRef = useRef(onChange);
 	useEffect(() => {
@@ -156,7 +169,9 @@ const WatermarkPositioner = ({
 	}, [onChange]);
 
 	const handleMouseDown = (e) => {
-		if (!isSelected) return;
+		if (!isSelected) {
+			return;
+		}
 		e.preventDefault();
 		e.stopPropagation();
 
@@ -233,14 +248,21 @@ const WatermarkPositioner = ({
 				? s.transientScale
 				: Number(s.settings.scale || s.settings.watermark_scale || 10);
 
-		const aspectRatio = s.aspectRatio;
-		const { width: containerWidth, height: containerHeight } = s.containerDimensions;
+		const currentRatio = s.aspectRatio;
+		const { width: containerWidth, height: containerHeight } =
+			s.containerDimensions;
 
 		// Preserve attributes based on what's being used (settings vs block-editor styles)
-		const isBlock = s.settings.hasOwnProperty('watermark_scale') || s.settings.hasOwnProperty('watermark');
+		const isBlock =
+			Object.prototype.hasOwnProperty.call(
+				s.settings,
+				'watermark_scale'
+			) || Object.prototype.hasOwnProperty.call(s.settings, 'watermark');
 
-		const currentAlign = s.settings.align || s.settings.watermark_align || 'center';
-		const currentValign = s.settings.valign || s.settings.watermark_valign || 'bottom';
+		const currentAlign =
+			s.settings.align || s.settings.watermark_align || 'center';
+		const currentValign =
+			s.settings.valign || s.settings.watermark_valign || 'bottom';
 
 		// 1. Calculate absolute top-left percentage (L, T)
 		let L = finalX;
@@ -250,7 +272,8 @@ const WatermarkPositioner = ({
 			L = 50 - finalScale / 2 - finalX;
 		}
 
-		const vScale = finalScale * (containerWidth / containerHeight) / aspectRatio;
+		const vScale =
+			(finalScale * (containerWidth / containerHeight)) / currentRatio;
 		let T = finalY;
 		if (currentValign === 'bottom') {
 			T = 100 - vScale - finalY;
@@ -297,14 +320,14 @@ const WatermarkPositioner = ({
 					watermark_valign: newValign,
 					watermark_x: Math.round(newX * 100) / 100,
 					watermark_y: Math.round(newY * 100) / 100,
-			  }
+				}
 			: {
 					scale: Math.round(finalScale * 100) / 100,
 					align: newAlign,
 					valign: newValign,
 					x: Math.round(newX * 100) / 100,
 					y: Math.round(newY * 100) / 100,
-			  };
+				};
 
 		onChangeRef.current(newSettings);
 
@@ -313,7 +336,7 @@ const WatermarkPositioner = ({
 
 		// Remove global listeners
 		window.removeEventListener('mousemove', handleMouseMove);
-	}, []);
+	}, [handleMouseMove]);
 
 	// Finalize interaction when selection is lost while dragging/resizing
 	useEffect(() => {
@@ -358,7 +381,10 @@ const WatermarkPositioner = ({
 		}
 		e.preventDefault();
 
-		const { x: currentX, y: currentY } = { x: stateRef.current.baseDeltaX, y: stateRef.current.baseDeltaY };
+		const { x: currentX, y: currentY } = {
+			x: stateRef.current.baseDeltaX,
+			y: stateRef.current.baseDeltaY,
+		};
 
 		let newX = currentX;
 		let newY = currentY;
@@ -366,28 +392,32 @@ const WatermarkPositioner = ({
 		const stepXPct = (stepPx / containerDimensions.width) * 100;
 		const stepYPct = (stepPx / containerDimensions.height) * 100;
 
-		const alignment = settings.align || settings.watermark_align || 'center';
-		const verticalAlignment = settings.valign || settings.watermark_valign || 'center';
+		const currentAlignment =
+			settings.align || settings.watermark_align || 'center';
+		const currentVerticalAlignment =
+			settings.valign || settings.watermark_valign || 'center';
 
 		switch (e.key) {
 			case 'ArrowUp':
-				newY += (verticalAlignment === 'top' ? -stepYPct : stepYPct);
+				newY +=
+					currentVerticalAlignment === 'top' ? -stepYPct : stepYPct;
 				break;
 			case 'ArrowDown':
-				newY += (verticalAlignment === 'top' ? stepYPct : -stepYPct);
+				newY +=
+					currentVerticalAlignment === 'top' ? stepYPct : -stepYPct;
 				break;
 			case 'ArrowLeft':
-				newX += (alignment === 'left' ? -stepXPct : stepXPct);
+				newX += currentAlignment === 'left' ? -stepXPct : stepXPct;
 				break;
 			case 'ArrowRight':
-				newX += (alignment === 'left' ? stepXPct : -stepXPct);
+				newX += currentAlignment === 'left' ? stepXPct : -stepXPct;
 				break;
 		}
 
 		setTransientPercentages({ x: newX, y: newY });
 	};
 
-	const handleResizeKeyDown = (e, handle) => {
+	const handleResizeKeyDown = (e) => {
 		if (
 			!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)
 		) {
@@ -401,9 +431,7 @@ const WatermarkPositioner = ({
 
 	const handleMouseMove = useCallback((e) => {
 		const s = stateRef.current;
-		if (
-			(!s.isDragging && !s.isResizing)
-		) {
+		if (!s.isDragging && !s.isResizing) {
 			return;
 		}
 
@@ -423,20 +451,22 @@ const WatermarkPositioner = ({
 		const dyPct = (dyCanvas / containerHeight) * 100;
 
 		if (s.isDragging) {
-			const alignment = s.settings.align || s.settings.watermark_align || 'center';
-			const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'bottom';
+			const currentAlignment =
+				s.settings.align || s.settings.watermark_align || 'center';
+			const currentVerticalAlignment =
+				s.settings.valign || s.settings.watermark_valign || 'bottom';
 
 			let newX = dragStart.initialX;
 			let newY = dragStart.initialY;
 
-			if (alignment === 'left') {
+			if (currentAlignment === 'left') {
 				newX = dragStart.initialX + dxPct;
 			} else {
 				// right or center offsets increase as we move left (negative dx)
 				newX = dragStart.initialX - dxPct;
 			}
 
-			if (verticalAlignment === 'top') {
+			if (currentVerticalAlignment === 'top') {
 				newY = dragStart.initialY + dyPct;
 			} else {
 				// bottom or center offsets increase as we move up (negative dy)
@@ -447,75 +477,60 @@ const WatermarkPositioner = ({
 		} else if (s.isResizing) {
 			const {
 				initialScale,
-				initialLeft,
-				initialTop,
-				aspectRatio,
+				aspectRatio: currentRatio,
 				handle,
 			} = dragStart;
-			const initialWidth = (containerWidth * initialScale) / 100;
-			const initialHeight = initialWidth / aspectRatio;
 
-			let newWidth = initialWidth;
+			let newWidth;
 			if (handle === 'se' || handle === 'ne') {
-				newWidth = initialWidth + dxCanvas;
+				newWidth = (containerWidth * initialScale) / 100 + dxCanvas;
 			} else {
-				newWidth = initialWidth - dxCanvas;
+				newWidth = (containerWidth * initialScale) / 100 - dxCanvas;
 			}
 
 			let newScale = (newWidth / containerWidth) * 100;
 			newScale = Math.round(newScale * 100) / 100;
 			newScale = Math.max(1, Math.min(100, newScale));
 
-			const alignment = s.settings.align || s.settings.watermark_align || 'center';
-			const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
+			const currentAlignment =
+				s.settings.align || s.settings.watermark_align || 'center';
+			const currentVerticalAlignment =
+				s.settings.valign || s.settings.watermark_valign || 'center';
 
 			let newX = dragStart.initialX;
 			let newY = dragStart.initialY;
 
 			const scaleDiff = newScale - initialScale;
-			const vScaleFactor = (containerWidth / containerHeight) / aspectRatio;
+			const vScaleFactor =
+				containerWidth / containerHeight / currentRatio;
 			const vScaleDiff = scaleDiff * vScaleFactor;
 
 			// Horizontal anchoring
 			if (handle === 'se' || handle === 'ne') {
 				// Dragging Right side -> NW or SW corner fixed
-				if (alignment === 'left') {
-					// Left anchored -> X is fixed
-				} else if (alignment === 'right') {
+				if (currentAlignment === 'right') {
 					newX = dragStart.initialX - scaleDiff;
-				} else {
+				} else if (currentAlignment === 'center') {
 					newX = dragStart.initialX - scaleDiff / 2;
 				}
-			} else {
-				// Dragging Left side -> NE or SE corner fixed
-				if (alignment === 'left') {
-					newX = dragStart.initialX + scaleDiff;
-				} else if (alignment === 'right') {
-					// Right anchored -> X is fixed
-				} else {
-					newX = dragStart.initialX + scaleDiff / 2;
-				}
+			} else if (currentAlignment === 'left') {
+				newX = dragStart.initialX + scaleDiff;
+			} else if (currentAlignment === 'center') {
+				newX = dragStart.initialX + scaleDiff / 2;
 			}
 
 			// Vertical anchoring
 			if (handle === 'se' || handle === 'sw') {
 				// Dragging Bottom side -> NW or NE corner fixed
-				if (verticalAlignment === 'top') {
-					// Top anchored -> Y is fixed
-				} else if (verticalAlignment === 'bottom') {
+				if (currentVerticalAlignment === 'bottom') {
 					newY = dragStart.initialY - vScaleDiff;
-				} else {
+				} else if (currentVerticalAlignment === 'center') {
 					newY = dragStart.initialY - vScaleDiff / 2;
 				}
-			} else {
-				// Dragging Top side -> SW or SE corner fixed
-				if (verticalAlignment === 'top') {
-					newY = dragStart.initialY + vScaleDiff;
-				} else if (verticalAlignment === 'bottom') {
-					// Bottom anchored -> Y is fixed
-				} else {
-					newY = dragStart.initialY + vScaleDiff / 2;
-				}
+			} else if (currentVerticalAlignment === 'top') {
+				newY = dragStart.initialY + vScaleDiff;
+			} else if (currentVerticalAlignment === 'center') {
+				newY = dragStart.initialY + vScaleDiff / 2;
 			}
 
 			setTransientScale(newScale);
@@ -537,6 +552,13 @@ const WatermarkPositioner = ({
 
 	const showHandles = isSelected || isFocused;
 
+	let watermarkCursor = 'default';
+	if (isDragging) {
+		watermarkCursor = 'grabbing';
+	} else if (isSelected) {
+		watermarkCursor = 'move';
+	}
+
 	return (
 		<div
 			ref={containerRef}
@@ -544,14 +566,19 @@ const WatermarkPositioner = ({
 			style={{
 				width: `${containerWidth}px`,
 				height: `${containerHeight}px`,
-				backgroundImage: showBackground && backgroundDataUrl ? `url(${backgroundDataUrl})` : 'none',
+				backgroundImage:
+					showBackground && backgroundDataUrl
+						? `url(${backgroundDataUrl})`
+						: 'none',
 				backgroundSize: 'contain',
 				backgroundRepeat: 'no-repeat',
+				backgroundPosition: 'center',
 			}}
 		>
 			{(isDragging || isResizing) && (
 				<div
 					className="videopack-interaction-overlay"
+					role="presentation"
 					style={{
 						position: 'fixed',
 						top: 0,
@@ -571,10 +598,10 @@ const WatermarkPositioner = ({
 				style={{
 					...wmStyle,
 					outline: showHandles ? '1px dashed #757575' : 'none',
-					cursor: isDragging ? 'grabbing' : (isSelected ? 'move' : 'default'),
+					cursor: watermarkCursor,
 				}}
 				role="button"
-				tabIndex={isSelected ? "0" : "-1"}
+				tabIndex={isSelected ? '0' : '-1'}
 				aria-label={__(
 					'Move watermark',
 					'video-embed-thumbnail-generator'
@@ -584,7 +611,9 @@ const WatermarkPositioner = ({
 				onFocus={handleFocus}
 				onBlur={handleBlur}
 			>
-				{children ? children : (
+				{children ? (
+					children
+				) : (
 					<img
 						src={effectiveImageUrl}
 						alt="Watermark"
@@ -602,7 +631,10 @@ const WatermarkPositioner = ({
 						<div
 							role="slider"
 							tabIndex="0"
-							aria-label={__('Resize watermark from top left', 'video-embed-thumbnail-generator')}
+							aria-label={__(
+								'Resize watermark from top left',
+								'video-embed-thumbnail-generator'
+							)}
 							className="videopack-resize-handle nw"
 							onMouseDown={(e) => handleResizeStart(e, 'nw')}
 							onKeyDown={(e) => handleResizeKeyDown(e, 'nw')}
@@ -610,7 +642,10 @@ const WatermarkPositioner = ({
 						<div
 							role="slider"
 							tabIndex="0"
-							aria-label={__('Resize watermark from top right', 'video-embed-thumbnail-generator')}
+							aria-label={__(
+								'Resize watermark from top right',
+								'video-embed-thumbnail-generator'
+							)}
 							className="videopack-resize-handle ne"
 							onMouseDown={(e) => handleResizeStart(e, 'ne')}
 							onKeyDown={(e) => handleResizeKeyDown(e, 'ne')}
@@ -618,7 +653,10 @@ const WatermarkPositioner = ({
 						<div
 							role="slider"
 							tabIndex="0"
-							aria-label={__('Resize watermark from bottom left', 'video-embed-thumbnail-generator')}
+							aria-label={__(
+								'Resize watermark from bottom left',
+								'video-embed-thumbnail-generator'
+							)}
 							className="videopack-resize-handle sw"
 							onMouseDown={(e) => handleResizeStart(e, 'sw')}
 							onKeyDown={(e) => handleResizeKeyDown(e, 'sw')}
@@ -626,7 +664,10 @@ const WatermarkPositioner = ({
 						<div
 							role="slider"
 							tabIndex="0"
-							aria-label={__('Resize watermark from bottom right', 'video-embed-thumbnail-generator')}
+							aria-label={__(
+								'Resize watermark from bottom right',
+								'video-embed-thumbnail-generator'
+							)}
 							className="videopack-resize-handle se"
 							onMouseDown={(e) => handleResizeStart(e, 'se')}
 							onKeyDown={(e) => handleResizeKeyDown(e, 'se')}

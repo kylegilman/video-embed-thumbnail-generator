@@ -836,9 +836,7 @@ const playOutline = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   VideoWatermark: () => (/* binding */ VideoWatermark),
-/* harmony export */   "default": () => (/* binding */ Edit),
-/* harmony export */   getWatermarkBlockStyles: () => (/* binding */ getWatermarkBlockStyles)
+/* harmony export */   "default": () => (/* binding */ Edit)
 /* harmony export */ });
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
@@ -856,8 +854,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/not-allowed.mjs");
 /* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/page.mjs");
 /* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/post.mjs");
-/* harmony import */ var _utils_context__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../utils/context */ "./src/utils/context.js");
-/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
+/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
+/* harmony import */ var _components_VideoWatermark_VideoWatermark__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../components/VideoWatermark/VideoWatermark */ "./src/components/VideoWatermark/VideoWatermark.js");
 /* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/watermark/editor.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__);
@@ -874,95 +872,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * Internal component to display the watermark with correct positioning and fallback.
- *
- * @param {Object} props         Component props.
- * @param {Object} props.context Block context.
- * @return {Object} The rendered component.
- */
-
-function VideoWatermark({
-  attributes = {},
-  context = {},
-  isBlockEditor = false,
-  onDimensions = null
-}) {
-  const {
-    resolved
-  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_13__["default"])(attributes, context);
-  const {
-    watermark: effectiveUrl,
-    watermark_scale: actualScale = 10,
-    watermark_align: actualAlign = 'right',
-    watermark_valign: actualValign = 'bottom',
-    watermark_x: actualX = 5,
-    watermark_y: actualY = 7,
-    skin
-  } = resolved;
-  const style = {
-    position: isBlockEditor ? 'relative' : 'absolute',
-    width: effectiveUrl ? `${actualScale}%` : '260px',
-    height: 'auto',
-    pointerEvents: 'auto',
-    transform: ''
-  };
-
-  // X Positioning
-  if (actualAlign === 'center') {
-    style.left = '50%';
-    style.transform += 'translateX(-50%) ';
-    style.marginLeft = `${-actualX}%`;
-  } else {
-    style[actualAlign] = `${actualX}%`;
-  }
-
-  // Y Positioning
-  if (actualValign === 'center') {
-    style.top = '50%';
-    style.transform += 'translateY(-50%) ';
-    style.marginTop = `${-actualY}%`;
-  } else {
-    style[actualValign] = `${actualY}%`;
-  }
-  if (!style.transform || isBlockEditor) {
-    delete style.transform;
-  }
-  if (isBlockEditor) {
-    delete style.left;
-    delete style.right;
-    delete style.top;
-    delete style.bottom;
-    delete style.marginLeft;
-    delete style.marginTop;
-    style.width = '100%'; // Inner container fills the outer block
-  }
-  if (!effectiveUrl) {
-    return null;
-  }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)("div", {
-    className: `videopack-video-watermark ${skin}`,
-    style: style,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)("img", {
-      src: effectiveUrl,
-      alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark', 'video-embed-thumbnail-generator'),
-      style: {
-        display: 'block',
-        width: '100%',
-        height: 'auto'
-      },
-      onLoad: e => {
-        if (onDimensions && e.target.naturalWidth && e.target.naturalHeight) {
-          const ratio = e.target.naturalWidth / e.target.naturalHeight;
-          onDimensions(ratio);
-        }
-      }
-    })
-  });
-}
-
-/**
  * Helper to calculate watermark positioning styles for the block wrapper.
+ *
+ * @param {Object} resolved Resolved context attributes.
+ * @return {Object} Style object for the block wrapper.
  */
+
 function getWatermarkBlockStyles(resolved) {
   const {
     watermark: effectiveUrl,
@@ -998,19 +913,21 @@ function getWatermarkBlockStyles(resolved) {
   } else {
     style[effectiveValign] = `${effectiveY}%`;
   }
-  if (!style.transform) delete style.transform;
+  if (!style.transform) {
+    delete style.transform;
+  }
   return style;
 }
 
 /**
- * Edit component for the Video Watermark block.
+ * Watermark Edit Component.
  *
- * @param {Object}   props               Component props.
- * @param {Object}   props.attributes    Block attributes.
- * @param {Function} props.setAttributes Function to update block attributes.
- * @param {Object}   props.context       Block context.
- *
- * @return {Object} The component.
+ * @param {Object}   root0               Component props.
+ * @param {Object}   root0.attributes    Block attributes.
+ * @param {Function} root0.setAttributes Attribute setter.
+ * @param {Object}   root0.context       Block context.
+ * @param {boolean}  root0.isSelected    Whether the block is selected.
+ * @return {Element} Watermark edit component.
  */
 function Edit({
   attributes,
@@ -1053,21 +970,11 @@ function Edit({
     }
     return () => observer.disconnect();
   }, []);
-  const {
-    watermark,
-    watermark_scale = 10,
-    watermark_align = 'right',
-    watermark_valign = 'bottom',
-    watermark_x = 5,
-    watermark_y = 7,
-    watermark_link_to = 'false',
-    watermark_url = ''
-  } = attributes;
 
   // Use unified context hook for all design and behavior resolution
   const {
     resolved
-  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_13__["default"])(attributes, context);
+  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_12__["default"])(attributes, context);
   const {
     watermark: effectiveUrl,
     watermark_scale: effectiveScale = 10,
@@ -1121,7 +1028,7 @@ function Edit({
     ...blockProps,
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.BlockControls, {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.MediaReplaceFlow, {
-        mediaURL: watermark,
+        mediaURL: effectiveUrl,
         allowedTypes: ['image'],
         accept: "image/*",
         onSelect: media => setAttributes({
@@ -1194,7 +1101,7 @@ function Edit({
               __nextHasNoMarginBottom: true,
               __next40pxDefaultSize: true,
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Custom URL', 'video-embed-thumbnail-generator'),
-              value: watermark_url,
+              value: effectiveCustomLinkUrl,
               placeholder: "https://...",
               onChange: value => setAttributes({
                 watermark_url: value
@@ -1331,7 +1238,7 @@ function Edit({
         isSelected: isSelected,
         showBackground: false,
         aspectRatio: detectedAspectRatio,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(VideoWatermark, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_components_VideoWatermark_VideoWatermark__WEBPACK_IMPORTED_MODULE_13__["default"], {
           attributes: attributes,
           context: context,
           isBlockEditor: true,
@@ -1347,7 +1254,7 @@ function Edit({
           position: 'relative'
         } : {})
       },
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(VideoWatermark, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_15__.jsx)(_components_VideoWatermark_VideoWatermark__WEBPACK_IMPORTED_MODULE_13__["default"], {
         attributes: attributes,
         context: context,
         isBlockEditor: isOverlay,
@@ -1371,6 +1278,116 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 function save() {
   return null;
+}
+
+/***/ },
+
+/***/ "./src/components/VideoWatermark/VideoWatermark.js"
+/*!*********************************************************!*\
+  !*** ./src/components/VideoWatermark/VideoWatermark.js ***!
+  \*********************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ VideoWatermark)
+/* harmony export */ });
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../hooks/useVideopackContext */ "./src/hooks/useVideopackContext.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+/**
+ * Internal component to display the watermark with correct positioning and fallback.
+ *
+ * @param {Object}   root0               Component props.
+ * @param {Object}   root0.attributes    Block attributes.
+ * @param {Object}   root0.context       Block context.
+ * @param {boolean}  root0.isBlockEditor Whether we are in the block editor.
+ * @param {Function} root0.onDimensions  Callback for dimension detection.
+ * @return {Element}                     The rendered component.
+ */
+
+function VideoWatermark({
+  attributes = {},
+  context = {},
+  isBlockEditor = false,
+  onDimensions = null
+}) {
+  const {
+    resolved
+  } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_1__["default"])(attributes, context);
+  const {
+    watermark: effectiveUrl,
+    watermark_scale: actualScale = 10,
+    watermark_align: actualAlign = 'right',
+    watermark_valign: actualValign = 'bottom',
+    watermark_x: actualX = 5,
+    watermark_y: actualY = 7,
+    skin
+  } = resolved;
+  const style = {
+    position: isBlockEditor ? 'relative' : 'absolute',
+    width: effectiveUrl ? `${actualScale}%` : '260px',
+    height: 'auto',
+    pointerEvents: 'auto',
+    transform: ''
+  };
+
+  // X Positioning
+  if (actualAlign === 'center') {
+    style.left = '50%';
+    style.transform += 'translateX(-50%) ';
+    style.marginLeft = `${-actualX}%`;
+  } else {
+    style[actualAlign] = `${actualX}%`;
+  }
+
+  // Y Positioning
+  if (actualValign === 'center') {
+    style.top = '50%';
+    style.transform += 'translateY(-50%) ';
+    style.marginTop = `${-actualY}%`;
+  } else {
+    style[actualValign] = `${actualY}%`;
+  }
+  if (!style.transform || isBlockEditor) {
+    delete style.transform;
+  }
+  if (isBlockEditor) {
+    delete style.left;
+    delete style.right;
+    delete style.top;
+    delete style.bottom;
+    delete style.marginLeft;
+    delete style.marginTop;
+    style.width = '100%'; // Inner container fills the outer block
+  }
+  if (!effectiveUrl) {
+    return null;
+  }
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+    className: `videopack-video-watermark ${skin}`,
+    style: style,
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("img", {
+      src: effectiveUrl,
+      alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark', 'video-embed-thumbnail-generator'),
+      style: {
+        display: 'block',
+        width: '100%',
+        height: 'auto'
+      },
+      onLoad: e => {
+        if (onDimensions && e.target.naturalWidth && e.target.naturalHeight) {
+          const ratio = e.target.naturalWidth / e.target.naturalHeight;
+          onDimensions(ratio);
+        }
+      }
+    })
+  });
 }
 
 /***/ },
@@ -1443,11 +1460,6 @@ const WatermarkPositioner = ({
     wmStyle,
     wmWidth,
     wmHeight,
-    x,
-    y,
-    scale,
-    alignment,
-    valign,
     aspectRatio
   } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
     if (!containerDimensions) {
@@ -1455,11 +1467,6 @@ const WatermarkPositioner = ({
         wmStyle: {},
         wmWidth: 0,
         wmHeight: 0,
-        x: 0,
-        y: 0,
-        scale: 10,
-        alignment: 'center',
-        valign: 'center',
         aspectRatio: 1
       };
     }
@@ -1502,11 +1509,6 @@ const WatermarkPositioner = ({
       wmStyle: style,
       wmWidth: w,
       wmHeight: h,
-      x: currentX,
-      y: currentY,
-      scale: currentScale,
-      alignment: currentAlign,
-      valign: currentValign,
       aspectRatio: ratio
     };
   }, [containerDimensions, watermarkImage, settings, transientScale, transientPercentages]);
@@ -1522,16 +1524,18 @@ const WatermarkPositioner = ({
       wmWidth,
       wmHeight,
       aspectRatio,
-      baseDeltaX: x,
-      baseDeltaY: y
+      baseDeltaX: Number(settings.x || settings.watermark_x || 0),
+      baseDeltaY: Number(settings.y || settings.watermark_y || 0)
     };
-  }, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, x, y, aspectRatio]);
+  }, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, aspectRatio]);
   const onChangeRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(onChange);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
   const handleMouseDown = e => {
-    if (!isSelected) return;
+    if (!isSelected) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     if (watermarkRef.current) {
@@ -1594,14 +1598,14 @@ const WatermarkPositioner = ({
     const finalX = s.transientPercentages.x;
     const finalY = s.transientPercentages.y;
     const finalScale = wasResizing && s.transientScale !== null ? s.transientScale : Number(s.settings.scale || s.settings.watermark_scale || 10);
-    const aspectRatio = s.aspectRatio;
+    const currentRatio = s.aspectRatio;
     const {
       width: containerWidth,
       height: containerHeight
     } = s.containerDimensions;
 
     // Preserve attributes based on what's being used (settings vs block-editor styles)
-    const isBlock = s.settings.hasOwnProperty('watermark_scale') || s.settings.hasOwnProperty('watermark');
+    const isBlock = Object.prototype.hasOwnProperty.call(s.settings, 'watermark_scale') || Object.prototype.hasOwnProperty.call(s.settings, 'watermark');
     const currentAlign = s.settings.align || s.settings.watermark_align || 'center';
     const currentValign = s.settings.valign || s.settings.watermark_valign || 'bottom';
 
@@ -1612,7 +1616,7 @@ const WatermarkPositioner = ({
     } else if (currentAlign === 'center') {
       L = 50 - finalScale / 2 - finalX;
     }
-    const vScale = finalScale * (containerWidth / containerHeight) / aspectRatio;
+    const vScale = finalScale * (containerWidth / containerHeight) / currentRatio;
     let T = finalY;
     if (currentValign === 'bottom') {
       T = 100 - vScale - finalY;
@@ -1668,7 +1672,7 @@ const WatermarkPositioner = ({
 
     // Remove global listeners
     window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [handleMouseMove]);
 
   // Finalize interaction when selection is lost while dragging/resizing
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
@@ -1716,20 +1720,20 @@ const WatermarkPositioner = ({
     const stepPx = e.shiftKey ? 10 : 1;
     const stepXPct = stepPx / containerDimensions.width * 100;
     const stepYPct = stepPx / containerDimensions.height * 100;
-    const alignment = settings.align || settings.watermark_align || 'center';
-    const verticalAlignment = settings.valign || settings.watermark_valign || 'center';
+    const currentAlignment = settings.align || settings.watermark_align || 'center';
+    const currentVerticalAlignment = settings.valign || settings.watermark_valign || 'center';
     switch (e.key) {
       case 'ArrowUp':
-        newY += verticalAlignment === 'top' ? -stepYPct : stepYPct;
+        newY += currentVerticalAlignment === 'top' ? -stepYPct : stepYPct;
         break;
       case 'ArrowDown':
-        newY += verticalAlignment === 'top' ? stepYPct : -stepYPct;
+        newY += currentVerticalAlignment === 'top' ? stepYPct : -stepYPct;
         break;
       case 'ArrowLeft':
-        newX += alignment === 'left' ? -stepXPct : stepXPct;
+        newX += currentAlignment === 'left' ? -stepXPct : stepXPct;
         break;
       case 'ArrowRight':
-        newX += alignment === 'left' ? stepXPct : -stepXPct;
+        newX += currentAlignment === 'left' ? stepXPct : -stepXPct;
         break;
     }
     setTransientPercentages({
@@ -1737,7 +1741,7 @@ const WatermarkPositioner = ({
       y: newY
     });
   };
-  const handleResizeKeyDown = (e, handle) => {
+  const handleResizeKeyDown = e => {
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       return;
     }
@@ -1762,17 +1766,17 @@ const WatermarkPositioner = ({
     const dxPct = dxCanvas / containerWidth * 100;
     const dyPct = dyCanvas / containerHeight * 100;
     if (s.isDragging) {
-      const alignment = s.settings.align || s.settings.watermark_align || 'center';
-      const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'bottom';
+      const currentAlignment = s.settings.align || s.settings.watermark_align || 'center';
+      const currentVerticalAlignment = s.settings.valign || s.settings.watermark_valign || 'bottom';
       let newX = dragStart.initialX;
       let newY = dragStart.initialY;
-      if (alignment === 'left') {
+      if (currentAlignment === 'left') {
         newX = dragStart.initialX + dxPct;
       } else {
         // right or center offsets increase as we move left (negative dx)
         newX = dragStart.initialX - dxPct;
       }
-      if (verticalAlignment === 'top') {
+      if (currentVerticalAlignment === 'top') {
         newY = dragStart.initialY + dyPct;
       } else {
         // bottom or center offsets increase as we move up (negative dy)
@@ -1785,70 +1789,52 @@ const WatermarkPositioner = ({
     } else if (s.isResizing) {
       const {
         initialScale,
-        initialLeft,
-        initialTop,
-        aspectRatio,
+        aspectRatio: currentRatio,
         handle
       } = dragStart;
-      const initialWidth = containerWidth * initialScale / 100;
-      const initialHeight = initialWidth / aspectRatio;
-      let newWidth = initialWidth;
+      let newWidth;
       if (handle === 'se' || handle === 'ne') {
-        newWidth = initialWidth + dxCanvas;
+        newWidth = containerWidth * initialScale / 100 + dxCanvas;
       } else {
-        newWidth = initialWidth - dxCanvas;
+        newWidth = containerWidth * initialScale / 100 - dxCanvas;
       }
       let newScale = newWidth / containerWidth * 100;
       newScale = Math.round(newScale * 100) / 100;
       newScale = Math.max(1, Math.min(100, newScale));
-      const alignment = s.settings.align || s.settings.watermark_align || 'center';
-      const verticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
+      const currentAlignment = s.settings.align || s.settings.watermark_align || 'center';
+      const currentVerticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
       let newX = dragStart.initialX;
       let newY = dragStart.initialY;
       const scaleDiff = newScale - initialScale;
-      const vScaleFactor = containerWidth / containerHeight / aspectRatio;
+      const vScaleFactor = containerWidth / containerHeight / currentRatio;
       const vScaleDiff = scaleDiff * vScaleFactor;
 
       // Horizontal anchoring
       if (handle === 'se' || handle === 'ne') {
         // Dragging Right side -> NW or SW corner fixed
-        if (alignment === 'left') {
-          // Left anchored -> X is fixed
-        } else if (alignment === 'right') {
+        if (currentAlignment === 'right') {
           newX = dragStart.initialX - scaleDiff;
-        } else {
+        } else if (currentAlignment === 'center') {
           newX = dragStart.initialX - scaleDiff / 2;
         }
-      } else {
-        // Dragging Left side -> NE or SE corner fixed
-        if (alignment === 'left') {
-          newX = dragStart.initialX + scaleDiff;
-        } else if (alignment === 'right') {
-          // Right anchored -> X is fixed
-        } else {
-          newX = dragStart.initialX + scaleDiff / 2;
-        }
+      } else if (currentAlignment === 'left') {
+        newX = dragStart.initialX + scaleDiff;
+      } else if (currentAlignment === 'center') {
+        newX = dragStart.initialX + scaleDiff / 2;
       }
 
       // Vertical anchoring
       if (handle === 'se' || handle === 'sw') {
         // Dragging Bottom side -> NW or NE corner fixed
-        if (verticalAlignment === 'top') {
-          // Top anchored -> Y is fixed
-        } else if (verticalAlignment === 'bottom') {
+        if (currentVerticalAlignment === 'bottom') {
           newY = dragStart.initialY - vScaleDiff;
-        } else {
+        } else if (currentVerticalAlignment === 'center') {
           newY = dragStart.initialY - vScaleDiff / 2;
         }
-      } else {
-        // Dragging Top side -> SW or SE corner fixed
-        if (verticalAlignment === 'top') {
-          newY = dragStart.initialY + vScaleDiff;
-        } else if (verticalAlignment === 'bottom') {
-          // Bottom anchored -> Y is fixed
-        } else {
-          newY = dragStart.initialY + vScaleDiff / 2;
-        }
+      } else if (currentVerticalAlignment === 'top') {
+        newY = dragStart.initialY + vScaleDiff;
+      } else if (currentVerticalAlignment === 'center') {
+        newY = dragStart.initialY + vScaleDiff / 2;
       }
       setTransientScale(newScale);
       setTransientPercentages({
@@ -1867,6 +1853,12 @@ const WatermarkPositioner = ({
   const containerWidth = containerDimensions.width;
   const containerHeight = containerDimensions.height;
   const showHandles = isSelected || isFocused;
+  let watermarkCursor = 'default';
+  if (isDragging) {
+    watermarkCursor = 'grabbing';
+  } else if (isSelected) {
+    watermarkCursor = 'move';
+  }
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
     ref: containerRef,
     className: "videopack-watermark-positioner",
@@ -1875,10 +1867,12 @@ const WatermarkPositioner = ({
       height: `${containerHeight}px`,
       backgroundImage: showBackground && backgroundDataUrl ? `url(${backgroundDataUrl})` : 'none',
       backgroundSize: 'contain',
-      backgroundRepeat: 'no-repeat'
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center'
     },
     children: [(isDragging || isResizing) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
       className: "videopack-interaction-overlay",
+      role: "presentation",
       style: {
         position: 'fixed',
         top: 0,
@@ -1896,10 +1890,10 @@ const WatermarkPositioner = ({
       style: {
         ...wmStyle,
         outline: showHandles ? '1px dashed #757575' : 'none',
-        cursor: isDragging ? 'grabbing' : isSelected ? 'move' : 'default'
+        cursor: watermarkCursor
       },
       role: "button",
-      tabIndex: isSelected ? "0" : "-1",
+      tabIndex: isSelected ? '0' : '-1',
       "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Move watermark', 'video-embed-thumbnail-generator'),
       onMouseDown: handleMouseDown,
       onKeyDown: handleDragKeyDown,
@@ -1974,7 +1968,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -2036,8 +2030,12 @@ function useVideopackContext(attributes, context, options = {}) {
             style.fontSize = fontSize;
           }
         }
-        if (lineHeight) style.lineHeight = lineHeight;
-        if (letterSpacing) style.letterSpacing = letterSpacing;
+        if (lineHeight) {
+          style.lineHeight = lineHeight;
+        }
+        if (letterSpacing) {
+          style.letterSpacing = letterSpacing;
+        }
       }
 
       // Spacing Support (Margin/Padding)
@@ -2157,11 +2155,11 @@ function useVideopackContext(attributes, context, options = {}) {
       discoveredAttachmentId: foundId,
       isDiscovering: isResolving || !foundId && attachments === undefined
     };
-  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
+  }, [attributes.src, attributes.id, initial]);
   return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 
-    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // Safety: If the resolved attachment ID is the same as the post ID,
     // and we know the post is NOT an attachment, then it's a false resolution.
     const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id ? null : rawAttachmentId;
     const finalResolved = {
@@ -2191,7 +2189,7 @@ function useVideopackContext(attributes, context, options = {}) {
       classes: initial.classes.join(' '),
       sharedContext
     };
-  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
+  }, [initial, discoveredAttachmentId, isDiscovering, attributes.id]);
 }
 
 /***/ },
@@ -2227,7 +2225,7 @@ const isTrue = val => {
  * Resolves an effective design value by checking local overrides, inherited context,
  * and finally global plugin defaults.
  *
- * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {string} key        The key to resolve (e.g., 'skin', 'title_color').
  * @param {Object} attributes The block's own attributes.
  * @param {Object} context    The inherited block context.
  * @return {*} The resolved value.

@@ -1,4 +1,8 @@
-import { TextControl, SelectControl, ToggleControl } from '@wordpress/components';
+import {
+	TextControl,
+	SelectControl,
+	ToggleControl,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 export default function CollectionLayoutSettings({
@@ -6,7 +10,7 @@ export default function CollectionLayoutSettings({
 	setAttributes,
 	options = {},
 }) {
-	const { gallery_columns, overlay_title, gallery_end, gallery_pagination } = attributes;
+	const { gallery_columns, overlay_title, gallery_end } = attributes;
 
 	const updateNumericAttribute = (name, value) => {
 		const parsedValue = parseInt(value, 10);
@@ -19,7 +23,9 @@ export default function CollectionLayoutSettings({
 				label={__('Max Columns', 'video-embed-thumbnail-generator')}
 				type="number"
 				value={gallery_columns ?? ''}
-				onChange={(val) => updateNumericAttribute('gallery_columns', val)}
+				onChange={(val) =>
+					updateNumericAttribute('gallery_columns', val)
+				}
 			/>
 			<ToggleControl
 				__nextHasNoMarginBottom

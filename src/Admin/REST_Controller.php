@@ -123,7 +123,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'gallery_category'   => array( 'type' => 'string' ),
 					'gallery_tag'        => array( 'type' => 'string' ),
 					'layout'             => array( 'type' => 'string' ),
-					'prioritizePostData' => array( 
+					'prioritizePostData' => array(
 						'type'              => 'boolean',
 						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
@@ -413,7 +413,7 @@ class REST_Controller extends \WP_REST_Controller {
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'views'    => array(
+					'views'         => array(
 						'type'              => 'boolean',
 						'default'           => false,
 						'sanitize_callback' => 'rest_sanitize_boolean',
@@ -838,7 +838,7 @@ class REST_Controller extends \WP_REST_Controller {
 		$gallery      = new \Videopack\Frontend\Gallery( $this->options, $this->format_registry );
 		$gallery_atts = (array) $shortcode->atts( (array) $request->get_params() );
 		$page         = (int) ( $request->get_param( 'page_number' ) ? $request->get_param( 'page_number' ) : 1 );
-		$layout = (string) $request->get_param( 'layout' );
+		$layout       = (string) $request->get_param( 'layout' );
 		if ( ! $layout ) {
 			$layout = ( isset( $gallery_atts['gallery'] ) && true === $gallery_atts['gallery'] ) ? 'gallery' : 'list';
 		}
@@ -875,7 +875,7 @@ class REST_Controller extends \WP_REST_Controller {
 			return new \WP_Error( 'rest_invalid_param', (string) __( 'Missing Video URL or ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
 
-		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
+		$source         = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
 		$videopack_data = array(
 			'srcset'        => (string) wp_get_attachment_image_srcset( (int) $attachment_id ),
 			'sources'       => array(),
