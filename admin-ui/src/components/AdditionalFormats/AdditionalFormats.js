@@ -80,7 +80,7 @@ const AdditionalFormats = ({
 		if (src) {
 			try {
 				isSrcExternal = new URL(src).origin !== window.location.origin;
-			} catch (e) {
+			} catch {
 				// Relative URLs or invalid URLs are considered internal
 			}
 		}

@@ -18,7 +18,8 @@ import { useEffect, useRef } from '@wordpress/element';
  * @return {Element} The rendered component.
  */
 const WpMejsPlayer = (props) => {
-	const { options, controls, actualAutoplay, aspectRatio, source_groups } = props;
+	const { options, controls, actualAutoplay, aspectRatio, source_groups } =
+		props;
 
 	const playerRef = useRef(null);
 	const containerRef = useRef(null);
@@ -31,6 +32,8 @@ const WpMejsPlayer = (props) => {
 		tracks: options.tracks,
 		controls,
 		actualAutoplay,
+		source_groups,
+		option_source_groups: options.source_groups,
 	});
 
 	useEffect(() => {
@@ -57,7 +60,7 @@ const WpMejsPlayer = (props) => {
 						}
 						playerRef.current.remove();
 					}
-				} catch (e) {
+				} catch {
 					// Ignore
 				}
 				playerRef.current = null;
@@ -210,7 +213,7 @@ const WpMejsPlayer = (props) => {
 					if (curAutoplay && playerRef.current) {
 						try {
 							playerRef.current.play();
-						} catch (e) {
+						} catch {
 							// Browser blocked autoplay
 						}
 					}
@@ -320,7 +323,7 @@ const WpMejsPlayer = (props) => {
 												height: mediaHeight,
 											});
 										}
-									} catch (e) {
+									} catch {
 										targetPlayer.setPlayerSize();
 									}
 								} else {
@@ -380,7 +383,7 @@ const WpMejsPlayer = (props) => {
 													}
 												}
 											}
-										} catch (err) {
+										} catch {
 											// Silence metadata errors
 										}
 
@@ -396,7 +399,7 @@ const WpMejsPlayer = (props) => {
 										sizeOnMetadata
 									);
 								}
-							} catch (outerErr) {
+							} catch {
 								// Silence dimension detection errors
 							}
 						}
@@ -413,7 +416,7 @@ const WpMejsPlayer = (props) => {
 				) {
 					$videoElement.mediaelementplayer(mejsOptions);
 				}
-			} catch (e) {
+			} catch {
 				// Silence init errors
 			}
 		}, 100);
@@ -425,7 +428,7 @@ const WpMejsPlayer = (props) => {
 			}
 			cleanupPlayer();
 		};
-	}, [uniqueKey]);
+	}, [uniqueKey, options.src, options.source_groups, source_groups]);
 
 	// Reactive updates for volume and muted without recreating the player.
 	useEffect(() => {

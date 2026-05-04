@@ -1,3 +1,4 @@
+/* global videopack_config */
 import {
 	useBlockProps,
 	InnerBlocks,
@@ -5,9 +6,10 @@ import {
 	BlockControls,
 } from '@wordpress/block-editor';
 import {
-	ToolbarGroup,
-	ToolbarButton,
 	Placeholder,
+	Spinner,
+	ToolbarButton,
+	ToolbarGroup,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import {
@@ -18,9 +20,8 @@ import {
 	post as parentIcon,
 	video as placeholderIcon,
 } from '@wordpress/icons';
-import { Spinner } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
-import { VideoThumbnailPreview } from './VideoThumbnailPreview';
+import VideoThumbnailPreview from '../../components/VideoThumbnailPreview/VideoThumbnailPreview';
 
 import useVideopackContext from '../../hooks/useVideopackContext';
 import './editor.scss';
@@ -32,28 +33,33 @@ import './editor.scss';
  * @param {Object}   root0.attributes    Block attributes
  * @param {Function} root0.setAttributes Attribute setter
  * @param {Object}   root0.context       Block context
- * @param            root0.clientId
+ * @param {string}   root0.clientId      Block client ID
  * @return {Element} Thumbnail edit component
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const vpContext = useVideopackContext(attributes, context);
 	const attachmentId = vpContext.resolved.attachmentId;
 	const isDiscovering = vpContext.resolved.isDiscovering;
-	const { linkTo, style } = attributes;
+	const { linkTo } = attributes;
 
 	const blockProps = useBlockProps();
-	const { latestVideoId } = useSelect((select) => {
-		if (!vpContext.resolved.isPreview) return { latestVideoId: null };
-		const { getEntityRecords } = select('core');
-		const query = {
-			post_type: 'attachment',
-			mime_type: 'video',
-			per_page: 1,
-			_fields: 'id',
-		};
-		const media = getEntityRecords('postType', 'attachment', query);
-		return { latestVideoId: media?.[0]?.id };
-	}, [vpContext.resolved.isPreview]);
+	const { latestVideoId } = useSelect(
+		(select) => {
+			if (!vpContext.resolved.isPreview) {
+				return { latestVideoId: null };
+			}
+			const { getEntityRecords } = select('core');
+			const query = {
+				post_type: 'attachment',
+				mime_type: 'video',
+				per_page: 1,
+				_fields: 'id',
+			};
+			const media = getEntityRecords('postType', 'attachment', query);
+			return { latestVideoId: media?.[0]?.id };
+		},
+		[vpContext.resolved.isPreview]
+	);
 
 	const effectiveAttachmentId = attachmentId || latestVideoId;
 
@@ -116,49 +122,75 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					(blockProps.className || '') + ' videopack-thumbnail-block'
 				}
 			>
-				{isDiscovering && !attachmentId ? (
-					<div className="videopack-thumbnail-discovery-loading">
-						<Spinner />
-						<p>{__('Searching for attached video...', 'video-embed-thumbnail-generator')}</p>
-					</div>
-				) : !attachmentId && !vpContext.resolved.isPreview ? (
-					<Placeholder
-						icon={placeholderIcon}
-						label={__(
-							'Video Thumbnail',
-							'video-embed-thumbnail-generator'
-						)}
-						instructions={__(
-							'This block displays a video thumbnail. Place it inside a Videopack Collection or a post with attached videos.',
-							'video-embed-thumbnail-generator'
-						)}
-					/>
-				) : (
-					<VideoThumbnailPreview
-						postId={effectiveAttachmentId}
-						video={ ( vpContext.resolved.isPreview && ! effectiveAttachmentId ) ? { poster_url: videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg' } : {}}
-						linkTo={linkTo}
-						context={context}
-						className="videopack-thumbnail-preview"
-						resolvedDuotoneClass={undefined}
-						clientId={clientId}
-					>
-						<BlockContextProvider
-							value={{
-								...context,
-								'videopack/isInsideThumbnail': true,
-								'videopack/attachmentId': attachmentId,
-								'videopack/downloadlink': false,
-								'videopack/embedcode': false,
-							}}
-						>
-							<InnerBlocks
-								templateLock={false}
-								renderAppender={InnerBlocks.ButtonBlockAppender}
+				{(() => {
+					if (isDiscovering && !attachmentId) {
+						return (
+							<div className="videopack-thumbnail-discovery-loading">
+								<Spinner />
+								<p>
+									{__(
+										'Searching for attached video…',
+										'video-embed-thumbnail-generator'
+									)}
+								</p>
+							</div>
+						);
+					}
+
+					if (!attachmentId && !vpContext.resolved.isPreview) {
+						return (
+							<Placeholder
+								icon={placeholderIcon}
+								label={__(
+									'Video Thumbnail',
+									'video-embed-thumbnail-generator'
+								)}
+								instructions={__(
+									'This block displays a video thumbnail. Place it inside a Videopack Collection or a post with attached videos.',
+									'video-embed-thumbnail-generator'
+								)}
 							/>
-						</BlockContextProvider>
-					</VideoThumbnailPreview>
-				)}
+						);
+					}
+
+					return (
+						<VideoThumbnailPreview
+							postId={effectiveAttachmentId}
+							video={
+								vpContext.resolved.isPreview &&
+								!effectiveAttachmentId
+									? {
+											poster_url:
+												videopack_config.url +
+												'/src/images/Adobestock_469037984_thumb1.jpg',
+										}
+									: {}
+							}
+							linkTo={linkTo}
+							context={context}
+							className="videopack-thumbnail-preview"
+							resolvedDuotoneClass={undefined}
+							clientId={clientId}
+						>
+							<BlockContextProvider
+								value={{
+									...context,
+									'videopack/isInsideThumbnail': true,
+									'videopack/attachmentId': attachmentId,
+									'videopack/downloadlink': false,
+									'videopack/embedcode': false,
+								}}
+							>
+								<InnerBlocks
+									templateLock={false}
+									renderAppender={
+										InnerBlocks.ButtonBlockAppender
+									}
+								/>
+							</BlockContextProvider>
+						</VideoThumbnailPreview>
+					);
+				})()}
 
 				{/* Ensure InnerBlocks is always present for Gutenberg validation, even if visually hidden. */}
 				{!attachmentId && (

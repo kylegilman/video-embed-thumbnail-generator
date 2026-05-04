@@ -68,7 +68,6 @@ if (editMediaContainer) {
 						}
 						player.remove();
 					} catch (e) {
-						// eslint-disable-next-line no-console
 						console.warn(
 							'Videopack: Failed to remove native MEJS player',
 							e
@@ -108,7 +107,6 @@ function initVideopackMediaExtension(attempts = 0) {
 				initVideopackMediaExtension(attempts + 1)
 			);
 		} else {
-			// eslint-disable-next-line no-console
 			console.error(
 				'Videopack: wp.media.view.Attachment.Details is not available after multiple attempts.'
 			);

@@ -958,7 +958,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -1020,8 +1020,12 @@ function useVideopackContext(attributes, context, options = {}) {
             style.fontSize = fontSize;
           }
         }
-        if (lineHeight) style.lineHeight = lineHeight;
-        if (letterSpacing) style.letterSpacing = letterSpacing;
+        if (lineHeight) {
+          style.lineHeight = lineHeight;
+        }
+        if (letterSpacing) {
+          style.letterSpacing = letterSpacing;
+        }
       }
 
       // Spacing Support (Margin/Padding)
@@ -1141,11 +1145,11 @@ function useVideopackContext(attributes, context, options = {}) {
       discoveredAttachmentId: foundId,
       isDiscovering: isResolving || !foundId && attachments === undefined
     };
-  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
+  }, [attributes.src, attributes.id, initial]);
   return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 
-    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // Safety: If the resolved attachment ID is the same as the post ID,
     // and we know the post is NOT an attachment, then it's a false resolution.
     const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id ? null : rawAttachmentId;
     const finalResolved = {
@@ -1175,7 +1179,7 @@ function useVideopackContext(attributes, context, options = {}) {
       classes: initial.classes.join(' '),
       sharedContext
     };
-  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
+  }, [initial, discoveredAttachmentId, isDiscovering, attributes.id]);
 }
 
 /***/ },
@@ -1211,7 +1215,7 @@ const isTrue = val => {
  * Resolves an effective design value by checking local overrides, inherited context,
  * and finally global plugin defaults.
  *
- * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {string} key        The key to resolve (e.g., 'skin', 'title_color').
  * @param {Object} attributes The block's own attributes.
  * @param {Object} context    The inherited block context.
  * @return {*} The resolved value.

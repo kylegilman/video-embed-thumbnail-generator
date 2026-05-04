@@ -285,7 +285,7 @@ class Screens implements Hook_Subscriber {
 		$attachment      = new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta );
 		if ( $attachment->is_video( $post ) ) {
 			echo '<div id="videopack-attachment-details-root"></div>';
-			echo '<input type="hidden" name="videopack_meta_json" id="videopack_meta_json" value="' . (string) esc_attr( (string) wp_json_encode( (array) $attachment_meta->get() ) ) . '">';
+			echo '<input type="hidden" name="videopack_meta_json" id="videopack_meta_json" value="' . esc_attr( (string) wp_json_encode( (array) $attachment_meta->get() ) ) . '">';
 			wp_nonce_field( 'videopack_save_meta_box', 'videopack_meta_box_nonce' );
 		}
 	}
@@ -298,7 +298,7 @@ class Screens implements Hook_Subscriber {
 	 */
 	public function save_meta_box_data( $post_id ) {
 		// Verify nonce.
-		if ( ! isset( $_POST['videopack_meta_box_nonce'] ) || ! wp_verify_nonce( (string) $_POST['videopack_meta_box_nonce'], 'videopack_save_meta_box' ) ) {
+		if ( ! isset( $_POST['videopack_meta_box_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['videopack_meta_box_nonce'] ) ), 'videopack_save_meta_box' ) ) {
 			return;
 		}
 
@@ -313,7 +313,8 @@ class Screens implements Hook_Subscriber {
 		}
 
 		if ( isset( $_POST['videopack_meta_json'] ) ) {
-			$meta = (array) json_decode( (string) wp_unslash( (string) $_POST['videopack_meta_json'] ), true );
+			$meta_json = wp_unslash( $_POST['videopack_meta_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data handled by json_decode and Attachment_Meta.
+			$meta      = (array) json_decode( (string) $meta_json, true );
 			if ( is_array( $meta ) ) {
 				$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $post_id );
 				$attachment_meta->save( (array) $meta );
@@ -338,6 +339,7 @@ class Screens implements Hook_Subscriber {
 
 			$videopack_postmeta = (array) ( new \Videopack\Admin\Attachment_Meta( $this->options, (int) $id ) )->get();
 			if ( ! empty( $videopack_postmeta ) && (int) ( $videopack_postmeta['starts'] ?? 0 ) > 0 ) {
+				/* translators: %1$s: opening <strong> tag, %2$d: number of starts, %3$s: closing </strong> tag */
 				echo wp_kses_post( sprintf( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', (int) $videopack_postmeta['starts'], 'video-embed-thumbnail-generator' ), '<strong>', (int) $videopack_postmeta['starts'], '</strong>' ) );
 
 				if ( (int) ( $videopack_postmeta['play_25'] ?? 0 ) > 0 ) {
@@ -444,15 +446,14 @@ class Screens implements Hook_Subscriber {
 
 			add_filter(
 				'posts_where',
-				function ( $where, $query ) use ( $videopack_parent_id ) {
+				function ( $where ) use ( $videopack_parent_id ) {
 					global $wpdb;
 					if ( ! empty( $videopack_parent_id ) && strpos( (string) $where, "post_parent = $videopack_parent_id" ) === false ) {
 						$where .= (string) $wpdb->prepare( " OR ({$wpdb->posts}.post_parent = %d AND {$wpdb->posts}.post_type = 'attachment')", (int) $videopack_parent_id );
 					}
 					return (string) $where;
 				},
-				10,
-				2
+				10
 			);
 
 			$wp_query_obj->set( 'meta_query', $meta_query );

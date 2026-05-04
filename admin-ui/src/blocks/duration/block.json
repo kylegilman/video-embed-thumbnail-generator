@@ -6,10 +6,7 @@
 	"category": "media",
 	"icon": "clock",
 	"description": "Displays the video duration.",
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"usesContext": ["postId", "postType"],
 	"attributes": {
 		"position": {
 			"type": "string"

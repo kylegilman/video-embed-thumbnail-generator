@@ -1,7 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import useVideopackContext from '../../hooks/useVideopackContext';
 
-
 /**
  * A standardized pagination component for use in both blocks and previews.
  *
@@ -11,27 +10,34 @@ import useVideopackContext from '../../hooks/useVideopackContext';
  * @param {Function} props.onPageChange Callback when a page is changed.
  * @param {Object}   props.attributes   Optional. Block attributes for color resolution.
  * @param {Object}   props.context      Optional. Block context for color resolution.
+ * @param {Object}   props.style        Optional. Additional styles.
  */
 export default function Pagination({
-	currentPage,
-	totalPages,
-	onPageChange,
+	currentPage: propCurrentPage,
+	totalPages: propTotalPages,
+	onPageChange: propOnPageChange,
 	attributes = {},
 	context = {},
 	style: propStyle,
 }) {
 	const vpContext = useVideopackContext(attributes, context);
-
-	if (totalPages <= 1) {
-		return null;
-	}
-
 	const {
 		pagination_color,
 		pagination_background_color,
 		pagination_active_bg_color,
 		pagination_active_color,
+		currentPage: contextPage,
+		totalPages: contextTotal,
+		onPageChange: contextOnChange,
 	} = vpContext.resolved;
+
+	const current = propCurrentPage ?? contextPage ?? 1;
+	const total = propTotalPages ?? contextTotal ?? 1;
+	const onChange = propOnPageChange ?? contextOnChange ?? (() => {});
+
+	if (total <= 1) {
+		return null;
+	}
 
 	const style = {
 		'--videopack-pagination-color': pagination_color,
@@ -45,23 +51,23 @@ export default function Pagination({
 		const pages = [];
 		const showMax = 5; // Max number of page buttons to show around current page
 
-		if (totalPages <= showMax + 2) {
+		if (total <= showMax + 2) {
 			// Show all pages if total is small
-			for (let i = 1; i <= totalPages; i++) {
+			for (let i = 1; i <= total; i++) {
 				pages.push(i);
 			}
 		} else {
 			// Always show page 1
 			pages.push(1);
 
-			let start = Math.max(2, currentPage - 1);
-			let end = Math.min(totalPages - 1, currentPage + 1);
+			let start = Math.max(2, current - 1);
+			let end = Math.min(total - 1, current + 1);
 
 			// Adjust start/end to always show 3 numbers in the middle if possible
-			if (currentPage <= 3) {
+			if (current <= 3) {
 				end = 4;
-			} else if (currentPage >= totalPages - 2) {
-				start = totalPages - 3;
+			} else if (current >= total - 2) {
+				start = total - 3;
 			}
 
 			if (start > 2) {
@@ -72,12 +78,12 @@ export default function Pagination({
 				pages.push(i);
 			}
 
-			if (end < totalPages - 1) {
+			if (end < total - 1) {
 				pages.push('...');
 			}
 
 			// Always show last page
-			pages.push(totalPages);
+			pages.push(total);
 		}
 
 		return pages;
@@ -95,11 +101,9 @@ export default function Pagination({
 				<li className="videopack-pagination-item">
 					<button
 						className={`videopack-pagination-button prev page-numbers ${
-							currentPage <= 1 ? 'is-hidden videopack-hidden' : ''
+							current <= 1 ? 'is-hidden videopack-hidden' : ''
 						}`}
-						onClick={() =>
-							currentPage > 1 && onPageChange(currentPage - 1)
-						}
+						onClick={() => current > 1 && onChange(current - 1)}
 						aria-label={__(
 							'Previous Page',
 							'video-embed-thumbnail-generator'
@@ -116,16 +120,13 @@ export default function Pagination({
 						) : (
 							<button
 								className={`videopack-pagination-button page-numbers ${
-									page === currentPage
-										? 'is-active current'
-										: ''
+									page === current ? 'is-active current' : ''
 								}`}
 								onClick={() =>
-									typeof page === 'number' &&
-									onPageChange(page)
+									typeof page === 'number' && onChange(page)
 								}
 								aria-current={
-									page === currentPage ? 'page' : undefined
+									page === current ? 'page' : undefined
 								}
 							>
 								{page}
@@ -137,14 +138,9 @@ export default function Pagination({
 				<li className="videopack-pagination-item">
 					<button
 						className={`videopack-pagination-button next page-numbers ${
-							currentPage >= totalPages
-								? 'is-hidden videopack-hidden'
-								: ''
+							current >= total ? 'is-hidden videopack-hidden' : ''
 						}`}
-						onClick={() =>
-							currentPage < totalPages &&
-							onPageChange(currentPage + 1)
-						}
+						onClick={() => current < total && onChange(current + 1)}
 						aria-label={__(
 							'Next Page',
 							'video-embed-thumbnail-generator'

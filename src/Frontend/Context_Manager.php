@@ -93,12 +93,10 @@ class Context_Manager {
 					if ( 'default' !== $value ) {
 						$classes[] = $value;
 					}
-				} else {
-					if ( is_scalar( $value ) ) {
+				} elseif ( is_scalar( $value ) ) {
 						$css_key      = str_replace( '_', '-', $key );
 						$style_vars[] = "--videopack-{$css_key}: {$value}";
 						$classes[]    = "videopack-has-{$css_key}";
-					}
 				}
 			}
 		}

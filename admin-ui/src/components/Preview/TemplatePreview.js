@@ -35,14 +35,17 @@ export default function TemplatePreview({
 		}
 
 		const isOverlay =
-			!!currentFlags.isInsideThumbnail || !!currentFlags.isInsidePlayerOverlay;
+			!!currentFlags.isInsideThumbnail ||
+			!!currentFlags.isInsidePlayerOverlay;
 
 		const itemContext = {
 			...context,
 			...currentFlags,
 			'videopack/isInsideThumbnail': currentFlags.isInsideThumbnail,
-			'videopack/isInsidePlayerOverlay': currentFlags.isInsidePlayerOverlay,
-			'videopack/isInsidePlayerContainer': currentFlags.isInsidePlayerContainer,
+			'videopack/isInsidePlayerOverlay':
+				currentFlags.isInsidePlayerOverlay,
+			'videopack/isInsidePlayerContainer':
+				currentFlags.isInsidePlayerContainer,
 			'videopack/downloadlink': currentFlags.downloadlink,
 			'videopack/embedcode': currentFlags.embedcode,
 			'videopack/postId': video.attachment_id,

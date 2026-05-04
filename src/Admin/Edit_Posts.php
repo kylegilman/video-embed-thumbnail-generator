@@ -258,11 +258,11 @@ class Edit_Posts implements Hook_Subscriber {
 			'videopack-classic-editor',
 			'videopack_classic_editor_config',
 			array(
-				'options'        => (array) $this->options,
+				'options'          => (array) $this->options,
 				'postId'           => $post_id ? $post_id : 0,
 				'videopack/postId' => $post_id ? $post_id : 0,
-				'activeTab'      => ( 'embedgallery' === $active_tab ) ? 'gallery' : ( ( 'embedlist' === $active_tab ) ? 'list' : 'single' ),
-				'editAttributes' => $edit_attributes,
+				'activeTab'        => ( 'embedgallery' === $active_tab ) ? 'gallery' : ( ( 'embedlist' === $active_tab ) ? 'list' : 'single' ),
+				'editAttributes'   => $edit_attributes,
 			)
 		);
 

@@ -54,10 +54,10 @@ const metaKeys = [
 /**
  * Hook to manage video settings and synchronize them with attachment metadata.
  *
- * @param {Object}   attributes    Block attributes.
- * @param {Function} setAttributes Function to update block attributes.
- * @param {Object}   options       Global options/settings.
- * @param {Object}   hookOptions   Hook options.
+ * @param {Object}   attributes           Block attributes.
+ * @param {Function} setAttributes        Function to update block attributes.
+ * @param {Object}   options              Global options/settings.
+ * @param {Object}   hookOptions          Hook options.
  * @param {boolean}  hookOptions.autoSave Whether to automatically save to the REST API.
  * @return {Object} Setting change handlers and options.
  */
@@ -88,7 +88,6 @@ const useVideoSettings = (
 					method: 'POST',
 					data: { [key]: value },
 				}).catch(() => {
-					// eslint-disable-next-line no-console
 					console.error(`Failed to update attachment ${id}`);
 				});
 			}
@@ -136,7 +135,6 @@ const useVideoSettings = (
 						},
 					},
 				}).catch(() => {
-					// eslint-disable-next-line no-console
 					console.error(
 						`Failed to update _videopack-meta for attachment ${id}`
 					);

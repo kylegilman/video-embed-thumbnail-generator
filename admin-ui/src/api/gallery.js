@@ -53,9 +53,9 @@ export const getPresets = async (
 /**
  * Fetches already grouped and labeled video sources for a player.
  *
- * @param {number|string} attachmentId   Optional. The video attachment ID.
- * @param {string}        url            Optional. The video source URL.
- * @param {AbortSignal}   signal         Optional. Abort signal.
+ * @param {number|string} attachmentId Optional. The video attachment ID.
+ * @param {string}        url          Optional. The video source URL.
+ * @param {AbortSignal}   signal       Optional. Abort signal.
  */
 export const getVideoSources = async (
 	attachmentId = null,

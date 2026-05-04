@@ -9,8 +9,6 @@ import {
 	useCallback,
 	useState,
 } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
-import { decodeEntities } from '@wordpress/html-entities';
 import { applyFilters } from '@wordpress/hooks';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import GenericPlayer from './GenericPlayer.js';
@@ -24,40 +22,39 @@ const DEFAULT_PLAYERS = {
 	None: GenericPlayer,
 };
 
-
 // Make sure to pass isSelected from the block's edit component.
 const noop = () => {};
 
 /**
  * VideoPlayer component.
  *
- * @param {Object}   props               Component props.
- * @param {Object}   props.attributes    Block attributes.
- * @param {Object}   props.context       Inherited block context.
- * @param {Function} props.setAttributes Function to update block attributes.
- * @param {boolean}  props.isSelected    Whether the block is selected.
+ * @param {Object}   props                    Component props.
+ * @param {Object}   props.attributes         Block attributes.
+ * @param {Object}   props.context            Inherited block context.
+ * @param {Function} props.setAttributes      Function to update block attributes.
+ * @param {boolean}  props.isSelected         Whether the block is selected.
  * @param {boolean}  props.hideStaticOverlays Whether to hide site-wide static overlays (watermark, title).
- * @param {Function} props.onReady       Callback fired when the player engine is ready.
- * @param {Object}   props.children      Child components (InnerBlocks).
+ * @param {Function} props.onReady            Callback fired when the player engine is ready.
+ * @param {Object}   props.children           Child components (InnerBlocks).
  * @return {Element|null} The rendered component.
  */
 const VideoPlayer = ({
 	attributes = {},
 	context = {},
-	setAttributes = noop,
 	onReady = noop,
-	isSelected = false,
-	hideStaticOverlays = false,
 	children,
 	// Catch-all for non-DOM attributes that might leak from settings/block spreading
 	...otherProps
 }) => {
 	// Standardize attributes to ensure all block-level settings are here
-	const blockAttributes = useMemo(() => ({
-		...attributes,
-		// If props are passed directly (e.g. from BlockPreview spreading), prioritize them
-		...otherProps,
-	}), [attributes, otherProps]);
+	const blockAttributes = useMemo(
+		() => ({
+			...attributes,
+			// If props are passed directly (e.g. from BlockPreview spreading), prioritize them
+			...otherProps,
+		}),
+		[attributes, otherProps]
+	);
 
 	// Use unified context hook for all design and behavior resolution
 	const {
@@ -133,28 +130,21 @@ const VideoPlayer = ({
 		playback_rate,
 		default_ratio,
 		// Design settings resolved from context
-		play_button_color,
-		play_button_secondary_color,
-		control_bar_bg_color,
-		control_bar_color,
-		title_color,
-		title_background_color,
 		skin,
 		embed_method = 'Video.js',
 		duotone,
-		title: rawTitle,
-		caption,
 		fixed_aspect,
 		fullwidth,
-		rotate,
 		loopDuotoneId,
 	} = resolved;
 
-	const title = rawTitle ? decodeEntities(rawTitle) : rawTitle;
-
 	const source_groups = useMemo(() => {
 		// If we have valid groups, use them (handle empty array vs object)
-		if (incomingSourceGroups && !Array.isArray(incomingSourceGroups) && Object.keys(incomingSourceGroups).length > 0) {
+		if (
+			incomingSourceGroups &&
+			!Array.isArray(incomingSourceGroups) &&
+			Object.keys(incomingSourceGroups).length > 0
+		) {
 			return incomingSourceGroups;
 		}
 
@@ -174,16 +164,9 @@ const VideoPlayer = ({
 		return {};
 	}, [incomingSourceGroups, incomingSources]);
 
-
 	const final_embed_method = embed_method;
 	const final_skin = skin;
-	const final_play_button_color = play_button_color;
-	const final_play_button_secondary_color = play_button_secondary_color;
-	const final_control_bar_bg_color = control_bar_bg_color;
-	const final_control_bar_color = control_bar_color;
-	const final_title_color = title_color;
-	const final_title_background_color = title_background_color;
-	
+
 	// Duotone resolution
 	const final_duotone = blockAttributes?.style?.color?.duotone || duotone;
 	const instanceId = useMemo(() => {
@@ -194,7 +177,10 @@ const VideoPlayer = ({
 
 	if (loopDuotoneId) {
 		resolvedDuotoneClass = loopDuotoneId;
-	} else if (typeof final_duotone === 'string' && final_duotone.startsWith('var:preset|duotone|')) {
+	} else if (
+		typeof final_duotone === 'string' &&
+		final_duotone.startsWith('var:preset|duotone|')
+	) {
 		resolvedDuotoneClass = `wp-duotone-${final_duotone.split('|').pop()}`;
 	} else if (Array.isArray(final_duotone)) {
 		resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
@@ -213,8 +199,7 @@ const VideoPlayer = ({
 		} else {
 			// Fallback to database metadata
 			vertical =
-				Number(resolved.height) >
-					Number(resolved.width) ||
+				Number(resolved.height) > Number(resolved.width) ||
 				[90, 270].includes(Number(resolved.rotate));
 		}
 
@@ -228,19 +213,14 @@ const VideoPlayer = ({
 	]);
 
 	const isFixedAspect = useMemo(() => {
-		const verticalFixed =
-			fixed_aspect === 'vertical' && isVertical;
+		const verticalFixed = fixed_aspect === 'vertical' && isVertical;
 		const alwaysFixed = fixed_aspect === 'always';
 
 		return (
 			(alwaysFixed || verticalFixed) &&
 			(fullwidth !== true || verticalFixed)
 		);
-	}, [
-		fixed_aspect,
-		fullwidth,
-		isVertical,
-	]);
+	}, [fixed_aspect, fullwidth, isVertical]);
 
 	const aspectRatio = useMemo(() => {
 		let ratio;
@@ -277,7 +257,11 @@ const VideoPlayer = ({
 	const playerStyles = useMemo(() => {
 		const styles = { ...contextStyles };
 		const config = window.videopack_config || {};
-		const mejsSvgPath = config.mejs_controls_svg || (typeof window !== 'undefined' ? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg` : '');
+		const mejsSvgPath =
+			config.mejs_controls_svg ||
+			(typeof window !== 'undefined'
+				? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
+				: '');
 		if (final_embed_method === 'WordPress Default' && mejsSvgPath) {
 			styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
 		}
@@ -286,8 +270,12 @@ const VideoPlayer = ({
 	}, [final_embed_method, contextStyles]);
 
 	const wrapperClasses = useMemo(() => {
-		const classes = [...contextClasses, 'videopack-video-block-container', 'videopack-wrapper'];
-		
+		const classes = [
+			...contextClasses,
+			'videopack-video-block-container',
+			'videopack-wrapper',
+		];
+
 		if (isFixedAspect || aspectRatio) {
 			classes.push('videopack-has-aspect-ratio');
 			if (isFixedAspect) {
@@ -298,7 +286,7 @@ const VideoPlayer = ({
 		if (resolvedDuotoneClass && !loopDuotoneId) {
 			classes.push(resolvedDuotoneClass);
 		}
-		
+
 		// Ensure unique classes and join
 		return [...new Set(classes)].join(' ');
 	}, [
@@ -313,18 +301,20 @@ const VideoPlayer = ({
 		return autoplay;
 	}, [autoplay]);
 
-	const videoRef = useRef(null);
-
 	const finalizedSources = useMemo(() => {
 		// Priority 1: Sources from groups
 		if (Object.keys(source_groups).length > 0) {
-			const groupedSources = Object.values(source_groups).flatMap(g => g.sources || []);
-			if (groupedSources.length > 0) return groupedSources.filter(s => s && s.src);
+			const groupedSources = Object.values(source_groups).flatMap(
+				(g) => g.sources || []
+			);
+			if (groupedSources.length > 0) {
+				return groupedSources.filter((s) => s && s.src);
+			}
 		}
 
 		// Priority 2: Flat sources array
 		if (incomingSources && incomingSources.length > 0) {
-			return incomingSources.filter(s => s && s.src);
+			return incomingSources.filter((s) => s && s.src);
 		}
 
 		// Priority 3: Primary src attribute
@@ -356,7 +346,9 @@ const VideoPlayer = ({
 			tracks: text_tracks,
 			volume,
 			autoPlay:
-				final_embed_method === 'WordPress Default' ? false : actualAutoplay,
+				final_embed_method === 'WordPress Default'
+					? false
+					: actualAutoplay,
 		}),
 		[
 			poster,
@@ -371,7 +363,7 @@ const VideoPlayer = ({
 			finalizedSources,
 			text_tracks,
 			final_embed_method,
-		] // eslint-disable-line react-hooks/exhaustive-deps
+		]
 	);
 
 	const videoJsOptions = useMemo(() => {
@@ -415,7 +407,9 @@ const VideoPlayer = ({
 		options.source_groups = source_groups;
 
 		const hasMultipleSources = finalizedSources.length > 1;
-		const hasResolutions = finalizedSources.some((s) => s.resolution || s['data-res']);
+		const hasResolutions = finalizedSources.some(
+			(s) => s.resolution || s['data-res']
+		);
 		const hasMultipleCodecs = Object.keys(source_groups).length > 1;
 
 		if (hasResolutions || hasMultipleCodecs || hasMultipleSources) {
@@ -448,19 +442,27 @@ const VideoPlayer = ({
 		source_groups,
 		text_tracks,
 		aspectRatio,
-	]); // eslint-disable-line react-hooks/exhaustive-deps
+	]);
 
 	const handlePlay = useCallback(() => {
 		if (wrapperRef.current) {
-			const metaElements = wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper');
-			metaElements.forEach((el) => el.classList.remove('videopack-video-title-visible'));
+			const metaElements = wrapperRef.current.querySelectorAll(
+				'.videopack-video-title, .videopack-meta-wrapper'
+			);
+			metaElements.forEach((el) =>
+				el.classList.remove('videopack-video-title-visible')
+			);
 		}
 	}, []);
 
 	const handlePause = useCallback(() => {
 		if (wrapperRef.current) {
-			const metaElements = wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper');
-			metaElements.forEach((el) => el.classList.add('videopack-video-title-visible'));
+			const metaElements = wrapperRef.current.querySelectorAll(
+				'.videopack-video-title, .videopack-meta-wrapper'
+			);
+			metaElements.forEach((el) =>
+				el.classList.add('videopack-video-title-visible')
+			);
 		}
 	}, []);
 
@@ -473,7 +475,9 @@ const VideoPlayer = ({
 		if (typeof window !== 'undefined' && blockAttributes.id) {
 			window.videopack = window.videopack || {};
 			window.videopack.player_data = window.videopack.player_data || {};
-			window.videopack.player_data[`videopack_player_${blockAttributes.id}`] = {
+			window.videopack.player_data[
+				`videopack_player_${blockAttributes.id}`
+			] = {
 				source_groups,
 			};
 		}
@@ -503,15 +507,20 @@ const VideoPlayer = ({
 		}
 	}, []);
 
-
-	const renderReady = src || (finalizedSources && finalizedSources.length > 0);
+	const renderReady =
+		src || (finalizedSources && finalizedSources.length > 0);
 
 	if (!renderReady) {
 		return null; // Or a loading spinner
 	}
 
 	return (
-		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles} id={instanceId}>
+		<div
+			className={wrapperClasses}
+			ref={wrapperRef}
+			style={playerStyles}
+			id={instanceId}
+		>
 			<div
 				className={`videopack-player ${
 					final_embed_method === 'Video.js' ? final_skin || '' : ''
@@ -521,7 +530,8 @@ const VideoPlayer = ({
 			>
 				{/* Overlays and interactive elements move outside player div for better layout control */}
 				{(() => {
-					const PlayerComponent = players[final_embed_method] || players.None;
+					const PlayerComponent =
+						players[final_embed_method] || players.None;
 
 					if (final_embed_method === 'Video.js') {
 						return (
@@ -581,11 +591,16 @@ const VideoPlayer = ({
 						/>
 					);
 				})()}
-				{Array.isArray(final_duotone) && resolvedDuotoneClass && !loopDuotoneId && (
-					<>
-						<CustomDuotoneFilter colors={final_duotone} id={resolvedDuotoneClass} />
-						<style>
-							{`
+				{Array.isArray(final_duotone) &&
+					resolvedDuotoneClass &&
+					!loopDuotoneId && (
+						<>
+							<CustomDuotoneFilter
+								colors={final_duotone}
+								id={resolvedDuotoneClass}
+							/>
+							<style>
+								{`
 								.${resolvedDuotoneClass} .vjs-poster:not(.vjs-poster .vjs-poster),
 								.${resolvedDuotoneClass} .mejs-poster:not(.mejs-poster .mejs-poster),
 								#${instanceId} .vjs-poster:not(.vjs-poster .vjs-poster),
@@ -596,9 +611,9 @@ const VideoPlayer = ({
 									filter: none !important;
 								}
 							`}
-						</style>
-					</>
-				)}
+							</style>
+						</>
+					)}
 				{children}
 			</div>
 		</div>

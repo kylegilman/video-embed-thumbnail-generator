@@ -67,8 +67,14 @@ class Public_Controller extends Controller {
 				'callback'            => array( $this, 'render_shortcode' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'attrs'   => array( 'type' => 'object', 'required' => false ),
-					'content' => array( 'type' => 'string', 'required' => false ),
+					'attrs'   => array(
+						'type'     => 'object',
+						'required' => false,
+					),
+					'content' => array(
+						'type'     => 'string',
+						'required' => false,
+					),
 				),
 			)
 		);
@@ -81,9 +87,21 @@ class Public_Controller extends Controller {
 				'callback'            => array( $this, 'count_play' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'attachment_id' => array( 'type' => 'integer', 'required' => true, 'sanitize_callback' => 'absint' ),
-					'video_event'   => array( 'type' => 'string', 'required' => true, 'sanitize_callback' => 'sanitize_text_field' ),
-					'show_views'    => array( 'type' => 'boolean', 'default' => false, 'sanitize_callback' => 'rest_sanitize_boolean' ),
+					'attachment_id' => array(
+						'type'              => 'integer',
+						'required'          => true,
+						'sanitize_callback' => 'absint',
+					),
+					'video_event'   => array(
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'show_views'    => array(
+						'type'              => 'boolean',
+						'default'           => false,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
 				),
 			)
 		);
@@ -98,8 +116,16 @@ class Public_Controller extends Controller {
 					return current_user_can( 'upload_files' );
 				},
 				'args'                => array(
-					'url'       => array( 'type' => 'string', 'required' => true, 'format' => 'uri' ),
-					'parent_id' => array( 'type' => 'number', 'required' => false, 'default' => 0 ),
+					'url'       => array(
+						'type'     => 'string',
+						'required' => true,
+						'format'   => 'uri',
+					),
+					'parent_id' => array(
+						'type'     => 'number',
+						'required' => false,
+						'default'  => 0,
+					),
 				),
 			)
 		);
@@ -113,7 +139,10 @@ class Public_Controller extends Controller {
 				'permission_callback' => '__return_true',
 				'args'                => array(
 					'attachment_id' => array( 'type' => array( 'number', 'string' ) ),
-					'url'           => array( 'type' => 'string', 'format' => 'uri' ),
+					'url'           => array(
+						'type'   => 'string',
+						'format' => 'uri',
+					),
 				),
 			)
 		);
@@ -123,25 +152,29 @@ class Public_Controller extends Controller {
 
 	/**
 	 * REST callback for video gallery.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function video_gallery( \WP_REST_Request $request ) {
-		$shortcode    = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
-		$gallery      = new \Videopack\Frontend\Gallery( $this->options, $this->format_registry );
-		$gallery_atts = (array) $shortcode->atts( $request->get_params() );
+		$shortcode                             = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
+		$gallery                               = new \Videopack\Frontend\Gallery( $this->options, $this->format_registry );
+		$gallery_atts                          = (array) $shortcode->atts( $request->get_params() );
 		$gallery_atts['inner_blocks_template'] = $request->get_param( 'inner_blocks_template' );
 
-		$page         = (int) ( $request->get_param( 'page_number' ) ?: 1 );
+		$page   = (int) ( $request->get_param( 'page_number' ) ? $request->get_param( 'page_number' ) : 1 );
 		$layout = (string) $request->get_param( 'layout' );
 		if ( ! $layout ) {
 			$layout = $gallery_atts['layout'] ?? ( ( isset( $gallery_atts['gallery'] ) && true === $gallery_atts['gallery'] ) ? 'gallery' : 'list' );
 		}
 
-		$result   = $gallery->collection_page( $page, $gallery_atts, $layout );
+		$result = $gallery->collection_page( $page, $gallery_atts, $layout );
 		return apply_filters( 'videopack_rest_video_gallery', new \WP_REST_Response( $result, 200 ), $request );
 	}
 
 	/**
 	 * REST callback for video sources.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function video_sources( \WP_REST_Request $request ) {
 		$url           = (string) $request->get_param( 'url' );
@@ -164,6 +197,8 @@ class Public_Controller extends Controller {
 
 	/**
 	 * REST callback to render shortcode.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function render_shortcode( \WP_REST_Request $request ) {
 		$atts      = (array) $request->get_param( 'attrs' );
@@ -174,6 +209,8 @@ class Public_Controller extends Controller {
 
 	/**
 	 * REST callback to count play.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function count_play( \WP_REST_Request $request ) {
 		$attachment_id = (int) $request->get_param( 'attachment_id' );
@@ -196,6 +233,8 @@ class Public_Controller extends Controller {
 
 	/**
 	 * REST callback to resolve URL to attachment.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function resolve_url_to_attachment_api( \WP_REST_Request $request ) {
 		$url       = (string) $request->get_param( 'url' );
@@ -214,6 +253,8 @@ class Public_Controller extends Controller {
 
 	/**
 	 * REST callback to get presets.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function presets_get( \WP_REST_Request $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
@@ -230,7 +271,7 @@ class Public_Controller extends Controller {
 				$browser_metadata['duration'] = (float) $request->get_param( 'duration' );
 			}
 
-			$encoder = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id, $url, $browser_metadata );
+			$encoder            = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id, $url, $browser_metadata );
 			$video_formats_data = (array) $encoder->get_all_formats_with_status();
 			foreach ( $video_formats_data as $id => $data ) {
 				$presets[] = array_merge( $data, array( 'id' => (string) $id ) );
@@ -252,7 +293,7 @@ class Public_Controller extends Controller {
 			'attachment',
 			'videopack',
 			array(
-				'get_callback' => function ( $post ) {
+				'get_callback'    => function ( $post ) {
 					return $this->prepare_data_for_rest_response( (array) $post );
 				},
 				'update_callback' => null,
@@ -263,6 +304,8 @@ class Public_Controller extends Controller {
 
 	/**
 	 * Prepares Videopack data for REST response.
+	 *
+	 * @param array $post The post data array.
 	 */
 	protected function prepare_data_for_rest_response( $post ) {
 		$post_id = (int) $post['id'];
@@ -288,11 +331,15 @@ class Public_Controller extends Controller {
 
 	/**
 	 * Logs REST API errors.
+	 *
+	 * @param mixed            $result  The REST response or error.
+	 * @param \WP_REST_Server  $server  The REST server instance.
+	 * @param \WP_REST_Request $request The request object.
 	 */
 	public function log_rest_api_errors( $result, $server, $request ) {
 		$is_error = ( is_wp_error( $result ) || ( $result instanceof \WP_REST_Response && $result->is_error() ) );
 		if ( $is_error ) {
-			$error_details = is_wp_error( $result ) ? wp_json_encode( $result->get_error_data() ) : wp_json_encode( $result->get_data() );
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( sprintf( 'REST API Error: Route: %s, Method: %s, Params: %s, Error: %s', $request->get_route(), $request->get_method(), wp_json_encode( $request->get_params() ), $error_details ) );
 		}
 		return $result;
@@ -303,29 +350,29 @@ class Public_Controller extends Controller {
 	 */
 	private function get_gallery_args() {
 		return array(
-			'page_number'        => array( 'type' => 'number' ),
-			'gallery_orderby'    => array( 'type' => 'string' ),
-			'gallery_order'      => array( 'type' => 'string' ),
-			'gallery_per_page'   => array( 'type' => 'number' ),
-			'gallery_pagination' => array( 'type' => 'boolean' ),
-			'gallery_id'         => array( 'type' => array( 'number', 'string' ) ),
-			'gallery_include'    => array( 'type' => 'string' ),
-			'gallery_exclude'    => array( 'type' => 'string' ),
-			'gallery_title'      => array( 'type' => 'string' ),
-			'gallery_thumb'      => array( 'type' => 'number' ),
-			'gallery_source'     => array( 'type' => 'string' ),
-			'gallery_category'   => array( 'type' => 'string' ),
-			'gallery_tag'        => array( 'type' => 'string' ),
-			'layout'             => array( 'type' => 'string' ),
-			'grid_metadata'      => array( 'type' => 'string' ),
-			'grid_link_to'       => array( 'type' => 'string' ),
-			'inner_blocks_template' => array( 
+			'page_number'           => array( 'type' => 'number' ),
+			'gallery_orderby'       => array( 'type' => 'string' ),
+			'gallery_order'         => array( 'type' => 'string' ),
+			'gallery_per_page'      => array( 'type' => 'number' ),
+			'gallery_pagination'    => array( 'type' => 'boolean' ),
+			'gallery_id'            => array( 'type' => array( 'number', 'string' ) ),
+			'gallery_include'       => array( 'type' => 'string' ),
+			'gallery_exclude'       => array( 'type' => 'string' ),
+			'gallery_title'         => array( 'type' => 'string' ),
+			'gallery_thumb'         => array( 'type' => 'number' ),
+			'gallery_source'        => array( 'type' => 'string' ),
+			'gallery_category'      => array( 'type' => 'string' ),
+			'gallery_tag'           => array( 'type' => 'string' ),
+			'layout'                => array( 'type' => 'string' ),
+			'grid_metadata'         => array( 'type' => 'string' ),
+			'grid_link_to'          => array( 'type' => 'string' ),
+			'inner_blocks_template' => array(
 				'type'              => 'string',
 				'sanitize_callback' => array( $this, 'sanitize_inner_blocks_template' ),
 			),
-			'collectionId'       => array( 'type' => 'string' ),
-			'id'                 => array( 'type' => array( 'number', 'null' ) ),
-			'prioritizePostData' => array( 'type' => 'boolean' ),
+			'collectionId'          => array( 'type' => 'string' ),
+			'id'                    => array( 'type' => array( 'number', 'null' ) ),
+			'prioritizePostData'    => array( 'type' => 'boolean' ),
 		);
 	}
 
@@ -334,6 +381,8 @@ class Public_Controller extends Controller {
 	 *
 	 * Ensures the JSON is valid and only allows videopack blocks to prevent
 	 * arbitrary block execution vulnerabilities.
+	 *
+	 * @param string $value The JSON string to sanitize.
 	 */
 	public function sanitize_inner_blocks_template( $value ) {
 		if ( empty( $value ) || ! is_string( $value ) ) {
@@ -341,7 +390,7 @@ class Public_Controller extends Controller {
 		}
 
 		$decoded = json_decode( wp_unslash( $value ), true );
-		
+
 		if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $decoded ) ) {
 			return '';
 		}
@@ -353,6 +402,8 @@ class Public_Controller extends Controller {
 
 	/**
 	 * Recursively sanitizes a parsed Gutenberg block array.
+	 *
+	 * @param array $blocks The array of blocks to sanitize.
 	 */
 	private function sanitize_blocks_recursive( array $blocks ) {
 		$sanitized = array();
@@ -361,11 +412,11 @@ class Public_Controller extends Controller {
 			if ( ! isset( $block['blockName'] ) ) {
 				continue;
 			}
-			
+
 			$safe_block = array(
 				'blockName' => sanitize_text_field( $block['blockName'] ),
 			);
-			
+
 			if ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) {
 				$safe_block['attrs'] = array();
 				foreach ( $block['attrs'] as $key => $val ) {
@@ -376,22 +427,22 @@ class Public_Controller extends Controller {
 					}
 				}
 			}
-			
+
 			if ( isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
 				$safe_block['innerBlocks'] = $this->sanitize_blocks_recursive( $block['innerBlocks'] );
 			}
-			
+
 			if ( isset( $block['innerHTML'] ) ) {
 				$safe_block['innerHTML'] = wp_kses_post( $block['innerHTML'] );
 			}
-			
+
 			if ( isset( $block['innerContent'] ) && is_array( $block['innerContent'] ) ) {
 				$safe_block['innerContent'] = array();
 				foreach ( $block['innerContent'] as $content ) {
 					$safe_block['innerContent'][] = is_string( $content ) ? wp_kses_post( $content ) : $content;
 				}
 			}
-			
+
 			$sanitized[] = $safe_block;
 		}
 		return $sanitized;

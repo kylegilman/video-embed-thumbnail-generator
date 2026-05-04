@@ -4,15 +4,20 @@ import { useMemo } from '@wordpress/element';
 
 /**
  * A wrapper component that resolves Videopack context and bridges it into Gutenberg's block context.
- * 
- * @param {Object} props
- * @param {Object} props.attributes The block attributes.
- * @param {Object} props.context    The block context.
- * @param {Object} [props.overrides] Optional context overrides to merge into the shared context.
- * @param {React.ReactNode} props.children
- * @return {React.ReactElement}
+ *
+ * @param {Object} root0             Component props.
+ * @param {Object} root0.attributes  The block attributes.
+ * @param {Object} root0.context     The block context.
+ * @param {Object} [root0.overrides] Optional context overrides to merge into the shared context.
+ * @param {Node}   root0.children    Children.
+ * @return {Element} The rendered component with context bridge.
  */
-export default function VideopackContextBridge({ attributes, context, overrides = {}, children }) {
+export default function VideopackContextBridge({
+	attributes,
+	context,
+	overrides = {},
+	children,
+}) {
 	const { sharedContext } = useVideopackContext(attributes, context);
 
 	const finalContext = useMemo(() => {

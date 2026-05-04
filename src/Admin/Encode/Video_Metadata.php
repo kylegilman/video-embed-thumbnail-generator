@@ -139,8 +139,8 @@ class Video_Metadata {
 		array $options,
 		array $browser_metadata = array()
 	) {
-		$this->id            = $id;
-		$this->encode_input  = $encode_input;
+		$this->id               = $id;
+		$this->encode_input     = $encode_input;
 		$this->is_attachment    = $is_attachment;
 		$this->ffmpeg_path      = $ffmpeg_path;
 		$this->options          = $options;

@@ -1133,26 +1133,33 @@ __webpack_require__.r(__webpack_exports__);
  * @param {Function} props.onPageChange Callback when a page is changed.
  * @param {Object}   props.attributes   Optional. Block attributes for color resolution.
  * @param {Object}   props.context      Optional. Block context for color resolution.
+ * @param {Object}   props.style        Optional. Additional styles.
  */
 
 function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
+  currentPage: propCurrentPage,
+  totalPages: propTotalPages,
+  onPageChange: propOnPageChange,
   attributes = {},
   context = {},
   style: propStyle
 }) {
   const vpContext = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_1__["default"])(attributes, context);
-  if (totalPages <= 1) {
-    return null;
-  }
   const {
     pagination_color,
     pagination_background_color,
     pagination_active_bg_color,
-    pagination_active_color
+    pagination_active_color,
+    currentPage: contextPage,
+    totalPages: contextTotal,
+    onPageChange: contextOnChange
   } = vpContext.resolved;
+  const current = propCurrentPage ?? contextPage ?? 1;
+  const total = propTotalPages ?? contextTotal ?? 1;
+  const onChange = propOnPageChange ?? contextOnChange ?? (() => {});
+  if (total <= 1) {
+    return null;
+  }
   const style = {
     '--videopack-pagination-color': pagination_color,
     '--videopack-pagination-bg': pagination_background_color,
@@ -1164,22 +1171,22 @@ function Pagination({
     const pages = [];
     const showMax = 5; // Max number of page buttons to show around current page
 
-    if (totalPages <= showMax + 2) {
+    if (total <= showMax + 2) {
       // Show all pages if total is small
-      for (let i = 1; i <= totalPages; i++) {
+      for (let i = 1; i <= total; i++) {
         pages.push(i);
       }
     } else {
       // Always show page 1
       pages.push(1);
-      let start = Math.max(2, currentPage - 1);
-      let end = Math.min(totalPages - 1, currentPage + 1);
+      let start = Math.max(2, current - 1);
+      let end = Math.min(total - 1, current + 1);
 
       // Adjust start/end to always show 3 numbers in the middle if possible
-      if (currentPage <= 3) {
+      if (current <= 3) {
         end = 4;
-      } else if (currentPage >= totalPages - 2) {
-        start = totalPages - 3;
+      } else if (current >= total - 2) {
+        start = total - 3;
       }
       if (start > 2) {
         pages.push('...');
@@ -1187,12 +1194,12 @@ function Pagination({
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
-      if (end < totalPages - 1) {
+      if (end < total - 1) {
         pages.push('...');
       }
 
       // Always show last page
-      pages.push(totalPages);
+      pages.push(total);
     }
     return pages;
   };
@@ -1206,8 +1213,8 @@ function Pagination({
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("li", {
         className: "videopack-pagination-item",
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
-          className: `videopack-pagination-button prev page-numbers ${currentPage <= 1 ? 'is-hidden videopack-hidden' : ''}`,
-          onClick: () => currentPage > 1 && onPageChange(currentPage - 1),
+          className: `videopack-pagination-button prev page-numbers ${current <= 1 ? 'is-hidden videopack-hidden' : ''}`,
+          onClick: () => current > 1 && onChange(current - 1),
           "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Previous Page', 'video-embed-thumbnail-generator'),
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
             className: "videopack-pagination-arrow",
@@ -1220,16 +1227,16 @@ function Pagination({
           className: "page-numbers dots",
           children: page
         }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
-          className: `videopack-pagination-button page-numbers ${page === currentPage ? 'is-active current' : ''}`,
-          onClick: () => typeof page === 'number' && onPageChange(page),
-          "aria-current": page === currentPage ? 'page' : undefined,
+          className: `videopack-pagination-button page-numbers ${page === current ? 'is-active current' : ''}`,
+          onClick: () => typeof page === 'number' && onChange(page),
+          "aria-current": page === current ? 'page' : undefined,
           children: page
         })
       }, index)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("li", {
         className: "videopack-pagination-item",
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
-          className: `videopack-pagination-button next page-numbers ${currentPage >= totalPages ? 'is-hidden videopack-hidden' : ''}`,
-          onClick: () => currentPage < totalPages && onPageChange(currentPage + 1),
+          className: `videopack-pagination-button next page-numbers ${current >= total ? 'is-hidden videopack-hidden' : ''}`,
+          onClick: () => current < total && onChange(current + 1),
           "aria-label": (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Next Page', 'video-embed-thumbnail-generator'),
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
             className: "videopack-pagination-arrow",
@@ -1264,7 +1271,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -1326,8 +1333,12 @@ function useVideopackContext(attributes, context, options = {}) {
             style.fontSize = fontSize;
           }
         }
-        if (lineHeight) style.lineHeight = lineHeight;
-        if (letterSpacing) style.letterSpacing = letterSpacing;
+        if (lineHeight) {
+          style.lineHeight = lineHeight;
+        }
+        if (letterSpacing) {
+          style.letterSpacing = letterSpacing;
+        }
       }
 
       // Spacing Support (Margin/Padding)
@@ -1447,11 +1458,11 @@ function useVideopackContext(attributes, context, options = {}) {
       discoveredAttachmentId: foundId,
       isDiscovering: isResolving || !foundId && attachments === undefined
     };
-  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
+  }, [attributes.src, attributes.id, initial]);
   return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 
-    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // Safety: If the resolved attachment ID is the same as the post ID,
     // and we know the post is NOT an attachment, then it's a false resolution.
     const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id ? null : rawAttachmentId;
     const finalResolved = {
@@ -1481,7 +1492,7 @@ function useVideopackContext(attributes, context, options = {}) {
       classes: initial.classes.join(' '),
       sharedContext
     };
-  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
+  }, [initial, discoveredAttachmentId, isDiscovering, attributes.id]);
 }
 
 /***/ },
@@ -1618,7 +1629,7 @@ const isTrue = val => {
  * Resolves an effective design value by checking local overrides, inherited context,
  * and finally global plugin defaults.
  *
- * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {string} key        The key to resolve (e.g., 'skin', 'title_color').
  * @param {Object} attributes The block's own attributes.
  * @param {Object} context    The inherited block context.
  * @return {*} The resolved value.

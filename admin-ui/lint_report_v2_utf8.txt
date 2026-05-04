@@ -1,0 +1,192 @@
+﻿
+> videopack-admin@0.2.0 lint:js
+> wp-scripts lint-js src
+
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\collection\edit.js
+   73:21  error    Do not nest ternary expressions                                                                                                                                                        no-nested-ternary
+   75:6   error    Do not nest ternary expressions                                                                                                                                                        no-nested-ternary
+  150:8   warning  The 'videos' conditional could make the dependencies of useMemo Hook (at line 253) change on every render. To fix this, wrap the initialization of 'videos' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  151:3   error    Do not nest ternary expressions                                                                                                                                                        no-nested-ternary
+  159:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  162:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  168:12  error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  178:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  181:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  187:12  error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  197:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  200:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  207:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  210:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  217:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  220:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  227:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+  230:9   error    'videopack_config' is not defined                                                                                                                                                      no-undef
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\collection\save.js
+  1:10  error  'useBlockProps' is defined but never used  no-unused-vars
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\loop\edit.js
+     9:10  error    'getBlockType' is defined but never used                                                                                                                                                           no-unused-vars
+    12:25  error    'PanelBody' is defined but never used                                                                                                                                                              no-unused-vars
+    12:36  error    'Disabled' is defined but never used                                                                                                                                                               no-unused-vars
+    13:10  error    'EntityProvider' is defined but never used                                                                                                                                                         no-unused-vars
+    42:8   error    'VideoPlayer' is defined but never used                                                                                                                                                            no-unused-vars
+    47:8   error    'CustomDuotoneFilter' is defined but never used                                                                                                                                                    no-unused-vars
+    52:1   error    Missing JSDoc @param "root0" type                                                                                                                                                                  jsdoc/require-param-type
+    53:1   error    Missing JSDoc @param "root0.id" type                                                                                                                                                               jsdoc/require-param-type
+    54:1   error    Missing JSDoc @param "root0.isEditableTemplate" type                                                                                                                                               jsdoc/require-param-type
+    55:1   error    Missing JSDoc @param "root0.isHoveringGallery" type                                                                                                                                                jsdoc/require-param-type
+    56:1   error    Missing JSDoc @param "root0.onRemove" type                                                                                                                                                         jsdoc/require-param-type
+    57:1   error    Missing JSDoc @param "root0.onEdit" type                                                                                                                                                           jsdoc/require-param-type
+    58:1   error    Missing JSDoc @param "root0.onAddVideo" type                                                                                                                                                       jsdoc/require-param-type
+    59:1   error    Missing JSDoc @param "root0.isPreview" type                                                                                                                                                        jsdoc/require-param-type
+    60:1   error    Missing JSDoc @param "root0.children" type                                                                                                                                                         jsdoc/require-param-type
+   105:5   error    Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+   120:4   error    Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+   153:1   error    Missing JSDoc @param "props.attributes" type                                                                                                                                                       jsdoc/require-param-type
+   154:1   error    Missing JSDoc @param "props.setAttributes" type                                                                                                                                                    jsdoc/require-param-type
+   170:3   error    'thumbClientId' is assigned a value but never used                                                                                                                                                 no-unused-vars
+   178:3   error    'isLoopSelected' is assigned a value but never used                                                                                                                                                no-unused-vars
+   185:18  error    'getBlockEditorSettings' is assigned a value but never used                                                                                                                                        no-unused-vars
+   233:10  error    'inheritedDuotone' is already declared in the upper scope on line 169 column 3                                                                                                                     no-shadow
+   256:3   warning  React Hook useSelect has missing dependencies: 'attributes?.duotone' and 'attributes?.style?.color?.duotone'. Either include them or remove the dependency array                                   react-hooks/exhaustive-deps
+   266:8   warning  The 'queryAttributes' object makes the dependencies of useCallback Hook (at line 460) change on every render. To fix this, wrap the initialization of 'queryAttributes' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   303:8   error    'isResolving' is assigned a value but never used                                                                                                                                                   no-unused-vars
+   357:8   error    'attachmentRecords' is assigned a value but never used                                                                                                                                             no-unused-vars
+   483:14  error    'error' is defined but never used                                                                                                                                                                  no-unused-vars
+   529:3   warning  React Hook useCallback has a missing dependency: 'previewPostId'. Either include it or remove the dependency array                                                                                 react-hooks/exhaustive-deps
+   551:13  error    'error' is defined but never used                                                                                                                                                                  no-unused-vars
+   594:5   warning  React Hook useCallback has a missing dependency: 'previewPostId'. Either include it or remove the dependency array                                                                                 react-hooks/exhaustive-deps
+   622:15  error    'error' is defined but never used                                                                                                                                                                  no-unused-vars
+   648:3   warning  React Hook useCallback has a missing dependency: 'previewPostId'. Either include it or remove the dependency array                                                                                 react-hooks/exhaustive-deps
+   755:10  error    'videopack_config' is not defined                                                                                                                                                                  no-undef
+  1001:1   error    Missing JSDoc @param "root0" type                                                                                                                                                                  jsdoc/require-param-type
+  1002:1   error    Missing JSDoc @param "root0.block" type                                                                                                                                                            jsdoc/require-param-type
+  1003:1   error    Missing JSDoc @param "root0.video" type                                                                                                                                                            jsdoc/require-param-type
+  1004:1   error    Missing JSDoc @param "root0.previewContext" type                                                                                                                                                   jsdoc/require-param-type
+  1005:1   error    Missing JSDoc @param "root0.parentFlags" type                                                                                                                                                      jsdoc/require-param-type
+  1006:1   error    Missing JSDoc @param "root0.vpContext" type                                                                                                                                                        jsdoc/require-param-type
+  1007:1   error    Missing JSDoc @param "root0.resolvedDuotoneClass" type                                                                                                                                             jsdoc/require-param-type
+  1026:24  error    'ResizeObserver' is not defined                                                                                                                                                                    no-undef
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\player\edit.js
+   12:10  error  'normalizeSourceGroups' is defined but never used    no-unused-vars
+  122:10  error  'probedMetadata' is assigned a value but never used  no-unused-vars
+  123:19  error  'videoFormats' is assigned a value but never used    no-unused-vars
+  140:5   error  'videopack_config' is not defined                    no-undef
+  142:5   error  'videopack_config' is not defined                    no-undef
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\thumbnail\save.js
+  1:10  error  'useBlockProps' is defined but never used  no-unused-vars
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\title\edit.js
+   2:10  error  'useState' is defined but never used        no-unused-vars
+   2:31  error  'useCallback' is defined but never used     no-unused-vars
+   9:2   error  'RichText' is defined but never used        no-unused-vars
+  13:2   error  'Spinner' is defined but never used         no-unused-vars
+  16:2   error  'Icon' is defined but never used            no-unused-vars
+  20:10  error  'useSelect' is defined but never used       no-unused-vars
+  22:10  error  'decodeEntities' is defined but never used  no-unused-vars
+  26:11  error  'closeIcon' is defined but never used       no-unused-vars
+  27:10  error  'embedIcon' is defined but never used       no-unused-vars
+  30:10  error  'postIcon' is defined but never used        no-unused-vars
+  85:3   error  Do not nest ternary expressions             no-nested-ternary
+  91:3   error  Do not nest ternary expressions             no-nested-ternary
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\blocks\view-count\edit.js
+  12:2   error  'Icon' is defined but never used     no-unused-vars
+  13:2   error  'Spinner' is defined but never used  no-unused-vars
+  19:14  error  '_n' is defined but never used       no-unused-vars
+  19:18  error  'sprintf' is defined but never used  no-unused-vars
+  68:23  error  Do not nest ternary expressions      no-nested-ternary
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\AdditionalFormats\AdditionalFormats.js
+  83:13  error  'e' is defined but never used  no-unused-vars
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\Duotone\CustomDuotoneFilter.js
+   5:1  error  Missing JSDoc @param "color" type             jsdoc/require-param-type
+  17:4  error  'a' is never reassigned. Use 'const' instead  prefer-const
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\InspectorControls\CollectionInspectorControls.js
+  14:1   error  Missing JSDoc @param "root0" type                                                    jsdoc/require-param-type
+  15:1   error  Missing JSDoc @param "root0.clientId" type                                           jsdoc/require-param-type
+  16:1   error  Missing JSDoc @param "root0.attributes" type                                         jsdoc/require-param-type
+  17:1   error  Missing JSDoc @param "root0.setAttributes" type                                      jsdoc/require-param-type
+  18:1   error  Missing JSDoc @param "root0.queryData" type                                          jsdoc/require-param-type
+  19:1   error  Missing JSDoc @param "root0.options" type                                            jsdoc/require-param-type
+  20:1   error  Missing JSDoc @param "root0.hasPaginationBlock" type                                 jsdoc/require-param-type
+  21:1   error  Missing JSDoc @param "root0.isEditingAllPages" type                                  jsdoc/require-param-type
+  82:10  error  'showTitleSettings' is already declared in the upper scope on line 36 column 3       no-shadow
+  84:10  error  'showPlayerSettings' is already declared in the upper scope on line 37 column 3      no-shadow
+  85:10  error  'showPaginationSettings' is already declared in the upper scope on line 35 column 3  no-shadow
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\InspectorControls\CollectionLayoutSettings.js
+  13:55  error  'gallery_pagination' is assigned a value but never used  no-unused-vars
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\InspectorControls\QuerySettings.js
+  9:2  error  'showArchiveSource' is assigned a value but never used  no-unused-vars
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\Pagination\Pagination.js
+  13:1  error  Missing JSDoc @param "props.style" type  jsdoc/require-param-type
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\PreviewIframe\PreviewIframe.js
+  72:20  warning  React Hook useEffect has a spread element in its dependency array. This means we can't statically verify whether you've passed the correct dependencies  react-hooks/exhaustive-deps
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\Preview\parts\CollectionWrapper.js
+  3:1  error  Missing JSDoc @param "root0" type             jsdoc/require-param-type
+  4:1  error  Missing JSDoc @param "root0.children" type    jsdoc/require-param-type
+  5:1  error  Missing JSDoc @param "root0.attributes" type  jsdoc/require-param-type
+  6:1  error  Missing JSDoc @param "root0.context" type     jsdoc/require-param-type
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\Preview\parts\Pagination.js
+  5:1  error  Missing JSDoc @param "root0" type             jsdoc/require-param-type
+  6:1  error  Missing JSDoc @param "root0.attributes" type  jsdoc/require-param-type
+  7:1  error  Missing JSDoc @param "root0.context" type     jsdoc/require-param-type
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\Preview\parts\VideoLoop.js
+   7:1  error  Missing JSDoc @param "root0" type              jsdoc/require-param-type
+   8:1  error  Missing JSDoc @param "root0.children" type     jsdoc/require-param-type
+   9:1  error  Missing JSDoc @param "root0.attributes" type   jsdoc/require-param-type
+  10:1  error  Missing JSDoc @param "root0.context" type      jsdoc/require-param-type
+  11:1  error  Missing JSDoc @param "root0.innerBlocks" type  jsdoc/require-param-type
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\TextTracks\TextTracks.js
+   9:2   error  'Icon' is defined but never used               no-unused-vars
+  13:23  error  'dragHandle' is defined but never used         no-unused-vars
+  16:9   error  'isAdding' is assigned a value but never used  no-unused-vars
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\Thumbnails\Thumbnails.js
+  163:12  error  'e' is defined but never used            no-unused-vars
+  261:16  error  'ffmpegError' is defined but never used  no-unused-vars
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\VideoPlayer\BelowVideo.js
+  13:1  error  Missing JSDoc @param "props.setAttributes" type  jsdoc/require-param-type
+  14:1  error  Missing JSDoc @param "props.isSelected" type     jsdoc/require-param-type
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\VideoPlayer\WpMejsPlayer.js
+   61:14  error    'e' is defined but never used                                                                                                                                   no-unused-vars
+  214:16  error    'e' is defined but never used                                                                                                                                   no-unused-vars
+  324:19  error    'e' is defined but never used                                                                                                                                   no-unused-vars
+  384:20  error    'err' is defined but never used                                                                                                                                 no-unused-vars
+  400:17  error    'outerErr' is defined but never used                                                                                                                            no-unused-vars
+  417:13  error    'e' is defined but never used                                                                                                                                   no-unused-vars
+  429:5   warning  React Hook useEffect has missing dependencies: 'options.source_groups', 'options.src', and 'source_groups'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\components\VideopackContextBridge.js
+  13:1  error  Missing JSDoc @return description  jsdoc/require-returns-description
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\features\settings\components\FreemiusPage.js
+  11:1  error  The type 'JSX' is undefined  jsdoc/no-undefined-types
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\features\settings\components\PerCodecQualitySettings.js
+  308:5  warning  React Hook useEffect has a missing dependency: 'resolutions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\hooks\useVideoProbe.js
+  27:13  error  'e' is defined but never used  no-unused-vars
+
+C:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\admin-ui\src\utils\video-capture.js
+  289:13  error  'e' is defined but never used  no-unused-vars
+
+Γ£û 133 problems (124 errors, 9 warnings)
+

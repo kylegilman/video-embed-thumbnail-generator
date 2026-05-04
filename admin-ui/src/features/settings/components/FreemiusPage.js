@@ -8,7 +8,7 @@ import { Spinner } from '@wordpress/components';
  *
  * @param {Object} props      Component props.
  * @param {string} props.page The Freemius page slug ('account' or 'add-ons').
- * @return {JSX.Element} The rendered component.
+ * @return {Element} The rendered component.
  */
 const FreemiusPage = ({ page }) => {
 	const [content, setContent] = useState('');
@@ -23,7 +23,6 @@ const FreemiusPage = ({ page }) => {
 				setIsLoading(false);
 			})
 			.catch((error) => {
-				// eslint-disable-next-line no-console
 				console.error(`Error fetching Freemius page '${page}':`, error);
 				setContent(
 					`<div class="notice notice-error"><p>Error loading page: ${error.message}</p></div>`

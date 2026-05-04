@@ -193,7 +193,7 @@ class Attachment_Deleter implements Hook_Subscriber {
 	 * @return string The sanitized URL for transient use.
 	 */
 	protected function get_transient_name( $url ) {
-		$url = str_replace( ' ', '', (string) $url );
+		$url        = str_replace( ' ', '', (string) $url );
 		$search_url = (string) preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . (string) pathinfo( $url, PATHINFO_EXTENSION ), $url );
 		return $search_url;
 	}

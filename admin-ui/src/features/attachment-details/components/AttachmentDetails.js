@@ -167,7 +167,6 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 						? JSON.parse(modelAttrsRaw || '{}')
 						: modelAttrsRaw || {};
 			} catch (e) {
-				// eslint-disable-next-line no-console
 				console.error('Failed to parse videopack_attributes', e);
 			}
 

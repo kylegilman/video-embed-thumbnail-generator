@@ -1,3 +1,4 @@
+/* global videopack_config, ResizeObserver */
 import {
 	useBlockProps,
 	InnerBlocks,
@@ -6,17 +7,16 @@ import {
 	BlockPreview,
 	__experimentalBlockPreview,
 } from '@wordpress/block-editor';
-import { getBlockType } from '@wordpress/blocks';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
+import { Spinner, Icon } from '@wordpress/components';
 import {
-	Spinner,
-	Icon,
-	PanelBody,
-	Disabled,
-} from '@wordpress/components';
-import { EntityProvider } from '@wordpress/core-data';
-import { useMemo, useState, useEffect, useCallback, useRef } from '@wordpress/element';
+	useMemo,
+	useState,
+	useEffect,
+	useCallback,
+	useRef,
+} from '@wordpress/element';
 import { pencil, close, dragHandle, create } from '@wordpress/icons';
 import {
 	DndContext,
@@ -38,17 +38,23 @@ import useVideoQuery from '../../hooks/useVideoQuery';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import { useVideopackContext as useVideopackData } from '../../utils/VideopackContext';
 import { isTrue } from '../../utils/context';
-import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 import { getSettings } from '../../api/settings';
 import { getVideoGallery } from '../../api/gallery';
 import CollectionInspectorControls from '../../components/InspectorControls/CollectionInspectorControls';
 import { BlockPreview as VideopackPreview } from '../../components/Preview';
-import CustomDuotoneFilter from '../../components/Duotone/CustomDuotoneFilter';
 import './editor.scss';
-
-
 /**
  * A internal component to wrap collection items with drag-and-drop and action functionality.
+ *
+ * @param {Object}        root0                    Component props.
+ * @param {number|string} root0.id                 Item ID.
+ * @param {boolean}       root0.isEditableTemplate Whether it's an editable template.
+ * @param {boolean}       root0.isHoveringGallery  Whether gallery is being hovered.
+ * @param {Function}      root0.onRemove           Remove callback.
+ * @param {Function}      root0.onEdit             Edit callback.
+ * @param {Function}      root0.onAddVideo         Add video callback.
+ * @param {boolean}       root0.isPreview          Whether it's in preview mode.
+ * @param {Element}       root0.children           Child elements.
  */
 function SortableItem({
 	id,
@@ -81,7 +87,7 @@ function SortableItem({
 			style={style}
 			{...sortableAttributes}
 			className={`videopack-collection-item videopack-hover-trigger ${
-				(isEditableTemplate && !isPreview) ? 'is-editable' : 'is-preview'
+				isEditableTemplate && !isPreview ? 'is-editable' : 'is-preview'
 			} ${isDragging ? 'is-dragging' : ''}`}
 		>
 			{children}
@@ -93,32 +99,30 @@ function SortableItem({
 				<Icon icon={dragHandle} />
 			</button>
 			{!isEditableTemplate && (
-				<div
-					className="gallery-item-edit"
-					onClick={(e) => {
-						e.stopPropagation();
-						onEdit(id);
-					}}
-					tabIndex="0"
-					role="button"
-					title={__('Edit', 'video-embed-thumbnail-generator')}
-				>
-					<button type="button" className="videopack-edit-item">
+				<div className="gallery-item-edit">
+					<button
+						type="button"
+						className="videopack-edit-item"
+						onClick={(e) => {
+							e.stopPropagation();
+							onEdit(id);
+						}}
+						title={__('Edit', 'video-embed-thumbnail-generator')}
+					>
 						<Icon icon={pencil} />
 					</button>
 				</div>
 			)}
-			<div
-				className="gallery-item-remove"
-				onClick={(e) => {
-					e.stopPropagation();
-					onRemove(id);
-				}}
-				tabIndex="0"
-				role="button"
-				title={__('Remove', 'video-embed-thumbnail-generator')}
-			>
-				<button type="button" className="videopack-remove-item">
+			<div className="gallery-item-remove">
+				<button
+					type="button"
+					className="videopack-remove-item"
+					onClick={(e) => {
+						e.stopPropagation();
+						onRemove(id);
+					}}
+					title={__('Remove', 'video-embed-thumbnail-generator')}
+				>
 					<Icon icon={close} />
 				</button>
 			</div>
@@ -136,15 +140,116 @@ function SortableItem({
 }
 
 /**
- * The Edit component for the Video Loop block.
+ * Renders a single block preview item.
  *
- * @param {Object} props          Component props.
- * @param {Object} props.context  Block context.
- * @param {string} props.clientId Block client ID.
+ * @param {Object} root0                      Component props.
+ * @param {Object} root0.block                Block data.
+ * @param {Object} root0.video                Video data.
+ * @param {Object} root0.previewContext       Preview context.
+ * @param {Object} root0.parentFlags          Parent flags.
+ * @param {Object} root0.vpContext            Videopack context.
+ * @param {string} root0.resolvedDuotoneClass Resolved duotone class name.
+ */
+const PreviewItem = ({
+	block,
+	video,
+	previewContext,
+	parentFlags,
+	vpContext,
+	resolvedDuotoneClass,
+}) => {
+	const [width, setWidth] = useState(400);
+	const containerRef = useRef();
+	const ActualBlockPreview = BlockPreview || __experimentalBlockPreview;
+
+	useEffect(() => {
+		if (!containerRef.current) {
+			return;
+		}
+		let timeoutId;
+		const observer = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				if (entry.contentRect.width > 0) {
+					const newWidth = entry.contentRect.width;
+					clearTimeout(timeoutId);
+					timeoutId = setTimeout(() => {
+						setWidth((prev) => {
+							if (Math.abs(prev - newWidth) > 2) {
+								return newWidth;
+							}
+							return prev;
+						});
+					}, 100);
+				}
+			}
+		});
+		observer.observe(containerRef.current);
+		return () => {
+			observer.disconnect();
+			clearTimeout(timeoutId);
+		};
+	}, []);
+
+	if (!ActualBlockPreview) {
+		return <div>{block.name}</div>;
+	}
+
+	const targetPostId =
+		vpContext.resolved.prioritizePostData && video.parent_id
+			? video.parent_id
+			: video.attachment_id || video.id;
+	const targetPostType =
+		vpContext.resolved.prioritizePostData && video.parent_id
+			? 'post'
+			: 'attachment';
+
+	return (
+		<div ref={containerRef} className="videopack-block-preview-external">
+			<BlockContextProvider
+				value={{
+					...previewContext,
+					...parentFlags,
+					postId: targetPostId,
+					postType: targetPostType,
+					'videopack/postId': targetPostId,
+					'videopack/postType': targetPostType,
+					'videopack/attachmentId': video.attachment_id || video.id,
+					'videopack/parentPostId': video.parent_id,
+					'videopack/video': video,
+				}}
+			>
+				<div className={resolvedDuotoneClass}>
+					<ActualBlockPreview
+						blocks={[block]}
+						viewportWidth={width}
+						context={{
+							...previewContext,
+							...parentFlags,
+							postId: targetPostId,
+							postType: targetPostType,
+							'videopack/postId': targetPostId,
+							'videopack/postType': targetPostType,
+							'videopack/parentPostId': video.parent_id,
+							'videopack/loopDuotoneId': resolvedDuotoneClass,
+						}}
+					/>
+				</div>
+			</BlockContextProvider>
+		</div>
+	);
+};
+/**
+ * @param {Object}   props               Component props.
+ * @param {Object}   props.context       Block context.
+ * @param {string}   props.clientId      Block client ID.
+ * @param {Object}   props.attributes    Block attributes.
+ * @param {Function} props.setAttributes Block attributes setter.
  * @return {Element}              The rendered component.
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
-	const vpContext = useVideopackContext(attributes, context, { excludeHoverTrigger: true });
+	const vpContext = useVideopackContext(attributes, context, {
+		excludeHoverTrigger: true,
+	});
 	const vpData = useVideopackData();
 
 	const [options, setOptions] = useState({});
@@ -154,7 +259,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const {
 		effectiveDuotone,
 		inheritedDuotone,
-		thumbClientId,
 		previewPostId,
 		isSaving,
 		isAutosaving,
@@ -162,23 +266,19 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		hasPaginationBlock,
 		isEditingAllPages,
 		parentClientId,
-		isLoopSelected,
 	} = useSelect(
 		(select) => {
-			const { getBlocks, getBlockAttributes, getBlockRootClientId, getSettings: getBlockEditorSettings } =
+			const { getBlocks, getBlockAttributes, getBlockRootClientId } =
 				select('core/block-editor');
-			const { isSavingPost, isAutosavingPost, getCurrentPostId } = select('core/editor');
+			const { isSavingPost, isAutosavingPost, getCurrentPostId } =
+				select('core/editor');
 
 			const parentId = getBlockRootClientId(clientId);
 			const blocks = getBlocks(clientId) || [];
 
-			const parentAttrs = parentId
-				? getBlockAttributes(parentId)
-				: {};
+			const parentAttrs = parentId ? getBlockAttributes(parentId) : {};
 
-			const parentBlocks = parentId
-				? getBlocks(parentId)
-				: [];
+			const parentBlocks = parentId ? getBlocks(parentId) : [];
 			const hasPagination = parentBlocks.some(
 				(b) => b.name === 'videopack/pagination'
 			);
@@ -216,18 +316,15 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				childBlocks?.attributes?.duotone ||
 				childBlocks?.attributes?.style?.color?.duotone;
 
-			const inheritedDuotone =
-				parentAttrs?.duotone ||
-				parentAttrs?.style?.color?.duotone ||
-				childBlocks?.attributes?.style?.color?.duotone ||
-				childBlocks?.attributes?.duotone;
-
 			const isEditingAll = !!parentAttrs.isEditingAllPages;
 
 			return {
 				effectiveDuotone: presetDuotone,
-				inheritedDuotone,
-				thumbClientId: childBlocks?.clientId,
+				inheritedDuotone:
+					parentAttrs?.duotone ||
+					parentAttrs?.style?.color?.duotone ||
+					childBlocks?.attributes?.style?.color?.duotone ||
+					childBlocks?.attributes?.duotone,
 				previewPostId: getCurrentPostId(),
 				isSaving: isSavingPost ? isSavingPost() : false,
 				isAutosaving: isAutosavingPost ? isAutosavingPost() : false,
@@ -235,10 +332,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				hasPaginationBlock: hasPagination,
 				isEditingAllPages: isEditingAll,
 				parentClientId: parentId,
-				isLoopSelected: select('core/block-editor').isBlockSelected(clientId),
 			};
 		},
-		[clientId, context]
+		[clientId, attributes?.duotone, attributes?.style?.color?.duotone]
 	);
 
 	useEffect(() => {
@@ -248,39 +344,57 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	}, []);
 
 	// We get query-related attributes from the parent collection block via context.
-	const queryAttributes = {
-		gallery_source: context['videopack/gallery_source'],
-		gallery_id: context['videopack/gallery_id'],
-		gallery_category: context['videopack/gallery_category'],
-		gallery_tag: context['videopack/gallery_tag'],
-		gallery_orderby: context['videopack/gallery_orderby'],
-		gallery_order: context['videopack/gallery_order'],
-		gallery_include: context['videopack/gallery_include'],
-		gallery_exclude: context['videopack/gallery_exclude'],
-		gallery_pagination: isEditingAllPages
-			? false
-			: vpContext.resolved.gallery_pagination,
-		gallery_per_page: isEditingAllPages
-			? -1
-			: vpContext.resolved.gallery_per_page,
-		enable_collection_video_limit: vpContext.resolved.enable_collection_video_limit,
-		collection_video_limit: vpContext.resolved.collection_video_limit,
-		page_number: isEditingAllPages ? 1 : (vpContext.currentPage || context['videopack/currentPage'] || 1),
-		prioritizePostData: vpContext.resolved.prioritizePostData,
-	};
+	const queryAttributes = useMemo(
+		() => ({
+			gallery_source: context['videopack/gallery_source'],
+			gallery_id: context['videopack/gallery_id'],
+			gallery_category: context['videopack/gallery_category'],
+			gallery_tag: context['videopack/gallery_tag'],
+			gallery_orderby: context['videopack/gallery_orderby'],
+			gallery_order: context['videopack/gallery_order'],
+			gallery_include: context['videopack/gallery_include'],
+			gallery_exclude: context['videopack/gallery_exclude'],
+			gallery_pagination: isEditingAllPages
+				? false
+				: vpContext.resolved.gallery_pagination,
+			gallery_per_page: isEditingAllPages
+				? -1
+				: vpContext.resolved.gallery_per_page,
+			enable_collection_video_limit:
+				vpContext.resolved.enable_collection_video_limit,
+			collection_video_limit: vpContext.resolved.collection_video_limit,
+			page_number: isEditingAllPages
+				? 1
+				: vpContext.currentPage ||
+					context['videopack/currentPage'] ||
+					1,
+			prioritizePostData: vpContext.resolved.prioritizePostData,
+		}),
+		[context, isEditingAllPages, vpContext.resolved, vpContext.currentPage]
+	);
 
 	const queryData = useVideoQuery(
-		(vpData.videos && vpData.videos.length > 0) ? null : queryAttributes,
+		vpData.videos && vpData.videos.length > 0 ? null : queryAttributes,
 		previewPostId
 	);
-	const { videoResults: queryVideos, isResolving: isResolvingQuery, totalResults, maxNumPages } = queryData;
+	const {
+		videoResults: queryVideos,
+		isResolving: isResolvingQuery,
+		totalResults,
+		maxNumPages,
+	} = queryData;
 	const parentVideos = vpData.videos || context['videopack/videos'];
-	const videos = parentVideos && parentVideos.length > 0 ? parentVideos : queryVideos;
-	const isResolving = (parentVideos && parentVideos.length > 0) ? false : isResolvingQuery;
-	const totalResultsCount = (parentVideos && parentVideos.length > 0) ? parentVideos.length : totalResults;
-	const totalPagesCount = (parentVideos && parentVideos.length > 0) ? 1 : maxNumPages;
+	const videos =
+		parentVideos && parentVideos.length > 0 ? parentVideos : queryVideos;
+	const totalResultsCount =
+		parentVideos && parentVideos.length > 0
+			? parentVideos.length
+			: totalResults;
+	const totalPagesCount =
+		parentVideos && parentVideos.length > 0 ? 1 : maxNumPages;
 	const templateBlocks = useSelect(
-		(select) => clientId ? select('core/block-editor').getBlocks(clientId) : [],
+		(select) =>
+			clientId ? select('core/block-editor').getBlocks(clientId) : [],
 		[clientId]
 	);
 
@@ -299,7 +413,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-loop layout-${layout} columns-${columns} ${
-			isPreviewResolving && !isSaving && !isAutosaving ? 'has-loading-state' : ''
+			isPreviewResolving && !isSaving && !isAutosaving
+				? 'has-loading-state'
+				: ''
 		} ${isEditingAllPages ? 'is-editing-all-pages' : ''}`,
 	});
 
@@ -309,7 +425,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		return classes.find((c) => c.startsWith('wp-duotone-'));
 	}, [blockProps.className]);
 
-
 	const computedStyle = {};
 	if (columns && layout === 'grid') {
 		computedStyle['--videopack-collection-columns'] = columns;
@@ -318,12 +433,16 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	// Universal Solution: Fetch the actual attachment records to hydrate the store.
 	// This ensures that BlockEdit and any inner blocks have the 'real' data they need.
 	const videoIds = useMemo(() => {
-		return (previewVideos || []).map((v) => v.attachment_id).filter(Boolean);
+		return (previewVideos || [])
+			.map((v) => v.attachment_id)
+			.filter(Boolean);
 	}, [previewVideos]);
 
-	const attachmentRecords = useSelect(
+	useSelect(
 		(select) => {
-			if (!videoIds.length) return null;
+			if (!videoIds.length) {
+				return null;
+			}
 			return select('core').getEntityRecords('postType', 'attachment', {
 				include: videoIds,
 				per_page: -1,
@@ -335,10 +454,14 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	// Synchronize child/parent duotone attributes to the Loop block itself
 	// so that Gutenberg applies the necessary classes and SVG filters to the Loop wrapper.
 	useEffect(() => {
-		const loopDuotone = attributes.style?.color?.duotone || attributes.duotone;
+		const loopDuotone =
+			attributes.style?.color?.duotone || attributes.duotone;
 
 		// 1. If we have a new inherited duotone, adopt it.
-		if (inheritedDuotone && JSON.stringify(inheritedDuotone) !== JSON.stringify(loopDuotone)) {
+		if (
+			inheritedDuotone &&
+			JSON.stringify(inheritedDuotone) !== JSON.stringify(loopDuotone)
+		) {
 			if (Array.isArray(inheritedDuotone)) {
 				setAttributes({
 					style: {
@@ -356,7 +479,10 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 		// 2. If the inheritance was JUST cleared, and our Loop still has that exact value, clear it.
 		// This prevents "sticky" attributes while allowing local Loop-level filters to persist.
-		const wasInherited = prevInheritedDuotone.current && JSON.stringify(loopDuotone) === JSON.stringify(prevInheritedDuotone.current);
+		const wasInherited =
+			prevInheritedDuotone.current &&
+			JSON.stringify(loopDuotone) ===
+				JSON.stringify(prevInheritedDuotone.current);
 		if (!inheritedDuotone && wasInherited) {
 			setAttributes({
 				duotone: undefined,
@@ -367,9 +493,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 								? {
 										...attributes.style.color,
 										duotone: undefined,
-								  }
+									}
 								: undefined,
-					  }
+						}
 					: undefined,
 			});
 		}
@@ -435,9 +561,13 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						page_number: undefined,
 						gallery_pagination: false,
 					});
-					currentInclude = (response.videos || []).map((v) => v.attachment_id.toString());
-				} catch (error) {
-					currentInclude = (videos || []).map((v) => v.attachment_id.toString());
+					currentInclude = (response.videos || []).map((v) =>
+						v.attachment_id.toString()
+					);
+				} catch {
+					currentInclude = (videos || []).map((v) =>
+						v.attachment_id.toString()
+					);
 				}
 			}
 
@@ -485,14 +615,13 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			videos,
 			parentClientId,
 			updateBlockAttributes,
+			previewPostId,
 		]
 	);
 
 	const handleAddVideo = useCallback(async () => {
 		let currentInclude = queryAttributes.gallery_include
-			? queryAttributes.gallery_include
-					.split(',')
-					.map((id) => id.trim())
+			? queryAttributes.gallery_include.split(',').map((id) => id.trim())
 			: [];
 
 		// If we're not already in manual mode, we need to fetch ALL current IDs
@@ -506,10 +635,14 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					page_number: undefined, // Remove page limit
 					gallery_pagination: false,
 				});
-				currentInclude = (response.videos || []).map((v) => v.attachment_id.toString());
-			} catch (error) {
+				currentInclude = (response.videos || []).map((v) =>
+					v.attachment_id.toString()
+				);
+			} catch {
 				// Fallback to current page results if fetch fails
-				currentInclude = (videos || []).map((v) => v.attachment_id.toString());
+				currentInclude = (videos || []).map((v) =>
+					v.attachment_id.toString()
+				);
 			}
 		} else {
 			// Already manual
@@ -553,6 +686,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		videos,
 		parentClientId,
 		updateBlockAttributes,
+		previewPostId,
 	]);
 
 	const handleDragEnd = useCallback(
@@ -572,7 +706,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					try {
 						const response = await getVideoGallery({
 							...queryAttributes,
-							gallery_id: queryAttributes.gallery_id || previewPostId,
+							gallery_id:
+								queryAttributes.gallery_id || previewPostId,
 							gallery_per_page: -1,
 							page_number: undefined,
 							gallery_pagination: false,
@@ -580,7 +715,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						fullIds = (response.videos || []).map((v) =>
 							v.attachment_id.toString()
 						);
-					} catch (error) {
+					} catch {
 						fullIds = (videos || []).map((v) =>
 							v.attachment_id.toString()
 						);
@@ -606,7 +741,13 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				}
 			}
 		},
-		[queryAttributes, videos, parentClientId, updateBlockAttributes]
+		[
+			queryAttributes,
+			videos,
+			parentClientId,
+			updateBlockAttributes,
+			previewPostId,
+		]
 	);
 
 	/**
@@ -624,8 +765,14 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		previewContext,
 		parentFlags = {}
 	) => {
-		const targetPostId = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? video.parent_id : ( video.attachment_id || video.id );
-		const targetPostType = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? 'post' : 'attachment';
+		const targetPostId =
+			vpContext.resolved.prioritizePostData && video.parent_id
+				? video.parent_id
+				: video.attachment_id || video.id;
+		const targetPostType =
+			vpContext.resolved.prioritizePostData && video.parent_id
+				? 'post'
+				: 'attachment';
 
 		return previewBlocks.map((block, index) => {
 			const {
@@ -686,7 +833,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							'videopack/embedcode': currentFlags.embedcode,
 							'videopack/postId': targetPostId,
 							'videopack/postType': targetPostType,
-							'videopack/attachmentId': video.attachment_id || video.id,
+							'videopack/attachmentId':
+								video.attachment_id || video.id,
 							'videopack/parentPostId': video.parent_id,
 							'videopack/title': video.title,
 							'videopack/caption': video.caption,
@@ -695,7 +843,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 								video.player_vars?.full_player_html ||
 								'',
 							'videopack/views': video.starts,
-							'videopack/duration': video.duration || video.player_vars?.duration,
+							'videopack/duration':
+								video.duration || video.player_vars?.duration,
 							'videopack/loopDuotoneId': resolvedDuotoneClass,
 						}}
 					>
@@ -704,20 +853,21 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 							// If innerBlocks are empty for a container, try to hydrate from default templates
 							if (blocksToRender.length === 0) {
-								const globalOpts = videopack_config?.options || {};
+								const globalOpts =
+									videopack_config?.options || {};
 								if (name === 'videopack/player-container') {
 									blocksToRender = [
 										{
 											name: 'videopack/player',
 											attributes: {},
-											innerBlocks: []
-										}
+											innerBlocks: [],
+										},
 									];
 									if (globalOpts.views !== false) {
 										blocksToRender.push({
 											name: 'videopack/view-count',
 											attributes: {},
-											innerBlocks: []
+											innerBlocks: [],
 										});
 									}
 								} else if (name === 'videopack/player') {
@@ -731,25 +881,27 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 										blocksToRender.push({
 											name: 'videopack/title',
 											attributes: {},
-											innerBlocks: []
+											innerBlocks: [],
 										});
 									}
 									if (globalOpts.watermark) {
 										blocksToRender.push({
 											name: 'videopack/watermark',
 											attributes: {},
-											innerBlocks: []
+											innerBlocks: [],
 										});
 									}
 								}
 							}
 
-							return blocksToRender.length > 0 ? renderBlockPreview(
-								blocksToRender,
-								video,
-								previewContext,
-								currentFlags
-							) : null;
+							return blocksToRender.length > 0
+								? renderBlockPreview(
+										blocksToRender,
+										video,
+										previewContext,
+										currentFlags
+									)
+								: null;
 						})()}
 					</VideopackPreview>
 				);
@@ -769,8 +921,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			);
 		});
 	};
-
-
 
 	return (
 		<>
@@ -830,15 +980,34 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							<div className="videopack-collection-grid">
 								{videos.map((video, index) => {
 									const isEditableTemplate = index === 0;
-									const targetPostId = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? video.parent_id : ( video.attachment_id || video.id );
-									const targetPostType = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? 'post' : 'attachment';
+									const targetPostId =
+										vpContext.resolved.prioritizePostData &&
+										video.parent_id
+											? video.parent_id
+											: video.attachment_id || video.id;
+									const targetPostType =
+										vpContext.resolved.prioritizePostData &&
+										video.parent_id
+											? 'post'
+											: 'attachment';
 
 									return (
 										<SortableItem
-											key={video.attachment_id || video.id}
+											key={
+												video.attachment_id || video.id
+											}
 											id={video.attachment_id || video.id}
-											isEditableTemplate={isEditableTemplate}
-											isPreview={vpContext.resolved.isPreview || isTrue(context['videopack/isPreview'])}
+											isEditableTemplate={
+												isEditableTemplate
+											}
+											isPreview={
+												vpContext.resolved.isPreview ||
+												isTrue(
+													context[
+														'videopack/isPreview'
+													]
+												)
+											}
 											onRemove={handleRemoveItem}
 											onEdit={handleEditItem}
 											onAddVideo={handleAddVideo}
@@ -850,22 +1019,56 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 													...vpContext.sharedContext,
 													postId: targetPostId,
 													postType: targetPostType,
-													'videopack/postId': targetPostId,
-													'videopack/postType': targetPostType,
-													'videopack/attachmentId': video.attachment_id || video.id,
-													'videopack/title': video.title,
-													'videopack/caption': video.caption,
-													'videopack/views': video.views || video.starts || (video.meta?.['_videopack-meta']?.starts),
-													'videopack/duration': video.duration || (video.meta?.['_videopack-meta']?.duration),
-													'videopack/embedlink': video.embed_url || video.player_vars?.full_player_html || '',
-													'videopack/parentPostId': video.parent_id,
-													'videopack/totalPages': totalPagesCount,
-													'videopack/totalResults': totalResultsCount,
-													'videopack/loopDuotoneId': resolvedDuotoneClass,
+													'videopack/postId':
+														targetPostId,
+													'videopack/postType':
+														targetPostType,
+													'videopack/attachmentId':
+														video.attachment_id ||
+														video.id,
+													'videopack/title':
+														video.title,
+													'videopack/caption':
+														video.caption,
+													'videopack/views':
+														video.views ||
+														video.starts ||
+														video.meta?.[
+															'_videopack-meta'
+														]?.starts,
+													'videopack/duration':
+														video.duration ||
+														video.meta?.[
+															'_videopack-meta'
+														]?.duration,
+													'videopack/embedlink':
+														video.embed_url ||
+														video.player_vars
+															?.full_player_html ||
+														'',
+													'videopack/parentPostId':
+														video.parent_id,
+													'videopack/totalPages':
+														totalPagesCount,
+													'videopack/totalResults':
+														totalResultsCount,
+													'videopack/loopDuotoneId':
+														resolvedDuotoneClass,
 												}}
 											>
-												<div className={resolvedDuotoneClass}>
-													{(isEditableTemplate && !vpContext.resolved.isPreview && !isTrue(context['videopack/isPreview'])) ? (
+												<div
+													className={
+														resolvedDuotoneClass
+													}
+												>
+													{isEditableTemplate &&
+													!vpContext.resolved
+														.isPreview &&
+													!isTrue(
+														context[
+															'videopack/isPreview'
+														]
+													) ? (
 														<InnerBlocks
 															templateLock={false}
 															renderAppender={
@@ -894,81 +1097,3 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		</>
 	);
 }
-
-/**
- * Renders a single block preview item.
- */
-const PreviewItem = ({ block, video, previewContext, parentFlags, vpContext, resolvedDuotoneClass }) => {
-	const [width, setWidth] = useState(400);
-	const containerRef = useRef();
-	const ActualBlockPreview = BlockPreview || __experimentalBlockPreview;
-
-	useEffect(() => {
-		if (!containerRef.current) return;
-		let timeoutId;
-		const observer = new ResizeObserver((entries) => {
-			for (const entry of entries) {
-				if (entry.contentRect.width > 0) {
-					const newWidth = entry.contentRect.width;
-					clearTimeout(timeoutId);
-					timeoutId = setTimeout(() => {
-						setWidth((prev) => {
-							if (Math.abs(prev - newWidth) > 2) {
-								return newWidth;
-							}
-							return prev;
-						});
-					}, 100);
-				}
-			}
-		});
-		observer.observe(containerRef.current);
-		return () => {
-			observer.disconnect();
-			clearTimeout(timeoutId);
-		};
-	}, []);
-
-	if (!ActualBlockPreview) {
-		return <div>{block.name}</div>;
-	}
-
-	const targetPostId = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? video.parent_id : ( video.attachment_id || video.id );
-	const targetPostType = ( vpContext.resolved.prioritizePostData && video.parent_id ) ? 'post' : 'attachment';
-
-	return (
-		<div ref={containerRef} className="videopack-block-preview-external">
-			<BlockContextProvider
-				value={{
-					...previewContext,
-					...parentFlags,
-					postId: targetPostId,
-					postType: targetPostType,
-					'videopack/postId': targetPostId,
-					'videopack/postType': targetPostType,
-					'videopack/attachmentId': video.attachment_id || video.id,
-					'videopack/parentPostId': video.parent_id,
-					'videopack/video': video,
-				}}
-			>
-				<div className={resolvedDuotoneClass}>
-					<ActualBlockPreview
-						blocks={[block]}
-						viewportWidth={width}
-						context={{
-							...previewContext,
-							...parentFlags,
-							postId: targetPostId,
-							postType: targetPostType,
-							'videopack/postId': targetPostId,
-							'videopack/postType': targetPostType,
-							'videopack/parentPostId': video.parent_id,
-							'videopack/loopDuotoneId': resolvedDuotoneClass,
-						}}
-					/>
-				</div>
-			</BlockContextProvider>
-		</div>
-	);
-};
-

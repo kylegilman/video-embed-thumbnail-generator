@@ -38,10 +38,7 @@ import VideoSettings from '../../components/VideoSettings/VideoSettings.js';
 import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../components/AdditionalFormats/AdditionalFormats.js';
 import useVideoProbe from '../../hooks/useVideoProbe.js';
-import useVideopackContext, {
-	VIDEOPACK_CONTEXT_KEYS,
-	isTrue,
-} from '../../hooks/useVideopackContext';
+import useVideopackContext from '../../hooks/useVideopackContext';
 import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = ['video'];
@@ -55,15 +52,14 @@ const ALLOWED_BLOCKS = [
 /**
  * Edit component for the Videopack Video block.
  *
- * @param {Object}   props               Component props.
- * @param {Object}   props.attributes    Block attributes.
- * @param {string}   props.clientId      Block client ID.
- * @param {Function} props.setAttributes Function to update block attributes.
- * @param {boolean}  props.isSelected    Whether the block is currently selected.
- * @param {Object}   props.context       Block context.
- * @return {Object}                      The rendered component.
+ * @param {Object}   root0               Component props.
+ * @param {Object}   root0.attributes    Block attributes.
+ * @param {string}   root0.clientId      Block client ID.
+ * @param {Function} root0.setAttributes Attribute setter.
+ * @param {Object}   root0.context       Block context.
+ * @return {Element}                     The rendered component.
  */
-const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
+export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const { id, src } = attributes;
 	const [options, setOptions] = useState();
 	const config =
@@ -107,17 +103,16 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 
 	const vpContext = useVideopackContext(attributes, context);
 	const {
-		resolved: {
-			attachmentId: resolvedAttachmentId,
-			postId: resolvedPostIdFromContext,
-			postType: resolvedPostType,
-			isStandalone: inheritedIsStandalone,
-			isDiscovering,
-		},
 		resolved: effectiveDesign,
 		style: contextStyle,
 		classes: contextClasses,
 	} = vpContext;
+
+	const {
+		attachmentId: resolvedAttachmentId,
+		postId: resolvedPostIdFromContext,
+		isDiscovering,
+	} = effectiveDesign;
 
 	const isDynamic =
 		(context['videopack/postId'] || context.postId) &&
@@ -125,7 +120,6 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			Number(editorPostId) ||
 			isSiteEditor);
 	const isStandalone = !isDynamic;
-	const shouldPersist = isStandalone;
 
 	const effectiveId = resolvedAttachmentId;
 
@@ -238,15 +232,6 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				context['videopack/embedlink'] ||
 				attachment?.videopack?.embed_url ||
 				attributes.embedlink,
-			sources: attachment?.videopack?.sources || attributes.sources || [],
-			source_groups:
-				attachment?.videopack?.source_groups ||
-				attributes.source_groups ||
-				{},
-			text_tracks:
-				attachment?.videopack?.text_tracks ||
-				attributes.text_tracks ||
-				[],
 		};
 	}, [attributes, attachment, options, config, context, effectiveDesign]);
 
@@ -266,7 +251,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	}, []);
 
 	const setAttributesFromMedia = useCallback(
-		(attachmentObject, shouldPersist = true) => {
+		(attachmentObject, forcePersist = true) => {
 			if (!isMountedRef.current) {
 				return;
 			}
@@ -300,19 +285,6 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					: undefined,
 				width: attachmentObject.media_details?.width,
 				height: attachmentObject.media_details?.height,
-				sources:
-					attachmentObject.videopack?.sources ||
-					(attachmentObject.source_url || attachmentObject.url
-						? [
-								{
-									src:
-										attachmentObject.source_url ||
-										attachmentObject.url,
-								},
-							]
-						: []),
-				source_groups: attachmentObject.videopack?.source_groups || {},
-				text_tracks: attachmentObject.videopack?.text_tracks || [],
 				showCaption: !!(
 					attachmentObject.caption?.raw ??
 					attachmentObject.caption?.rendered
@@ -324,7 +296,6 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					const newVal = media_attributes[key];
 					const oldVal = attributesRef.current[key];
 
-					// Handle deep comparison for arrays (e.g., text_tracks)
 					const isDifferent = Array.isArray(newVal)
 						? JSON.stringify(newVal) !== JSON.stringify(oldVal)
 						: newVal !== oldVal;
@@ -334,20 +305,13 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 						newVal !== null &&
 						isDifferent
 					) {
-						// For metadata that can be manually edited (title, caption),
-						// we only want to overwrite if the current attribute is EMPTY.
-						// This prevents background "hydration" from wiping out user edits.
 						const isMetadata = ['title', 'caption'].includes(key);
 						if (isMetadata) {
 							if (!oldVal) {
 								acc[key] = newVal;
 							}
-						} else {
-							// For core attributes (id, src, etc), we persist if standalone
-							// or if the current value is missing.
-							if (shouldPersist || !oldVal) {
-								acc[key] = newVal;
-							}
+						} else if (forcePersist || !oldVal) {
+							acc[key] = newVal;
 						}
 					}
 					return acc;
@@ -379,13 +343,8 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 			if (Object.keys(updatedAttributes).length > 0) {
 				const filteredUpdates = { ...updatedAttributes };
 
-				// We always want to persist the ID if it's being set.
-				// For other attributes, we only persist them if we are NOT in a contextual loop
-				// AND they are not in the dynamicKeys list.
 				if (attachmentObject.id) {
 					dynamicKeys.forEach((key) => {
-						// Always strip dynamic attributes if we have an ID to keep the block markup lean.
-						// The frontend and editor will resolve these dynamically from the ID.
 						if (key in filteredUpdates) {
 							delete filteredUpdates[key];
 						}
@@ -397,13 +356,11 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				}
 			}
 		},
-		[setAttributes, shouldPersist]
+		[setAttributes]
 	);
 
 	useEffect(() => {
 		if (effectiveId && typeof effectiveId === 'number') {
-			// Avoid redundant fetches if we already have the correct attachment
-			// or if we've already tried fetching this specific ID.
 			if (
 				attachment?.id === effectiveId ||
 				lastFetchedIdRef.current === effectiveId
@@ -424,8 +381,6 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					}
 					setAttachment(record);
 					setHasResolved(true);
-					// Always hydrate missing metadata from the record to ensure the context
-					// provided to inner blocks (like the player engine) is complete.
 					setAttributesFromMedia(record, isStandalone);
 				})
 				.catch((error) => {
@@ -456,6 +411,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 		setAttributesFromMedia,
 		setAttributes,
 		attachment,
+		isStandalone,
 	]);
 
 	const onUploadError = useCallback(
@@ -501,7 +457,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				}
 				try {
 					filename = decodeURIComponent(filename);
-				} catch (e) {
+				} catch {
 					// Ignore decoding errors
 				}
 
@@ -522,15 +478,6 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	useEffect(() => {
 		getSettings().then((response) => {
 			setOptions(response);
-			// Hydrate embed_method from global settings if it's missing from block attributes
-			// We skip persistence if we are in a contextual (loop) environment
-			if (
-				response?.embed_method &&
-				!attributesRef.current.embed_method &&
-				isStandalone
-			) {
-				// We no longer call setAttributes here to keep the block markup clean
-			}
 		});
 
 		if (!hasAttemptedInitialUpload.current && !id && isBlobURL(src)) {
@@ -579,7 +526,6 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 	const { isProbing, probedMetadata } = useVideoProbe(src);
 	const [probedMetadataOverride, setProbedMetadataOverride] = useState(null);
 
-	// Sync metadata from attachment records when it loads
 	useEffect(() => {
 		if (attachment?.media_details && !probedMetadata) {
 			const { width, height, duration } = attachment.media_details;
@@ -587,7 +533,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 				width,
 				height,
 				duration,
-				isTainted: false, // Internal media tags are never tainted
+				isTainted: false,
 			});
 		} else if (!src) {
 			setProbedMetadataOverride(null);
@@ -652,6 +598,141 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 		);
 	};
 
+	let blockContent;
+
+	if (isDiscovering && !effectiveId) {
+		blockContent = (
+			<div className="videopack-video-discovery-loading">
+				<Placeholder
+					icon={<BlockIcon icon={icon} />}
+					label={__(
+						'Videopack Video',
+						'video-embed-thumbnail-generator'
+					)}
+				>
+					<Spinner />
+					<p>
+						{__(
+							'Searching for attached video…',
+							'video-embed-thumbnail-generator'
+						)}
+					</p>
+				</Placeholder>
+			</div>
+		);
+	} else if (!src && !effectiveId) {
+		blockContent = (
+			<MediaPlaceholder
+				icon={<BlockIcon icon={icon} />}
+				onSelect={onSelectVideo}
+				onSelectURL={onSelectURL}
+				accept="video/*"
+				allowedTypes={ALLOWED_MEDIA_TYPES}
+				value={attributes}
+				onError={onUploadError}
+				placeholder={placeholder}
+			/>
+		);
+	} else if (!id && src && isBlobURL(src)) {
+		blockContent = (
+			<div className="components-placeholder block-editor-media-placeholder is-large has-illustration">
+				<div className="components-placeholder__label">
+					<BlockIcon icon={icon} />
+					{__('Videopack Video', 'video-embed-thumbnail-generator')}
+				</div>
+				<div className="components-placeholder__fieldset">
+					<div className="videopack-uploading-overlay-content">
+						<p>
+							{__(
+								'Uploading…',
+								'video-embed-thumbnail-generator'
+							)}
+						</p>
+						<div className="videopack-progress-bar-container">
+							<ProgressBar />
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	} else {
+		blockContent = (
+			<>
+				<BlockControls group="other">
+					<MediaReplaceFlow
+						mediaId={id}
+						mediaURL={src}
+						allowedTypes={ALLOWED_MEDIA_TYPES}
+						accept="video/*"
+						onSelect={onSelectVideo}
+						onSelectURL={onSelectURL}
+						onError={onUploadError}
+					/>
+					<ToolbarButton
+						icon={resetIcon}
+						label={__(
+							'Restart Video',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={() =>
+							setAttributes({
+								restartCount:
+									(attributes.restartCount || 0) + 1,
+							})
+						}
+					/>
+				</BlockControls>
+				<BlockControls>
+					<ToolbarButton
+						icon={captionIcon}
+						label={__(
+							'Add caption',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={() => {
+							const hasCaption = innerBlocks.some(
+								(block) => block.name === 'videopack/caption'
+							);
+							if (!hasCaption) {
+								insertBlock(
+									createBlock('videopack/caption', {
+										caption: attributes.caption || '',
+									}),
+									innerBlocks.length,
+									clientId
+								);
+							}
+						}}
+					/>
+				</BlockControls>
+
+				<figure
+					style={{
+						...contextStyle,
+						display: src || effectiveId ? 'block' : 'none',
+					}}
+					aria-hidden={!(src || effectiveId)}
+					className={`videopack-video-block-container videopack-wrapper ${contextClasses}${
+						effectiveDesign.isPreview ? ' is-preview' : ''
+					}`}
+				>
+					<VideopackContextBridge
+						key={effectiveId || resolvedPostIdFromContext}
+						attributes={resolvedAttributes}
+						context={context}
+						overrides={bridgeOverrides}
+					>
+						<InnerBlocks
+							template={template}
+							templateLock={false}
+							allowedBlocks={ALLOWED_BLOCKS}
+						/>
+					</VideopackContextBridge>
+				</figure>
+			</>
+		);
+	}
+
 	return (
 		<>
 			<InspectorControls>
@@ -697,139 +778,7 @@ const Edit = ({ clientId, attributes, setAttributes, isSelected, context }) => {
 					probedMetadata={effectiveMetadata}
 				/>
 			</InspectorControls>
-			<figure {...blockProps}>
-				{isDiscovering && !effectiveId ? (
-					<div className="videopack-video-discovery-loading">
-						<Placeholder
-							icon={<BlockIcon icon={icon} />}
-							label={__(
-								'Videopack Video',
-								'video-embed-thumbnail-generator'
-							)}
-						>
-							<Spinner />
-							<p>
-								{__(
-									'Searching for attached video…',
-									'video-embed-thumbnail-generator'
-								)}
-							</p>
-						</Placeholder>
-					</div>
-				) : !src && !effectiveId ? (
-					<MediaPlaceholder
-						icon={<BlockIcon icon={icon} />}
-						onSelect={onSelectVideo}
-						onSelectURL={onSelectURL}
-						accept="video/*"
-						allowedTypes={ALLOWED_MEDIA_TYPES}
-						value={attributes}
-						onError={onUploadError}
-						placeholder={placeholder}
-					/>
-				) : !id && src && isBlobURL(src) ? (
-					<div className="components-placeholder block-editor-media-placeholder is-large has-illustration">
-						<div className="components-placeholder__label">
-							<BlockIcon icon={icon} />
-							{__(
-								'Videopack Video',
-								'video-embed-thumbnail-generator'
-							)}
-						</div>
-						<div className="components-placeholder__fieldset">
-							<div className="videopack-uploading-overlay-content">
-								<p>
-									{__(
-										'Uploading…',
-										'video-embed-thumbnail-generator'
-									)}
-								</p>
-								<div className="videopack-progress-bar-container">
-									<ProgressBar />
-								</div>
-							</div>
-						</div>
-					</div>
-				) : (
-					<>
-						<BlockControls group="other">
-							<MediaReplaceFlow
-								mediaId={id}
-								mediaURL={src}
-								allowedTypes={ALLOWED_MEDIA_TYPES}
-								accept="video/*"
-								onSelect={onSelectVideo}
-								onSelectURL={onSelectURL}
-								onError={onUploadError}
-							/>
-							<ToolbarButton
-								icon={resetIcon}
-								label={__(
-									'Restart Video',
-									'video-embed-thumbnail-generator'
-								)}
-								onClick={() =>
-									setAttributes({
-										restartCount:
-											(attributes.restartCount || 0) + 1,
-									})
-								}
-							/>
-						</BlockControls>
-						<BlockControls>
-							<ToolbarButton
-								icon={captionIcon}
-								label={__(
-									'Add caption',
-									'video-embed-thumbnail-generator'
-								)}
-								onClick={() => {
-									const hasCaption = innerBlocks.some(
-										(block) =>
-											block.name === 'videopack/caption'
-									);
-									if (!hasCaption) {
-										insertBlock(
-											createBlock('videopack/caption', {
-												caption:
-													attributes.caption || '',
-											}),
-											innerBlocks.length,
-											clientId
-										);
-									}
-								}}
-							/>
-						</BlockControls>
-
-						<figure
-							style={{
-								...contextStyle,
-								display: src || effectiveId ? 'block' : 'none',
-							}}
-							aria-hidden={!(src || effectiveId)}
-							className={`videopack-video-block-container videopack-wrapper ${contextClasses}${
-								effectiveDesign.isPreview ? ' is-preview' : ''
-							}`}
-						>
-							<VideopackContextBridge
-								key={effectiveId || resolvedPostIdFromContext}
-								attributes={resolvedAttributes}
-								context={context}
-								overrides={bridgeOverrides}
-							>
-								<InnerBlocks
-									template={template}
-									templateLock={false}
-									allowedBlocks={ALLOWED_BLOCKS}
-								/>
-							</VideopackContextBridge>
-						</figure>
-					</>
-				)}
-			</figure>
+			<figure {...blockProps}>{blockContent}</figure>
 		</>
 	);
-};
-
-export default Edit;
+}

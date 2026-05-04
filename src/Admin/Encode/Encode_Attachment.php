@@ -171,10 +171,11 @@ class Encode_Attachment {
 	/**
 	 * Constructor.
 	 *
-	 * @param array                             $options        Plugin options.
-	 * @param \Videopack\Admin\Formats\Registry $format_registry Video formats registry.
-	 * @param int|string                        $id       The ID of the video attachment or source URL.
-	 * @param string|null                       $url      Optional. The URL of the video (if not an attachment).
+	 * @param array                             $options          Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry  Video formats registry.
+	 * @param int|string                        $id               The ID of the video attachment or source URL.
+	 * @param string|null                       $url              Optional. The URL of the video (if not an attachment).
+	 * @param array                             $browser_metadata Optional. Browser-provided metadata for the video.
 	 */
 	public function __construct(
 		array $options,
@@ -183,11 +184,11 @@ class Encode_Attachment {
 		string $url = null,
 		array $browser_metadata = array()
 	) {
-		$this->options          = $options;
-		$this->format_registry  = $format_registry;
-		$this->id               = $id;
-		$this->url              = $url;
-		$this->browser_metadata = $browser_metadata;
+		$this->options            = $options;
+		$this->format_registry    = $format_registry;
+		$this->id                 = $id;
+		$this->url                = $url;
+		$this->browser_metadata   = $browser_metadata;
 		$attachment_meta          = new Attachment_Meta( $this->options );
 		$this->attachment_manager = new Attachment( $this->options, $format_registry, $attachment_meta );
 		$this->uploads            = (array) wp_upload_dir();
@@ -773,7 +774,7 @@ class Encode_Attachment {
 			}
 		}
 
-		// Third, check for any "Full Resolution" format that is enabled. 
+		// Third, check for any "Full Resolution" format that is enabled.
 		// These are always valid replacement candidates.
 		$res_id   = (string) $format_obj->get_resolution()->get_id();
 		$codec_id = (string) $format_obj->get_codec()->get_id();
@@ -1187,7 +1188,7 @@ class Encode_Attachment {
 		}
 		return $this->video_metadata;
 	}
- 
+
 	/**
 	 * Get the video duration in microseconds.
 	 *
@@ -1197,7 +1198,7 @@ class Encode_Attachment {
 		$metadata = $this->get_video_metadata();
 		return ( $metadata && $metadata->duration ) ? (int) round( $metadata->duration * 1000000 ) : 0;
 	}
- 
+
 	/**
 	 * Get the video title.
 	 *

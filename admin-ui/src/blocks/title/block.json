@@ -12,10 +12,7 @@
 	],
 	"icon": "heading",
 	"description": "Overlay title and action buttons for the video player.",
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"usesContext": ["postId", "postType"],
 	"attributes": {
 		"title": {
 			"type": "string",

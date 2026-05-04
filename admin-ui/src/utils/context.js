@@ -7,7 +7,14 @@
  * @return {boolean} True if truthy.
  */
 export const isTrue = (val) => {
-	if (val === true || val === 'true' || val === 1 || val === '1' || val === 'on' || val === 'yes') {
+	if (
+		val === true ||
+		val === 'true' ||
+		val === 1 ||
+		val === '1' ||
+		val === 'on' ||
+		val === 'yes'
+	) {
 		return true;
 	}
 	return false;
@@ -17,7 +24,7 @@ export const isTrue = (val) => {
  * Resolves an effective design value by checking local overrides, inherited context,
  * and finally global plugin defaults.
  *
- * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {string} key        The key to resolve (e.g., 'skin', 'title_color').
  * @param {Object} attributes The block's own attributes.
  * @param {Object} context    The inherited block context.
  * @return {*} The resolved value.
@@ -32,12 +39,20 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	// 1. Check local attribute override
 	if (isValid(attributes[attrKey])) {
 		// Special case for isPreview: if local is false but context is true, prefer context true
-		if (attrKey === 'isPreview' && !attributes[attrKey] && isTrue(context[contextKey])) {
+		if (
+			attrKey === 'isPreview' &&
+			!attributes[attrKey] &&
+			isTrue(context[contextKey])
+		) {
 			return true;
 		}
 		return attributes[attrKey];
 	}
-	if (attrKey === 'postId' && isValid(attributes.id) && !isValid(context[contextKey])) {
+	if (
+		attrKey === 'postId' &&
+		isValid(attributes.id) &&
+		!isValid(context[contextKey])
+	) {
 		return attributes.id;
 	}
 	if (attrKey === 'attachmentId' && isValid(attributes.id)) {
@@ -52,18 +67,33 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	// If we are resolving postType and we have an attachmentId but no explicit postType context,
 	// assume it's an attachment.
 	if (attrKey === 'postType') {
-		const attachmentId = getEffectiveValue('attachmentId', attributes, context);
+		const attachmentId = getEffectiveValue(
+			'attachmentId',
+			attributes,
+			context
+		);
 		const postId = getEffectiveValue('postId', attributes, context);
-		if (attachmentId && attachmentId === postId && !isValid(context[contextKey])) {
+		if (
+			attachmentId &&
+			attachmentId === postId &&
+			!isValid(context[contextKey])
+		) {
 			return 'attachment';
 		}
 	}
 
 	// 2b. Check standard Gutenberg context fallbacks
-	if (attrKey === 'postType' && isValid(attributes.id) && !isValid(context[contextKey])) {
+	if (
+		attrKey === 'postType' &&
+		isValid(attributes.id) &&
+		!isValid(context[contextKey])
+	) {
 		return 'attachment';
 	}
-	if ((attrKey === 'postId' || attrKey === 'postType') && isValid(context[attrKey])) {
+	if (
+		(attrKey === 'postId' || attrKey === 'postType') &&
+		isValid(context[attrKey])
+	) {
 		return context[attrKey];
 	}
 
@@ -76,7 +106,12 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		if (isValid(localValue)) {
 			return localValue;
 		}
-		return globalOptions.skin || globalDefaults.skin || videopack_config?.skin || 'vjs-theme-videopack';
+		return (
+			globalOptions.skin ||
+			globalDefaults.skin ||
+			videopack_config?.skin ||
+			'vjs-theme-videopack'
+		);
 	}
 
 	if (attrKey === 'align') {
@@ -87,12 +122,20 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		// Collections use gallery_align as their global default
 		const isCollection = attributes.layout || context['videopack/layout'];
 		if (isCollection) {
-			return globalOptions.gallery_align || globalOptions.align || globalDefaults.align || '';
+			return (
+				globalOptions.gallery_align ||
+				globalOptions.align ||
+				globalDefaults.align ||
+				''
+			);
 		}
 		return globalOptions.align || globalDefaults.align || '';
 	}
 
-	const globalValue = globalOptions[attrKey] ?? globalDefaults[attrKey] ?? videopack_config?.[attrKey];
+	const globalValue =
+		globalOptions[attrKey] ??
+		globalDefaults[attrKey] ??
+		videopack_config?.[attrKey];
 	const finalValue = isValid(globalValue) ? globalValue : undefined;
 
 	return finalValue;

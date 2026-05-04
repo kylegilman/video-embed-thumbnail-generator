@@ -35,6 +35,10 @@ import { videopack } from '../../assets/icon';
 import TextControlOnBlur from '../settings/components/TextControlOnBlur';
 import './settings-network.scss';
 
+const capitalizeFirstLetter = (string) => {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
 /**
  * NetworkSettingsPage component.
  *
@@ -168,10 +172,6 @@ const NetworkSettingsPage = () => {
 			.catch((error) => {
 				console.error(error);
 			});
-	};
-
-	const capitalizeFirstLetter = (string) => {
-		return string.charAt(0).toUpperCase() + string.slice(1);
 	};
 
 	const RolesCheckboxes = () => {

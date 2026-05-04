@@ -9,7 +9,6 @@ import {
 	Button,
 	CheckboxControl,
 	Flex,
-	FlexItem,
 	__experimentalConfirmDialog as ConfirmDialog,
 	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	PanelBody,

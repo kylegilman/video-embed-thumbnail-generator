@@ -6,16 +6,11 @@ import {
 	SelectControl,
 	TextControl,
 	ToggleControl,
-	Icon,
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
-import { plus, close, dragHandle } from '@wordpress/icons';
-
+import { plus, close } from '@wordpress/icons';
 
 const TextTracks = ({ tracks = [], onChange }) => {
-	const [isAdding, setIsAdding] = useState(false);
-
 	const updateTrack = (index, newValues) => {
 		const newTracks = [...tracks];
 		newTracks[index] = { ...newTracks[index], ...newValues };
@@ -30,7 +25,6 @@ const TextTracks = ({ tracks = [], onChange }) => {
 	const addTrack = (track) => {
 		const newTracks = [...tracks, track];
 		onChange(newTracks);
-		setIsAdding(false);
 	};
 
 	const handleMediaSelect = (media) => {

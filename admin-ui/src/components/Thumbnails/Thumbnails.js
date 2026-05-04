@@ -60,7 +60,8 @@ const Thumbnails = ({
 		videopack_config.ffmpeg_exists !== 'notinstalled';
 	const { editPost } = useDispatch('core/editor') || {};
 	const isEditingAttachment = useSelect(
-		(select) => select('core/editor')?.getCurrentPostType() === 'attachment',
+		(select) =>
+			select('core/editor')?.getCurrentPostType() === 'attachment',
 		[]
 	);
 
@@ -159,7 +160,7 @@ const Thumbnails = ({
 		try {
 			const url = new URL(src, window.location.origin);
 			return url.origin !== window.location.origin;
-		} catch (e) {
+		} catch {
 			return false;
 		}
 	})();
@@ -257,7 +258,7 @@ const Thumbnails = ({
 								newThumbCanvases.push(thumb);
 								setThumbChoices([...newThumbCanvases]);
 							}
-						} catch (ffmpegError) {
+						} catch {
 							// Silently handle FFmpeg fallback errors
 						}
 					}
@@ -587,11 +588,8 @@ const Thumbnails = ({
 					} else {
 						setIsSaving(false);
 					}
-				} catch (ffmpegError) {
-					console.error(
-						'FFmpeg pinpoint capture failed:',
-						ffmpegError
-					);
+				} catch {
+					console.error('FFmpeg pinpoint capture failed');
 					setIsSaving(false);
 				}
 			} else {
@@ -795,7 +793,10 @@ const Thumbnails = ({
 									src={thumb.src}
 									alt={sprintf(
 										/* translators: %d is the thumbnail index */
-										__('Thumbnail %d', 'video-embed-thumbnail-generator'),
+										__(
+											'Thumbnail %d',
+											'video-embed-thumbnail-generator'
+										),
 										index + 1
 									)}
 									title={__(

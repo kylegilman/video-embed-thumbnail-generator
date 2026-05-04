@@ -74,9 +74,9 @@ const getPresets = async (attachmentId = null, url = '', probedMetadata = null, 
 /**
  * Fetches already grouped and labeled video sources for a player.
  *
- * @param {number|string} attachmentId   Optional. The video attachment ID.
- * @param {string}        url            Optional. The video source URL.
- * @param {AbortSignal}   signal         Optional. Abort signal.
+ * @param {number|string} attachmentId Optional. The video attachment ID.
+ * @param {string}        url          Optional. The video source URL.
+ * @param {AbortSignal}   signal       Optional. Abort signal.
  */
 const getVideoSources = async (attachmentId = null, url = '', signal = null) => {
   try {
@@ -1220,6 +1220,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./editor.scss */ "./src/blocks/collection/editor.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__);
+/* global videopack_config */
 
 
 
@@ -1275,12 +1276,22 @@ function Edit({
     };
   }, [clientId]);
   const previewPostId = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_2__.useSelect)(select => select('core/editor').getCurrentPostId(), []);
-  const queryParams = {
-    ...attributes,
-    gallery_pagination: hasPaginationBlock,
-    gallery_per_page: effectiveValues.isPreview ? 2 : hasPaginationBlock ? gallery_per_page || effectiveValues.gallery_per_page : effectiveValues.enable_collection_video_limit ? effectiveValues.collection_video_limit || effectiveValues.gallery_per_page : -1,
-    page_number: currentPage || 1
-  };
+  const queryParams = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useMemo)(() => {
+    let galleryPerPage = -1;
+    if (effectiveValues.isPreview) {
+      galleryPerPage = 2;
+    } else if (hasPaginationBlock) {
+      galleryPerPage = gallery_per_page || effectiveValues.gallery_per_page;
+    } else if (effectiveValues.enable_collection_video_limit) {
+      galleryPerPage = effectiveValues.collection_video_limit || effectiveValues.gallery_per_page;
+    }
+    return {
+      ...attributes,
+      gallery_pagination: hasPaginationBlock,
+      gallery_per_page: galleryPerPage,
+      page_number: currentPage || 1
+    };
+  }, [attributes, hasPaginationBlock, effectiveValues.isPreview, effectiveValues.gallery_per_page, effectiveValues.enable_collection_video_limit, effectiveValues.collection_video_limit, gallery_per_page, currentPage]);
   // We fetch query data to power the live preview template and pagination info
   const queryData = (0,_hooks_useVideoQuery__WEBPACK_IMPORTED_MODULE_6__["default"])(queryParams, previewPostId);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
@@ -1328,57 +1339,65 @@ function Edit({
     // If no explicit align is set, apply the effective (global) align class
     !attributes.align && effectiveValues.align ? `align${effectiveValues.align}` : '', effectiveValues.isPreview ? 'is-preview' : '', collectionClasses].filter(Boolean).join(' ')
   });
-  const videos = queryData.videoResults && queryData.videoResults.length > 0 ? queryData.videoResults : effectiveValues.isPreview ? [{
-    attachment_id: 10001,
-    title: 'Sample Video 1',
-    poster_url: videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg',
-    url: videopack_config.url + '/src/images/Adobestock_469037984.mp4',
-    player_vars: {
-      sources: [{
-        src: videopack_config.url + '/src/images/Adobestock_469037984.mp4'
-      }]
+  const videos = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useMemo)(() => {
+    if (queryData.videoResults && queryData.videoResults.length > 0) {
+      return queryData.videoResults;
     }
-  }, {
-    attachment_id: 10002,
-    title: 'Sample Video 2',
-    poster_url: videopack_config.url + '/src/images/Adobestock_287460179_thumb1.jpg',
-    url: videopack_config.url + '/src/images/Adobestock_287460179.mp4',
-    player_vars: {
-      sources: [{
-        src: videopack_config.url + '/src/images/Adobestock_287460179.mp4'
-      }]
+    if (effectiveValues.isPreview) {
+      return [{
+        attachment_id: 10001,
+        title: 'Sample Video 1',
+        poster_url: videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg',
+        url: videopack_config.url + '/src/images/Adobestock_469037984.mp4',
+        player_vars: {
+          sources: [{
+            src: videopack_config.url + '/src/images/Adobestock_469037984.mp4'
+          }]
+        }
+      }, {
+        attachment_id: 10002,
+        title: 'Sample Video 2',
+        poster_url: videopack_config.url + '/src/images/Adobestock_287460179_thumb1.jpg',
+        url: videopack_config.url + '/src/images/Adobestock_287460179.mp4',
+        player_vars: {
+          sources: [{
+            src: videopack_config.url + '/src/images/Adobestock_287460179.mp4'
+          }]
+        }
+      }, {
+        attachment_id: 10003,
+        title: 'Sample Video 3',
+        poster_url: videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg',
+        url: videopack_config.url + '/src/images/Adobestock_469037984.mp4'
+      }, {
+        attachment_id: 10004,
+        title: 'Sample Video 4',
+        poster_url: videopack_config.url + '/src/images/Adobestock_287460179_thumb1.jpg',
+        url: videopack_config.url + '/src/images/Adobestock_287460179.mp4'
+      }, {
+        attachment_id: 10005,
+        title: 'Sample Video 5',
+        poster_url: videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg',
+        url: videopack_config.url + '/src/images/Adobestock_469037984.mp4'
+      }, {
+        attachment_id: 10006,
+        title: 'Sample Video 6',
+        poster_url: videopack_config.url + '/src/images/Adobestock_287460179_thumb1.jpg',
+        url: videopack_config.url + '/src/images/Adobestock_287460179.mp4'
+      }];
     }
-  }, {
-    attachment_id: 10003,
-    title: 'Sample Video 3',
-    poster_url: videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg',
-    url: videopack_config.url + '/src/images/Adobestock_469037984.mp4'
-  }, {
-    attachment_id: 10004,
-    title: 'Sample Video 4',
-    poster_url: videopack_config.url + '/src/images/Adobestock_287460179_thumb1.jpg',
-    url: videopack_config.url + '/src/images/Adobestock_287460179.mp4'
-  }, {
-    attachment_id: 10005,
-    title: 'Sample Video 5',
-    poster_url: videopack_config.url + '/src/images/Adobestock_469037984_thumb1.jpg',
-    url: videopack_config.url + '/src/images/Adobestock_469037984.mp4'
-  }, {
-    attachment_id: 10006,
-    title: 'Sample Video 6',
-    poster_url: videopack_config.url + '/src/images/Adobestock_287460179_thumb1.jpg',
-    url: videopack_config.url + '/src/images/Adobestock_287460179.mp4'
-  }] : [];
+    return [];
+  }, [queryData.videoResults, effectiveValues.isPreview]);
 
-  // The 'videos' array is used for live preview only and should not be persisted 
+  // The 'videos' array is used for live preview only and should not be persisted
   // to block attributes to avoid bloat. The PHP renderer fetches these dynamically.
 
   const videopackContextValue = {
     gallery_pagination: hasPaginationBlock,
     gallery_per_page: effectiveValues.gallery_per_page,
     totalPages: queryData.maxNumPages,
-    currentPage: currentPage,
-    videos: videos
+    currentPage,
+    videos
   };
   const bridgeOverrides = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useMemo)(() => ({
     'videopack/gallery_pagination': hasPaginationBlock,
@@ -1979,6 +1998,15 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Shared Inspector controls for Videopack collections.
  * Used by both the Collection parent block and the Video Loop child block.
+ *
+ * @param {Object}   root0                    Component props.
+ * @param {string}   root0.clientId           Block client ID.
+ * @param {Object}   root0.attributes         Block attributes.
+ * @param {Function} root0.setAttributes      Attribute setter.
+ * @param {Object}   root0.queryData          Query data.
+ * @param {Object}   root0.options            Global options.
+ * @param {boolean}  root0.hasPaginationBlock Whether the block has pagination.
+ * @param {boolean}  root0.isEditingAllPages  Whether all pages are being edited.
  */
 
 function CollectionInspectorControls({
@@ -2025,14 +2053,14 @@ function CollectionInspectorControls({
 
     // Check if specific blocks are INSIDE the thumbnail block
     const hasOverlayBlockInsideThumbnail = thumbnailBlock?.innerBlocks?.some(b => ['videopack/title', 'videopack/duration', 'videopack/view-count'].includes(b.name)) || false;
-    const showTitleSettings = isLightbox || hasOverlayBlockInsideThumbnail;
-    const showPlayerSettings = isLightbox;
-    const showPaginationSettings = hasPagination;
+    const canShowTitle = isLightbox || hasOverlayBlockInsideThumbnail;
+    const canShowPlayer = isLightbox;
+    const canShowPagination = hasPagination;
     return {
-      showPaginationSettings,
-      showTitleSettings,
-      showPlayerSettings,
-      showSkinSettings: showTitleSettings || showPlayerSettings || showPaginationSettings
+      showPaginationSettings: canShowPagination,
+      showTitleSettings: canShowTitle,
+      showPlayerSettings: canShowPlayer,
+      showSkinSettings: canShowTitle || canShowPlayer || canShowPagination
     };
   }, [clientId]);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
@@ -2114,8 +2142,7 @@ function CollectionLayoutSettings({
   const {
     gallery_columns,
     overlay_title,
-    gallery_end,
-    gallery_pagination
+    gallery_end
   } = attributes;
   const updateNumericAttribute = (name, value) => {
     const parsedValue = parseInt(value, 10);
@@ -2428,7 +2455,6 @@ function QuerySettings({
   attributes,
   setAttributes,
   queryData,
-  showArchiveSource = true,
   showManualSource = true
 }) {
   const {
@@ -2574,13 +2600,13 @@ __webpack_require__.r(__webpack_exports__);
 
 /**
  * A wrapper component that resolves Videopack context and bridges it into Gutenberg's block context.
- * 
- * @param {Object} props
- * @param {Object} props.attributes The block attributes.
- * @param {Object} props.context    The block context.
- * @param {Object} [props.overrides] Optional context overrides to merge into the shared context.
- * @param {React.ReactNode} props.children
- * @return {React.ReactElement}
+ *
+ * @param {Object} root0             Component props.
+ * @param {Object} root0.attributes  The block attributes.
+ * @param {Object} root0.context     The block context.
+ * @param {Object} [root0.overrides] Optional context overrides to merge into the shared context.
+ * @param {Node}   root0.children    Children.
+ * @return {Element} The rendered component with context bridge.
  */
 
 function VideopackContextBridge({
@@ -2694,12 +2720,20 @@ function useVideoQuery(attributes = {}, previewPostId) {
     if (isSaving || isAutosaving) {
       return;
     }
+    let resolvedGalleryId;
+    if (['current', 'custom'].includes(gallery_source)) {
+      if (gallery_id) {
+        resolvedGalleryId = parseInt(gallery_id, 10);
+      } else if (previewPostId) {
+        resolvedGalleryId = parseInt(previewPostId, 10);
+      }
+    }
     const args = {
       gallery_orderby: gallery_orderby || 'post_date',
       gallery_order: gallery_order || 'DESC',
       gallery_per_page: parseInt(gallery_per_page, 10) || 6,
       page_number: parseInt(page_number, 10) || 1,
-      gallery_id: ['current', 'custom'].includes(gallery_source) ? gallery_id ? parseInt(gallery_id, 10) : previewPostId ? parseInt(previewPostId, 10) : undefined : undefined,
+      gallery_id: resolvedGalleryId,
       gallery_exclude: gallery_exclude || '',
       gallery_source: gallery_source || 'current',
       gallery_category: gallery_category || '',
@@ -2821,7 +2855,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio'];
+const VIDEOPACK_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange'];
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -2883,8 +2917,12 @@ function useVideopackContext(attributes, context, options = {}) {
             style.fontSize = fontSize;
           }
         }
-        if (lineHeight) style.lineHeight = lineHeight;
-        if (letterSpacing) style.letterSpacing = letterSpacing;
+        if (lineHeight) {
+          style.lineHeight = lineHeight;
+        }
+        if (letterSpacing) {
+          style.letterSpacing = letterSpacing;
+        }
       }
 
       // Spacing Support (Margin/Padding)
@@ -3004,11 +3042,11 @@ function useVideopackContext(attributes, context, options = {}) {
       discoveredAttachmentId: foundId,
       isDiscovering: isResolving || !foundId && attachments === undefined
     };
-  }, [initial.resolved.postId, initial.resolved.attachmentId, initial.resolved.postType, attributes.src]);
+  }, [attributes.src, attributes.id, initial]);
   return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 
-    // Safety: If the resolved attachment ID is the same as the post ID, 
+    // Safety: If the resolved attachment ID is the same as the post ID,
     // and we know the post is NOT an attachment, then it's a false resolution.
     const finalAttachmentId = rawAttachmentId && rawAttachmentId === initial.resolved.postId && initial.resolved.postType && initial.resolved.postType !== 'attachment' && !attributes.id ? null : rawAttachmentId;
     const finalResolved = {
@@ -3038,7 +3076,7 @@ function useVideopackContext(attributes, context, options = {}) {
       classes: initial.classes.join(' '),
       sharedContext
     };
-  }, [initial, discoveredAttachmentId, isDiscovering, excludeHoverTrigger]);
+  }, [initial, discoveredAttachmentId, isDiscovering, attributes.id]);
 }
 
 /***/ },
@@ -3175,7 +3213,7 @@ const isTrue = val => {
  * Resolves an effective design value by checking local overrides, inherited context,
  * and finally global plugin defaults.
  *
- * @param {string} key      The key to resolve (e.g., 'skin', 'title_color').
+ * @param {string} key        The key to resolve (e.g., 'skin', 'title_color').
  * @param {Object} attributes The block's own attributes.
  * @param {Object} context    The inherited block context.
  * @return {*} The resolved value.

@@ -20,7 +20,9 @@ export default function Edit({ attributes, setAttributes, context }) {
 			);
 			return {
 				fetchedExcerpt:
-					record?.excerpt?.rendered || record?.caption?.rendered || '',
+					record?.excerpt?.rendered ||
+					record?.caption?.rendered ||
+					'',
 			};
 		},
 		[postId, postType]
@@ -30,10 +32,12 @@ export default function Edit({ attributes, setAttributes, context }) {
 
 	const displayCaption = decodeEntities(
 		manualCaption ||
-			( vpContext.prioritizePostData
+			(vpContext.prioritizePostData
 				? fetchedExcerpt || contextCaption
-				: contextCaption || fetchedExcerpt ) ||
-			(vpContext.isPreview ? __('Sample Video Caption', 'video-embed-thumbnail-generator') : '')
+				: contextCaption || fetchedExcerpt) ||
+			(vpContext.isPreview
+				? __('Sample Video Caption', 'video-embed-thumbnail-generator')
+				: '')
 	);
 
 	const blockProps = useBlockProps({

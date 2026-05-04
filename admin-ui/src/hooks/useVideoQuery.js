@@ -11,7 +11,7 @@ import { getVideoGallery } from '../api/gallery';
  * @return {Object} Query results including search results, categories, and tags.
  */
 export default function useVideoQuery(attributes = {}, previewPostId) {
-	if ( ! attributes ) {
+	if (!attributes) {
 		attributes = {};
 	}
 	const {
@@ -33,28 +33,22 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 	const [searchString, setSearchString] = useState('');
 	const debouncedSetSearchString = useDebounce(setSearchString, 500);
 
-	const postTypes = useSelect(
-		(select) => {
-			const core = select('core');
-			return core ? core.getPostTypes({ per_page: -1 }) : [];
-		},
-		[]
-	);
+	const postTypes = useSelect((select) => {
+		const core = select('core');
+		return core ? core.getPostTypes({ per_page: -1 }) : [];
+	}, []);
 
-	const { isSaving, isAutosaving } = useSelect(
-		(select) => {
-			const editorStore = select('core/editor');
-			if (!editorStore) {
-				return { isSaving: false, isAutosaving: false };
-			}
-			const { isSavingPost, isAutosavingPost } = editorStore;
-			return {
-				isSaving: isSavingPost ? isSavingPost() : false,
-				isAutosaving: isAutosavingPost ? isAutosavingPost() : false,
-			};
-		},
-		[]
-	);
+	const { isSaving, isAutosaving } = useSelect((select) => {
+		const editorStore = select('core/editor');
+		if (!editorStore) {
+			return { isSaving: false, isAutosaving: false };
+		}
+		const { isSavingPost, isAutosavingPost } = editorStore;
+		return {
+			isSaving: isSavingPost ? isSavingPost() : false,
+			isAutosaving: isAutosavingPost ? isAutosavingPost() : false,
+		};
+	}, []);
 
 	const viewablePostTypes = useMemo(() => {
 		return (postTypes || [])
@@ -72,14 +66,21 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 			return;
 		}
 
+		let resolvedGalleryId;
+		if (['current', 'custom'].includes(gallery_source)) {
+			if (gallery_id) {
+				resolvedGalleryId = parseInt(gallery_id, 10);
+			} else if (previewPostId) {
+				resolvedGalleryId = parseInt(previewPostId, 10);
+			}
+		}
+
 		const args = {
 			gallery_orderby: gallery_orderby || 'post_date',
 			gallery_order: gallery_order || 'DESC',
 			gallery_per_page: parseInt(gallery_per_page, 10) || 6,
 			page_number: parseInt(page_number, 10) || 1,
-			gallery_id: (['current', 'custom'].includes(gallery_source)) 
-				? (gallery_id ? parseInt(gallery_id, 10) : (previewPostId ? parseInt(previewPostId, 10) : undefined))
-				: undefined,
+			gallery_id: resolvedGalleryId,
 			gallery_exclude: gallery_exclude || '',
 			gallery_source: gallery_source || 'current',
 			gallery_category: gallery_category || '',
@@ -93,14 +94,22 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 
 		// Skip query if required parameters for the source are missing
 		const isMissingCustomId = gallery_source === 'custom' && !gallery_id;
-		const isMissingCategoryId = gallery_source === 'category' && !gallery_category;
+		const isMissingCategoryId =
+			gallery_source === 'category' && !gallery_category;
 		const isMissingTagId = gallery_source === 'tag' && !gallery_tag;
-		const isMissingCurrentId = gallery_source === 'current' && !gallery_id && !previewPostId;
-		const isMissingManualInclude = gallery_source === 'manual' && !gallery_include;
+		const isMissingCurrentId =
+			gallery_source === 'current' && !gallery_id && !previewPostId;
+		const isMissingManualInclude =
+			gallery_source === 'manual' && !gallery_include;
 
-		const canQuery = ['recent', 'all'].includes(gallery_source) || (
-			gallery_source && !isMissingCustomId && !isMissingCategoryId && !isMissingTagId && !isMissingCurrentId && !isMissingManualInclude
-		);
+		const canQuery =
+			['recent', 'all'].includes(gallery_source) ||
+			(gallery_source &&
+				!isMissingCustomId &&
+				!isMissingCategoryId &&
+				!isMissingTagId &&
+				!isMissingCurrentId &&
+				!isMissingManualInclude);
 
 		if (!canQuery) {
 			setVideoResults([]);
@@ -114,7 +123,9 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 		getVideoGallery(args)
 			.then((response) => {
 				setVideoResults(response.videos || []);
-				setTotalResults(response.total_count || response.videos?.length || 0);
+				setTotalResults(
+					response.total_count || response.videos?.length || 0
+				);
 				setMaxNumPages(response.max_num_pages || 1);
 			})
 			.catch((error) => {

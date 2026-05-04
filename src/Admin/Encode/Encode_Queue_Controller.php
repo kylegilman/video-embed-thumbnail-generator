@@ -108,9 +108,9 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				'callback' => 'handle_job_action',
 			),
 			array(
-				'hook'     => 'videopack_cleanup_queue',
-				'callback' => 'clear_completed_queue',
-				'priority' => 10,
+				'hook'          => 'videopack_cleanup_queue',
+				'callback'      => 'clear_completed_queue',
+				'priority'      => 10,
 				'accepted_args' => 2,
 			),
 		);
@@ -1098,34 +1098,34 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			'pid'           => null,
 			'retry_count'   => (int) $job['retry_count'] + 1,
 		);
- 
+
 		// If the job was deleted, paths were cleared. We need to restore them.
 		if ( empty( $job['output_path'] ) ) {
 			$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
-			$encoder             = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $job['input_url'] );
-			$video_formats       = $this->format_registry->get_video_formats();
-			$format_id           = $job['format_id'];
- 
+			$encoder              = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $job['input_url'] );
+			$video_formats        = $this->format_registry->get_video_formats();
+			$format_id            = $job['format_id'];
+
 			if ( isset( $video_formats[ $format_id ] ) ) {
-				$video_format_obj    = $video_formats[ $format_id ];
-				$attachment_id       = ! empty( $job['attachment_id'] ) ? (int) $job['attachment_id'] : null;
-				$encode_info_obj     = new Encode_Info( $attachment_id, (string) $job['input_url'], $video_format_obj, $this->options, $this->format_registry );
+				$video_format_obj           = $video_formats[ $format_id ];
+				$attachment_id              = ! empty( $job['attachment_id'] ) ? (int) $job['attachment_id'] : null;
+				$encode_info_obj            = new Encode_Info( $attachment_id, (string) $job['input_url'], $video_format_obj, $this->options, $this->format_registry );
 				$update_data['output_path'] = (string) $encode_info_obj->path;
 				$update_data['output_url']  = (string) $encode_info_obj->url;
 			}
 		}
- 
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$update_result = $wpdb->update(
 			$this->queue_table_name,
 			$update_data,
 			array( 'id' => $job_id )
 		);
- 
+
 		if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
 			restore_current_blog();
 		}
- 
+
 		if ( false === $update_result ) {
 			return new \WP_Error( 'videopack_db_error', __( 'Could not update job status to retry.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
 		}
@@ -1182,13 +1182,13 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$user_name       = '';
 		$blog_name       = '';
 		$attachment_link = '';
- 
+
 		if ( $attachment_id ) {
 			$poster_id       = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', true );
 			$poster_url      = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
 			$attachment_link = get_edit_post_link( $attachment_id );
 		}
- 
+
 		// Ensure duration is set for progress calculation.
 		if ( ! $video_duration ) {
 			$attachment_key = ! empty( $attachment_id ) ? (string) $attachment_id : $job->get_input_url();
@@ -1204,7 +1204,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				}
 			}
 		}
-
 
 		if ( $user_id ) {
 			$user_data = get_userdata( $user_id );

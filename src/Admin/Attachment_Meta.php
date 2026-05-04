@@ -54,8 +54,8 @@ class Attachment_Meta implements Hook_Subscriber {
 	 * @param int|bool $post_id Optional. Attachment ID.
 	 */
 	public function __construct( array $options, $post_id = false ) {
-		$this->options = $options;
-		$this->post_id = $post_id;
+		$this->options   = $options;
+		$this->post_id   = $post_id;
 		$this->meta_data = $this->get();
 	}
 
@@ -102,74 +102,74 @@ class Attachment_Meta implements Hook_Subscriber {
 	 */
 	public function get_defaults() {
 		return array(
-			'embed'             => (string) ( $this->options['default_insert'] ?? 'Single Video' ),
-			'width'             => (string) ( $this->options['width'] ?? '' ),
-			'height'            => (string) ( $this->options['height'] ?? '' ),
-			'actualwidth'       => null,
-			'actualheight'      => null,
-			'downloadlink'      => (bool) ( $this->options['downloadlink'] ?? false ),
-			'track'             => array(),
-			'starts'            => 0,
-			'play_25'           => 0,
-			'play_50'           => 0,
-			'play_75'           => 0,
-			'completeviews'     => 0,
-			'pickedformat'      => null,
-			'encode'            => (array) ( $this->options['encode'] ?? array() ),
-			'rotate'            => null,
-			'autothumb_error'   => null,
-			'total_thumbnails'  => (int) ( $this->options['total_thumbnails'] ?? 4 ),
-			'randomize'         => false,
-			'forcefirst'        => false,
-			'featured'          => (bool) ( $this->options['featured'] ?? true ),
-			'thumbtime'         => null,
-			'lockaspect'        => true,
-			'showtitle'         => true,
-			'gallery_columns'   => (int) ( $this->options['gallery_columns'] ?? 4 ),
-			'gallery_exclude'   => null,
-			'gallery_include'   => null,
-			'gallery_orderby'   => 'menu_order ID',
-			'gallery_order'     => 'asc',
-			'gallery_id'        => null,
-			'duration'          => null,
-			'aspect'            => null,
-			'original_replaced' => null,
-			'featuredchanged'   => false,
-			'url'               => null,
-			'poster'            => null,
-			'poster_id'         => null,
-			'maxwidth'          => null,
-			'maxheight'         => null,
-			'animated'          => 'notchecked',
-			'frame_rate'        => null,
-			'codec'             => null,
-			'worked'            => false,
+			'embed'                       => (string) ( $this->options['default_insert'] ?? 'Single Video' ),
+			'width'                       => (string) ( $this->options['width'] ?? '' ),
+			'height'                      => (string) ( $this->options['height'] ?? '' ),
+			'actualwidth'                 => null,
+			'actualheight'                => null,
+			'downloadlink'                => (bool) ( $this->options['downloadlink'] ?? false ),
+			'track'                       => array(),
+			'starts'                      => 0,
+			'play_25'                     => 0,
+			'play_50'                     => 0,
+			'play_75'                     => 0,
+			'completeviews'               => 0,
+			'pickedformat'                => null,
+			'encode'                      => (array) ( $this->options['encode'] ?? array() ),
+			'rotate'                      => null,
+			'autothumb_error'             => null,
+			'total_thumbnails'            => (int) ( $this->options['total_thumbnails'] ?? 4 ),
+			'randomize'                   => false,
+			'forcefirst'                  => false,
+			'featured'                    => (bool) ( $this->options['featured'] ?? true ),
+			'thumbtime'                   => null,
+			'lockaspect'                  => true,
+			'showtitle'                   => true,
+			'gallery_columns'             => (int) ( $this->options['gallery_columns'] ?? 4 ),
+			'gallery_exclude'             => null,
+			'gallery_include'             => null,
+			'gallery_orderby'             => 'menu_order ID',
+			'gallery_order'               => 'asc',
+			'gallery_id'                  => null,
+			'duration'                    => null,
+			'aspect'                      => null,
+			'original_replaced'           => null,
+			'featuredchanged'             => false,
+			'url'                         => null,
+			'poster'                      => null,
+			'poster_id'                   => null,
+			'maxwidth'                    => null,
+			'maxheight'                   => null,
+			'animated'                    => 'notchecked',
+			'frame_rate'                  => null,
+			'codec'                       => null,
+			'worked'                      => false,
 			// Player settings.
-			'autoplay'          => (bool) ( $this->options['autoplay'] ?? false ),
-			'loop'              => (bool) ( $this->options['loop'] ?? false ),
-			'muted'             => (bool) ( $this->options['muted'] ?? false ),
-			'controls'          => (bool) ( $this->options['controls'] ?? true ),
-			'volume'            => (float) ( $this->options['volume'] ?? 1.0 ),
-			'preload'           => (string) ( $this->options['preload'] ?? 'metadata' ),
-			'playback_rate'     => (bool) ( $this->options['playback_rate'] ?? false ),
-			'playsinline'       => (bool) ( $this->options['playsinline'] ?? true ),
-			'right_click'       => (bool) ( $this->options['right_click'] ?? true ),
-			'gifmode'           => (bool) ( $this->options['gifmode'] ?? false ),
-			'fixed_aspect'      => (string) ( $this->options['fixed_aspect'] ?? 'vertical' ),
-			'align'             => (string) ( $this->options['align'] ?? '' ),
-			'fullwidth'         => (bool) ( $this->options['fullwidth'] ?? false ),
-			'resize'            => (bool) ( $this->options['resize'] ?? true ),
-			'inline'            => (bool) ( $this->options['inline'] ?? false ),
-			'embeddable'        => (bool) ( $this->options['embeddable'] ?? false ),
-			'embedcode'         => (bool) ( $this->options['embedcode'] ?? false ),
-			'overlay_title'     => (bool) ( $this->options['overlay_title'] ?? false ),
-			'views'             => (bool) ( $this->options['views'] ?? false ),
-			'watermark'         => (string) ( $this->options['watermark'] ?? '' ),
-			'watermark_link_to' => (string) ( $this->options['watermark_link_to'] ?? 'none' ),
-			'watermark_url'     => (string) ( $this->options['watermark_url'] ?? '' ),
-			'ffmpeg_watermark_url' => null,
-			'is_remote'         => false,
-			'legacy_dimensions' => null,
+			'autoplay'                    => (bool) ( $this->options['autoplay'] ?? false ),
+			'loop'                        => (bool) ( $this->options['loop'] ?? false ),
+			'muted'                       => (bool) ( $this->options['muted'] ?? false ),
+			'controls'                    => (bool) ( $this->options['controls'] ?? true ),
+			'volume'                      => (float) ( $this->options['volume'] ?? 1.0 ),
+			'preload'                     => (string) ( $this->options['preload'] ?? 'metadata' ),
+			'playback_rate'               => (bool) ( $this->options['playback_rate'] ?? false ),
+			'playsinline'                 => (bool) ( $this->options['playsinline'] ?? true ),
+			'right_click'                 => (bool) ( $this->options['right_click'] ?? true ),
+			'gifmode'                     => (bool) ( $this->options['gifmode'] ?? false ),
+			'fixed_aspect'                => (string) ( $this->options['fixed_aspect'] ?? 'vertical' ),
+			'align'                       => (string) ( $this->options['align'] ?? '' ),
+			'fullwidth'                   => (bool) ( $this->options['fullwidth'] ?? false ),
+			'resize'                      => (bool) ( $this->options['resize'] ?? true ),
+			'inline'                      => (bool) ( $this->options['inline'] ?? false ),
+			'embeddable'                  => (bool) ( $this->options['embeddable'] ?? false ),
+			'embedcode'                   => (bool) ( $this->options['embedcode'] ?? false ),
+			'overlay_title'               => (bool) ( $this->options['overlay_title'] ?? false ),
+			'views'                       => (bool) ( $this->options['views'] ?? false ),
+			'watermark'                   => (string) ( $this->options['watermark'] ?? '' ),
+			'watermark_link_to'           => (string) ( $this->options['watermark_link_to'] ?? 'none' ),
+			'watermark_url'               => (string) ( $this->options['watermark_url'] ?? '' ),
+			'ffmpeg_watermark_url'        => null,
+			'is_remote'                   => false,
+			'legacy_dimensions'           => null,
 			'title_color'                 => null,
 			'title_background_color'      => null,
 			'pagination_color'            => null,
@@ -200,7 +200,7 @@ class Attachment_Meta implements Hook_Subscriber {
 		$defaults = $this->get_defaults();
 		$migrated = false;
 
-		// Standardize terminology: Migration from view_count to views
+		// Standardize terminology: migration from view_count to views.
 		if ( array_key_exists( 'view_count', $current_meta ) ) {
 			$current_meta['views'] = (bool) $current_meta['view_count'];
 			unset( $current_meta['view_count'] );
@@ -265,7 +265,6 @@ class Attachment_Meta implements Hook_Subscriber {
 		}
 
 		$current_meta['is_remote'] = ( 'true' === get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-external-remote', true ) );
-
 
 		$meta_data = array_merge( $defaults, $current_meta );
 
@@ -642,7 +641,6 @@ class Attachment_Meta implements Hook_Subscriber {
 			);
 		}
 
-
 		register_post_meta(
 			'attachment',
 			'_kgvid-meta',
@@ -685,52 +683,52 @@ class Attachment_Meta implements Hook_Subscriber {
 	 */
 	public function schema() {
 		$full_schema_definitions = array(
-			'actualwidth'         => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'actualheight'        => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'aspect'              => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'autothumb_error'     => array( 'type' => array( 'string', 'null' ) ),
-			'codec'               => array( 'type' => array( 'string', 'null' ) ),
-			'completeviews'       => array( 'type' => array( 'string', 'number' ) ),
-			'downloadlink'        => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'duration'            => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'embed'               => array( 'type' => array( 'string', 'number' ) ),
-			'encode'              => array(
+			'actualwidth'                 => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'actualheight'                => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'aspect'                      => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'autothumb_error'             => array( 'type' => array( 'string', 'null' ) ),
+			'codec'                       => array( 'type' => array( 'string', 'null' ) ),
+			'completeviews'               => array( 'type' => array( 'string', 'number' ) ),
+			'downloadlink'                => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'duration'                    => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'embed'                       => array( 'type' => array( 'string', 'number' ) ),
+			'encode'                      => array(
 				'type'                 => 'object',
 				'additionalProperties' => array(
 					'type' => array( 'string', 'boolean' ),
 					'enum' => array( true, false, 'notchecked' ),
 				),
 			),
-			'featured'            => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'featuredchanged'     => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'forcefirst'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'frame_rate'          => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'gallery_exclude'     => array( 'type' => array( 'string', 'number' ) ),
-			'gallery_id'          => array( 'type' => array( 'string', 'number' ) ),
-			'gallery_include'     => array( 'type' => array( 'string', 'number' ) ),
-			'gallery_order'       => array( 'type' => array( 'string', 'number' ) ),
-			'gallery_orderby'     => array( 'type' => array( 'string', 'number' ) ),
-			'gallery_thumb_width' => array( 'type' => array( 'string', 'number' ) ),
-			'height'              => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'lockaspect'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'maxheight'           => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'maxwidth'            => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'total_thumbnails'    => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'original_replaced'   => array( 'type' => array( 'string', 'null' ) ),
-			'pickedformat'        => array( 'type' => array( 'string', 'null' ) ),
-			'play_25'             => array( 'type' => array( 'string', 'number' ) ),
-			'play_50'             => array( 'type' => array( 'string', 'number' ) ),
-			'play_75'             => array( 'type' => array( 'string', 'number' ) ),
-			'poster'              => array(
+			'featured'                    => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'featuredchanged'             => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'forcefirst'                  => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'frame_rate'                  => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'gallery_exclude'             => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_id'                  => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_include'             => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_order'               => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_orderby'             => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_thumb_width'         => array( 'type' => array( 'string', 'number' ) ),
+			'height'                      => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'lockaspect'                  => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'maxheight'                   => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'maxwidth'                    => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'total_thumbnails'            => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'original_replaced'           => array( 'type' => array( 'string', 'null' ) ),
+			'pickedformat'                => array( 'type' => array( 'string', 'null' ) ),
+			'play_25'                     => array( 'type' => array( 'string', 'number' ) ),
+			'play_50'                     => array( 'type' => array( 'string', 'number' ) ),
+			'play_75'                     => array( 'type' => array( 'string', 'number' ) ),
+			'poster'                      => array(
 				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',
 			),
-			'poster_id'           => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'rotate'              => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'showtitle'           => array( 'type' => array( 'string', 'boolean' ) ),
-			'starts'              => array( 'type' => array( 'string', 'number' ) ),
-			'thumbtime'           => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'track'               => array(
+			'poster_id'                   => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'rotate'                      => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'showtitle'                   => array( 'type' => array( 'string', 'boolean' ) ),
+			'starts'                      => array( 'type' => array( 'string', 'number' ) ),
+			'thumbtime'                   => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'track'                       => array(
 				'type'  => 'array',
 				'items' => array(
 					'type'       => 'object',
@@ -743,43 +741,43 @@ class Attachment_Meta implements Hook_Subscriber {
 					),
 				),
 			),
-			'url'                 => array(
+			'url'                         => array(
 				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',
 			),
-			'width'               => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'worked'              => array( 'type' => array( 'string', 'boolean' ) ),
-			'autoplay'            => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'loop'                => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'muted'               => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'controls'            => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'volume'              => array( 'type' => array( 'string', 'number', 'null' ) ),
-			'preload'             => array( 'type' => array( 'string', 'null' ) ),
-			'playback_rate'       => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'playsinline'         => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'right_click'         => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'gifmode'             => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'fixed_aspect'        => array( 'type' => array( 'string', 'null' ) ),
-			'align'               => array( 'type' => array( 'string', 'null' ) ),
-			'fullwidth'           => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'resize'              => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'inline'              => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'embeddable'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'embedcode'           => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'overlay_title'       => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'views'               => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'watermark'           => array( 'type' => array( 'string', 'null' ) ),
-			'watermark_link_to'   => array( 'type' => array( 'string', 'null' ) ),
-			'watermark_url'       => array(
+			'width'                       => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'worked'                      => array( 'type' => array( 'string', 'boolean' ) ),
+			'autoplay'                    => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'loop'                        => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'muted'                       => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'controls'                    => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'volume'                      => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'preload'                     => array( 'type' => array( 'string', 'null' ) ),
+			'playback_rate'               => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'playsinline'                 => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'right_click'                 => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'gifmode'                     => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'fixed_aspect'                => array( 'type' => array( 'string', 'null' ) ),
+			'align'                       => array( 'type' => array( 'string', 'null' ) ),
+			'fullwidth'                   => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'resize'                      => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'inline'                      => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'embeddable'                  => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'embedcode'                   => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'overlay_title'               => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'views'                       => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'watermark'                   => array( 'type' => array( 'string', 'null' ) ),
+			'watermark_link_to'           => array( 'type' => array( 'string', 'null' ) ),
+			'watermark_url'               => array(
 				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',
 			),
-			'ffmpeg_watermark_url' => array(
+			'ffmpeg_watermark_url'        => array(
 				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',
 			),
-			'is_remote'           => array( 'type' => array( 'boolean' ) ),
-			'legacy_dimensions'   => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'is_remote'                   => array( 'type' => array( 'boolean' ) ),
+			'legacy_dimensions'           => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'title_color'                 => array( 'type' => array( 'string', 'null' ) ),
 			'title_background_color'      => array( 'type' => array( 'string', 'null' ) ),
 			'pagination_color'            => array( 'type' => array( 'string', 'null' ) ),
@@ -829,9 +827,9 @@ class Attachment_Meta implements Hook_Subscriber {
 	/**
 	 * Merges incoming metadata with existing metadata for the REST API.
 	 *
-	 * @param mixed           $value    The new value for the meta field.
-	 * @param \WP_Post        $post     The post object.
-	 * @param string          $meta_key The meta key.
+	 * @param mixed            $value    The new value for the meta field.
+	 * @param \WP_Post         $post     The post object.
+	 * @param string           $meta_key The meta key.
 	 * @param \WP_REST_Request $request  The REST request.
 	 * @return bool True if successful, false otherwise.
 	 */

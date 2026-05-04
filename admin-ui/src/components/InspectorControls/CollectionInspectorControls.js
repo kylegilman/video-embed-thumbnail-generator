@@ -1,11 +1,25 @@
 import { useSelect } from '@wordpress/data';
-import { PanelBody, SelectControl, RangeControl, ToggleControl } from '@wordpress/components';
+import {
+	PanelBody,
+	SelectControl,
+	RangeControl,
+	ToggleControl,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import CollectionSettingsPanel from './CollectionSettingsPanel';
 
 /**
  * Shared Inspector controls for Videopack collections.
  * Used by both the Collection parent block and the Video Loop child block.
+ *
+ * @param {Object}   root0                    Component props.
+ * @param {string}   root0.clientId           Block client ID.
+ * @param {Object}   root0.attributes         Block attributes.
+ * @param {Function} root0.setAttributes      Attribute setter.
+ * @param {Object}   root0.queryData          Query data.
+ * @param {Object}   root0.options            Global options.
+ * @param {boolean}  root0.hasPaginationBlock Whether the block has pagination.
+ * @param {boolean}  root0.isEditingAllPages  Whether all pages are being edited.
  */
 export default function CollectionInspectorControls({
 	clientId, // The collection block's clientId
@@ -34,7 +48,10 @@ export default function CollectionInspectorControls({
 						return block;
 					}
 					if (block.innerBlocks && block.innerBlocks.length > 0) {
-						const found = findBlockRecursive(block.innerBlocks, name);
+						const found = findBlockRecursive(
+							block.innerBlocks,
+							name
+						);
 						if (found) {
 							return found;
 						}
@@ -43,24 +60,36 @@ export default function CollectionInspectorControls({
 				return null;
 			};
 
-			const hasPagination = blocks.some((b) => b.name === 'videopack/pagination');
-			const thumbnailBlock = findBlockRecursive(blocks, 'videopack/thumbnail');
-			const isLightbox = thumbnailBlock?.attributes?.linkTo === 'lightbox';
+			const hasPagination = blocks.some(
+				(b) => b.name === 'videopack/pagination'
+			);
+			const thumbnailBlock = findBlockRecursive(
+				blocks,
+				'videopack/thumbnail'
+			);
+			const isLightbox =
+				thumbnailBlock?.attributes?.linkTo === 'lightbox';
 
 			// Check if specific blocks are INSIDE the thumbnail block
-			const hasOverlayBlockInsideThumbnail = thumbnailBlock?.innerBlocks?.some((b) =>
-				['videopack/title', 'videopack/duration', 'videopack/view-count'].includes(b.name)
-			) || false;
+			const hasOverlayBlockInsideThumbnail =
+				thumbnailBlock?.innerBlocks?.some((b) =>
+					[
+						'videopack/title',
+						'videopack/duration',
+						'videopack/view-count',
+					].includes(b.name)
+				) || false;
 
-			const showTitleSettings = isLightbox || hasOverlayBlockInsideThumbnail;
-			const showPlayerSettings = isLightbox;
-			const showPaginationSettings = hasPagination;
+			const canShowTitle = isLightbox || hasOverlayBlockInsideThumbnail;
+			const canShowPlayer = isLightbox;
+			const canShowPagination = hasPagination;
 
 			return {
-				showPaginationSettings,
-				showTitleSettings,
-				showPlayerSettings,
-				showSkinSettings: showTitleSettings || showPlayerSettings || showPaginationSettings,
+				showPaginationSettings: canShowPagination,
+				showTitleSettings: canShowTitle,
+				showPlayerSettings: canShowPlayer,
+				showSkinSettings:
+					canShowTitle || canShowPlayer || canShowPagination,
 			};
 		},
 		[clientId]
