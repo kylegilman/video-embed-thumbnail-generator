@@ -51,17 +51,16 @@ class Options implements Hook_Subscriber {
 	 */
 	protected $merged_options = array();
 
+
 	/**
-	 * Default options array.
+	 * Whether defaults are ready (filters have run).
 	 *
-	 * @var array $default_options
+	 * @var bool $defaults_ready
 	 */
-	protected $default_options = array();
+	protected $defaults_ready = false;
 
 	/**
 	 * Video player ID.
-	 *
-	 * @var int $video_player_id
 	 */
 	protected $video_player_id = 0;
 
@@ -87,14 +86,17 @@ class Options implements Hook_Subscriber {
 			array(
 				'hook'     => 'init',
 				'callback' => 'load_options',
+				'priority' => 11,
 			),
 			array(
-				'hook'     => 'admin_init',
-				'callback' => 'register_videopack_options',
+				'hook'     => 'init',
+				'callback' => 'mark_defaults_ready',
+				'priority' => 15,
 			),
 			array(
-				'hook'     => 'rest_api_init',
+				'hook'     => 'init',
 				'callback' => 'register_videopack_options',
+				'priority' => 20,
 			),
 		);
 	}
@@ -185,6 +187,7 @@ class Options implements Hook_Subscriber {
 			'watermark_link_to'             => 'home',
 			'watermark_url'                 => '',
 			'overlay_title'                 => true,
+			'title_position'                => 'top',
 			'embedcode'                     => false,
 			'downloadlink'                  => false,
 			'click_download'                => true,
@@ -298,20 +301,27 @@ class Options implements Hook_Subscriber {
 	}
 
 	/**
+	 * Marks defaults as ready after all filters should have run.
+	 */
+	public function mark_defaults_ready() {
+		$this->defaults_ready = true;
+		$this->load_options(); // Reload now that we are sure.
+	}
+
+	/**
 	 * Loads options from the database and initializes them if necessary.
 	 */
 	public function load_options() {
-		$saved_options         = get_option( 'videopack_options' );
-		$this->default_options = (array) $this->get_default();
-		$this->options         = $this->default_options; // Prevent recursion if child objects call back into get_options().
+		$saved_options = get_option( 'videopack_options' );
+		$options       = array();
 
 		if ( false === $saved_options ) {
-			$options = (array) $this->init_options( $this->default_options );
+			$options = (array) $this->init_options( (array) $this->get_default() );
 		} else {
-			$options = (array) $this->merge_options_with_defaults( (array) $saved_options, $this->default_options );
+			$options = (array) $this->merge_options_with_defaults( (array) $saved_options, (array) $this->get_default() );
 		}
 
-		if ( $options !== $saved_options ) {
+		if ( $options !== $saved_options && did_action( 'init' ) ) {
 			update_option( 'videopack_options', $options );
 		}
 
@@ -486,8 +496,9 @@ class Options implements Hook_Subscriber {
 			unset( $safe_options[ $key ] );
 		}
 
-		return $safe_options;
+		return (array) apply_filters( 'videopack_options_for_rest', $safe_options );
 	}
+
 
 	/**
 	 * Registers Videopack settings with WordPress.
@@ -500,15 +511,16 @@ class Options implements Hook_Subscriber {
 				'type'              => 'object',
 				'sanitize_callback' => array( $this, 'validate_options' ),
 				'show_in_rest'      => array(
-					'schema'       => array(
-						'type'       => 'object',
-						'properties' => $this->settings_schema( (array) $this->get_default() ),
+					'schema' => array(
+						'type'                 => 'object',
+						'properties'           => (array) apply_filters( 'videopack_settings_schema', $this->settings_schema( (array) $this->get_default() ), (array) $this->get_default() ),
+						'additionalProperties' => true,
 					),
-					'get_callback' => array( $this, 'filter_options_for_rest' ),
 				),
 			)
 		);
 	}
+
 
 	/**
 	 * Generates a JSON-LD inspired schema for settings.
@@ -720,7 +732,7 @@ class Options implements Hook_Subscriber {
 			}
 		}
 
-		$schema = (array) $this->settings_schema( (array) $this->get_default() );
+		$schema = (array) apply_filters( 'videopack_settings_schema', $this->settings_schema( (array) $this->get_default() ), (array) $this->get_default() );
 		$input  = (array) \Videopack\Common\Sanitizer::sanitize_options_recursively( (array) $input, $schema );
 
 		$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options, $this->get_formats_registry() );
@@ -775,7 +787,7 @@ class Options implements Hook_Subscriber {
 			}
 		}
 
-		foreach ( $this->default_options as $key => $value ) {
+		foreach ( (array) $this->get_default() as $key => $value ) {
 			if ( ! array_key_exists( (string) $key, $input ) ) {
 				$input[ (string) $key ] = false;
 			}
@@ -919,7 +931,7 @@ class Options implements Hook_Subscriber {
 	 */
 	public function merge_options_with_defaults( array $options, array $default_options ) {
 		foreach ( (array) array_keys( $options ) as $key ) {
-			if ( ! array_key_exists( (string) $key, $default_options ) ) {
+			if ( ! array_key_exists( (string) $key, $default_options ) && $this->defaults_ready ) {
 				unset( $options[ (string) $key ] );
 			}
 		}

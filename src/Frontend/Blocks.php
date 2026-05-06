@@ -783,8 +783,9 @@ class Blocks implements Hook_Subscriber {
 			return '';
 		}
 
-		$meta    = get_post_meta( $post_id, '_videopack-meta', true );
-		$seconds = $meta['duration'] ?? 0;
+		$meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options, $post_id );
+		$meta         = $meta_manager->get();
+		$seconds      = $meta['duration'] ?? 0;
 		if ( ! $seconds ) {
 			return '';
 		}

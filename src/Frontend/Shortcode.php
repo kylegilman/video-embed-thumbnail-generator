@@ -515,7 +515,9 @@ class Shortcode implements Hook_Subscriber {
 		// set in the shortcode text (which are already in $atts).
 		$attachment_id = (string) $source->get_id();
 		if ( is_numeric( $attachment_id ) ) {
-			$videopack_meta = get_post_meta( (int) $attachment_id, '_videopack-meta', true );
+			$meta_manager   = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
+			$videopack_meta = $meta_manager->get();
+
 			if ( is_array( $videopack_meta ) && ! empty( $videopack_meta ) ) {
 				foreach ( (array) $videopack_meta as $key => $value ) {
 					// Only apply if the key exists in $query_atts and was NOT

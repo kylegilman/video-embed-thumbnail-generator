@@ -339,6 +339,14 @@ class Public_Controller extends Controller {
 	public function log_rest_api_errors( $result, $server, $request ) {
 		$is_error = ( is_wp_error( $result ) || ( $result instanceof \WP_REST_Response && $result->is_error() ) );
 		if ( $is_error ) {
+			$error_details = '';
+			if ( is_wp_error( $result ) ) {
+				$error_details = $result->get_error_message();
+			} elseif ( $result instanceof \WP_REST_Response ) {
+				$data = $result->get_data();
+				$error_details = is_string( $data ) ? $data : wp_json_encode( $data );
+			}
+
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( sprintf( 'REST API Error: Route: %s, Method: %s, Params: %s, Error: %s', $request->get_route(), $request->get_method(), wp_json_encode( $request->get_params() ), $error_details ) );
 		}

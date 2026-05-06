@@ -216,6 +216,7 @@ class Ui implements Hook_Subscriber {
 			'sources'                     => array( 'type' => 'array' ),
 			'source_groups'               => array( 'type' => 'object' ),
 		);
+		$shared_attributes = (array) apply_filters( 'videopack_shared_attributes', $shared_attributes );
 
 		$provides_context = array(
 			'videopack/skin'                        => 'skin',
@@ -232,6 +233,7 @@ class Ui implements Hook_Subscriber {
 			'videopack/sources'                     => 'sources',
 			'videopack/source_groups'               => 'source_groups',
 		);
+		$provides_context = (array) apply_filters( 'videopack_provides_context', $provides_context );
 
 		// Only map these to providesContext if the block actually has the attribute.
 		// Otherwise, Gutenberg will provide 'undefined' and potentially shadow
@@ -307,8 +309,12 @@ class Ui implements Hook_Subscriber {
 				'videopack/position',
 				'videopack/totalPages',
 				'videopack/currentPage',
+				'videopack/videos',
+				'videopack/gallery_pagination',
+				'videopack/gallery_title',
 			)
 		);
+		$uses_context = (array) apply_filters( 'videopack_uses_context', $uses_context );
 
 		// Blocks that get shared attributes injected.
 		$receives_shared_attributes = array(

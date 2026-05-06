@@ -13,6 +13,7 @@ import {
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
+import { applyFilters } from '@wordpress/hooks';
 
 import { volumeUp, volumeDown } from '../../assets/icon';
 import useVideoSettings from '../../hooks/useVideoSettings';
@@ -897,6 +898,14 @@ const VideoSettings = ({
 					handleSettingChange('text_tracks', newTracks)
 				}
 			/>
+			{applyFilters('videopack.videoSettings.panels', [], {
+				attributes,
+				setAttributes,
+				options,
+				displayAttributes,
+				handleSettingChange,
+				isBlockEditor,
+			})}
 			<PanelBody
 				title={__('Sharing', 'video-embed-thumbnail-generator')}
 				initialOpen={false}

@@ -341,10 +341,11 @@ class Gallery {
 	public function prepare_video_data_for_js( $video, $final_atts, $layout = 'gallery', $skip_html = false ) {
 
 		if ( $video instanceof \WP_Post ) {
-			$video = array(
+			$video_meta = $this->attachment_meta->set_post_id( (int) $video->ID );
+			$video      = array(
 				'id'          => (int) $video->ID,
 				'url'         => (string) wp_get_attachment_url( $video->ID ),
-				'poster'      => (string) get_post_meta( $video->ID, '_kgflashmediaplayer-poster', true ),
+				'poster'      => (string) ( $video_meta['poster'] ?? '' ),
 				'title'       => (string) $video->post_title,
 				'caption'     => (string) $video->post_excerpt,
 				'description' => (string) $video->post_content,
@@ -406,17 +407,15 @@ class Gallery {
 			'mute'        => (bool) ( $final_atts['muted'] ?? false ),
 		);
 
-		$poster_id = (int) get_post_meta( (int) $data['id'], '_kgflashmediaplayer-poster-id', true );
-		if ( ! $poster_id ) {
-			$poster_id = (int) get_post_thumbnail_id( (int) $data['id'] );
-		}
+		$video_meta = $this->attachment_meta->set_post_id( (int) $data['id'] );
+		$poster_id  = $video_meta['poster_id'] ?? null;
 
 		$poster_url = (string) ( $final_atts['poster'] ?? '' );
 		if ( empty( $poster_url ) ) {
 			if ( $poster_id ) {
 				$poster_url = (string) wp_get_attachment_url( $poster_id );
 			} else {
-				$poster_url = (string) get_post_meta( (int) $data['id'], '_kgflashmediaplayer-poster', true );
+				$poster_url = (string) ( $video_meta['poster'] ?? '' );
 			}
 		}
 
@@ -465,8 +464,7 @@ class Gallery {
 		$player_vars['embed_url']     = (string) add_query_arg( 'videopack[enable]', 'true', (string) get_attachment_link( (int) $data['id'] ) );
 
 		// Retrieve video statistics from attachment metadata if available.
-		$video_meta = get_post_meta( (int) $data['id'], '_videopack-meta', true );
-		if ( is_array( $video_meta ) && isset( $video_meta['starts'] ) ) {
+		if ( isset( $video_meta['starts'] ) ) {
 			$player_vars['starts'] = (int) $video_meta['starts'];
 		} else {
 			$player_vars['starts'] = (int) ( $final_atts['starts'] ?? 0 );

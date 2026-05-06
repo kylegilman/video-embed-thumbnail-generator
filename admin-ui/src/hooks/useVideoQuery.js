@@ -50,16 +50,62 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 		};
 	}, []);
 
+
+	const [videoResults, setVideoResults] = useState([]);
+	const [totalResults, setTotalResults] = useState(0);
+	const [maxNumPages, setMaxNumPages] = useState(1);
+	const [isResolvingVideos, setIsResolvingVideos] = useState(false);
+
+	const [searchResults, setSearchResults] = useState([]);
+	const [isResolvingSearch, setIsResolvingSearch] = useState(false);
+
 	const viewablePostTypes = useMemo(() => {
 		return (postTypes || [])
 			.filter((type) => type.viewable && type.slug !== 'attachment')
 			.map((type) => type.slug);
 	}, [postTypes]);
 
-	const [videoResults, setVideoResults] = useState([]);
-	const [totalResults, setTotalResults] = useState(0);
-	const [maxNumPages, setMaxNumPages] = useState(1);
-	const [isResolvingVideos, setIsResolvingVideos] = useState(false);
+	useEffect(() => {
+		if (!searchString) {
+			setSearchResults([]);
+			setIsResolvingSearch(false);
+			return;
+		}
+
+		setIsResolvingSearch(true);
+		const path = `/wp/v2/search?search=${encodeURIComponent(
+			searchString
+		)}&type=post&subtype=${encodeURIComponent(
+			viewablePostTypes.join(',')
+		)}&per_page=20`;
+
+		const abortController = new window.AbortController();
+
+		import('@wordpress/api-fetch').then(({ default: apiFetch }) => {
+			apiFetch({ path, signal: abortController.signal })
+				.then((results) => {
+					setSearchResults(
+						results.map((res) => ({
+							id: res.id,
+							title: {
+								rendered: res.title?.rendered || res.title || ''
+							},
+						}))
+					);
+				})
+				.catch((error) => {
+					if (error.name !== 'AbortError') {
+						console.error('Post Search Error:', error);
+					}
+				})
+				.finally(() => {
+					setIsResolvingSearch(false);
+				});
+		});
+
+		return () => abortController.abort();
+	}, [searchString, viewablePostTypes]);
+
 
 	useEffect(() => {
 		if (isSaving || isAutosaving) {
@@ -154,19 +200,6 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 		isAutosaving,
 	]);
 
-	const searchResults = useSelect(
-		(select) => {
-			if (!searchString) {
-				return [];
-			}
-			const { getEntityRecords } = select('core');
-			return getEntityRecords('postType', viewablePostTypes, {
-				s: searchString,
-				per_page: 20,
-			});
-		},
-		[searchString, viewablePostTypes]
-	);
 
 	const categories = useSelect((select) => {
 		const { getEntityRecords } = select('core');
@@ -192,15 +225,21 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 		[gallery_source, gallery_include]
 	);
 
-	const customGalleries = useSelect((select) => {
-		const { getEntityRecords } = select('core');
-		return getEntityRecords('postType', 'videopack_gallery', {
-			per_page: -1,
-		});
-	}, []);
+	const { customGalleries } = useSelect(
+		(select) => {
+			const { getEntityRecords } = select('core');
+			return {
+				customGalleries: getEntityRecords('postType', 'videopack_gallery', {
+					per_page: -1,
+				}),
+			};
+		},
+		[]
+	);
 
 	return {
 		isResolving: isResolvingVideos,
+		isResolvingSearch,
 		videoResults,
 		totalResults,
 		maxNumPages,
@@ -209,6 +248,6 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 		tags,
 		manualVideos,
 		customGalleries,
-		setSearch: debouncedSetSearchString,
+		debouncedSetSearchString,
 	};
 }

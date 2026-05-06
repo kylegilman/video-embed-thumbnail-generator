@@ -152,7 +152,7 @@ const VideoPlayer = ({
 		if (incomingSources.length > 0) {
 			const groups = {};
 			incomingSources.forEach((s) => {
-				const codec = s.codec || 'h264';
+				const codec = s.codec || s.codecs || 'h264';
 				if (!groups[codec]) {
 					groups[codec] = { sources: [], label: codec.toUpperCase() };
 				}
@@ -285,6 +285,14 @@ const VideoPlayer = ({
 
 		if (resolvedDuotoneClass && !loopDuotoneId) {
 			classes.push(resolvedDuotoneClass);
+		}
+
+		if (final_embed_method) {
+			classes.push(
+				`videopack-embed-${final_embed_method
+					.toLowerCase()
+					.replace(/[^a-z0-9]/g, '-')}`
+			);
 		}
 
 		// Ensure unique classes and join
@@ -445,26 +453,68 @@ const VideoPlayer = ({
 	]);
 
 	const handlePlay = useCallback(() => {
+		console.log('VideoPlayer: handlePlay triggered');
 		if (wrapperRef.current) {
-			const metaElements = wrapperRef.current.querySelectorAll(
-				'.videopack-video-title, .videopack-meta-wrapper'
+
+			const elements = Array.from(
+				wrapperRef.current.querySelectorAll(
+					'.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'
+				)
 			);
-			metaElements.forEach((el) =>
+			const parent = wrapperRef.current.parentElement?.closest(
+				'.videopack-wrapper'
+			);
+			if (parent) {
+				Array.from(
+					parent.querySelectorAll(
+						'.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'
+					)
+				).forEach((el) => {
+					if (!elements.includes(el)) {
+						elements.push(el);
+					}
+				});
+			}
+
+			elements.forEach((el) =>
 				el.classList.remove('videopack-video-title-visible')
 			);
 		}
 	}, []);
 
 	const handlePause = useCallback(() => {
+		console.log('VideoPlayer: handlePause triggered');
 		if (wrapperRef.current) {
-			const metaElements = wrapperRef.current.querySelectorAll(
-				'.videopack-video-title, .videopack-meta-wrapper'
+
+			const elements = Array.from(
+				wrapperRef.current.querySelectorAll(
+					'.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'
+				)
 			);
-			metaElements.forEach((el) =>
+			const parent = wrapperRef.current.parentElement?.closest(
+				'.videopack-wrapper'
+			);
+			if (parent) {
+				Array.from(
+					parent.querySelectorAll(
+						'.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'
+					)
+				).forEach((el) => {
+					if (!elements.includes(el)) {
+						elements.push(el);
+					}
+				});
+			}
+
+			elements.forEach((el) =>
 				el.classList.add('videopack-video-title-visible')
 			);
 		}
 	}, []);
+
+	const handleEnded = useCallback(() => {
+		handlePause();
+	}, [handlePause]);
 
 	const onReadyRef = useRef(onReady);
 	useEffect(() => {
@@ -543,6 +593,7 @@ const VideoPlayer = ({
 								skin={final_skin}
 								onPlay={handlePlay}
 								onPause={handlePause}
+								onEnded={handleEnded}
 								onReady={handleVideoPlayerReady}
 								onMetadataLoaded={onMetadataLoaded}
 							/>
@@ -560,6 +611,8 @@ const VideoPlayer = ({
 								actualAutoplay={actualAutoplay}
 								onReady={handleMejsReady}
 								onPlay={handlePlay}
+								onPause={handlePause}
+								onEnded={handleEnded}
 								playback_rate={playback_rate}
 								aspectRatio={aspectRatio}
 								onMetadataLoaded={onMetadataLoaded}
@@ -573,18 +626,14 @@ const VideoPlayer = ({
 							key={`${final_embed_method}-${src}-${resetKey}-${uniqueKey}-${
 								blockAttributes.restartCount || 0
 							}`}
-							options={
-								PlayerComponent === VideoJS ||
-								PlayerComponent === WpMejsPlayer
-									? videoJsOptions || genericPlayerOptions
-									: undefined
-							}
+							options={videoJsOptions || genericPlayerOptions}
 							{...(PlayerComponent === GenericPlayer
 								? genericPlayerOptions
 								: {})}
 							skin={final_skin}
 							onPlay={handlePlay}
 							onPause={handlePause}
+							onEnded={handleEnded}
 							onReady={handleVideoPlayerReady}
 							onMetadataLoaded={onMetadataLoaded}
 							source_groups={source_groups}

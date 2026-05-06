@@ -36,10 +36,16 @@ const GenericPlayer = forwardRef(
 			sources = [],
 			src,
 			tracks = [],
+			onPlay,
+			onPause,
+			onEnded,
 		},
 		ref
 	) => (
 		<video
+			onPlay={onPlay}
+			onPause={onPause}
+			onEnded={onEnded}
 			poster={poster}
 			loop={loop}
 			autoPlay={autoPlay}

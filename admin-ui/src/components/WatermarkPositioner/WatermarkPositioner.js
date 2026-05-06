@@ -222,6 +222,115 @@ const WatermarkPositioner = ({
 		};
 	};
 
+	const handleMouseMove = useCallback((e) => {
+		const s = stateRef.current;
+		if (!s.isDragging && !s.isResizing) {
+			return;
+		}
+
+		const dragStart = dragStartRef.current;
+		const containerWidth = s.containerDimensions.width;
+		const containerHeight = s.containerDimensions.height;
+
+		const rect = containerRef.current.getBoundingClientRect();
+
+		const scaleX = containerWidth / rect.width;
+		const scaleY = containerHeight / rect.height;
+
+		const dxCanvas = (e.clientX - dragStart.x) * scaleX;
+		const dyCanvas = (e.clientY - dragStart.y) * scaleY;
+
+		const dxPct = (dxCanvas / containerWidth) * 100;
+		const dyPct = (dyCanvas / containerHeight) * 100;
+
+		if (s.isDragging) {
+			const currentAlignment =
+				s.settings.align || s.settings.watermark_align || 'center';
+			const currentVerticalAlignment =
+				s.settings.valign || s.settings.watermark_valign || 'bottom';
+
+			let newX = dragStart.initialX;
+			let newY = dragStart.initialY;
+
+			if (currentAlignment === 'left') {
+				newX = dragStart.initialX + dxPct;
+			} else {
+				// right or center offsets increase as we move left (negative dx)
+				newX = dragStart.initialX - dxPct;
+			}
+
+			if (currentVerticalAlignment === 'top') {
+				newY = dragStart.initialY + dyPct;
+			} else {
+				// bottom or center offsets increase as we move up (negative dy)
+				newY = dragStart.initialY - dyPct;
+			}
+
+			setTransientPercentages({ x: newX, y: newY });
+		} else if (s.isResizing) {
+			const {
+				initialScale,
+				aspectRatio: currentRatio,
+				handle,
+			} = dragStart;
+
+			let newWidth;
+			if (handle === 'se' || handle === 'ne') {
+				newWidth = (containerWidth * initialScale) / 100 + dxCanvas;
+			} else {
+				newWidth = (containerWidth * initialScale) / 100 - dxCanvas;
+			}
+
+			let newScale = (newWidth / containerWidth) * 100;
+			newScale = Math.round(newScale * 100) / 100;
+			newScale = Math.max(1, Math.min(100, newScale));
+
+			const currentAlignment =
+				s.settings.align || s.settings.watermark_align || 'center';
+			const currentVerticalAlignment =
+				s.settings.valign || s.settings.watermark_valign || 'center';
+
+			let newX = dragStart.initialX;
+			let newY = dragStart.initialY;
+
+			const scaleDiff = newScale - initialScale;
+			const vScaleFactor =
+				containerWidth / containerHeight / currentRatio;
+			const vScaleDiff = scaleDiff * vScaleFactor;
+
+			// Horizontal anchoring
+			if (handle === 'se' || handle === 'ne') {
+				// Dragging Right side -> NW or SW corner fixed
+				if (currentAlignment === 'right') {
+					newX = dragStart.initialX - scaleDiff;
+				} else if (currentAlignment === 'center') {
+					newX = dragStart.initialX - scaleDiff / 2;
+				}
+			} else if (currentAlignment === 'left') {
+				newX = dragStart.initialX + scaleDiff;
+			} else if (currentAlignment === 'center') {
+				newX = dragStart.initialX + scaleDiff / 2;
+			}
+
+			// Vertical anchoring
+			if (handle === 'se' || handle === 'sw') {
+				// Dragging Bottom side -> NW or NE corner fixed
+				if (currentVerticalAlignment === 'bottom') {
+					newY = dragStart.initialY - vScaleDiff;
+				} else if (currentVerticalAlignment === 'center') {
+					newY = dragStart.initialY - vScaleDiff / 2;
+				}
+			} else if (currentVerticalAlignment === 'top') {
+				newY = dragStart.initialY + vScaleDiff;
+			} else if (currentVerticalAlignment === 'center') {
+				newY = dragStart.initialY + vScaleDiff / 2;
+			}
+
+			setTransientScale(newScale);
+			setTransientPercentages({ x: newX, y: newY });
+		}
+	}, []);
+
 	const finalizeInteraction = useCallback(() => {
 		const s = stateRef.current;
 		if (!s.isDragging && !s.isResizing) {
@@ -429,114 +538,6 @@ const WatermarkPositioner = ({
 		// Keyboard resizing is temporarily disabled during percentage refactor for stability
 	};
 
-	const handleMouseMove = useCallback((e) => {
-		const s = stateRef.current;
-		if (!s.isDragging && !s.isResizing) {
-			return;
-		}
-
-		const dragStart = dragStartRef.current;
-		const containerWidth = s.containerDimensions.width;
-		const containerHeight = s.containerDimensions.height;
-
-		const rect = containerRef.current.getBoundingClientRect();
-
-		const scaleX = containerWidth / rect.width;
-		const scaleY = containerHeight / rect.height;
-
-		const dxCanvas = (e.clientX - dragStart.x) * scaleX;
-		const dyCanvas = (e.clientY - dragStart.y) * scaleY;
-
-		const dxPct = (dxCanvas / containerWidth) * 100;
-		const dyPct = (dyCanvas / containerHeight) * 100;
-
-		if (s.isDragging) {
-			const currentAlignment =
-				s.settings.align || s.settings.watermark_align || 'center';
-			const currentVerticalAlignment =
-				s.settings.valign || s.settings.watermark_valign || 'bottom';
-
-			let newX = dragStart.initialX;
-			let newY = dragStart.initialY;
-
-			if (currentAlignment === 'left') {
-				newX = dragStart.initialX + dxPct;
-			} else {
-				// right or center offsets increase as we move left (negative dx)
-				newX = dragStart.initialX - dxPct;
-			}
-
-			if (currentVerticalAlignment === 'top') {
-				newY = dragStart.initialY + dyPct;
-			} else {
-				// bottom or center offsets increase as we move up (negative dy)
-				newY = dragStart.initialY - dyPct;
-			}
-
-			setTransientPercentages({ x: newX, y: newY });
-		} else if (s.isResizing) {
-			const {
-				initialScale,
-				aspectRatio: currentRatio,
-				handle,
-			} = dragStart;
-
-			let newWidth;
-			if (handle === 'se' || handle === 'ne') {
-				newWidth = (containerWidth * initialScale) / 100 + dxCanvas;
-			} else {
-				newWidth = (containerWidth * initialScale) / 100 - dxCanvas;
-			}
-
-			let newScale = (newWidth / containerWidth) * 100;
-			newScale = Math.round(newScale * 100) / 100;
-			newScale = Math.max(1, Math.min(100, newScale));
-
-			const currentAlignment =
-				s.settings.align || s.settings.watermark_align || 'center';
-			const currentVerticalAlignment =
-				s.settings.valign || s.settings.watermark_valign || 'center';
-
-			let newX = dragStart.initialX;
-			let newY = dragStart.initialY;
-
-			const scaleDiff = newScale - initialScale;
-			const vScaleFactor =
-				containerWidth / containerHeight / currentRatio;
-			const vScaleDiff = scaleDiff * vScaleFactor;
-
-			// Horizontal anchoring
-			if (handle === 'se' || handle === 'ne') {
-				// Dragging Right side -> NW or SW corner fixed
-				if (currentAlignment === 'right') {
-					newX = dragStart.initialX - scaleDiff;
-				} else if (currentAlignment === 'center') {
-					newX = dragStart.initialX - scaleDiff / 2;
-				}
-			} else if (currentAlignment === 'left') {
-				newX = dragStart.initialX + scaleDiff;
-			} else if (currentAlignment === 'center') {
-				newX = dragStart.initialX + scaleDiff / 2;
-			}
-
-			// Vertical anchoring
-			if (handle === 'se' || handle === 'sw') {
-				// Dragging Bottom side -> NW or NE corner fixed
-				if (currentVerticalAlignment === 'bottom') {
-					newY = dragStart.initialY - vScaleDiff;
-				} else if (currentVerticalAlignment === 'center') {
-					newY = dragStart.initialY - vScaleDiff / 2;
-				}
-			} else if (currentVerticalAlignment === 'top') {
-				newY = dragStart.initialY + vScaleDiff;
-			} else if (currentVerticalAlignment === 'center') {
-				newY = dragStart.initialY + vScaleDiff / 2;
-			}
-
-			setTransientScale(newScale);
-			setTransientPercentages({ x: newX, y: newY });
-		}
-	}, []);
 
 	useEffect(() => {
 		// Clean logs and ensure no leaking listeners
@@ -564,8 +565,9 @@ const WatermarkPositioner = ({
 			ref={containerRef}
 			className="videopack-watermark-positioner"
 			style={{
-				width: `${containerWidth}px`,
-				height: `${containerHeight}px`,
+				width: '100%',
+				maxWidth: `${containerWidth}px`,
+				aspectRatio: `${containerWidth} / ${containerHeight}`,
 				backgroundImage:
 					showBackground && backgroundDataUrl
 						? `url(${backgroundDataUrl})`

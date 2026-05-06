@@ -1,6 +1,8 @@
 import { SelectControl, ComboboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
+import { useState, useEffect } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 export default function QuerySettings({
 	attributes,
@@ -15,9 +17,50 @@ export default function QuerySettings({
 		tags,
 		debouncedSetSearchString,
 		searchResults,
-		currentPost,
 		isResolvingSearch,
 	} = queryData;
+
+	const [currentPost, setCurrentPost] = useState(null);
+
+	useEffect(() => {
+		if (!gallery_id) {
+			setCurrentPost(null);
+			return;
+		}
+
+		// If we already have the correct post, don't fetch again
+		if (currentPost && currentPost.id === gallery_id) {
+			return;
+		}
+
+		// Check if it's in the search results
+		const found = (searchResults || []).find((res) => res.id === gallery_id);
+		if (found) {
+			setCurrentPost(found);
+			return;
+		}
+
+		// Fetch from the search endpoint to support all post types
+		apiFetch({
+			path: `/wp/v2/search?include=${gallery_id}&type=post`,
+		})
+			.then((results) => {
+				if (results && results.length > 0) {
+					setCurrentPost({
+						id: results[0].id,
+						title: {
+							rendered: results[0].title?.rendered || results[0].title || '',
+						},
+					});
+				}
+			})
+			.catch(() => {
+				setCurrentPost({
+					id: gallery_id,
+					title: { rendered: `#${gallery_id}` },
+				});
+			});
+	}, [gallery_id, searchResults, currentPost]);
 
 	const mapTermsToOptions = (terms) => {
 		if (!terms) {
@@ -29,21 +72,20 @@ export default function QuerySettings({
 	const optionsForSelect = [];
 	if (currentPost) {
 		optionsForSelect.push({
-			value: currentPost.id,
+			value: String(currentPost.id),
 			label: decodeEntities(currentPost.title.rendered),
 		});
 	}
 	if (searchResults) {
 		searchResults.forEach((post) => {
-			if (!optionsForSelect.find((o) => o.value === post.id)) {
+			if (!optionsForSelect.find((o) => String(o.value) === String(post.id))) {
 				optionsForSelect.push({
-					value: post.id,
+					value: String(post.id),
 					label: decodeEntities(post.title.rendered),
 				});
 			}
 		});
 	}
-
 	const attributeChangeFactory = (attributeName, isNumeric = false) => {
 		return (newValue) => {
 			let valueToSet = newValue;
@@ -116,7 +158,7 @@ export default function QuerySettings({
 						'Search Posts',
 						'video-embed-thumbnail-generator'
 					)}
-					value={gallery_id}
+					value={gallery_id ? String(gallery_id) : ''}
 					options={optionsForSelect}
 					onFilterValueChange={debouncedSetSearchString}
 					onChange={(newValue) =>

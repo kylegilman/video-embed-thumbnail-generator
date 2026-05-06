@@ -3,7 +3,9 @@ import { useSelect } from '@wordpress/data';
 import { getEffectiveValue, isTrue } from '../utils/context';
 export { isTrue };
 
-export const VIDEOPACK_CONTEXT_KEYS = [
+import { applyFilters } from '@wordpress/hooks';
+
+const DEFAULT_CONTEXT_KEYS = [
 	'skin',
 	'title_color',
 	'title_background_color',
@@ -30,6 +32,9 @@ export const VIDEOPACK_CONTEXT_KEYS = [
 	'gallery_exclude',
 	'layout',
 	'columns',
+	'gallery_pagination',
+	'gallery_title',
+	'videos',
 	'enable_collection_video_limit',
 	'collection_video_limit',
 	'prioritizePostData',
@@ -72,7 +77,15 @@ export const VIDEOPACK_CONTEXT_KEYS = [
 	'currentPage',
 	'totalPages',
 	'onPageChange',
+	'isInsideThumbnail',
+	'isInsidePlayerOverlay',
+	'isInsidePlayerContainer',
 ];
+
+export const VIDEOPACK_CONTEXT_KEYS = applyFilters(
+	'videopack.contextKeys',
+	DEFAULT_CONTEXT_KEYS
+);
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.

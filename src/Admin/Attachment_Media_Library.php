@@ -112,10 +112,14 @@ class Attachment_Media_Library implements Hook_Subscriber {
 				$this->change_thumbnail_parent( (int) $post_id, (int) $post->post_parent );
 			}
 
-			$featured_id = get_post_meta( (int) $post_id, '_kgflashmediaplayer-poster-id', true );
-			set_post_thumbnail( (int) $post_id, (int) $featured_id );
+			$meta_manager = new Attachment_Meta( $this->options, (int) $post_id );
+			$meta         = $meta_manager->get();
+			$featured_id  = $meta['poster_id'] ?? null;
 
-			$meta = get_post_meta( (int) $post_id, '_videopack-meta', true );
+			if ( ! empty( $featured_id ) ) {
+				set_post_thumbnail( (int) $post_id, (int) $featured_id );
+			}
+
 			if ( ! empty( $meta['featuredchanged'] ) && ! empty( $featured_id ) && ! empty( $post->post_parent ) ) {
 				set_post_thumbnail( (int) $post->post_parent, (int) $featured_id );
 			}

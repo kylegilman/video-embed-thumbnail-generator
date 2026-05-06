@@ -7,7 +7,6 @@ import {
 } from '../../assets/icon';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideopackData from '../../hooks/useVideopackData';
-import './ViewCount.css';
 
 /**
  * A internal component to display the view count with correct styling and data.

@@ -60,6 +60,18 @@ class Attachment_Meta implements Hook_Subscriber {
 	}
 
 	/**
+	 * Sets the current attachment ID and refreshes metadata.
+	 *
+	 * @param int|bool $post_id Attachment ID.
+	 * @return array The refreshed metadata.
+	 */
+	public function set_post_id( $post_id ) {
+		$this->post_id   = $post_id;
+		$this->meta_data = $this->get();
+		return $this->meta_data;
+	}
+
+	/**
 	 * Returns an array of actions to register.
 	 *
 	 * @return array
@@ -101,7 +113,7 @@ class Attachment_Meta implements Hook_Subscriber {
 	 * @return array Default meta values.
 	 */
 	public function get_defaults() {
-		return array(
+		return (array) apply_filters( 'videopack_attachment_meta_defaults', array(
 			'embed'                       => (string) ( $this->options['default_insert'] ?? 'Single Video' ),
 			'width'                       => (string) ( $this->options['width'] ?? '' ),
 			'height'                      => (string) ( $this->options['height'] ?? '' ),
@@ -180,7 +192,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'play_button_secondary_color' => null,
 			'control_bar_bg_color'        => null,
 			'control_bar_color'           => null,
-		);
+		) );
 	}
 
 	/**
