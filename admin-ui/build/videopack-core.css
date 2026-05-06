@@ -1160,6 +1160,7 @@
   position: relative;
   height: auto;
   min-height: 1px;
+  overflow: hidden;
 }
 .videopack-wrapper.videopack-has-aspect-ratio .videopack-player video,
 .videopack-wrapper.videopack-has-aspect-ratio .videopack-player .video-js,
@@ -1182,6 +1183,14 @@
   width: 100%;
   height: auto;
   min-height: 1px;
+  overflow: hidden;
+}
+.videopack-wrapper .videopack-player .vjs-poster img,
+.videopack-wrapper .videopack-player picture.vjs-poster img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: contain;
+     object-fit: contain;
 }
 .videopack-wrapper .videopack-icon-svg,
 .videopack-wrapper .videopack-icons svg,

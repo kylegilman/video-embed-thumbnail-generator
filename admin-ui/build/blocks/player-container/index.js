@@ -1955,23 +1955,7 @@ function Edit({
     });
     const dynamicKeys = ['src', 'poster', 'title', 'caption', 'width', 'height', 'embedlink', 'sources', 'source_groups', 'text_tracks', 'embed_method', 'skin', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'title_color', 'title_background_color', 'total_thumbnails', 'featured', 'starts', 'showCaption'];
     if (Object.keys(updatedAttributes).length > 0) {
-      const filteredUpdates = {
-        ...updatedAttributes
-      };
-
-      // Only strip dynamic attributes if we have an ID and are not forcing persistence.
-      if (attachmentObject.id && !forcePersist) {
-        dynamicKeys.forEach(key => {
-          delete filteredUpdates[key];
-          // If the attribute is currently set, we unset it to ensure it becomes dynamic.
-          if (currentAttributes[key]) {
-            filteredUpdates[key] = undefined;
-          }
-        });
-      }
-      if (Object.keys(filteredUpdates).length > 0) {
-        setAttributes(filteredUpdates);
-      }
+      setAttributes(updatedAttributes);
     }
   }, [setAttributes]);
   const processedIds = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useRef)(new Set());
@@ -6141,6 +6125,12 @@ function useVideopackContext(attributes, context, options = {}) {
         // Only add classes for colors/styles that are actually set
         if (key !== 'skin') {
           classes.push(`videopack-has-${cssKey}`);
+
+          // Add specific class for embed method value
+          if (key === 'embed_method') {
+            const embedClass = `videopack-embed-${String(value).toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+            classes.push(embedClass);
+          }
         }
       }
     });

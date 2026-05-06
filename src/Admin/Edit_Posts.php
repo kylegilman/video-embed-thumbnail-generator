@@ -109,7 +109,7 @@ class Edit_Posts implements Hook_Subscriber {
 
 			if ( (string) ( $videopack_postmeta['embed'] ?? '' ) === 'Single Video' ) {
 
-				$source = new \Videopack\Video_Source\Source_Attachment_Local(
+				$source = new \Videopack\Video_Source\Source_Attachment(
 					(int) $attachment_id,
 					$this->options,
 					$this->format_registry

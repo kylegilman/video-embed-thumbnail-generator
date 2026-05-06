@@ -126,8 +126,8 @@ export default function Edit(props) {
 			Object.keys(parentAttributes.source_groups).length > 0);
 
 	const { formats } = useVideoFormats(
-		!hasSources && !isDiscovering && src ? resolvedPostId : null,
-		!hasSources && !isDiscovering && src ? src : null
+		!hasSources && src ? resolvedPostId : null,
+		!hasSources && src ? src : null
 	);
 
 	useEffect(() => {
@@ -236,7 +236,7 @@ export default function Edit(props) {
 				attributes={{
 					...parentAttributes,
 					restartCount,
-					...( formats && ! hasSources ? { source_groups: formats } : {} ),
+					...(formats && !hasSources ? { source_groups: formats } : {}),
 				}}
 				context={context}
 				isSelected={isSelected}

@@ -271,7 +271,9 @@ const VideoPlayer = ({
 
 	const wrapperClasses = useMemo(() => {
 		const classes = [
-			...contextClasses,
+			...(typeof contextClasses === 'string'
+				? contextClasses.split(' ').filter(Boolean)
+				: contextClasses),
 			'videopack-video-block-container',
 			'videopack-wrapper',
 		];
@@ -287,18 +289,11 @@ const VideoPlayer = ({
 			classes.push(resolvedDuotoneClass);
 		}
 
-		if (final_embed_method) {
-			classes.push(
-				`videopack-embed-${final_embed_method
-					.toLowerCase()
-					.replace(/[^a-z0-9]/g, '-')}`
-			);
-		}
-
 		// Ensure unique classes and join
 		return [...new Set(classes)].join(' ');
 	}, [
 		contextClasses,
+		final_embed_method,
 		isFixedAspect,
 		aspectRatio,
 		resolvedDuotoneClass,
@@ -338,7 +333,7 @@ const VideoPlayer = ({
 			return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
 		}
 		return Math.random().toString(36).substr(2, 9);
-	}, [blockAttributes.id, source_groups]);
+	}, [blockAttributes.id, source_groups, final_embed_method]);
 
 	const genericPlayerOptions = useMemo(
 		() => ({

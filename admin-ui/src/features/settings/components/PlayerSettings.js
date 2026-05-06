@@ -481,6 +481,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						resizeDependencies={[align]}
 					>
 						<BlockPreview
+							key={embed_method}
 							name="videopack/player-container"
 							attributes={{
 								id: 'sample-video',

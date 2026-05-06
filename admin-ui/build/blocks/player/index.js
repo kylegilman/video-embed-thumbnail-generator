@@ -1867,7 +1867,7 @@ function Edit(props) {
   const hasSources = parentAttributes.sources && parentAttributes.sources.length > 0 || parentAttributes.source_groups && Object.keys(parentAttributes.source_groups).length > 0;
   const {
     formats
-  } = (0,_hooks_useVideoFormats_js__WEBPACK_IMPORTED_MODULE_4__.useVideoFormats)(!hasSources && !isDiscovering && src ? resolvedPostId : null, !hasSources && !isDiscovering && src ? src : null);
+  } = (0,_hooks_useVideoFormats_js__WEBPACK_IMPORTED_MODULE_4__.useVideoFormats)(!hasSources && src ? resolvedPostId : null, !hasSources && src ? src : null);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
     resetPlayer();
   }, [skin, resetPlayer]);
@@ -4663,7 +4663,7 @@ const VideoPlayer = ({
     return styles;
   }, [final_embed_method, contextStyles]);
   const wrapperClasses = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
-    const classes = [...contextClasses, 'videopack-video-block-container', 'videopack-wrapper'];
+    const classes = [...(typeof contextClasses === 'string' ? contextClasses.split(' ').filter(Boolean) : contextClasses), 'videopack-video-block-container', 'videopack-wrapper'];
     if (isFixedAspect || aspectRatio) {
       classes.push('videopack-has-aspect-ratio');
       if (isFixedAspect) {
@@ -4673,13 +4673,10 @@ const VideoPlayer = ({
     if (resolvedDuotoneClass && !loopDuotoneId) {
       classes.push(resolvedDuotoneClass);
     }
-    if (final_embed_method) {
-      classes.push(`videopack-embed-${final_embed_method.toLowerCase().replace(/[^a-z0-9]/g, '-')}`);
-    }
 
     // Ensure unique classes and join
     return [...new Set(classes)].join(' ');
-  }, [contextClasses, isFixedAspect, aspectRatio, resolvedDuotoneClass, loopDuotoneId]);
+  }, [contextClasses, final_embed_method, isFixedAspect, aspectRatio, resolvedDuotoneClass, loopDuotoneId]);
   const actualAutoplay = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     return autoplay;
   }, [autoplay]);
@@ -4711,7 +4708,7 @@ const VideoPlayer = ({
       return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
     }
     return Math.random().toString(36).substr(2, 9);
-  }, [blockAttributes.id, source_groups]);
+  }, [blockAttributes.id, source_groups, final_embed_method]);
   const genericPlayerOptions = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => ({
     poster,
     loop,
@@ -7120,6 +7117,12 @@ function useVideopackContext(attributes, context, options = {}) {
         // Only add classes for colors/styles that are actually set
         if (key !== 'skin') {
           classes.push(`videopack-has-${cssKey}`);
+
+          // Add specific class for embed method value
+          if (key === 'embed_method') {
+            const embedClass = `videopack-embed-${String(value).toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+            classes.push(embedClass);
+          }
         }
       }
     });

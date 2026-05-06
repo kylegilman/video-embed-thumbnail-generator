@@ -271,6 +271,9 @@ class Validate {
 	 * @return bool True if valid, false otherwise.
 	 */
 	public static function filter_validate_url( $uri ) {
+		if ( is_array( $uri ) ) {
+			return false;
+		}
 		$uri = (string) $uri;
 		$res = filter_var( $uri, FILTER_VALIDATE_URL );
 

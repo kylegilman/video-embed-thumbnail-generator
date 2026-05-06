@@ -68,14 +68,14 @@ class Source_Factory {
 		}
 
 		switch ( $source_type ) {
-			case 'attachment_local':
-				return new Source_Attachment_Local( $instance_source, $options, $format_registry, $format, $exists, $parent_id );
-			case 'file_local':
-				return new Source_File_Local( $instance_source, $options, $format_registry, $format, $exists, $parent_id );
+			case 'attachment':
+				return new Source_Attachment( $instance_source, $options, $format_registry, $format, $exists, $parent_id );
+			case 'file':
+				return new Source_File( $instance_source, $options, $format_registry, $format, $exists, $parent_id );
 			case 'url':
 				return new Source_Url( $instance_source, $options, $format_registry, $format, $exists, $parent_id );
 			case 'placeholder':
-				return new Source_Placeholder_Local( $instance_source, $options, $format_registry, $format, false, $parent_id );
+				return new Source_Placeholder( $instance_source, $options, $format_registry, $format, false, $parent_id );
 		}
 
 		return null;
@@ -93,9 +93,15 @@ class Source_Factory {
 	 * }
 	 */
 	protected static function determine_source_type( $source, array $options, \Videopack\Admin\Formats\Registry $format_registry ) {
+		if ( is_array( $source ) ) {
+			if ( isset( $source['id'] ) && get_post_type( $source['id'] ) === 'attachment' ) {
+				return array( $source, 'attachment' );
+			}
+			return array( $source, 'placeholder' );
+		}
 
 		if ( is_numeric( $source ) && get_post_type( $source ) === 'attachment' ) {
-			return array( $source, 'attachment_local' );
+			return array( $source, 'attachment' );
 		}
 
 		if ( \Videopack\Common\Validate::filter_validate_url( $source ) ) {
@@ -108,7 +114,7 @@ class Source_Factory {
 						'id'  => $attachment_id,
 						'url' => $source,
 					),
-					'attachment_local',
+					'attachment',
 				);
 			}
 
@@ -121,7 +127,7 @@ class Source_Factory {
 			if ( isset( $url_parts['host'] ) && $url_parts['host'] === $site_url_parts['host'] ) {
 				// It's a local URL. Convert to a server path.
 				$path = str_replace( site_url( '/' ), trailingslashit( ABSPATH ), $source );
-				return array( urldecode( $path ), 'file_local' );
+				return array( urldecode( $path ), 'file' );
 			}
 
 			// If all else fails for a URL, it's a remote URL.
@@ -129,7 +135,7 @@ class Source_Factory {
 		}
 
 		if ( file_exists( $source ) ) {
-			return array( $source, 'file_local' );
+			return array( $source, 'file' );
 		}
 
 		return array( $source, 'placeholder' );

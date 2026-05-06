@@ -369,22 +369,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			];
 
 			if (Object.keys(updatedAttributes).length > 0) {
-				const filteredUpdates = { ...updatedAttributes };
-
-				// Only strip dynamic attributes if we have an ID and are not forcing persistence.
-				if (attachmentObject.id && !forcePersist) {
-					dynamicKeys.forEach((key) => {
-						delete filteredUpdates[key];
-						// If the attribute is currently set, we unset it to ensure it becomes dynamic.
-						if (currentAttributes[key]) {
-							filteredUpdates[key] = undefined;
-						}
-					});
-				}
-
-				if (Object.keys(filteredUpdates).length > 0) {
-					setAttributes(filteredUpdates);
-				}
+				setAttributes(updatedAttributes);
 			}
 		},
 		[setAttributes]
