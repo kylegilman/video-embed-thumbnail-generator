@@ -113,6 +113,7 @@ export const VideoJS = (props) => {
 						}
 						this.on('play', onPlay);
 						this.on('pause', onPause);
+						this.on('ended', props.onEnded);
 						this.on('loadedmetadata', function () {
 							if (typeof onMetadataLoaded === 'function') {
 								onMetadataLoaded({

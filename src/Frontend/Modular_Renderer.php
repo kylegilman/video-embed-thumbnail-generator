@@ -115,6 +115,11 @@ class Modular_Renderer {
 		if ( ! empty( $atts['wrapper_class'] ) ) {
 			$classes[] = $atts['wrapper_class'];
 		}
+		
+		$embed_method = $atts['embed_method'] ?? $options['embed_method'] ?? 'Video.js';
+		if ( $embed_method ) {
+			$classes[] = 'videopack-embed-' . sanitize_title( (string) $embed_method );
+		}
 
 		// Title visibility is now managed by the title/meta bars themselves.
 
@@ -917,6 +922,11 @@ class Modular_Renderer {
 				esc_attr( implode( ' ', $classes ) ),
 				$style
 			);
+		}
+
+		$html = apply_filters( 'videopack_play_button_html', null, $atts, $options, $skin );
+		if ( null !== $html ) {
+			return $html;
 		}
 
 		$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';

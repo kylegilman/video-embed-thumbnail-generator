@@ -136,7 +136,10 @@ export default function VideoTitle({
 		return <Spinner />;
 	}
 
-	const position = attrPosition || (isInsideThumbnail ? 'bottom' : 'top');
+	const position =
+		attrPosition ||
+		(isInsideThumbnail ? 'bottom' : vpContext.resolved.title_position) ||
+		'top';
 	let defaultAlign = 'left';
 	if (isInsideThumbnail) {
 		defaultAlign = 'center';
@@ -194,7 +197,7 @@ export default function VideoTitle({
 		isOverlay ? 'is-overlay' : ''
 	} ${!showBackground && isOverlay ? 'has-no-background' : ''} ${
 		isInsideThumbnail ? 'videopack-thumbnail-title' : ''
-	} ${isInsidePlayerOverlay ? `videopack-title-${position}` : ''}`.trim();
+	} ${isInsidePlayerOverlay || isOverlay ? `position-${position}` : ''}`.trim();
 
 	return (
 		<div {...finalBlockProps}>

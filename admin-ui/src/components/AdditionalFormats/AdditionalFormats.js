@@ -70,6 +70,7 @@ const AdditionalFormats = ({
 	src: propSrc, // Accept src as a separate prop
 	probedMetadata,
 	isProbing,
+	isDiscovering = false,
 }) => {
 	const parentId = providedParentId || attributes.id || 0;
 	const src = propSrc || attributes.src;
@@ -179,9 +180,9 @@ const AdditionalFormats = ({
 	const fetchVideoFormats = useCallback(
 		async (signal = null) => {
 			const activeId = attributes.id || 0;
-			if (!activeId && !src) {
+			if (!activeId || !src) {
 				return;
-			} // Don't fetch if no ID and no URL.
+			} // Don't fetch until we have both an identity and a URL.
 			setIsLoading(true);
 			try {
 				const formats = await getVideoFormats(
@@ -229,13 +230,13 @@ const AdditionalFormats = ({
 	);
 
 	useEffect(() => {
-		if (isProbing || !isOpen) {
+		if (isProbing || !isOpen || isDiscovering) {
 			return;
 		}
 		const controller = new AbortController();
 		fetchVideoFormats(controller.signal);
 		return () => controller.abort();
-	}, [fetchVideoFormats, isProbing, isOpen]); // Fetch formats when the attachment ID changes or panel is opened
+	}, [fetchVideoFormats, isProbing, isOpen, isDiscovering]); // Fetch formats when the attachment ID changes or panel is opened
 
 	const shouldPoll = (formats) => {
 		if (!formats) {

@@ -47,7 +47,7 @@ class Player_Video_Js extends Player {
 	 * @return array The style handles.
 	 */
 	public function get_player_style_handles(): array {
-		return array_merge( parent::get_player_style_handles(), array( 'video-js' ) );
+		return array_merge( (array) parent::get_player_style_handles(), array( 'video-js' ) );
 	}
 
 	/**
@@ -56,7 +56,7 @@ class Player_Video_Js extends Player {
 	 * @return array The script handles.
 	 */
 	public function get_player_script_handles(): array {
-		return array( 'video-js', 'video-js-quality-selector' );
+		return array_merge( (array) parent::get_player_script_handles(), array( 'video-js', 'video-js-quality-selector' ) );
 	}
 
 
@@ -106,9 +106,7 @@ class Player_Video_Js extends Player {
 	 * Enqueues Video.js player-specific scripts and styles.
 	 */
 	public function enqueue_player_scripts(): void {
-		wp_enqueue_script( 'video-js' );
-		wp_enqueue_script( 'video-js-quality-selector' );
-		wp_enqueue_style( 'video-js' );
+		parent::enqueue_player_scripts();
 
 		if ( wp_script_is( 'videojs-l10n', 'registered' ) ) {
 			wp_enqueue_script( 'videojs-l10n' );

@@ -136,7 +136,7 @@
 					}
 				};
 				checkMejs();
-			} else if (videoVars.embed_method === 'None') {
+			} else {
 				this.setupVideo(playerWrapper, videoVars);
 			}
 		},
@@ -344,6 +344,11 @@
 				this.setupVideoJSPlayer(playerWrapper, videoVars);
 			} else if (videoVars.embed_method === 'WordPress Default') {
 				this.setupMEJSPlayer(playerWrapper, videoVars);
+			} else {
+				const video = playerWrapper.querySelector('video');
+				if (video) {
+					this.setupVideoTitle(playerWrapper, video, videoVars);
+				}
 			}
 
 			// Resize logic.
@@ -591,7 +596,7 @@
 			};
 
 			const isMejs = 'WordPress Default' === videoVars.embed_method;
-			const video = isMejs ? player.media : player.el().querySelector('video');
+			const video = isMejs ? player.media : (player.tagName === 'VIDEO' ? player : (player.el ? player.el().querySelector('video') : null));
 
 			const showMeta = () => {
 				getMetaElements().forEach((el) => el.classList.add('videopack-video-title-visible'));
@@ -605,9 +610,15 @@
 				video.addEventListener('pause', showMeta);
 				video.addEventListener('ended', showMeta);
 			} else if (player && !isMejs) {
-				player.on('play', hideMeta);
-				player.on('pause', showMeta);
-				player.on('ended', showMeta);
+				if (typeof player.on === 'function') {
+					player.on('play', hideMeta);
+					player.on('pause', showMeta);
+					player.on('ended', showMeta);
+				} else if (typeof player.addEventListener === 'function') {
+					player.addEventListener('play', hideMeta);
+					player.addEventListener('pause', showMeta);
+					player.addEventListener('ended', showMeta);
+				}
 			}
 		},
 

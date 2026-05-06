@@ -84,23 +84,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const hasAttemptedInitialUpload = useRef(false);
 	const { createErrorNotice } = useDispatch(noticesStore);
 	const { insertBlock } = useDispatch(blockEditorStore);
-	const { mediaUpload, isSiteEditor, editorPostId, innerBlocks } = useSelect(
-		(select) => {
-			const editorStore = select(blockEditorStore);
-			const editor = select('core/editor');
-			const postType = editor?.getCurrentPostType();
-			return {
-				mediaUpload: editorStore.getSettings()?.mediaUpload,
-				isSiteEditor:
-					postType === 'wp_template' ||
-					postType === 'wp_template_part',
-				editorPostId: editor?.getCurrentPostId(),
-				innerBlocks: editorStore.getBlocks(clientId),
-			};
-		},
-		[clientId]
-	);
-
 	const vpContext = useVideopackContext(attributes, context);
 	const {
 		resolved: effectiveDesign,
@@ -114,20 +97,55 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		isDiscovering,
 	} = effectiveDesign;
 
+	const {
+		mediaUpload,
+		isSiteEditor,
+		editorPostId,
+		innerBlocks,
+		attachmentFromStore,
+	} = useSelect(
+		(select) => {
+			const editorStore = select(blockEditorStore);
+			const editor = select('core/editor');
+			const core = select('core');
+			const postType = editor?.getCurrentPostType();
+			const effectiveId =
+				id || context['videopack/attachmentId'] || resolvedAttachmentId;
+
+			return {
+				mediaUpload: editorStore.getSettings()?.mediaUpload,
+				isSiteEditor:
+					postType === 'wp_template' ||
+					postType === 'wp_template_part',
+				editorPostId: editor?.getCurrentPostId(),
+				innerBlocks: editorStore.getBlocks(clientId),
+				attachmentFromStore:
+					effectiveId && typeof effectiveId === 'number'
+						? select('core').getEntityRecord(
+								'postType',
+								'attachment',
+								effectiveId
+						  )
+						: null,
+			};
+		},
+		[clientId, id, context['videopack/attachmentId'], resolvedAttachmentId]
+	);
+
 	const isDynamic =
 		(context['videopack/postId'] || context.postId) &&
 		(Number(context['videopack/postId'] || context.postId) !==
 			Number(editorPostId) ||
 			isSiteEditor);
 	const isStandalone = !isDynamic;
-
 	const effectiveId = resolvedAttachmentId;
 
-	const [attachment, setAttachment] = useState(null);
-	const [hasResolved, setHasResolved] = useState(false);
+	const [attachmentOverride, setAttachmentOverride] = useState(null);
+	const attachment = attachmentOverride || attachmentFromStore;
+	const hasResolved = !!attachment || (!effectiveId && !src);
 
 	const videoData = useMemo(
-		() => ({ record: attachment, setRecord: setAttachment, hasResolved }),
+		() => ({ record: attachment, setRecord: setAttachmentOverride, hasResolved }),
 		[attachment, hasResolved]
 	);
 
@@ -232,11 +250,17 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				context['videopack/embedlink'] ||
 				attachment?.videopack?.embed_url ||
 				attributes.embedlink,
+			showCaption:
+				attributes.showCaption ||
+				!!(
+					attachment?.caption?.raw ||
+					attachment?.caption?.rendered ||
+					context['videopack/caption']
+				),
 		};
 	}, [attributes, attachment, options, config, context, effectiveDesign]);
 
 	const attributesRef = useRef(attributes);
-	const lastFetchedIdRef = useRef(null);
 	const isMountedRef = useRef(false);
 
 	useEffect(() => {
@@ -251,10 +275,11 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	}, []);
 
 	const setAttributesFromMedia = useCallback(
-		(attachmentObject, forcePersist = true) => {
+		(attachmentObject, forcePersist = false) => {
 			if (!isMountedRef.current) {
 				return;
 			}
+
 			const media_attributes = {
 				src: attachmentObject.source_url || attachmentObject.url,
 				id: attachmentObject.id,
@@ -291,33 +316,32 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				),
 			};
 
-			const updatedAttributes = Object.keys(media_attributes).reduce(
-				(acc, key) => {
-					const newVal = media_attributes[key];
-					const oldVal = attributesRef.current[key];
+			const updatedAttributes = {};
+			const currentAttributes = attributesRef.current;
 
-					const isDifferent = Array.isArray(newVal)
-						? JSON.stringify(newVal) !== JSON.stringify(oldVal)
-						: newVal !== oldVal;
+			Object.keys(media_attributes).forEach((key) => {
+				const newVal = media_attributes[key];
+				const oldVal = currentAttributes[key];
 
-					if (
-						newVal !== undefined &&
-						newVal !== null &&
-						isDifferent
-					) {
-						const isMetadata = ['title', 'caption'].includes(key);
-						if (isMetadata) {
-							if (!oldVal) {
-								acc[key] = newVal;
-							}
-						} else if (forcePersist || !oldVal) {
-							acc[key] = newVal;
+				if (newVal === undefined || newVal === null) {
+					return;
+				}
+
+				const isDifferent = Array.isArray(newVal)
+					? JSON.stringify(newVal) !== JSON.stringify(oldVal)
+					: newVal !== oldVal;
+
+				if (isDifferent) {
+					const isMetadata = ['title', 'caption'].includes(key);
+					if (isMetadata) {
+						if (!oldVal) {
+							updatedAttributes[key] = newVal;
 						}
+					} else if (forcePersist || !oldVal) {
+						updatedAttributes[key] = newVal;
 					}
-					return acc;
-				},
-				{}
-			);
+				}
+			});
 
 			const dynamicKeys = [
 				'src',
@@ -338,15 +362,22 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				'control_bar_color',
 				'title_color',
 				'title_background_color',
+				'total_thumbnails',
+				'featured',
+				'starts',
+				'showCaption',
 			];
 
 			if (Object.keys(updatedAttributes).length > 0) {
 				const filteredUpdates = { ...updatedAttributes };
 
-				if (attachmentObject.id) {
+				// Only strip dynamic attributes if we have an ID and are not forcing persistence.
+				if (attachmentObject.id && !forcePersist) {
 					dynamicKeys.forEach((key) => {
-						if (key in filteredUpdates) {
-							delete filteredUpdates[key];
+						delete filteredUpdates[key];
+						// If the attribute is currently set, we unset it to ensure it becomes dynamic.
+						if (currentAttributes[key]) {
+							filteredUpdates[key] = undefined;
 						}
 					});
 				}
@@ -359,59 +390,22 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		[setAttributes]
 	);
 
+	const processedIds = useRef(new Set());
 	useEffect(() => {
-		if (effectiveId && typeof effectiveId === 'number') {
-			if (
-				attachment?.id === effectiveId ||
-				lastFetchedIdRef.current === effectiveId
-			) {
-				if (attachment?.id === effectiveId) {
-					setHasResolved(true);
-				}
-				return;
+		if (attachmentFromStore && isStandalone && !attachmentOverride) {
+			const attachmentId = attachmentFromStore.id;
+			// Only process each ID once to avoid infinite loops and keep attributes lean.
+			if (!processedIds.current.has(attachmentId) || !id) {
+				setAttributesFromMedia(attachmentFromStore, false);
+				processedIds.current.add(attachmentId);
 			}
-
-			lastFetchedIdRef.current = effectiveId;
-			setHasResolved(false);
-
-			apiFetch({ path: `/wp/v2/media/${effectiveId}?context=edit` })
-				.then((record) => {
-					if (!isMountedRef.current) {
-						return;
-					}
-					setAttachment(record);
-					setHasResolved(true);
-					setAttributesFromMedia(record, isStandalone);
-				})
-				.catch((error) => {
-					if (!isMountedRef.current) {
-						return;
-					}
-					setAttachment(null);
-					setHasResolved(true);
-					if ((error.status === 404 || error.status === 403) && id) {
-						setAttributes({
-							id: undefined,
-							src: undefined,
-							poster: undefined,
-							title: undefined,
-							caption: undefined,
-						});
-					}
-				});
-		} else {
-			setAttachment(null);
-			setHasResolved(false);
-			lastFetchedIdRef.current = null;
 		}
 	}, [
-		effectiveId,
-		id,
-		resolvedPostIdFromContext,
-		setAttributesFromMedia,
-		setAttributes,
-		attachment,
+		attachmentFromStore,
 		isStandalone,
+		id,
+		attachmentOverride,
+		setAttributesFromMedia,
 	]);
 
 	const onUploadError = useCallback(
@@ -438,10 +432,14 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			}
 
 			if (videoArray.length === 1) {
-				if (isBlobURL(videoArray[0].url)) {
+				const selectedVideo = videoArray[0];
+				if (isBlobURL(selectedVideo.url)) {
 					hasAttemptedInitialUpload.current = true;
 				}
-				setAttributesFromMedia(videoArray[0]);
+
+				// Hydrate the block from the media object.
+				// We don't force persistence here to keep the block markup lean if an ID is present.
+				setAttributesFromMedia(selectedVideo, false);
 			}
 		},
 		[setAttributesFromMedia, setAttributes]
@@ -517,9 +515,17 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		) {
 			apiFetch({
 				path: `/videopack/v1/sources?url=${encodeURIComponent(src)}`,
-			}).catch((error) => {
-				console.error('Error fetching video sources:', error);
-			});
+			})
+				.then((response) => {
+					if (response && Object.keys(response).length > 0) {
+						setAttributes({
+							source_groups: response,
+						});
+					}
+				})
+				.catch((error) => {
+					console.error('Error fetching video sources:', error);
+				});
 		}
 	}, [id, src, setAttributes]);
 
@@ -776,6 +782,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					options={options}
 					isProbing={isProbing}
 					probedMetadata={effectiveMetadata}
+					isDiscovering={isDiscovering}
 				/>
 			</InspectorControls>
 			<figure {...blockProps}>{blockContent}</figure>

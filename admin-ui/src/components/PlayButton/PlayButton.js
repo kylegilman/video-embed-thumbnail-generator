@@ -1,4 +1,5 @@
 import { __ } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 import useVideopackContext from '../../hooks/useVideopackContext';
 
 /**
@@ -15,6 +16,17 @@ export default function PlayButton({ attributes = {}, context = {} }) {
 	const embed_method =
 		typeof config !== 'undefined' ? config.embed_method : 'Video.js';
 	const vpContext = useVideopackContext(attributes, context);
+
+	const customButton = applyFilters('videopack.playButtonElement', null, {
+		attributes,
+		context,
+		vpContext,
+		embed_method,
+	});
+
+	if (customButton) {
+		return customButton;
+	}
 
 	if ('WordPress Default' === embed_method) {
 		const styles = {

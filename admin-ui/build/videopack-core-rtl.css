@@ -50,6 +50,35 @@
   bottom: auto;
   transform: translateY(-50%);
 }
+.videopack-video-title-block.is-overlay {
+  position: absolute;
+  right: 0;
+  width: 100%;
+  z-index: 115;
+  pointer-events: none;
+}
+.videopack-video-title-block.is-overlay.position-top {
+  top: 0;
+  bottom: auto;
+}
+.videopack-video-title-block.is-overlay.position-bottom {
+  bottom: 0;
+  top: auto;
+}
+.videopack-video-title-block.is-overlay.position-center {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+.videopack-video-title-block.is-overlay.is-inside-thumbnail.position-top {
+  top: 5%;
+}
+.videopack-video-title-block.is-overlay.is-inside-thumbnail.position-bottom {
+  bottom: 5%;
+}
+.videopack-video-title-block.is-overlay .videopack-video-title {
+  pointer-events: auto;
+}
 .videopack-video-title.is-overlay {
   display: flex;
   flex-direction: row;
@@ -277,6 +306,7 @@
   gap: 4px;
   width: -moz-fit-content;
   width: fit-content;
+  white-space: nowrap;
 }
 .videopack-view-count.has-text-align-left,
 .videopack-view-count-block.has-text-align-left,
@@ -302,6 +332,45 @@
 .videopack-video-duration-block.has-text-align-right {
   justify-content: flex-end;
   margin-right: auto;
+}
+.videopack-view-count:not(.is-overlay),
+.videopack-view-count-block:not(.is-overlay),
+.videopack-view-count-wrapper:not(.is-overlay),
+.videopack-video-duration:not(.is-overlay),
+.videopack-video-duration-block:not(.is-overlay) {
+  margin-bottom: 0.5em;
+  color: var(--wp--preset--color--foreground, inherit);
+}
+.videopack-video-player .videopack-view-count:not(.is-overlay), .vjs-theme-videopack .videopack-view-count:not(.is-overlay), .video-js .videopack-view-count:not(.is-overlay),
+.videopack-video-player .videopack-view-count-block:not(.is-overlay),
+.vjs-theme-videopack .videopack-view-count-block:not(.is-overlay),
+.video-js .videopack-view-count-block:not(.is-overlay),
+.videopack-video-player .videopack-view-count-wrapper:not(.is-overlay),
+.vjs-theme-videopack .videopack-view-count-wrapper:not(.is-overlay),
+.video-js .videopack-view-count-wrapper:not(.is-overlay),
+.videopack-video-player .videopack-video-duration:not(.is-overlay),
+.vjs-theme-videopack .videopack-video-duration:not(.is-overlay),
+.video-js .videopack-video-duration:not(.is-overlay),
+.videopack-video-player .videopack-video-duration-block:not(.is-overlay),
+.vjs-theme-videopack .videopack-video-duration-block:not(.is-overlay),
+.video-js .videopack-video-duration-block:not(.is-overlay) {
+  color: var(--wp--preset--color--foreground, #333);
+}
+.videopack-view-count.is-preview,
+.videopack-view-count-block.is-preview,
+.videopack-view-count-wrapper.is-preview,
+.videopack-video-duration.is-preview,
+.videopack-video-duration-block.is-preview {
+  color: #333 !important;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  font-size: 0.85em;
+  margin: 0;
 }
 :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
   background: transparent !important;
@@ -535,9 +604,15 @@
   top: 5%;
   bottom: auto;
 }
+.videopack-video-title-block.is-overlay :is(:is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay.position-top, .videopack-video-title-block.position-top :is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay) {
+  top: 0 !important;
+}
 :is(:is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay.position-bottom, .videopack-video-title-block.position-bottom :is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay) {
   bottom: 5%;
   top: auto;
+}
+.videopack-video-title-block.is-overlay :is(:is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay.position-bottom, .videopack-video-title-block.position-bottom :is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay) {
+  bottom: 0 !important;
 }
 :is(:is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay.position-center, .videopack-video-title-block.position-center :is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay) {
   top: 50%;

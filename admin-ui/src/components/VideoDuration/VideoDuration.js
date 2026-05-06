@@ -1,7 +1,6 @@
 import { Spinner } from '@wordpress/components';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideopackData from '../../hooks/useVideopackData';
-import './VideoDuration.css';
 
 /**
  * A internal component to display the video duration with correct formatting and data.

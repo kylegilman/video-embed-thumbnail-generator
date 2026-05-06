@@ -118,9 +118,17 @@ export default function Edit(props) {
 		classes: contextClasses,
 	} = useVideopackContext({ ...parentAttributes, restartCount }, context);
 
-	const { src, skin } = resolved;
+	const { src, skin, isDiscovering } = resolved;
 	useVideoProbe(src);
-	useVideoFormats(resolvedPostId, src);
+	const hasSources =
+		(parentAttributes.sources && parentAttributes.sources.length > 0) ||
+		(parentAttributes.source_groups &&
+			Object.keys(parentAttributes.source_groups).length > 0);
+
+	const { formats } = useVideoFormats(
+		!hasSources && !isDiscovering && src ? resolvedPostId : null,
+		!hasSources && !isDiscovering && src ? src : null
+	);
 
 	useEffect(() => {
 		resetPlayer();
@@ -221,10 +229,15 @@ export default function Edit(props) {
 					key={parentAttributes.id || parentAttributes.src}
 					attributes={effectiveAttributes}
 					options={options}
+					isDiscovering={isDiscovering}
 				/>
 			</InspectorControls>
 			<VideoPlayer
-				attributes={{ ...parentAttributes, restartCount }}
+				attributes={{
+					...parentAttributes,
+					restartCount,
+					...( formats && ! hasSources ? { source_groups: formats } : {} ),
+				}}
 				context={context}
 				isSelected={isSelected}
 				hideStaticOverlays={true}

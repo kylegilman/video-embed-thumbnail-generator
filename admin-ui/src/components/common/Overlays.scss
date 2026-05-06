@@ -53,6 +53,33 @@ $badge-selectors: (
 	}
 }
 
+// Block wrapper positioning (mirrors editor styles but available in all contexts)
+.videopack-video-title-block.is-overlay {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	z-index: 115;
+	pointer-events: none;
+
+	&.position-top { top: 0; bottom: auto; }
+	&.position-bottom { bottom: 0; top: auto; }
+	&.position-center {
+		top: 50%;
+		bottom: auto;
+		transform: translateY(-50%);
+	}
+
+	// Thumbnail offsets for block wrappers
+	&.is-inside-thumbnail {
+		&.position-top { top: 5%; }
+		&.position-bottom { bottom: 5%; }
+	}
+
+	.videopack-video-title {
+		pointer-events: auto;
+	}
+}
+
 .videopack-video-title {
 	&.is-overlay {
 		display: flex;
@@ -284,6 +311,7 @@ $badge-selectors: (
 	align-items: center;
 	gap: 4px;
 	width: fit-content;
+	white-space: nowrap;
 
 	&.has-text-align-left {
 		justify-content: flex-start;
@@ -297,6 +325,31 @@ $badge-selectors: (
 	&.has-text-align-right {
 		justify-content: flex-end;
 		margin-left: auto;
+	}
+
+	&:not(.is-overlay) {
+		margin-bottom: 0.5em;
+		color: var(--wp--preset--color--foreground, inherit);
+
+		// Ensure visibility in dark players when not an overlay
+		.videopack-video-player &,
+		.vjs-theme-videopack &,
+		.video-js & {
+			color: var(--wp--preset--color--foreground, #333);
+		}
+	}
+
+	&.is-preview {
+		color: #333 !important;
+		background: rgba(255, 255, 255, 0.8);
+		padding: 2px 6px;
+		border-radius: 4px;
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		font-weight: 500;
+		font-size: 0.85em;
+		margin: 0;
 	}
 }
 
@@ -408,11 +461,21 @@ $badge-selectors: (
 	:is(&.position-top, .videopack-video-title-block.position-top &) {
 		top: 5%;
 		bottom: auto;
+
+		// If we are inside an overlay block wrapper that already handles the offset, reset this to 0
+		.videopack-video-title-block.is-overlay & {
+			top: 0 !important;
+		}
 	}
 
 	:is(&.position-bottom, .videopack-video-title-block.position-bottom &) {
 		bottom: 5%;
 		top: auto;
+
+		// If we are inside an overlay block wrapper that already handles the offset, reset this to 0
+		.videopack-video-title-block.is-overlay & {
+			bottom: 0 !important;
+		}
 	}
 
 	:is(&.position-center, .videopack-video-title-block.position-center &) {

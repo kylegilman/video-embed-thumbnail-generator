@@ -873,6 +873,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
+			{ applyFilters( 'videopack.settings.player.after_playback', null, { settings, changeHandlerFactory } ) }
 			<PanelBody
 				title={__('Dimensions', 'video-embed-thumbnail-generator')}
 				initialOpen={true}
@@ -1043,6 +1044,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
+			{ applyFilters( 'videopack.settings.player.after_dimensions', null, { settings, changeHandlerFactory } ) }
 			<PanelBody
 				title={__('Sharing', 'video-embed-thumbnail-generator')}
 				initialOpen={true}
@@ -1090,6 +1092,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
+			{ applyFilters( 'videopack.settings.player.after_sharing', null, { settings, changeHandlerFactory } ) }
 			<WatermarkSettingsPanel
 				title={__(
 					'Watermark Overlay',
@@ -1128,6 +1131,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					</div>
 				)}
 			</WatermarkSettingsPanel>
+			{ applyFilters( 'videopack.settings.player.after_watermark', null, { settings, changeHandlerFactory } ) }
 			<PanelBody
 				title={__('Video Sources', 'video-embed-thumbnail-generator')}
 			>
@@ -1203,6 +1207,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					</div>
 				</BaseControl>
 			</PanelBody>
+			{ applyFilters( 'videopack.settings.player.after_sources', null, { settings, changeHandlerFactory } ) }
 		</>
 	);
 };

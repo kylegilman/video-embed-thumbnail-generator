@@ -88,6 +88,8 @@ const WpMejsPlayer = (props) => {
 				actualAutoplay: curAutoplay,
 				onReady: curOnReady,
 				onPlay: curOnPlay,
+				onPause: curOnPause,
+				onEnded: curOnEnded,
 				playback_rate: curPlaybackRate,
 			} = propsRef.current;
 
@@ -208,6 +210,16 @@ const WpMejsPlayer = (props) => {
 						curOnPlay(e);
 					}
 				};
+				const onPauseHandler = (e) => {
+					if (typeof curOnPause === 'function') {
+						curOnPause(e);
+					}
+				};
+				const onEndedHandler = (e) => {
+					if (typeof curOnEnded === 'function') {
+						curOnEnded(e);
+					}
+				};
 
 				const autoPlayHandler = () => {
 					if (curAutoplay && playerRef.current) {
@@ -225,6 +237,8 @@ const WpMejsPlayer = (props) => {
 					}
 					playerRef.current = player;
 					media.addEventListener('play', onPlayHandler);
+					media.addEventListener('pause', onPauseHandler);
+					media.addEventListener('ended', onEndedHandler);
 
 					if (curOnReady) {
 						if (typeof curOnReady === 'function') {

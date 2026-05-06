@@ -17,6 +17,7 @@ import { BlockPreview, TemplatePreview } from '../../../components/Preview';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe';
 import CompactColorPicker from '../../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../../utils/colors';
+import VideopackTooltip from './VideopackTooltip';
 
 /* global videopack_config */
 
@@ -127,6 +128,17 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 	);
 
 	// Sync total pages from the query results
+	const handlers = useMemo(() => {
+		const h = { ...changeHandlerFactory };
+		['gallery_columns', 'gallery_per_page'].forEach((key) => {
+			if (h[key]) {
+				const original = h[key];
+				h[key] = (val) => original(parseInt(val, 10) || 0);
+			}
+		});
+		return h;
+	}, [changeHandlerFactory]);
+
 	// This is now derived directly in previewContext from maxNumPages
 
 	const galleryTemplate = useMemo(() => {
@@ -140,7 +152,15 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						{ linkTo: 'none' },
 						[
 							['videopack/play-button', {}],
-							gallery_title ? ['videopack/title', {}] : null,
+							gallery_title
+								? [
+										'videopack/title',
+										{
+											isOverlay: true,
+											showBackground: true,
+										},
+								  ]
+								: null,
 						].filter(Boolean),
 					],
 				],
@@ -310,7 +330,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={__('Paginate', 'video-embed-thumbnail-generator')}
-				onChange={changeHandlerFactory.gallery_pagination}
+				onChange={handlers.gallery_pagination}
 				checked={!!gallery_pagination}
 			/>
 			{gallery_pagination && (
@@ -324,7 +344,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						)}
 						type="number"
 						value={gallery_per_page}
-						onChange={changeHandlerFactory.gallery_per_page}
+						onChange={handlers.gallery_per_page}
 					/>
 				</div>
 			)}
@@ -337,13 +357,13 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={(val) => {
-							changeHandlerFactory.enable_collection_video_limit(
+							handlers.enable_collection_video_limit(
 								val
 							);
 							if (!val) {
-								changeHandlerFactory.collection_video_limit(-1);
+								handlers.collection_video_limit(-1);
 							} else if (Number(collection_video_limit) === -1) {
-								changeHandlerFactory.collection_video_limit(12);
+								handlers.collection_video_limit(12);
 							}
 						}}
 						checked={!!enable_collection_video_limit}
@@ -368,7 +388,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 										: collection_video_limit
 								}
 								onChange={
-									changeHandlerFactory.collection_video_limit
+									handlers.collection_video_limit
 								}
 							/>
 						</div>
@@ -384,7 +404,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 								'video-embed-thumbnail-generator'
 							)}
 							value={gallery_orderby}
-							onChange={changeHandlerFactory.gallery_orderby}
+							onChange={handlers.gallery_orderby}
 							options={baseGalleryOrderbyOptions}
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
@@ -409,7 +429,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 										)
 							}
 							onClick={() =>
-								changeHandlerFactory.gallery_order(
+								handlers.gallery_order(
 									gallery_order === 'asc' ? 'desc' : 'asc'
 								)
 							}
@@ -433,7 +453,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							'video-embed-thumbnail-generator'
 						)}
 						value={gallery_align}
-						onChange={changeHandlerFactory.gallery_align}
+						onChange={handlers.gallery_align}
 						options={alignOptions}
 					/>
 				</div>
@@ -447,13 +467,19 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						)}
 						type="number"
 						value={gallery_columns}
-						onChange={changeHandlerFactory.gallery_columns}
+						onChange={handlers.gallery_columns}
+					/>
+					<VideopackTooltip
+						text={__(
+							'The actual number of columns displayed may be lower than this value depending on the gallery alignment and the width of the container. Narrower widths will automatically collapse to fewer columns for better responsiveness.',
+							'video-embed-thumbnail-generator'
+						)}
 					/>
 				</div>
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__('Title', 'video-embed-thumbnail-generator')}
-					onChange={changeHandlerFactory.gallery_title}
+					onChange={handlers.gallery_title}
 					checked={!!gallery_title}
 				/>
 				<div className="videopack-setting-auto-width videopack-setting-extra-margin">
@@ -464,7 +490,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							'video-embed-thumbnail-generator'
 						)}
 						value={gallery_end}
-						onChange={changeHandlerFactory.gallery_end}
+						onChange={handlers.gallery_end}
 						options={galleryEndOptions}
 					/>
 				</div>
@@ -481,7 +507,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 								'video-embed-thumbnail-generator'
 							)}
 							value={skin}
-							onChange={changeHandlerFactory.skin}
+							onChange={handlers.skin}
 							options={skinOptions}
 						/>
 					</div>
@@ -497,7 +523,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 										'video-embed-thumbnail-generator'
 									)}
 									value={title_color}
-									onChange={changeHandlerFactory.title_color}
+									onChange={handlers.title_color}
 									colors={videopack_config.themeColors}
 									fallbackValue={colorFallbacks.title_color}
 								/>
@@ -510,7 +536,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									)}
 									value={title_background_color}
 									onChange={
-										changeHandlerFactory.title_background_color
+										handlers.title_background_color
 									}
 									colors={videopack_config.themeColors}
 									fallbackValue={
@@ -541,7 +567,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									}
 									value={play_button_color}
 									onChange={
-										changeHandlerFactory.play_button_color
+										handlers.play_button_color
 									}
 									colors={videopack_config.themeColors}
 									fallbackValue={
@@ -564,7 +590,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									}
 									value={play_button_secondary_color}
 									onChange={
-										changeHandlerFactory.play_button_secondary_color
+										handlers.play_button_secondary_color
 									}
 									colors={videopack_config.themeColors}
 									fallbackValue={
@@ -591,7 +617,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									)}
 									value={pagination_color}
 									onChange={
-										changeHandlerFactory.pagination_color
+										handlers.pagination_color
 									}
 									colors={videopack_config.themeColors}
 									fallbackValue={
@@ -607,7 +633,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									)}
 									value={pagination_background_color}
 									onChange={
-										changeHandlerFactory.pagination_background_color
+										handlers.pagination_background_color
 									}
 									colors={videopack_config.themeColors}
 									fallbackValue={
@@ -623,7 +649,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									)}
 									value={pagination_active_bg_color}
 									onChange={
-										changeHandlerFactory.pagination_active_bg_color
+										handlers.pagination_active_bg_color
 									}
 									colors={videopack_config.themeColors}
 									fallbackValue={
@@ -639,7 +665,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									)}
 									value={pagination_active_color}
 									onChange={
-										changeHandlerFactory.pagination_active_color
+										handlers.pagination_active_color
 									}
 									colors={videopack_config.themeColors}
 									fallbackValue={

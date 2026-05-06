@@ -201,7 +201,7 @@ class Player {
 	 * @return array The style handles.
 	 */
 	public function get_player_style_handles(): array {
-		return array( 'videopack-core' );
+		return (array) apply_filters( 'videopack_player_style_handles', array( 'videopack-core' ), $this->atts, $this );
 	}
 
 	/**
@@ -210,7 +210,7 @@ class Player {
 	 * @return array The script handles.
 	 */
 	public function get_player_script_handles(): array {
-		return array();
+		return (array) apply_filters( 'videopack_player_script_handles', array(), $this->atts, $this );
 	}
 
 
@@ -245,7 +245,12 @@ class Player {
 	 * This method is intended to be overridden by child classes.
 	 */
 	public function enqueue_player_scripts(): void {
-		// This method is intended to be overridden by child classes.
+		foreach ( (array) $this->get_player_script_handles() as $handle ) {
+			wp_enqueue_script( (string) $handle );
+		}
+		foreach ( (array) $this->get_player_style_handles() as $handle ) {
+			wp_enqueue_style( (string) $handle );
+		}
 	}
 
 	/**

@@ -104,7 +104,7 @@ class Source_Attachment_Local extends Source {
 		$original_url  = is_array( $this->source ) ? $this->source['url'] : '';
 
 		// 1. Check for remote attachment URL (hybrid source).
-		$external_url = get_post_meta( $attachment_id, '_kgflashmediaplayer-externalurl', true );
+		$external_url = $this->metadata['url'] ?? null;
 		if ( $external_url ) {
 			$this->url = $external_url;
 			return;
@@ -154,7 +154,7 @@ class Source_Attachment_Local extends Source {
 	 * Sets whether the video source exists.
 	 */
 	protected function set_exists(): void {
-		$external_url = get_post_meta( $this->id, '_kgflashmediaplayer-externalurl', true );
+		$external_url = $this->metadata['url'] ?? null;
 		if ( $external_url ) {
 			$this->exists = true; // Assume it exists if it's a remote URL we've resolved.
 			return;
@@ -166,7 +166,7 @@ class Source_Attachment_Local extends Source {
 	 * Sets the direct path to the video.
 	 */
 	protected function set_direct_path(): void {
-		$external_url = get_post_meta( $this->id, '_kgflashmediaplayer-externalurl', true );
+		$external_url = $this->metadata['url'] ?? null;
 		if ( $external_url ) {
 			$this->direct_path = $external_url;
 			return;
@@ -208,7 +208,7 @@ class Source_Attachment_Local extends Source {
 		// For remote attachments, post_mime_type might be empty or generic.
 		// If we have an external URL, double check the file extension.
 		if ( empty( $this->mime_type ) || 'video/mp4' === $this->mime_type ) {
-			$external_url = get_post_meta( $this->id, '_kgflashmediaplayer-externalurl', true );
+			$external_url = $this->metadata['url'] ?? null;
 			if ( $external_url ) {
 				$filetype = wp_check_filetype( $external_url );
 				if ( ! empty( $filetype['type'] ) ) {
@@ -251,24 +251,19 @@ class Source_Attachment_Local extends Source {
 			}
 		}
 
-		// 3. Check for legacy poster ID.
-		$legacy_poster_id = get_post_meta( $this->id, '_kgflashmediaplayer-poster-id', true );
-		if ( ! empty( $legacy_poster_id ) ) {
-			$poster_url = wp_get_attachment_url( (int) $legacy_poster_id );
+		// 3. Check for legacy poster ID (already migrated to poster_id by Attachment_Meta).
+		// Note: Attachment_Meta also handles the fallback to get_post_thumbnail_id.
+		$poster_id = $this->metadata['poster_id'] ?? null;
+		if ( ! empty( $poster_id ) ) {
+			$poster_url = wp_get_attachment_url( (int) $poster_id );
 			if ( $poster_url ) {
 				return $poster_url;
 			}
 		}
 
-		// 4. Check for poster URL in _videopack-meta.
+		// 4. Check for poster URL in metadata.
 		if ( ! empty( $this->metadata['poster'] ) ) {
 			return (string) $this->metadata['poster'];
-		}
-
-		// 5. Fallback to legacy URL field.
-		$legacy_poster_url = get_post_meta( $this->id, '_kgflashmediaplayer-poster', true );
-		if ( ! empty( $legacy_poster_url ) ) {
-			return (string) $legacy_poster_url;
 		}
 
 		return '';

@@ -36,6 +36,15 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	// Helper to check if a value is valid (not undefined, null, or empty string)
 	const isValid = (val) => val !== undefined && val !== null && val !== '';
 
+	// Mappings for settings that have different names in blocks vs global options
+	const altAttrKey = {
+		columns: 'gallery_columns',
+		layout: 'gallery_layout',
+		align: 'gallery_align',
+		pagination: 'gallery_pagination',
+		per_page: 'gallery_per_page',
+	}[attrKey];
+
 	// 1. Check local attribute override
 	if (isValid(attributes[attrKey])) {
 		// Special case for isPreview: if local is false but context is true, prefer context true
@@ -48,6 +57,12 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		}
 		return attributes[attrKey];
 	}
+
+	// 1b. Check mapped attribute (e.g. settings object from VideoCollectionSettings)
+	if (altAttrKey && isValid(attributes[altAttrKey])) {
+		return attributes[altAttrKey];
+	}
+
 	if (
 		attrKey === 'postId' &&
 		isValid(attributes.id) &&
@@ -114,13 +129,36 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		);
 	}
 
+	if (attrKey === 'layout') {
+		const localValue =
+			attributes[attrKey] ||
+			attributes.gallery_layout ||
+			context[contextKey];
+		if (isValid(localValue)) {
+			return localValue;
+		}
+		return (
+			globalOptions.gallery_layout ||
+			globalOptions.layout ||
+			globalDefaults.gallery_layout ||
+			globalDefaults.layout ||
+			'grid'
+		);
+	}
+
 	if (attrKey === 'align') {
-		const localValue = attributes[attrKey] || context[contextKey];
+		const localValue =
+			attributes[attrKey] ||
+			attributes.gallery_align ||
+			context[contextKey];
 		if (isValid(localValue)) {
 			return localValue;
 		}
 		// Collections use gallery_align as their global default
-		const isCollection = attributes.layout || context['videopack/layout'];
+		const isCollection =
+			attributes.layout ||
+			attributes.gallery_layout ||
+			context['videopack/layout'];
 		if (isCollection) {
 			return (
 				globalOptions.gallery_align ||
@@ -130,6 +168,40 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 			);
 		}
 		return globalOptions.align || globalDefaults.align || '';
+	}
+
+	if (attrKey === 'columns') {
+		const localValue =
+			attributes[attrKey] ||
+			attributes.gallery_columns ||
+			context[contextKey];
+		if (isValid(localValue)) {
+			return localValue;
+		}
+		const isCollection =
+			attributes.layout ||
+			attributes.gallery_layout ||
+			context['videopack/layout'];
+		if (isCollection) {
+			return (
+				globalOptions.gallery_columns ||
+				globalDefaults.gallery_columns ||
+				3
+			);
+		}
+		return globalOptions.columns || globalDefaults.columns || 3;
+	}
+
+	if (attrKey === 'title_position') {
+		// Priority logic for title_position is now partially handled in the component
+		// to allow for context-aware defaults (like bottom for thumbnails).
+		const localValue = attributes[attrKey] || context[contextKey];
+		if (isValid(localValue)) {
+			return localValue;
+		}
+		return (
+			globalOptions.title_position || globalDefaults.title_position || 'top'
+		);
 	}
 
 	const globalValue =
