@@ -386,6 +386,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const parentVideos = vpData.videos || context['videopack/videos'];
 	const videos =
 		parentVideos && parentVideos.length > 0 ? parentVideos : queryVideos;
+
 	const totalResultsCount =
 		parentVideos && parentVideos.length > 0
 			? parentVideos.length
@@ -961,138 +962,169 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						`}
 					</style>
 				)}
-				{!videos ? (
-					<div className="videopack-collection-loading">
-						<Spinner />
-					</div>
-				) : (
-					<DndContext
-						sensors={sensors}
-						collisionDetection={closestCenter}
-						onDragEnd={handleDragEnd}
-					>
-						<SortableContext
-							items={videos.map(
-								(v, i) => v.attachment_id || `temp-${i}`
-							)}
-							strategy={rectSortingStrategy}
-						>
-							<div className="videopack-collection-grid">
-								{videos.map((video, index) => {
-									const isEditableTemplate = index === 0;
-									const targetPostId =
-										vpContext.resolved.prioritizePostData &&
-										video.parent_id
-											? video.parent_id
-											: video.attachment_id || video.id;
-									const targetPostType =
-										vpContext.resolved.prioritizePostData &&
-										video.parent_id
-											? 'post'
-											: 'attachment';
+				{(() => {
+					if (
+						!videos ||
+						(isPreviewResolving && videos.length === 0)
+					) {
+						return (
+							<div className="videopack-collection-loading">
+								<Spinner />
+							</div>
+						);
+					}
 
-									return (
-										<SortableItem
-											key={
-												video.attachment_id || video.id
-											}
-											id={video.attachment_id || video.id}
-											isEditableTemplate={
-												isEditableTemplate
-											}
-											isPreview={
-												vpContext.resolved.isPreview ||
-												isTrue(
-													context[
-														'videopack/isPreview'
-													]
-												)
-											}
-											onRemove={handleRemoveItem}
-											onEdit={handleEditItem}
-											onAddVideo={handleAddVideo}
-											isHoveringGallery={false}
-										>
-											<BlockContextProvider
-												value={{
-													...context,
-													...vpContext.sharedContext,
-													postId: targetPostId,
-													postType: targetPostType,
-													'videopack/postId':
-														targetPostId,
-													'videopack/postType':
-														targetPostType,
-													'videopack/attachmentId':
-														video.attachment_id ||
-														video.id,
-													'videopack/title':
-														video.title,
-													'videopack/caption':
-														video.caption,
-													'videopack/views':
-														video.views ||
-														video.starts ||
-														video.meta?.[
-															'_videopack-meta'
-														]?.starts,
-													'videopack/duration':
-														video.duration ||
-														video.meta?.[
-															'_videopack-meta'
-														]?.duration,
-													'videopack/embedlink':
-														video.embed_url ||
-														video.player_vars
-															?.full_player_html ||
-														'',
-													'videopack/parentPostId':
-														video.parent_id,
-													'videopack/totalPages':
-														totalPagesCount,
-													'videopack/totalResults':
-														totalResultsCount,
-													'videopack/loopDuotoneId':
-														resolvedDuotoneClass,
-												}}
-											>
-												<div
-													className={
-														resolvedDuotoneClass
-													}
-												>
-													{isEditableTemplate &&
-													!vpContext.resolved
-														.isPreview &&
-													!isTrue(
+					if (videos.length === 0) {
+						return (
+							<div className="videopack-collection-preview-placeholder">
+								{__(
+									'No videos found for this source.',
+									'video-embed-thumbnail-generator'
+								)}
+							</div>
+						);
+					}
+
+					return (
+						<DndContext
+							sensors={sensors}
+							collisionDetection={closestCenter}
+							onDragEnd={handleDragEnd}
+						>
+							<SortableContext
+								items={videos.map(
+									(v, i) => v.attachment_id || `temp-${i}`
+								)}
+								strategy={rectSortingStrategy}
+							>
+								<div className="videopack-collection-grid">
+									{videos.map((video, index) => {
+										const isEditableTemplate = index === 0;
+										const targetPostId =
+											vpContext.resolved
+												.prioritizePostData &&
+											video.parent_id
+												? video.parent_id
+												: video.attachment_id ||
+													video.id;
+										const targetPostType =
+											vpContext.resolved
+												.prioritizePostData &&
+											video.parent_id
+												? 'post'
+												: 'attachment';
+
+										return (
+											<SortableItem
+												key={
+													video.attachment_id ||
+													video.id
+												}
+												id={
+													video.attachment_id ||
+													video.id
+												}
+												isEditableTemplate={
+													isEditableTemplate
+												}
+												isPreview={
+													vpContext.resolved
+														.isPreview ||
+													isTrue(
 														context[
 															'videopack/isPreview'
 														]
-													) ? (
-														<InnerBlocks
-															templateLock={false}
-															renderAppender={
-																InnerBlocks.ButtonBlockAppender
-															}
-														/>
-													) : (
-														renderBlockPreview(
-															templateBlocks,
-															video,
-															context,
-															{},
-															vpContext
-														)
-													)}
-												</div>
-											</BlockContextProvider>
-										</SortableItem>
-									);
-								})}
-							</div>
-						</SortableContext>
-					</DndContext>
-				)}
+													)
+												}
+												onRemove={handleRemoveItem}
+												onEdit={handleEditItem}
+												onAddVideo={handleAddVideo}
+												isHoveringGallery={false}
+											>
+												<BlockContextProvider
+													value={{
+														...context,
+														...vpContext.sharedContext,
+														postId: targetPostId,
+														postType:
+															targetPostType,
+														'videopack/postId':
+															targetPostId,
+														'videopack/postType':
+															targetPostType,
+														'videopack/attachmentId':
+															video.attachment_id ||
+															video.id,
+														'videopack/title':
+															video.title,
+														'videopack/caption':
+															video.caption,
+														'videopack/views':
+															video.views ||
+															video.starts ||
+															video.meta?.[
+																'_videopack-meta'
+															]?.starts,
+														'videopack/duration':
+															video.duration ||
+															video.meta?.[
+																'_videopack-meta'
+															]?.duration,
+														'videopack/embedlink':
+															video.embed_url ||
+															video.player_vars
+																?.full_player_html ||
+															'',
+														'videopack/parentPostId':
+															video.parent_id,
+														'videopack/totalPages':
+															totalPagesCount,
+														'videopack/totalResults':
+															totalResultsCount,
+														'videopack/loopDuotoneId':
+															resolvedDuotoneClass,
+													}}
+												>
+													<div
+														className={
+															resolvedDuotoneClass
+														}
+													>
+														{isEditableTemplate &&
+														!vpContext.resolved
+															.isPreview &&
+														!isTrue(
+															context[
+																'videopack/isPreview'
+															]
+														) ? (
+															<InnerBlocks
+																templateLock={
+																	false
+																}
+																renderAppender={
+																	InnerBlocks.ButtonBlockAppender
+																}
+															/>
+														) : (
+															renderBlockPreview(
+																templateBlocks,
+																video,
+																context,
+																{},
+																vpContext
+															)
+														)}
+													</div>
+												</BlockContextProvider>
+											</SortableItem>
+										);
+									})}
+								</div>
+							</SortableContext>
+						</DndContext>
+					);
+				})()}
 			</figure>
 		</>
 	);

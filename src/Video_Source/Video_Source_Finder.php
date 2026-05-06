@@ -136,7 +136,7 @@ class Video_Source_Finder {
 							$format->get_id(),
 							$post->ID,
 							true,
-							'attachment_local'
+							'attachment'
 						);
 						return true;
 					}
@@ -175,7 +175,7 @@ class Video_Source_Finder {
 						$format->get_id(),
 						$attachment_id,
 						true,
-						'attachment_local'
+						'attachment'
 					);
 					return true;
 				}
@@ -184,7 +184,7 @@ class Video_Source_Finder {
 					$format->get_id(),
 					$file,
 					true,
-					'file_local'
+					'file'
 				);
 				return true;
 			}
@@ -242,7 +242,7 @@ class Video_Source_Finder {
 							$format->get_id(),
 							true,
 							$parent_id,
-							'attachment_local'
+							'attachment'
 						);
 					}
 				}
@@ -281,7 +281,7 @@ class Video_Source_Finder {
 						$format->get_id(),
 						true,
 						$source_obj->get_parent_id(),
-						'attachment_local'
+						'attachment'
 					);
 				}
 
@@ -292,7 +292,7 @@ class Video_Source_Finder {
 					$format->get_id(),
 					true,
 					$source_obj->get_parent_id(),
-					'file_local'
+					'file'
 				);
 			}
 		}

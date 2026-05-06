@@ -2707,10 +2707,8 @@ __webpack_require__.r(__webpack_exports__);
  * @param {number} previewPostId The ID of the post being previewed.
  * @return {Object} Query results including search results, categories, and tags.
  */
-function useVideoQuery(attributes = {}, previewPostId) {
-  if (!attributes) {
-    attributes = {};
-  }
+function useVideoQuery(inputAttributes, previewPostId) {
+  const attributes = inputAttributes || {};
   const {
     gallery_id,
     gallery_source = 'current',
@@ -2800,7 +2798,11 @@ function useVideoQuery(attributes = {}, previewPostId) {
       return;
     }
     let resolvedGalleryId;
-    if (['current', 'custom'].includes(gallery_source)) {
+    if (gallery_source === 'custom') {
+      if (gallery_id) {
+        resolvedGalleryId = parseInt(gallery_id, 10);
+      }
+    } else if (gallery_source === 'current') {
       if (gallery_id) {
         resolvedGalleryId = parseInt(gallery_id, 10);
       } else if (previewPostId) {
@@ -2830,7 +2832,7 @@ function useVideoQuery(attributes = {}, previewPostId) {
     const isMissingTagId = gallery_source === 'tag' && !gallery_tag;
     const isMissingCurrentId = gallery_source === 'current' && !gallery_id && !previewPostId;
     const isMissingManualInclude = gallery_source === 'manual' && !gallery_include;
-    const canQuery = ['recent', 'all'].includes(gallery_source) || gallery_source && !isMissingCustomId && !isMissingCategoryId && !isMissingTagId && !isMissingCurrentId && !isMissingManualInclude;
+    const canQuery = !!inputAttributes && (['recent', 'all'].includes(gallery_source) || gallery_source && !isMissingCustomId && !isMissingCategoryId && !isMissingTagId && !isMissingCurrentId && !isMissingManualInclude);
     if (!canQuery) {
       setVideoResults([]);
       setTotalResults(0);
@@ -2967,6 +2969,12 @@ function useVideopackContext(attributes, context, options = {}) {
         // Only add classes for colors/styles that are actually set
         if (key !== 'skin') {
           classes.push(`videopack-has-${cssKey}`);
+
+          // Add specific class for embed method value
+          if (key === 'embed_method') {
+            const embedClass = `videopack-embed-${String(value).toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+            classes.push(embedClass);
+          }
         }
       }
     });

@@ -166,7 +166,7 @@ class Encode_Info {
 
 		$this->sanitized_url = new Sanitize_Url( $this->url );
 		$this->basename      = $this->sanitized_url->basename;
-		$this->is_attachment = $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local;
+		$this->is_attachment = $this->source instanceof \Videopack\Video_Source\Source_Attachment;
 		$this->uploads       = wp_upload_dir();
 		$this->path          = $this->uploads['path'] . '/';
 
@@ -247,7 +247,7 @@ class Encode_Info {
 	protected function check_potential_locations() {
 		$potential_locations = array();
 
-		if ( $this->source instanceof \Videopack\Video_Source\Source_File_Local || $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local || $this->source instanceof \Videopack\Video_Source\Source_Url ) {
+		if ( $this->source instanceof \Videopack\Video_Source\Source_File || $this->source instanceof \Videopack\Video_Source\Source_Attachment || $this->source instanceof \Videopack\Video_Source\Source_Url ) {
 			$potential_locations['same_directory'] = array(
 				'url'  => $this->sanitized_url->noextension . $this->format->get_suffix(),
 				'path' => $this->source->get_dirname() . '/' . $this->basename . $this->format->get_suffix(),

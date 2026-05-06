@@ -8,14 +8,14 @@
 namespace Videopack\Video_Source;
 
 /**
- * Class Source_Placeholder_Local
+ * Class Source_Placeholder
  *
  * Handles video sources that don't exist yet but have a reserved location (placeholders).
  *
  * @since 5.0.0
  * @package Videopack\Video_Source
  */
-class Source_Placeholder_Local extends Source {
+class Source_Placeholder extends Source {
 
 	/**
 	 * Constructor.
@@ -39,7 +39,7 @@ class Source_Placeholder_Local extends Source {
 	) {
 
 		if ( $this->validate_source( $source ) ) {
-			parent::__construct( $source, 'placeholder_local', $options, $format_registry, $format, $exists, $parent_id );
+			parent::__construct( $source, 'placeholder', $options, $format_registry, $format, $exists, $parent_id );
 		} else {
 			throw new \Exception( esc_html__( 'Source is empty.', 'video-embed-thumbnail-generator' ) );
 		}

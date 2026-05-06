@@ -8,14 +8,14 @@
 namespace Videopack\Video_Source;
 
 /**
- * Class Source_File_Local
+ * Class Source_File
  *
  * Handles video sources that are local files on the server but not necessarily WordPress attachments.
  *
  * @since 5.0.0
  * @package Videopack\Video_Source
  */
-class Source_File_Local extends Source {
+class Source_File extends Source {
 
 	/**
 	 * Constructor.
@@ -39,7 +39,7 @@ class Source_File_Local extends Source {
 	) {
 
 		if ( $this->validate_source( $source ) ) {
-			parent::__construct( $source, 'file_local', $options, $format_registry, $format, $exists, $parent_id );
+			parent::__construct( $source, 'file', $options, $format_registry, $format, $exists, $parent_id );
 		} else {
 			throw new \Exception( esc_html__( 'Source is empty.', 'video-embed-thumbnail-generator' ) );
 		}

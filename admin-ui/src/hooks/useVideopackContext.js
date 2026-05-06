@@ -122,6 +122,14 @@ export default function useVideopackContext(attributes, context, options = {}) {
 				// Only add classes for colors/styles that are actually set
 				if (key !== 'skin') {
 					classes.push(`videopack-has-${cssKey}`);
+
+					// Add specific class for embed method value
+					if (key === 'embed_method') {
+						const embedClass = `videopack-embed-${String(value)
+							.toLowerCase()
+							.replace(/[^a-z0-9]/g, '-')}`;
+						classes.push(embedClass);
+					}
 				}
 			}
 		});

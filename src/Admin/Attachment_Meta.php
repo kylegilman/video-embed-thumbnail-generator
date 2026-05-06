@@ -279,6 +279,10 @@ class Attachment_Meta implements Hook_Subscriber {
 		$current_meta['is_remote'] = ( 'true' === get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-external-remote', true ) );
 
 		$meta_data = array_merge( $defaults, $current_meta );
+		if ( empty( $meta_data['url'] ) && ! empty( get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-externalurl', true ) ) ) {
+			$meta_data['url'] = (string) get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-externalurl', true );
+			$changed          = true;
+		}
 
 		$get_from_wp_meta = array(
 			'actualwidth'  => 'width',

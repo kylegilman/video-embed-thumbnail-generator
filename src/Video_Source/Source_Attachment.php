@@ -8,14 +8,14 @@
 namespace Videopack\Video_Source;
 
 /**
- * Class Source_Attachment_Local
+ * Class Source_Attachment
  *
  * Handles video sources that are WordPress attachments stored locally (or on a cloud provider via hybrid attachment).
  *
  * @since 5.0.0
  * @package Videopack\Video_Source
  */
-class Source_Attachment_Local extends Source {
+class Source_Attachment extends Source {
 
 	/**
 	 * Attachment metadata manager.
@@ -46,7 +46,7 @@ class Source_Attachment_Local extends Source {
 	) {
 		$attachment_id = is_array( $source ) ? $source['id'] : $source;
 		if ( $this->validate_source( $attachment_id ) ) {
-			parent::__construct( $source, 'attachment_local', $options, $format_registry, $format, $exists, $parent_id );
+			parent::__construct( $source, 'attachment', $options, $format_registry, $format, $exists, $parent_id );
 			$this->set_id();
 			$this->set_metadata();
 		} else {
@@ -155,11 +155,13 @@ class Source_Attachment_Local extends Source {
 	 */
 	protected function set_exists(): void {
 		$external_url = $this->metadata['url'] ?? null;
-		if ( $external_url ) {
-			$this->exists = true; // Assume it exists if it's a remote URL we've resolved.
+		$is_remote    = (bool) ( $this->metadata['is_remote'] ?? false );
+
+		if ( $external_url || $is_remote ) {
+			$this->exists = true; // Assume it exists if it's a remote URL or marked as remote.
 			return;
 		}
-		$this->exists = file_exists( get_attached_file( $this->id ) );
+		$this->exists = file_exists( get_attached_file( (int) $this->id ) );
 	}
 
 	/**
@@ -167,8 +169,10 @@ class Source_Attachment_Local extends Source {
 	 */
 	protected function set_direct_path(): void {
 		$external_url = $this->metadata['url'] ?? null;
-		if ( $external_url ) {
-			$this->direct_path = $external_url;
+		$is_remote    = (bool) ( $this->metadata['is_remote'] ?? false );
+
+		if ( $external_url || $is_remote ) {
+			$this->direct_path = (string) ( $external_url ? $external_url : $this->get_url() );
 			return;
 		}
 		$this->direct_path = get_attached_file( $this->id );

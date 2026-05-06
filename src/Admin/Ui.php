@@ -232,6 +232,14 @@ class Ui implements Hook_Subscriber {
 			'videopack/pagination_active_color'     => 'pagination_active_color',
 			'videopack/sources'                     => 'sources',
 			'videopack/source_groups'               => 'source_groups',
+			'videopack/gallery_source'              => 'gallery_source',
+			'videopack/gallery_id'                  => 'gallery_id',
+			'videopack/gallery_category'            => 'gallery_category',
+			'videopack/gallery_tag'                 => 'gallery_tag',
+			'videopack/gallery_orderby'              => 'gallery_orderby',
+			'videopack/gallery_order'                => 'gallery_order',
+			'videopack/gallery_include'              => 'gallery_include',
+			'videopack/gallery_exclude'              => 'gallery_exclude',
 		);
 		$provides_context = (array) apply_filters( 'videopack_provides_context', $provides_context );
 

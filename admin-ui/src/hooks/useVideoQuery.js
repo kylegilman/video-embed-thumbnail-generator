@@ -10,10 +10,8 @@ import { getVideoGallery } from '../api/gallery';
  * @param {number} previewPostId The ID of the post being previewed.
  * @return {Object} Query results including search results, categories, and tags.
  */
-export default function useVideoQuery(attributes = {}, previewPostId) {
-	if (!attributes) {
-		attributes = {};
-	}
+export default function useVideoQuery(inputAttributes, previewPostId) {
+	const attributes = inputAttributes || {};
 	const {
 		gallery_id,
 		gallery_source = 'current',
@@ -113,7 +111,11 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 		}
 
 		let resolvedGalleryId;
-		if (['current', 'custom'].includes(gallery_source)) {
+		if (gallery_source === 'custom') {
+			if (gallery_id) {
+				resolvedGalleryId = parseInt(gallery_id, 10);
+			}
+		} else if (gallery_source === 'current') {
 			if (gallery_id) {
 				resolvedGalleryId = parseInt(gallery_id, 10);
 			} else if (previewPostId) {
@@ -149,13 +151,14 @@ export default function useVideoQuery(attributes = {}, previewPostId) {
 			gallery_source === 'manual' && !gallery_include;
 
 		const canQuery =
-			['recent', 'all'].includes(gallery_source) ||
-			(gallery_source &&
-				!isMissingCustomId &&
-				!isMissingCategoryId &&
-				!isMissingTagId &&
-				!isMissingCurrentId &&
-				!isMissingManualInclude);
+			!!inputAttributes &&
+			(['recent', 'all'].includes(gallery_source) ||
+				(gallery_source &&
+					!isMissingCustomId &&
+					!isMissingCategoryId &&
+					!isMissingTagId &&
+					!isMissingCurrentId &&
+					!isMissingManualInclude));
 
 		if (!canQuery) {
 			setVideoResults([]);

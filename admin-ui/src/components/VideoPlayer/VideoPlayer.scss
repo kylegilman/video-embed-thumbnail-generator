@@ -74,6 +74,7 @@
 			position: relative;
 			height: auto;
 			min-height: 1px;
+			overflow: hidden;
 
 			video,
 			.video-js,
@@ -102,6 +103,14 @@
 		width: 100%;
 		height: auto;
 		min-height: 1px;
+		overflow: hidden;
+
+		.vjs-poster img,
+		picture.vjs-poster img {
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+		}
 	}
 
 	// Global Icon Normalization

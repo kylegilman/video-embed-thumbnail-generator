@@ -344,7 +344,7 @@ class Gallery {
 			$video_meta = $this->attachment_meta->set_post_id( (int) $video->ID );
 			$video      = array(
 				'id'          => (int) $video->ID,
-				'url'         => (string) wp_get_attachment_url( $video->ID ),
+				'url'         => (string) ( $video_meta['url'] ?? wp_get_attachment_url( $video->ID ) ),
 				'poster'      => (string) ( $video_meta['poster'] ?? '' ),
 				'title'       => (string) $video->post_title,
 				'caption'     => (string) $video->post_excerpt,
@@ -378,7 +378,14 @@ class Gallery {
 			$autoplay = true;
 		}
 
-		$source = \Videopack\Video_Source\Source_Factory::create( (int) ( $video['id'] ?? 0 ), $this->options, $this->format_registry );
+		$source = \Videopack\Video_Source\Source_Factory::create(
+			array(
+				'id'  => (int) ( $video['id'] ?? 0 ),
+				'url' => (string) ( $video['url'] ?? '' ),
+			),
+			$this->options,
+			$this->format_registry
+		);
 		if ( ! $source ) {
 			return array();
 		}
@@ -396,7 +403,7 @@ class Gallery {
 
 		$data = array(
 			'id'          => (int) ( $video['id'] ?? 0 ),
-			'url'         => (string) ( $video['url'] ?? '' ),
+			'url'         => (string) $source->get_url(),
 			'poster'      => (string) ( $video['poster'] ?? '' ),
 			'title'       => (string) ( $video['title'] ?? '' ),
 			'caption'     => (string) ( $video['caption'] ?? '' ),
