@@ -61,6 +61,8 @@ const ALLOWED_BLOCKS = [
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const { id, src } = attributes;
+	const [temporarySrc, setTemporarySrc] = useState(isBlobURL(src) ? src : null);
+	const effectiveSrc = temporarySrc || src;
 	const [options, setOptions] = useState();
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
@@ -142,7 +144,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 	const [attachmentOverride, setAttachmentOverride] = useState(null);
 	const attachment = attachmentOverride || attachmentFromStore;
-	const hasResolved = !!attachment || (!effectiveId && !src);
+	const hasResolved = !!attachment || (!effectiveId && !effectiveSrc);
 
 	const videoData = useMemo(
 		() => ({ record: attachment, setRecord: setAttachmentOverride, hasResolved }),
@@ -156,7 +158,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 
 		return {
 			...attributes,
-			src: attachment.source_url || attachment.url || attributes.src,
+			src: attachment.source_url || attachment.url || effectiveSrc,
 			id: attachment.id,
 			poster:
 				attachment.videopack?.poster ||
@@ -194,10 +196,13 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			height: attachment.media_details?.height || attributes.height,
 			sources:
 				attachment.videopack?.sources ||
-				(attachment.source_url || attachment.url
+				(attachment.source_url || attachment.url || effectiveSrc
 					? [
 							{
-								src: attachment.source_url || attachment.url,
+								src:
+									attachment.source_url ||
+									attachment.url ||
+									effectiveSrc,
 							},
 						]
 					: attributes.sources || []),
@@ -280,8 +285,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				return;
 			}
 
+			const media_src = attachmentObject.source_url || attachmentObject.url;
 			const media_attributes = {
-				src: attachmentObject.source_url || attachmentObject.url,
+				src: isBlobURL(media_src) ? undefined : media_src,
 				id: attachmentObject.id,
 				poster:
 					attachmentObject.videopack?.poster ||
@@ -316,6 +322,12 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				),
 			};
 
+			if (isBlobURL(media_src)) {
+				setTemporarySrc(media_src);
+			} else {
+				setTemporarySrc(null);
+			}
+
 			const updatedAttributes = {};
 			const currentAttributes = attributesRef.current;
 
@@ -332,41 +344,19 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					: newVal !== oldVal;
 
 				if (isDifferent) {
-					const isMetadata = ['title', 'caption'].includes(key);
-					if (isMetadata) {
-						if (!oldVal) {
-							updatedAttributes[key] = newVal;
-						}
-					} else if (forcePersist || !oldVal) {
+					// Always persist ID and SRC.
+					if (key === 'id' || key === 'src') {
+						updatedAttributes[key] = newVal;
+						return;
+					}
+
+					// For other attributes, only persist if forcePersist is true
+					// or if we DON'T have an attachment ID (manual URL mode).
+					if (forcePersist || !attachmentObject.id) {
 						updatedAttributes[key] = newVal;
 					}
 				}
 			});
-
-			const dynamicKeys = [
-				'src',
-				'poster',
-				'title',
-				'caption',
-				'width',
-				'height',
-				'embedlink',
-				'sources',
-				'source_groups',
-				'text_tracks',
-				'embed_method',
-				'skin',
-				'play_button_color',
-				'play_button_secondary_color',
-				'control_bar_bg_color',
-				'control_bar_color',
-				'title_color',
-				'title_background_color',
-				'total_thumbnails',
-				'featured',
-				'starts',
-				'showCaption',
-			];
 
 			if (Object.keys(updatedAttributes).length > 0) {
 				setAttributes(updatedAttributes);
@@ -466,6 +456,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		if (!hasAttemptedInitialUpload.current && !id && isBlobURL(src)) {
 			hasAttemptedInitialUpload.current = true;
 			const file = getBlobByURL(src);
+			setTemporarySrc(src);
+			setAttributes({ src: undefined });
 			if (file) {
 				mediaUpload({
 					filesList: [file],
@@ -514,7 +506,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		}
 	}, [id, src, setAttributes]);
 
-	const { isProbing, probedMetadata } = useVideoProbe(src);
+	const { isProbing, probedMetadata } = useVideoProbe(effectiveSrc);
 	const [probedMetadataOverride, setProbedMetadataOverride] = useState(null);
 
 	useEffect(() => {
@@ -526,10 +518,10 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				duration,
 				isTainted: false,
 			});
-		} else if (!src) {
+		} else if (!effectiveSrc) {
 			setProbedMetadataOverride(null);
 		}
-	}, [attachment, probedMetadata, src]);
+	}, [attachment, probedMetadata, effectiveSrc]);
 
 	const effectiveMetadata = probedMetadataOverride || probedMetadata;
 
@@ -611,7 +603,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				</Placeholder>
 			</div>
 		);
-	} else if (!src && !effectiveId) {
+	} else if (!effectiveSrc && !effectiveId) {
 		blockContent = (
 			<MediaPlaceholder
 				icon={<BlockIcon icon={icon} />}
@@ -624,7 +616,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				placeholder={placeholder}
 			/>
 		);
-	} else if (!id && src && isBlobURL(src)) {
+	} else if (!id && effectiveSrc && isBlobURL(effectiveSrc)) {
 		blockContent = (
 			<div className="components-placeholder block-editor-media-placeholder is-large has-illustration">
 				<div className="components-placeholder__label">
@@ -652,7 +644,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				<BlockControls group="other">
 					<MediaReplaceFlow
 						mediaId={id}
-						mediaURL={src}
+						mediaURL={effectiveSrc}
 						allowedTypes={ALLOWED_MEDIA_TYPES}
 						accept="video/*"
 						onSelect={onSelectVideo}
@@ -700,9 +692,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				<figure
 					style={{
 						...contextStyle,
-						display: src || effectiveId ? 'block' : 'none',
+						display: effectiveSrc || effectiveId ? 'block' : 'none',
 					}}
-					aria-hidden={!(src || effectiveId)}
+					aria-hidden={!(effectiveSrc || effectiveId)}
 					className={`videopack-video-block-container videopack-wrapper ${contextClasses}${
 						effectiveDesign.isPreview ? ' is-preview' : ''
 					}`}
@@ -762,7 +754,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					isBlockEditor={true}
 				/>
 				<AdditionalFormats
-					key={attributes.id || src}
+					key={attributes.id || effectiveSrc}
 					attributes={attributes}
 					options={options}
 					isProbing={isProbing}

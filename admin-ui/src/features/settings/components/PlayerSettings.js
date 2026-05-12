@@ -352,8 +352,13 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 
 	const handleWatermarkChange = (newSettings) => {
 		const { url, ...styles } = newSettings;
-		changeHandlerFactory.watermark(url);
-		changeHandlerFactory.watermark_styles(styles);
+		if (url !== undefined) {
+			changeHandlerFactory.watermark(url);
+		}
+		changeHandlerFactory.watermark_styles({
+			...watermark_styles,
+			...styles,
+		});
 	};
 
 	const PLAYER_COLOR_FALLBACKS = useMemo(
@@ -379,6 +384,17 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				ctx[`videopack/${key}`] = settings[key];
 			}
 		});
+
+		// Flatten watermark styles for blocks that expect individual attributes
+		if (settings.watermark_styles) {
+			Object.entries(settings.watermark_styles).forEach(([key, val]) => {
+				const contextKey = key.startsWith('watermark_')
+					? key
+					: `watermark_${key}`;
+				ctx[`videopack/${contextKey}`] = val;
+			});
+		}
+
 		return ctx;
 	}, [settings, PLAYER_COLOR_FALLBACKS]);
 

@@ -71,6 +71,24 @@ export const deleteFile = async (attachmentId) => {
 };
 
 /**
+ * Deletes a specific video format by ID.
+ *
+ * @param {number|string} attachmentId The ID of the parent attachment.
+ * @param {string}        formatId     The format identifier.
+ */
+export const deleteFormat = async (attachmentId, formatId) => {
+	try {
+		return await apiFetch({
+			path: `/videopack/v1/attachment/${attachmentId}/format/${formatId}`,
+			method: 'DELETE',
+		});
+	} catch (error) {
+		console.error('Error deleting format:', error);
+		throw error;
+	}
+};
+
+/**
  * Starts a batch process of a particular type.
  *
  * @param {string} type           The type of batch process to start.

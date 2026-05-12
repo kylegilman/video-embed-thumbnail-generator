@@ -146,6 +146,8 @@ class Shortcode implements Hook_Subscriber {
 				'grid_columns'                  => 3,
 				'is_modular_engine'             => false,
 				'collectionId'                  => null,
+				'instanceId'                    => null,
+				'hover_effect'                  => 'global',
 				'prioritizePostData'            => false,
 			),
 			'options_atts'    => array(

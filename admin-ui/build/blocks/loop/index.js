@@ -5539,7 +5539,8 @@ const getSettings = async () => {
   settingsPromise = _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
     path: '/wp/v2/settings'
   }).then(allSettings => {
-    cachedSettings = allSettings.videopack_options || {};
+    const result = allSettings.videopack_options || {};
+    cachedSettings = result;
     settingsPromise = null;
     return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__.applyFilters)('videopack.utils.getSettings', cachedSettings);
   }).catch(error => {
@@ -5557,14 +5558,16 @@ const getSettings = async () => {
  */
 const saveWPSettings = async newSettings => {
   try {
+    const data = {
+      videopack_options: newSettings
+    };
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings',
       method: 'POST',
-      data: {
-        videopack_options: newSettings
-      }
+      data: data
     });
-    cachedSettings = response.videopack_options || {};
+    const result = response.videopack_options || {};
+    cachedSettings = result;
     return cachedSettings;
   } catch (error) {
     console.error('Error saving WP settings:', error);
@@ -6852,6 +6855,7 @@ function Edit({
   if (columns && layout === 'grid') {
     computedStyle['--videopack-collection-columns'] = columns;
   }
+  computedStyle.containerType = 'inline-size';
 
   // Universal Solution: Fetch the actual attachment records to hydrate the store.
   // This ensures that BlockEdit and any inner blocks have the 'real' data they need.
@@ -10675,7 +10679,7 @@ function VideoThumbnailPreview({
   clientId,
   attributes = {}
 }) {
-  const vpContext = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_3__["default"])({}, context);
+  const vpContext = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_3__["default"])(attributes, context);
   const {
     resolved: {
       duotone: contextDuotone
@@ -11075,13 +11079,19 @@ function VideoWatermark({
   } = (0,_hooks_useVideopackContext__WEBPACK_IMPORTED_MODULE_1__["default"])(attributes, context);
   const {
     watermark: effectiveUrl,
-    watermark_scale: actualScale = 10,
-    watermark_align: actualAlign = 'right',
-    watermark_valign: actualValign = 'bottom',
-    watermark_x: actualX = 5,
-    watermark_y: actualY = 7,
+    watermark_styles: styles = {},
+    watermark_scale: attrScale,
+    watermark_align: attrAlign,
+    watermark_valign: attrValign,
+    watermark_x: attrX,
+    watermark_y: attrY,
     skin
   } = resolved;
+  const actualScale = attrScale ?? styles.scale ?? styles.watermark_scale ?? 10;
+  const actualAlign = attrAlign ?? styles.align ?? styles.watermark_align ?? 'right';
+  const actualValign = attrValign ?? styles.valign ?? styles.watermark_valign ?? 'bottom';
+  const actualX = attrX ?? styles.x ?? styles.watermark_x ?? 5;
+  const actualY = attrY ?? styles.y ?? styles.watermark_y ?? 7;
   const style = {
     position: isBlockEditor ? 'relative' : 'absolute',
     width: effectiveUrl ? `${actualScale}%` : '260px',
@@ -11526,7 +11536,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer'];
+const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer'];
 const VIDEOPACK_CONTEXT_KEYS = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_3__.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**

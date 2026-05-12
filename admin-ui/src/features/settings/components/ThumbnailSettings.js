@@ -32,7 +32,16 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 		auto_thumb,
 		auto_thumb_number,
 		auto_thumb_position,
+		encode,
+		active_encoder = 'ffmpeg',
 	} = settings;
+
+	const effectiveFfmpegExists =
+		(active_encoder !== 'ffmpeg' && !!config.isTranscodingServiceReady) ||
+		ffmpeg_exists === true ||
+		ffmpeg_exists === 'true' ||
+		ffmpeg_exists === 1 ||
+		ffmpeg_exists === '1';
 
 	const featuredBatch = useBatchProcess();
 	const parentsBatch = useBatchProcess();
@@ -211,7 +220,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							onChange={changeHandlerFactory.total_thumbnails}
 						/>
 					</div>
-					{ffmpeg_exists === true || config.is_pro ? (
+					{!!effectiveFfmpegExists ? (
 						<>
 							<div className="videopack-setting-extra-margin">
 								<span className="videopack-settings-label">
@@ -228,13 +237,56 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 									checked={!!auto_thumb}
 								/>
 							</div>
+							{config.is_pro && (
+								<div className="videopack-setting-extra-margin">
+									<ToggleControl
+										__nextHasNoMarginBottom
+										label={__(
+											'Generate thumbnail sprites',
+											'video-embed-thumbnail-generator'
+										)}
+										help={__(
+											'Creates a tiled image of video frames for use with player progress bar previews.',
+											'video-embed-thumbnail-generator'
+										)}
+										checked={
+											!!encode?.thumbnail_sprite
+												?.resolutions?.sprite
+										}
+										onChange={(isChecked) => {
+											const newEncode = {
+												...encode,
+												thumbnail_sprite: {
+													...encode?.thumbnail_sprite,
+													enabled: isChecked,
+													resolutions: {
+														...encode
+															?.thumbnail_sprite
+															?.resolutions,
+														sprite: isChecked,
+													},
+												},
+											};
+											changeHandlerFactory.encode(
+												newEncode
+											);
+										}}
+										disabled={
+											! config.is_pro && effectiveFfmpegExists !== true
+										}
+									/>
+								</div>
+							)}
 							<div className="videopack-setting-extra-margin">
 								<div className="videopack-control-with-tooltip">
 									<Button
 										__next40pxDefaultSize
 										variant="secondary"
 										onClick={handleGenerateAllThumbnails}
-										disabled={generationBatch.isProcessing}
+										disabled={
+											effectiveFfmpegExists !== true ||
+											generationBatch.isProcessing
+										}
 									>
 										{generationBatch.isProcessing
 											? sprintf(
@@ -278,15 +330,46 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							</p>
 						</div>
 					)}
-					{ffmpeg_exists === true && (
+					{!!effectiveFfmpegExists && (
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label={__(
-								"When possible, use the browser's built-in video capabilities to make thumbnails instead of FFmpeg"
+								"When possible, use the browser's built-in video capabilities to make thumbnails"
 							)}
 							value={browser_thumbnails}
-							checked={!!browser_thumbnails}
+							checked={
+								!!browser_thumbnails ||
+								(!!config.cloud_enabled &&
+									! (
+										config.raw_ffmpeg_exists === true ||
+										config.raw_ffmpeg_exists === 'true' ||
+										config.raw_ffmpeg_exists === 1 ||
+										config.raw_ffmpeg_exists === '1'
+									))
+							}
 							onChange={changeHandlerFactory.browser_thumbnails}
+							disabled={
+								!!config.cloud_enabled &&
+								! (
+									config.raw_ffmpeg_exists === true ||
+									config.raw_ffmpeg_exists === 'true' ||
+									config.raw_ffmpeg_exists === 1 ||
+									config.raw_ffmpeg_exists === '1'
+								)
+							}
+							help={
+								!!config.cloud_enabled &&
+								! (
+									config.raw_ffmpeg_exists === true ||
+									config.raw_ffmpeg_exists === 'true' ||
+									config.raw_ffmpeg_exists === 1 ||
+									config.raw_ffmpeg_exists === '1'
+								)
+									? __(
+											'In-browser thumbnail generation is required when using cloud transcoding without FFmpeg installed on your server.'
+									  )
+									: null
+							}
 						/>
 					)}
 				</PanelBody>

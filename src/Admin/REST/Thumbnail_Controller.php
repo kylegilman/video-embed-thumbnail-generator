@@ -58,7 +58,9 @@ class Thumbnail_Controller extends Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'thumb_generate' ),
 					'permission_callback' => function () {
-						return (bool) ( $this->can_make_thumbnails() && (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' ) );
+						$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+						$is_cloud_ready = ! empty( $this->options['cloud']['enable_transcoding'] ) && apply_filters( 'videopack_transcoding_service_ready', false );
+						return (bool) ( $this->can_make_thumbnails() && ( apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) || $is_cloud_ready ) );
 					},
 					'args'                => array(
 						'url'              => array(
@@ -127,6 +129,16 @@ class Thumbnail_Controller extends Controller {
 						'type'     => 'boolean',
 						'required' => false,
 					),
+					'set_poster'    => array(
+						'type'     => 'boolean',
+						'required' => false,
+						'default'  => true,
+					),
+					'filename_suffix' => array(
+						'type'     => 'string',
+						'required' => false,
+						'default'  => '_thumb',
+					),
 				),
 			)
 		);
@@ -192,7 +204,9 @@ class Thumbnail_Controller extends Controller {
 		}
 
 		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
+
 		$time              = $request->get_param( 'time' );
+
 
 		if ( ! is_null( $time ) ) {
 			$result = $ffmpeg_thumbnails->generate_thumbnail_at_timecode( (int) $attachment_id, (float) $time );
@@ -204,6 +218,33 @@ class Thumbnail_Controller extends Controller {
 				( $request->get_param( 'generate_button' ) === 'random' )
 			);
 		}
+
+		// Fallback to Cloud Transcoding if FFmpeg failed but cloud IS available.
+		if ( is_wp_error( $result ) && $is_cloud_ready ) {
+			$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
+			$enqueue_result = $queue_controller->enqueue_encodes(
+				array(
+					'id'      => (int) $attachment_id,
+					'url'     => (string) wp_get_attachment_url( (int) $attachment_id ),
+					'formats' => array(
+						$format_id => array(
+							'total_thumbnails' => (int) $request->get_param( 'total_thumbnails' ),
+						),
+					),
+				)
+			);
+
+			if ( ! empty( $enqueue_result['results'][ $format_id ] ) && 'success' === $enqueue_result['results'][ $format_id ]['status'] ) {
+				return new \WP_REST_Response(
+					array(
+						'status'  => 'enqueued',
+						'message' => __( 'Thumbnail generation offloaded to cloud service.', 'video-embed-thumbnail-generator' ),
+					),
+					202
+				);
+			}
+		}
+
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -275,7 +316,7 @@ class Thumbnail_Controller extends Controller {
 		}
 
 		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
-		$response   = (array) $thumbnails->save_from_blob( (int) $attachment_id, $post_name, (array) $files['file'], (int) $request->get_param( 'parent_id' ), $request->get_param( 'featured' ) );
+		$response   = (array) $thumbnails->save_from_blob( (int) $attachment_id, $post_name, (array) $files['file'], (int) $request->get_param( 'parent_id' ), $request->get_param( 'featured' ), $request->get_param( 'set_poster' ), $request->get_param( 'filename_suffix' ) );
 
 		$response['attachment_id'] = (int) $attachment_id;
 		if ( empty( $response['thumb_id'] ) ) {

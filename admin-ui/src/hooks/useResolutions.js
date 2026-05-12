@@ -13,11 +13,17 @@ import { __, sprintf } from '@wordpress/i18n';
  * @param {string|number} custom_resolution        The height of the custom resolution.
  * @return {Array} List of resolution objects.
  */
-const useResolutions = (enable_custom_resolution, custom_resolution) => {
+const useResolutions = (
+	enable_custom_resolution,
+	custom_resolution,
+	onlyStandard = true
+) => {
 	return useMemo(() => {
-		// Filter out the custom resolution from the static list, as it will be re-added if enabled.
+		// Filter based on whether we want only standard playback resolutions or all video resolutions.
 		let resolutionsList = videopack_config.resolutions.filter(
-			(r) => !r.is_custom
+			(r) =>
+				!r.is_custom &&
+				( onlyStandard ? r.is_standard !== false : r.is_video !== false )
 		);
 
 		if (enable_custom_resolution) {

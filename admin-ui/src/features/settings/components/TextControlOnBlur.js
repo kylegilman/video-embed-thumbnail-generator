@@ -13,8 +13,12 @@ const TextControlOnBlur = ({ value, onChange, ...props }) => {
 		setInnerValue(newValue);
 	};
 
-	const handleOnBlur = () => {
+	const handleOnBlur = (event) => {
+		console.log('TextControlOnBlur: blurred, calling onChange with:', innerValue);
 		onChange(innerValue);
+		if (props.onBlur) {
+			props.onBlur(event);
+		}
 	};
 
 	const handleOnFocus = (event) => {

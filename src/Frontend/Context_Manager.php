@@ -50,6 +50,7 @@ class Context_Manager {
 			'pagination_active_color',
 			'exclude_hover_trigger',
 			'title_position',
+			'hover_effect',
 		);
 
 		$resolved   = array();

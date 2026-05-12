@@ -41,7 +41,7 @@ $badge-selectors: (
 		position: absolute;
 		left: 0;
 		width: 100%;
-		z-index: 102;
+		z-index: 100;
 
 		&.position-top { top: 0; bottom: auto; }
 		&.position-bottom { bottom: 0; top: auto; }
@@ -58,7 +58,7 @@ $badge-selectors: (
 	position: absolute;
 	left: 0;
 	width: 100%;
-	z-index: 115;
+	z-index: 100;
 	pointer-events: none;
 
 	&.position-top { top: 0; bottom: auto; }
@@ -184,12 +184,12 @@ $badge-selectors: (
 	// Standard Title Text Logic (when not an overlay)
 	:is(.videopack-title, .videopack-thumbnail-title-text) {
 		color: inherit;
-		
-		&.is-link, 
+
+		&.is-link,
 		.videopack-title-link {
 			color: inherit;
 			text-decoration: none;
-			
+
 			&:hover {
 				text-decoration: underline;
 			}
@@ -434,16 +434,6 @@ $badge-selectors: (
 	}
 }
 
-// 2. Focused Thumbnail Layout (Logic moved to Thumbnail.scss)
-:is(.videopack-thumbnail-holder) {
-	width: 100%;
-	padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-	height: 0;
-	overflow: hidden;
-	background: #000;
-}
-
-
 // ---------------------------------------------------------------------------
 // Thumbnail Specific Overlays (Frontend & Base)
 // ---------------------------------------------------------------------------
@@ -455,7 +445,7 @@ $badge-selectors: (
 	left: 0;
 	width: 100%;
 	padding: 4px;
-	z-index: 102;
+	z-index: 100;
 	--videopack-title-bg-alpha: 0.5;
 
 	:is(&.position-top, .videopack-video-title-block.position-top &) {
@@ -522,10 +512,7 @@ $badge-selectors: (
 // Frontend Container Parity
 // ---------------------------------------------------------------------------
 
-// Logic moved to Thumbnail.scss
-
-.gallery-item-clickable-area,
-.videopack-thumbnail-holder {
+.gallery-item-clickable-area {
 	position: absolute;
 	top: 0;
 	left: 0;

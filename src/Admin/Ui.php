@@ -215,6 +215,9 @@ class Ui implements Hook_Subscriber {
 			'pagination_active_color'     => array( 'type' => 'string' ),
 			'sources'                     => array( 'type' => 'array' ),
 			'source_groups'               => array( 'type' => 'object' ),
+			'collectionId'                => array( 'type' => 'string' ),
+			'instanceId'                  => array( 'type' => 'string' ),
+			'hover_effect'                => array( 'type' => 'string' ),
 		);
 		$shared_attributes = (array) apply_filters( 'videopack_shared_attributes', $shared_attributes );
 
@@ -240,6 +243,13 @@ class Ui implements Hook_Subscriber {
 			'videopack/gallery_order'                => 'gallery_order',
 			'videopack/gallery_include'              => 'gallery_include',
 			'videopack/gallery_exclude'              => 'gallery_exclude',
+			'videopack/layout'                       => 'layout',
+			'videopack/columns'                      => 'columns',
+			'videopack/gallery_pagination'           => 'gallery_pagination',
+			'videopack/gallery_per_page'             => 'gallery_per_page',
+			'videopack/collectionId'                 => 'collectionId',
+			'videopack/instanceId'                   => 'instanceId',
+			'videopack/hover_effect'                 => 'hover_effect',
 		);
 		$provides_context = (array) apply_filters( 'videopack_provides_context', $provides_context );
 
@@ -320,6 +330,9 @@ class Ui implements Hook_Subscriber {
 				'videopack/videos',
 				'videopack/gallery_pagination',
 				'videopack/gallery_title',
+				'videopack/collectionId',
+				'videopack/instanceId',
+				'videopack/hover_effect',
 			)
 		);
 		$uses_context = (array) apply_filters( 'videopack_uses_context', $uses_context );
@@ -383,7 +396,7 @@ class Ui implements Hook_Subscriber {
 		$codecs_data   = array();
 		foreach ( $codec_objects as $codec_class ) {
 			if ( $codec_class instanceof \Videopack\Admin\Formats\Codecs\Video_Codec ) {
-				$codecs_data[] = (array) $codec_class->get_properties();
+				$codecs_data[] = array_merge( (array) $codec_class->get_properties(), array( 'is_video' => (bool) $codec_class->is_video() ) );
 			}
 		}
 
@@ -393,11 +406,14 @@ class Ui implements Hook_Subscriber {
 			if ( $resolution instanceof \Videopack\Admin\Formats\Video_Resolution ) {
 				$height             = (int) $resolution->get_height();
 				$resolutions_data[] = array(
-					'id'        => (string) $resolution->get_id(),
-					'name'      => (string) $this->format_registry->get_resolution_l10n( (string) $resolution->get_name() ),
-					'height'    => $height,
-					'width'     => $height ? (int) ceil( $height * 16 / 9 ) : null,
-					'is_custom' => (bool) $resolution->is_custom(),
+					'id'             => (string) $resolution->get_id(),
+					'name'           => (string) $this->format_registry->get_resolution_l10n( (string) $resolution->get_name() ),
+					'height'         => $height,
+					'width'          => $height ? (int) ceil( $height * 16 / 9 ) : null,
+					'is_custom'      => (bool) $resolution->is_custom(),
+					'is_video'       => (bool) $resolution->is_video(),
+					'is_standard'    => (bool) $resolution->is_standard(),
+					'allowed_codecs' => (array) $resolution->get_allowed_codecs(),
 				);
 			}
 		}
@@ -429,13 +445,36 @@ class Ui implements Hook_Subscriber {
 			'color' => 'transparent',
 		);
 
+		$settings_tabs = array(
+			'general' => array(
+				'title' => (string) esc_html_x( 'General', 'Adjective, tab title', 'video-embed-thumbnail-generator' ),
+			),
+		);
+
+		/**
+		 * Filters the tabs for the Videopack settings page.
+		 *
+		 * @since 5.0.0
+		 * @param array $settings_tabs {
+		 *     An array of tabs.
+		 *
+		 *     @type string $key ID for the tab. Used to show or hide corresponding settings blocks.
+		 *     @type array  $value {
+		 *         @type string $title Localizable title for the tab.
+		 *     }
+		 * }
+		 */
+		$settings_tabs = (array) apply_filters( 'videopack_settings_tabs', $settings_tabs );
+
 		return (array) apply_filters(
 			'videopack_config_data',
 			array(
+				'settings_tabs'          => $settings_tabs,
 				'url'                    => (string) plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
 				'codecs'                 => $codecs_data,
 				'resolutions'            => $resolutions_data,
-				'ffmpeg_exists'          => is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ),
+				'ffmpeg_exists'          => apply_filters( 'videopack_ffmpeg_exists', is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ) ),
+				'raw_ffmpeg_exists'      => is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ),
 				'browser_thumbnails'     => (bool) ( $options['browser_thumbnails'] ?? true ),
 				'auto_thumb'             => (bool) ( $options['auto_thumb'] ?? false ),
 				'auto_thumb_number'      => (int) ( $options['auto_thumb_number'] ?? 1 ),
@@ -447,6 +486,8 @@ class Ui implements Hook_Subscriber {
 				'contentSize'            => $global_settings['layout']['contentSize'] ?? false,
 				'wideSize'               => $global_settings['layout']['wideSize'] ?? false,
 				'freemiusEnabled'        => $freemius_enabled,
+				'is_pro'                    => apply_filters( 'videopack_is_pro', false ),
+				'isTranscodingServiceReady' => (bool) apply_filters( 'videopack_transcoding_service_ready', false ),
 				'isMultisite'            => (bool) is_multisite(),
 				'isNetworkAdmin'         => (bool) is_network_admin(),
 				'isNetworkActive'        => ( null !== $fs ) && (bool) $fs->is_network_active(),
@@ -461,7 +502,7 @@ class Ui implements Hook_Subscriber {
 				'themeColors'            => $theme_colors,
 				'globalStyles'           => function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
 				'mejs_controls_svg'      => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),
-				'options'                => $options,
+				'options'                => array_merge( $options, array( 'ffmpeg_exists' => apply_filters( 'videopack_ffmpeg_exists', is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ) ) ) ),
 				'defaults'               => \Videopack\Common\Defaults::get_all( $options ),
 				'classic_embed_nonce'    => wp_create_nonce( 'videopack_classic_embed' ),
 			)

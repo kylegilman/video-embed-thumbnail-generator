@@ -6,11 +6,12 @@ This document explains how video metadata and design settings are propagated thr
 
 Videopack uses a hybrid context system to ensure that child blocks (like Title, View Count, or Watermark) can access video metadata regardless of their nesting depth or whether they are rendered inside a specialized player engine.
 
-The system consists of three layers:
+The system consists of four layers:
 
 1. **The PHP Registry (`src/Admin/Ui.php`)**: Dynamically injects global attributes and context mappings into all Videopack blocks.
-2. **The React Bridge (`useVideopackContext` hook)**: Resolves design tokens and generates a "shared context" object for manual propagation.
-3. **The Shadow Provider (`Engine/edit.js`)**: Manually relays context through internal overlays where Gutenberg's automatic propagation might be interrupted.
+2. **The React Bridge (`useVideopackContext` hook)**: Resolves design tokens and generates a "shared context" object for manual propagation in the editor.
+3. **The PHP Context Manager (`src/Frontend/Context_Manager.php`)**: Mirrors the React resolution logic on the PHP side for frontend rendering.
+4. **The Shadow Provider (`Engine/edit.js`)**: Manually relays context through internal overlays in the editor.
 
 ---
 
@@ -22,7 +23,7 @@ The `Videopack\Admin\Ui::register_videopack_block_context` method filters the bl
 Every block starting with `videopack/` automatically receives a set of shared attributes (e.g., `skin`, `title_color`, `pagination_color`).
 
 ### Context Mapping
-The registry maps attributes to context keys (e.g., `id` -> `videopack/attachmentId`). 
+The registry maps attributes to context keys (e.g., `id` -> `videopack/attachmentId`).
 
 > [!IMPORTANT]
 > **Strict PHP Registration**: To prevent Gutenberg from "shadowing" valid data with `undefined`, all `videopack/*` context keys have been removed from individual `block.json` files. `src/Admin/Ui.php` is now the **sole authority** for registering `usesContext` and `providesContext`. The registry defensively only claims to provide a context key if the block natively possesses the required attribute.
@@ -44,7 +45,24 @@ The hook generates a `sharedContext` object containing all resolved values prefi
 
 ---
 
-## Layer 3: The Shadow Provider (VideopackContextBridge)
+## Layer 3: The PHP Context Manager
+
+For frontend rendering where React hooks aren't available, `Videopack\Frontend\Context_Manager::resolve` provides identical resolution logic.
+
+### Design Tokens & Tracking IDs
+The context manager handles several critical keys:
+- **Design Tokens**: `skin`, `hover_effect`, `title_position`, etc.
+- **Tracking IDs**: `collectionId` and `instanceId`. These bridge the gap between pre-fetched metadata (in `Blocks::render_collection`) and the specific rendered elements (in `Blocks::render_thumbnail`).
+
+### Metadata Cache Consistency
+When rendering collections, Videopack uses a pre-fetch cache to optimize performance. However, block-level attributes can override collection-level defaults.
+
+> [!TIP]
+> **Force Refresh Pattern**: In `Blocks::render_thumbnail`, the system checks if local attributes (e.g., `hover_effect`) deviate from the cached metadata. If a mismatch is detected, it triggers a `force_refresh` to re-run the player preparation logic, ensuring that specific block settings (like "Sprite" previews) aren't swallowed by global "Trailer" defaults.
+
+---
+
+## Layer 4: The Shadow Provider (VideopackContextBridge)
 
 Because complex blocks (like `PlayerContainer` or `Engine`) render inner blocks inside overlays, they must manually bridge the context. To eliminate boilerplate and prevent misconfiguration, we use the `<VideopackContextBridge>` React component.
 

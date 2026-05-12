@@ -430,6 +430,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	if (columns && layout === 'grid') {
 		computedStyle['--videopack-collection-columns'] = columns;
 	}
+	computedStyle.containerType = 'inline-size';
 
 	// Universal Solution: Fetch the actual attachment records to hydrate the store.
 	// This ensures that BlockEdit and any inner blocks have the 'real' data they need.

@@ -26,7 +26,7 @@ class Debug_Logger {
 	 * @param array  $context Optional context data.
 	 * @return void
 	 */
-	public static function log( $message, array $context = array() ) {
+	public static function log( $message, array $context = array(), $include_backtrace = false ) {
 		if ( ! defined( 'WP_DEBUG' ) || ! (bool) WP_DEBUG ) {
 			return;
 		}
@@ -34,6 +34,15 @@ class Debug_Logger {
 		$log_message = (string) sprintf( '[Videopack] %s', (string) $message );
 		if ( ! empty( $context ) ) {
 			$log_message .= ' | Context: ' . (string) wp_json_encode( (array) $context );
+		}
+
+		if ( $include_backtrace ) {
+			$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 5 );
+			$trace_str = '';
+			foreach ( $backtrace as $i => $frame ) {
+				$trace_str .= sprintf( "\n  #%d %s%s%s() at %s:%d", $i, $frame['class'] ?? '', $frame['type'] ?? '', $frame['function'], $frame['file'] ?? 'unknown', $frame['line'] ?? 0 );
+			}
+			$log_message .= ' | Trace:' . $trace_str;
 		}
 
 		error_log( $log_message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log

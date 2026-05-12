@@ -24,6 +24,7 @@ import './EncodeFormatStatus.scss';
  * @param {number}   props.parentId         ID of the parent video attachment.
  * @param {boolean}  props.showLabel        Whether to show the format label.
  * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
+ * @param {boolean}  props.isBusy           Whether the format is currently being processed.
  * @return {Element} The rendered component.
  */
 const EncodeFormatStatus = ({
@@ -35,11 +36,13 @@ const EncodeFormatStatus = ({
 	onDeleteFile,
 	onRemoveFormat,
 	onCancelJob,
-	deleteInProgress,
 	onRefresh,
 	parentId,
 	showLabel = true,
 	hideCancel = false,
+	isProcessing = false,
+	processingId = null,
+	deleteInProgress = null,
 }) => {
 	const openMediaLibrary = (currentId = null) => {
 		if (typeof window.wp === 'undefined' || !window.wp.media) {
@@ -100,6 +103,9 @@ const EncodeFormatStatus = ({
 	};
 
 	const getCheckboxDisabledState = (data) => {
+		if (isProcessing || !!deleteInProgress) {
+			return true;
+		}
 		return (
 			(data.exists && data.status !== 'error') ||
 			[
@@ -117,7 +123,7 @@ const EncodeFormatStatus = ({
 	return (
 		<li key={formatId} className="videopack-format-row">
 			{showLabel &&
-				(!!ffmpegExists && ffmpegExists !== 'notinstalled' ? (
+				(!!ffmpegExists ? (
 					<CheckboxControl
 						__nextHasNoMarginBottom
 						className="videopack-format"
@@ -145,6 +151,8 @@ const EncodeFormatStatus = ({
 						onClick={() => openMediaLibrary()}
 						className="videopack-format-button"
 						size="small"
+						isBusy={processingId === formatId}
+						disabled={isProcessing || !!deleteInProgress}
 						title={__(
 							'Open the Media Library',
 							'video-embed-thumbnail-generator'
@@ -160,6 +168,8 @@ const EncodeFormatStatus = ({
 					onClick={() => openMediaLibrary(formatData.id)}
 					className="videopack-format-button"
 					size="small"
+					isBusy={processingId === formatId}
+					disabled={isProcessing || !!deleteInProgress}
 					title={__(
 						'Open the Media Library',
 						'video-embed-thumbnail-generator'
@@ -176,6 +186,8 @@ const EncodeFormatStatus = ({
 						onClick={onRemoveFormat}
 						variant="secondary"
 						size="small"
+						isBusy={processingId === formatId}
+						disabled={isProcessing || !!deleteInProgress}
 						text={__('Remove', 'video-embed-thumbnail-generator')}
 						title={__(
 							'Removes manual selection. It will not be deleted.',
@@ -184,20 +196,19 @@ const EncodeFormatStatus = ({
 					/>
 				)}
 
-			{formatData.deletable &&
-				formatData.id &&
-				!formatData.encoding_now && (
-					<Button
-						isBusy={deleteInProgress === formatId}
-						onClick={onDeleteFile}
-						variant="link"
-						text={__(
-							'Delete permanently',
-							'video-embed-thumbnail-generator'
-						)}
-						isDestructive
-					/>
-				)}
+			{formatData.deletable && !formatData.encoding_now && (
+				<Button
+					isBusy={deleteInProgress === formatId}
+					disabled={isProcessing || !!deleteInProgress}
+					onClick={onDeleteFile}
+					variant="link"
+					text={__(
+						'Delete permanently',
+						'video-embed-thumbnail-generator'
+					)}
+					isDestructive
+				/>
+			)}
 
 			{(formatData.encoding_now || formatData.status === 'error') && (
 				<EncodeProgress

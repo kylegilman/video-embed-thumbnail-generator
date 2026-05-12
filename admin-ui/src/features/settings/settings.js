@@ -88,7 +88,8 @@ const VideopackSettingsPage = () => {
 			activeTab === 'encoding' &&
 			settings.sample_codec &&
 			settings.sample_resolution &&
-			settings.ffmpeg_exists === true
+			settings.ffmpeg_exists === true &&
+			( settings.active_encoder === 'ffmpeg' || ! settings.active_encoder )
 		) {
 			testFfmpeg(
 				settings.sample_codec,
@@ -117,12 +118,13 @@ const VideopackSettingsPage = () => {
 	}, []);
 
 	const debouncedSaveSettings = useDebounce((newSettings) => {
+		// Prepare settings for saving. Standalone options like videopack_cloud_secret_key
+		// are stored alongside the main videopack_options object.
 		saveWPSettings(newSettings)
 			.then((response) => {
 				const currentSettings = settingsRef.current;
 				const nextSettings = { ...response };
 				let hasLocalChanges = false;
-
 				Object.keys(currentSettings).forEach((key) => {
 					if (currentSettings[key] !== newSettings[key]) {
 						nextSettings[key] = currentSettings[key];
@@ -149,7 +151,7 @@ const VideopackSettingsPage = () => {
 		if (!settings || typeof settings !== 'object') {
 			return {};
 		}
-		return Object.keys(settings).reduce((acc, setting) => {
+		const handlers = Object.keys(settings).reduce((acc, setting) => {
 			acc[setting] = (newValue) => {
 				setSettings((prevSettings) => ({
 					...prevSettings,
@@ -159,6 +161,10 @@ const VideopackSettingsPage = () => {
 			};
 			return acc;
 		}, {});
+
+
+
+		return handlers;
 	}, [settings]);
 
 	const tabs = useMemo(() => {
@@ -273,6 +279,12 @@ const VideopackSettingsPage = () => {
 					size={40}
 				/>
 				{__('Videopack Settings', 'video-embed-thumbnail-generator')}
+				{isSettingsChanged && (
+					<span className="videopack-settings-saving">
+						<Spinner />
+						{__('Saving…', 'video-embed-thumbnail-generator')}
+					</span>
+				)}
 			</h1>
 			<Panel>
 				<TabPanel

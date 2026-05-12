@@ -7,12 +7,28 @@
 #wpwrap {
   font-size: small;
 }
+.videopack-hidden {
+  display: none !important;
+}
 .wrap.videopack-settings {
   container-type: inline-size;
   container-name: videopack-settings;
 }
 .wrap.videopack-settings h1 {
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+.wrap.videopack-settings h1 .videopack-settings-saving {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 20px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #949494;
+}
+.wrap.videopack-settings h1 .videopack-settings-saving .components-spinner {
+  margin: 0 0 0 10px;
 }
 .wrap.videopack-settings label {
   color: #1e1e1e;
@@ -59,13 +75,13 @@
   margin-right: 5px;
   margin-bottom: 0;
 }
-.wrap.videopack-settings .videopack-tooltip {
+.wrap.videopack-settings .videopack-tooltip-trigger {
   line-height: 1;
   position: relative;
   z-index: 10;
   pointer-events: auto;
 }
-.wrap.videopack-settings .videopack-tooltip svg {
+.wrap.videopack-settings .videopack-tooltip-trigger svg {
   margin-right: 5px;
 }
 .wrap.videopack-settings .components-text-control__input:disabled {
@@ -140,7 +156,7 @@
   display: inline-flex;
   align-items: center;
 }
-.wrap.videopack-settings .videopack-setting-reduced-width .videopack-library-button-wrapper .videopack-tooltip {
+.wrap.videopack-settings .videopack-setting-reduced-width .videopack-library-button-wrapper .videopack-tooltip-trigger {
   margin-right: 5px;
 }
 .wrap.videopack-settings span.videopack-setting-auto-width {
@@ -320,14 +336,37 @@
 .wrap.videopack-settings .freemius-page-container #fs_addons .fs-cards-list {
   display: inline-block;
 }
-.components-tooltip {
+.wrap.videopack-settings .videopack-constant-setup {
+  margin-bottom: 20px;
+}
+.wrap.videopack-settings .videopack-constant-setup .videopack-code-snippet {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+.wrap.videopack-settings .videopack-constant-setup .videopack-code-snippet code {
+  font-family: monospace;
+  font-size: 12px;
+  color: #1e1e1e;
+}
+.wrap.videopack-settings .videopack-constant-notice {
+  margin-bottom: 20px;
+}
+.wrap.videopack-settings .videopack-constant-notice p {
+  margin: 0;
+}
+.components-tooltip.videopack-tooltip {
   color: #fff;
   white-space: normal;
   padding: 10px;
   max-width: 400px;
-  background: var(--wp-admin-theme-color-darker-20);
+  background: var(--wp-admin-theme-color-darker-20, #1e1e1e);
   box-shadow: -2px 2px 2px 1px rgba(30, 30, 30, 0.2);
   border-radius: 4px;
+  z-index: 1000000;
 }
 /*!****************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/settings-network/settings-network.scss ***!
@@ -364,13 +403,6 @@
 }
 .videopack-settings-network button.components-button.videopack-settings-reset.is-primary {
   margin: 0px 10px 10px 10px;
-}
-.components-tooltip {
-  color: #1e1e1e;
-  white-space: normal;
-  max-width: 400px;
-  background: var(--wp--preset--color--accent-5);
-  box-shadow: -2px 2px 2px 1px rgba(30, 30, 30, 0.2);
 }
 /*!********************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/encode-queue/encode-queue.scss ***!

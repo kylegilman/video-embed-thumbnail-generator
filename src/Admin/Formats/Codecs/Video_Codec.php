@@ -89,6 +89,13 @@ class Video_Codec {
 	protected $default_encode;
 
 	/**
+	 * Whether this is a standard video codec.
+	 *
+	 * @var bool
+	 */
+	protected $is_video;
+
+	/**
 	 * Constructor for Video_Codec.
 	 *
 	 * @param array $properties Associative array of codec properties and values.
@@ -115,6 +122,16 @@ class Video_Codec {
 		);
 		$this->supported_rate_controls = $properties['supported_rate_controls'] ?? array( 'crf', 'vbr' );
 		$this->default_encode          = $properties['default_encode'] ?? false;
+		$this->is_video                = $properties['is_video'] ?? true;
+	}
+
+	/**
+	 * Returns whether this codec produces standard video output.
+	 *
+	 * @return bool True if video, false otherwise.
+	 */
+	public function is_video() {
+		return $this->is_video;
 	}
 
 	/**

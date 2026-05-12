@@ -29,7 +29,7 @@ export default function VideoThumbnailPreview({
 	clientId,
 	attributes = {},
 }) {
-	const vpContext = useVideopackContext({}, context);
+	const vpContext = useVideopackContext(attributes, context);
 
 	const {
 		resolved: { duotone: contextDuotone },

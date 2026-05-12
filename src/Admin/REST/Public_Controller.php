@@ -274,12 +274,19 @@ class Public_Controller extends Controller {
 			$encoder            = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id, $url, $browser_metadata );
 			$video_formats_data = (array) $encoder->get_all_formats_with_status();
 			foreach ( $video_formats_data as $id => $data ) {
-				$presets[] = array_merge( $data, array( 'id' => (string) $id ) );
+				$presets[] = array_merge( $data, array(
+					'id'            => (string) $id,
+					'attachment_id' => $data['id'] ?? null,
+				) );
 			}
 		} else {
-			$all_formats = $this->format_registry->get_video_formats( $this->options['hide_video_formats'] ?? false );
+			$all_formats = (array) $this->format_registry->get_video_formats( (bool) ( $this->options['hide_video_formats'] ?? false ) );
 			foreach ( $all_formats as $id => $obj ) {
-				$presets[] = array_merge( $obj->to_array(), array( 'id' => (string) $id ) );
+				$data = (array) $obj->to_array();
+				$presets[] = array_merge( $data, array(
+					'id'            => (string) $id,
+					'attachment_id' => null,
+				) );
 			}
 		}
 		return apply_filters( 'videopack_rest_presets_get', new \WP_REST_Response( $presets, 200 ), $request );
@@ -321,12 +328,17 @@ class Public_Controller extends Controller {
 
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'] ?? 'Video.js', $this->options, $this->format_registry );
 		$player->set_source( $source );
-		return array(
+
+		$response = array(
 			'srcset'        => (string) wp_get_attachment_image_srcset( $post_id ),
 			'sources'       => $player->get_flat_sources(),
 			'source_groups' => $player->get_sources(),
 			'poster'        => $source->get_poster(),
+			'views'         => $source->get_views(),
+			'duration'      => $source->get_duration(),
 		);
+
+		return $response;
 	}
 
 	/**

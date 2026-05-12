@@ -9,10 +9,12 @@ import {
 	PanelBody,
 	Spinner,
 	ToggleControl,
+	Notice,
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
+import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	generateThumbnail,
@@ -20,6 +22,7 @@ import {
 	setPosterImage,
 	createThumbnailFromCanvas,
 } from '../../api/thumbnails';
+import { enqueueJob, listJobs } from '../../api/jobs';
 import {
 	captureVideoFrame,
 	calculateTimecodes,
@@ -55,9 +58,44 @@ const Thumbnails = ({
 	const [thumbChoices, setThumbChoices] = useState([]);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const ffmpegExists =
-		!!videopack_config.ffmpeg_exists &&
-		videopack_config.ffmpeg_exists !== 'notinstalled';
+	const [spriteMessage, setSpriteMessage] = useState(null);
+	const [cloudJobs, setCloudJobs] = useState([]);
+
+	// Poll for active thumbnail jobs if any exist
+	useEffect(() => {
+		let pollInterval;
+
+		const checkJobs = async () => {
+			try {
+				const jobs = await listJobs(id);
+				const activeThumbnailJobs = jobs.filter(
+					(job) =>
+						job.format_id === 'thumbnail' &&
+						['queued', 'processing', 'encoding', 'cloud_encoding'].includes(job.status)
+				);
+				setCloudJobs(activeThumbnailJobs);
+
+				if (activeThumbnailJobs.length === 0 && cloudJobs.length > 0) {
+					// Jobs just finished, maybe refresh the poster if it was just set
+					if (id) {
+						// Optionally trigger a refresh of videoData if needed
+					}
+				}
+			} catch (error) {
+				console.error('Error polling jobs:', error);
+			}
+		};
+
+		if (id) {
+			checkJobs();
+			pollInterval = setInterval(checkJobs, 10000); // Poll every 10 seconds
+		}
+
+		return () => clearInterval(pollInterval);
+	}, [id]);
+	const { active_encoder = 'ffmpeg' } = options;
+	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady ) || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+	const ffmpegExists = effectiveFfmpegExists;
 	const { editPost } = useDispatch('core/editor') || {};
 	const isEditingAttachment = useSelect(
 		(select) =>
@@ -97,6 +135,15 @@ const Thumbnails = ({
 			}
 		}
 	}, [poster]);
+ 
+	useEffect(() => {
+		if (spriteMessage && spriteMessage.type !== 'error') {
+			const timer = setTimeout(() => {
+				setSpriteMessage(null);
+			}, 10000);
+			return () => clearTimeout(timer);
+		}
+	}, [spriteMessage]);
 
 	function onSelectPoster(image) {
 		setAttributes({
@@ -106,8 +153,8 @@ const Thumbnails = ({
 		});
 	}
 
-	function onRemovePoster() {
-		setAttributes({ ...attributes, poster: undefined });
+	async function onRemovePoster() {
+		await setPosterData('', '', '');
 
 		// Move focus back to the Media Upload button.
 		posterImageButton.current.focus();
@@ -120,8 +167,7 @@ const Thumbnails = ({
 
 		if (
 			!browserThumbnailsEnabled &&
-			!!ffmpegExists &&
-			ffmpegExists !== 'notinstalled'
+			!!ffmpegExists
 		) {
 			// Browser thumbnails explicitly disabled, use FFmpeg directly
 			const newThumbImages = [];
@@ -133,6 +179,16 @@ const Thumbnails = ({
 					workingId,
 					featured
 				);
+
+				if (response?.status === 'cloud_queued') {
+					setSpriteMessage({
+						type: 'success',
+						text: __('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator'),
+					});
+					setIsSaving(false);
+					return;
+				}
+
 				if (response?.attachment_id && workingId === 0) {
 					workingId = parseInt(response.attachment_id, 10) || 0;
 					setAttributes({
@@ -153,6 +209,127 @@ const Thumbnails = ({
 		} else {
 			// Attempt browser-based generation
 			generateThumbCanvases(type);
+		}
+	};
+
+	const [spriteTiles, setSpriteTiles] = useState([]);
+	const handleGenerateSprite = async () => {
+		setIsSaving(true);
+		setSpriteTiles([]);
+
+		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
+		const rawFfmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+		const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady;
+
+		if (
+			!browserThumbnailsEnabled &&
+			rawFfmpegExists &&
+			!activeEncoderIsCloud
+		) {
+			try {
+				const activeId = id || 0;
+				await enqueueJob(
+					activeId,
+					src,
+					{ thumbnail_sprite_sprite: true },
+					parentId
+				);
+				setSpriteMessage({
+					type: 'success',
+					text: __(
+						'Sprite generation enqueued. Check Additional Formats panel for progress.',
+						'video-embed-thumbnail-generator'
+					),
+				});
+				// If we have an Additional Formats panel nearby, it will handle polling.
+			} catch (error) {
+				console.error('Sprite enqueue failed', error);
+				setSpriteMessage({
+					type: 'error',
+					text: __(
+						'Error: Failed to enqueue sprite generation.',
+						'video-embed-thumbnail-generator'
+					),
+				});
+			} finally {
+				setIsSaving(false);
+			}
+			return;
+		}
+
+		const tileWidth = 160;
+		const columns = 10;
+
+		const targetCount = 100;
+		const duration = videoRef.current.duration;
+		const spriteInterval = Math.max(1.0, duration / targetCount);
+		const totalTiles = Math.ceil(duration / spriteInterval);
+		const timePoints = [];
+		for (let i = 0; i < totalTiles; i++) {
+			timePoints.push(i * spriteInterval);
+		}
+
+		const canvases = [];
+		try {
+			for (const time of timePoints) {
+				const canvas = await captureVideoFrame(
+					src,
+					time,
+					options?.ffmpeg_thumb_watermark || {}
+				);
+				// Resize canvas to tileWidth
+				const tileCanvas = document.createElement('canvas');
+				tileCanvas.width = tileWidth;
+				tileCanvas.height = (tileWidth * canvas.height) / canvas.width;
+				const tctx = tileCanvas.getContext('2d');
+				tctx.drawImage(
+					canvas,
+					0,
+					0,
+					tileCanvas.width,
+					tileCanvas.height
+				);
+				canvases.push(tileCanvas);
+				setSpriteTiles((prev) => [
+					...prev,
+					tileCanvas.toDataURL('image/jpeg', 0.6),
+				]);
+			}
+
+			const rows = Math.ceil(canvases.length / columns);
+			const tileHeight = canvases[0].height;
+
+			const spriteCanvas = document.createElement('canvas');
+			spriteCanvas.width = tileWidth * columns;
+			spriteCanvas.height = tileHeight * rows;
+			const ctx = spriteCanvas.getContext('2d');
+
+			canvases.forEach((canvas, index) => {
+				const x = (index % columns) * tileWidth;
+				const y = Math.floor(index / columns) * tileHeight;
+				ctx.drawImage(canvas, x, y);
+			});
+
+			await createThumbnailFromCanvas(
+				spriteCanvas,
+				id,
+				src,
+				parentId,
+				false,
+				{
+					is_sprite: true,
+					interval: spriteInterval,
+					total_tiles: canvases.length,
+					width: tileWidth,
+					set_poster: false,
+					filename_suffix: '_thumbnail-sprite',
+				}
+			);
+		} catch (error) {
+			console.error('Sprite generation failed', error);
+		} finally {
+			setIsSaving(false);
+			setSpriteTiles([]);
 		}
 	};
 
@@ -183,7 +360,12 @@ const Thumbnails = ({
 					time
 				);
 
-				return response;
+				if (response.status === 202) {
+					return { status: 'cloud_queued' };
+				}
+
+				const data = await response.json();
+				return data;
 			} catch (error) {
 				console.error(error);
 			}
@@ -234,7 +416,7 @@ const Thumbnails = ({
 							error
 						);
 					}
-					if (!!ffmpegExists && ffmpegExists !== 'notinstalled') {
+					if (!!ffmpegExists) {
 						try {
 							const response = await generateThumb(
 								index,
@@ -242,6 +424,14 @@ const Thumbnails = ({
 								workingId,
 								featured
 							);
+							if (response?.status === 'cloud_queued') {
+								setSpriteMessage({
+									type: 'success',
+									text: __('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator'),
+								});
+								setIsSaving(false);
+								return; // Stop the loop, it's offloaded to cloud
+							}
 							if (response?.attachment_id && workingId === 0) {
 								workingId =
 									parseInt(response.attachment_id, 10) || 0;
@@ -419,23 +609,23 @@ const Thumbnails = ({
 		new_attachment_id
 	) => {
 		try {
-			const metaData = {};
-			if (new_poster) {
-				// Only include if new_poster has a value
-				metaData['_kgflashmediaplayer-poster'] = new_poster;
-				metaData['_kgflashmediaplayer-poster-id'] =
-					Number(new_poster_id);
+			const existingMeta =
+				videoData?.record?.meta?.['_videopack-meta'] || {};
 
-				const existingMeta =
-					videoData?.record?.meta?.['_videopack-meta'] || {};
-				metaData['_videopack-meta'] = {
+			const metaData = {
+				'_kgflashmediaplayer-poster': new_poster || '',
+				'_kgflashmediaplayer-poster-id': new_poster_id
+					? Number(new_poster_id)
+					: 0,
+				'_videopack-meta': {
 					...existingMeta,
-					poster: new_poster,
-					poster_id: Number(new_poster_id),
-				};
-				if (attributes.featured !== undefined) {
-					metaData['_videopack-meta'].featured = attributes.featured;
-				}
+					poster: new_poster || '',
+					poster_id: new_poster_id ? Number(new_poster_id) : 0,
+				},
+			};
+
+			if (attributes.featured !== undefined) {
+				metaData['_videopack-meta'].featured = attributes.featured;
 			}
 
 			if (videoData?.edit) {
@@ -446,6 +636,18 @@ const Thumbnails = ({
 					meta: metaData,
 				});
 				await videoData.save();
+			} else if (id && Number(id) > 0) {
+				// Fallback for contexts without a core-data entity record (e.g. attachment details pane)
+				await apiFetch({
+					path: `/wp/v2/media/${id}`,
+					method: 'POST',
+					data: {
+						featured_media: new_poster_id
+							? Number(new_poster_id)
+							: null,
+						meta: metaData,
+					},
+				});
 			}
 
 			if (featured && parentId && editPost && !isEditingAttachment) {
@@ -474,18 +676,16 @@ const Thumbnails = ({
 
 			const finalAttributes = {
 				...attributes,
-				poster: new_poster,
-				poster_id: Number(new_poster_id),
+				poster: new_poster || undefined,
+				poster_id: new_poster_id || undefined,
 			};
 
 			// If we just created the attachment, ensure the ID is included
-			if (new_attachment_id && Number(id) === 0) {
+			if (new_attachment_id && ( ! id || Number(id) === 0 ) ) {
 				finalAttributes.id = Number(new_attachment_id);
 			}
 
-			if (new_poster) {
-				setAttributes(finalAttributes);
-			}
+			setAttributes(finalAttributes);
 			setThumbChoices([]);
 			setIsSaving(false);
 		} catch (error) {
@@ -574,7 +774,7 @@ const Thumbnails = ({
 		setIsSaving(true);
 
 		const runFfmpegFallback = async () => {
-			if (!!ffmpegExists && ffmpegExists !== 'notinstalled') {
+			if (!!ffmpegExists) {
 				try {
 					const response = await generateThumb(
 						1,
@@ -583,7 +783,13 @@ const Thumbnails = ({
 						null,
 						ref.current.currentTime
 					);
-					if (response?.real_thumb_url) {
+					if (response?.status === 'cloud_queued') {
+						setSpriteMessage({
+							type: 'success',
+							text: __('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator'),
+						});
+						setIsSaving(false);
+					} else if (response?.real_thumb_url) {
 						await setImgAsPoster(response.real_thumb_url);
 					} else {
 						setIsSaving(false);
@@ -597,7 +803,9 @@ const Thumbnails = ({
 			}
 		};
 
-		if (canvasTainted) {
+		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
+
+		if ( ! browserThumbnailsEnabled || canvasTainted ) {
 			await runFfmpegFallback();
 			return;
 		}
@@ -697,6 +905,14 @@ const Thumbnails = ({
 						</Button>
 					)}
 				</BaseControl>
+				{cloudJobs.length > 0 && (
+					<div className="videopack-active-jobs">
+						<Spinner />
+						<p>
+							{__('Cloud thumbnail generation in progress...', 'video-embed-thumbnail-generator')}
+						</p>
+					</div>
+				)}
 				<ToggleControl
 					label={__(
 						"Set as post's featured image",
@@ -757,12 +973,51 @@ const Thumbnails = ({
 				>
 					{__('Random', 'video-embed-thumbnail-generator')}
 				</Button>
+				{videopack_config.is_pro && (
+					<Button
+						variant="secondary"
+						onClick={handleGenerateSprite}
+						className="videopack-generate-sprite"
+						disabled={isSaving || isProbing || (canvasTainted && !ffmpegExists)}
+					>
+						{__('Sprite', 'video-embed-thumbnail-generator')}
+					</Button>
+				)}
+				{spriteMessage && (
+					<Notice
+						status={spriteMessage.type}
+						onRemove={() => setSpriteMessage(null)}
+						isDismissible={true}
+						className="videopack-sprite-notice"
+					>
+						{spriteMessage.text}
+					</Notice>
+				)}
 				{canvasTainted && !isProbing && !ffmpegExists && (
 					<div className="videopack-security-error-notice">
 						{__(
 							'Cross-origin resource sharing (CORS) policy on the external server is preventing thumbnail generation.',
 							'video-embed-thumbnail-generator'
 						)}
+					</div>
+				)}
+				{spriteTiles.length > 0 && (
+					<div className="videopack-sprite-generation-preview">
+						<p>
+							{sprintf(
+								/* translators: %d is the number of tiles captured */
+								__(
+									'Capturing sprite tiles... (%d)',
+									'video-embed-thumbnail-generator'
+								),
+								spriteTiles.length
+							)}
+						</p>
+						<div className="videopack-sprite-tiles-grid">
+							{spriteTiles.map((src, index) => (
+								<img key={index} src={src} alt="" />
+							))}
+						</div>
 					</div>
 				)}
 				{thumbChoices.length > 0 && (

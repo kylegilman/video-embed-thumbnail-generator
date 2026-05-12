@@ -692,6 +692,7 @@ class Player {
 			'preload',
 			'height',
 			'width',
+			'crossorigin',
 		);
 
 		$string_video_atts = array();
@@ -700,7 +701,7 @@ class Player {
 				$string_video_atts[] = $attribute_name . '="' . esc_attr( (string) $this->atts[ $attribute_name ] ) . '"';
 			}
 		}
-		return $string_video_atts;
+		return apply_filters( 'videopack_video_player_string_attributes', $string_video_atts, $this->atts, $this );
 	}
 
 	/**

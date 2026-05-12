@@ -19,7 +19,8 @@ export const createThumbnailFromCanvas = (
 	attachmentId,
 	videoSrc,
 	parentId = 0,
-	featured = null
+	featured = null,
+	extraData = {}
 ) => {
 	return new Promise((resolve, reject) => {
 		canvas.toBlob(async (blob) => {
@@ -37,6 +38,10 @@ export const createThumbnailFromCanvas = (
 				if (featured !== null) {
 					formData.append('featured', featured);
 				}
+
+				Object.keys(extraData).forEach((key) => {
+					formData.append(key, extraData[key]);
+				});
 
 				const response = await uploadThumbnail(formData);
 				resolve(response);
@@ -172,7 +177,7 @@ export const generateThumbnail = async (
 
 		const path = addQueryArgs('/videopack/v1/thumbs', query);
 
-		return await apiFetch({ path });
+		return await apiFetch({ path, parse: false });
 	} catch (error) {
 		console.error('Error generating thumbnail:', error);
 		throw error;

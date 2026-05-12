@@ -19,7 +19,7 @@ import { store as coreStore } from '@wordpress/core-data';
 import EncodeFormatStatus from './EncodeFormatStatus';
 import { getVideoFormats } from '../../api/gallery';
 import { enqueueJob, deleteJob } from '../../api/jobs';
-import { deleteFile, assignFormat } from '../../api/media';
+import { deleteFile, deleteFormat, assignFormat } from '../../api/media';
 
 /**
  * Helper to get the ordinal string for a number.
@@ -74,7 +74,8 @@ const AdditionalFormats = ({
 }) => {
 	const parentId = providedParentId || attributes.id || 0;
 	const src = propSrc || attributes.src;
-	const { ffmpeg_exists } = options;
+	const { ffmpeg_exists, active_encoder = 'ffmpeg' } = options;
+	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
 	const [videoFormats, setVideoFormats] = useState(null);
 	const isExternal = useMemo(() => {
 		let isSrcExternal = false;
@@ -88,14 +89,14 @@ const AdditionalFormats = ({
 		return !attributes.id || isSrcExternal;
 	}, [attributes.id, src]);
 
-	const [isOpen, setIsOpen] = useState(
-		isExternal ? false : ffmpeg_exists === true
-	);
+	const [isOpen, setIsOpen] = useState(false);
 	const [encodeMessage, setEncodeMessage] = useState();
 	const [itemToDelete, setItemToDelete] = useState(null); // { type: 'file'/'job', formatId: string, jobId?: int, id?: int, name?: string }
 	const [deleteInProgress, setDeleteInProgress] = useState(null); // Stores formatId or jobId being deleted
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isProcessing, setIsProcessing] = useState(false);
+	const [processingId, setProcessingId] = useState(null);
 	const [isEncoding, setIsEncoding] = useState(false);
 	const siteSettings = useSelect((select) => {
 		return select('core').getSite();
@@ -182,8 +183,10 @@ const AdditionalFormats = ({
 			const activeId = attributes.id || 0;
 			if (!activeId || !src) {
 				return;
-			} // Don't fetch until we have both an identity and a URL.
-			setIsLoading(true);
+			}
+			if (!videoFormats) {
+				setIsLoading(true);
+			}
 			try {
 				const formats = await getVideoFormats(
 					activeId,
@@ -201,7 +204,7 @@ const AdditionalFormats = ({
 				setIsLoading(false);
 			}
 		},
-		[attributes.id, src, probedMetadata, updateVideoFormats]
+		[attributes.id, src, updateVideoFormats]
 	);
 
 	const pollVideoFormats = useCallback(
@@ -226,17 +229,24 @@ const AdditionalFormats = ({
 			}
 			return null;
 		},
-		[src, attributes.id, probedMetadata, updateVideoFormats]
+		[src, attributes.id, updateVideoFormats]
 	);
 
+	// Initial fetch
 	useEffect(() => {
 		if (isProbing || !isOpen || isDiscovering) {
 			return;
 		}
+
+		// Only fetch once. Polling handles updates if encoding.
+		if (videoFormats) {
+			return;
+		}
+
 		const controller = new AbortController();
 		fetchVideoFormats(controller.signal);
 		return () => controller.abort();
-	}, [fetchVideoFormats, isProbing, isOpen, isDiscovering]); // Fetch formats when the attachment ID changes or panel is opened
+	}, [fetchVideoFormats, isProbing, isOpen, isDiscovering]);
 
 	const shouldPoll = (formats) => {
 		if (!formats) {
@@ -259,9 +269,14 @@ const AdditionalFormats = ({
 
 	useEffect(() => {
 		let pollTimer = null;
+		let isMounted = true;
+
 		// Manage polling logic based on isEncoding state
-		if (isEncoding) {
+		if (isEncoding && isOpen) {
 			const runPoll = async () => {
+				if (!isMounted) {
+					return;
+				}
 				const formats = await pollVideoFormats();
 				let delay = 15000;
 				if (formats) {
@@ -276,21 +291,24 @@ const AdditionalFormats = ({
 						delay = 30000;
 					}
 				}
-				pollTimer = setTimeout(runPoll, delay);
+				if (isMounted) {
+					pollTimer = setTimeout(runPoll, delay);
+				}
 			};
-			runPoll();
-		} else {
-			clearTimeout(pollTimer);
-			pollTimer = null;
+
+			// Don't run immediately if we just mounted/changed state,
+			// wait for the first interval.
+			pollTimer = setTimeout(runPoll, 5000);
 		}
 
 		return () => {
-			if (pollTimer !== null) {
+			isMounted = false;
+			if (pollTimer) {
 				clearTimeout(pollTimer);
-				pollTimer = null;
 			}
 		};
-	}, [isEncoding, pollVideoFormats]);
+	}, [isEncoding, isOpen, pollVideoFormats]);
+
 	const handleFormatCheckbox = (formatId, isChecked) => {
 		setVideoFormats((prevVideoFormats) => {
 			const updatedFormats = { ...prevVideoFormats };
@@ -325,7 +343,7 @@ const AdditionalFormats = ({
 			return <Spinner />;
 		}
 
-		setIsLoading(true);
+		setIsProcessing(true);
 
 		// Get list of format IDs that are checked and available
 		const formatsToEncode = Object.entries(videoFormats)
@@ -411,7 +429,8 @@ const AdditionalFormats = ({
 			);
 			fetchVideoFormats(); // Re-fetch to ensure UI is consistent
 		} finally {
-			setIsLoading(false);
+			setIsProcessing(false);
+			setProcessingId(null);
 		}
 	};
 
@@ -420,7 +439,8 @@ const AdditionalFormats = ({
 			return;
 		}
 
-		setIsLoading(true);
+		setIsProcessing(true);
+		setProcessingId(formatId);
 
 		try {
 			await assignFormat(media.id, formatId, attributes.id);
@@ -442,29 +462,27 @@ const AdditionalFormats = ({
 				)
 			);
 		} finally {
-			setIsLoading(false);
+			setIsProcessing(false);
+			setProcessingId(null);
 		}
 	};
 
-	// Deletes the actual media file (WP Attachment)
+	// Deletes the actual media file (WP Attachment or orphaned file)
 	const handleFileDelete = async (formatId) => {
 		const formatData = videoFormats?.[formatId];
-		if (!formatData || !formatData.id) {
-			setEncodeMessage(
-				__(
-					'Error: Cannot delete file, missing attachment ID.',
-					'video-embed-thumbnail-generator'
-				)
-			);
-			console.error(
-				'Cannot delete file: Missing id for format',
-				formatId
-			);
+		if (!formatData) {
 			return;
 		}
+
 		setDeleteInProgress(formatId); // Mark this formatId as being deleted
 		try {
-			await deleteFile(formatData.id);
+			if (formatData.id) {
+				await deleteFile(formatData.id);
+			} else {
+				// Cleanup orphaned file
+				await deleteFormat(parentId, formatId);
+			}
+
 			setEncodeMessage(
 				__(
 					'File deleted successfully.',
@@ -551,7 +569,7 @@ const AdditionalFormats = ({
 	const handleConfirm = () => {
 		setIsConfirmOpen(false);
 		if (itemToDelete) {
-			if (itemToDelete.type === 'file' && itemToDelete.id) {
+			if (itemToDelete.type === 'file') {
 				handleFileDelete(itemToDelete.formatId);
 			} else if (itemToDelete.type === 'job' && itemToDelete.jobId) {
 				handleJobDelete(itemToDelete.jobId);
@@ -602,7 +620,7 @@ const AdditionalFormats = ({
 	};
 
 	const isEncodeButtonDisabled =
-		isLoading || ffmpeg_exists !== true || !somethingToEncode();
+		isLoading || !effectiveFfmpegExists || !somethingToEncode();
 
 	const confirmDialogMessage = () => {
 		if (!itemToDelete) {
@@ -701,7 +719,7 @@ const AdditionalFormats = ({
 				opened={isOpen}
 				onToggle={() => setIsOpen(!isOpen)}
 			>
-				{isLoading || !videoFormats ? (
+				{!videoFormats ? (
 					<div className="videopack-formats-loading">
 						<Spinner />
 						{isLoading && isExternal && (
@@ -715,12 +733,31 @@ const AdditionalFormats = ({
 					</div>
 				) : (
 					<div className="videopack-formats-container">
+						{isLoading && isExternal && (
+							<div className="videopack-external-check-notice">
+								<Spinner size={16} />
+								{__(
+									'Checking URLs on external server…',
+									'video-embed-thumbnail-generator'
+								)}
+							</div>
+						)}
 						<ul
 							className={`videopack-formats-list${
-								ffmpeg_exists === true ? '' : ' no-ffmpeg'
+								effectiveFfmpegExists ? '' : ' no-ffmpeg'
 							}`}
 						>
-							{Object.keys(groupedFormats).map((codecId) => {
+							{Object.keys(groupedFormats)
+								.sort((a, b) => {
+									if (a === 'thumbnail_sprite') {
+										return 1;
+									}
+									if (b === 'thumbnail_sprite') {
+										return -1;
+									}
+									return a.localeCompare(b);
+								})
+								.map((codecId) => {
 								const codecGroup = groupedFormats[codecId];
 								if (codecGroup.formats.length === 0) {
 									return null;
@@ -744,13 +781,18 @@ const AdditionalFormats = ({
 																formatData
 															}
 															ffmpegExists={
-																ffmpeg_exists
+																effectiveFfmpegExists
 															}
 															onCheckboxChange={
 																handleFormatCheckbox
 															}
 															onSelectFormat={
 																onSelectFormat
+															}
+															isProcessing={isProcessing}
+															processingId={processingId}
+															deleteInProgress={
+																deleteInProgress
 															}
 															onDeleteFile={() =>
 																openConfirmDialog(
@@ -789,7 +831,7 @@ const AdditionalFormats = ({
 						</ConfirmDialog>
 					</div>
 				)}
-				{ffmpeg_exists === true && videoFormats && canUploadFiles && (
+				{!!effectiveFfmpegExists && videoFormats && canUploadFiles && (
 					<PanelRow className="videopack-encode-button-row">
 						<Button
 							variant="secondary"
@@ -799,9 +841,11 @@ const AdditionalFormats = ({
 								'Encode',
 								'video-embed-thumbnail-generator'
 							)}
-							disabled={isEncodeButtonDisabled}
+							disabled={
+								isEncodeButtonDisabled || isProcessing
+							}
 						/>
-						{isLoading && <Spinner />}
+						{(isLoading || isProcessing) && <Spinner />}
 						{encodeMessage && (
 							<span className="videopack-encode-message">
 								{encodeMessage}

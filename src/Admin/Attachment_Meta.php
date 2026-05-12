@@ -48,16 +48,42 @@ class Attachment_Meta implements Hook_Subscriber {
 	protected $post_id;
 
 	/**
+	 * Recursion guard.
+	 *
+	 * @var bool
+	 */
+	private static $getting_meta = false;
+
+	/**
+	 * Static cache for metadata.
+	 *
+	 * @var array
+	 */
+	private static $meta_cache = array();
+
+	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry
+	 */
+	protected $format_registry;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param array    $options Plugin options.
-	 * @param int|bool $post_id Optional. Attachment ID.
+	 * @param array $options Plugin options.
+	 * @param int   $post_id Optional. Post ID.
 	 */
-	public function __construct( array $options, $post_id = false ) {
-		$this->options   = $options;
-		$this->post_id   = $post_id;
-		$this->meta_data = $this->get();
+	public function __construct( array $options, $post_id = null ) {
+		$this->options         = $options;
+		$this->post_id         = $post_id;
+		$this->format_registry = new \Videopack\Admin\Formats\Registry( $this->options );
+		if ( ! is_null( $this->post_id ) ) {
+			$this->meta_data = $this->get();
+		}
 	}
+
+
 
 	/**
 	 * Sets the current attachment ID and refreshes metadata.
@@ -181,6 +207,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'watermark_url'               => (string) ( $this->options['watermark_url'] ?? '' ),
 			'ffmpeg_watermark_url'        => null,
 			'is_remote'                   => false,
+			'cloud'                       => null,
 			'legacy_dimensions'           => null,
 			'title_color'                 => null,
 			'title_background_color'      => null,
@@ -201,9 +228,20 @@ class Attachment_Meta implements Hook_Subscriber {
 	 * @return array The attachment meta data.
 	 */
 	public function get() {
-		if ( ! $this->post_id ) {
-			return $this->get_defaults();
+		if ( is_null( $this->post_id ) ) {
+			return array();
 		}
+
+		if ( isset( self::$meta_cache[ (int) $this->post_id ] ) ) {
+			return self::$meta_cache[ (int) $this->post_id ];
+		}
+
+		if ( self::$getting_meta ) {
+			// Return a minimal set of data to break recursion.
+			return array();
+		}
+
+		self::$getting_meta = true;
 
 		$current_meta = get_post_meta( (int) $this->post_id, '_videopack-meta', true );
 		if ( ! is_array( $current_meta ) ) {
@@ -328,10 +366,14 @@ class Attachment_Meta implements Hook_Subscriber {
 			} else {
 				$external_url = get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-externalurl', true );
 				if ( $external_url && ( empty( $meta_data['actualwidth'] ) || empty( $meta_data['actualheight'] ) || empty( $meta_data['duration'] ) ) ) {
-					$remote_metadata = $this->fetch_remote_metadata( (string) $external_url, (int) $this->post_id );
-					if ( is_array( $remote_metadata ) ) {
-						$meta_data = array_merge( $meta_data, $remote_metadata );
-						$changed   = true;
+					$is_local = (bool) ( strpos( $external_url, home_url() ) === 0 );
+					$skip_remote = $is_local || apply_filters( 'videopack_skip_remote_metadata_fetch', false, (int) $this->post_id, $external_url );
+					if ( ! $skip_remote ) {
+						$remote_metadata = $this->fetch_remote_metadata( (string) $external_url, (int) $this->post_id );
+						if ( is_array( $remote_metadata ) ) {
+							$meta_data = array_merge( $meta_data, $remote_metadata );
+							$changed   = true;
+						}
 					}
 				}
 			}
@@ -342,7 +384,16 @@ class Attachment_Meta implements Hook_Subscriber {
 		}
 
 		$this->meta_data = (array) $meta_data;
-		return (array) apply_filters( 'videopack_attachment_meta', $this->meta_data, $this->post_id );
+		$meta_data = (array) apply_filters( 'videopack_attachment_meta', $meta_data, (int) $this->post_id );
+
+		if ( ! empty( $meta_data['cloud']['url'] ) ) {
+			$meta_data['url'] = $meta_data['cloud']['url'];
+		}
+
+		self::$getting_meta = false;
+		self::$meta_cache[ (int) $this->post_id ] = $meta_data;
+
+		return $meta_data;
 	}
 
 	/**
@@ -524,22 +575,31 @@ class Attachment_Meta implements Hook_Subscriber {
 		}
 
 		$args = array(
-			'timeout'   => 30,
+			'timeout'   => 5,
 			'sslverify' => false,
 			'headers'   => array(
 				'Range' => 'bytes=0-2097151',
 			),
 		);
 
+		\Videopack\Common\Debug_Logger::log( 'Fetching remote metadata for URL: ' . $url );
+		$start_time = microtime( true );
+
 		$response = wp_remote_get( (string) $url, $args );
 
+		$duration = round( microtime( true ) - $start_time, 4 );
+
 		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 299 ) {
+			\Videopack\Common\Debug_Logger::log( 'Initial remote fetch failed for URL: ' . $url . ' | Duration: ' . $duration . 's', array( 'error' => is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_response_code( $response ) ) );
 			unset( $args['headers']['Range'] );
 			$response = wp_remote_get( (string) $url, $args );
 			if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 299 ) {
+				\Videopack\Common\Debug_Logger::log( 'Retry remote fetch failed for URL: ' . $url );
 				return false;
 			}
 		}
+
+		\Videopack\Common\Debug_Logger::log( 'Remote fetch successful for URL: ' . $url . ' | Duration: ' . $duration . 's' );
 
 		$body = wp_remote_retrieve_body( $response );
 		if ( empty( $body ) ) {
@@ -735,6 +795,15 @@ class Attachment_Meta implements Hook_Subscriber {
 			'play_25'                     => array( 'type' => array( 'string', 'number' ) ),
 			'play_50'                     => array( 'type' => array( 'string', 'number' ) ),
 			'play_75'                     => array( 'type' => array( 'string', 'number' ) ),
+			'cloud'                       => array(
+				'type'       => 'object',
+				'properties' => array(
+					'file_name' => array( 'type' => 'string' ),
+					'bucket'    => array( 'type' => 'string' ),
+					'url'       => array( 'type' => 'string' ),
+					'permissions' => array( 'type' => 'string' ),
+				),
+			),
 			'poster'                      => array(
 				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',

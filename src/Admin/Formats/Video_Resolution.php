@@ -57,6 +57,27 @@ class Video_Resolution {
 	protected $is_custom;
 
 	/**
+	 * List of codec IDs allowed for this resolution. If empty, all codecs are allowed.
+	 *
+	 * @var array
+	 */
+	protected $allowed_codecs = array();
+
+	/**
+	 * Whether this is a standard video resolution.
+	 *
+	 * @var bool
+	 */
+	protected $is_video;
+
+	/**
+	 * Whether this is a standard playback resolution.
+	 *
+	 * @var bool
+	 */
+	protected $is_standard;
+
+	/**
 	 * Video_Resolution constructor.
 	 *
 	 * @param array $properties {
@@ -65,7 +86,10 @@ class Video_Resolution {
 	 *     default_encode: bool,
 	 *     is_custom?: bool,
 	 *     label?: string,
-	 *     id?: string
+	 *     id?: string,
+	 *     allowed_codecs?: array,
+	 *     is_video?: bool,
+	 *     is_standard?: bool
 	 * } Associative array of resolution properties.
 	 */
 	public function __construct( $properties ) {
@@ -73,6 +97,9 @@ class Video_Resolution {
 		$this->name           = $properties['name'];
 		$this->default_encode = $properties['default_encode'];
 		$this->is_custom      = $properties['is_custom'] ?? false;
+		$this->allowed_codecs = (array) ( $properties['allowed_codecs'] ?? array() );
+		$this->is_video       = $properties['is_video'] ?? true;
+		$this->is_standard    = $properties['is_standard'] ?? true;
 
 		if ( isset( $properties['label'] ) ) {
 			$this->label = $properties['label'];
@@ -85,6 +112,43 @@ class Video_Resolution {
 		} else {
 			$this->id = strval( $this->height );
 		}
+	}
+
+	/**
+	 * Returns whether this is a standard video resolution.
+	 *
+	 * @return bool True if video, false otherwise.
+	 */
+	public function is_video() {
+		return $this->is_video;
+	}
+
+	/**
+	 * Returns whether this is a standard playback resolution.
+	 *
+	 * @return bool True if standard playback, false otherwise.
+	 */
+	public function is_standard() {
+		return $this->is_standard;
+	}
+
+	/**
+	 * Get the list of allowed codecs for this resolution.
+	 *
+	 * @return array|null Array of codec IDs, or null if allowed for all.
+	 */
+	public function get_allowed_codecs() {
+		return $this->allowed_codecs;
+	}
+
+	/**
+	 * Set the list of allowed codecs for this resolution.
+	 *
+	 * @param array|null $codecs Array of codec IDs, or null for all.
+	 * @return void
+	 */
+	public function set_allowed_codecs( $codecs ) {
+		$this->allowed_codecs = $codecs;
 	}
 
 	/**

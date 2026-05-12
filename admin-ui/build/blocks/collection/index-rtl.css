@@ -96,6 +96,7 @@
   max-width: 100%;
   display: block;
   gap: var(--videopack-collection-gap, var(--wp--style--block-gap, var(--wp--style--spacing--block-gap, 20px)));
+  container-type: inline-size;
 }
 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
 .layout-grid .videopack-collection-grid,
@@ -104,78 +105,6 @@
 .videopack-gallery-wrapper.layout-grid) {
   display: grid;
   grid-template-columns: repeat(var(--videopack-collection-columns, 3), 1fr);
-}
-:is(.columns-1 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-1) {
-  grid-template-columns: 1fr;
-}
-:is(.columns-2 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-2) {
-  grid-template-columns: repeat(2, 1fr);
-}
-:is(.columns-3 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-3) {
-  grid-template-columns: repeat(3, 1fr);
-}
-:is(.columns-4 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-4) {
-  grid-template-columns: repeat(4, 1fr);
-}
-:is(.columns-5 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-5) {
-  grid-template-columns: repeat(5, 1fr);
-}
-:is(.columns-6 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-6) {
-  grid-template-columns: repeat(6, 1fr);
-}
-:is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid) {
   /* Responsive Adaptation */
 }
 @container (max-width: 800px) {

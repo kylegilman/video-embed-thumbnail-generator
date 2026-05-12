@@ -335,13 +335,11 @@ class Blocks implements Hook_Subscriber {
 		}
 		$attributes['gallery_pagination'] = $has_pagination;
 
-		$instance_id = $attributes['instanceId'] ?? 'vp_' . \Videopack\Admin\Ui::$instance_counter;
-		if ( ! isset( $attributes['instanceId'] ) ) {
-			++\Videopack\Admin\Ui::$instance_counter;
-			$instance_id = 'vp_' . \Videopack\Admin\Ui::$instance_counter;
-		}
-		$collection_id                                     = $attributes['collectionId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
-		$attributes['collectionId']                        = $collection_id;
+		$instance_id   = $attributes['instanceId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
+		$collection_id = $attributes['collectionId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
+
+		$attributes['instanceId']   = $instance_id;
+		$attributes['collectionId'] = $collection_id;
 		self::$collection_metadata_cache[ $collection_id ] = array();
 
 		$gallery_handler = new Gallery( $this->options, $this->format_registry );
@@ -598,9 +596,27 @@ class Blocks implements Hook_Subscriber {
 			$player_data = self::$collection_metadata_cache[ $collection_id ][ $post_id ];
 		}
 
-		if ( ! $player_data ) {
+		// Detect if we need to re-run player preparation because of block-level design overrides.
+		$force_refresh = false;
+		if ( $player_data ) {
+			$local_hover = $attributes['hover_effect'] ?? 'global';
+			$cached_hover = $player_data['hover_effect'] ?? 'global';
+			if ( 'global' !== $local_hover && $local_hover !== $cached_hover ) {
+				$force_refresh = true;
+			}
+		}
+
+		if ( ! $player_data || $force_refresh ) {
 			$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
-			$prepared          = $shortcode_handler->prepare_player( array_merge( $attributes, array( 'id' => $post_id ) ) );
+			$prep_atts         = array_merge(
+				$attributes,
+				array(
+					'id'           => $post_id,
+					'collectionId' => $collection_id,
+					'instanceId'   => $instance_id,
+				)
+			);
+			$prepared = $shortcode_handler->prepare_player( $prep_atts );
 
 			if ( $prepared ) {
 				$player      = $prepared['player'];

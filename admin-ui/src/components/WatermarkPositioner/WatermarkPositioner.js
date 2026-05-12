@@ -424,6 +424,7 @@ const WatermarkPositioner = ({
 
 		const newSettings = isBlock
 			? {
+					...s.settings,
 					watermark_scale: Math.round(finalScale * 100) / 100,
 					watermark_align: newAlign,
 					watermark_valign: newValign,
@@ -431,6 +432,7 @@ const WatermarkPositioner = ({
 					watermark_y: Math.round(newY * 100) / 100,
 				}
 			: {
+					...s.settings,
 					scale: Math.round(finalScale * 100) / 100,
 					align: newAlign,
 					valign: newValign,

@@ -168,6 +168,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							}
 							linkTo={linkTo}
 							context={context}
+							attributes={attributes}
 							className="videopack-thumbnail-preview"
 							resolvedDuotoneClass={undefined}
 							clientId={clientId}

@@ -59,10 +59,7 @@ class Options implements Hook_Subscriber {
 	 */
 	protected $defaults_ready = false;
 
-	/**
-	 * Video player ID.
-	 */
-	protected $video_player_id = 0;
+
 
 	/**
 	 * Video formats registry.
@@ -455,16 +452,7 @@ class Options implements Hook_Subscriber {
 		$this->set_capabilities( (array) ( $options_to_init['capabilities'] ?? array() ) );
 
 		if ( ( $options_to_init['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-			$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $options_to_init );
-			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $options_to_init['app_path'] ?? '' ) );
-			if ( true === $ffmpeg_check['ffmpeg_exists'] ) {
-				$options_to_init['ffmpeg_exists'] = true;
-				$options_to_init['app_path']      = (string) $ffmpeg_check['app_path'];
-				$options_to_init['ffmpeg_error']  = '';
-			} else {
-				$options_to_init['ffmpeg_exists'] = 'notinstalled';
-				$options_to_init['ffmpeg_error']  = (string) $ffmpeg_check['ffmpeg_error'];
-			}
+			$options_to_init = (array) $this->validate_ffmpeg_settings( $options_to_init );
 		}
 
 		return $options_to_init;
@@ -580,16 +568,7 @@ class Options implements Hook_Subscriber {
 		$options_to_save = (array) $this->get_default();
 
 		if ( ( $options_to_save['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-			$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $options_to_save );
-			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $options_to_save['app_path'] ?? '' ) );
-			if ( true === $ffmpeg_check['ffmpeg_exists'] ) {
-				$options_to_save['ffmpeg_exists'] = true;
-				$options_to_save['app_path']      = (string) $ffmpeg_check['app_path'];
-				$options_to_save['ffmpeg_error']  = '';
-			} else {
-				$options_to_save['ffmpeg_exists'] = 'notinstalled';
-				$options_to_save['ffmpeg_error']  = (string) $ffmpeg_check['ffmpeg_error'];
-			}
+			$options_to_save = (array) $this->validate_ffmpeg_settings( $options_to_save );
 		}
 
 		update_option( 'videopack_options', $options_to_save );
@@ -623,7 +602,7 @@ class Options implements Hook_Subscriber {
 			}
 		}
 
-		$this->merged_options = $options;
+		$options['ffmpeg_exists'] = apply_filters( 'videopack_ffmpeg_exists', $options['ffmpeg_exists'] );
 
 		// Ensure registry is using merged options.
 		if ( $this->formats_registry ) {
@@ -735,18 +714,20 @@ class Options implements Hook_Subscriber {
 		$schema = (array) apply_filters( 'videopack_settings_schema', $this->settings_schema( (array) $this->get_default() ), (array) $this->get_default() );
 		$input  = (array) \Videopack\Common\Sanitizer::sanitize_options_recursively( (array) $input, $schema );
 
-		$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options, $this->get_formats_registry() );
 		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $this->options['app_path'] ?? '' ) || ( $input['ffmpeg_exists'] ?? '' ) === 'notchecked' ) {
-			$input = (array) $this->validate_ffmpeg_settings( $input, $ffmpeg_tester );
+			$input = (array) $this->validate_ffmpeg_settings( $input );
 		} else {
 			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'] ?? 'notchecked';
 			$input['ffmpeg_error']  = (string) ( $this->options['ffmpeg_error'] ?? '' );
 		}
 
-		if ( 'notinstalled' === ( $input['ffmpeg_exists'] ?? '' ) ) {
+		if ( 'notinstalled' === ( $input['ffmpeg_exists'] ?? 'notinstalled' ) ) {
 			$input['browser_thumbnails'] = true;
-			$input['auto_encode']        = false;
-			$input['auto_encode_gif']    = false;
+		}
+
+		if ( 'notinstalled' === apply_filters( 'videopack_ffmpeg_exists', $input['ffmpeg_exists'] ?? 'notinstalled', $input ) ) {
+			$input['auto_encode']     = false;
+			$input['auto_encode_gif'] = false;
 		}
 
 		if ( empty( $input['width'] ) ) {
@@ -814,14 +795,14 @@ class Options implements Hook_Subscriber {
 	}
 
 	/**
-	 * Validates FFmpeg settings.
+	 * Validates FFmpeg settings and updates the options array.
 	 *
-	 * @param array                                 $input         Raw input options.
-	 * @param \Videopack\Admin\Encode\FFmpeg_Tester $ffmpeg_tester FFmpeg tester instance.
+	 * @param array $input Raw input options.
 	 * @return array Validated input options.
 	 */
-	public function validate_ffmpeg_settings( array $input, \Videopack\Admin\Encode\FFmpeg_Tester $ffmpeg_tester ) {
-		$ffmpeg_info = (array) $ffmpeg_tester->check_ffmpeg_exists( (string) ( $input['app_path'] ?? '' ) );
+	public function validate_ffmpeg_settings( array $input ) {
+		$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $input, $this->get_formats_registry() );
+		$ffmpeg_info   = (array) $ffmpeg_tester->check_ffmpeg_exists( (string) ( $input['app_path'] ?? '' ) );
 
 		if ( true === $ffmpeg_info['ffmpeg_exists'] ) {
 			$input['ffmpeg_exists'] = true;
@@ -951,22 +932,5 @@ class Options implements Hook_Subscriber {
 		return (array) $options;
 	}
 
-	/**
-	 * Gets the current video player ID.
-	 *
-	 * @return int The player ID.
-	 */
-	public function get_video_player_id() {
-		return (int) $this->video_player_id;
-	}
 
-	/**
-	 * Increments and returns the video player ID.
-	 *
-	 * @return int The new player ID.
-	 */
-	public function increment_video_player_id() {
-		++$this->video_player_id;
-		return (int) $this->video_player_id;
-	}
 }
