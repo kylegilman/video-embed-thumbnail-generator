@@ -32,7 +32,7 @@
   position: absolute;
   right: 0;
   width: 100%;
-  z-index: 102;
+  z-index: 100;
 }
 .videopack-video-title.is-overlay.position-top,
 .videopack-meta-wrapper.is-overlay.position-top {
@@ -54,7 +54,7 @@
   position: absolute;
   right: 0;
   width: 100%;
-  z-index: 115;
+  z-index: 100;
   pointer-events: none;
 }
 .videopack-video-title-block.is-overlay.position-top {
@@ -585,19 +585,12 @@
 .videopack-video-loop) :is(.videopack-video-duration.is-overlay, .videopack-video-duration-block.is-inside-thumbnail, .videopack-video-duration-block.is-badge, .videopack-view-count.is-overlay, .videopack-view-count-block.is-inside-thumbnail, .videopack-view-count-block.is-badge, .videopack-view-count-wrapper.is-inside-thumbnail) {
   background-color: var(--videopack-title-background-color, var(--videopack-title-bg-fallback));
 }
-:is(.videopack-thumbnail-holder) {
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-  height: 0;
-  overflow: hidden;
-  background: #000;
-}
 :is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay {
   position: absolute;
   right: 0;
   width: 100%;
   padding: 4px;
-  z-index: 102;
+  z-index: 100;
   --videopack-title-bg-alpha: 0.5;
 }
 :is(:is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay.position-top, .videopack-video-title-block.position-top :is(.videopack-video-title, .videopack-meta-wrapper).videopack-thumbnail-title.is-overlay) {
@@ -643,8 +636,7 @@
   height: auto;
   min-height: 1px;
 }
-.gallery-item-clickable-area,
-.videopack-thumbnail-holder {
+.gallery-item-clickable-area {
   position: absolute;
   top: 0;
   right: 0;
@@ -780,7 +772,7 @@
   border: none;
   box-shadow: none;
   pointer-events: none;
-  z-index: 115;
+  z-index: 50;
   margin: 0;
 }
 .play-button-container.video-js > *,
@@ -2368,6 +2360,7 @@
   max-width: 100%;
   display: block;
   gap: var(--videopack-collection-gap, var(--wp--style--block-gap, var(--wp--style--spacing--block-gap, 20px)));
+  container-type: inline-size;
 }
 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
 .layout-grid .videopack-collection-grid,
@@ -2376,78 +2369,6 @@
 .videopack-gallery-wrapper.layout-grid) {
   display: grid;
   grid-template-columns: repeat(var(--videopack-collection-columns, 3), 1fr);
-}
-:is(.columns-1 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-1) {
-  grid-template-columns: 1fr;
-}
-:is(.columns-2 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-2) {
-  grid-template-columns: repeat(2, 1fr);
-}
-:is(.columns-3 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-3) {
-  grid-template-columns: repeat(3, 1fr);
-}
-:is(.columns-4 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-4) {
-  grid-template-columns: repeat(4, 1fr);
-}
-:is(.columns-5 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-5) {
-  grid-template-columns: repeat(5, 1fr);
-}
-:is(.columns-6 :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid), :is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid).columns-6) {
-  grid-template-columns: repeat(6, 1fr);
-}
-:is(.layout-grid .videopack-collection-inner, .videopack-collection-inner.layout-grid,
-.layout-grid .videopack-collection-grid,
-.videopack-collection-grid.layout-grid,
-.layout-grid .videopack-gallery-wrapper,
-.videopack-gallery-wrapper.layout-grid) {
   /* Responsive Adaptation */
 }
 @container (max-width: 800px) {
@@ -2683,7 +2604,6 @@
   right: 0;
   width: 100%;
   height: 100%;
-  z-index: 10;
   pointer-events: none;
 }
 .videopack-inner-blocks-container > * {
@@ -3021,10 +2941,70 @@
   font-size: 13px;
   line-height: 1.4;
 }
-.videopack-thumbnail-generator .videopack-thumb-video-container.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-  filter: grayscale(0.5);
+.videopack-thumbnail-generator .videopack-sprite-generation-preview {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e2e4e7;
+}
+.videopack-thumbnail-generator .videopack-sprite-generation-preview p {
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.videopack-thumbnail-generator .videopack-sprite-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #1e1e1e;
+  padding: 2px;
+  border-radius: 2px;
+}
+.videopack-thumbnail-generator .videopack-sprite-tiles-grid img {
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0;
+  animation: videopack-fade-in 0.3s forwards;
+}
+.videopack-thumbnail-generator .videopack-sprite-message {
+  padding: 10px;
+  background-color: #f0f6fb;
+  border-right: 4px solid #2271b1;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #1e1e1e;
+}
+.videopack-thumbnail-generator .videopack-active-jobs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border: 1px solid #e0e0e0;
+}
+.videopack-thumbnail-generator .videopack-active-jobs p {
+  margin: 0;
+  font-size: 13px;
+  color: #757575;
+  font-weight: 500;
+}
+.videopack-thumbnail-generator .videopack-active-jobs .components-spinner {
+  margin: 0;
+}
+@keyframes videopack-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .editor-video-poster-control .components-base-control__label {
   display: block;
@@ -3389,7 +3369,7 @@ picture.vjs-poster {
   font-style: italic;
   color: #949494;
 }
-.videopack-encode-button-row {
+.components-panel__row.videopack-encode-button-row {
   justify-content: flex-start;
 }
 .videopack-formats-loading {

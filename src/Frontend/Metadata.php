@@ -103,6 +103,7 @@ class Metadata implements Hook_Subscriber {
 			return array( 'url' => '' );
 		}
 
+		$start_time = microtime( true );
 		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
 		if ( ! $source || ! (bool) $source->exists() ) {
 			return array( 'url' => '' );
@@ -115,6 +116,9 @@ class Metadata implements Hook_Subscriber {
 		$final_atts['id']          = (string) $source->get_id();
 		$final_atts['mime_type']   = (string) $source->get_mime_type();
 		$final_atts['description'] = (string) $this->generate_video_description( (array) $final_atts, $post );
+
+		$duration = round( microtime( true ) - $start_time, 4 );
+		\Videopack\Common\Debug_Logger::log( 'Discovery of first embedded video completed in ' . $duration . 's' );
 
 		return (array) $final_atts;
 	}

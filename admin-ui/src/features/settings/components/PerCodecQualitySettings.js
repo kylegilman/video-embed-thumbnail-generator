@@ -1,6 +1,7 @@
 /* global videopack_config */
 
 import { __, sprintf } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 import {
 	RadioControl,
 	RangeControl,
@@ -26,8 +27,18 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		h264_level,
 		h265_profile,
 		h265_level,
+		active_encoder = 'ffmpeg',
 	} = settings;
-	const codecEncodeSettings = encode[codec.id] || {};
+
+	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
+
+	const encodeKey = applyFilters(
+		'videopack.settings.encodeKey',
+		'encode',
+		active_encoder
+	);
+	const currentEncode = settings[encodeKey] || {};
+	const codecEncodeSettings = currentEncode[codec.id] || {};
 	const {
 		rate_control: currentRateControl = codec.supported_rate_controls[0],
 		crf: currentCrf = codec.rate_control.crf.default,
@@ -230,6 +241,29 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		[codec]
 	);
 
+	const marks = applyFilters(
+		'videopack.settings.qualityMarks',
+		null,
+		{ codec, active_encoder, rateControl: currentRateControl, generateMarks }
+	);
+
+	const qualityScale = applyFilters(
+		'videopack.settings.qualityScale',
+		{
+			min:
+				currentRateControl === 'crf'
+					? codec.rate_control.crf.min
+					: 0.1,
+			max:
+				currentRateControl === 'crf'
+					? codec.rate_control.crf.max
+					: 50,
+			step: currentRateControl === 'crf' ? 1 : 0.5,
+			marks: marks || generateMarks(currentRateControl),
+		},
+		{ codec, active_encoder, rateControl: currentRateControl }
+	);
+
 	useEffect(() => setLocalCrf(currentCrf), [currentCrf]);
 	useEffect(() => setLocalVbr(currentVbr), [currentVbr]);
 
@@ -243,16 +277,16 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 
 	const performUpdate = useCallback(
 		(key, value) => {
-			const currentEncode = settingsRef.current.encode;
-			changeHandlerFactoryRef.current.encode({
-				...currentEncode,
+			const encodeData = settingsRef.current[encodeKey] || {};
+			changeHandlerFactoryRef.current[encodeKey]({
+				...encodeData,
 				[codec.id]: {
-					...currentEncode[codec.id],
+					...encodeData[codec.id],
 					[key]: value,
 				},
 			});
 		},
-		[codec.id]
+		[codec.id, encodeKey]
 	);
 
 	const debouncedUpdate = useDebounce(performUpdate, 500);
@@ -260,10 +294,11 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 	const handleSettingChange = (key, value) => {
 		if (key === 'rate_control') {
 			// Immediate update for radio buttons
-			changeHandlerFactory.encode({
-				...encode,
+			const encodeData = settings[encodeKey] || {};
+			changeHandlerFactory[encodeKey]({
+				...encodeData,
 				[codec.id]: {
-					...encode[codec.id],
+					...encodeData[codec.id],
 					[key]: value,
 				},
 			});
@@ -307,10 +342,31 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		setBitrates(newBitrates);
 	}, [localVbr, codec, resolutions]);
 
+	const rateControlOptions = applyFilters(
+		'videopack.settings.rateControlOptions',
+		[
+			{
+				label: __(
+					'Constant Rate Factor (CRF)',
+					'video-embed-thumbnail-generator'
+				),
+				value: 'crf',
+			},
+			{
+				label: __(
+					'Average Bitrate (ABR)',
+					'video-embed-thumbnail-generator'
+				),
+				value: 'vbr',
+			},
+		],
+		{ codec, active_encoder }
+	);
+
 	return (
 		<div key={codec.id} className="videopack-per-codec-quality-settings">
 			<h4 className="videopack-codec-quality-header">{codec.name}</h4>
-			{codec.supported_rate_controls.length > 1 && (
+			{rateControlOptions.length > 1 && (
 				<RadioControl
 					label={
 						<span className="videopack-label-with-tooltip">
@@ -330,23 +386,8 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 					onChange={(value) =>
 						handleSettingChange('rate_control', value)
 					}
-					options={[
-						{
-							label: __(
-								'Constant Rate Factor (CRF)',
-								'video-embed-thumbnail-generator'
-							),
-							value: 'crf',
-						},
-						{
-							label: __(
-								'Average Bitrate (ABR)',
-								'video-embed-thumbnail-generator'
-							),
-							value: 'vbr',
-						},
-					]}
-					disabled={ffmpeg_exists !== true}
+					options={rateControlOptions}
+					disabled={effectiveFfmpegExists !== true}
 				/>
 			)}
 
@@ -358,11 +399,11 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 					value={localCrf}
 					className="videopack-crf-slider"
 					onChange={(value) => handleSettingChange('crf', value)}
-					min={codec.rate_control.crf.min}
-					max={codec.rate_control.crf.max}
-					step={1}
-					marks={generateMarks('crf')}
-					disabled={ffmpeg_exists !== true}
+					min={qualityScale.min}
+					max={qualityScale.max}
+					step={qualityScale.step}
+					marks={qualityScale.marks}
+					disabled={effectiveFfmpegExists !== true}
 				/>
 			)}
 
@@ -374,11 +415,11 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 					value={localVbr}
 					className="videopack-abr-slider"
 					onChange={(value) => handleSettingChange('vbr', value)}
-					min={0.1}
-					max={50}
-					step={0.5}
-					marks={generateMarks('vbr')}
-					disabled={ffmpeg_exists !== true}
+					min={qualityScale.min}
+					max={qualityScale.max}
+					step={qualityScale.step}
+					marks={qualityScale.marks}
+					disabled={effectiveFfmpegExists !== true}
 					help={
 						<span className="videopack-bitrate-grid">
 							{bitrates.map((item, index) => (
@@ -403,7 +444,7 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 						value={h264_profile}
 						onChange={changeHandlerFactory.h264_profile}
 						options={h264ProfileOptions}
-						disabled={ffmpeg_exists !== true}
+						disabled={effectiveFfmpegExists !== true}
 					/>
 					<SelectControl
 						__nextHasNoMarginBottom
@@ -415,7 +456,7 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 						value={h264_level}
 						onChange={changeHandlerFactory.h264_level}
 						options={h264LevelOptions}
-						disabled={ffmpeg_exists !== true}
+						disabled={effectiveFfmpegExists !== true}
 					/>
 				</div>
 			)}
@@ -431,7 +472,7 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 						value={h265_profile}
 						onChange={changeHandlerFactory.h265_profile}
 						options={h265ProfileOptions}
-						disabled={ffmpeg_exists !== true}
+						disabled={effectiveFfmpegExists !== true}
 					/>
 					<SelectControl
 						__nextHasNoMarginBottom
@@ -443,7 +484,7 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 						value={h265_level}
 						onChange={changeHandlerFactory.h265_level}
 						options={h265LevelOptions}
-						disabled={ffmpeg_exists !== true}
+						disabled={effectiveFfmpegExists !== true}
 					/>
 				</div>
 			)}

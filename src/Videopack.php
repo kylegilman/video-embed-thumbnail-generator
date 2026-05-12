@@ -65,12 +65,7 @@ class Videopack {
 	 */
 	protected $container;
 
-	/**
-	 * Unique ID counter for video player instances.
-	 *
-	 * @var int $video_player_id
-	 */
-	protected static $video_player_id = 0;
+
 
 	/**
 	 * Define the core functionality of the plugin.

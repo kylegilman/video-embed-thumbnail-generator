@@ -187,7 +187,7 @@ class Encode_Info {
 			$this->check_potential_locations();
 		}
 
-		if ( ! $this->exists ) {
+		if ( ! $this->exists || empty( $this->path ) || $this->path === $this->uploads['path'] . '/' ) {
 			$this->set_default_url_and_path();
 		}
 	}
@@ -299,19 +299,20 @@ class Encode_Info {
 	 */
 	protected function set_default_url_and_path() {
 
-		$moviefilename = $this->basename . $this->format->get_suffix();
 		require_once ABSPATH . 'wp-admin/includes/file.php';
-		$local_file = get_attached_file( $this->id );
-		if ( get_post_type( $this->id ) == 'attachment'
-			&& $local_file
-			&& file_exists( $local_file )
-			&& get_filesystem_method( array(), $this->path, true ) === 'direct'
-		) {
-			$this->url  = $this->sanitized_url->noextension . $this->format->get_suffix();
-			$this->path = $this->path . $moviefilename;
+		$local_file    = get_attached_file( $this->id );
+		$moviefilename = $this->basename . $this->format->get_suffix();
+
+		// Use the same directory as the original file if it's a local attachment.
+		if ( $local_file && file_exists( $local_file ) ) {
+			$base_path = dirname( $local_file );
+			$base_url  = dirname( wp_get_attachment_url( $this->id ) );
 		} else {
-			$this->url  = $this->uploads['url'] . '/' . $moviefilename;
-			$this->path = $this->uploads['path'] . '/' . $moviefilename;
+			$base_path = $this->uploads['path'];
+			$base_url  = $this->uploads['url'];
 		}
+
+		$this->url  = trailingslashit( $base_url ) . $moviefilename;
+		$this->path = trailingslashit( $base_path ) . $moviefilename;
 	}
 }

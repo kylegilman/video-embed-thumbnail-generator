@@ -245,6 +245,15 @@ abstract class Source {
 	}
 
 	/**
+	 * Returns the video metadata.
+	 *
+	 * @return array The metadata array.
+	 */
+	public function get_metadata(): array {
+		return $this->metadata;
+	}
+
+	/**
 	 * Sets the video metadata.
 	 *
 	 * @param array|null $metadata Optional. The metadata array.
@@ -323,7 +332,7 @@ abstract class Source {
 		if ( ! $this->url ) {
 			$this->set_url();
 		}
-		return $this->url;
+		return (string) apply_filters( 'videopack_source_get_url', $this->url, $this );
 	}
 
 	/**
@@ -332,7 +341,7 @@ abstract class Source {
 	 * @return string The download URL.
 	 */
 	public function get_download_url(): string {
-		return $this->get_url();
+		return (string) apply_filters( 'videopack_source_get_download_url', $this->get_url(), $this );
 	}
 
 	/**
@@ -880,7 +889,7 @@ abstract class Source {
 			$this->set_dimensions();
 		}
 
-		return $this->width;
+		return (int) $this->width;
 	}
 
 	/**
@@ -894,7 +903,7 @@ abstract class Source {
 			$this->set_dimensions();
 		}
 
-		return $this->height;
+		return (int) $this->height;
 	}
 
 	/**
@@ -942,7 +951,7 @@ abstract class Source {
 			$this->set_duration();
 		}
 
-		return $this->duration;
+		return (float) ( $this->duration ?? 0.0 );
 	}
 
 	/**

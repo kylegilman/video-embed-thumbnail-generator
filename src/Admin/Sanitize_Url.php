@@ -79,8 +79,11 @@ class Sanitize_Url {
 
 		$decoded_url    = (string) rawurldecode( $this->url );
 		$this->movieurl = (string) esc_url_raw( $decoded_url );
-		$parsed_url     = (string) wp_parse_url( $decoded_url, PHP_URL_PATH );
-		$path_info      = (array) pathinfo( $parsed_url );
+		$parsed_path    = (string) wp_parse_url( $decoded_url, PHP_URL_PATH );
+		
+		// If wp_parse_url failed (likely a local path), use the raw decoded URL as the path.
+		$path_for_info  = ! empty( $parsed_path ) ? $parsed_path : $decoded_url;
+		$path_info      = (array) pathinfo( $path_for_info );
 
 		if ( empty( $path_info['extension'] ) ) {
 			$this->noextension = $this->url;

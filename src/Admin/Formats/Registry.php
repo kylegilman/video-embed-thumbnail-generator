@@ -36,6 +36,11 @@ class Registry {
 	}
 
 	/**
+	 * Recursion guard.
+	 */
+	private static $getting_resolutions = false;
+
+	/**
 	 * Returns available video codecs.
 	 *
 	 * @return \Videopack\Admin\Formats\Codecs\Video_Codec[] Array of codec objects.
@@ -49,7 +54,8 @@ class Registry {
 			new Codecs\Video_Codec_AV1(),
 		);
 
-		return (array) apply_filters( 'videopack_video_codecs', $codecs );
+		$codecs = (array) apply_filters( 'videopack_video_codecs', $codecs );
+		return $codecs;
 	}
 
 	/**
@@ -140,7 +146,16 @@ class Registry {
 			}
 		);
 
-		return (array) apply_filters( 'videopack_video_resolutions', $resolutions );
+		if ( self::$getting_resolutions ) {
+			\Videopack\Common\Debug_Logger::log( 'Recursion detected in Registry::get_video_resolutions!', array(), true );
+			return $resolutions;
+		}
+
+		self::$getting_resolutions = true;
+		$resolutions = (array) apply_filters( 'videopack_video_resolutions', $resolutions );
+		self::$getting_resolutions = false;
+
+		return $resolutions;
 	}
 
 	/**
@@ -206,6 +221,11 @@ class Registry {
 	 * @return \Videopack\Admin\Formats\Video_Format[] Available video formats.
 	 */
 	public function get_video_formats( $hide_formats = false ) {
+		static $formats_cache = array();
+		$cache_key = $hide_formats ? 'hidden' : 'all';
+		if ( isset( $formats_cache[ $cache_key ] ) ) {
+			return $formats_cache[ $cache_key ];
+		}
 		$video_formats     = array();
 		$video_resolutions = (array) $this->get_video_resolutions();
 		$video_codecs      = (array) $this->get_video_codecs();
@@ -217,7 +237,13 @@ class Registry {
 				continue;
 			}
 			foreach ( $video_resolutions as $resolution ) {
-				$res_id    = (string) $resolution->get_id();
+				$res_id         = (string) $resolution->get_id();
+				$allowed_codecs = (array) $resolution->get_allowed_codecs();
+
+				if ( ! empty( $allowed_codecs ) && ! in_array( $codec_id, $allowed_codecs, true ) ) {
+					continue;
+				}
+
 				$format_id = $codec_id . '_' . $res_id;
 
 				// Determine if this specific format replaces the original.
@@ -234,6 +260,7 @@ class Registry {
 			}
 		}
 
+		$formats_cache[ $cache_key ] = $video_formats;
 		return $video_formats;
 	}
 }

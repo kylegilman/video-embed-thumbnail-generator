@@ -156,12 +156,27 @@ class Video_Metadata {
 
 		if ( $this->is_attachment ) {
 			$attachment_meta_instance   = new \Videopack\Admin\Attachment_Meta( $this->options, $this->id );
-			$videopack_postmeta         = $attachment_meta_instance->get(); // get() returns the array.
+			$videopack_postmeta         = $attachment_meta_instance->get();
 			$this->ffmpeg_watermark_url = $videopack_postmeta['ffmpeg_watermark_url'] ?? null;
 			$this->original_replaced    = $videopack_postmeta['original_replaced'] ?? null;
 
-			if ( isset( $videopack_postmeta['worked'] ) && $videopack_postmeta['worked']
-			) {
+			// If videopack meta is missing or incomplete, try WP metadata first.
+			if ( empty( $videopack_postmeta['worked'] ) || empty( $videopack_postmeta['actualheight'] ) || empty( $videopack_postmeta['codec'] ) ) {
+				$wp_metadata = wp_get_attachment_metadata( $this->id );
+				if ( is_array( $wp_metadata ) ) {
+					$this->actualwidth  = $wp_metadata['width'] ?? null;
+					$this->actualheight = $wp_metadata['height'] ?? null;
+					$this->duration     = $wp_metadata['length'] ?? null;
+					$this->codec        = $wp_metadata['videocodec'] ?? $wp_metadata['codec'] ?? null;
+					
+					if ( $this->actualwidth && $this->actualheight && $this->codec ) {
+						$this->worked = true;
+						return; // Success, no need for FFmpeg.
+					}
+				}
+			}
+
+			if ( ! empty( $videopack_postmeta['worked'] ) ) {
 				$this->worked       = true;
 				$this->actualwidth  = $videopack_postmeta['actualwidth'] ?? ( $this->browser_metadata['actualwidth'] ?? null );
 				$this->actualheight = $videopack_postmeta['actualheight'] ?? ( $this->browser_metadata['actualheight'] ?? null );
@@ -169,7 +184,7 @@ class Video_Metadata {
 				$this->codec        = $videopack_postmeta['codec'] ?? null;
 				$this->rotate       = $videopack_postmeta['rotate'] ?? '';
 
-				if ( $this->actualwidth && $this->actualheight ) {
+				if ( $this->actualwidth && $this->actualheight && $this->codec ) {
 					return;
 				}
 			}

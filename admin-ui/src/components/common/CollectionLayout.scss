@@ -12,26 +12,24 @@
 	display: block; // Fallback
 	gap: var( --videopack-collection-gap, var( --wp--style--block-gap, var( --wp--style--spacing--block-gap, 20px ) ) );
 
+	container-type: inline-size;
+
 	// Default layout logic (handle classes on self OR on parent)
 	:is(.layout-grid &, &.layout-grid) {
 		display: grid;
 		grid-template-columns: repeat(var(--videopack-collection-columns, 3), 1fr);
 
-		:is(.columns-1 &, &.columns-1) { grid-template-columns: 1fr; }
-		:is(.columns-2 &, &.columns-2) { grid-template-columns: repeat(2, 1fr); }
-		:is(.columns-3 &, &.columns-3) { grid-template-columns: repeat(3, 1fr); }
-		:is(.columns-4 &, &.columns-4) { grid-template-columns: repeat(4, 1fr); }
-		:is(.columns-5 &, &.columns-5) { grid-template-columns: repeat(5, 1fr); }
-		:is(.columns-6 &, &.columns-6) { grid-template-columns: repeat(6, 1fr); }
-
 		/* Responsive Adaptation */
 		@container (max-width: 800px) {
+			// Only force-collapse if columns > 2. We use a fallback class check for browsers
+			// where the variable might be missing or to preserve specificity.
 			:is(.columns-3 &, .columns-4 &, .columns-5 &, .columns-6 &, &.columns-3, &.columns-4, &.columns-5, &.columns-6) {
 				grid-template-columns: repeat(2, 1fr) !important;
 			}
 		}
 
 		@container (max-width: 500px) {
+			// Force-collapse to 1 column if > 1.
 			:is(.columns-2 &, .columns-3 &, .columns-4 &, .columns-5 &, .columns-6 &, &.columns-2, &.columns-3, &.columns-4, &.columns-5, &.columns-6) {
 				grid-template-columns: 1fr !important;
 				

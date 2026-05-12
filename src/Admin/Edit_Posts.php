@@ -115,6 +115,14 @@ class Edit_Posts implements Hook_Subscriber {
 					$this->format_registry
 				);
 				$url    = (string) $source->get_url();
+				/**
+				 * Filters the URL of the video to be inserted into the Classic Editor.
+				 *
+				 * @since 5.0.0
+				 * @param string $url           The URL of the video to be inserted.
+				 * @param int    $attachment_id The attachment ID.
+				 */
+				$url = apply_filters( 'videopack_send_to_editor_url', $url, (int) $attachment_id );
 
 				$shortcode_atts = array(
 					'id' => (int) $attachment_id,

@@ -159,7 +159,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			output_attachment_id BIGINT UNSIGNED NULL,
 			input_url VARCHAR(1024) NOT NULL,
 			format_id VARCHAR(100) NOT NULL,
-			status ENUM('queued', 'processing', 'encoding', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled', 'deleted') NOT NULL DEFAULT 'queued',
+			status ENUM('queued', 'processing', 'encoding', 'cloud_encoding', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled', 'deleted') NOT NULL DEFAULT 'queued',
 			output_path VARCHAR(1024) NULL,
 			output_url VARCHAR(1024) NULL,
 			user_id BIGINT UNSIGNED NULL,
@@ -177,6 +177,9 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			temp_watermark_path VARCHAR(1024) NULL,
 			retry_count TINYINT UNSIGNED NOT NULL DEFAULT 0,
 			encode_options_hash VARCHAR(32) NULL,
+			cloud_job_id VARCHAR(255) NULL,
+			cloud_provider VARCHAR(100) NULL,
+			cloud_meta TEXT NULL,
 			mailed TINYINT(1) NOT NULL DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY idx_blog_id (blog_id),
@@ -256,10 +259,12 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$successfully_queued_names = array();
 		$video_formats_objects     = $this->format_registry->get_video_formats();
 
-		foreach ( $formats_to_encode as $format_to_encode ) {
-			$format_id    = sanitize_text_field( $format_to_encode );
-			$queue_result = $encoder->queue_format( $format_id, $user_id, $current_blog_id );
+		foreach ( $formats_to_encode as $key => $format_to_encode ) {
+			$format_id    = is_string( $key ) ? sanitize_text_field( $key ) : sanitize_text_field( $format_to_encode );
+			$meta         = is_array( $format_to_encode ) ? $format_to_encode : array();
+			$queue_result = $encoder->queue_format( $format_id, $user_id, $current_blog_id, $meta );
 			$this->queue_log->add_to_log( $queue_result['reason'] ?? $queue_result['status'], $format_id );
+
 			$results[ $format_id ] = $queue_result;
 			if ( isset( $queue_result['status'] ) && 'success' === $queue_result['status'] ) {
 				$name                        = ( is_array( $video_formats_objects ) && isset( $video_formats_objects[ $format_id ] ) )
@@ -376,24 +381,42 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 							return;
 						}
 
-						$encode_format_obj = new Encode_Format( $job['format_id'] );
-						$encode_format_obj->set_path( $job['output_path'] );
-						$encode_format_obj->set_url( $job['output_url'] );
-						$encode_format_obj->set_job_id( $job_id );
+						$encode_format_obj = Encode_Format::from_array( (array) $job );
 
 						$started_format = $encoder->start_encode( $encode_format_obj ); // This starts FFmpeg and updates $encode_format_obj with PID.
 
-						if ( $started_format->get_pid() && $started_format->get_status() === Encode_Format::STATUS_ENCODING ) {
+						$is_cloud_job = (bool) $started_format->get_cloud_provider();
+
+						if ( ( $started_format->get_pid() && $started_format->get_status() === Encode_Format::STATUS_ENCODING ) || ( $is_cloud_job && ( $started_format->get_status() === Encode_Format::STATUS_CLOUD_ENCODING || $started_format->get_status() === Encode_Format::STATUS_ENCODING ) ) ) {
+							$update_data = array(
+								'status' => $started_format->get_status(),
+							);
+
+							if ( $started_format->get_pid() ) {
+								$update_data['pid'] = $started_format->get_pid();
+							}
+
+							if ( $started_format->get_logfile() ) {
+								$update_data['logfile_path'] = $started_format->get_logfile();
+							}
+
+							if ( $started_format->get_cloud_job_id() ) {
+								$update_data['cloud_job_id'] = $started_format->get_cloud_job_id();
+							}
+
+							if ( $started_format->get_cloud_provider() ) {
+								$update_data['cloud_provider'] = $started_format->get_cloud_provider();
+							}
+
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 							$wpdb->update(
 								$this->queue_table_name,
-								array( // Store PID and logfile path.
-									'status'       => Encode_Format::STATUS_ENCODING,
-									'pid'          => $started_format->get_pid(),
-									'logfile_path' => $started_format->get_logfile(),
-								),
+								$update_data,
 								array( 'id' => $job_id )
 							);
+							
+							// For cloud jobs, we use the recurring heartbeat for polling, so we don't necessarily need an immediate videopack_handle_job action,
+							// but it doesn't hurt.
 							as_schedule_single_action( time() + 30, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
 						} else {
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -401,7 +424,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 								$this->queue_table_name,
 								array( // Mark as failed if FFmpeg didn't start.
 									'status'        => Encode_Format::STATUS_FAILED,
-									'error_message' => 'Failed to start FFmpeg: ' . $started_format->get_error(),
+									'error_message' => 'Failed to start encoding: ' . $started_format->get_error(),
 									'failed_at'     => current_time( 'mysql', true ),
 								),
 								array( 'id' => $job_id )
@@ -499,7 +522,13 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 					case Encode_Format::STATUS_NEEDS_INSERT:
 					case Encode_Format::STATUS_PENDING_REPLACEMENT:
 						$encode_format_obj = Encode_Format::from_array( $job );
+						error_log( "[Videopack] Debug: Attempting insert_attachment for job " . $job['id'] );
 						$inserted          = $encoder->insert_attachment( $encode_format_obj );
+						if ( $inserted ) {
+							error_log( "[Videopack] Debug: insert_attachment returned true for job " . $job['id'] );
+						} else {
+							error_log( "[Videopack] ERROR: insert_attachment returned false for job " . $job['id'] );
+						}
 
 						if ( $inserted ) {
 							$update_data = array( 'status' => 'completed' );
@@ -610,7 +639,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		// will advance the status of finished jobs and free up capacity.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$active_encodes = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE status IN ('processing', 'encoding')", $this->queue_table_name ), ARRAY_A );
+		$active_encodes = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE status IN ('processing', 'encoding', 'cloud_encoding')", $this->queue_table_name ), ARRAY_A );
 		$status_changed = false;
 
 		if ( ! empty( $active_encodes ) ) {
@@ -619,13 +648,34 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				$attachment_identifier = ! empty( $job_data['attachment_id'] ) ? $job_data['attachment_id'] : $job_data['input_url'];
 				$encoder               = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $job_data['input_url'] );
 				$encode_format         = Encode_Format::from_array( $job_data );
-				$encode_format->get_progress(); // Updates internal status if log says 'end' or if it timed out.
+				
+				if ( ! empty( $encode_format->get_cloud_job_id() ) ) {
+					error_log( sprintf( '[Videopack] Heartbeat: Checking cloud job status for job %d', $job_id ) );
+					do_action( 'videopack_check_cloud_job_status', $encode_format, $job_data );
+					error_log( sprintf( '[Videopack] Heartbeat: Cloud job status is now %s', $encode_format->get_status() ) );
+				} else {
+					$encode_format->get_progress(); // Updates internal status if log says 'end' or if it timed out.
+				}
 
-				if ( $encode_format->get_status() !== $job_data['status'] ) {
+				$status_changed_now = $encode_format->get_status() !== $job_data['status'];
+				$cloud_meta_now     = json_encode( $encode_format->get_cloud_meta() );
+				$cloud_meta_changed = $encode_format->get_cloud_job_id() !== ( $job_data['cloud_job_id'] ?? null ) 
+					|| $encode_format->get_cloud_provider() !== ( $job_data['cloud_provider'] ?? null )
+					|| $cloud_meta_now !== ( $job_data['cloud_meta'] ?? null );
+
+				if ( $status_changed_now || $cloud_meta_changed ) {
 					$new_status  = $encode_format->get_status();
+					
+					if ( $status_changed_now ) {
+						error_log( sprintf( '[Videopack] Heartbeat: Status changed from %s to %s for job %d', $job_data['status'], $new_status, $job_id ) );
+					}
+					
 					$update_data = array(
-						'status'     => $new_status,
-						'updated_at' => current_time( 'mysql', true ),
+						'status'         => $new_status,
+						'updated_at'     => current_time( 'mysql', true ),
+						'cloud_job_id'   => $encode_format->get_cloud_job_id(),
+						'cloud_provider' => $encode_format->get_cloud_provider(),
+						'cloud_meta'     => $cloud_meta_now,
 					);
 
 					if ( Encode_Format::STATUS_NEEDS_INSERT === $new_status ) {
@@ -680,11 +730,18 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 					)
 				);
 				// Reschedule the job. The handle_job action will check the status and decide how to proceed.
-				as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => (int) $stuck_job['id'] ), 'videopack_encode_jobs' );
-
-				// Slightly update updated_at to prevent repeated rescheduling in the same heartbeat.
+				$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => (int) $stuck_job['id'] ), 'videopack_encode_jobs' );
+				
+				// Slightly update updated_at and save action_id to prevent repeated rescheduling in the same heartbeat.
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$wpdb->update( $this->queue_table_name, array( 'updated_at' => current_time( 'mysql', true ) ), array( 'id' => (int) $stuck_job['id'] ) );
+				$wpdb->update( 
+					$this->queue_table_name, 
+					array( 
+						'updated_at' => current_time( 'mysql', true ),
+						'action_id'  => $action_id,
+					), 
+					array( 'id' => (int) $stuck_job['id'] ) 
+				);
 			}
 		}
 
@@ -696,7 +753,40 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			foreach ( $pending_system_jobs as $job_row ) {
 				$job_id = $job_row['id'];
 				if ( ! as_has_scheduled_action( 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ) ) {
-					as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					if ( $action_id ) {
+						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+						$wpdb->update( $this->queue_table_name, array( 'action_id' => $action_id ), array( 'id' => $job_id ) );
+					}
+				}
+			}
+		}
+
+		// 4. Action Scheduler Watchdog: Check if the associated AS action has failed.
+		// Limit to 10 jobs per heartbeat to prevent site lag if the queue is large.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$active_with_actions = $wpdb->get_results( $wpdb->prepare( "SELECT id, action_id FROM %i WHERE status IN ('processing', 'encoding', 'needs_insert', 'pending_replacement') AND action_id IS NOT NULL LIMIT 10", $this->queue_table_name ), ARRAY_A );
+		if ( ! empty( $active_with_actions ) ) {
+			foreach ( $active_with_actions as $job_row ) {
+				$action_id = (int) $job_row['action_id'];
+				$job_id    = (int) $job_row['id'];
+				
+				if ( class_exists( 'ActionScheduler_Store' ) ) {
+					$status = \ActionScheduler_Store::instance()->get_status( $action_id );
+					if ( \ActionScheduler_Store::STATUS_FAILED === $status ) {
+						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+						$wpdb->update(
+							$this->queue_table_name,
+							array(
+								'status'        => Encode_Format::STATUS_FAILED,
+								'error_message' => 'Background task (Action Scheduler) failed.',
+								'failed_at'     => current_time( 'mysql', true ),
+							),
+							array( 'id' => $job_id )
+						);
+						$this->send_error_email( $job_id );
+						$status_changed = true;
+					}
 				}
 			}
 		}
@@ -735,7 +825,11 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 					)
 				);
 				if ( empty( $existing_actions ) ) {
-					as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					if ( $action_id ) {
+						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+						$wpdb->update( $this->queue_table_name, array( 'action_id' => $action_id ), array( 'id' => $job_id ) );
+					}
 				}
 			}
 		}
@@ -1225,7 +1319,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$response = array(
 			'id'              => $job->get_job_id(),
 			'status'          => $status,
-			'status_l10n'     => Encode_Format::get_status_label( $internal_status ),
+			'status_l10n'     => $job->get_status_label(),
 			'preset'          => $job->get_format_id(),
 			'format_name'     => $format_name,
 			'output_url'      => $job->get_url(),
@@ -1240,6 +1334,12 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			'poster_url'      => $poster_url,
 			'attachment_link' => $attachment_link,
 			'attachment_id'   => $attachment_id,
+			'cloud_job_id'    => $job->get_cloud_job_id(),
+			'cloud_provider'  => $job->get_cloud_provider(),
+			'cloud_meta'      => $job->get_cloud_meta(),
+			'exists'          => in_array( $status, array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_REMOTE_EXISTS ), true ),
+			'encoding_now'    => in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING ), true ),
+			'deletable'       => ! empty( $job->get_job_id() ),
 		);
 
 		if ( in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
@@ -1267,7 +1367,12 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 		$replace_setting = (string) ( $this->options['replace_format'] ?? 'none' );
 
-		foreach ( $format_ids as $id ) {
+		foreach ( $format_ids as $key => $id_or_meta ) {
+			$id = is_string( $key ) ? $key : $id_or_meta;
+			if ( ! is_string( $id ) ) {
+				continue;
+			}
+
 			if ( $encoder->is_replacement_format( $id ) ) {
 				$replacement_ids[]     = (string) $id;
 				$replacement_requested = true;
@@ -1278,6 +1383,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				$additional_ids[] = (string) $id;
 			}
 		}
+
 
 		if ( ! $replacement_requested ) {
 			return $format_ids;
@@ -1459,11 +1565,12 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$incomplete_job_attachment_ids = $wpdb->get_col(
 			$wpdb->prepare(
-				'SELECT DISTINCT attachment_id FROM %i WHERE status IN (%s, %s, %s, %s, %s) AND blog_id = %d AND attachment_id IS NOT NULL',
+				'SELECT DISTINCT attachment_id FROM %i WHERE status IN (%s, %s, %s, %s, %s, %s) AND blog_id = %d AND attachment_id IS NOT NULL',
 				$this->queue_table_name,
 				Encode_Format::STATUS_QUEUED,
 				Encode_Format::STATUS_PROCESSING,
 				Encode_Format::STATUS_ENCODING,
+				Encode_Format::STATUS_CLOUD_ENCODING,
 				Encode_Format::STATUS_NEEDS_INSERT,
 				Encode_Format::STATUS_PENDING_REPLACEMENT,
 				$blog_id

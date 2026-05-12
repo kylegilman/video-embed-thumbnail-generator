@@ -27,7 +27,8 @@ export const getSettings = async () => {
 
 	settingsPromise = apiFetch({ path: '/wp/v2/settings' })
 		.then((allSettings) => {
-			cachedSettings = allSettings.videopack_options || {};
+			const result = allSettings.videopack_options || {};
+			cachedSettings = result;
 			settingsPromise = null;
 			return applyFilters('videopack.utils.getSettings', cachedSettings);
 		})
@@ -47,14 +48,20 @@ export const getSettings = async () => {
  */
 export const saveWPSettings = async (newSettings) => {
 	try {
+		const data = {
+			videopack_options: newSettings,
+		};
+
+
+
 		const response = await apiFetch({
 			path: '/wp/v2/settings',
 			method: 'POST',
-			data: {
-				videopack_options: newSettings,
-			},
+			data: data,
 		});
-		cachedSettings = response.videopack_options || {};
+
+		const result = response.videopack_options || {};
+		cachedSettings = result;
 		return cachedSettings;
 	} catch (error) {
 		console.error('Error saving WP settings:', error);

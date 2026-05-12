@@ -108,7 +108,8 @@ class Attachment_Processor implements Hook_Subscriber {
 		// Thumbnail generation logic.
 		if ( ! empty( $this->options['auto_thumb'] ) && $this->is_video( $post ) && 'image/gif' !== $post->post_mime_type ) {
 			if ( ! has_post_thumbnail( (int) $post_id ) ) {
-				if ( (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' ) ) {
+				$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+				if ( apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
 					$this->generate_thumbnails_with_ffmpeg( (int) $post_id );
 				}
 			}
@@ -153,7 +154,13 @@ class Attachment_Processor implements Hook_Subscriber {
 	 * @param int $post_id The ID of the video attachment.
 	 */
 	public function generate_thumbnails_with_ffmpeg( $post_id ) {
-		if ( ! (bool) ( $this->options['ffmpeg_exists'] ?? false ) || 'notinstalled' === ( $this->options['ffmpeg_exists'] ?? '' ) ) {
+		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+		$cloud_ready   = (bool) apply_filters( 'videopack_transcoding_service_ready', false );
+
+		if ( ! apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
+			if ( $cloud_ready ) {
+				$this->enqueue_cloud_thumbnail( (int) $post_id );
+			}
 			return;
 		}
 
@@ -273,9 +280,10 @@ class Attachment_Processor implements Hook_Subscriber {
 		$videos = get_posts( $args );
 		$count  = 0;
 
-		$ffmpeg_exists = ! empty( $this->options['ffmpeg_exists'] ) && true === $this->options['ffmpeg_exists'];
+		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+		$cloud_ready   = (bool) apply_filters( 'videopack_transcoding_service_ready', false );
 
-		if ( ! $ffmpeg_exists ) {
+		if ( ! apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) && ! $cloud_ready ) {
 			return array( 'total' => 0 );
 		}
 
@@ -425,5 +433,32 @@ class Attachment_Processor implements Hook_Subscriber {
 		}
 		fclose( $fh );
 		return $total_count > 1;
+	}
+
+	/**
+	 * Enqueues a cloud-based thumbnail generation job.
+	 *
+	 * @param int $post_id The attachment ID.
+	 */
+	protected function enqueue_cloud_thumbnail( int $post_id ) {
+		$url = (string) wp_get_attachment_url( $post_id );
+		if ( ! $url ) {
+			return;
+		}
+
+		$total_thumbs = intval( $this->options['auto_thumb_number'] ?? 1 );
+		$controller   = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
+
+		$controller->enqueue_encodes(
+			array(
+				'id'      => (int) $post_id,
+				'url'     => $url,
+				'formats' => array(
+					'thumbnail' => array(
+						'total_thumbnails' => $total_thumbs,
+					),
+				),
+			)
+		);
 	}
 }

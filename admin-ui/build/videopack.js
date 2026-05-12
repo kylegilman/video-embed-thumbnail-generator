@@ -446,6 +446,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   assignFormat: () => (/* binding */ assignFormat),
 /* harmony export */   deleteFile: () => (/* binding */ deleteFile),
+/* harmony export */   deleteFormat: () => (/* binding */ deleteFormat),
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
 /* harmony export */   unassignFormat: () => (/* binding */ unassignFormat)
@@ -522,6 +523,24 @@ const deleteFile = async attachmentId => {
     });
   } catch (error) {
     console.error('Error deleting file:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a specific video format by ID.
+ *
+ * @param {number|string} attachmentId The ID of the parent attachment.
+ * @param {string}        formatId     The format identifier.
+ */
+const deleteFormat = async (attachmentId, formatId) => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/attachment/${attachmentId}/format/${formatId}`,
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error('Error deleting format:', error);
     throw error;
   }
 };
@@ -614,7 +633,8 @@ const getSettings = async () => {
   settingsPromise = _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
     path: '/wp/v2/settings'
   }).then(allSettings => {
-    cachedSettings = allSettings.videopack_options || {};
+    const result = allSettings.videopack_options || {};
+    cachedSettings = result;
     settingsPromise = null;
     return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__.applyFilters)('videopack.utils.getSettings', cachedSettings);
   }).catch(error => {
@@ -632,14 +652,16 @@ const getSettings = async () => {
  */
 const saveWPSettings = async newSettings => {
   try {
+    const data = {
+      videopack_options: newSettings
+    };
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings',
       method: 'POST',
-      data: {
-        videopack_options: newSettings
-      }
+      data: data
     });
-    cachedSettings = response.videopack_options || {};
+    const result = response.videopack_options || {};
+    cachedSettings = result;
     return cachedSettings;
   } catch (error) {
     console.error('Error saving WP settings:', error);
@@ -758,7 +780,7 @@ __webpack_require__.r(__webpack_exports__);
  * @param {number}            parentId     Optional. The parent post ID.
  * @param {boolean}           featured     Optional. Whether to set as featured image.
  */
-const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0, featured = null) => {
+const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0, featured = null, extraData = {}) => {
   return new Promise((resolve, reject) => {
     canvas.toBlob(async blob => {
       if (!blob) {
@@ -775,6 +797,9 @@ const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0,
         if (featured !== null) {
           formData.append('featured', featured);
         }
+        Object.keys(extraData).forEach(key => {
+          formData.append(key, extraData[key]);
+        });
         const response = await uploadThumbnail(formData);
         resolve(response);
       } catch (error) {
@@ -886,7 +911,8 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
     }
     const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/thumbs', query);
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path
+      path,
+      parse: false
     });
   } catch (error) {
     console.error('Error generating thumbnail:', error);
@@ -2811,16 +2837,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/media-utils */ "@wordpress/media-utils");
 /* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _api_thumbnails__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../api/thumbnails */ "./src/api/thumbnails.js");
-/* harmony import */ var _utils_video_capture__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../utils/video-capture */ "./src/utils/video-capture.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-down.mjs");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-up.mjs");
-/* harmony import */ var _VideoPlayerInner__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./VideoPlayerInner */ "./src/components/Thumbnails/VideoPlayerInner.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _api_thumbnails__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../api/thumbnails */ "./src/api/thumbnails.js");
+/* harmony import */ var _api_jobs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../api/jobs */ "./src/api/jobs.js");
+/* harmony import */ var _utils_video_capture__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils/video-capture */ "./src/utils/video-capture.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-down.mjs");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-up.mjs");
+/* harmony import */ var _VideoPlayerInner__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./VideoPlayerInner */ "./src/components/Thumbnails/VideoPlayerInner.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__);
 /* global videopack_config */
+
+
 
 
 
@@ -2858,7 +2889,38 @@ const Thumbnails = ({
   const [thumbChoices, setThumbChoices] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
   const [isSaving, setIsSaving] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
   const [isModalOpen, setIsModalOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
-  const ffmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+  const [spriteMessage, setSpriteMessage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null);
+  const [cloudJobs, setCloudJobs] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
+
+  // Poll for active thumbnail jobs if any exist
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    let pollInterval;
+    const checkJobs = async () => {
+      try {
+        const jobs = await (0,_api_jobs__WEBPACK_IMPORTED_MODULE_7__.listJobs)(id);
+        const activeThumbnailJobs = jobs.filter(job => job.format_id === 'thumbnail' && ['queued', 'processing', 'encoding', 'cloud_encoding'].includes(job.status));
+        setCloudJobs(activeThumbnailJobs);
+        if (activeThumbnailJobs.length === 0 && cloudJobs.length > 0) {
+          // Jobs just finished, maybe refresh the poster if it was just set
+          if (id) {
+            // Optionally trigger a refresh of videoData if needed
+          }
+        }
+      } catch (error) {
+        console.error('Error polling jobs:', error);
+      }
+    };
+    if (id) {
+      checkJobs();
+      pollInterval = setInterval(checkJobs, 10000); // Poll every 10 seconds
+    }
+    return () => clearInterval(pollInterval);
+  }, [id]);
+  const {
+    active_encoder = 'ffmpeg'
+  } = options;
+  const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+  const ffmpegExists = effectiveFfmpegExists;
   const {
     editPost
   } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.useDispatch)('core/editor') || {};
@@ -2889,6 +2951,14 @@ const Thumbnails = ({
       }
     }
   }, [poster]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    if (spriteMessage && spriteMessage.type !== 'error') {
+      const timer = setTimeout(() => {
+        setSpriteMessage(null);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [spriteMessage]);
   function onSelectPoster(image) {
     setAttributes({
       ...attributes,
@@ -2896,11 +2966,8 @@ const Thumbnails = ({
       poster_id: Number(image.id)
     });
   }
-  function onRemovePoster() {
-    setAttributes({
-      ...attributes,
-      poster: undefined
-    });
+  async function onRemovePoster() {
+    await setPosterData('', '', '');
 
     // Move focus back to the Media Upload button.
     posterImageButton.current.focus();
@@ -2909,12 +2976,20 @@ const Thumbnails = ({
     setIsSaving(true);
     setThumbChoices([]);
     const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
-    if (!browserThumbnailsEnabled && !!ffmpegExists && ffmpegExists !== 'notinstalled') {
+    if (!browserThumbnailsEnabled && !!ffmpegExists) {
       // Browser thumbnails explicitly disabled, use FFmpeg directly
       const newThumbImages = [];
       let workingId = Number(id);
       for (let i = 1; i <= Number(total_thumbnails); i++) {
         const response = await generateThumb(i, type, workingId, featured);
+        if (response?.status === 'cloud_queued') {
+          setSpriteMessage({
+            type: 'success',
+            text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator')
+          });
+          setIsSaving(false);
+          return;
+        }
         if (response?.attachment_id && workingId === 0) {
           workingId = parseInt(response.attachment_id, 10) || 0;
           setAttributes({
@@ -2937,6 +3012,84 @@ const Thumbnails = ({
       generateThumbCanvases(type);
     }
   };
+  const [spriteTiles, setSpriteTiles] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
+  const handleGenerateSprite = async () => {
+    setIsSaving(true);
+    setSpriteTiles([]);
+    const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
+    const rawFfmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+    const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady;
+    if (!browserThumbnailsEnabled && rawFfmpegExists && !activeEncoderIsCloud) {
+      try {
+        const activeId = id || 0;
+        await (0,_api_jobs__WEBPACK_IMPORTED_MODULE_7__.enqueueJob)(activeId, src, {
+          thumbnail_sprite_sprite: true
+        }, parentId);
+        setSpriteMessage({
+          type: 'success',
+          text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Sprite generation enqueued. Check Additional Formats panel for progress.', 'video-embed-thumbnail-generator')
+        });
+        // If we have an Additional Formats panel nearby, it will handle polling.
+      } catch (error) {
+        console.error('Sprite enqueue failed', error);
+        setSpriteMessage({
+          type: 'error',
+          text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Error: Failed to enqueue sprite generation.', 'video-embed-thumbnail-generator')
+        });
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+    const tileWidth = 160;
+    const columns = 10;
+    const targetCount = 100;
+    const duration = videoRef.current.duration;
+    const spriteInterval = Math.max(1.0, duration / targetCount);
+    const totalTiles = Math.ceil(duration / spriteInterval);
+    const timePoints = [];
+    for (let i = 0; i < totalTiles; i++) {
+      timePoints.push(i * spriteInterval);
+    }
+    const canvases = [];
+    try {
+      for (const time of timePoints) {
+        const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_8__.captureVideoFrame)(src, time, options?.ffmpeg_thumb_watermark || {});
+        // Resize canvas to tileWidth
+        const tileCanvas = document.createElement('canvas');
+        tileCanvas.width = tileWidth;
+        tileCanvas.height = tileWidth * canvas.height / canvas.width;
+        const tctx = tileCanvas.getContext('2d');
+        tctx.drawImage(canvas, 0, 0, tileCanvas.width, tileCanvas.height);
+        canvases.push(tileCanvas);
+        setSpriteTiles(prev => [...prev, tileCanvas.toDataURL('image/jpeg', 0.6)]);
+      }
+      const rows = Math.ceil(canvases.length / columns);
+      const tileHeight = canvases[0].height;
+      const spriteCanvas = document.createElement('canvas');
+      spriteCanvas.width = tileWidth * columns;
+      spriteCanvas.height = tileHeight * rows;
+      const ctx = spriteCanvas.getContext('2d');
+      canvases.forEach((canvas, index) => {
+        const x = index % columns * tileWidth;
+        const y = Math.floor(index / columns) * tileHeight;
+        ctx.drawImage(canvas, x, y);
+      });
+      await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_6__.createThumbnailFromCanvas)(spriteCanvas, id, src, parentId, false, {
+        is_sprite: true,
+        interval: spriteInterval,
+        total_tiles: canvases.length,
+        width: tileWidth,
+        set_poster: false,
+        filename_suffix: '_thumbnail-sprite'
+      });
+    } catch (error) {
+      console.error('Sprite generation failed', error);
+    } finally {
+      setIsSaving(false);
+      setSpriteTiles([]);
+    }
+  };
   const srcIsExternal = (() => {
     try {
       const url = new URL(src, window.location.origin);
@@ -2948,8 +3101,14 @@ const Thumbnails = ({
   const canvasTainted = probedMetadata?.isTainted || srcIsExternal && !isProbing && !probedMetadata;
   const generateThumb = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useCallback)(async (i, type, forceId = null, forceFeatured = null, time = null) => {
     try {
-      const response = await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_5__.generateThumbnail)(src, total_thumbnails, i, forceId !== null ? forceId : id, type, parentId, forceFeatured !== null ? forceFeatured : featured, time);
-      return response;
+      const response = await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_6__.generateThumbnail)(src, total_thumbnails, i, forceId !== null ? forceId : id, type, parentId, forceFeatured !== null ? forceFeatured : featured, time);
+      if (response.status === 202) {
+        return {
+          status: 'cloud_queued'
+        };
+      }
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error(error);
     }
@@ -2958,7 +3117,7 @@ const Thumbnails = ({
     const thumbsInt = Number(total_thumbnails);
     const newThumbCanvases = [];
     let workingId = parseInt(id, 10) || 0;
-    const timePoints = (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_6__.calculateTimecodes)(videoRef.current.duration, thumbsInt, {
+    const timePoints = (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_8__.calculateTimecodes)(videoRef.current.duration, thumbsInt, {
       random: type === 'random'
     });
     for (let i = 0; i < timePoints.length; i++) {
@@ -2968,7 +3127,7 @@ const Thumbnails = ({
       try {
         let canvas;
         if (!canvasTainted) {
-          canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_6__.captureVideoFrame)(src, time, options?.ffmpeg_thumb_watermark || {});
+          canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_8__.captureVideoFrame)(src, time, options?.ffmpeg_thumb_watermark || {});
         } else {
           throw new Error('Canvas tainted, skipping browser capture.');
         }
@@ -2983,9 +3142,17 @@ const Thumbnails = ({
         if (!canvasTainted) {
           console.error('Error generating canvas thumbnail:', error);
         }
-        if (!!ffmpegExists && ffmpegExists !== 'notinstalled') {
+        if (!!ffmpegExists) {
           try {
             const response = await generateThumb(index, type, workingId, featured);
+            if (response?.status === 'cloud_queued') {
+              setSpriteMessage({
+                type: 'success',
+                text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator')
+              });
+              setIsSaving(false);
+              return; // Stop the loop, it's offloaded to cloud
+            }
             if (response?.attachment_id && workingId === 0) {
               workingId = parseInt(response.attachment_id, 10) || 0;
               setAttributes({
@@ -3070,7 +3237,7 @@ const Thumbnails = ({
 
     if (firstThumbType === 'canvas') {
       const uploadPromises = thumbChoices.map(thumb => {
-        return (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_5__.createThumbnailFromCanvas)(thumb.canvasObject, id, src, parentId, featured);
+        return (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_6__.createThumbnailFromCanvas)(thumb.canvasObject, id, src, parentId, featured);
       });
       try {
         await Promise.all(uploadPromises);
@@ -3082,7 +3249,7 @@ const Thumbnails = ({
       // For FFmpeg thumbnails, send their temporary URLs to the server to be saved
       const thumbUrls = thumbChoices.map(thumb => thumb.src);
       try {
-        const response = await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_5__.saveAllThumbnails)(id, thumbUrls, parentId, src, featured);
+        const response = await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_6__.saveAllThumbnails)(id, thumbUrls, parentId, src, featured);
         const firstResult = response?.[0];
         if (firstResult?.attachment_id && Number(id) === 0) {
           setAttributes({
@@ -3100,7 +3267,7 @@ const Thumbnails = ({
   const setCanvasAsPoster = async canvasObject => {
     setIsSaving(true);
     try {
-      const response = await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_5__.createThumbnailFromCanvas)(canvasObject, id, src, parentId, featured);
+      const response = await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_6__.createThumbnailFromCanvas)(canvasObject, id, src, parentId, featured);
       setPosterData(response.thumb_url, response.thumb_id, response.attachment_id);
     } catch (error) {
       console.error('Error uploading thumbnail:', error);
@@ -3111,20 +3278,18 @@ const Thumbnails = ({
   };
   const setPosterData = async (new_poster, new_poster_id, new_attachment_id) => {
     try {
-      const metaData = {};
-      if (new_poster) {
-        // Only include if new_poster has a value
-        metaData['_kgflashmediaplayer-poster'] = new_poster;
-        metaData['_kgflashmediaplayer-poster-id'] = Number(new_poster_id);
-        const existingMeta = videoData?.record?.meta?.['_videopack-meta'] || {};
-        metaData['_videopack-meta'] = {
+      const existingMeta = videoData?.record?.meta?.['_videopack-meta'] || {};
+      const metaData = {
+        '_kgflashmediaplayer-poster': new_poster || '',
+        '_kgflashmediaplayer-poster-id': new_poster_id ? Number(new_poster_id) : 0,
+        '_videopack-meta': {
           ...existingMeta,
-          poster: new_poster,
-          poster_id: Number(new_poster_id)
-        };
-        if (attributes.featured !== undefined) {
-          metaData['_videopack-meta'].featured = attributes.featured;
+          poster: new_poster || '',
+          poster_id: new_poster_id ? Number(new_poster_id) : 0
         }
+      };
+      if (attributes.featured !== undefined) {
+        metaData['_videopack-meta'].featured = attributes.featured;
       }
       if (videoData?.edit) {
         await videoData.edit({
@@ -3132,6 +3297,16 @@ const Thumbnails = ({
           meta: metaData
         });
         await videoData.save();
+      } else if (id && Number(id) > 0) {
+        // Fallback for contexts without a core-data entity record (e.g. attachment details pane)
+        await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_4___default()({
+          path: `/wp/v2/media/${id}`,
+          method: 'POST',
+          data: {
+            featured_media: new_poster_id ? Number(new_poster_id) : null,
+            meta: metaData
+          }
+        });
       }
       if (featured && parentId && editPost && !isEditingAttachment) {
         editPost({
@@ -3155,17 +3330,15 @@ const Thumbnails = ({
       }
       const finalAttributes = {
         ...attributes,
-        poster: new_poster,
-        poster_id: Number(new_poster_id)
+        poster: new_poster || undefined,
+        poster_id: new_poster_id || undefined
       };
 
       // If we just created the attachment, ensure the ID is included
-      if (new_attachment_id && Number(id) === 0) {
+      if (new_attachment_id && (!id || Number(id) === 0)) {
         finalAttributes.id = Number(new_attachment_id);
       }
-      if (new_poster) {
-        setAttributes(finalAttributes);
-      }
+      setAttributes(finalAttributes);
       setThumbChoices([]);
       setIsSaving(false);
     } catch (error) {
@@ -3175,7 +3348,7 @@ const Thumbnails = ({
   };
   const setImgAsPoster = async thumb_url => {
     try {
-      const response = await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_5__.setPosterImage)(id, thumb_url, parentId, src, featured);
+      const response = await (0,_api_thumbnails__WEBPACK_IMPORTED_MODULE_6__.setPosterImage)(id, thumb_url, parentId, src, featured);
       setPosterData(response.thumb_url, response.thumb_id, response.attachment_id);
     } catch (error) {
       console.error(error);
@@ -3237,10 +3410,16 @@ const Thumbnails = ({
   const handleUseThisFrame = async (ref = videoRef) => {
     setIsSaving(true);
     const runFfmpegFallback = async () => {
-      if (!!ffmpegExists && ffmpegExists !== 'notinstalled') {
+      if (!!ffmpegExists) {
         try {
           const response = await generateThumb(1, 'generate', null, null, ref.current.currentTime);
-          if (response?.real_thumb_url) {
+          if (response?.status === 'cloud_queued') {
+            setSpriteMessage({
+              type: 'success',
+              text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator')
+            });
+            setIsSaving(false);
+          } else if (response?.real_thumb_url) {
             await setImgAsPoster(response.real_thumb_url);
           } else {
             setIsSaving(false);
@@ -3253,12 +3432,13 @@ const Thumbnails = ({
         setIsSaving(false);
       }
     };
-    if (canvasTainted) {
+    const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
+    if (!browserThumbnailsEnabled || canvasTainted) {
       await runFfmpegFallback();
       return;
     }
     try {
-      const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_6__.captureVideoFrame)(ref.current, ref.current.currentTime, options?.ffmpeg_thumb_watermark || {});
+      const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_8__.captureVideoFrame)(ref.current, ref.current.currentTime, options?.ffmpeg_thumb_watermark || {});
       await setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
     } catch (error) {
       console.warn('Canvas capture failed, attempting FFmpeg fallback:', error);
@@ -3288,37 +3468,42 @@ const Thumbnails = ({
       }, 50);
     }
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
     className: "videopack-thumbnail-generator",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Thumbnails', 'video-embed-thumbnail-generator'),
-      children: [poster && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("img", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelBody, {
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Thumbnails', 'video-embed-thumbnail-generator'),
+      children: [poster && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("img", {
         className: "videopack-current-thumbnail",
         src: poster,
-        alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Current Thumbnail', 'video-embed-thumbnail-generator')
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.BaseControl, {
+        alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Current Thumbnail', 'video-embed-thumbnail-generator')
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.BaseControl, {
         className: "editor-video-poster-control",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.BaseControl.VisualLabel, {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Video Thumbnail', 'video-embed-thumbnail-generator')
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__.MediaUpload, {
-          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Select video thumbnail', 'video-embed-thumbnail-generator'),
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.BaseControl.VisualLabel, {
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Video Thumbnail', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__.MediaUpload, {
+          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Select video thumbnail', 'video-embed-thumbnail-generator'),
           onSelect: onSelectPoster,
           allowedTypes: VIDEO_POSTER_ALLOWED_MEDIA_TYPES,
           render: ({
             open
-          }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
+          }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
             variant: "secondary",
             onClick: open,
             ref: posterImageButton,
-            children: !poster ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Select', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Replace', 'video-embed-thumbnail-generator')
+            children: !poster ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Select', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Replace', 'video-embed-thumbnail-generator')
           })
-        }), !!poster && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
+        }), !!poster && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
           onClick: onRemovePoster,
           variant: "tertiary",
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Remove', 'video-embed-thumbnail-generator')
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Remove', 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
-        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)("Set as post's featured image", 'video-embed-thumbnail-generator'),
+      }), cloudJobs.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+        className: "videopack-active-jobs",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Spinner, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", {
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Cloud thumbnail generation in progress...', 'video-embed-thumbnail-generator')
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)("Set as post's featured image", 'video-embed-thumbnail-generator'),
         checked: !!featured,
         onChange: value => {
           setAttributes({
@@ -3326,7 +3511,7 @@ const Thumbnails = ({
             featured: value
           });
         }
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.__experimentalNumberControl, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.__experimentalNumberControl, {
         __next40pxDefaultSize: true,
         min: 1,
         max: 99,
@@ -3347,67 +3532,91 @@ const Thumbnails = ({
         },
         className: "videopack-total-thumbnails",
         disabled: isSaving || (canvasTainted || isProbing) && !ffmpegExists
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
         variant: "secondary",
         onClick: () => handleGenerate('generate'),
         className: "videopack-generate",
         disabled: isSaving || (canvasTainted || isProbing) && !ffmpegExists,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Generate', 'video-embed-thumbnail-generator')
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Generate', 'video-embed-thumbnail-generator')
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
         variant: "secondary",
         onClick: () => handleGenerate('random'),
         className: "videopack-generate",
         disabled: isSaving || (canvasTainted || isProbing) && !ffmpegExists,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Random', 'video-embed-thumbnail-generator')
-      }), canvasTainted && !isProbing && !ffmpegExists && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Random', 'video-embed-thumbnail-generator')
+      }), videopack_config.is_pro && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
+        variant: "secondary",
+        onClick: handleGenerateSprite,
+        className: "videopack-generate-sprite",
+        disabled: isSaving || isProbing || canvasTainted && !ffmpegExists,
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Sprite', 'video-embed-thumbnail-generator')
+      }), spriteMessage && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Notice, {
+        status: spriteMessage.type,
+        onRemove: () => setSpriteMessage(null),
+        isDismissible: true,
+        className: "videopack-sprite-notice",
+        children: spriteMessage.text
+      }), canvasTainted && !isProbing && !ffmpegExists && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
         className: "videopack-security-error-notice",
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Cross-origin resource sharing (CORS) policy on the external server is preventing thumbnail generation.', 'video-embed-thumbnail-generator')
-      }), thumbChoices.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Cross-origin resource sharing (CORS) policy on the external server is preventing thumbnail generation.', 'video-embed-thumbnail-generator')
+      }), spriteTiles.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+        className: "videopack-sprite-generation-preview",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", {
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.sprintf)(/* translators: %d is the number of tiles captured */
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Capturing sprite tiles... (%d)', 'video-embed-thumbnail-generator'), spriteTiles.length)
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
+          className: "videopack-sprite-tiles-grid",
+          children: spriteTiles.map((src, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("img", {
+            src: src,
+            alt: ""
+          }, index))
+        })]
+      }), thumbChoices.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
         variant: "primary",
         onClick: handleSaveAllThumbnails,
         disabled: isSaving,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Save All', 'video-embed-thumbnail-generator')
-      }), thumbChoices.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Save All', 'video-embed-thumbnail-generator')
+      }), thumbChoices.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
         className: `videopack-thumbnail-holder${isSaving ? ' disabled' : ''}`,
-        children: thumbChoices.map((thumb, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("button", {
+        children: thumbChoices.map((thumb, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("button", {
           type: "button",
           className: 'videopack-thumbnail spinner-container',
           onClick: event => {
             handleSaveThumbnail(event, thumb, index);
           },
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("img", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("img", {
             src: thumb.src,
-            alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.sprintf)(/* translators: %d is the thumbnail index */
-            (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Thumbnail %d', 'video-embed-thumbnail-generator'), index + 1),
-            title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Save and set thumbnail', 'video-embed-thumbnail-generator')
-          }), isSaving && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Spinner, {})]
+            alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.sprintf)(/* translators: %d is the thumbnail index */
+            (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Thumbnail %d', 'video-embed-thumbnail-generator'), index + 1),
+            title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Save and set thumbnail', 'video-embed-thumbnail-generator')
+          }), isSaving && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Spinner, {})]
         }, index))
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
         className: `components-panel__body videopack-thumb-video ${isOpened ? 'is-opened' : ''}`,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("h2", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("h2", {
           className: "components-panel__body-title",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("button", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("button", {
             className: "components-button components-panel__body-toggle",
             type: "button",
             onClick: handleToggleVideoPlayer,
             "aria-expanded": isOpened,
             disabled: (canvasTainted || isProbing) && !ffmpegExists,
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("span", {
               "aria-hidden": "true",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Icon, {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Icon, {
                 className: "components-panel__arrow",
-                icon: isOpened ? _wordpress_icons__WEBPACK_IMPORTED_MODULE_8__["default"] : _wordpress_icons__WEBPACK_IMPORTED_MODULE_7__["default"]
+                icon: isOpened ? _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"] : _wordpress_icons__WEBPACK_IMPORTED_MODULE_9__["default"]
               })
-            }), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Choose From Video', 'video-embed-thumbnail-generator'), canvasTainted && !isProbing && !ffmpegExists && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Icon, {
-              icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_8__["default"],
+            }), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Choose From Video', 'video-embed-thumbnail-generator'), canvasTainted && !isProbing && !ffmpegExists && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Icon, {
+              icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"],
               style: {
                 display: 'none'
               }
             })]
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("div", {
           className: `videopack-thumb-video-container ${isOpened ? 'is-opened' : ''} ${(canvasTainted || isProbing) && !ffmpegExists ? 'disabled' : ''}`,
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_VideoPlayerInner__WEBPACK_IMPORTED_MODULE_9__["default"], {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_VideoPlayerInner__WEBPACK_IMPORTED_MODULE_11__["default"], {
             videoRef: videoRef,
             panelRef: thumbVideoPanel,
             src: src,
@@ -3422,12 +3631,12 @@ const Thumbnails = ({
             disabled: (canvasTainted || isProbing) && !ffmpegExists
           })
         })]
-      }), isModalOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Modal, {
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Choose From Video', 'video-embed-thumbnail-generator'),
+      }), isModalOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Modal, {
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Choose From Video', 'video-embed-thumbnail-generator'),
         onRequestClose: handleCloseModal,
         className: "videopack-video-modal",
         overlayClassName: "videopack-video-modal-overlay",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_VideoPlayerInner__WEBPACK_IMPORTED_MODULE_9__["default"], {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_VideoPlayerInner__WEBPACK_IMPORTED_MODULE_11__["default"], {
           videoRef: modalVideoRef,
           src: src,
           isPlaying: isPlaying,
@@ -3592,7 +3801,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer'];
+const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'auto_codec', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer'];
 const VIDEOPACK_CONTEXT_KEYS = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_3__.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**
@@ -4170,6 +4379,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   createJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.createJob),
 /* harmony export */   createThumbnailFromCanvas: () => (/* reexport safe */ _api_thumbnails__WEBPACK_IMPORTED_MODULE_2__.createThumbnailFromCanvas),
 /* harmony export */   deleteFile: () => (/* reexport safe */ _api_media__WEBPACK_IMPORTED_MODULE_4__.deleteFile),
+/* harmony export */   deleteFormat: () => (/* reexport safe */ _api_media__WEBPACK_IMPORTED_MODULE_4__.deleteFormat),
 /* harmony export */   deleteJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.deleteJob),
 /* harmony export */   enqueueJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.enqueueJob),
 /* harmony export */   generateShortcode: () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_5__.generateShortcode),

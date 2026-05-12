@@ -156,12 +156,30 @@ class Source_Attachment extends Source {
 	protected function set_exists(): void {
 		$external_url = $this->metadata['url'] ?? null;
 		$is_remote    = (bool) ( $this->metadata['is_remote'] ?? false );
+		$is_cloud     = ! empty( $this->metadata['cloud']['file_name'] ?? '' );
 
-		if ( $external_url || $is_remote ) {
+		if ( $external_url || $is_remote || $is_cloud ) {
 			$this->exists = true; // Assume it exists if it's a remote URL or marked as remote.
 			return;
 		}
-		$this->exists = file_exists( get_attached_file( (int) $this->id ) );
+
+		$filepath = get_attached_file( (int) $this->id );
+		if ( $filepath && file_exists( $filepath ) ) {
+			$this->exists = true;
+			return;
+		}
+
+		// Fallback for cloud-offloaded attachments.
+		// If the attachment URL is different from the local upload URL structure, or if a filter says so.
+		$this->exists = (bool) apply_filters( 'videopack_attachment_exists', false, (int) $this->id );
+
+		if ( ! $this->exists ) {
+			$attachment_url = wp_get_attachment_url( (int) $this->id );
+			$uploads        = wp_upload_dir();
+			if ( $attachment_url && strpos( $attachment_url, $uploads['baseurl'] ) === false ) {
+				$this->exists = true;
+			}
+		}
 	}
 
 	/**
@@ -170,19 +188,26 @@ class Source_Attachment extends Source {
 	protected function set_direct_path(): void {
 		$external_url = $this->metadata['url'] ?? null;
 		$is_remote    = (bool) ( $this->metadata['is_remote'] ?? false );
+		$is_cloud     = ! empty( $this->metadata['cloud']['file_name'] ?? '' );
 
-		if ( $external_url || $is_remote ) {
+		if ( $external_url || $is_remote || $is_cloud ) {
 			$this->direct_path = (string) ( $external_url ? $external_url : $this->get_url() );
 			return;
 		}
-		$this->direct_path = get_attached_file( $this->id );
+		$filepath = get_attached_file( $this->id );
+		if ( $filepath && file_exists( $filepath ) ) {
+			$this->direct_path = $filepath;
+		} else {
+			$this->direct_path = $this->get_url();
+		}
 	}
 
 	/**
 	 * Sets whether the video source is local.
 	 */
 	protected function set_local(): void {
-		$this->local = true;
+		$is_cloud    = ! empty( $this->metadata['cloud']['file_name'] ?? '' );
+		$this->local = ! $is_cloud;
 	}
 
 	/**
@@ -242,7 +267,7 @@ class Source_Attachment extends Source {
 		if ( ! empty( $poster_id ) ) {
 			$poster_url = wp_get_attachment_url( (int) $poster_id );
 			if ( $poster_url ) {
-				return $poster_url;
+				return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
 			}
 		}
 
@@ -251,7 +276,7 @@ class Source_Attachment extends Source {
 		if ( ! empty( $thumbnail_id ) ) {
 			$poster_url = wp_get_attachment_url( (int) $thumbnail_id );
 			if ( $poster_url ) {
-				return $poster_url;
+				return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
 			}
 		}
 
@@ -261,16 +286,16 @@ class Source_Attachment extends Source {
 		if ( ! empty( $poster_id ) ) {
 			$poster_url = wp_get_attachment_url( (int) $poster_id );
 			if ( $poster_url ) {
-				return $poster_url;
+				return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
 			}
 		}
 
 		// 4. Check for poster URL in metadata.
 		if ( ! empty( $this->metadata['poster'] ) ) {
-			return (string) $this->metadata['poster'];
+			return (string) apply_filters( 'videopack_source_get_poster', (string) $this->metadata['poster'], $this );
 		}
 
-		return '';
+		return (string) apply_filters( 'videopack_source_get_poster', '', $this );
 	}
 
 	/**

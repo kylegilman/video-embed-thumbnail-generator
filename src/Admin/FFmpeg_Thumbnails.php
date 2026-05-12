@@ -196,7 +196,11 @@ class FFmpeg_Thumbnails {
 		$tmp_dir = (string) $uploads['path'] . '/thumb_tmp';
 		wp_mkdir_p( $tmp_dir );
 
-		$sanitized_basename = (string) sanitize_file_name( (string) pathinfo( $input_path, PATHINFO_FILENAME ) );
+		$path_for_info = $input_path;
+		if ( \Videopack\Common\Validate::filter_validate_url( $input_path ) ) {
+			$path_for_info = (string) wp_parse_url( $input_path, PHP_URL_PATH );
+		}
+		$sanitized_basename = (string) sanitize_file_name( (string) pathinfo( $path_for_info, PATHINFO_FILENAME ) );
 		$unique_id          = (string) uniqid();
 		$temp_filename      = "{$sanitized_basename}_thumb_{$unique_id}.jpg";
 		$temp_filepath      = $tmp_dir . '/' . $temp_filename;
@@ -372,7 +376,7 @@ class FFmpeg_Thumbnails {
 	 * @param bool   $force_featured  Optional. Force featured status.
 	 * @return array Result with 'thumb_id' and 'error'.
 	 */
-	public function save_from_blob( $attachment_id, $post_name, $file_info, $force_parent_id = 0, $force_featured = null ) {
+	public function save_from_blob( $attachment_id, $post_name, $file_info, $force_parent_id = 0, $force_featured = null, $force_set_poster = true, $filename_suffix = '_thumb' ) {
 		if ( ! isset( $file_info['tmp_name'] ) || ! is_uploaded_file( $file_info['tmp_name'] ) ) {
 			return array(
 				'thumb_id' => false,
@@ -395,7 +399,7 @@ class FFmpeg_Thumbnails {
 
 		$temp_file_url = trailingslashit( (string) $uploads['url'] ) . 'thumb_tmp/' . $temp_file_name;
 
-		return $this->save( (int) $attachment_id, (string) $post_name, $temp_file_url, false, (int) $force_parent_id, $force_featured );
+		return $this->save( (int) $attachment_id, (string) $post_name, $temp_file_url, false, (int) $force_parent_id, $force_featured, $force_set_poster, $filename_suffix );
 	}
 
 	/**
@@ -409,12 +413,35 @@ class FFmpeg_Thumbnails {
 	 * @param bool|null $force_featured  Optional. Flag to force featured status.
 	 * @return array Result of the save operation.
 	 */
-	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false, $force_parent_id = 0, $force_featured = null ) {
+	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false, $force_parent_id = 0, $force_featured = null, $force_set_poster = true, $filename_suffix = '_thumb' ) {
 		$user_ID = (int) get_current_user_id();
 		$uploads = wp_upload_dir();
 
 		$thumb_id         = false;
 		$final_poster_url = (string) $thumb_url;
+
+		if ( empty( $thumb_url ) ) {
+			if ( $force_set_poster && is_numeric( $attachment_id ) ) {
+				delete_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster' );
+				delete_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id' );
+
+				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
+				$current_meta             = $attachment_meta_instance->get();
+				$current_meta['poster']    = null;
+				$current_meta['poster_id'] = null;
+				$attachment_meta_instance->save( $current_meta );
+
+				delete_post_thumbnail( (int) $attachment_id );
+				$video = get_post( (int) $attachment_id );
+				if ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
+					delete_post_thumbnail( (int) $video->post_parent );
+				}
+			}
+			return array(
+				'thumb_id'  => false,
+				'thumb_url' => '',
+			);
+		}
 
 		$existing_attachment_id = (int) attachment_url_to_postid( (string) $thumb_url );
 		if ( $existing_attachment_id ) {
@@ -449,13 +476,23 @@ class FFmpeg_Thumbnails {
 					$index = (int) $thumbnail_index;
 				}
 
-				$new_filename_base = "{$base_filename}_thumb{$index}";
+				$new_filename_base = "{$base_filename}{$filename_suffix}{$index}";
 				$final_posterpath  = (string) $uploads['path'] . '/' . $new_filename_base . '.' . $extension;
 
+				$video     = get_post( (int) $attachment_id );
+				$parent_id = (int) $attachment_id;
+				if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
+					if ( ! empty( $force_parent_id ) ) {
+						$parent_id = (int) $force_parent_id;
+					} elseif ( isset( $video ) && $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
+						$parent_id = (int) $video->post_parent;
+					}
+				}
+
 				$counter = $index;
-				while ( file_exists( $final_posterpath ) ) {
+				while ( $this->thumb_exists( $final_posterpath, $parent_id ) ) {
 					++$counter;
-					$new_filename_base = "{$base_filename}_thumb{$counter}";
+					$new_filename_base = "{$base_filename}{$filename_suffix}{$counter}";
 					$final_posterpath  = (string) $uploads['path'] . '/' . $new_filename_base . '.' . $extension;
 				}
 
@@ -469,16 +506,6 @@ class FFmpeg_Thumbnails {
 						'thumb_id'  => false,
 						'thumb_url' => (string) $thumb_url,
 					);
-				}
-
-				$video     = get_post( (int) $attachment_id );
-				$parent_id = (int) $attachment_id;
-				if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
-					if ( ! empty( $force_parent_id ) ) {
-						$parent_id = (int) $force_parent_id;
-					} elseif ( ! empty( $video->post_parent ) ) {
-						$parent_id = (int) $video->post_parent;
-					}
 				}
 
 				$wp_filetype = wp_check_filetype( basename( $final_posterpath ), null );
@@ -553,10 +580,13 @@ class FFmpeg_Thumbnails {
 					}
 				}
 
+				if ( $force_set_poster ) {
+					set_post_thumbnail( (int) $attachment_id, (int) $thumb_id );
+				}
+
 				$is_featured = $force_featured_bool !== null ? $force_featured_bool : (bool) ( $current_meta['featured'] ?? ( $this->options['featured'] ?? true ) );
 
 				if ( $is_featured ) {
-					set_post_thumbnail( (int) $attachment_id, (int) $thumb_id );
 					if ( ! empty( $force_parent_id ) ) {
 						set_post_thumbnail( (int) $force_parent_id, (int) $thumb_id );
 					} elseif ( isset( $video ) && $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
@@ -564,21 +594,71 @@ class FFmpeg_Thumbnails {
 					}
 				}
 
-				update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster', $final_poster_url );
-				update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id', (int) $thumb_id );
+				if ( $force_set_poster ) {
+					update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster', $final_poster_url );
+					update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id', (int) $thumb_id );
 
-				$current_meta['featured']  = $is_featured;
-				$current_meta['poster']    = (string) $final_poster_url;
-				$current_meta['poster_id'] = (int) $thumb_id;
-				$attachment_meta_instance->save( $current_meta );
+					$current_meta['featured']  = $is_featured;
+					$current_meta['poster']    = (string) $final_poster_url;
+					$current_meta['poster_id'] = (int) $thumb_id;
+					$attachment_meta_instance->save( $current_meta );
+				}
 				delete_post_meta( (int) $attachment_id, '_videopack_needs_browser_thumb' );
 			}
 			update_post_meta( (int) $thumb_id, '_videopack-video-id', (int) $attachment_id );
 		}
 
+		/**
+		 * Filters the URL of newly-saved thumbnail images.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param string  $final_poster_url Thumbnail URL.
+		 * @param int     $thumb_id         Thumbnail ID.
+		 */
+		$final_poster_url = apply_filters( 'videopack_post_save_thumb', $final_poster_url, (int) $thumb_id );
+
 		return array(
 			'thumb_id'  => $thumb_id,
 			'thumb_url' => (string) $final_poster_url,
 		);
+	}
+
+	/**
+	 * Checks if a thumbnail exists either on the filesystem or in the media library.
+	 *
+	 * @param string $path      Full filesystem path to the file.
+	 * @param int    $parent_id The ID of the parent post or video.
+	 * @return bool True if the thumbnail exists.
+	 */
+	private function thumb_exists( $path, $parent_id ) {
+		$exists = file_exists( $path );
+
+		if ( ! $exists && $parent_id > 0 ) {
+			$filename = basename( $path );
+			$children = get_children(
+				array(
+					'post_parent' => (int) $parent_id,
+					'post_type'   => 'attachment',
+				)
+			);
+
+			foreach ( $children as $child ) {
+				// We use the second parameter of get_attached_file (true) to get the unfiltered path.
+				// This allows us to compare the original filename even if the file has been offloaded to the cloud.
+				if ( basename( (string) get_attached_file( $child->ID, true ) ) === $filename ) {
+					$exists = true;
+					break;
+				}
+			}
+		}
+
+		/**
+		 * Filters whether a thumbnail exists.
+		 *
+		 * @param bool   $exists Whether the thumbnail exists.
+		 * @param string $path   The file path.
+		 */
+		return (bool) apply_filters( 'videopack_thumb_exists', $exists, $path );
 	}
 }

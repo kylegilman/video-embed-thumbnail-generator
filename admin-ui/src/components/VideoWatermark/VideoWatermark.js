@@ -21,13 +21,23 @@ export default function VideoWatermark({
 
 	const {
 		watermark: effectiveUrl,
-		watermark_scale: actualScale = 10,
-		watermark_align: actualAlign = 'right',
-		watermark_valign: actualValign = 'bottom',
-		watermark_x: actualX = 5,
-		watermark_y: actualY = 7,
+		watermark_styles: styles = {},
+		watermark_scale: attrScale,
+		watermark_align: attrAlign,
+		watermark_valign: attrValign,
+		watermark_x: attrX,
+		watermark_y: attrY,
 		skin,
 	} = resolved;
+
+	const actualScale =
+		attrScale ?? styles.scale ?? styles.watermark_scale ?? 10;
+	const actualAlign =
+		attrAlign ?? styles.align ?? styles.watermark_align ?? 'right';
+	const actualValign =
+		attrValign ?? styles.valign ?? styles.watermark_valign ?? 'bottom';
+	const actualX = attrX ?? styles.x ?? styles.watermark_x ?? 5;
+	const actualY = attrY ?? styles.y ?? styles.watermark_y ?? 7;
 
 	const style = {
 		position: isBlockEditor ? 'relative' : 'absolute',

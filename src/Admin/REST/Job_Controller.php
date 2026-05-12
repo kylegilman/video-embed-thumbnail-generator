@@ -112,6 +112,26 @@ class Job_Controller extends Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/attachment/(?P<id>\d+)/format/(?P<format_id>[a-zA-Z0-9_-]+)',
+			array(
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'delete_format_by_id_rest' ),
+				'permission_callback' => array( $this, 'can_encode_videos' ),
+				'args'                => array(
+					'id'        => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+					'format_id' => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -273,5 +293,31 @@ class Job_Controller extends Controller {
 			),
 			$request
 		);
+	}
+
+	/**
+	 * REST callback to delete a specific format by ID.
+	 *
+	 * Useful for cleaning up orphaned files that are not registered as attachments.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function delete_format_by_id_rest( \WP_REST_Request $request ) {
+		$attachment_id = (int) $request->get_param( 'id' );
+		$format_id     = (string) $request->get_param( 'format_id' );
+
+		if ( ! $attachment_id || ! $format_id ) {
+			return new \WP_Error( 'rest_invalid_param', 'Missing attachment ID or format ID.', array( 'status' => 400 ) );
+		}
+
+		$encoder = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id );
+		$result  = $encoder->delete_format_by_id( $format_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return apply_filters( 'videopack_rest_delete_format_by_id', new \WP_REST_Response( array( 'success' => $result ), 200 ), $request );
 	}
 }

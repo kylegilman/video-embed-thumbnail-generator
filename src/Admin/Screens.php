@@ -226,7 +226,8 @@ class Screens implements Hook_Subscriber {
 	 * @return void
 	 */
 	public function add_encode_queue_page() {
-		if ( (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' ) ) {
+		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+		if ( apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
 			add_submenu_page(
 				'tools.php',
 				(string) esc_html_x( 'Videopack Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),

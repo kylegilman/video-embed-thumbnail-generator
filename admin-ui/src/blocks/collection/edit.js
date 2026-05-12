@@ -147,6 +147,7 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 			...contextStyle,
 			'--videopack-collection-columns': columns,
 			'--videopack-collection-gap': resolvedBlockGap,
+			containerType: 'inline-size',
 		},
 		className: [
 			'videopack-collection',

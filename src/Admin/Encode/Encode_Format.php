@@ -21,6 +21,7 @@ class Encode_Format {
 	const STATUS_QUEUED              = 'queued';
 	const STATUS_PROCESSING          = 'processing';
 	const STATUS_ENCODING            = 'encoding';
+	const STATUS_CLOUD_ENCODING      = 'cloud_encoding';
 	const STATUS_NEEDS_INSERT        = 'needs_insert';
 	const STATUS_PENDING_REPLACEMENT = 'pending_replacement';
 	const STATUS_COMPLETED           = 'completed';
@@ -201,6 +202,27 @@ class Encode_Format {
 	private $updated_at;
 
 	/**
+	 * Cloud job ID.
+	 *
+	 * @var string $cloud_job_id
+	 */
+	private $cloud_job_id;
+
+	/**
+	 * Cloud provider.
+	 *
+	 * @var string $cloud_provider
+	 */
+	private $cloud_provider;
+
+	/**
+	 * Cloud provider metadata.
+	 *
+	 * @var array $cloud_meta
+	 */
+	private $cloud_meta = array();
+
+	/**
 	 * Constructor.
 	 *
 	 * @param string $format_id The ID of the video format.
@@ -267,6 +289,16 @@ class Encode_Format {
 		$format->blog_id       = $format->set_or_null( $data, 'blog_id' );
 		$format->created_at    = $format->set_or_null( $data, 'created_at' );
 		$format->updated_at    = $format->set_or_null( $data, 'updated_at' );
+		$format->cloud_job_id  = $format->set_or_null( $data, 'cloud_job_id' );
+		$format->cloud_provider = $format->set_or_null( $data, 'cloud_provider' );
+		
+		$cloud_meta = $format->set_or_null( $data, 'cloud_meta' );
+		if ( ! empty( $cloud_meta ) ) {
+			$decoded = json_decode( $cloud_meta, true );
+			if ( is_array( $decoded ) ) {
+				$format->set_cloud_meta( $decoded );
+			}
+		}
 
 		return $format;
 	}
@@ -296,6 +328,27 @@ class Encode_Format {
 			&& file_exists( $this->logfile )
 		) {
 			$this->progress = Encode_Progress::from_log_file( $this->logfile, (int) $this->video_duration, (int) $this->started, (int) $this->job_id )->to_array();
+		} else if ( $this->status === self::STATUS_ENCODING ) {
+			$cloud_job_id = $this->get_cloud_job_id();
+			if ( ! empty( $cloud_job_id ) ) {
+				$cloud_meta = $this->get_cloud_meta();
+				$percent    = isset( $cloud_meta['percent'] ) ? (int) $cloud_meta['percent'] : 0;
+				$elapsed    = time() - $this->get_started();
+				$speed      = $elapsed > 0 ? ( $percent / 100 ) * ( ( $this->get_video_duration() / 1000000 ) / $elapsed ) : 0;
+				$speed      = $speed * 0.9; // Slightly underestimate to avoid getting ahead of server sync.
+
+				$this->progress = array(
+					'percent'        => $percent,
+					'status'         => 'encoding',
+					'started'        => $this->get_started(),
+					'elapsed'        => $elapsed,
+					'speed'          => sprintf( '%.2fx', max( 0.01, $speed ) ),
+					'fps'            => '--',
+					'video_duration' => $this->get_video_duration(),
+				);
+				return $this->progress;
+			}
+			return 'recheck';
 		} elseif ( in_array( $this->status, array( self::STATUS_NEEDS_INSERT, self::STATUS_PENDING_REPLACEMENT, self::STATUS_COMPLETED ), true ) ) {
 			// If it's finishing or finished, mock the progress as 100%.
 			$this->progress = Encode_Progress::finished( (int) $this->video_duration, (int) $this->started, (int) $this->job_id )->to_array();
@@ -501,6 +554,24 @@ class Encode_Format {
 	}
 
 	/**
+	 * Get the cloud job ID.
+	 *
+	 * @return string|null
+	 */
+	public function get_cloud_job_id() {
+		return $this->cloud_job_id;
+	}
+
+	/**
+	 * Get the cloud provider.
+	 *
+	 * @return string|null
+	 */
+	public function get_cloud_provider() {
+		return $this->cloud_provider;
+	}
+
+	/**
 	 * Get the video duration.
 	 *
 	 * @return int
@@ -544,10 +615,29 @@ class Encode_Format {
 			'deleted',
 			'pending_replacement',
 			'failed',
+			'cloud_encoding',
 		);
 		if ( in_array( $status, $allowed ) ) {
 			$this->status = $status;
 		}
+	}
+
+	/**
+	 * Set the cloud job ID.
+	 *
+	 * @param string|null $cloud_job_id Cloud job ID.
+	 */
+	public function set_cloud_job_id( ?string $cloud_job_id ) {
+		$this->cloud_job_id = $cloud_job_id;
+	}
+
+	/**
+	 * Set the cloud provider.
+	 *
+	 * @param string|null $cloud_provider Cloud provider.
+	 */
+	public function set_cloud_provider( ?string $cloud_provider ) {
+		$this->cloud_provider = $cloud_provider;
 	}
 
 	/**
@@ -575,6 +665,24 @@ class Encode_Format {
 	 */
 	public function set_url( ?string $url ) {
 		$this->url = $url;
+	}
+
+	/**
+	 * Get cloud provider metadata.
+	 *
+	 * @return array
+	 */
+	public function get_cloud_meta() {
+		return $this->cloud_meta;
+	}
+
+	/**
+	 * Set cloud provider metadata.
+	 *
+	 * @param array $meta Metadata.
+	 */
+	public function set_cloud_meta( array $meta ) {
+		$this->cloud_meta = array_merge( $this->cloud_meta, $meta );
 	}
 
 	/**
@@ -751,12 +859,24 @@ class Encode_Format {
 	}
 
 	/**
+	 * Get the localized label for the current status of this instance.
+	 *
+	 * @return string The localized status label.
+	 */
+	public function get_status_label() {
+		if ( self::STATUS_ENCODING === $this->status && ! empty( $this->get_cloud_job_id() ) ) {
+			return __( 'Cloud Encoding', 'video-embed-thumbnail-generator' );
+		}
+		return self::get_status_label_static( $this->status );
+	}
+
+	/**
 	 * Get the localized label for a given status.
 	 *
 	 * @param string $status The internal status string.
 	 * @return string The localized status label.
 	 */
-	public static function get_status_label( $status ) {
+	public static function get_status_label_static( $status ) {
 		switch ( $status ) {
 			case self::STATUS_NOT_ENCODED:
 				return __( 'Not Encoded', 'video-embed-thumbnail-generator' );
@@ -769,6 +889,8 @@ class Encode_Format {
 				return __( 'Processing', 'video-embed-thumbnail-generator' );
 			case self::STATUS_ENCODING:
 				return __( 'Encoding', 'video-embed-thumbnail-generator' );
+			case self::STATUS_CLOUD_ENCODING:
+				return __( 'Cloud Encoding', 'video-embed-thumbnail-generator' );
 			case self::STATUS_FAILED:
 			case self::STATUS_ERROR:
 				return __( 'Failed', 'video-embed-thumbnail-generator' );
