@@ -94,7 +94,7 @@ const Thumbnails = ({
 		return () => clearInterval(pollInterval);
 	}, [id]);
 	const { active_encoder = 'ffmpeg' } = options;
-	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady ) || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
 	const ffmpegExists = effectiveFfmpegExists;
 	const { editPost } = useDispatch('core/editor') || {};
 	const isEditingAttachment = useSelect(
@@ -219,7 +219,7 @@ const Thumbnails = ({
 
 		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
 		const rawFfmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
-		const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady;
+		const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro );
 
 		if (
 			!browserThumbnailsEnabled &&
@@ -234,12 +234,27 @@ const Thumbnails = ({
 					{ thumbnail_sprite_sprite: true },
 					parentId
 				);
+				let successMsg = __(
+					'Sprite generation enqueued. Check Additional Formats panel for progress.',
+					'video-embed-thumbnail-generator'
+				);
+				if ( videopack_config.active_encoder === 'browser' ) {
+					successMsg = (
+						<div>
+							<p>{ successMsg }</p>
+							<p>
+								{ __( 'Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator' ) }
+								{ ' ' }
+								<a href={ videopack_config.queue_url }>
+									{ __( 'Go to Queue Page', 'video-embed-thumbnail-generator' ) }
+								</a>
+							</p>
+						</div>
+					);
+				}
 				setSpriteMessage({
 					type: 'success',
-					text: __(
-						'Sprite generation enqueued. Check Additional Formats panel for progress.',
-						'video-embed-thumbnail-generator'
-					),
+					text: successMsg,
 				});
 				// If we have an Additional Formats panel nearby, it will handle polling.
 			} catch (error) {

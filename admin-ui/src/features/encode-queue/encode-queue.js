@@ -30,6 +30,7 @@ import {
 	deleteJob,
 	retryJob,
 	removeJob,
+	resetJob,
 } from '../../api/jobs';
 import { getBatchProgress } from '../../api/media';
 
@@ -105,10 +106,13 @@ const EncodeQueue = () => {
 
 			const progressData = await getBatchProgress('all');
 			setBatchProgress(progressData);
+			// Clear any previous FETCHING error messages if we successfully fetched data.
+			setMessage((prev) => (prev && prev.isFetchingError ? null : prev));
 		} catch (error) {
 			console.error('Error fetching queue:', error);
 			setMessage({
 				type: 'error',
+				isFetchingError: true,
 				text: sprintf(
 					/* translators: %s is an error message */
 					__(
@@ -285,6 +289,46 @@ const EncodeQueue = () => {
 		}
 	};
 
+	const handleResetJobs = useCallback(async (jobIds) => {
+		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
+		setActingJobIds((prev) => [...prev, ...ids]);
+		try {
+			for (const jobId of ids) {
+				await resetJob(jobId);
+			}
+			setMessage({
+				type: 'success',
+				text:
+					ids.length === 1
+						? __('Job status reset.', 'video-embed-thumbnail-generator')
+						: sprintf(
+								/* translators: %d: number of jobs reset */
+								__(
+									'%d jobs reset.',
+									'video-embed-thumbnail-generator'
+								),
+								ids.length
+							),
+			});
+			fetchQueue();
+		} catch (error) {
+			console.error('Error resetting job(s):', error);
+			setMessage({
+				type: 'error',
+				text: sprintf(
+					/* translators: %s is an error message */
+					__(
+						'Error resetting job(s): %s',
+						'video-embed-thumbnail-generator'
+					),
+					error.message || error.code
+				),
+			});
+		} finally {
+			setActingJobIds((prev) => prev.filter((id) => !ids.includes(id)));
+		}
+	}, []);
+
 	const handleRetryJobs = useCallback(async (jobIds) => {
 		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
 		setActingJobIds((prev) => [...prev, ...ids]);
@@ -401,6 +445,8 @@ const EncodeQueue = () => {
 									'processing',
 									'needs_insert',
 									'pending_replacement',
+									'browser_pending',
+									'browser_encoding',
 								].includes(item.status)
 									? 'videopack-job-running'
 									: ''
@@ -416,6 +462,8 @@ const EncodeQueue = () => {
 											'processing',
 											'needs_insert',
 											'pending_replacement',
+											'browser_pending',
+											'browser_encoding',
 										].includes(item.status),
 										job_id: item.id,
 										label: item.status_l10n,
@@ -431,6 +479,7 @@ const EncodeQueue = () => {
 									onRefresh={() => fetchQueue()}
 									showLabel={false}
 									hideCancel={true}
+									hideButtons={true}
 								/>
 							</ul>
 						</div>
@@ -502,18 +551,24 @@ const EncodeQueue = () => {
 				supportsBulk: true,
 				isEligible: (item) =>
 					[
+						'queued',
 						'encoding',
 						'processing',
 						'needs_insert',
 						'pending_replacement',
+						'browser_pending',
+						'browser_encoding',
 					].includes(item.status),
 				callback: (items) => {
 					const eligibleItems = items.filter((item) =>
 						[
+							'queued',
 							'encoding',
 							'processing',
 							'needs_insert',
 							'pending_replacement',
+							'browser_pending',
+							'browser_encoding',
 						].includes(item.status)
 					);
 					if (eligibleItems.length > 0) {
@@ -551,11 +606,27 @@ const EncodeQueue = () => {
 				isDestructive: true,
 				supportsBulk: true,
 				isEligible: (item) =>
-					item.status === 'completed' && !!item.output_id,
+					![
+						'encoding',
+						'processing',
+						'needs_insert',
+						'pending_replacement',
+						'browser_pending',
+						'browser_encoding',
+						'deleted',
+					].includes(item.status) && !!item.id,
 				callback: (items) => {
 					const eligibleItems = items.filter(
 						(item) =>
-							item.status === 'completed' && !!item.output_id
+							![
+								'encoding',
+								'processing',
+								'needs_insert',
+								'pending_replacement',
+								'browser_pending',
+								'browser_encoding',
+								'deleted',
+							].includes(item.status) && !!item.id
 					);
 					if (eligibleItems.length > 0) {
 						openConfirmDialog('delete_permanently', {
@@ -564,8 +635,37 @@ const EncodeQueue = () => {
 					}
 				},
 			},
+			{
+				id: 'reset',
+				label: __('Reset Status', 'video-embed-thumbnail-generator'),
+				supportsBulk: true,
+				isEligible: (item) => {
+					if (!['encoding', 'browser_encoding'].includes(item.status)) {
+						return false;
+					}
+					// Only allow reset if it's "stuck" (not updated in the last minute)
+					if (!item.updated_at) return true; // If no timestamp, assume stuck
+					const updatedAt = new Date(item.updated_at + ' UTC').getTime();
+					const now = new Date().getTime();
+					return (now - updatedAt) > 60000; // 1 minute
+				},
+				callback: (items) => {
+					const eligibleItems = items.filter((item) => {
+						if (!['encoding', 'browser_encoding'].includes(item.status)) {
+							return false;
+						}
+						if (!item.updated_at) return true;
+						const updatedAt = new Date(item.updated_at + ' UTC').getTime();
+						const now = new Date().getTime();
+						return (now - updatedAt) > 60000;
+					});
+					if (eligibleItems.length > 0) {
+						handleResetJobs(eligibleItems.map((i) => i.id));
+					}
+				},
+			},
 		],
-		[handleRetryJobs]
+		[handleRetryJobs, handleResetJobs]
 	);
 
 	// "processedData" and "paginationInfo" definition

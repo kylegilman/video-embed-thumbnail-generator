@@ -22,6 +22,8 @@ class Encode_Format {
 	const STATUS_PROCESSING          = 'processing';
 	const STATUS_ENCODING            = 'encoding';
 	const STATUS_CLOUD_ENCODING      = 'cloud_encoding';
+	const STATUS_BROWSER_PENDING     = 'browser_pending';
+	const STATUS_BROWSER_ENCODING    = 'browser_encoding';
 	const STATUS_NEEDS_INSERT        = 'needs_insert';
 	const STATUS_PENDING_REPLACEMENT = 'pending_replacement';
 	const STATUS_COMPLETED           = 'completed';
@@ -115,6 +117,13 @@ class Encode_Format {
 	 * @var array $progress
 	 */
 	private $progress;
+
+	/**
+	 * Progress percentage (from DB).
+	 *
+	 * @var int $progress_percent
+	 */
+	private $progress_percent;
 
 	/**
 	 * Encoded video width.
@@ -291,6 +300,7 @@ class Encode_Format {
 		$format->updated_at    = $format->set_or_null( $data, 'updated_at' );
 		$format->cloud_job_id  = $format->set_or_null( $data, 'cloud_job_id' );
 		$format->cloud_provider = $format->set_or_null( $data, 'cloud_provider' );
+		$format->progress_percent = $format->set_or_null( $data, 'progress' );
 		
 		$cloud_meta = $format->set_or_null( $data, 'cloud_meta' );
 		if ( ! empty( $cloud_meta ) ) {
@@ -340,6 +350,32 @@ class Encode_Format {
 				$this->progress = array(
 					'percent'        => $percent,
 					'status'         => 'encoding',
+					'started'        => $this->get_started(),
+					'elapsed'        => $elapsed,
+					'speed'          => sprintf( '%.2fx', max( 0.01, $speed ) ),
+					'fps'            => '--',
+					'video_duration' => $this->get_video_duration(),
+				);
+				return $this->progress;
+			} else {
+				// Fallback for browser-side or unknown encoding jobs.
+				// Watchdog: If status is 'encoding' but updated_at is more than 3 minutes ago, reset to browser_pending.
+				if ( self::STATUS_ENCODING === $this->status && ! empty( $this->updated_at ) ) {
+					$last_update = strtotime( $this->updated_at );
+					$diff        = time() - $last_update;
+					
+					if ( $diff > 180 ) { // 3 minutes
+						$this->set_status( self::STATUS_BROWSER_PENDING );
+					}
+				}
+
+				$percent = (int) $this->progress_percent;
+				$elapsed = time() - $this->get_started();
+				$speed   = $elapsed > 0 ? ( $percent / 100 ) * ( ( $this->get_video_duration() / 1000000 ) / $elapsed ) : 0;
+
+				$this->progress = array(
+					'percent'        => $percent,
+					'status'         => $this->status,
 					'started'        => $this->get_started(),
 					'elapsed'        => $elapsed,
 					'speed'          => sprintf( '%.2fx', max( 0.01, $speed ) ),
@@ -581,6 +617,15 @@ class Encode_Format {
 	}
 
 	/**
+	 * Set the progress percentage.
+	 *
+	 * @param int|null $percent Progress percentage.
+	 */
+	public function set_progress_percent( ?int $percent ) {
+		$this->progress_percent = $percent;
+	}
+
+	/**
 	 * Get the video title.
 	 *
 	 * @return string
@@ -616,6 +661,7 @@ class Encode_Format {
 			'pending_replacement',
 			'failed',
 			'cloud_encoding',
+			'browser_pending',
 		);
 		if ( in_array( $status, $allowed ) ) {
 			$this->status = $status;
@@ -898,6 +944,10 @@ class Encode_Format {
 				return __( 'Canceled', 'video-embed-thumbnail-generator' );
 			case self::STATUS_DELETED:
 				return __( 'Deleted', 'video-embed-thumbnail-generator' );
+			case self::STATUS_BROWSER_PENDING:
+				return __( 'Queued', 'video-embed-thumbnail-generator' );
+			case self::STATUS_BROWSER_ENCODING:
+				return __( 'Encoding (Browser)', 'video-embed-thumbnail-generator' );
 			case self::STATUS_NEEDS_INSERT:
 			case self::STATUS_PENDING_REPLACEMENT:
 				return __( 'Finishing', 'video-embed-thumbnail-generator' );

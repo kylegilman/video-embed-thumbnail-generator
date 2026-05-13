@@ -226,6 +226,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
 /* harmony export */   listJobs: () => (/* binding */ listJobs),
 /* harmony export */   removeJob: () => (/* binding */ removeJob),
+/* harmony export */   resetJob: () => (/* binding */ resetJob),
 /* harmony export */   retryJob: () => (/* binding */ retryJob),
 /* harmony export */   toggleQueue: () => (/* binding */ toggleQueue)
 /* harmony export */ });
@@ -308,7 +309,9 @@ const clearQueue = async type => {
 const deleteJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/jobs/${jobId}`,
+      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(`/videopack/v1/jobs/${jobId}`, {
+        force: true
+      }),
       method: 'DELETE'
     });
   } catch (error) {
@@ -434,6 +437,23 @@ const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
   }
 };
 
+/**
+ * Resets a stuck browser encoding job.
+ *
+ * @param {number|string} jobId The ID of the job to reset.
+ */
+const resetJob = async jobId => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/browser-queue/job/${jobId}/reset`,
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error('Error resetting job:', error);
+    throw error;
+  }
+};
+
 /***/ },
 
 /***/ "./src/api/media.js"
@@ -445,8 +465,10 @@ const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   assignFormat: () => (/* binding */ assignFormat),
+/* harmony export */   deleteBrowserEncoderAssets: () => (/* binding */ deleteBrowserEncoderAssets),
 /* harmony export */   deleteFile: () => (/* binding */ deleteFile),
 /* harmony export */   deleteFormat: () => (/* binding */ deleteFormat),
+/* harmony export */   downloadBrowserEncoderAssets: () => (/* binding */ downloadBrowserEncoderAssets),
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
 /* harmony export */   unassignFormat: () => (/* binding */ unassignFormat)
@@ -581,6 +603,35 @@ const getBatchProgress = async type => {
     });
   } catch (error) {
     console.error(`Error fetching ${type} batch progress:`, error);
+    throw error;
+  }
+};
+/**
+ * Downloads the browser encoder assets (ffmpeg.wasm) to the local server.
+ */
+const downloadBrowserEncoderAssets = async () => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/browser-encoder/download-assets',
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error('Error downloading browser encoder assets:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes the browser encoder assets from the local server.
+ */
+const deleteBrowserEncoderAssets = async () => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/browser-encoder/delete-assets',
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error('Error deleting browser encoder assets:', error);
     throw error;
   }
 };
@@ -2919,7 +2970,7 @@ const Thumbnails = ({
   const {
     active_encoder = 'ffmpeg'
   } = options;
-  const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+  const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && (!!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro) || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
   const ffmpegExists = effectiveFfmpegExists;
   const {
     editPost
@@ -3018,16 +3069,29 @@ const Thumbnails = ({
     setSpriteTiles([]);
     const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
     const rawFfmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
-    const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady;
+    const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && (!!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro);
     if (!browserThumbnailsEnabled && rawFfmpegExists && !activeEncoderIsCloud) {
       try {
         const activeId = id || 0;
         await (0,_api_jobs__WEBPACK_IMPORTED_MODULE_7__.enqueueJob)(activeId, src, {
           thumbnail_sprite_sprite: true
         }, parentId);
+        let successMsg = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Sprite generation enqueued. Check Additional Formats panel for progress.', 'video-embed-thumbnail-generator');
+        if (videopack_config.active_encoder === 'browser') {
+          successMsg = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", {
+              children: successMsg
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("p", {
+              children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator'), ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("a", {
+                href: videopack_config.queue_url,
+                children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Go to Queue Page', 'video-embed-thumbnail-generator')
+              })]
+            })]
+          });
+        }
         setSpriteMessage({
           type: 'success',
-          text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Sprite generation enqueued. Check Additional Formats panel for progress.', 'video-embed-thumbnail-generator')
+          text: successMsg
         });
         // If we have an Additional Formats panel nearby, it will handle polling.
       } catch (error) {
@@ -4378,9 +4442,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   clearUrlCache: () => (/* reexport safe */ _api_settings__WEBPACK_IMPORTED_MODULE_1__.clearUrlCache),
 /* harmony export */   createJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.createJob),
 /* harmony export */   createThumbnailFromCanvas: () => (/* reexport safe */ _api_thumbnails__WEBPACK_IMPORTED_MODULE_2__.createThumbnailFromCanvas),
+/* harmony export */   deleteBrowserEncoderAssets: () => (/* reexport safe */ _api_media__WEBPACK_IMPORTED_MODULE_4__.deleteBrowserEncoderAssets),
 /* harmony export */   deleteFile: () => (/* reexport safe */ _api_media__WEBPACK_IMPORTED_MODULE_4__.deleteFile),
 /* harmony export */   deleteFormat: () => (/* reexport safe */ _api_media__WEBPACK_IMPORTED_MODULE_4__.deleteFormat),
 /* harmony export */   deleteJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.deleteJob),
+/* harmony export */   downloadBrowserEncoderAssets: () => (/* reexport safe */ _api_media__WEBPACK_IMPORTED_MODULE_4__.downloadBrowserEncoderAssets),
 /* harmony export */   enqueueJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.enqueueJob),
 /* harmony export */   generateShortcode: () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_5__.generateShortcode),
 /* harmony export */   generateThumbnail: () => (/* reexport safe */ _api_thumbnails__WEBPACK_IMPORTED_MODULE_2__.generateThumbnail),
@@ -4399,6 +4465,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   normalizeOptions: () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_5__.normalizeOptions),
 /* harmony export */   parseShortcode: () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_5__.parseShortcode),
 /* harmony export */   removeJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.removeJob),
+/* harmony export */   resetJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.resetJob),
 /* harmony export */   resetNetworkSettings: () => (/* reexport safe */ _api_settings__WEBPACK_IMPORTED_MODULE_1__.resetNetworkSettings),
 /* harmony export */   resetVideopackSettings: () => (/* reexport safe */ _api_settings__WEBPACK_IMPORTED_MODULE_1__.resetVideopackSettings),
 /* harmony export */   retryJob: () => (/* reexport safe */ _api_jobs__WEBPACK_IMPORTED_MODULE_0__.retryJob),

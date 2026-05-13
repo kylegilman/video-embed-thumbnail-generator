@@ -159,7 +159,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			output_attachment_id BIGINT UNSIGNED NULL,
 			input_url VARCHAR(1024) NOT NULL,
 			format_id VARCHAR(100) NOT NULL,
-			status ENUM('queued', 'processing', 'encoding', 'cloud_encoding', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled', 'deleted') NOT NULL DEFAULT 'queued',
+			status ENUM('queued', 'processing', 'encoding', 'cloud_encoding', 'browser_pending', 'browser_encoding', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled', 'deleted') NOT NULL DEFAULT 'queued',
 			output_path VARCHAR(1024) NULL,
 			output_url VARCHAR(1024) NULL,
 			user_id BIGINT UNSIGNED NULL,
@@ -180,6 +180,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			cloud_job_id VARCHAR(255) NULL,
 			cloud_provider VARCHAR(100) NULL,
 			cloud_meta TEXT NULL,
+			progress TINYINT UNSIGNED NULL,
 			mailed TINYINT(1) NOT NULL DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY idx_blog_id (blog_id),
@@ -387,7 +388,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 						$is_cloud_job = (bool) $started_format->get_cloud_provider();
 
-						if ( ( $started_format->get_pid() && $started_format->get_status() === Encode_Format::STATUS_ENCODING ) || ( $is_cloud_job && ( $started_format->get_status() === Encode_Format::STATUS_CLOUD_ENCODING || $started_format->get_status() === Encode_Format::STATUS_ENCODING ) ) ) {
+						if ( ( $started_format->get_pid() && $started_format->get_status() === Encode_Format::STATUS_ENCODING ) || ( $is_cloud_job && ( $started_format->get_status() === Encode_Format::STATUS_CLOUD_ENCODING || $started_format->get_status() === Encode_Format::STATUS_ENCODING ) ) || $started_format->get_status() === Encode_Format::STATUS_BROWSER_PENDING ) {
 							$update_data = array(
 								'status' => $started_format->get_status(),
 							);
@@ -649,12 +650,16 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				$encoder               = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $job_data['input_url'] );
 				$encode_format         = Encode_Format::from_array( $job_data );
 				
+				$progress = null;
 				if ( ! empty( $encode_format->get_cloud_job_id() ) ) {
 					error_log( sprintf( '[Videopack] Heartbeat: Checking cloud job status for job %d', $job_id ) );
 					do_action( 'videopack_check_cloud_job_status', $encode_format, $job_data );
 					error_log( sprintf( '[Videopack] Heartbeat: Cloud job status is now %s', $encode_format->get_status() ) );
+					$progress_data = $encode_format->get_progress();
+					$progress      = is_array( $progress_data ) ? ( $progress_data['percent'] ?? null ) : null;
 				} else {
-					$encode_format->get_progress(); // Updates internal status if log says 'end' or if it timed out.
+					$progress_data = $encode_format->get_progress(); // Updates internal status if log says 'end' or if it timed out.
+					$progress      = is_array( $progress_data ) ? ( $progress_data['percent'] ?? null ) : null;
 				}
 
 				$status_changed_now = $encode_format->get_status() !== $job_data['status'];
@@ -662,8 +667,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				$cloud_meta_changed = $encode_format->get_cloud_job_id() !== ( $job_data['cloud_job_id'] ?? null ) 
 					|| $encode_format->get_cloud_provider() !== ( $job_data['cloud_provider'] ?? null )
 					|| $cloud_meta_now !== ( $job_data['cloud_meta'] ?? null );
+				
+				$progress_changed = null !== $progress && (int) $progress !== (int) ( $job_data['progress'] ?? -1 );
 
-				if ( $status_changed_now || $cloud_meta_changed ) {
+				if ( $status_changed_now || $cloud_meta_changed || $progress_changed ) {
 					$new_status  = $encode_format->get_status();
 					
 					if ( $status_changed_now ) {
@@ -676,6 +683,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 						'cloud_job_id'   => $encode_format->get_cloud_job_id(),
 						'cloud_provider' => $encode_format->get_cloud_provider(),
 						'cloud_meta'     => $cloud_meta_now,
+						'progress'       => $progress,
 					);
 
 					if ( Encode_Format::STATUS_NEEDS_INSERT === $new_status ) {
@@ -1337,6 +1345,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			'cloud_job_id'    => $job->get_cloud_job_id(),
 			'cloud_provider'  => $job->get_cloud_provider(),
 			'cloud_meta'      => $job->get_cloud_meta(),
+			'updated_at'      => $job->get_updated_at(),
 			'exists'          => in_array( $status, array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_REMOTE_EXISTS ), true ),
 			'encoding_now'    => in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING ), true ),
 			'deletable'       => ! empty( $job->get_job_id() ),

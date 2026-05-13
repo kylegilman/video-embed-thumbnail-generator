@@ -606,6 +606,7 @@ class Options implements Hook_Subscriber {
 
 		// Ensure registry is using merged options.
 		if ( $this->formats_registry ) {
+			$this->merged_options   = $options;
 			$this->formats_registry = new Formats\Registry( $this->merged_options );
 		}
 

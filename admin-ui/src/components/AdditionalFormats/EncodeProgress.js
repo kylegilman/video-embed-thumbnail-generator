@@ -71,6 +71,38 @@ const EncodeProgress = ({
 		}
 	}, [formatData?.progress]);
 
+	// Real-time updates from browser encoder
+	useEffect(() => {
+		const handleBrowserProgress = (event) => {
+			const { job_id, format_id, percent } = event.detail;
+			if (
+				formatData?.job_id === job_id ||
+				(formatData?.format_id === format_id &&
+					formatData?.status === 'browser_pending')
+			) {
+				setInterpolatedProgress((prev) => {
+					if (percent < prev.percent) {
+						return prev;
+					}
+					return {
+						...prev,
+						percent: percent,
+					};
+				});
+			}
+		};
+
+		window.addEventListener(
+			'videopack_browser_progress',
+			handleBrowserProgress
+		);
+		return () =>
+			window.removeEventListener(
+				'videopack_browser_progress',
+				handleBrowserProgress
+			);
+	}, [formatData?.job_id, formatData?.format_id, formatData?.status]);
+
 	// Internal interpolation timer
 	useEffect(() => {
 		const isRunning = [

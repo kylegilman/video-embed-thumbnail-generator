@@ -505,6 +505,7 @@ class Ui implements Hook_Subscriber {
 				'options'                => array_merge( $options, array( 'ffmpeg_exists' => apply_filters( 'videopack_ffmpeg_exists', is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ) ) ) ),
 				'defaults'               => \Videopack\Common\Defaults::get_all( $options ),
 				'classic_embed_nonce'    => wp_create_nonce( 'videopack_classic_embed' ),
+				'queue_url'              => admin_url( 'tools.php?page=videopack_encode_queue' ),
 			)
 		);
 	}

@@ -246,6 +246,7 @@ class Screens implements Hook_Subscriber {
 	 */
 	public function output_encode_queue_page() {
 		echo '<div id="videopack-queue-root"></div>';
+		do_action( 'videopack_admin_queue_page_after' );
 	}
 
 	/**
