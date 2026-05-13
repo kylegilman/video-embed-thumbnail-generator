@@ -226,6 +226,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
 /* harmony export */   listJobs: () => (/* binding */ listJobs),
 /* harmony export */   removeJob: () => (/* binding */ removeJob),
+/* harmony export */   resetJob: () => (/* binding */ resetJob),
 /* harmony export */   retryJob: () => (/* binding */ retryJob),
 /* harmony export */   toggleQueue: () => (/* binding */ toggleQueue)
 /* harmony export */ });
@@ -308,7 +309,9 @@ const clearQueue = async type => {
 const deleteJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/jobs/${jobId}`,
+      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(`/videopack/v1/jobs/${jobId}`, {
+        force: true
+      }),
       method: 'DELETE'
     });
   } catch (error) {
@@ -434,6 +437,23 @@ const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
   }
 };
 
+/**
+ * Resets a stuck browser encoding job.
+ *
+ * @param {number|string} jobId The ID of the job to reset.
+ */
+const resetJob = async jobId => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/browser-queue/job/${jobId}/reset`,
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error('Error resetting job:', error);
+    throw error;
+  }
+};
+
 /***/ },
 
 /***/ "./src/api/media.js"
@@ -445,8 +465,10 @@ const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   assignFormat: () => (/* binding */ assignFormat),
+/* harmony export */   deleteBrowserEncoderAssets: () => (/* binding */ deleteBrowserEncoderAssets),
 /* harmony export */   deleteFile: () => (/* binding */ deleteFile),
 /* harmony export */   deleteFormat: () => (/* binding */ deleteFormat),
+/* harmony export */   downloadBrowserEncoderAssets: () => (/* binding */ downloadBrowserEncoderAssets),
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
 /* harmony export */   unassignFormat: () => (/* binding */ unassignFormat)
@@ -581,6 +603,35 @@ const getBatchProgress = async type => {
     });
   } catch (error) {
     console.error(`Error fetching ${type} batch progress:`, error);
+    throw error;
+  }
+};
+/**
+ * Downloads the browser encoder assets (ffmpeg.wasm) to the local server.
+ */
+const downloadBrowserEncoderAssets = async () => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/browser-encoder/download-assets',
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error('Error downloading browser encoder assets:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes the browser encoder assets from the local server.
+ */
+const deleteBrowserEncoderAssets = async () => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/browser-encoder/delete-assets',
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error('Error deleting browser encoder assets:', error);
     throw error;
   }
 };
@@ -2498,7 +2549,7 @@ const AdditionalFormats = ({
     ffmpeg_exists,
     active_encoder = 'ffmpeg'
   } = options;
-  const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
+  const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && (!!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
   const [videoFormats, setVideoFormats] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null);
   const isExternal = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => {
     let isSrcExternal = false;
@@ -2556,7 +2607,7 @@ const AdditionalFormats = ({
 
           // Carry over UI-only 'checked' state or initialize it.
           // If the status is one where encoding is already done or in progress, uncheck it.
-          const isBusyOrDone = ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists'].includes(newFormat.status);
+          const isBusyOrDone = ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists', 'browser_pending', 'browser_encoding'].includes(newFormat.status);
           newFormat.checked = oldFormat && !isBusyOrDone ? !!oldFormat.checked : false;
         });
 
@@ -2637,6 +2688,37 @@ const AdditionalFormats = ({
     let pollTimer = null;
     let isMounted = true;
 
+    // Handle real-time progress updates from browser encoder via CustomEvents
+    const handleBrowserProgress = event => {
+      const {
+        job_id,
+        format_id,
+        percent
+      } = event.detail;
+      setVideoFormats(prevFormats => {
+        if (!prevFormats) return prevFormats;
+        const updatedFormats = {
+          ...prevFormats
+        };
+        const format = updatedFormats[format_id];
+        if (format && (format.job_id === job_id || !format.job_id && format.status === 'browser_pending')) {
+          updatedFormats[format_id] = {
+            ...format,
+            status: 'encoding',
+            encoding_now: true,
+            progress: {
+              ...(typeof format.progress === 'object' ? format.progress : {}),
+              percent: percent,
+              status: 'encoding'
+            }
+          };
+          return updatedFormats;
+        }
+        return prevFormats;
+      });
+    };
+    window.addEventListener('videopack_browser_progress', handleBrowserProgress);
+
     // Manage polling logic based on isEncoding state
     if (isEncoding && isOpen) {
       const runPoll = async () => {
@@ -2662,6 +2744,7 @@ const AdditionalFormats = ({
     }
     return () => {
       isMounted = false;
+      window.removeEventListener('videopack_browser_progress', handleBrowserProgress);
       if (pollTimer) {
         clearTimeout(pollTimer);
       }
@@ -2722,8 +2805,23 @@ const AdditionalFormats = ({
         const queuePosition = response?.new_queue_position;
         const startPosition = Math.max(1, queuePosition - jobCount + 1);
         const ordinalPosition = getOrdinal(startPosition, siteSettings?.language || 'en-US');
-        setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %1$d is the number of jobs. %2$s is the ordinal position (e.g. 1st, 2nd). */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)('%1$d job added to queue in %2$s position.', '%1$d jobs added to queue starting in %2$s position.', jobCount, 'video-embed-thumbnail-generator'), jobCount, ordinalPosition));
+        let successMsg = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %1$d is the number of jobs. %2$s is the ordinal position (e.g. 1st, 2nd). */
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)('%1$d job added to queue in %2$s position.', '%1$d jobs added to queue starting in %2$s position.', jobCount, 'video-embed-thumbnail-generator'), jobCount, ordinalPosition)
+        });
+        if (active_encoder === 'browser') {
+          successMsg = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("p", {
+              children: successMsg
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("p", {
+              children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator'), ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("a", {
+                href: videopack_config.queue_url,
+                children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Go to Queue Page', 'video-embed-thumbnail-generator')
+              })]
+            })]
+          });
+        }
+        setEncodeMessage(successMsg);
       }
       fetchVideoFormats(); // Re-fetch to update statuses
     } catch (error) {
@@ -3059,7 +3157,8 @@ const EncodeFormatStatus = ({
   hideCancel = false,
   isProcessing = false,
   processingId = null,
-  deleteInProgress = null
+  deleteInProgress = null,
+  hideButtons = false
 }) => {
   const openMediaLibrary = (currentId = null) => {
     if (typeof window.wp === 'undefined' || !window.wp.media) {
@@ -3110,7 +3209,7 @@ const EncodeFormatStatus = ({
     if (isProcessing || !!deleteInProgress) {
       return true;
     }
-    return data.exists && data.status !== 'error' || ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists'].includes(data.status);
+    return data.exists && data.status !== 'error' || ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists', 'browser_pending', 'browser_encoding'].includes(data.status);
   };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
     className: "videopack-format-row",
@@ -3127,7 +3226,7 @@ const EncodeFormatStatus = ({
     })), formatData.status !== 'not_encoded' && (formatData.status_l10n !== formatData.label || !showLabel) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
       className: "videopack-format-status",
       children: formatData.status_l10n
-    }), formatData.status === 'not_encoded' && !formatData.exists && !formatData.replaces_original && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+    }), formatData.status === 'not_encoded' && !formatData.exists && !formatData.replaces_original && !hideButtons && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
       variant: "secondary",
       onClick: () => openMediaLibrary(),
       className: "videopack-format-button",
@@ -3136,7 +3235,7 @@ const EncodeFormatStatus = ({
       disabled: isProcessing || !!deleteInProgress,
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Open the Media Library', 'video-embed-thumbnail-generator'),
       children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose', 'video-embed-thumbnail-generator')
-    }), formatData.exists && !formatData.encoding_now && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+    }), formatData.exists && !formatData.encoding_now && !hideButtons && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
       variant: "secondary",
       onClick: () => openMediaLibrary(formatData.id),
       className: "videopack-format-button",
@@ -3145,7 +3244,7 @@ const EncodeFormatStatus = ({
       disabled: isProcessing || !!deleteInProgress,
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Open the Media Library', 'video-embed-thumbnail-generator'),
       children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Change', 'video-embed-thumbnail-generator')
-    }), formatData.is_manual && formatData.id && !formatData.encoding_now && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+    }), formatData.is_manual && formatData.id && !formatData.encoding_now && !hideButtons && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
       onClick: onRemoveFormat,
       variant: "secondary",
       size: "small",
@@ -3153,14 +3252,14 @@ const EncodeFormatStatus = ({
       disabled: isProcessing || !!deleteInProgress,
       text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remove', 'video-embed-thumbnail-generator'),
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Removes manual selection. It will not be deleted.', 'video-embed-thumbnail-generator')
-    }), formatData.deletable && !formatData.encoding_now && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+    }), formatData.deletable && !formatData.encoding_now && !hideButtons && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
       isBusy: deleteInProgress === formatId,
       disabled: isProcessing || !!deleteInProgress,
       onClick: onDeleteFile,
       variant: "link",
       text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete permanently', 'video-embed-thumbnail-generator'),
       isDestructive: true
-    }), (formatData.encoding_now || formatData.status === 'error') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_EncodeProgress__WEBPACK_IMPORTED_MODULE_2__["default"], {
+    }), (formatData.encoding_now || formatData.status === 'browser_pending' || formatData.status === 'browser_encoding' || formatData.status === 'error') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_EncodeProgress__WEBPACK_IMPORTED_MODULE_2__["default"], {
       formatData: formatData,
       onCancelJob: onCancelJob,
       deleteInProgress: deleteInProgress,
@@ -3258,6 +3357,30 @@ const EncodeProgress = ({
       });
     }
   }, [formatData?.progress]);
+
+  // Real-time updates from browser encoder
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    const handleBrowserProgress = event => {
+      const {
+        job_id,
+        format_id,
+        percent
+      } = event.detail;
+      if (formatData?.job_id === job_id || formatData?.format_id === format_id && formatData?.status === 'browser_pending') {
+        setInterpolatedProgress(prev => {
+          if (percent < prev.percent) {
+            return prev;
+          }
+          return {
+            ...prev,
+            percent: percent
+          };
+        });
+      }
+    };
+    window.addEventListener('videopack_browser_progress', handleBrowserProgress);
+    return () => window.removeEventListener('videopack_browser_progress', handleBrowserProgress);
+  }, [formatData?.job_id, formatData?.format_id, formatData?.status]);
 
   // Internal interpolation timer
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
@@ -3749,7 +3872,7 @@ const Thumbnails = ({
   const {
     active_encoder = 'ffmpeg'
   } = options;
-  const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+  const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && (!!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro) || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
   const ffmpegExists = effectiveFfmpegExists;
   const {
     editPost
@@ -3848,16 +3971,29 @@ const Thumbnails = ({
     setSpriteTiles([]);
     const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
     const rawFfmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
-    const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady;
+    const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && (!!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro);
     if (!browserThumbnailsEnabled && rawFfmpegExists && !activeEncoderIsCloud) {
       try {
         const activeId = id || 0;
         await (0,_api_jobs__WEBPACK_IMPORTED_MODULE_7__.enqueueJob)(activeId, src, {
           thumbnail_sprite_sprite: true
         }, parentId);
+        let successMsg = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Sprite generation enqueued. Check Additional Formats panel for progress.', 'video-embed-thumbnail-generator');
+        if (videopack_config.active_encoder === 'browser') {
+          successMsg = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("p", {
+              children: successMsg
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsxs)("p", {
+              children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator'), ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)("a", {
+                href: videopack_config.queue_url,
+                children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Go to Queue Page', 'video-embed-thumbnail-generator')
+              })]
+            })]
+          });
+        }
         setSpriteMessage({
           type: 'success',
-          text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Sprite generation enqueued. Check Additional Formats panel for progress.', 'video-embed-thumbnail-generator')
+          text: successMsg
         });
         // If we have an Additional Formats panel nearby, it will handle polling.
       } catch (error) {

@@ -3,7 +3,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 import { getUsersWithCapability } from '../../../utils/utils';
-import { startBatchProcess, getBatchProgress } from '../../../api/media';
+import { startBatchProcess, getBatchProgress, downloadBrowserEncoderAssets, deleteBrowserEncoderAssets } from '../../../api/media';
 import useBatchProcess from '../../../hooks/useBatchProcess';
 import {
 	BaseControl,
@@ -58,18 +58,20 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		sample_rotate,
 		auto_publish_post,
 		active_encoder = 'ffmpeg',
+		browser_encoder_assets_status = 'missing',
 	} = settings;
 
-	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
+	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
 
 	const availableEncoders = applyFilters('videopack.settings.encoders', [
 		{
 			value: 'ffmpeg',
 			label: __('Local FFmpeg', 'video-embed-thumbnail-generator'),
 		},
-	]);
+	], settings);
 
 	const [users, setUsers] = useState(null);
+	const [isDownloadingAssets, setIsDownloadingAssets] = useState(false);
 
 	const encodingBatch = useBatchProcess();
 
@@ -104,7 +106,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const EncodeFormatGrid = () => {
 		const { codecs } = videopack_config;
 		const { encode: currentEncode, ffmpeg_exists: rawFfmpegExists } = settings;
-		const ffmpegExists = ( settings.active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady ) || rawFfmpegExists === true || rawFfmpegExists === 'true' || rawFfmpegExists === 1 || rawFfmpegExists === '1';
+		const ffmpegExists = ( settings.active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || rawFfmpegExists === true || rawFfmpegExists === 'true' || rawFfmpegExists === 1 || rawFfmpegExists === '1';
 
 		const handleCheckboxChange = (codecId, resolutionId, isChecked) => {
 			const newEncode = JSON.parse(JSON.stringify(currentEncode || {}));
@@ -167,6 +169,9 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		const filteredResolutions = currentResolutions;
 
 		const filteredCodecs = codecs.filter((codec) => {
+			if (codec.id === 'av1' && active_encoder === 'browser') {
+				return false;
+			}
 			if (codec.id === 'thumbnail_sprite' || codec.id === 'thumbnail') {
 				return (
 					rawFfmpegExists === true ||
@@ -482,6 +487,103 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 							onChange={changeHandlerFactory.active_encoder}
 						/>
 					</PanelRow>
+					{active_encoder === 'browser' && (
+						<>
+							<PanelRow className="videopack-panel-row-vertical">
+								<p>
+									{browser_encoder_assets_status === 'ready'
+										? __(
+												'The FFmpeg encoder library is currently hosted on your own server.',
+												'video-embed-thumbnail-generator'
+										  )
+										: __(
+												'The FFmpeg encoder library (30MB) is currently loaded from a global CDN. To improve privacy and reliability, you can download the library and host it on your own server.',
+												'video-embed-thumbnail-generator'
+										  )}
+								</p>
+								<Flex
+									align="center"
+									justify="flex-start"
+									gap={2}
+								>
+									<Button
+										variant="secondary"
+										isBusy={isDownloadingAssets}
+										disabled={isDownloadingAssets}
+										onClick={async () => {
+											setIsDownloadingAssets(true);
+											try {
+												await downloadBrowserEncoderAssets();
+												changeHandlerFactory.browser_encoder_assets_status(
+													'ready'
+												);
+												videopack_config.browser_encoder_assets_status =
+													'ready';
+											} catch (error) {
+												alert(
+													__(
+														'Failed to download assets. Please check your server permissions.',
+														'video-embed-thumbnail-generator'
+													)
+												);
+											} finally {
+												setIsDownloadingAssets(false);
+											}
+										}}
+									>
+										{browser_encoder_assets_status ===
+										'ready'
+											? __(
+													'Update assets',
+													'video-embed-thumbnail-generator'
+											  )
+											: __(
+													'Download and install assets',
+													'video-embed-thumbnail-generator'
+											  )}
+									</Button>
+									{browser_encoder_assets_status ===
+										'ready' && (
+										<Button
+											variant="link"
+											isDestructive
+											onClick={async () => {
+												if (
+													window.confirm(
+														__(
+															'Are you sure you want to delete the local FFmpeg assets? This will revert to using the CDN.',
+															'video-embed-thumbnail-generator'
+														)
+													)
+												) {
+													try {
+														await deleteBrowserEncoderAssets();
+														changeHandlerFactory.browser_encoder_assets_status(
+															'missing'
+														);
+														videopack_config.browser_encoder_assets_status =
+															'missing';
+													} catch (error) {
+														alert(
+															__(
+																'Failed to delete assets.',
+																'video-embed-thumbnail-generator'
+															)
+														);
+													}
+												}
+											}}
+										>
+											{__(
+												'Delete local assets',
+												'video-embed-thumbnail-generator'
+											)}
+										</Button>
+									)}
+								</Flex>
+							</PanelRow>
+						</>
+					)}
 				</PanelBody>
 			)}
 			<PanelBody

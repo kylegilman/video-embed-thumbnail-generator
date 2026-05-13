@@ -43,6 +43,7 @@ const EncodeFormatStatus = ({
 	isProcessing = false,
 	processingId = null,
 	deleteInProgress = null,
+	hideButtons = false,
 }) => {
 	const openMediaLibrary = (currentId = null) => {
 		if (typeof window.wp === 'undefined' || !window.wp.media) {
@@ -116,6 +117,8 @@ const EncodeFormatStatus = ({
 				'needs_insert',
 				'pending_replacement',
 				'remote_exists',
+				'browser_pending',
+				'browser_encoding',
 			].includes(data.status)
 		);
 	};
@@ -145,7 +148,8 @@ const EncodeFormatStatus = ({
 
 			{formatData.status === 'not_encoded' &&
 				!formatData.exists &&
-				!formatData.replaces_original && (
+				!formatData.replaces_original &&
+				!hideButtons && (
 					<Button
 						variant="secondary"
 						onClick={() => openMediaLibrary()}
@@ -162,7 +166,7 @@ const EncodeFormatStatus = ({
 					</Button>
 				)}
 
-			{formatData.exists && !formatData.encoding_now && (
+			{formatData.exists && !formatData.encoding_now && !hideButtons && (
 				<Button
 					variant="secondary"
 					onClick={() => openMediaLibrary(formatData.id)}
@@ -181,7 +185,8 @@ const EncodeFormatStatus = ({
 
 			{formatData.is_manual &&
 				formatData.id &&
-				!formatData.encoding_now && (
+				!formatData.encoding_now &&
+				!hideButtons && (
 					<Button
 						onClick={onRemoveFormat}
 						variant="secondary"
@@ -196,7 +201,7 @@ const EncodeFormatStatus = ({
 					/>
 				)}
 
-			{formatData.deletable && !formatData.encoding_now && (
+			{formatData.deletable && !formatData.encoding_now && !hideButtons && (
 				<Button
 					isBusy={deleteInProgress === formatId}
 					disabled={isProcessing || !!deleteInProgress}
@@ -210,7 +215,10 @@ const EncodeFormatStatus = ({
 				/>
 			)}
 
-			{(formatData.encoding_now || formatData.status === 'error') && (
+			{(formatData.encoding_now ||
+				formatData.status === 'browser_pending' ||
+				formatData.status === 'browser_encoding' ||
+				formatData.status === 'error') && (
 				<EncodeProgress
 					formatData={formatData}
 					onCancelJob={onCancelJob}

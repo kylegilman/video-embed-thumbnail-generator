@@ -67,7 +67,7 @@ export const clearQueue = async (type) => {
 export const deleteJob = async (jobId) => {
 	try {
 		return await apiFetch({
-			path: `/videopack/v1/jobs/${jobId}`,
+			path: addQueryArgs(`/videopack/v1/jobs/${jobId}`, { force: true }),
 			method: 'DELETE',
 		});
 	} catch (error) {
@@ -189,6 +189,23 @@ export const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
 		};
 	} catch (error) {
 		console.error('Error enqueuing job:', error);
+		throw error;
+	}
+};
+
+/**
+ * Resets a stuck browser encoding job.
+ *
+ * @param {number|string} jobId The ID of the job to reset.
+ */
+export const resetJob = async (jobId) => {
+	try {
+		return await apiFetch({
+			path: `/videopack/v1/browser-queue/job/${jobId}/reset`,
+			method: 'POST',
+		});
+	} catch (error) {
+		console.error('Error resetting job:', error);
 		throw error;
 	}
 };

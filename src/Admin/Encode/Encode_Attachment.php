@@ -340,18 +340,19 @@ class Encode_Attachment {
 		$data_to_save = (array) $encode_format->to_array();
 
 		$db_data = array(
-			'status'              => (string) $data_to_save['status'],
-			'output_path'         => (string) $data_to_save['path'],
-			'output_url'          => (string) $data_to_save['url'],
-			'pid'                 => (int) $data_to_save['pid'],
-			'logfile_path'        => (string) $data_to_save['logfile'],
-			'started_at'          => $data_to_save['started'] ? (string) gmdate( 'Y-m-d H:i:s', (int) $data_to_save['started'] ) : null,
-			'completed_at'        => $data_to_save['ended'] ? (string) gmdate( 'Y-m-d H:i:s', (int) $data_to_save['ended'] ) : null,
-			'error_message'       => (string) $data_to_save['error'],
-			'temp_watermark_path' => (string) $data_to_save['temp_watermark_path'],
-			'cloud_job_id'        => (string) $data_to_save['cloud_job_id'],
-			'cloud_provider'      => (string) $data_to_save['cloud_provider'],
-			'cloud_meta'          => json_encode( $data_to_save['cloud_meta'] ),
+			'status'               => (string) $data_to_save['status'],
+			'output_attachment_id' => ! empty( $data_to_save['id'] ) ? (int) $data_to_save['id'] : null,
+			'output_path'          => (string) $data_to_save['path'],
+			'output_url'           => (string) $data_to_save['url'],
+			'pid'                  => (int) $data_to_save['pid'],
+			'logfile_path'         => (string) $data_to_save['logfile'],
+			'started_at'           => $data_to_save['started'] ? (string) gmdate( 'Y-m-d H:i:s', (int) $data_to_save['started'] ) : null,
+			'completed_at'         => $data_to_save['ended'] ? (string) gmdate( 'Y-m-d H:i:s', (int) $data_to_save['ended'] ) : null,
+			'error_message'        => (string) $data_to_save['error'],
+			'temp_watermark_path'  => (string) $data_to_save['temp_watermark_path'],
+			'cloud_job_id'         => (string) $data_to_save['cloud_job_id'],
+			'cloud_provider'       => (string) $data_to_save['cloud_provider'],
+			'cloud_meta'           => json_encode( $data_to_save['cloud_meta'] ),
 		);
 
 		if ( 'failed' === (string) $data_to_save['status'] ) {
@@ -689,6 +690,7 @@ class Encode_Attachment {
 		}
 
 		$target_height = (int) $video_format_obj->get_resolution()->get_height();
+		$target_width  = (int) round( $target_height * 16 / 9 );
 		$source_height = (int) ( $video_metadata->actualheight ?? 0 );
 		$source_width  = (int) ( $video_metadata->actualwidth ?? 0 );
 
@@ -696,12 +698,12 @@ class Encode_Attachment {
 			return false;
 		}
 
-		$target_width = (int) round( $target_height * 16 / 9 );
+		// Don't upscale.
+		if ( $source_height > 0 && ( $source_height < $target_height || $source_width < $target_width ) ) {
+			if ( ! empty( $this->options['allow_upscale'] ) ) {
+				return false;
+			}
 
-		if ( $source_height < $target_height || $source_width < $target_width ) {
-			// If either dimension is smaller, it's an upscale in that direction.
-			// However, we usually only care about the primary dimension (height for landscape, width for portrait).
-			// For simplicity and safety, if height is lower, we hide it.
 			if ( $source_height < $target_height ) {
 				return true;
 			}
@@ -719,12 +721,14 @@ class Encode_Attachment {
 				$normalized_source_codec = in_array( $normalized_source_codec, array( 'vp08', 'vp8' ), true ) ? 'vp8' : $normalized_source_codec;
 				$normalized_source_codec = in_array( $normalized_source_codec, array( 'av01', 'av1' ), true ) ? 'av1' : $normalized_source_codec;
 			}
+
 			$target_codec_id = (string) $video_format_obj->get_codec()->get_id();
 
 			if ( $target_codec_id === $normalized_source_codec ) {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -1376,7 +1380,7 @@ class Encode_Attachment {
 			if ( in_array( (string) $existing_job->status, array( 'deleted', 'canceled', 'failed' ), true ) ) {
 				$job_id      = (int) $existing_job->id;
 				$update_data = array(
-					'status'               => 'queued',
+					'status'               => apply_filters( 'videopack_queue_format_status', 'queued', $format_id, $this ),
 					'user_id'              => (int) $user_id,
 					'pid'                  => null,
 					'logfile_path'         => null,
@@ -1440,7 +1444,7 @@ class Encode_Attachment {
 			'attachment_id'  => $is_attachment ? (int) $this->id : null,
 			'input_url'      => (string) $this->url,
 			'format_id'      => (string) $format_id,
-			'status'         => 'queued',
+			'status'         => apply_filters( 'videopack_queue_format_status', 'queued', $format_id, $this ),
 			'output_path'    => $output_path,
 			'output_url'     => $output_url,
 
@@ -1892,7 +1896,7 @@ class Encode_Attachment {
 	 */
 	public function delete_format_by_id( string $format_id ) {
 		$encode_formats = $this->get_formats();
-		
+
 		// If we have a formal job record, use the standard delete method.
 		if ( isset( $encode_formats[ $format_id ] ) ) {
 			return $this->delete_format( (int) $encode_formats[ $format_id ]->get_job_id() );
@@ -1949,6 +1953,24 @@ class Encode_Attachment {
 		}
 
 		$wp_attachment_id = (int) $encode_format->get_id();
+		
+		// Fallback: If the job record is missing the output attachment ID, try to resolve it from the file system/registry.
+		if ( 0 === $wp_attachment_id && Encode_Format::STATUS_COMPLETED === $encode_format->get_status() ) {
+			$all_formats = (array) $this->format_registry->get_video_formats();
+			$format_obj  = $all_formats[ $encode_format->get_format_id() ] ?? null;
+			if ( $format_obj instanceof Video_Format ) {
+				$encode_info      = new Encode_Info( $this->id, (string) $this->url, $format_obj, $this->options, $this->format_registry );
+				$wp_attachment_id = (int) $encode_info->id;
+				if ( ! $wp_attachment_id ) {
+					$wp_attachment_id = (int) $this->attachment_manager->url_to_id( (string) $encode_info->url );
+				}
+				if ( $wp_attachment_id > 0 ) {
+					$encode_format->set_id( $wp_attachment_id );
+					$this->save_format( $encode_format ); // Update the record for next time.
+				}
+			}
+		}
+
 		if ( $wp_attachment_id > 0 && (string) get_post_type( $wp_attachment_id ) === 'attachment' ) {
 			if ( $wp_attachment_id !== (int) $this->id ) {
 				if ( (bool) $delete_attachment ) {

@@ -37,7 +37,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	} = settings;
 
 	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' && !!config.isTranscodingServiceReady) ||
+		(active_encoder !== 'ffmpeg' && ( !!config.isTranscodingServiceReady || !!config.is_pro ) ) ||
 		ffmpeg_exists === true ||
 		ffmpeg_exists === 'true' ||
 		ffmpeg_exists === 1 ||

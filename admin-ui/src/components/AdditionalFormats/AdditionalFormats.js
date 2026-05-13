@@ -75,7 +75,7 @@ const AdditionalFormats = ({
 	const parentId = providedParentId || attributes.id || 0;
 	const src = propSrc || attributes.src;
 	const { ffmpeg_exists, active_encoder = 'ffmpeg' } = options;
-	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && !!videopack_config.isTranscodingServiceReady ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
+	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
 	const [videoFormats, setVideoFormats] = useState(null);
 	const isExternal = useMemo(() => {
 		let isSrcExternal = false;
@@ -152,6 +152,8 @@ const AdditionalFormats = ({
 						'needs_insert',
 						'pending_replacement',
 						'remote_exists',
+						'browser_pending',
+						'browser_encoding',
 					].includes(newFormat.status);
 
 					newFormat.checked =
@@ -271,6 +273,32 @@ const AdditionalFormats = ({
 		let pollTimer = null;
 		let isMounted = true;
 
+		// Handle real-time progress updates from browser encoder via CustomEvents
+		const handleBrowserProgress = (event) => {
+			const { job_id, format_id, percent } = event.detail;
+			setVideoFormats((prevFormats) => {
+				if (!prevFormats) return prevFormats;
+				const updatedFormats = { ...prevFormats };
+				const format = updatedFormats[format_id];
+				if (format && (format.job_id === job_id || (!format.job_id && format.status === 'browser_pending'))) {
+					updatedFormats[format_id] = {
+						...format,
+						status: 'encoding',
+						encoding_now: true,
+						progress: {
+							...(typeof format.progress === 'object' ? format.progress : {}),
+							percent: percent,
+							status: 'encoding'
+						}
+					};
+					return updatedFormats;
+				}
+				return prevFormats;
+			});
+		};
+
+		window.addEventListener('videopack_browser_progress', handleBrowserProgress);
+
 		// Manage polling logic based on isEncoding state
 		if (isEncoding && isOpen) {
 			const runPoll = async () => {
@@ -303,6 +331,7 @@ const AdditionalFormats = ({
 
 		return () => {
 			isMounted = false;
+			window.removeEventListener('videopack_browser_progress', handleBrowserProgress);
 			if (pollTimer) {
 				clearTimeout(pollTimer);
 			}
@@ -400,19 +429,38 @@ const AdditionalFormats = ({
 					siteSettings?.language || 'en-US'
 				);
 
-				setEncodeMessage(
-					sprintf(
-						/* translators: %1$d is the number of jobs. %2$s is the ordinal position (e.g. 1st, 2nd). */
-						_n(
-							'%1$d job added to queue in %2$s position.',
-							'%1$d jobs added to queue starting in %2$s position.',
+				let successMsg = (
+					<span>
+						{ sprintf(
+							/* translators: %1$d is the number of jobs. %2$s is the ordinal position (e.g. 1st, 2nd). */
+							_n(
+								'%1$d job added to queue in %2$s position.',
+								'%1$d jobs added to queue starting in %2$s position.',
+								jobCount,
+								'video-embed-thumbnail-generator'
+							),
 							jobCount,
-							'video-embed-thumbnail-generator'
-						),
-						jobCount,
-						ordinalPosition
-					)
+							ordinalPosition
+						) }
+					</span>
 				);
+
+				if ( active_encoder === 'browser' ) {
+					successMsg = (
+						<div>
+							<p>{ successMsg }</p>
+							<p>
+								{ __( 'Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator' ) }
+								{ ' ' }
+								<a href={ videopack_config.queue_url }>
+									{ __( 'Go to Queue Page', 'video-embed-thumbnail-generator' ) }
+								</a>
+							</p>
+						</div>
+					);
+				}
+
+				setEncodeMessage( successMsg );
 			}
 			fetchVideoFormats(); // Re-fetch to update statuses
 		} catch (error) {
