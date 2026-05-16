@@ -63,4 +63,13 @@ class Video_Codec_VP9 extends Video_Codec {
 
 		return $vbr_flags;
 	}
+
+	/**
+	 * Returns the CMAF/HLS codec string for VP9.
+	 *
+	 * @return string The codec string.
+	 */
+	public function get_cmaf_codec_string() {
+		return 'vp09.00.10.08,mp4a.40.2';
+	}
 }

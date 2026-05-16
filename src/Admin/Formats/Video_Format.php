@@ -85,6 +85,9 @@ class Video_Format {
 	 * @return string
 	 */
 	public function get_name() {
+		if ( ! empty( $this->label ) ) {
+			return $this->label;
+		}
 		$name = $this->codec->get_name() . ' ' . $this->resolution->get_name();
 		/* translators: %s is the video format name (ex. H.264 1080p). */
 		return $this->replaces_original ? sprintf( (string) __( 'Replace original (%s)', 'video-embed-thumbnail-generator' ), $name ) : $name;
@@ -96,9 +99,21 @@ class Video_Format {
 	 * @return string
 	 */
 	public function get_short_name() {
+		if ( ! empty( $this->label ) ) {
+			return $this->label;
+		}
 		$name = $this->codec->get_label() . ' ' . $this->resolution->get_label();
 		/* translators: %s is the video format label (ex. H.264 1080p). */
 		return $this->replaces_original ? sprintf( (string) __( 'Replace original (%s)', 'video-embed-thumbnail-generator' ), $name ) : $name;
+	}
+
+	/**
+	 * Set the video format label.
+	 *
+	 * @param string $label The label.
+	 */
+	public function set_label( $label ) {
+		$this->label = (string) $label;
 	}
 
 	/**
@@ -204,6 +219,15 @@ class Video_Format {
 	 */
 	public function get_replaces_original() {
 		return $this->replaces_original;
+	}
+
+	/**
+	 * Sets whether this video format replaces the original file.
+	 *
+	 * @param bool $replaces True to replace, false otherwise.
+	 */
+	public function set_replaces_original( $replaces ) {
+		$this->replaces_original = (bool) $replaces;
 	}
 
 	/**

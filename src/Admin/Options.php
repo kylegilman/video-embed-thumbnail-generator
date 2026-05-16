@@ -539,7 +539,9 @@ class Options implements Hook_Subscriber {
 			}
 
 			$att_type = 'string';
-			if ( is_bool( $value ) || 'ffmpeg_exists' === $option ) {
+			if ( in_array( $option, array( 'h264_level', 'h265_level' ), true ) ) {
+				$att_type = 'string';
+			} elseif ( is_bool( $value ) || 'ffmpeg_exists' === $option ) {
 				$att_type = array( 'boolean', 'string' );
 			} elseif ( is_numeric( $value ) ) {
 				$att_type = array( 'number', 'string' );
@@ -789,6 +791,13 @@ class Options implements Hook_Subscriber {
 
 		if ( isset( $input['embed_method'] ) && 'WordPress Default' === $input['embed_method'] ) {
 			$input['skin'] = 'vjs-theme-videopack';
+		}
+
+		if ( isset( $input['h264_level'] ) ) {
+			$input['h264_level'] = (string) $input['h264_level'];
+		}
+		if ( isset( $input['h265_level'] ) ) {
+			$input['h265_level'] = (string) $input['h265_level'];
 		}
 
 		$this->options = (array) $input;

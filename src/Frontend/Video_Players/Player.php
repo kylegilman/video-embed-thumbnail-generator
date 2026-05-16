@@ -112,6 +112,15 @@ class Player {
 	}
 
 	/**
+	 * Returns the plugin options.
+	 *
+	 * @return array Options array.
+	 */
+	public function get_options(): array {
+		return (array) $this->options;
+	}
+
+	/**
 	 * Registers WordPress hooks.
 	 */
 	public function register_hooks() {
@@ -445,7 +454,19 @@ class Player {
 			$group['sources'] = $sources;
 		}
 
-		$this->sources = $grouped_sources;
+		$this->sources = apply_filters( 'videopack_grouped_sources', $grouped_sources, $this->atts, $this );
+	}
+
+	/**
+	 * Returns the grouped sources.
+	 *
+	 * @return array Grouped sources.
+	 */
+	public function get_source_groups(): array {
+		if ( ! $this->sources ) {
+			$this->set_sources();
+		}
+		return (array) $this->sources;
 	}
 
 	/**
@@ -714,10 +735,10 @@ class Player {
 
 		foreach ( $this->get_flat_sources() as $source ) {
 			$source_elements .= '<source src="' . $source['src'] . '" type="' . $source['type'];
-			// Only include the codecs parameter for H.264 (avc1), as browsers are lenient with it.
-			// For other formats (HEVC, VP9, AV1), the simple FourCC code is insufficient and causes playback failures in Chrome.
-			if ( ! empty( $source['codecs'] ) && 'avc1' === $source['codecs'] ) {
-				$source_elements .= '; codecs=' . $source['codecs'];
+			// Include codecs if present. For adaptive streaming, these can be complex strings with dots and commas.
+			if ( ! empty( $source['codecs'] ) ) {
+				// Use single quotes for the codecs parameter value to avoid breaking the double-quoted type attribute.
+				$source_elements .= '; codecs=\'' . $source['codecs'] . '\'';
 			}
 			$source_elements .= '"';
 			$source_elements .= $this->get_source_atts( $source );

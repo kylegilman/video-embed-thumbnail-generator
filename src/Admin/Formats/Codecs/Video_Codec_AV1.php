@@ -42,4 +42,13 @@ class Video_Codec_AV1 extends Video_Codec {
 
 		parent::__construct( $properties );
 	}
+
+	/**
+	 * Returns the CMAF/HLS codec string for AV1.
+	 *
+	 * @return string The codec string.
+	 */
+	public function get_cmaf_codec_string() {
+		return 'av01.0.08M.08,mp4a.40.2';
+	}
 }

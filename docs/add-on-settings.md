@@ -49,9 +49,32 @@ The base plugin implements a "corruption protection" layer. Any key present in t
 
 This is why step #1 (Registering Defaults) is critical—if you skip it, your data will be deleted from the database shortly after the plugin boots.
 
+### 5. Dynamic Objects and Dictionaries
+
+If your setting is an object with dynamic keys (e.g., a dictionary of values where the keys are not known in advance), you should use the `additionalProperties` keyword in your schema.
+
+**Example:**
+```php
+$schema['my_dictionary'] = array(
+    'type'                 => 'object',
+    'additionalProperties' => array( 'type' => 'number' ),
+);
+```
+
+> [!TIP]
+> Whenever possible, it is better to **dynamically explicitly define** the properties in your schema by querying the same registries (like `Formats\Registry`) used for your defaults. This ensures that every key is recognized as a primary property, leading to more robust sanitization and better compatibility with the Admin UI.
+
+### 6. Structural Alignment
+
+Your schema must structure objects exactly as they appear in your defaults. If a default value is an associative array (key-value pairs), the schema type must be `object`. If the default value is a simple list (index-based array), the schema type must be `array`. 
+
+> [!WARNING]
+> If your default value is an empty associative array intended to be an object, cast it to an object in PHP: `(object) array()`. This ensures it is serialized as `{}` instead of `[]` in JSON, which is required for the REST API to validate it against an `object` schema.
+
 ## Checklist for New Settings
 
 - [ ] Add the key and default value to the `videopack_default_options` filter.
 - [ ] Add the type definition and schema to the `videopack_settings_schema` filter.
+- [ ] For complex objects, use dynamic generation or `additionalProperties`.
 - [ ] Ensure your hooks are registered at or before the `init` action.
 - [ ] (Optional) Add a custom `sanitize_callback` via the `videopack_sanitize_options` filter if specialized validation is required.

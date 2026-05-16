@@ -214,9 +214,10 @@
 
 			const sources = Array.from(videoElement.querySelectorAll('source'));
 			const hasResolutions = sources.some((s) => s.dataset.res);
+			const hasAdaptive = sources.some((s) => s.type && (s.type.startsWith('application/x-mpegURL') || s.type.startsWith('application/dash+xml')));
 			const source_groups = videoVars.source_groups || {};
 
-			if (hasResolutions || (source_groups && Object.keys(source_groups).length > 1)) {
+			if (hasResolutions || hasAdaptive || (source_groups && Object.keys(source_groups).length > 1)) {
 				if (videojs.VERSION.split('.')[0] >= 5) {
 					videojsOptions.plugins = videojsOptions.plugins || {};
 					videojsOptions.plugins.resolutionSelector = {

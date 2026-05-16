@@ -22,6 +22,8 @@ import {
 	setPosterImage,
 	createThumbnailFromCanvas,
 } from '../../api/thumbnails';
+import { getVideoFormats } from '../../api/gallery';
+import { deleteFile } from '../../api/media';
 import { enqueueJob, listJobs } from '../../api/jobs';
 import {
 	captureVideoFrame,
@@ -60,6 +62,9 @@ const Thumbnails = ({
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [spriteMessage, setSpriteMessage] = useState(null);
 	const [cloudJobs, setCloudJobs] = useState([]);
+	const [existingSprite, setExistingSprite] = useState(null); // { id, url, status }
+	const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	// Poll for active thumbnail jobs if any exist
 	useEffect(() => {
@@ -70,12 +75,19 @@ const Thumbnails = ({
 				const jobs = await listJobs(id);
 				const activeThumbnailJobs = jobs.filter(
 					(job) =>
-						job.format_id === 'thumbnail' &&
-						['queued', 'processing', 'encoding', 'cloud_encoding'].includes(job.status)
+						(job.format_id === 'thumbnail' ||
+							job.format_id === 'thumbnail_sprite') &&
+						[
+							'queued',
+							'processing',
+							'encoding',
+							'cloud_encoding',
+						].includes(job.status)
 				);
 				setCloudJobs(activeThumbnailJobs);
 
 				if (activeThumbnailJobs.length === 0 && cloudJobs.length > 0) {
+					fetchSpriteStatus();
 					// Jobs just finished, maybe refresh the poster if it was just set
 					if (id) {
 						// Optionally trigger a refresh of videoData if needed
@@ -93,8 +105,39 @@ const Thumbnails = ({
 
 		return () => clearInterval(pollInterval);
 	}, [id]);
+
+	const fetchSpriteStatus = useCallback(async () => {
+		if (!id || !src) {
+			return;
+		}
+		try {
+			const formats = await getVideoFormats(id, src, probedMetadata);
+			const spriteFormat = formats.thumbnail_sprite;
+			console.log('Sprite detection:', { id, spriteFormat });
+			if (spriteFormat && spriteFormat.exists) {
+				setExistingSprite({
+					id: spriteFormat.id,
+					url: spriteFormat.url,
+					status: spriteFormat.status,
+				});
+			} else {
+				setExistingSprite(null);
+			}
+		} catch (error) {
+			console.error('Error fetching sprite status:', error);
+		}
+	}, [id, src, probedMetadata]);
+
+	useEffect(() => {
+		fetchSpriteStatus();
+	}, [fetchSpriteStatus]);
 	const { active_encoder = 'ffmpeg' } = options;
-	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
+	const effectiveFfmpegExists =
+		(active_encoder !== 'ffmpeg' &&
+			(!!videopack_config.isTranscodingServiceReady ||
+				!!videopack_config.is_pro)) ||
+		(!!videopack_config.ffmpeg_exists &&
+			videopack_config.ffmpeg_exists !== 'notinstalled');
 	const ffmpegExists = effectiveFfmpegExists;
 	const { editPost } = useDispatch('core/editor') || {};
 	const isEditingAttachment = useSelect(
@@ -135,7 +178,7 @@ const Thumbnails = ({
 			}
 		}
 	}, [poster]);
- 
+
 	useEffect(() => {
 		if (spriteMessage && spriteMessage.type !== 'error') {
 			const timer = setTimeout(() => {
@@ -165,10 +208,7 @@ const Thumbnails = ({
 		setThumbChoices([]);
 		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
 
-		if (
-			!browserThumbnailsEnabled &&
-			!!ffmpegExists
-		) {
+		if (!browserThumbnailsEnabled && !!ffmpegExists) {
 			// Browser thumbnails explicitly disabled, use FFmpeg directly
 			const newThumbImages = [];
 			let workingId = Number(id);
@@ -183,7 +223,10 @@ const Thumbnails = ({
 				if (response?.status === 'cloud_queued') {
 					setSpriteMessage({
 						type: 'success',
-						text: __('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator'),
+						text: __(
+							'Thumbnail generation enqueued in the cloud. This may take a few minutes.',
+							'video-embed-thumbnail-generator'
+						),
 					});
 					setIsSaving(false);
 					return;
@@ -218,8 +261,13 @@ const Thumbnails = ({
 		setSpriteTiles([]);
 
 		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
-		const rawFfmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
-		const activeEncoderIsCloud = active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro );
+		const rawFfmpegExists =
+			!!videopack_config.ffmpeg_exists &&
+			videopack_config.ffmpeg_exists !== 'notinstalled';
+		const activeEncoderIsCloud =
+			active_encoder !== 'ffmpeg' &&
+			(!!videopack_config.isTranscodingServiceReady ||
+				!!videopack_config.is_pro);
 
 		if (
 			!browserThumbnailsEnabled &&
@@ -231,22 +279,27 @@ const Thumbnails = ({
 				await enqueueJob(
 					activeId,
 					src,
-					{ thumbnail_sprite_sprite: true },
+					{ thumbnail_sprite: true },
 					parentId
 				);
 				let successMsg = __(
 					'Sprite generation enqueued. Check Additional Formats panel for progress.',
 					'video-embed-thumbnail-generator'
 				);
-				if ( videopack_config.active_encoder === 'browser' ) {
+				if (videopack_config.active_encoder === 'browser') {
 					successMsg = (
 						<div>
-							<p>{ successMsg }</p>
+							<p>{successMsg}</p>
 							<p>
-								{ __( 'Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator' ) }
-								{ ' ' }
-								<a href={ videopack_config.queue_url }>
-									{ __( 'Go to Queue Page', 'video-embed-thumbnail-generator' ) }
+								{__(
+									'Browser encoding is active. Processing will only occur while the Videopack Queue page is open.',
+									'video-embed-thumbnail-generator'
+								)}{' '}
+								<a href={videopack_config.queue_url}>
+									{__(
+										'Go to Queue Page',
+										'video-embed-thumbnail-generator'
+									)}
 								</a>
 							</p>
 						</div>
@@ -257,6 +310,7 @@ const Thumbnails = ({
 					text: successMsg,
 				});
 				// If we have an Additional Formats panel nearby, it will handle polling.
+				fetchSpriteStatus(); // Initial check after enqueue
 			} catch (error) {
 				console.error('Sprite enqueue failed', error);
 				setSpriteMessage({
@@ -340,11 +394,43 @@ const Thumbnails = ({
 					filename_suffix: '_thumbnail-sprite',
 				}
 			);
+			fetchSpriteStatus();
 		} catch (error) {
 			console.error('Sprite generation failed', error);
 		} finally {
 			setIsSaving(false);
 			setSpriteTiles([]);
+		}
+	};
+
+	const handleDeleteSprite = async () => {
+		if (!existingSprite || !existingSprite.id) {
+			return;
+		}
+
+		setIsConfirmDeleteOpen(false);
+		setIsDeleting(true);
+		try {
+			await deleteFile(existingSprite.id);
+			setExistingSprite(null);
+			setSpriteMessage({
+				type: 'success',
+				text: __(
+					'Sprite sheet deleted successfully.',
+					'video-embed-thumbnail-generator'
+				),
+			});
+		} catch (error) {
+			console.error('Failed to delete sprite:', error);
+			setSpriteMessage({
+				type: 'error',
+				text: __(
+					'Error: Failed to delete sprite sheet.',
+					'video-embed-thumbnail-generator'
+				),
+			});
+		} finally {
+			setIsDeleting(false);
 		}
 	};
 
@@ -442,7 +528,10 @@ const Thumbnails = ({
 							if (response?.status === 'cloud_queued') {
 								setSpriteMessage({
 									type: 'success',
-									text: __('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator'),
+									text: __(
+										'Thumbnail generation enqueued in the cloud. This may take a few minutes.',
+										'video-embed-thumbnail-generator'
+									),
 								});
 								setIsSaving(false);
 								return; // Stop the loop, it's offloaded to cloud
@@ -696,7 +785,7 @@ const Thumbnails = ({
 			};
 
 			// If we just created the attachment, ensure the ID is included
-			if (new_attachment_id && ( ! id || Number(id) === 0 ) ) {
+			if (new_attachment_id && (!id || Number(id) === 0)) {
 				finalAttributes.id = Number(new_attachment_id);
 			}
 
@@ -801,7 +890,10 @@ const Thumbnails = ({
 					if (response?.status === 'cloud_queued') {
 						setSpriteMessage({
 							type: 'success',
-							text: __('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator'),
+							text: __(
+								'Thumbnail generation enqueued in the cloud. This may take a few minutes.',
+								'video-embed-thumbnail-generator'
+							),
 						});
 						setIsSaving(false);
 					} else if (response?.real_thumb_url) {
@@ -820,7 +912,7 @@ const Thumbnails = ({
 
 		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
 
-		if ( ! browserThumbnailsEnabled || canvasTainted ) {
+		if (!browserThumbnailsEnabled || canvasTainted) {
 			await runFfmpegFallback();
 			return;
 		}
@@ -924,7 +1016,10 @@ const Thumbnails = ({
 					<div className="videopack-active-jobs">
 						<Spinner />
 						<p>
-							{__('Cloud thumbnail generation in progress...', 'video-embed-thumbnail-generator')}
+							{__(
+								'Cloud thumbnail generation in progress…',
+								'video-embed-thumbnail-generator'
+							)}
 						</p>
 					</div>
 				)}
@@ -941,63 +1036,90 @@ const Thumbnails = ({
 						});
 					}}
 				/>
-				<NumberControl
-					__next40pxDefaultSize
-					min={1}
-					max={99}
-					required={true}
-					value={total_thumbnails}
-					onChange={(value) => {
-						if (!value) {
-							setAttributes({
-								...attributes,
-								total_thumbnails: '',
-							});
-						} else {
-							setAttributes({
-								...attributes,
-								total_thumbnails: Number(value),
-							});
+				<div className="videopack-generation-controls">
+					<NumberControl
+						value={total_thumbnails}
+						min={1}
+						max={100}
+						onChange={(value) => {
+							if (isNaN(value) || value < 1) {
+								setAttributes({
+									...attributes,
+									total_thumbnails: 1,
+								});
+							} else {
+								setAttributes({
+									...attributes,
+									total_thumbnails: Number(value),
+								});
+							}
+						}}
+						className="videopack-total-thumbnails"
+						disabled={
+							isSaving ||
+							((canvasTainted || isProbing) && !ffmpegExists)
 						}
-					}}
-					className="videopack-total-thumbnails"
-					disabled={
-						isSaving ||
-						((canvasTainted || isProbing) && !ffmpegExists)
-					}
-				/>
-				<Button
-					variant="secondary"
-					onClick={() => handleGenerate('generate')}
-					className="videopack-generate"
-					disabled={
-						isSaving ||
-						((canvasTainted || isProbing) && !ffmpegExists)
-					}
-				>
-					{__('Generate', 'video-embed-thumbnail-generator')}
-				</Button>
-				<Button
-					variant="secondary"
-					onClick={() => handleGenerate('random')}
-					className="videopack-generate"
-					disabled={
-						isSaving ||
-						((canvasTainted || isProbing) && !ffmpegExists)
-					}
-				>
-					{__('Random', 'video-embed-thumbnail-generator')}
-				</Button>
-				{videopack_config.is_pro && (
-					<Button
-						variant="secondary"
-						onClick={handleGenerateSprite}
-						className="videopack-generate-sprite"
-						disabled={isSaving || isProbing || (canvasTainted && !ffmpegExists)}
-					>
-						{__('Sprite', 'video-embed-thumbnail-generator')}
-					</Button>
-				)}
+						label={__('Total', 'video-embed-thumbnail-generator')}
+						hideLabelFromVision
+					/>
+					<div className="videopack-generation-actions">
+						<Button
+							variant="secondary"
+							onClick={() => handleGenerate('generate')}
+							className="videopack-generate"
+							disabled={
+								isSaving ||
+								((canvasTainted || isProbing) && !ffmpegExists)
+							}
+						>
+							{__('Generate', 'video-embed-thumbnail-generator')}
+						</Button>
+						<Button
+							variant="secondary"
+							onClick={() => handleGenerate('random')}
+							className="videopack-generate"
+							disabled={
+								isSaving ||
+								((canvasTainted || isProbing) && !ffmpegExists)
+							}
+						>
+							{__('Random', 'video-embed-thumbnail-generator')}
+						</Button>
+						{videopack_config.is_pro && (
+							<Button
+								variant="secondary"
+								onClick={
+									existingSprite
+										? () => setIsConfirmDeleteOpen(true)
+										: handleGenerateSprite
+								}
+								className={
+									existingSprite
+										? 'videopack-delete-sprite'
+										: 'videopack-generate-sprite'
+								}
+								disabled={
+									isSaving ||
+									isProbing ||
+									(canvasTainted && !ffmpegExists) ||
+									isDeleting
+								}
+								isBusy={isDeleting}
+								isDestructive={!!existingSprite}
+							>
+								{existingSprite
+									? __(
+											'Delete Sprite',
+											'video-embed-thumbnail-generator'
+										)
+									: __(
+											'Sprite',
+											'video-embed-thumbnail-generator'
+										)}
+							</Button>
+						)}
+					</div>
+				</div>
 				{spriteMessage && (
 					<Notice
 						status={spriteMessage.type}
@@ -1022,7 +1144,7 @@ const Thumbnails = ({
 							{sprintf(
 								/* translators: %d is the number of tiles captured */
 								__(
-									'Capturing sprite tiles... (%d)',
+									'Capturing sprite tiles… (%d)',
 									'video-embed-thumbnail-generator'
 								),
 								spriteTiles.length
@@ -1163,6 +1285,48 @@ const Thumbnails = ({
 							}
 							isModal={true}
 						/>
+					</Modal>
+				)}
+				{isConfirmDeleteOpen && (
+					<Modal
+						title={__(
+							'Delete Sprite Sheet',
+							'video-embed-thumbnail-generator'
+						)}
+						onRequestClose={() => setIsConfirmDeleteOpen(false)}
+					>
+						<p>
+							{__(
+								'Are you sure you want to permanently delete this sprite sheet? This action cannot be undone.',
+								'video-embed-thumbnail-generator'
+							)}
+						</p>
+						<div className="videopack-modal-actions">
+							<Button
+								variant="secondary"
+								onClick={() => setIsConfirmDeleteOpen(false)}
+							>
+								{__(
+									'Cancel',
+									'video-embed-thumbnail-generator'
+								)}
+							</Button>
+							<Button
+								variant="primary"
+								isDestructive
+								onClick={handleDeleteSprite}
+								disabled={isDeleting}
+							>
+								{isDeleting ? (
+									<Spinner />
+								) : (
+									__(
+										'Delete',
+										'video-embed-thumbnail-generator'
+									)
+								)}
+							</Button>
+						</div>
 					</Modal>
 				)}
 			</PanelBody>

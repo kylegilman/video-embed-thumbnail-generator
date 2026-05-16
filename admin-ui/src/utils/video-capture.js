@@ -30,18 +30,25 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
 			video = source;
 		}
 
-		const onSeeked = async () => {
-			// Clean up listeners if we added them
-			if (isTempVideo) {
-				video.removeEventListener('seeked', onSeeked);
-				video.removeEventListener('error', onError);
-			}
-
+		const processFrame = async () => {
 			const canvas = document.createElement('canvas');
 			canvas.width = video.videoWidth;
 			canvas.height = video.videoHeight;
 			const ctx = canvas.getContext('2d');
-			ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+			// Use VideoFrame if supported for slightly better performance/memory
+			if (window.VideoFrame) {
+				try {
+					const frame = new VideoFrame(video);
+					ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+					frame.close();
+				} catch (e) {
+					// Fallback to direct video drawing if VideoFrame fails
+					ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+				}
+			} else {
+				ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+			}
 
 			if (watermarkOptions && watermarkOptions.url) {
 				try {
@@ -59,9 +66,18 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
 			}
 		};
 
+		const onFrameReady = () => {
+			// Clean up listeners if we added them
+			if (isTempVideo) {
+				video.removeEventListener('seeked', onFrameReady);
+				video.removeEventListener('error', onError);
+			}
+			processFrame();
+		};
+
 		const onError = (e) => {
 			if (isTempVideo) {
-				video.removeEventListener('seeked', onSeeked);
+				video.removeEventListener('seeked', onFrameReady);
 				video.removeEventListener('error', onError);
 			}
 			reject(e);
@@ -72,37 +88,37 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
 			if (video.duration < seekTime) {
 				seekTime = video.duration / 2;
 			}
+
+			// Use requestVideoFrameCallback if available for frame-accurate capture
+			if ('requestVideoFrameCallback' in video) {
+				video.requestVideoFrameCallback(() => {
+					onFrameReady();
+				});
+			} else {
+				// Fallback to legacy seeked event
+				video.addEventListener('seeked', onFrameReady);
+			}
+
 			video.currentTime = seekTime;
 		};
 
 		if (isTempVideo) {
-			video.addEventListener('seeked', onSeeked);
 			video.addEventListener('error', onError);
 			video.addEventListener('loadedmetadata', onLoadedMetadata);
-			// Trigger load
 			video.load();
 		} else {
-			// For existing video element, just seek
-			const oneShotSeek = async () => {
-				video.removeEventListener('seeked', oneShotSeek);
-
-				const canvas = document.createElement('canvas');
-				canvas.width = video.videoWidth;
-				canvas.height = video.videoHeight;
-				const ctx = canvas.getContext('2d');
-				ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-				if (watermarkOptions && watermarkOptions.url) {
-					try {
-						await drawWatermark(canvas, watermarkOptions);
-					} catch (e) {
-						console.error('Watermark failed', e);
-					}
-				}
-
-				resolve(canvas);
-			};
-			video.addEventListener('seeked', oneShotSeek);
+			// For existing video element
+			if ('requestVideoFrameCallback' in video) {
+				video.requestVideoFrameCallback(() => {
+					processFrame();
+				});
+			} else {
+				const oneShotSeek = () => {
+					video.removeEventListener('seeked', oneShotSeek);
+					processFrame();
+				};
+				video.addEventListener('seeked', oneShotSeek);
+			}
 			video.currentTime = time;
 		}
 	});

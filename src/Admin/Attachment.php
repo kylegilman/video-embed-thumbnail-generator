@@ -205,12 +205,18 @@ class Attachment implements Hook_Subscriber {
 			return true;
 		}
 
-		if ( 0 === strpos( (string) $post->post_mime_type, 'video/' ) ) {
+		$streaming_mimes = array(
+			'application/x-mpegURL',
+			'application/vnd.apple.mpegurl',
+			'application/dash+xml',
+		);
+
+		if ( 0 === strpos( (string) $post->post_mime_type, 'video/' ) || in_array( $post->post_mime_type, $streaming_mimes, true ) ) {
 			if ( empty( $post->post_parent ) || (int) $post->post_parent === (int) $post->ID ) {
 				return true;
 			}
 			$parent_mime = get_post_mime_type( (int) $post->post_parent );
-			if ( ! $parent_mime || 0 !== strpos( (string) $parent_mime, 'video/' ) ) {
+			if ( ! $parent_mime || ( 0 !== strpos( (string) $parent_mime, 'video/' ) && ! in_array( $parent_mime, $streaming_mimes, true ) ) ) {
 				return true;
 			}
 			if ( ! empty( get_post_meta( $post->ID, '_kgflashmediaplayer-externalurl', true ) ) ) {

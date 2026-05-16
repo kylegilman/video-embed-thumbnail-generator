@@ -65,7 +65,32 @@ class Sanitizer {
 
 			switch ( $type ) {
 				case 'object':
-					$sanitized_input[ $key ] = is_array( $value ) ? self::sanitize_options_recursively( $value, (array) ( $property_schema['properties'] ?? array() ) ) : sanitize_text_field( (string) $value );
+					$properties = (array) ( $property_schema['properties'] ?? array() );
+					$additional = $property_schema['additionalProperties'] ?? false;
+					
+					if ( is_array( $value ) ) {
+						if ( $additional ) {
+							$sanitized_obj = array();
+							foreach ( $value as $sub_key => $sub_val ) {
+								if ( isset( $properties[ $sub_key ] ) ) {
+									$temp                      = self::sanitize_options_recursively( array( $sub_key => $sub_val ), $properties );
+									$sanitized_obj[ $sub_key ] = $temp[ $sub_key ];
+								} else {
+									if ( is_array( $additional ) && isset( $additional['type'] ) ) {
+										$temp                      = self::sanitize_options_recursively( array( $sub_key => $sub_val ), array( $sub_key => $additional ) );
+										$sanitized_obj[ $sub_key ] = $temp[ $sub_key ];
+									} elseif ( true === $additional ) {
+										$sanitized_obj[ $sub_key ] = is_array( $sub_val ) ? self::sanitize_options_recursively( $sub_val ) : sanitize_text_field( (string) $sub_val );
+									}
+								}
+							}
+							$sanitized_input[ $key ] = $sanitized_obj;
+						} else {
+							$sanitized_input[ $key ] = self::sanitize_options_recursively( $value, $properties );
+						}
+					} else {
+						$sanitized_input[ $key ] = sanitize_text_field( (string) $value );
+					}
 					break;
 				case 'array':
 					$sanitized_input[ $key ] = array();

@@ -85,6 +85,15 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 	}
 
 	/**
+	 * Returns the name of the database table for the encoding queue.
+	 *
+	 * @return string
+	 */
+	public function get_table_name(): string {
+		return $this->queue_table_name;
+	}
+
+	/**
 	 * Returns an array of actions to subscribe to.
 	 *
 	 * @return array
@@ -110,6 +119,18 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			array(
 				'hook'          => 'videopack_cleanup_queue',
 				'callback'      => 'clear_completed_queue',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'          => 'action_scheduler_failed_action',
+				'callback'      => 'handle_as_failure',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'          => 'action_scheduler_timed_out_action',
+				'callback'      => 'handle_as_failure',
 				'priority'      => 10,
 				'accepted_args' => 2,
 			),
@@ -257,7 +278,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$encoder                   = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $input_url );
 		$formats_to_encode         = (array) $this->resolve_replacement_formats( $args['formats'], $encoder );
 		$results                   = array();
-		$successfully_queued_names = array();
+		$successfully_queued_items = array();
 		$video_formats_objects     = $this->format_registry->get_video_formats();
 
 		foreach ( $formats_to_encode as $key => $format_to_encode ) {
@@ -271,7 +292,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				$name                        = ( is_array( $video_formats_objects ) && isset( $video_formats_objects[ $format_id ] ) )
 					? $video_formats_objects[ $format_id ]->get_name()
 					: $format_id;
-				$successfully_queued_names[] = $name;
+				$successfully_queued_items[] = array(
+					'id'   => $format_id,
+					'name' => $name,
+				);
 			}
 		}
 		// After enqueuing, trigger the queue processor with a short delay.
@@ -287,7 +311,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			'log'                => $this->queue_log->get_log(),
 			'results'            => $results,
 			'new_queue_position' => $this->get_queue_size(),
-			'encode_list'        => $successfully_queued_names,
+			'encode_list'        => $successfully_queued_items,
 		);
 	}
 
@@ -470,6 +494,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 									$update_data,
 									array( 'id' => $job_id )
 								);
+								do_action( 'videopack_job_completed', $job_id, $encode_format_obj );
 								$this->maybe_auto_publish_post( $job['attachment_id'], $job['blog_id'] );
 							} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
 								// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -510,6 +535,13 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 							// Freed up an encoding slot!
 							$this->schedule_immediate_heartbeat();
 						} elseif ( $progress_status === 'recheck' || $encode_format_obj->get_status() === 'encoding' ) {
+							// Update the timestamp even if status hasn't changed to prevent watchdog timeouts.
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								array( 'updated_at' => current_time( 'mysql', true ) ),
+								array( 'id' => $job_id )
+							);
 							// If logfile not found yet, or still encoding, recheck.
 							as_schedule_single_action( time() + 30, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
 						}
@@ -523,16 +555,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 					case Encode_Format::STATUS_NEEDS_INSERT:
 					case Encode_Format::STATUS_PENDING_REPLACEMENT:
 						$encode_format_obj = Encode_Format::from_array( $job );
-						error_log( "[Videopack] Debug: Attempting insert_attachment for job " . $job['id'] );
 						$inserted          = $encoder->insert_attachment( $encode_format_obj );
 						if ( $inserted ) {
-							error_log( "[Videopack] Debug: insert_attachment returned true for job " . $job['id'] );
-						} else {
-							error_log( "[Videopack] ERROR: insert_attachment returned false for job " . $job['id'] );
-						}
-
-						if ( $inserted ) {
-							$update_data = array( 'status' => 'completed' );
+							$new_status  = $encode_format_obj->get_status();
+							$update_data = array( 'status' => ( 'offloading' === $new_status ) ? 'offloading' : 'completed' );
 							if ( $encode_format_obj->get_id() ) {
 								$update_data['output_attachment_id'] = $encode_format_obj->get_id();
 							}
@@ -652,9 +678,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				
 				$progress = null;
 				if ( ! empty( $encode_format->get_cloud_job_id() ) ) {
-					error_log( sprintf( '[Videopack] Heartbeat: Checking cloud job status for job %d', $job_id ) );
 					do_action( 'videopack_check_cloud_job_status', $encode_format, $job_data );
-					error_log( sprintf( '[Videopack] Heartbeat: Cloud job status is now %s', $encode_format->get_status() ) );
 					$progress_data = $encode_format->get_progress();
 					$progress      = is_array( $progress_data ) ? ( $progress_data['percent'] ?? null ) : null;
 				} else {
@@ -672,10 +696,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 				if ( $status_changed_now || $cloud_meta_changed || $progress_changed ) {
 					$new_status  = $encode_format->get_status();
-					
-					if ( $status_changed_now ) {
-						error_log( sprintf( '[Videopack] Heartbeat: Status changed from %s to %s for job %d', $job_data['status'], $new_status, $job_id ) );
-					}
 					
 					$update_data = array(
 						'status'         => $new_status,
@@ -999,6 +1019,12 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				return new \WP_Error( 'videopack_delete_failed', $error_message, array( 'status' => 500 ) );
 			}
 
+			if ( ! $updated_job ) {
+				// If the job was deleted from the database entirely, we return the original job data with status updated.
+				$job['status'] = 'deleted';
+				return $job;
+			}
+
 			return Encode_Format::from_array( $updated_job )->to_array();
 		} finally {
 			if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
@@ -1055,6 +1081,14 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 			// Also cancel any pending ActionScheduler actions for this job.
 			as_unschedule_action( 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+
+			/**
+			 * Fires after an encoding job is removed from the queue.
+			 *
+			 * @param int   $job_id The ID of the job being removed.
+			 * @param array $job    The raw job data (fetched before deletion).
+			 */
+			do_action( 'videopack_remove_job', $job_id, $job );
 
 			return true;
 
@@ -1650,5 +1684,57 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				array( 'id' => $job_id )
 			);
 		}
+	}
+	
+	/**
+	 * Handles Action Scheduler failures and timeouts by marking the corresponding job as failed.
+	 *
+	 * @param int        $action_id The Action Scheduler action ID.
+	 * @param \Exception $exception Optional exception that caused the failure.
+	 */
+	public function handle_as_failure( $action_id, $exception = null ) {
+		if ( ! class_exists( 'ActionScheduler' ) ) {
+			return;
+		}
+
+		$action = \ActionScheduler::store()->fetch_action( $action_id );
+		if ( ! $action || ! in_array( $action->get_hook(), array( 'videopack_handle_job', 'videopack_start_encode' ), true ) ) {
+			return;
+		}
+
+		global $wpdb;
+		$args   = $action->get_args();
+		$job_id = null;
+
+		if ( $action->get_hook() === 'videopack_handle_job' ) {
+			$job_id = $args['job_id'] ?? null;
+		} elseif ( $action->get_hook() === 'videopack_start_encode' ) {
+			$attachment_id = $args[0] ?? null;
+			$format_id     = $args[1] ?? null;
+			if ( $attachment_id && $format_id ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$job_id = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE attachment_id = %d AND format_id = %s ORDER BY created_at DESC LIMIT 1', $this->queue_table_name, $attachment_id, $format_id ) );
+			}
+		}
+
+		if ( ! $job_id ) {
+			return;
+		}
+
+		$error_message = $exception ? $exception->getMessage() : __( 'Background task (Action Scheduler) failed or timed out.', 'video-embed-thumbnail-generator' );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->update(
+			$this->queue_table_name,
+			array(
+				'status'        => Encode_Format::STATUS_FAILED,
+				'error_message' => $error_message,
+				'failed_at'     => current_time( 'mysql', true ),
+			),
+			array( 'id' => (int) $job_id )
+		);
+
+		$this->send_error_email( (int) $job_id );
+		wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
 	}
 }
