@@ -451,7 +451,14 @@ class FFmpeg_Thumbnails {
 			$is_local_temp_file = ( 0 === strpos( (string) $thumb_url, $tmp_prefix ) );
 
 			$video_post_title = (string) html_entity_decode( (string) get_the_title( (int) $attachment_id ), ENT_QUOTES, 'UTF-8' );
-			$desc             = $video_post_title . ' ' . (string) esc_html_x( 'thumbnail', 'text appended to newly created thumbnail titles', 'video-embed-thumbnail-generator' );
+			/**
+			 * Filters the type of description appended to the newly created thumbnail title.
+			 *
+			 * @param string $desc_type       The type of description (default 'thumbnail').
+			 * @param string $filename_suffix The filename suffix used for the thumbnail.
+			 */
+			$desc_type        = (string) apply_filters( 'videopack_thumb_desc_type', 'thumbnail', $filename_suffix );
+			$desc             = $video_post_title . ' ' . (string) esc_html_x( $desc_type, 'text appended to newly created attachment titles', 'video-embed-thumbnail-generator' );
 			if ( $thumbnail_index ) {
 				$desc .= ' ' . (string) $thumbnail_index;
 			}

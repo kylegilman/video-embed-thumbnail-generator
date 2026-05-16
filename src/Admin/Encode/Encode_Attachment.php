@@ -354,6 +354,9 @@ class Encode_Attachment {
 			'cloud_provider'       => (string) $data_to_save['cloud_provider'],
 			'cloud_meta'           => json_encode( $data_to_save['cloud_meta'] ),
 		);
+		
+		if ( ! empty( $data_to_save['cloud_meta'] ) ) {
+		}
 
 		if ( 'failed' === (string) $data_to_save['status'] ) {
 			$current_failed_at = $wpdb->get_var( $wpdb->prepare( 'SELECT failed_at FROM %i WHERE id = %d', $this->queue_table_name, $job_id ) );
@@ -800,38 +803,9 @@ class Encode_Attachment {
 			return false;
 		}
 
-		// First, check for "same codec" or explicit setting match. This is the user's INTENT.
-		$replace_setting = (string) ( $this->options['replace_format'] ?? 'none' );
-		if ( 'none' !== $replace_setting ) {
-			$match = false;
-			if ( strpos( $replace_setting, 'same_' ) === 0 ) {
-				$source_codec = (string) $this->get_normalized_source_codec();
-				$res_id       = substr( $replace_setting, 5 );
-				$target_codec = (string) $format_obj->get_codec()->get_id();
-				$target_res   = (string) $format_obj->get_resolution()->get_id();
-
-				if ( $target_codec === $source_codec && $target_res === $res_id ) {
-					$match = true;
-				}
-			} elseif ( $format_id === $replace_setting ) {
-				$match = true;
-			}
-
-			if ( $match ) {
-				return true;
-			}
-		}
-
-		// Third, check for any "Full Resolution" format that is enabled.
-		// These are always valid replacement candidates.
-		$res_id   = (string) $format_obj->get_resolution()->get_id();
-		$codec_id = (string) $format_obj->get_codec()->get_id();
-		if ( 'fullres' === $res_id && ! empty( $this->options['encode'][ $codec_id ]['resolutions']['fullres'] ) ) {
-			return true;
-		}
-
-		return false;
+		return (bool) $format_obj->get_replaces_original();
 	}
+
 
 	/**
 	 * Extracts and normalizes the source video codec name.
@@ -882,10 +856,13 @@ class Encode_Attachment {
 			return $encode_format;
 		}
 
-		Debug_Logger::log( 'Starting FFmpeg process', array(
-			'format_id' => (string) $encode_format->get_format_id(),
-			'command'   => implode( ' ', $encode_array ),
-		) );
+		Debug_Logger::log(
+			'Starting FFmpeg process',
+			array(
+				'format_id' => (string) $encode_format->get_format_id(),
+				'command'   => $this->get_command_string( $encode_array ),
+			)
+		);
 
 		$process = new FFmpeg_Process( (array) $encode_array );
 		try {
@@ -927,6 +904,7 @@ class Encode_Attachment {
 			$encode_format->set_error( $msg );
 		} finally {
 			$this->save_format( $encode_format );
+			do_action( 'videopack_start_encode', $encode_format, $this );
 			return $encode_format;
 		}
 	}
@@ -1031,56 +1009,65 @@ class Encode_Attachment {
 		if ( ! empty( $this->current_temp_watermark_path ) ) {
 			$encode_format->set_temp_watermark_path( (string) $this->current_temp_watermark_path );
 		}
-
-		$ffmpeg_flags        = (array) $this->get_ffmpeg_flags( $encode_format );
-		$ffmpeg_flags_before = (array) $this->get_ffmpeg_flags_before( (array) $watermark_flags );
-
-		$encode_array_after_options = array(
-			'-threads',
-			(string) ( $this->options['threads'] ?? '0' ),
-		);
-
-		if ( ! empty( $watermark_flags['input'] ) && ! empty( $watermark_flags['filter'] ) ) {
-			array_push(
-				$encode_array_after_options,
-				'-filter_complex',
-				(string) $watermark_flags['filter']
-			);
-		}
-
 		$uploads_dir = (string) $this->uploads['path'];
 		if ( ! is_dir( $uploads_dir ) ) {
 			wp_mkdir_p( $uploads_dir );
 		}
 		$logfile_name = (string) sanitize_file_name( $basename . '_' . wp_generate_password( 4, false ) . '_encode.txt' );
-		$logfile      = (string) ( $uploads_dir . '/' . $logfile_name );
+		$logfile      = (string) str_replace( '/', DIRECTORY_SEPARATOR, $uploads_dir . '/' . $logfile_name );
 
-		array_push(
-			$encode_array_after_options,
-			'-progress',
-			$logfile,
-			(string) $encode_format->get_path()
-		);
+		$ffmpeg_path = (string) str_replace( '/', DIRECTORY_SEPARATOR, $this->ffmpeg_path );
+		$builder     = new FFmpeg_Command( $ffmpeg_path );
 
-		$encode_array = (array) array_merge(
-			$ffmpeg_flags_before,
-			$ffmpeg_flags,
-			$encode_array_after_options
-		);
-
-		$dimensions_for_filter = array(
-			'width'  => (int) $encode_format->get_encode_width(),
-			'height' => (int) $encode_format->get_encode_height(),
-		);
-
-		$encode_array = (array) apply_filters( 'videopack_generate_encode_array', $encode_array, (string) $this->encode_input, (string) $encode_format->get_path(), $video_metadata, $format_id, $dimensions_for_filter['width'], $dimensions_for_filter['height'] );
-
-		// Update the path on the format object if the filter returned a different output path (usually the last element).
-		$final_output_path = (string) end( $encode_array );
-		if ( ! empty( $final_output_path ) && $final_output_path !== $encode_format->get_path() ) {
-			$encode_format->set_path( $final_output_path );
+		if ( strtoupper( (string) substr( PHP_OS, 0, 3 ) ) !== 'WIN' && (bool) ( $this->options['nice'] ?? false ) ) {
+			$builder->set_executable( 'nice' );
+			$builder->add_global_option( $this->ffmpeg_path );
 		}
 
+		$builder->add_global_option( '-nostats' )
+				->add_global_option( '-hide_banner' )
+				->add_global_option( '-y' );
+
+		// Input.
+		$input_source = (string) $this->encode_input;
+		if ( ! empty( $this->options['htaccess_login'] ) && (bool) filter_var( $input_source, FILTER_VALIDATE_URL ) ) {
+			if ( strpos( $input_source, 'http://' ) === 0 ) {
+				$input_source = (string) substr_replace( $input_source, (string) $this->options['htaccess_login'] . ':' . (string) $this->options['htaccess_password'] . '@', 7, 0 );
+			} elseif ( strpos( $input_source, 'https://' ) === 0 ) {
+				$input_source = (string) substr_replace( $input_source, (string) $this->options['htaccess_login'] . ':' . (string) $this->options['htaccess_password'] . '@', 8, 0 );
+			}
+		}
+		$builder->add_input( $input_source );
+
+		// Watermark input if applicable.
+		if ( ! empty( $watermark_flags['input'] ) && is_file( (string) $watermark_flags['input'] ) ) {
+			$builder->add_input( (string) $watermark_flags['input'] );
+		}
+
+		// Output options.
+		$output_options = (array) $this->get_ffmpeg_flags( $encode_format );
+
+		if ( (bool) ( $this->options['audio_channels'] ?? false ) ) {
+			$output_options[] = '-ac';
+			$output_options[] = '2';
+		}
+
+		$output_options[] = '-threads';
+		$output_options[] = (string) ( $this->options['threads'] ?? '0' );
+
+		if ( ! empty( $watermark_flags['input'] ) && ! empty( $watermark_flags['filter'] ) ) {
+			$output_options[] = '-filter_complex';
+			$output_options[] = (string) $watermark_flags['filter'];
+		}
+
+		$output_options[] = '-progress';
+		$output_options[] = $logfile;
+
+		$builder->add_output( $encode_format->get_path(), $output_options );
+
+		$encode_array = $builder->to_array();
+
+		// Clean up the array before passing it to filters.
 		$encode_array = (array) array_filter(
 			$encode_array,
 			function ( $value ) {
@@ -1094,10 +1081,32 @@ class Encode_Attachment {
 		);
 		$encode_array = array_values( (array) $encode_array );
 
+		$dimensions_for_filter = array(
+			'width'  => (int) $encode_format->get_encode_width(),
+			'height' => (int) $encode_format->get_encode_height(),
+		);
+
+		$encode_array = (array) apply_filters( 'videopack_generate_encode_array', $encode_array, (string) $this->encode_input, (string) $encode_format->get_path(), $video_metadata, $format_id, $dimensions_for_filter['width'], $dimensions_for_filter['height'], $encode_format, $this );
+
 		$encode_format->set_encode_array( (array) $encode_array );
 		$encode_format->set_logfile( $logfile );
 
 		return (array) $encode_array;
+	}
+
+	/**
+	 * Helper to get a string representation of the command for logging.
+	 *
+	 * @param array $encode_array The command array.
+	 * @return string
+	 */
+	private function get_command_string( $encode_array ) {
+		return implode( ' ', array_map( function( $arg ) {
+			if ( strpos( $arg, ' ' ) !== false || strpos( $arg, '"' ) !== false ) {
+				return '"' . str_replace( '"', '\\"', $arg ) . '"';
+			}
+			return $arg;
+		}, $encode_array ) );
 	}
 
 	/**
@@ -1310,7 +1319,6 @@ class Encode_Attachment {
 			return apply_filters( 'videopack_check_if_can_queue', 'error_invalid_format_key', $format_id, $this );
 		}
 
-
 		$encode_info_obj = new Encode_Info( $this->id, (string) $this->url, $video_format_config, $this->options, $this->format_registry );
 		if ( (bool) $encode_info_obj->exists && ! (bool) $video_format_config->get_replaces_original() ) {
 			return 'already_exists';
@@ -1406,6 +1414,8 @@ class Encode_Attachment {
 					array( 'id' => $job_id )
 				);
 
+				do_action( 'videopack_queue_format', $job_id, $format_id, $this );
+
 				return array(
 					'status' => 'success',
 					'job_id' => $job_id,
@@ -1464,6 +1474,8 @@ class Encode_Attachment {
 			);
 		}
 		$job_id = (int) $wpdb->insert_id;
+
+		do_action( 'videopack_queue_format', $job_id, $format_id, $this );
 
 		return array(
 			'status' => 'success',
@@ -1746,6 +1758,9 @@ class Encode_Attachment {
 		}
 
 		$this->save_format( $encode_format );
+
+		do_action( 'videopack_cancel_encoding', $job_id, $encode_format, $this );
+
 		return (bool) $canceled;
 	}
 
@@ -1953,7 +1968,7 @@ class Encode_Attachment {
 		}
 
 		$wp_attachment_id = (int) $encode_format->get_id();
-		
+
 		// Fallback: If the job record is missing the output attachment ID, try to resolve it from the file system/registry.
 		if ( 0 === $wp_attachment_id && Encode_Format::STATUS_COMPLETED === $encode_format->get_status() ) {
 			$all_formats = (array) $this->format_registry->get_video_formats();
@@ -1996,6 +2011,8 @@ class Encode_Attachment {
 		$encode_format->set_temp_watermark_path( null );
 
 		$this->save_format( $encode_format );
+
+		do_action( 'videopack_delete_format', $job_id, $encode_format, $this );
 
 		return (bool) $overall_success;
 	}
@@ -2113,7 +2130,8 @@ class Encode_Attachment {
 		if ( $existing_attachment_id <= 0 ) {
 			$wp_filetype = (array) wp_check_filetype( (string) basename( $path ) );
 			$title_base  = (string) ( $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( (int) $this->id ) );
-			$title       = (string) ( $title_base . ' ' . ( $video_format_config instanceof Video_Format ? $video_format_config->get_label() : '' ) );
+			$label       = $encode_format->get_label() ?: ( $video_format_config instanceof Video_Format ? $video_format_config->get_label() : '' );
+			$title       = (string) ( $title_base . ' ' . $label );
 
 			$author_id_from_parent = (int) ( $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id() );
 			$author_id             = $user_id > 0 ? $user_id : $author_id_from_parent;
@@ -2121,7 +2139,13 @@ class Encode_Attachment {
 				$author_id = (int) get_current_user_id();
 			}
 
-			Debug_Logger::log( 'Starting create_new_attachment', array( 'path' => $path, 'parent_id' => $parent_post_id ) );
+			Debug_Logger::log(
+				'Starting create_new_attachment',
+				array(
+					'path'      => $path,
+					'parent_id' => $parent_post_id,
+				)
+			);
 
 			$attachment_data = array(
 				'guid'           => $url,
@@ -2134,7 +2158,13 @@ class Encode_Attachment {
 
 			$new_attachment_id = wp_insert_attachment( $attachment_data, $path, $parent_post_id );
 
-			Debug_Logger::log( 'wp_insert_attachment result', array( 'id' => $new_attachment_id, 'is_error' => is_wp_error( $new_attachment_id ) ) );
+			Debug_Logger::log(
+				'wp_insert_attachment result',
+				array(
+					'id'       => $new_attachment_id,
+					'is_error' => is_wp_error( $new_attachment_id ),
+				)
+			);
 
 			if ( ! is_wp_error( $new_attachment_id ) && (int) $new_attachment_id > 0 ) {
 				$new_attachment_id = (int) $new_attachment_id;
@@ -2169,6 +2199,7 @@ class Encode_Attachment {
 						'attachment_id' => $new_attachment_id,
 					)
 				);
+				do_action( 'videopack_attachment_inserted', $new_attachment_id, $encode_format, $this );
 				return true;
 			}
 
@@ -2219,13 +2250,16 @@ class Encode_Attachment {
 		$path                = (string) $encode_format->get_path();
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 
-		Debug_Logger::log( 'Insert Attachment Debug', array(
-			'format_id'     => $format_id,
-			'path'          => $path,
-			'has_config'    => ( $video_format_config instanceof Video_Format ),
-			'file_exists'   => is_file( $path ),
-			'is_replacement' => $this->is_replacement_format( $format_id ),
-		) );
+		Debug_Logger::log(
+			'Insert Attachment Debug',
+			array(
+				'format_id'      => $format_id,
+				'path'           => $path,
+				'has_config'     => ( $video_format_config instanceof Video_Format ),
+				'file_exists'    => is_file( $path ),
+				'is_replacement' => $this->is_replacement_format( $format_id ),
+			)
+		);
 
 		$is_cloud_job = (bool) $encode_format->get_cloud_provider();
 

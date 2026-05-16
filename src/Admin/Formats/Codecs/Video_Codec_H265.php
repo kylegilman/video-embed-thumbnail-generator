@@ -71,4 +71,13 @@ class Video_Codec_H265 extends Video_Codec {
 
 		return $flags;
 	}
+
+	/**
+	 * Returns the CMAF/HLS codec string for H.265.
+	 *
+	 * @return string The codec string.
+	 */
+	public function get_cmaf_codec_string() {
+		return 'hev1.1.6.L93.B0,mp4a.40.2';
+	}
 }

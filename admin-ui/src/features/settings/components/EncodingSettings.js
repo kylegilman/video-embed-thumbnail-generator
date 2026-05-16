@@ -20,7 +20,7 @@ import {
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useState, useMemo } from '@wordpress/element';
 import TextControlOnBlur from './TextControlOnBlur';
 import PerCodecQualitySettings from './PerCodecQualitySettings';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
@@ -74,7 +74,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const [isDownloadingAssets, setIsDownloadingAssets] = useState(false);
 
 	const encodingBatch = useBatchProcess();
-
 	const handleEncodeAllVideos = () => {
 		encodingBatch.confirmAndRun(
 			__(
@@ -86,6 +85,59 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			__('No videos found to process.', 'video-embed-thumbnail-generator')
 		);
 	};
+
+	const filteredCodecs = useMemo(() => {
+		const { codecs } = videopack_config;
+		return codecs.filter((codec) => {
+			if (
+				codec.id === 'av1' &&
+				(active_encoder === 'browser' ||
+					active_encoder === 'google_transcoder')
+			) {
+				return false;
+			}
+			if (codec.id === 'cmaf' && active_encoder === 'browser') {
+				return false;
+			}
+			if (codec.id === 'thumbnail') {
+				const rawFfmpegExists = settings.ffmpeg_exists;
+				return (
+					rawFfmpegExists === true ||
+					rawFfmpegExists === 'true' ||
+					rawFfmpegExists === 1 ||
+					rawFfmpegExists === '1'
+				);
+			}
+			return true;
+		});
+	}, [active_encoder, settings.ffmpeg_exists]);
+
+	useEffect(() => {
+		if (!encode) return;
+
+		let changed = false;
+		const newEncode = { ...encode };
+
+		// Auto-disable AV1 for incompatible transcoders
+		if (
+			(active_encoder === 'browser' ||
+				active_encoder === 'google_transcoder') &&
+			encode.av1?.enabled
+		) {
+			newEncode.av1 = { ...newEncode.av1, enabled: false };
+			changed = true;
+		}
+
+		// Auto-disable Adaptive Streaming for Browser Encoding
+		if (active_encoder === 'browser' && encode.cmaf?.enabled) {
+			newEncode.cmaf = { ...newEncode.cmaf, enabled: false };
+			changed = true;
+		}
+
+		if (changed) {
+			changeHandlerFactory.encode(newEncode);
+		}
+	}, [active_encoder, encode, changeHandlerFactory]);
 
 	useEffect(() => {
 		getUsersWithCapability('edit_others_video_encodes')
@@ -167,22 +219,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 
 
 		const filteredResolutions = currentResolutions;
-
-		const filteredCodecs = codecs.filter((codec) => {
-			if (codec.id === 'av1' && active_encoder === 'browser') {
-				return false;
-			}
-			if (codec.id === 'thumbnail_sprite' || codec.id === 'thumbnail') {
-				return (
-					rawFfmpegExists === true ||
-					rawFfmpegExists === 'true' ||
-					rawFfmpegExists === 1 ||
-					rawFfmpegExists === '1'
-				);
-			}
-			return true;
-		});
-
 		return (
 			<div className="videopack-encode-grid">
 				{filteredCodecs.map((codec) => (
@@ -300,7 +336,15 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				),
 			},
 			...codecs
-				.filter((c) => c.is_video !== false)
+				.filter(
+					( c ) =>
+						c.is_video !== false &&
+						! (
+							c.id === 'av1' &&
+							( active_encoder === 'browser' ||
+								active_encoder === 'google_transcoder' )
+						)
+				)
 				.map((codec) => ({ value: codec.id, label: codec.name })),
 		];
 
@@ -816,16 +860,35 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				title={__('Video quality', 'video-embed-thumbnail-generator')}
 				initialOpen={!!effectiveFfmpegExists}
 			>
-				{videopack_config.codecs.map(
-					(codec) =>
-						!!encode?.[codec.id]?.enabled && (
+				{applyFilters('videopack.settings.encoding.before_quality', null, {
+					settings,
+					changeHandlerFactory,
+					ffmpegTest,
+				})}
+				{filteredCodecs.map(
+					(codec) => {
+						if ( ! encode?.[codec.id]?.enabled ) return null;
+						const content = applyFilters(
+							'videopack.settings.encoding.codec_settings',
 							<PerCodecQualitySettings
 								key={codec.id}
 								codec={codec}
 								settings={settings}
 								changeHandlerFactory={changeHandlerFactory}
-							/>
-						)
+							/>,
+							{ codec, settings, changeHandlerFactory }
+						);
+						if ( ! content ) return null;
+						return (
+							<PanelBody 
+								key={codec.id} 
+								title={codec.label || codec.name} 
+								initialOpen={false}
+							>
+								{content}
+							</PanelBody>
+						);
+					}
 				)}
 			</PanelBody>
 			<PanelBody
@@ -1045,6 +1108,11 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					{encodingBatch.confirmDialog.message}
 				</ConfirmDialog>
 			)}
+			{applyFilters('videopack.settings.encoding.after_panels', null, {
+				settings,
+				changeHandlerFactory,
+				ffmpegTest,
+			})}
 		</>
 	);
 };

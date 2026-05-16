@@ -298,21 +298,21 @@ class Encode_Info {
 	 * Set default URL and path for a new encode.
 	 */
 	protected function set_default_url_and_path() {
-
 		require_once ABSPATH . 'wp-admin/includes/file.php';
-		$local_file    = get_attached_file( $this->id );
+		$local_file = get_attached_file( $this->id );
+
 		$moviefilename = $this->basename . $this->format->get_suffix();
 
 		// Use the same directory as the original file if it's a local attachment.
 		if ( $local_file && file_exists( $local_file ) ) {
 			$base_path = dirname( $local_file );
-			$base_url  = dirname( wp_get_attachment_url( $this->id ) );
+			$base_url  = dirname( (string) wp_get_attachment_url( $this->id ) );
 		} else {
 			$base_path = $this->uploads['path'];
 			$base_url  = $this->uploads['url'];
 		}
 
-		$this->url  = trailingslashit( $base_url ) . $moviefilename;
-		$this->path = trailingslashit( $base_path ) . $moviefilename;
+		$this->url  = trailingslashit( (string) $base_url ) . $moviefilename;
+		$this->path = trailingslashit( (string) $base_path ) . $moviefilename;
 	}
 }

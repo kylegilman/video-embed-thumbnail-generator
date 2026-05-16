@@ -76,4 +76,37 @@ class Video_Codec_H264 extends Video_Codec {
 
 		return $flags;
 	}
+
+	/**
+	 * Returns the CMAF/HLS codec string for H.264.
+	 *
+	 * @return string The codec string.
+	 */
+	public function get_cmaf_codec_string() {
+		$options = get_option( 'videopack_options', array() );
+		$profile = $options['h264_profile'] ?? 'high';
+		$level   = $options['h264_level'] ?? '4.0';
+
+		$profiles = array(
+			'baseline' => '4200',
+			'main'     => '4D00',
+			'high'     => '6400',
+		);
+
+		$levels = array(
+			'3.0' => '1E',
+			'3.1' => '1F',
+			'4.0' => '28',
+			'4.1' => '29',
+			'4.2' => '2A',
+			'5.0' => '32',
+			'5.1' => '33',
+			'5.2' => '34',
+		);
+
+		$p = $profiles[ $profile ] ?? '6400';
+		$l = $levels[ (string) $level ] ?? '28';
+
+		return 'avc1.' . $p . $l . ',mp4a.40.2';
+	}
 }

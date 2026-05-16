@@ -104,3 +104,20 @@ export const parseShortcode = (shortcode) => {
 
 	return { tag, attributes };
 };
+
+/**
+ * Strips HTML tags from a string.
+ *
+ * @param {string} html The string to strip.
+ * @return {string} The stripped string.
+ */
+export const stripHtml = (html) => {
+	if (typeof html !== 'string') {
+		return html;
+	}
+
+	// Create a temporary DOM element to parse HTML
+	const tempDiv = document.createElement('div');
+	tempDiv.innerHTML = html;
+	return tempDiv.textContent || tempDiv.innerText || '';
+};

@@ -365,7 +365,6 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 
 	return (
 		<div key={codec.id} className="videopack-per-codec-quality-settings">
-			<h4 className="videopack-codec-quality-header">{codec.name}</h4>
 			{rateControlOptions.length > 1 && (
 				<RadioControl
 					label={

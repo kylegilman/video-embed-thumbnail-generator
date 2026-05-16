@@ -154,6 +154,13 @@ class Encode_Format {
 	private $job_id;
 
 	/**
+	 * Custom label for the format.
+	 *
+	 * @var string|null $label
+	 */
+	private $label;
+
+	/**
 	 * Temporary path for watermark.
 	 *
 	 * @var string $temp_watermark_path
@@ -166,6 +173,13 @@ class Encode_Format {
 	 * @var string $video_title
 	 */
 	private $video_title;
+
+	/**
+	 * Whether this format should replace the original attachment file.
+	 *
+	 * @var bool $replaces_original
+	 */
+	private $replaces_original = false;
 
 
 	/**
@@ -247,6 +261,10 @@ class Encode_Format {
 	 */
 	public function to_array() {
 		$vars = get_object_vars( $this );
+		if ( ! empty( $this->cloud_meta ) && empty( $vars['cloud_meta'] ) ) {
+			error_log( '[Videopack] Encode_Format: cloud_meta is missing from get_object_vars results!' );
+			$vars['cloud_meta'] = $this->cloud_meta;
+		}
 		return $vars;
 	}
 
@@ -259,6 +277,7 @@ class Encode_Format {
 	public static function from_array( array $data ) {
 
 		$format = new self( $data['format_id'] ); // Use 'format_id' from DB.
+		$format->set_job_id( $format->set_or_null( $data, 'id' ) ); // Use 'id' from DB as job_id.
 
 		$format->set_status( $format->set_or_null( $data, 'status' ) );
 		$format->set_user_id( $format->set_or_null( $data, 'user_id' ) );
@@ -286,7 +305,6 @@ class Encode_Format {
 
 		$format->set_encode_width( $format->set_or_null( $data, 'encode_width' ) );
 		$format->set_encode_height( $format->set_or_null( $data, 'encode_height' ) );
-		$format->set_job_id( $format->set_or_null( $data, 'id' ) ); // Use 'id' from DB as job_id.
 		$format->set_id( $format->set_or_null( $data, 'output_attachment_id' ) );
 		$format->set_temp_watermark_path( $format->set_or_null( $data, 'temp_watermark_path' ) );
 
@@ -307,7 +325,11 @@ class Encode_Format {
 			$decoded = json_decode( $cloud_meta, true );
 			if ( is_array( $decoded ) ) {
 				$format->set_cloud_meta( $decoded );
+			} else {
+				error_log( '[Videopack] Encode_Format json_decode failed for cloud_meta' );
 			}
+		} else {
+			error_log( '[Videopack] Encode_Format cloud_meta is empty in DB for job ' . ( $data['id'] ?? 'unknown' ) );
 		}
 
 		return $format;
@@ -333,12 +355,16 @@ class Encode_Format {
 	 * @return array|string Returns progress array or 'recheck' if it should be checked again later.
 	 */
 	public function get_progress() {
-		if ( $this->status === self::STATUS_ENCODING
-			&& $this->logfile
-			&& file_exists( $this->logfile )
-		) {
-			$this->progress = Encode_Progress::from_log_file( $this->logfile, (int) $this->video_duration, (int) $this->started, (int) $this->job_id )->to_array();
-		} else if ( $this->status === self::STATUS_ENCODING ) {
+		if ( $this->status === self::STATUS_ENCODING ) {
+			// 1. Try to get progress from the local log file first.
+			if ( $this->logfile && file_exists( $this->logfile ) ) {
+				$this->set_progress();
+				if ( ! empty( $this->progress ) ) {
+					return $this->progress;
+				}
+			}
+
+			// 2. If no log file, check for cloud progress.
 			$cloud_job_id = $this->get_cloud_job_id();
 			if ( ! empty( $cloud_job_id ) ) {
 				$cloud_meta = $this->get_cloud_meta();
@@ -357,42 +383,26 @@ class Encode_Format {
 					'video_duration' => $this->get_video_duration(),
 				);
 				return $this->progress;
-			} else {
-				// Fallback for browser-side or unknown encoding jobs.
-				// Watchdog: If status is 'encoding' but updated_at is more than 3 minutes ago, reset to browser_pending.
-				if ( self::STATUS_ENCODING === $this->status && ! empty( $this->updated_at ) ) {
-					$last_update = strtotime( $this->updated_at );
-					$diff        = time() - $last_update;
-					
-					if ( $diff > 180 ) { // 3 minutes
-						$this->set_status( self::STATUS_BROWSER_PENDING );
-					}
-				}
-
-				$percent = (int) $this->progress_percent;
-				$elapsed = time() - $this->get_started();
-				$speed   = $elapsed > 0 ? ( $percent / 100 ) * ( ( $this->get_video_duration() / 1000000 ) / $elapsed ) : 0;
-
-				$this->progress = array(
-					'percent'        => $percent,
-					'status'         => $this->status,
-					'started'        => $this->get_started(),
-					'elapsed'        => $elapsed,
-					'speed'          => sprintf( '%.2fx', max( 0.01, $speed ) ),
-					'fps'            => '--',
-					'video_duration' => $this->get_video_duration(),
-				);
-				return $this->progress;
 			}
-			return 'recheck';
+
+			// 3. Fallback for browser-side or unknown encoding jobs (uses DB progress).
+			$percent = (int) $this->progress_percent;
+			$elapsed = time() - $this->get_started();
+			$speed   = $elapsed > 0 ? ( $percent / 100 ) * ( ( $this->get_video_duration() / 1000000 ) / $elapsed ) : 0;
+
+			$this->progress = array(
+				'percent'        => $percent,
+				'status'         => $this->status,
+				'started'        => $this->get_started(),
+				'elapsed'        => $elapsed,
+				'speed'          => sprintf( '%.2fx', max( 0.01, $speed ) ),
+				'fps'            => '--',
+				'video_duration' => $this->get_video_duration(),
+			);
+			return $this->progress;
 		} elseif ( in_array( $this->status, array( self::STATUS_NEEDS_INSERT, self::STATUS_PENDING_REPLACEMENT, self::STATUS_COMPLETED ), true ) ) {
 			// If it's finishing or finished, mock the progress as 100%.
 			$this->progress = Encode_Progress::finished( (int) $this->video_duration, (int) $this->started, (int) $this->job_id )->to_array();
-		} else {
-			return 'recheck';
-		}
-
-		if ( is_array( $this->progress ) ) {
 			return $this->progress;
 		}
 
@@ -497,6 +507,42 @@ class Encode_Format {
 	 */
 	public function get_ended() {
 		return $this->ended;
+	}
+
+	/**
+	 * Gets the custom label for the format.
+	 *
+	 * @return string|null
+	 */
+	public function get_label() {
+		return $this->label;
+	}
+
+	/**
+	 * Sets a custom label for the format.
+	 *
+	 * @param string|null $label The label.
+	 */
+	public function set_label( ?string $label ) {
+		$this->label = $label;
+	}
+
+	/**
+	 * Checks if this format replaces the original attachment.
+	 *
+	 * @return bool
+	 */
+	public function get_replaces_original() {
+		return (bool) $this->replaces_original;
+	}
+
+	/**
+	 * Sets whether this format replaces the original attachment.
+	 *
+	 * @param bool $replaces True to replace, false otherwise.
+	 */
+	public function set_replaces_original( $replaces ) {
+		$this->replaces_original = (bool) $replaces;
 	}
 
 	/**
@@ -643,7 +689,6 @@ class Encode_Format {
 		$this->video_title = $title;
 	}
 
-
 	/**
 	 * Set the status.
 	 *
@@ -775,6 +820,12 @@ class Encode_Format {
 	public function set_error( ?string $error ) {
 		$this->set_status( self::STATUS_FAILED );
 		$this->error = $error;
+		\Videopack\Common\Debug_Logger::log( 'Encode_Format: Job failed', array( 
+			'job_id' => $this->job_id,
+			'format' => $this->format_id,
+			'error'  => $error,
+			'status' => $this->status
+		) );
 	}
 
 	/**
@@ -865,14 +916,31 @@ class Encode_Format {
 			&& $this->logfile
 			&& file_exists( $this->logfile )
 		) {
+			\Videopack\Common\Debug_Logger::log( 'Encode_Format: Checking progress', array(
+				'job_id'   => $this->job_id,
+				'duration' => $this->video_duration,
+				'started'  => $this->started,
+				'logfile'  => $this->logfile,
+			) );
 			$progress_obj   = Encode_Progress::from_log_file( $this->logfile, (int) $this->video_duration, (int) $this->started, (int) $this->job_id );
 			$this->progress = $progress_obj->to_array();
 
 			if ( isset( $this->progress['progress'] ) && 'end' === $this->progress['progress'] ) {
 				$this->set_needs_insert();
-			} elseif ( time() - filemtime( $this->logfile ) > 60 ) {
-				// it's been more than a minute since encoding progress was recorded.
-				$this->set_error( __( 'Encoding stopped unexpectedly', 'video-embed-thumbnail-generator' ) );
+			} else {
+				$mtime = @filemtime( $this->logfile );
+				$fsize = @filesize( $this->logfile );
+				
+				// Grace period: If the file is empty, give it at least 30 seconds before checking timeout.
+				$is_new_and_empty = ( $fsize === 0 && ( time() - $this->get_started() < 30 ) );
+
+				if ( ! $is_new_and_empty && $mtime && ( time() - $mtime > 300 ) ) {
+					// it's been more than 5 minutes since encoding progress was recorded.
+					// Check if the process is still running before failing.
+					if ( ! $this->is_pid_alive() ) {
+						$this->set_error( __( 'Encoding stopped unexpectedly', 'video-embed-thumbnail-generator' ) );
+					}
+				}
 			}
 		}
 	}
@@ -955,6 +1023,26 @@ class Encode_Format {
 				return __( 'On external server', 'video-embed-thumbnail-generator' );
 			default:
 				return $status;
+		}
+	}
+
+	/**
+	 * Check if the process with the stored PID is still running.
+	 *
+	 * @return bool True if the process is alive, false otherwise.
+	 */
+	public function is_pid_alive() {
+		if ( ! $this->pid ) {
+			return false;
+		}
+
+		if ( strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN' ) {
+			$output = array();
+			// Use /NH (No Header) and search for the PID specifically.
+			exec( 'tasklist /NH /FI "PID eq ' . (int) $this->pid . '"', $output );
+			return ! empty( $output ) && strpos( $output[0], (string) $this->pid ) !== false;
+		} else {
+			return function_exists( 'posix_kill' ) ? posix_kill( (int) $this->pid, 0 ) : true;
 		}
 	}
 }

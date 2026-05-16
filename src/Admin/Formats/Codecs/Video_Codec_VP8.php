@@ -42,4 +42,13 @@ class Video_Codec_VP8 extends Video_Codec {
 
 		parent::__construct( $properties );
 	}
+
+	/**
+	 * Returns the CMAF/HLS codec string for VP8.
+	 *
+	 * @return string The codec string.
+	 */
+	public function get_cmaf_codec_string() {
+		return 'vp08.00.10.08,mp4a.40.2';
+	}
 }

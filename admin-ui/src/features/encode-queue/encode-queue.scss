@@ -21,6 +21,20 @@ body.tools_page_videopack_encode_queue {
 			border-radius: 4px;
 			display: block;
 		}
+
+		// Ensure long file titles wrap instead of making the table too wide
+		.dataviews-view-table__cell-video_title {
+			white-space: normal;
+			overflow-wrap: break-word;
+			word-wrap: break-word;
+			word-break: break-word;
+			min-width: 200px;
+			max-width: 400px;
+
+			a {
+				word-break: break-word;
+			}
+		}
 	}
 
 	.videopack-status-cell {

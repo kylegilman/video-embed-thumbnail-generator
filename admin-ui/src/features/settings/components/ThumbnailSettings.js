@@ -250,18 +250,18 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 											'video-embed-thumbnail-generator'
 										)}
 										checked={
-											!!encode?.thumbnail_sprite
+											!!encode?.thumbnail
 												?.resolutions?.sprite
 										}
 										onChange={(isChecked) => {
 											const newEncode = {
 												...encode,
-												thumbnail_sprite: {
-													...encode?.thumbnail_sprite,
+												thumbnail: {
+													...encode?.thumbnail,
 													enabled: isChecked,
 													resolutions: {
 														...encode
-															?.thumbnail_sprite
+															?.thumbnail
 															?.resolutions,
 														sprite: isChecked,
 													},

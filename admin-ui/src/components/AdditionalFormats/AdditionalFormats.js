@@ -14,6 +14,7 @@ import {
 } from '@wordpress/components';
 import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
+import { applyFilters } from '@wordpress/hooks';
 import { store as coreStore } from '@wordpress/core-data';
 
 import EncodeFormatStatus from './EncodeFormatStatus';
@@ -121,9 +122,10 @@ const AdditionalFormats = ({
 	useEffect(() => {
 		if (
 			encodeMessage &&
-			!encodeMessage.includes(
-				__('Error:', 'video-embed-thumbnail-generator')
-			)
+			(typeof encodeMessage !== 'string' ||
+				!encodeMessage.includes(
+					__('Error:', 'video-embed-thumbnail-generator')
+				))
 		) {
 			const timer = setTimeout(() => {
 				setEncodeMessage(null);
@@ -362,9 +364,15 @@ const AdditionalFormats = ({
 					checked: isChecked,
 				};
 			}
-			return updatedFormats;
+
+			// Allow extensions (Pro) to modify the state based on checkboxes.
+			return applyFilters(
+				'videopack.handle_format_checkbox',
+				updatedFormats,
+				formatId,
+				isChecked
+			);
 		});
-		// Note: Checkbox state is now purely UI. Saving to DB happens on "Encode" button click.
 	};
 
 	const handleEnqueue = async () => {
@@ -429,6 +437,11 @@ const AdditionalFormats = ({
 					siteSettings?.language || 'en-US'
 				);
 
+				const encodeList = response?.encode_list || [];
+				const cmafPartsCount = encodeList.filter( item => item.id?.startsWith('cmaf_') ).length;
+				const otherJobsCount = encodeList.length - cmafPartsCount;
+				const effectiveJobCount = ( cmafPartsCount > 0 ? 1 : 0 ) + otherJobsCount;
+
 				let successMsg = (
 					<span>
 						{ sprintf(
@@ -436,10 +449,10 @@ const AdditionalFormats = ({
 							_n(
 								'%1$d job added to queue in %2$s position.',
 								'%1$d jobs added to queue starting in %2$s position.',
-								jobCount,
+								effectiveJobCount,
 								'video-embed-thumbnail-generator'
 							),
-							jobCount,
+							effectiveJobCount,
 							ordinalPosition
 						) }
 					</span>
@@ -714,47 +727,52 @@ const AdditionalFormats = ({
 	);
 
 	const groupedFormats = videoFormats
-		? Object.values(videoFormats).reduce((acc, format) => {
-				if (!format.codec || !format.codec.id) {
+		? applyFilters(
+				'videopack.grouped_formats',
+				Object.values(videoFormats).reduce((acc, format) => {
+					if (!format.codec || !format.codec.id) {
+						return acc;
+					}
+					const codecId = format.codec.id;
+					if (!acc[codecId]) {
+						acc[codecId] = {
+							name: format.codec.name,
+							formats: [],
+						};
+					}
+
+					acc[codecId].formats.push(format);
+					// sort formats by height
+					acc[codecId].formats.sort((a, b) => {
+						// Prioritize the replacement format to be at the top of its codec.
+						if (a.replaces_original && !b.replaces_original) {
+							return -1;
+						}
+						if (!a.replaces_original && b.replaces_original) {
+							return 1;
+						}
+						// Prioritize the fullres format.
+						if (
+							a.resolution.id === 'fullres' &&
+							b.resolution.id !== 'fullres'
+						) {
+							return -1;
+						}
+						if (
+							a.resolution.id !== 'fullres' &&
+							b.resolution.id === 'fullres'
+						) {
+							return 1;
+						}
+						// Otherwise, sort by resolution height in descending order.
+						return (
+							(b.resolution.height || 0) - (a.resolution.height || 0)
+						);
+					});
 					return acc;
-				}
-				const codecId = format.codec.id;
-				if (!acc[codecId]) {
-					acc[codecId] = {
-						name: format.codec.name,
-						formats: [],
-					};
-				}
-				acc[codecId].formats.push(format);
-				// sort formats by height
-				acc[codecId].formats.sort((a, b) => {
-					// Prioritize the replacement format to be at the top of its codec.
-					if (a.replaces_original && !b.replaces_original) {
-						return -1;
-					}
-					if (!a.replaces_original && b.replaces_original) {
-						return 1;
-					}
-					// Prioritize the fullres format.
-					if (
-						a.resolution.id === 'fullres' &&
-						b.resolution.id !== 'fullres'
-					) {
-						return -1;
-					}
-					if (
-						a.resolution.id !== 'fullres' &&
-						b.resolution.id === 'fullres'
-					) {
-						return 1;
-					}
-					// Otherwise, sort by resolution height in descending order.
-					return (
-						(b.resolution.height || 0) - (a.resolution.height || 0)
-					);
-				});
-				return acc;
-			}, {})
+				}, {}),
+				videoFormats
+			)
 		: {};
 
 	return (
@@ -797,10 +815,10 @@ const AdditionalFormats = ({
 						>
 							{Object.keys(groupedFormats)
 								.sort((a, b) => {
-									if (a === 'thumbnail_sprite') {
+									if (a === 'thumbnail') {
 										return 1;
 									}
-									if (b === 'thumbnail_sprite') {
+									if (b === 'thumbnail') {
 										return -1;
 									}
 									return a.localeCompare(b);

@@ -190,8 +190,9 @@ function videopack_cleanup_plugin() {
  * Handles plugin activation.
  *
  * @since 5.0.0
+ * @param bool $network_wide Whether the plugin is being activated network-wide.
  */
-function videopack_activate_plugin( $network_wide ) {
+function videopack_activate_plugin( bool $network_wide ) {
 	if ( is_multisite() && $network_wide ) {
 		$sites = get_sites( array( 'fields' => 'ids' ) );
 		foreach ( $sites as $blog_id ) {

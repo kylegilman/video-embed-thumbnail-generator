@@ -1172,10 +1172,11 @@ abstract class Source {
 	public function get_video_player_source(): array {
 
 		$video_player_source = array(
-			'src'        => $this->get_url(),
-			'type'       => $this->get_mime_type(),
-			'codecs'     => $this->get_codecs_att(),
-			'resolution' => $this->get_resolution(),
+			'src'           => $this->get_url(),
+			'type'          => $this->get_mime_type(),
+			'codecs'        => $this->get_codecs_att(),
+			'resolution'    => $this->get_resolution(),
+			'attachment_id' => $this->type === 'attachment' ? (int) $this->get_id() : 0,
 		);
 
 		return $video_player_source;

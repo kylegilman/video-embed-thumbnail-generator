@@ -33,6 +33,7 @@ import {
 	resetJob,
 } from '../../api/jobs';
 import { getBatchProgress } from '../../api/media';
+import { stripHtml } from '../../utils/helpers';
 
 const defaultLayouts = {
 	table: {
@@ -238,7 +239,7 @@ const EncodeQueue = () => {
 						'Error deleting job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
-					error.message
+					stripHtml(error.message)
 				),
 			});
 		} finally {
@@ -281,7 +282,7 @@ const EncodeQueue = () => {
 						'Error removing job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
-					error.message
+					stripHtml(error.message)
 				),
 			});
 		} finally {
@@ -321,7 +322,7 @@ const EncodeQueue = () => {
 						'Error resetting job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
-					error.message || error.code
+					stripHtml(error.message || error.code)
 				),
 			});
 		} finally {
@@ -364,7 +365,7 @@ const EncodeQueue = () => {
 						'Error retrying job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
-					error.message
+					stripHtml(error.message)
 				),
 			});
 		} finally {
