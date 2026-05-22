@@ -93,7 +93,6 @@ class Player_Video_Js extends Player {
 	public function filter_block_metadata( $metadata ) {
 		// Add script dependencies.
 		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'video-js' );
-		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'video-js-quality-selector' );
 
 		// Add style dependencies.
 		$metadata = $this->ensure_array_and_append( $metadata, 'style', 'video-js' );

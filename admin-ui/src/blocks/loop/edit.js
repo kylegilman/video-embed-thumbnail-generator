@@ -883,7 +883,20 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 										blocksToRender.push({
 											name: 'videopack/title',
 											attributes: {},
-											innerBlocks: [],
+											innerBlocks: globalOpts.downloadlink
+												? [
+														{
+															name: 'videopack/download',
+															attributes: {
+																icon: true,
+																text: false,
+																styleType: 'text',
+																downloadMode: 'direct',
+															},
+															innerBlocks: [],
+														},
+													]
+												: [],
 										});
 									}
 									if (globalOpts.watermark) {

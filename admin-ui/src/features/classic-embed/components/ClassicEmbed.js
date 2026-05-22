@@ -182,7 +182,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 		// until the new URL is resolved, preventing a jarring UI disappearance.
 
 		apiFetch({
-			path: '/videopack/v1/resolve-url',
+			path: '/videopack/v1/attachment/register-url',
 			method: 'POST',
 			data: { url: debouncedVideoUrl, post_id: postId },
 			signal: controller.signal,

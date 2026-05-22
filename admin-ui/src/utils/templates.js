@@ -2,6 +2,8 @@
  * Shared block templates for Videopack collections.
  */
 
+import { getTitleInnerTemplate } from './titleDownloadBlock';
+
 /**
  * Returns the template for a grid/gallery layout.
  *
@@ -45,7 +47,11 @@ export const getListTemplate = (options) => {
 
 	const engineChildren = [];
 	if (showTitleBar) {
-		engineChildren.push(['videopack/title', {}]);
+		engineChildren.push([
+			'videopack/title',
+			{},
+			getTitleInnerTemplate(!!options?.downloadlink, !!options?.embedcode),
+		]);
 	}
 	if (options?.watermark) {
 		engineChildren.push(['videopack/watermark', {}]);

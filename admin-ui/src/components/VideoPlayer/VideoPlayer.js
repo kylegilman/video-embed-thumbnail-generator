@@ -123,7 +123,6 @@ const VideoPlayer = ({
 		src,
 		volume,
 		auto_res,
-		auto_codec,
 		sources: incomingSources = [],
 		source_groups: incomingSourceGroups = {},
 		text_tracks = [],
@@ -422,7 +421,6 @@ const VideoPlayer = ({
 					force_types: ['video/mp4'],
 					source_groups,
 					default_res: auto_res,
-					default_codec: auto_codec,
 				},
 			};
 		}
@@ -440,7 +438,6 @@ const VideoPlayer = ({
 		playsinline,
 		volume,
 		auto_res,
-		auto_codec,
 		finalizedSources,
 		source_groups,
 		text_tracks,

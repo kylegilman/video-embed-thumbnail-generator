@@ -366,7 +366,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 									config.raw_ffmpeg_exists === '1'
 								)
 									? __(
-											'In-browser thumbnail generation is required when using cloud transcoding without FFmpeg installed on your server.'
+											'In-browser thumbnail generation is required when using cloud encoding without FFmpeg installed on your server.'
 									  )
 									: null
 							}

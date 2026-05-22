@@ -169,7 +169,7 @@ export default function Edit(props) {
 			: '');
 
 	const bridgeOverrides = useMemo(() => {
-		return {
+		const overrides = {
 			'videopack/isInsidePlayerContainer':
 				context['videopack/isInsidePlayerContainer'],
 			'videopack/isStandalone': context['videopack/isStandalone'],
@@ -182,7 +182,22 @@ export default function Edit(props) {
 			'videopack/postId':
 				context['videopack/attachmentId'] || effectiveAttributes.id,
 		};
-	}, [context, effectiveAttributes.id]);
+
+		const sourceGroups =
+			parentAttributes.source_groups ||
+			context['videopack/source_groups'];
+		const sources =
+			parentAttributes.sources || context['videopack/sources'];
+
+		if (sourceGroups && Object.keys(sourceGroups).length > 0) {
+			overrides['videopack/source_groups'] = sourceGroups;
+		}
+		if (sources && sources.length > 0) {
+			overrides['videopack/sources'] = sources;
+		}
+
+		return overrides;
+	}, [context, effectiveAttributes.id, parentAttributes.source_groups, parentAttributes.sources]);
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-player-engine-block videopack-wrapper ${contextClasses}`,

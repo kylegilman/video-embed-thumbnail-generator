@@ -298,6 +298,7 @@ const VideopackSettingsPage = () => {
 				</TabPanel>
 				<PanelRow>
 					<Button
+						__next40pxDefaultSize
 						variant="primary"
 						onClick={resetSettings}
 						className={'videopack-settings-reset'}

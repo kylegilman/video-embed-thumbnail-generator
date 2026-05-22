@@ -60,7 +60,6 @@ const DEFAULT_CONTEXT_KEYS = [
 	'preload',
 	'volume',
 	'auto_res',
-	'auto_codec',
 	'sources',
 	'source_groups',
 	'text_tracks',
@@ -85,6 +84,7 @@ const DEFAULT_CONTEXT_KEYS = [
 	'isInsideThumbnail',
 	'isInsidePlayerOverlay',
 	'isInsidePlayerContainer',
+	'isInsideTitleMeta',
 ];
 
 export const VIDEOPACK_CONTEXT_KEYS = applyFilters(
@@ -101,7 +101,10 @@ export const VIDEOPACK_CONTEXT_KEYS = applyFilters(
  * @return {Object} Resolved values, styles, and classes.
  */
 export default function useVideopackContext(attributes, context, options = {}) {
-	const { excludeHoverTrigger: optionsExclude = false } = options;
+	const {
+		excludeHoverTrigger: optionsExclude = false,
+		excludeKeys = [],
+	} = options;
 	// The hover trigger exclusion should NOT be inherited from parents by default,
 	// as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
 	const excludeHoverTrigger =
@@ -114,6 +117,9 @@ export default function useVideopackContext(attributes, context, options = {}) {
 		const classes = [];
 
 		VIDEOPACK_CONTEXT_KEYS.forEach((key) => {
+			if (excludeKeys.includes(key)) {
+				return;
+			}
 			const value = getEffectiveValue(key, attributes, context);
 			resolved[key] = value;
 
@@ -221,7 +227,7 @@ export default function useVideopackContext(attributes, context, options = {}) {
 		}
 
 		return { resolved, style, classes };
-	}, [attributes, context, excludeHoverTrigger]);
+	}, [attributes, context, excludeHoverTrigger, excludeKeys]);
 
 	// 2. Automatic Video Discovery
 	// If we have a postId but no attachmentId, try to find the first video attachment.

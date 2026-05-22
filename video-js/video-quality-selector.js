@@ -591,8 +591,15 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				if (controlBar) {
 					controlBar.addChild(resolutionSelector, {}, 11);
 					
+					const has_static = (available_res && available_res.length > 0) || (source_groups && Object.keys(source_groups).length > 1);
+					const has_hls_init = player.qualityLevels && player.qualityLevels().length > 0;
+
+					if (!has_static && !has_hls_init) {
+						resolutionSelector.addClass('vjs-hidden');
+					}
+					
 					const default_res = options.default_res;
-					const default_codec = options.default_codec;
+					const default_codec = player.currentCodec || options.default_codec;
 					
 					// Don't auto-set resolution if HLS levels are populated (let VHS handle it)
 					if (default_res && (!player.qualityLevels || player.qualityLevels().length === 0)) {

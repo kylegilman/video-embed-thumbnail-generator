@@ -65,6 +65,7 @@ const Thumbnails = ({
 	const [existingSprite, setExistingSprite] = useState(null); // { id, url, status }
 	const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [showFailedNotice, setShowFailedNotice] = useState(true);
 
 	// Poll for active thumbnail jobs if any exist
 	useEffect(() => {
@@ -964,6 +965,18 @@ const Thumbnails = ({
 			<PanelBody
 				title={__('Thumbnails', 'video-embed-thumbnail-generator')}
 			>
+				{showFailedNotice && Number(videoData?.record?.meta?.['_videopack_browser_thumb_failed']) === 1 && (
+					<Notice
+						status="error"
+						onRemove={() => setShowFailedNotice(false)}
+						isDismissible={true}
+					>
+						{__(
+							'Automatic in-browser thumbnail generation failed for this video (possibly due to CORS or canvas limitations). You can try generating thumbnails manually below.',
+							'video-embed-thumbnail-generator'
+						)}
+					</Notice>
+				)}
 				{poster && (
 					<img
 						className="videopack-current-thumbnail"
