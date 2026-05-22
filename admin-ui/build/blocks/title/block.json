@@ -16,7 +16,14 @@
     "postId",
     "postType"
   ],
+  "providesContext": {
+    "videopack/isInsideTitleMeta": "isInsideTitleMeta"
+  },
   "attributes": {
+    "isInsideTitleMeta": {
+      "type": "boolean",
+      "default": true
+    },
     "title": {
       "type": "string",
       "default": ""
@@ -44,9 +51,6 @@
       "type": "string"
     },
     "embedcode": {
-      "type": "boolean"
-    },
-    "downloadlink": {
       "type": "boolean"
     },
     "overlay_title": {

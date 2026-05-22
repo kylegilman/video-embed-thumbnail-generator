@@ -6,11 +6,11 @@
 	"license": "GPL-2.0-or-later",
 	"main": "build/videopack-video.js",
 	"scripts": {
-		"build": "wp-scripts build",
+		"build": "node scripts/generate-php-icons.js && wp-scripts build",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
-		"start": "wp-scripts start",
+		"start": "node scripts/generate-php-icons.js && wp-scripts start",
 		"start:all": "wp-scripts start",
 		"packages-update": "wp-scripts packages-update"
 	},

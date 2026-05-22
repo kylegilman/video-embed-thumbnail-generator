@@ -7,10 +7,24 @@ const external_wp_blocks_namespaceObject = window["wp"]["blocks"];
 const external_wp_element_namespaceObject = window["wp"]["element"];
 ;// external ["wp","blockEditor"]
 const external_wp_blockEditor_namespaceObject = window["wp"]["blockEditor"];
-;// external ["wp","data"]
-const external_wp_data_namespaceObject = window["wp"]["data"];
 ;// external ["wp","components"]
 const external_wp_components_namespaceObject = window["wp"]["components"];
+;// ./node_modules/@wordpress/icons/build-module/icon/index.mjs
+// packages/icons/src/icon/index.ts
+
+var icon_default = (0,external_wp_element_namespaceObject.forwardRef)(
+  ({ icon, size = 24, ...props }, ref) => {
+    return (0,external_wp_element_namespaceObject.cloneElement)(icon, {
+      width: size,
+      height: size,
+      ...props,
+      ref
+    });
+  }
+);
+
+//# sourceMappingURL=index.mjs.map
+
 ;// external ["wp","primitives"]
 const external_wp_primitives_namespaceObject = window["wp"]["primitives"];
 ;// external "ReactJSXRuntime"
@@ -22,14 +36,6 @@ const external_ReactJSXRuntime_namespaceObject = window["ReactJSXRuntime"];
 var not_allowed_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M12 18.5A6.5 6.5 0 0 1 6.93 7.931l9.139 9.138A6.473 6.473 0 0 1 12 18.5Zm5.123-2.498a6.5 6.5 0 0 0-9.124-9.124l9.124 9.124ZM4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z" }) });
 
 //# sourceMappingURL=not-allowed.mjs.map
-
-;// ./node_modules/@wordpress/icons/build-module/library/seen.mjs
-// packages/icons/src/library/seen.tsx
-
-
-var seen_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M3.99961 13C4.67043 13.3354 4.6703 13.3357 4.67017 13.3359L4.67298 13.3305C4.67621 13.3242 4.68184 13.3135 4.68988 13.2985C4.70595 13.2686 4.7316 13.2218 4.76695 13.1608C4.8377 13.0385 4.94692 12.8592 5.09541 12.6419C5.39312 12.2062 5.84436 11.624 6.45435 11.0431C7.67308 9.88241 9.49719 8.75 11.9996 8.75C14.502 8.75 16.3261 9.88241 17.5449 11.0431C18.1549 11.624 18.6061 12.2062 18.9038 12.6419C19.0523 12.8592 19.1615 13.0385 19.2323 13.1608C19.2676 13.2218 19.2933 13.2686 19.3093 13.2985C19.3174 13.3135 19.323 13.3242 19.3262 13.3305L19.3291 13.3359C19.3289 13.3357 19.3288 13.3354 19.9996 13C20.6704 12.6646 20.6703 12.6643 20.6701 12.664L20.6697 12.6632L20.6688 12.6614L20.6662 12.6563L20.6583 12.6408C20.6517 12.6282 20.6427 12.6108 20.631 12.5892C20.6078 12.5459 20.5744 12.4852 20.5306 12.4096C20.4432 12.2584 20.3141 12.0471 20.1423 11.7956C19.7994 11.2938 19.2819 10.626 18.5794 9.9569C17.1731 8.61759 14.9972 7.25 11.9996 7.25C9.00203 7.25 6.82614 8.61759 5.41987 9.9569C4.71736 10.626 4.19984 11.2938 3.85694 11.7956C3.68511 12.0471 3.55605 12.2584 3.4686 12.4096C3.42484 12.4852 3.39142 12.5459 3.36818 12.5892C3.35656 12.6108 3.34748 12.6282 3.34092 12.6408L3.33297 12.6563L3.33041 12.6614L3.32948 12.6632L3.32911 12.664C3.32894 12.6643 3.32879 12.6646 3.99961 13ZM11.9996 16C13.9326 16 15.4996 14.433 15.4996 12.5C15.4996 10.567 13.9326 9 11.9996 9C10.0666 9 8.49961 10.567 8.49961 12.5C8.49961 14.433 10.0666 16 11.9996 16Z" }) });
-
-//# sourceMappingURL=seen.mjs.map
 
 ;// ./node_modules/@wordpress/icons/build-module/library/media-and-text.mjs
 // packages/icons/src/library/media-and-text.tsx
@@ -922,6 +928,70 @@ const CompactColorPicker = ({
   });
 };
 /* harmony default export */ const CompactColorPicker_CompactColorPicker = (CompactColorPicker);
+;// ./src/utils/colors.js
+const getColorFallbacks = settings => {
+  const {
+    embed_method = 'Video.js',
+    skin = 'vjs-theme-videopack'
+  } = settings || {};
+  const fallbacks = {
+    title_color: '#ffffff',
+    title_background_color: '#2b333f',
+    play_button_color: '#ffffff',
+    play_button_secondary_color: '#ffffff',
+    control_bar_bg_color: '#2b333f',
+    control_bar_color: '#ffffff',
+    pagination_color: '#1e1e1e',
+    pagination_background_color: '#ffffff',
+    pagination_active_bg_color: '#1e1e1e',
+    pagination_active_color: '#ffffff'
+  };
+  if (embed_method === 'WordPress Default') {
+    fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
+    fallbacks.control_bar_bg_color = '#222222';
+    fallbacks.play_button_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#ffffff';
+  } else if (embed_method?.startsWith('Video.js')) {
+    // Default skin (vjs-theme-videopack) defaults
+    fallbacks.play_button_color = '#ffffff';
+    fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
+
+    switch (skin) {
+      case 'vjs-theme-city':
+        fallbacks.title_background_color = '#bf3b4d';
+        fallbacks.control_bar_bg_color = '#000000';
+        fallbacks.pagination_active_bg_color = '#bf3b4d';
+        break;
+      case 'vjs-theme-fantasy':
+        fallbacks.title_background_color = '#9f44b4';
+        fallbacks.play_button_color = '#9f44b4';
+        fallbacks.play_button_secondary_color = '#ffffff';
+        fallbacks.pagination_active_bg_color = '#9f44b4';
+        break;
+      case 'vjs-theme-forest':
+        fallbacks.title_background_color = '#6fb04e';
+        fallbacks.play_button_secondary_color = '#6fb04e';
+        fallbacks.control_bar_bg_color = 'transparent';
+        fallbacks.pagination_active_bg_color = '#6fb04e';
+        break;
+      case 'vjs-theme-sea':
+        fallbacks.title_background_color = '#4176bc';
+        fallbacks.play_button_secondary_color = '#4176bc';
+        fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
+        fallbacks.pagination_active_bg_color = '#4176bc';
+        break;
+      case 'kg-video-js-skin':
+        fallbacks.title_background_color = '#000000';
+        fallbacks.play_button_secondary_color = '#000000';
+        fallbacks.control_bar_bg_color = '#000000';
+        fallbacks.pagination_active_bg_color = '#000000';
+        break;
+    }
+  }
+  return fallbacks;
+};
+;// external ["wp","data"]
+const external_wp_data_namespaceObject = window["wp"]["data"];
 ;// ./src/utils/context.js
 /* global videopack_config */
 
@@ -1316,266 +1386,7 @@ function useVideopackContext(attributes, context, options = {}) {
     };
   }, [initial, discoveredAttachmentId, isDiscovering, attributes.id]);
 }
-;// ./src/hooks/useVideopackData.js
-
-
-
-/**
- * Hook to resolve specific video data from context or the WordPress database.
- *
- * @param {string} key     The data key to resolve (e.g., 'title', 'views', 'duration').
- * @param {Object} context The block context.
- * @return {*} The resolved data value.
- */
-function useVideopackData(key, context = {}) {
-  const contextKey = `videopack/${key}`;
-  const contextValue = context[contextKey];
-  const ctxAttachmentId = context['videopack/attachmentId'];
-  const ctxPostId = context['videopack/postId'];
-  const ctxPostType = context['videopack/postType'];
-  const propPostId = context.postId;
-  const propPostType = context.postType;
-  const isStandalone = isTrue(context['videopack/isStandalone']);
-  const resolvedData = (0,external_wp_data_namespaceObject.useSelect)(select => {
-    // 1. If context already has the value, we're done.
-    if (contextValue !== undefined && contextValue !== null) {
-      return {
-        data: contextValue,
-        isResolving: false
-      };
-    }
-
-    // 2. Otherwise, we need an ID to fetch from the database.
-    const isParentRequest = key === 'parentTitle';
-    const attachmentId = isParentRequest ? ctxPostId || propPostId : ctxAttachmentId || (ctxPostType === 'attachment' ? ctxPostId : null) || (propPostType === 'attachment' ? propPostId : null);
-    let postType = ctxPostType || propPostType || 'post';
-
-    // If we are looking for a video (attachment) and we have an explicit attachmentId,
-    // or we are in standalone mode, then the postType should be 'attachment'.
-    if (!isParentRequest && (ctxAttachmentId || isStandalone)) {
-      postType = 'attachment';
-    }
-    if (!attachmentId) {
-      return {
-        data: null,
-        isResolving: false
-      };
-    }
-    const {
-      getEntityRecord
-    } = select('core');
-    const record = getEntityRecord('postType', postType, attachmentId);
-    const isResolving = select('core/data').isResolving('core', 'getEntityRecord', ['postType', postType, attachmentId]);
-    if (!record) {
-      return {
-        data: null,
-        isResolving
-      };
-    }
-
-    // 3. Map the requested key to the record's property.
-    let data = null;
-    switch (key) {
-      case 'title':
-      case 'parentTitle':
-        data = record.title?.rendered || record.title || '';
-        break;
-      case 'caption':
-        data = record.caption?.rendered || record.caption || '';
-        break;
-      case 'views':
-        data = record.videopack?.views || record.meta?.videopack_views || record.meta?.['_videopack-meta']?.starts || 0;
-        break;
-      case 'duration':
-        data = record.videopack?.duration || record.meta?.['_videopack-meta']?.duration || '';
-        break;
-      case 'embedlink':
-        data = record.videopack?.embed_url || record.videopack?.embedlink || '';
-        break;
-      case 'videopack':
-        data = record.videopack || null;
-        break;
-      default:
-        data = record[key] || null;
-    }
-    return {
-      data,
-      isResolving
-    };
-  }, [key, contextValue, ctxAttachmentId, ctxPostId, ctxPostType, propPostId, propPostType, isStandalone]);
-  return resolvedData || {
-    data: null,
-    isResolving: false
-  };
-}
-;// ./src/components/ViewCount/ViewCount.js
-
-
-
-
-
-
-
-/**
- * A internal component to display the view count with correct styling and data.
- *
- * @param {Object}  root0                   Component props.
- * @param {Object}  root0.blockProps        Block props.
- * @param {string}  root0.iconType          Type of icon to display.
- * @param {boolean} root0.showText          Whether to show the "views" text.
- * @param {number}  root0.count             Manual count override.
- * @param {boolean} root0.isInsideThumbnail Whether it's inside a thumbnail.
- * @param {boolean} root0.isOverlay         Whether it's an overlay.
- * @param {string}  root0.textAlign         Text alignment.
- * @param {string}  root0.position          Position (top/bottom).
- * @param {Object}  root0.attributes        Block attributes.
- * @param {Object}  root0.context           Block context.
- * @return {Element}                        The rendered component.
- */
-
-function ViewCount({
-  blockProps,
-  iconType = 'none',
-  showText = true,
-  count,
-  isInsideThumbnail = false,
-  isOverlay = false,
-  textAlign,
-  position = 'top',
-  attributes = {},
-  context = {}
-}) {
-  const vpContext = useVideopackContext(attributes, context);
-  const {
-    data: views,
-    isResolving
-  } = useVideopackData('views', context);
-  const attachmentId = vpContext.resolved.attachmentId;
-  const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'];
-  const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
-  const defaultAlign = isInsideThumbnail || actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
-  const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${actualIsOverlay ? `position-${position || 'top'}` : ''} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`;
-  const finalBlockProps = blockProps || {
-    className: wrapperClass,
-    style: vpContext.style
-  };
-  if (vpContext.resolved.isDiscovering && !attachmentId) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      ...finalBlockProps,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {})
-    });
-  }
-  if (!attachmentId && count === undefined && !vpContext.resolved.isPreview) {
-    return null;
-  }
-  if (isResolving) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      ...finalBlockProps,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {})
-    });
-  }
-  let safeViews = 0;
-  if (count !== undefined) {
-    safeViews = Number(count);
-  } else if (views !== undefined && views !== null) {
-    safeViews = Number(views);
-  }
-  const displayValue = showText ? (0,external_wp_i18n_namespaceObject.sprintf)(/* translators: %s is the formatted number of views */
-  (0,external_wp_i18n_namespaceObject._n)('%s view', '%s views', safeViews, 'video-embed-thumbnail-generator'), safeViews.toLocaleString()) : safeViews.toLocaleString();
-  const renderIcon = () => {
-    switch (iconType) {
-      case 'eye':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Icon, {
-          icon: seen_default,
-          className: "videopack-icon-left-margin"
-        });
-      case 'play':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Icon, {
-          icon: play,
-          size: 16,
-          className: "videopack-icon-left-margin"
-        });
-      case 'playOutline':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Icon, {
-          icon: playOutline,
-          size: 16,
-          className: "videopack-icon-left-margin"
-        });
-      default:
-        return null;
-    }
-  };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-    ...finalBlockProps,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-view-count",
-      children: [renderIcon(), displayValue]
-    })
-  });
-}
-;// ./src/utils/colors.js
-const getColorFallbacks = settings => {
-  const {
-    embed_method = 'Video.js',
-    skin = 'vjs-theme-videopack'
-  } = settings || {};
-  const fallbacks = {
-    title_color: '#ffffff',
-    title_background_color: '#2b333f',
-    play_button_color: '#ffffff',
-    play_button_secondary_color: '#ffffff',
-    control_bar_bg_color: '#2b333f',
-    control_bar_color: '#ffffff',
-    pagination_color: '#1e1e1e',
-    pagination_background_color: '#ffffff',
-    pagination_active_bg_color: '#1e1e1e',
-    pagination_active_color: '#ffffff'
-  };
-  if (embed_method === 'WordPress Default') {
-    fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
-    fallbacks.control_bar_bg_color = '#222222';
-    fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_secondary_color = '#ffffff';
-  } else if (embed_method?.startsWith('Video.js')) {
-    // Default skin (vjs-theme-videopack) defaults
-    fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
-
-    switch (skin) {
-      case 'vjs-theme-city':
-        fallbacks.title_background_color = '#bf3b4d';
-        fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = '#bf3b4d';
-        break;
-      case 'vjs-theme-fantasy':
-        fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_color = '#9f44b4';
-        fallbacks.play_button_secondary_color = '#ffffff';
-        fallbacks.pagination_active_bg_color = '#9f44b4';
-        break;
-      case 'vjs-theme-forest':
-        fallbacks.title_background_color = '#6fb04e';
-        fallbacks.play_button_secondary_color = '#6fb04e';
-        fallbacks.control_bar_bg_color = 'transparent';
-        fallbacks.pagination_active_bg_color = '#6fb04e';
-        break;
-      case 'vjs-theme-sea':
-        fallbacks.title_background_color = '#4176bc';
-        fallbacks.play_button_secondary_color = '#4176bc';
-        fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
-        fallbacks.pagination_active_bg_color = '#4176bc';
-        break;
-      case 'kg-video-js-skin':
-        fallbacks.title_background_color = '#000000';
-        fallbacks.play_button_secondary_color = '#000000';
-        fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = '#000000';
-        break;
-    }
-  }
-  return fallbacks;
-};
-;// ./src/blocks/view-count/edit.js
+;// ./src/blocks/share/edit.js
 /* global videopack_config */
 
 
@@ -1587,10 +1398,8 @@ const getColorFallbacks = settings => {
 
 
 
-
-
 /**
- * Edit component for the Videopack View Count block.
+ * Edit component for the Videopack Video Share block.
  *
  * @param {Object}   root0               Component props.
  * @param {Object}   root0.attributes    Block attributes.
@@ -1602,61 +1411,235 @@ const getColorFallbacks = settings => {
 function Edit({
   attributes,
   setAttributes,
-  context
+  context,
+  isSelected
 }) {
   const vpContext = useVideopackContext(attributes, context);
-  const postId = vpContext.resolved.attachmentId;
   const {
-    iconType,
-    showText,
+    iconType = 'share',
+    showText = false,
+    styleType = 'text',
     textAlign,
     title_color,
-    title_background_color
+    title_background_color,
+    shareCopyLink = true,
+    shareNativeShare = true,
+    shareBluesky = true,
+    shareThreads = true,
+    shareFacebook = true,
+    shareReddit = true,
+    shareEmail = true
   } = attributes;
   const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
   const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
-  const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
-  const isOverlay = isInsideThumbnail || isInsidePlayerOverlay;
+  const isInsideTitleMeta = !!context['videopack/isInsideTitleMeta'];
+  const isOverlay = isInsideThumbnail || isInsidePlayerOverlay && !isInsideTitleMeta;
+  const shouldPortal = isInsideThumbnail || isInsidePlayerOverlay || isInsideTitleMeta;
   const colorFallbacks = (0,external_wp_element_namespaceObject.useMemo)(() => getColorFallbacks({
     title_color: vpContext.resolved.title_color,
     title_background_color: vpContext.resolved.title_background_color
   }), [vpContext.resolved.title_color, vpContext.resolved.title_background_color]);
   const defaultAlign = (0,external_wp_element_namespaceObject.useMemo)(() => {
     if (isInsideThumbnail) {
-      return 'right';
+      return 'center';
     }
-    return isInsidePlayerOverlay || isInsidePlayerContainer ? 'right' : 'left';
-  }, [isInsideThumbnail, isInsidePlayerOverlay, isInsidePlayerContainer]);
+    return 'left';
+  }, [isInsideThumbnail]);
   const finalTextAlign = textAlign || context['videopack/textAlign'] || defaultAlign;
-  const {
-    latestVideoId
-  } = (0,external_wp_data_namespaceObject.useSelect)(select => {
-    if (!vpContext.resolved.isPreview) {
-      return {
-        latestVideoId: null
-      };
-    }
-    const {
-      getEntityRecords
-    } = select('core');
-    const query = {
-      post_type: 'attachment',
-      mime_type: 'video',
-      per_page: 1,
-      _fields: 'id'
-    };
-    const media = getEntityRecords('postType', 'attachment', query);
-    return {
-      latestVideoId: media?.[0]?.id
-    };
-  }, [vpContext.resolved.isPreview]);
-  const effectiveAttachmentId = postId || latestVideoId;
   const position = attributes.position || context['videopack/position'] || 'top';
   const blockProps = (0,external_wp_blockEditor_namespaceObject.useBlockProps)({
-    className: `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${isOverlay ? `is-overlay position-${position}` : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayerOverlay ? 'is-inside-player' : ''} ${!effectiveAttachmentId ? 'no-title' : ''} has-text-align-${finalTextAlign}`,
-    style: vpContext.style
+    className: `videopack-share-block videopack-share-wrapper ${vpContext.classes} ${isOverlay ? `is-overlay position-${position}` : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayerOverlay ? 'is-inside-player' : ''} ${isInsideTitleMeta ? 'is-inside-title-meta' : ''} has-text-align-${finalTextAlign}`,
+    style: {
+      ...vpContext.style,
+      display: 'inline-flex',
+      alignItems: 'center'
+    }
   });
   const THEME_COLORS = videopack_config?.themeColors;
+  const [isOpen, setIsOpen] = (0,external_wp_element_namespaceObject.useState)(false);
+  const menuContainerRef = (0,external_wp_element_namespaceObject.useRef)(null);
+  const [portalTarget, setPortalTarget] = (0,external_wp_element_namespaceObject.useState)(null);
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    if (shouldPortal && menuContainerRef.current) {
+      const target = menuContainerRef.current.closest('.wp-block-videopack-player') || menuContainerRef.current.closest('.wp-block-videopack-player-container') || menuContainerRef.current.closest('.videopack-player') || menuContainerRef.current.closest('.videopack-player-relative-wrapper') || menuContainerRef.current.closest('.videopack-thumbnail-wrapper') || menuContainerRef.current.closest('.videopack-video-block-container') || menuContainerRef.current.closest('.videopack-collection-item') || menuContainerRef.current.parentElement;
+      setPortalTarget(target);
+    }
+  }, [shouldPortal, isOpen]);
+  const combinedRef = node => {
+    menuContainerRef.current = node;
+    if (blockProps.ref) {
+      if (typeof blockProps.ref === 'function') {
+        blockProps.ref(node);
+      } else if (typeof blockProps.ref === 'object') {
+        blockProps.ref.current = node;
+      }
+    }
+  };
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+    const handleOutside = event => {
+      if (menuContainerRef.current && !menuContainerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isOpen]);
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    if (!isSelected) {
+      setIsOpen(false);
+    }
+  }, [isSelected]);
+  const getActiveShareIcon = () => {
+    if (iconType === 'external') {
+      return shareAlt2;
+    }
+    if (iconType === 'iosShare') {
+      return shareAlt1;
+    }
+    if (iconType === 'curveShare') {
+      return shareAlt3;
+    }
+    return share;
+  };
+  const renderIcon = () => {
+    if (iconType === 'share') {
+      return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+        icon: isOpen ? icon_close : share,
+        className: "videopack-icon-svg"
+      });
+    }
+    if (iconType === 'external') {
+      return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+        icon: shareAlt2,
+        className: "videopack-icon-svg"
+      });
+    }
+    if (iconType === 'iosShare') {
+      return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+        icon: shareAlt1,
+        className: "videopack-icon-svg"
+      });
+    }
+    if (iconType === 'curveShare') {
+      return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+        icon: shareAlt3,
+        className: "videopack-icon-svg"
+      });
+    }
+    return null;
+  };
+  const renderTriggerContent = () => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+    children: [iconType !== 'none' && renderIcon(), (showText || iconType === 'none') && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+      className: "videopack-share-text-label",
+      style: {
+        marginLeft: iconType !== 'none' ? '4px' : '0'
+      },
+      children: (0,external_wp_i18n_namespaceObject.__)('Share', 'video-embed-thumbnail-generator')
+    }), !isOverlay && !isInsideTitleMeta && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+      className: "videopack-caret",
+      children: "\u25BC"
+    })]
+  });
+  const linkClassName = `videopack-share-link videopack-icons style-${styleType}`;
+  const shareContainerContent = /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+    className: `videopack-share-container${isOpen ? ' is-visible' : ''}`,
+    onClick: e => e.stopPropagation(),
+    children: [(shareCopyLink || shareNativeShare || shareBluesky || shareThreads || shareFacebook || shareReddit || shareEmail) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+      className: "videopack-share-services-grid",
+      children: [shareCopyLink && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+        type: "button",
+        className: "videopack-share-btn videopack-btn-copylink",
+        title: (0,external_wp_i18n_namespaceObject.__)('Copy Link', 'video-embed-thumbnail-generator'),
+        onClick: e => e.preventDefault(),
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+          icon: copyLink
+        })
+      }), shareNativeShare && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+        type: "button",
+        className: "videopack-share-btn videopack-btn-nativeshare",
+        title: (0,external_wp_i18n_namespaceObject.__)('Share via Device', 'video-embed-thumbnail-generator'),
+        onClick: e => e.preventDefault(),
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+          icon: getActiveShareIcon()
+        })
+      }), shareBluesky && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+        type: "button",
+        className: "videopack-share-btn videopack-btn-bluesky",
+        title: (0,external_wp_i18n_namespaceObject.__)('Share on Bluesky', 'video-embed-thumbnail-generator'),
+        onClick: e => e.preventDefault(),
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+          icon: bluesky
+        })
+      }), shareThreads && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+        type: "button",
+        className: "videopack-share-btn videopack-btn-threads",
+        title: (0,external_wp_i18n_namespaceObject.__)('Share on Threads', 'video-embed-thumbnail-generator'),
+        onClick: e => e.preventDefault(),
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+          icon: threads
+        })
+      }), shareFacebook && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+        type: "button",
+        className: "videopack-share-btn videopack-btn-facebook",
+        title: (0,external_wp_i18n_namespaceObject.__)('Share on Facebook', 'video-embed-thumbnail-generator'),
+        onClick: e => e.preventDefault(),
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+          icon: facebook
+        })
+      }), shareReddit && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+        type: "button",
+        className: "videopack-share-btn videopack-btn-reddit",
+        title: (0,external_wp_i18n_namespaceObject.__)('Share on Reddit', 'video-embed-thumbnail-generator'),
+        onClick: e => e.preventDefault(),
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+          icon: reddit
+        })
+      }), shareEmail && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+        type: "button",
+        className: "videopack-share-btn videopack-btn-email",
+        title: (0,external_wp_i18n_namespaceObject.__)('Share via Email', 'video-embed-thumbnail-generator'),
+        onClick: e => e.preventDefault(),
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+          icon: email
+        })
+      })]
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("span", {
+      className: "videopack-embedcode-container",
+      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+        className: "videopack-icons embed",
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(icon_default, {
+          icon: icon_embed,
+          className: "videopack-icon-svg"
+        })
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+        children: (0,external_wp_i18n_namespaceObject.__)('Embed:', 'video-embed-thumbnail-generator')
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("input", {
+          className: "videopack-embed-code",
+          type: "text",
+          value: `<iframe src="https://example.com/embed" width="960" height="540" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`,
+          readOnly: true
+        })
+      })]
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("span", {
+      className: "videopack-start-at-container",
+      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("input", {
+        type: "checkbox",
+        className: "videopack-start-at-enable",
+        id: "videopack-start-at-enable-editor"
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("label", {
+        htmlFor: "videopack-start-at-enable-editor",
+        children: (0,external_wp_i18n_namespaceObject.__)('Start at:', 'video-embed-thumbnail-generator')
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("input", {
+        type: "text",
+        className: "videopack-start-at",
+        defaultValue: "00:00"
+      })]
+    })]
+  });
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
     children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_blockEditor_namespaceObject.BlockControls, {
       children: [isOverlay && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.BlockVerticalAlignmentControl, {
@@ -1674,7 +1657,7 @@ function Edit({
           });
         }
       }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.ToolbarGroup, {
-        label: (0,external_wp_i18n_namespaceObject.__)('Icon Type', 'video-embed-thumbnail-generator'),
+        label: (0,external_wp_i18n_namespaceObject.__)('Icon Style', 'video-embed-thumbnail-generator'),
         children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
           icon: not_allowed_default,
           label: (0,external_wp_i18n_namespaceObject.__)('No Icon', 'video-embed-thumbnail-generator'),
@@ -1683,40 +1666,64 @@ function Edit({
           }),
           isPressed: iconType === 'none'
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
-          icon: seen_default,
-          label: (0,external_wp_i18n_namespaceObject.__)('Eye Icon', 'video-embed-thumbnail-generator'),
+          icon: share,
+          label: (0,external_wp_i18n_namespaceObject.__)('Standard Share Icon', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
-            iconType: 'eye'
+            iconType: 'share'
           }),
-          isPressed: iconType === 'eye'
+          isPressed: iconType === 'share'
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
-          icon: play,
-          label: (0,external_wp_i18n_namespaceObject.__)('Play Icon (Filled)', 'video-embed-thumbnail-generator'),
+          icon: shareAlt2,
+          label: (0,external_wp_i18n_namespaceObject.__)('External Link Icon', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
-            iconType: 'play'
+            iconType: 'external'
           }),
-          isPressed: iconType === 'play'
+          isPressed: iconType === 'external'
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
-          icon: playOutline,
-          label: (0,external_wp_i18n_namespaceObject.__)('Play Icon (Outline)', 'video-embed-thumbnail-generator'),
+          icon: shareAlt1,
+          label: (0,external_wp_i18n_namespaceObject.__)('iOS Style Share Icon', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
-            iconType: 'playOutline'
+            iconType: 'iosShare'
           }),
-          isPressed: iconType === 'playOutline'
+          isPressed: iconType === 'iosShare'
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
+          icon: shareAlt3,
+          label: (0,external_wp_i18n_namespaceObject.__)('Curved Arrow Share Icon', 'video-embed-thumbnail-generator'),
+          onClick: () => setAttributes({
+            iconType: 'curveShare'
+          }),
+          isPressed: iconType === 'curveShare'
         })]
       }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarGroup, {
         label: (0,external_wp_i18n_namespaceObject.__)('Display Options', 'video-embed-thumbnail-generator'),
         children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
           icon: media_and_text_default,
-          label: showText ? (0,external_wp_i18n_namespaceObject.__)('Hide "views" text', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_namespaceObject.__)('Show "views" text', 'video-embed-thumbnail-generator'),
+          label: (0,external_wp_i18n_namespaceObject.__)('Toggle Text', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
             showText: !showText
           }),
           isPressed: showText
         })
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.ToolbarGroup, {
+        label: (0,external_wp_i18n_namespaceObject.__)('Style Type', 'video-embed-thumbnail-generator'),
+        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Link Style', 'video-embed-thumbnail-generator'),
+          onClick: () => setAttributes({
+            styleType: 'text'
+          }),
+          isPressed: styleType === 'text',
+          children: (0,external_wp_i18n_namespaceObject.__)('Link', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Button Style', 'video-embed-thumbnail-generator'),
+          onClick: () => setAttributes({
+            styleType: 'button'
+          }),
+          isPressed: styleType === 'button',
+          children: (0,external_wp_i18n_namespaceObject.__)('Button', 'video-embed-thumbnail-generator')
+        })]
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.InspectorControls, {
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_blockEditor_namespaceObject.InspectorControls, {
+      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
         title: (0,external_wp_i18n_namespaceObject.__)('Colors', 'video-embed-thumbnail-generator'),
         initialOpen: true,
         children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
@@ -1751,32 +1758,84 @@ function Edit({
             })]
           })]
         })
-      })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(ViewCount, {
-      blockProps: blockProps,
-      iconType: iconType,
-      showText: showText,
-      postId: effectiveAttachmentId,
-      isInsideThumbnail: isInsideThumbnail,
-      context: context,
-      attributes: attributes
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
+        title: (0,external_wp_i18n_namespaceObject.__)('Share Services', 'video-embed-thumbnail-generator'),
+        initialOpen: true,
+        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Copy Link', 'video-embed-thumbnail-generator'),
+          checked: shareCopyLink,
+          onChange: val => setAttributes({
+            shareCopyLink: val
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Native Share', 'video-embed-thumbnail-generator'),
+          checked: shareNativeShare,
+          onChange: val => setAttributes({
+            shareNativeShare: val
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Bluesky', 'video-embed-thumbnail-generator'),
+          checked: shareBluesky,
+          onChange: val => setAttributes({
+            shareBluesky: val
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Threads', 'video-embed-thumbnail-generator'),
+          checked: shareThreads,
+          onChange: val => setAttributes({
+            shareThreads: val
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Facebook', 'video-embed-thumbnail-generator'),
+          checked: shareFacebook,
+          onChange: val => setAttributes({
+            shareFacebook: val
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Reddit', 'video-embed-thumbnail-generator'),
+          checked: shareReddit,
+          onChange: val => setAttributes({
+            shareReddit: val
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          label: (0,external_wp_i18n_namespaceObject.__)('Email', 'video-embed-thumbnail-generator'),
+          checked: shareEmail,
+          onChange: val => setAttributes({
+            shareEmail: val
+          })
+        })]
+      })]
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+      ...blockProps,
+      ref: combinedRef,
+      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+        type: "button",
+        className: `${linkClassName}${isOpen ? ' is-active' : ''}`,
+        onClick: e => {
+          e.preventDefault();
+          setIsOpen(!isOpen);
+        },
+        children: renderTriggerContent()
+      }), shouldPortal && portalTarget ? (0,external_wp_element_namespaceObject.createPortal)(shareContainerContent, portalTarget) : shareContainerContent]
     })]
   });
 }
-;// ./src/blocks/view-count/save.js
+;// ./src/blocks/share/save.js
 function save_save() {
   return null;
 }
-;// ./src/blocks/view-count/block.json
-const block_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"videopack/view-count"}');
-;// ./src/blocks/view-count/index.js
+;// ./src/blocks/share/block.json
+const block_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"videopack/share"}');
+;// ./src/blocks/share/index.js
+
+
 
 
 
 
 
 (0,external_wp_blocks_namespaceObject.registerBlockType)(block_namespaceObject.name, {
-  icon: videopackViewCount,
+  icon: share,
   edit: Edit,
   save: save_save
 });

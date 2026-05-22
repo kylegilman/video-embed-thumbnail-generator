@@ -1,0 +1,102 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "videopack/share",
+  "title": "Videopack Video Share",
+  "category": "media",
+  "icon": "share",
+  "description": "Displays a share/embed toggle link or button for the video.",
+  "parent": [
+    "videopack/title",
+    "videopack/player-container",
+    "videopack/player",
+    "videopack/thumbnail",
+    "videopack/loop"
+  ],
+  "usesContext": [
+    "postId",
+    "postType",
+    "videopack/postId",
+    "videopack/attachmentId",
+    "videopack/isInsidePlayerOverlay",
+    "videopack/isInsidePlayerContainer",
+    "videopack/isInsideThumbnail",
+    "videopack/isInsideTitleMeta",
+    "videopack/textAlign",
+    "videopack/position",
+    "videopack/title_color",
+    "videopack/title_background_color"
+  ],
+  "attributes": {
+    "iconType": {
+      "type": "string",
+      "default": "share"
+    },
+    "showText": {
+      "type": "boolean",
+      "default": false
+    },
+    "styleType": {
+      "type": "string",
+      "default": "text"
+    },
+    "textAlign": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string"
+    },
+    "title_color": {
+      "type": "string"
+    },
+    "title_background_color": {
+      "type": "string"
+    },
+    "isPreview": {
+      "type": "boolean",
+      "default": false
+    },
+    "shareCopyLink": {
+      "type": "boolean",
+      "default": true
+    },
+    "shareNativeShare": {
+      "type": "boolean",
+      "default": true
+    },
+    "shareBluesky": {
+      "type": "boolean",
+      "default": true
+    },
+    "shareThreads": {
+      "type": "boolean",
+      "default": true
+    },
+    "shareFacebook": {
+      "type": "boolean",
+      "default": true
+    },
+    "shareReddit": {
+      "type": "boolean",
+      "default": true
+    },
+    "shareEmail": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "supports": {
+    "html": false,
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    },
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css"
+}
