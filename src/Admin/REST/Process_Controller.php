@@ -18,6 +18,9 @@ class Process_Controller extends Controller {
 	 * Registers REST API routes for batch processes.
 	 */
 	public function register_routes() {
+		$batch_types    = apply_filters( 'videopack_batch_types', array( 'featured', 'parents', 'thumbs', 'encoding' ) );
+		$progress_types = array_merge( $batch_types, array( 'all', 'browser' ) );
+
 		register_rest_route(
 			$this->namespace,
 			'/batch/process',
@@ -29,7 +32,7 @@ class Process_Controller extends Controller {
 					'type' => array(
 						'required' => true,
 						'type'     => 'string',
-						'enum'     => array( 'featured', 'parents', 'thumbs', 'encoding' ),
+						'enum'     => $batch_types,
 					),
 				),
 			)
@@ -46,7 +49,7 @@ class Process_Controller extends Controller {
 					'type' => array(
 						'required' => true,
 						'type'     => 'string',
-						'enum'     => array( 'featured', 'parents', 'thumbs', 'encoding', 'all', 'browser' ),
+						'enum'     => $progress_types,
 					),
 				),
 			)
@@ -59,19 +62,24 @@ class Process_Controller extends Controller {
 	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function batch_permissions( $request ) {
-		$type = (string) $request->get_param( 'type' );
+		$type    = (string) $request->get_param( 'type' );
+		$allowed = false;
 		switch ( $type ) {
 			case 'featured':
 			case 'parents':
-				return $this->can_manage_options();
+				$allowed = $this->can_manage_options();
+				break;
 			case 'thumbs':
-				return $this->can_make_thumbnails();
+				$allowed = $this->can_make_thumbnails();
+				break;
 			case 'encoding':
-				return $this->can_encode_videos();
+				$allowed = $this->can_encode_videos();
+				break;
 			case 'all':
-				return $this->can_manage_options() && $this->can_make_thumbnails() && $this->can_encode_videos();
+				$allowed = $this->can_manage_options() && $this->can_make_thumbnails() && $this->can_encode_videos();
+				break;
 		}
-		return false;
+		return apply_filters( 'videopack_batch_permissions', $allowed, $type, $request );
 	}
 
 	/**
@@ -85,11 +93,14 @@ class Process_Controller extends Controller {
 		}
 
 		$type   = (string) $request->get_param( 'type' );
-		$groups = array(
-			'featured' => 'videopack-featured-images',
-			'parents'  => 'videopack-parent-switching',
-			'thumbs'   => 'videopack-generate-thumbnails',
-			'encoding' => 'videopack-batch-enqueue',
+		$groups = apply_filters(
+			'videopack_batch_groups',
+			array(
+				'featured' => 'videopack-featured-images',
+				'parents'  => 'videopack-parent-switching',
+				'thumbs'   => 'videopack-generate-thumbnails',
+				'encoding' => 'videopack-batch-enqueue',
+			)
 		);
 
 		if ( isset( $groups[ $type ] ) && function_exists( 'as_unschedule_all_actions' ) ) {
@@ -118,6 +129,8 @@ class Process_Controller extends Controller {
 				break;
 		}
 
+		$result = apply_filters( "videopack_batch_process_{$type}", $result, $request, $this );
+
 		if ( empty( $result ) ) {
 			return new \WP_Error( 'invalid_type', 'Invalid batch type.', array( 'status' => 400 ) );
 		}
@@ -138,11 +151,14 @@ class Process_Controller extends Controller {
 			return $cached;
 		}
 
-		$groups = array(
-			'featured' => 'videopack-featured-images',
-			'parents'  => 'videopack-parent-switching',
-			'thumbs'   => 'videopack-generate-thumbnails',
-			'encoding' => 'videopack-batch-enqueue',
+		$groups = apply_filters(
+			'videopack_batch_groups',
+			array(
+				'featured' => 'videopack-featured-images',
+				'parents'  => 'videopack-parent-switching',
+				'thumbs'   => 'videopack-generate-thumbnails',
+				'encoding' => 'videopack-batch-enqueue',
+			)
 		);
 
 		$counts = array();

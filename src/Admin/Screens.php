@@ -400,6 +400,14 @@ class Screens implements Hook_Subscriber {
 
 		$meta_query = (array) $wp_query_obj->get( 'meta_query' );
 
+		if ( 'select_video_source' === $filter ) {
+			add_filter(
+				'posts_where',
+				array( $this, 'filter_still_gifs_sql' ),
+				10
+			);
+		}
+
 		if ( 'only_children' === $filter ) {
 			$meta_query['relation'] = 'AND';
 			$meta_query[]           = array(
@@ -710,5 +718,24 @@ class Screens implements Hook_Subscriber {
 			}
 		}
 		return (array) $response;
+	}
+
+	/**
+	 * Filters the SQL WHERE clause to ensure only GIFs with video children are returned in video/GIF contexts.
+	 *
+	 * @param string $where The SQL WHERE clause.
+	 * @return string Modified WHERE clause.
+	 */
+	public function filter_still_gifs_sql( $where ) {
+		global $wpdb;
+		// Remove the filter so it doesn't affect subsequent queries.
+		remove_filter( 'posts_where', array( $this, 'filter_still_gifs_sql' ), 10 );
+
+		$target = "{$wpdb->posts}.post_mime_type = 'image/gif'";
+		if ( false !== strpos( $where, $target ) ) {
+			$replacement = "({$wpdb->posts}.post_mime_type = 'image/gif' AND {$wpdb->posts}.ID IN (SELECT DISTINCT post_parent FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_parent > 0 AND post_mime_type LIKE 'video/%'))";
+			$where = str_replace( $target, $replacement, $where );
+		}
+		return $where;
 	}
 }

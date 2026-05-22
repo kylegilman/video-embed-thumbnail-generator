@@ -40,8 +40,25 @@ class Public_Controller extends Controller {
 			array(
 				'methods'             => 'GET, POST',
 				'callback'            => array( $this, 'video_gallery' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'public_permissions' ),
 				'args'                => $this->get_gallery_args(),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/player',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'video_player' ),
+				'permission_callback' => array( $this, 'public_permissions' ),
+				'args'                => array(
+					'id'                    => array( 'type' => array( 'number', 'string' ) ),
+					'inner_blocks_template' => array(
+						'type'              => 'string',
+						'sanitize_callback' => array( $this, 'sanitize_inner_blocks_template' ),
+					),
+				),
 			)
 		);
 
@@ -51,7 +68,7 @@ class Public_Controller extends Controller {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'video_sources' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'public_permissions' ),
 				'args'                => array(
 					'url'           => array( 'type' => 'string' ),
 					'attachment_id' => array( 'type' => array( 'number', 'string' ) ),
@@ -65,7 +82,7 @@ class Public_Controller extends Controller {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'render_shortcode' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'public_permissions' ),
 				'args'                => array(
 					'attrs'   => array(
 						'type'     => 'object',
@@ -85,7 +102,7 @@ class Public_Controller extends Controller {
 			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'count_play' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'public_permissions' ),
 				'args'                => array(
 					'attachment_id' => array(
 						'type'              => 'integer',
@@ -108,46 +125,59 @@ class Public_Controller extends Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/resolve-url',
-			array(
-				'methods'             => \WP_REST_Server::EDITABLE,
-				'callback'            => array( $this, 'resolve_url_to_attachment_api' ),
-				'permission_callback' => function () {
-					return current_user_can( 'upload_files' );
-				},
-				'args'                => array(
-					'url'       => array(
-						'type'     => 'string',
-						'required' => true,
-						'format'   => 'uri',
-					),
-					'parent_id' => array(
-						'type'     => 'number',
-						'required' => false,
-						'default'  => 0,
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
 			'/presets',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'presets_get' ),
-				'permission_callback' => '__return_true',
-				'args'                => array(
-					'attachment_id' => array( 'type' => array( 'number', 'string' ) ),
-					'url'           => array(
-						'type'   => 'string',
-						'format' => 'uri',
-					),
-				),
+				'permission_callback' => 'is_user_logged_in',
 			)
 		);
 
 		$this->add_data_to_rest_response();
+	}
+
+	/**
+	 * REST callback for assembling a standalone video player.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 */
+	public function video_player( \WP_REST_Request $request ) {
+		$id = $request->get_param( 'id' );
+		if ( ! $id ) {
+			return new \WP_Error( 'rest_invalid_param', 'Missing Video ID.', array( 'status' => 400 ) );
+		}
+
+		$post_id = \Videopack\Common\Video_Discovery::get_first_video_child( $id ) ?: (int) $id;
+		$source  = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
+		
+		if ( ! $source || ! $source->exists() ) {
+			return new \WP_Error( 'rest_source_not_found', 'Video source could not be found.', array( 'status' => 404 ) );
+		}
+
+		$template_json = $request->get_param( 'inner_blocks_template' );
+		$blocks = $template_json ? json_decode( wp_unslash( $template_json ), true ) : array();
+
+		// Ensure we start with a player-container at the root
+		if ( empty( $blocks ) || 'videopack/player-container' !== $blocks[0]['blockName'] ) {
+			$blocks = array(
+				array(
+					'blockName' => 'videopack/player-container',
+					'attrs' => array( 'id' => $post_id ),
+					'innerBlocks' => $blocks,
+				)
+			);
+		} else {
+			$blocks[0]['attrs']['id'] = $post_id;
+		}
+
+		$serialized_tree = \Videopack\Frontend\Modular_Renderer::serialize_player_container( $blocks );
+		
+		$response = array(
+			'html' => do_blocks( serialize_blocks( $blocks ) ),
+			'tree' => $serialized_tree,
+		);
+
+		return apply_filters( 'videopack_rest_video_player', new \WP_REST_Response( $response, 200 ), $request );
 	}
 
 	/**
@@ -232,62 +262,19 @@ class Public_Controller extends Controller {
 	}
 
 	/**
-	 * REST callback to resolve URL to attachment.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 */
-	public function resolve_url_to_attachment_api( \WP_REST_Request $request ) {
-		$url       = (string) $request->get_param( 'url' );
-		$parent_id = (int) $request->get_param( 'parent_id' );
-		$create    = (bool) $request->get_param( 'create' );
-
-		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options );
-		$attachment      = new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta );
-		$result          = $attachment->resolve_url_to_attachment( $url, $parent_id, $create );
-
-		if ( is_wp_error( $result ) ) {
-			return $result;
-		}
-		return apply_filters( 'videopack_rest_resolve_url_to_attachment', new \WP_REST_Response( array( 'attachment_id' => (int) $result ), 200 ), $request );
-	}
-
-	/**
 	 * REST callback to get presets.
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function presets_get( \WP_REST_Request $request ) {
-		$attachment_id = $request->get_param( 'attachment_id' );
-		$url           = (string) $request->get_param( 'url' );
-		$presets       = array();
-
-		if ( ! empty( $attachment_id ) || ! empty( $url ) ) {
-			$browser_metadata = array();
-			if ( $request->get_param( 'width' ) && $request->get_param( 'height' ) ) {
-				$browser_metadata['actualwidth']  = (int) $request->get_param( 'width' );
-				$browser_metadata['actualheight'] = (int) $request->get_param( 'height' );
-			}
-			if ( $request->get_param( 'duration' ) ) {
-				$browser_metadata['duration'] = (float) $request->get_param( 'duration' );
-			}
-
-			$encoder            = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id, $url, $browser_metadata );
-			$video_formats_data = (array) $encoder->get_all_formats_with_status();
-			foreach ( $video_formats_data as $id => $data ) {
-				$presets[] = array_merge( $data, array(
-					'id'            => (string) $id,
-					'attachment_id' => $data['id'] ?? null,
-				) );
-			}
-		} else {
-			$all_formats = (array) $this->format_registry->get_video_formats( (bool) ( $this->options['hide_video_formats'] ?? false ) );
-			foreach ( $all_formats as $id => $obj ) {
-				$data = (array) $obj->to_array();
-				$presets[] = array_merge( $data, array(
-					'id'            => (string) $id,
-					'attachment_id' => null,
-				) );
-			}
+		$presets     = array();
+		$all_formats = (array) $this->format_registry->get_video_formats( (bool) ( $this->options['hide_video_formats'] ?? false ) );
+		foreach ( $all_formats as $id => $obj ) {
+			$data = (array) $obj->to_array();
+			$presets[] = array_merge( $data, array(
+				'id'            => (string) $id,
+				'attachment_id' => null,
+			) );
 		}
 		return apply_filters( 'videopack_rest_presets_get', new \WP_REST_Response( $presets, 200 ), $request );
 	}

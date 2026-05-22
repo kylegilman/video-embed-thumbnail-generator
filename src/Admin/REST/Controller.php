@@ -99,6 +99,16 @@ abstract class Controller extends \WP_REST_Controller implements Hook_Subscriber
 	}
 
 	/**
+	 * Permissions callback for public routes.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return bool
+	 */
+	public function public_permissions( \WP_REST_Request $request ): bool {
+		return (bool) apply_filters( 'videopack_rest_public_permission', true, $request );
+	}
+
+	/**
 	 * Ensures a valid attachment ID, creating one from URL if needed.
 	 *
 	 * @param \WP_REST_Request $request REST request.
