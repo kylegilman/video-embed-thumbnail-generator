@@ -73,6 +73,8 @@ class Blocks implements Hook_Subscriber {
 			'videopack/collection'       => 'render_collection',
 			'videopack/thumbnail'        => 'render_thumbnail',
 			'videopack/title'            => 'render_video_title',
+			'videopack/download'         => 'render_download',
+			'videopack/share'            => 'render_share',
 			'videopack/duration'         => 'render_video_duration',
 			'videopack/view-count'       => 'render_view_count',
 			'videopack/play-button'      => 'render_play_button',
@@ -168,8 +170,8 @@ class Blocks implements Hook_Subscriber {
 
 		// 4. If it's an attachment, validate and return it.
 		if ( 'attachment' === $post_type ) {
-			// Broad check for video types, including HLS manifests.
-			if ( 0 === strpos( $mime, 'video/' ) || 'application/x-mpegurl' === $mime || 'application/vnd.apple.mpegurl' === $mime ) {
+			// Broad check for video types, including HLS manifests and transcoded GIFs.
+			if ( 0 === strpos( $mime, 'video/' ) || 'image/gif' === $mime || 'application/x-mpegurl' === $mime || 'application/vnd.apple.mpegurl' === $mime ) {
 				return $post_id;
 			}
 
@@ -182,7 +184,7 @@ class Blocks implements Hook_Subscriber {
 		// 5. If it's a regular post (or we fell through), try to find the first attached video.
 		// We only perform auto-discovery if the ID refers to a non-attachment post.
 		if ( $post_type && 'attachment' !== $post_type ) {
-			$discovered_id = $this->get_first_video_child( $post_id );
+			$discovered_id = \Videopack\Common\Video_Discovery::get_first_video_child( $post_id );
 			if ( $discovered_id ) {
 				return $discovered_id;
 			}
@@ -191,34 +193,6 @@ class Blocks implements Hook_Subscriber {
 		// Final fallback: if we have an explicit ID but discovery found nothing,
 		// return the original ID and let the player attempt to handle it.
 		return $is_explicit ? $post_id : null;
-	}
-
-	/**
-	 * Retrieves the ID of the first video attachment for a given post.
-	 *
-	 * @param int $post_id The parent post ID.
-	 * @return int|null The video attachment ID or null if not found.
-	 */
-	protected function get_first_video_child( $post_id ) {
-		$args = array(
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'video',
-			'post_status'    => 'inherit',
-			'posts_per_page' => 1,
-			'post_parent'    => (int) $post_id,
-			'fields'         => 'ids',
-			'orderby'        => 'menu_order ID',
-			'order'          => 'ASC',
-			'meta_query'     => array(
-				array(
-					'key'     => '_kgflashmediaplayer-format',
-					'compare' => 'NOT EXISTS',
-				),
-			),
-		);
-
-		$children = get_posts( $args );
-		return ! empty( $children ) ? (int) $children[0] : null;
 	}
 
 	/**
@@ -776,12 +750,107 @@ class Blocks implements Hook_Subscriber {
 			array_merge(
 				$merged_attributes,
 				array(
-					'wrapper_class' => $settings['classes'] . ' videopack-video-title-block',
-					'style_vars'    => $settings['style'],
+					'wrapper_class'  => $settings['classes'] . ' videopack-video-title-block',
+					'style_vars'     => $settings['style'],
+					'inner_content'  => $content,
 				)
 			),
 			$source,
 			(string) ( $block->context['videopack/instanceId'] ?? ( $block->context['videopack/postId'] ?? $post_id ) )
+		);
+	}
+
+	/**
+	 * Renders the Video Download block.
+	 *
+	 * @param array     $attributes Block attributes.
+	 * @param string    $content    Block inner content.
+	 * @param \WP_Block $block      Block instance.
+	 * @return string Rendered HTML.
+	 */
+	public function render_download( $attributes, $content, $block ) {
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
+		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
+			return '';
+		}
+
+		$is_inside_thumb = ! empty( $block->context['videopack/isInsideThumbnail'] );
+		// Do not render the download block inside a thumbnail to match legacy behavior
+		if ( $is_inside_thumb ) {
+			return '';
+		}
+
+		$source = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
+		if ( ! $source ) {
+			return '';
+		}
+
+		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
+		$merged_attributes = array_merge( $attributes, $settings['resolved'] );
+		
+		$is_inside_title = ! empty( $block->context['videopack/isInsideTitleMeta'] );
+		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
+		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
+
+		return Modular_Renderer::render_download(
+			array_merge(
+				$merged_attributes,
+				array(
+					'wrapper_class'            => $settings['classes'],
+					'style_vars'               => $settings['style'],
+					'isInsideTitleMeta'        => $is_inside_title,
+					'isInsidePlayerContainer'  => $is_inside_player_container,
+					'isInsidePlayerOverlay'    => $is_inside_player_overlay,
+				)
+			),
+			$source,
+			$this->options,
+			$this->format_registry
+		);
+	}
+
+	/**
+	 * Renders the Video Share block.
+	 *
+	 * @param array     $attributes Block attributes.
+	 * @param string    $content    Block inner content.
+	 * @param \WP_Block $block      Block instance.
+	 * @return string Rendered HTML.
+	 */
+	public function render_share( $attributes, $content, $block ) {
+		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
+		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
+			return '';
+		}
+
+		$source = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
+		if ( ! $source ) {
+			return '';
+		}
+
+		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
+		$merged_attributes = array_merge( $attributes, $settings['resolved'] );
+		
+		$is_inside_thumb = ! empty( $block->context['videopack/isInsideThumbnail'] );
+		$is_inside_title = ! empty( $block->context['videopack/isInsideTitleMeta'] );
+		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
+		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
+
+		return Modular_Renderer::render_share(
+			array_merge(
+				$merged_attributes,
+				array(
+					'wrapper_class'            => $settings['classes'],
+					'style_vars'               => $settings['style'],
+					'isInsideTitleMeta'        => $is_inside_title,
+					'isInsidePlayerContainer'  => $is_inside_player_container,
+					'isInsidePlayerOverlay'    => $is_inside_player_overlay,
+					'isInsideThumbnail'        => $is_inside_thumb,
+				)
+			),
+			$source,
+			(string) ( $block->context['videopack/instanceId'] ?? ( $block->context['videopack/postId'] ?? $post_id ) ),
+			$this->options
 		);
 	}
 

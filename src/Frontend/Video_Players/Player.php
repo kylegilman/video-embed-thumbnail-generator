@@ -78,13 +78,6 @@ class Player {
 	protected $default_res = '';
 
 	/**
-	 * Default codec group ID for initial load.
-	 *
-	 * @var string $default_codec
-	 */
-	protected $default_codec = '';
-
-	/**
 	 * Whether the frontend script has been localized.
 	 *
 	 * @var bool $script_localized
@@ -350,7 +343,6 @@ class Player {
 	 */
 	protected function set_sources(): void {
 		$grouped_sources = array();
-		$auto_codec      = (string) ( $this->atts['auto_codec'] ?? 'h264' );
 		$auto_res        = (string) ( $this->atts['auto_res'] ?? 'automatic' );
 
 		// Process the main source.
@@ -390,26 +382,32 @@ class Player {
 			}
 		}
 
-		if ( ! isset( $grouped_sources[ $auto_codec ] ) && ! empty( $grouped_sources ) ) {
-			if ( count( $grouped_sources ) === 1 ) {
-				reset( $grouped_sources );
-				$auto_codec = key( $grouped_sources );
-			} elseif ( isset( $grouped_sources['h264'] ) ) {
-				$auto_codec = 'h264';
-			} else {
-				reset( $grouped_sources );
-				$auto_codec = key( $grouped_sources );
-			}
-		}
+		// Sort groups strictly so that higher efficiency codecs are ordered first.
+		$registry = new \Videopack\Admin\Formats\Registry( $this->options );
+		$available_codecs = $registry->get_video_codecs();
 
-		// Sort groups so the auto_codec comes first.
-		if ( isset( $grouped_sources[ $auto_codec ] ) ) {
-			$preferred_group = $grouped_sources[ $auto_codec ];
-			unset( $grouped_sources[ $auto_codec ] );
-			$grouped_sources = array_merge( array( $auto_codec => $preferred_group ), $grouped_sources );
-		}
+		uksort(
+			$grouped_sources,
+			function ( $a, $b ) use ( $available_codecs ) {
+				$codec_id_a = str_replace( 'cmaf_', '', $a );
+				$codec_id_b = str_replace( 'cmaf_', '', $b );
+
+				$eff_a = 0;
+				$eff_b = 0;
+				foreach ( $available_codecs as $codec ) {
+					if ( (string) $codec->get_id() === $codec_id_a ) {
+						$eff_a = (int) $codec->get_efficiency();
+					}
+					if ( (string) $codec->get_id() === $codec_id_b ) {
+						$eff_b = (int) $codec->get_efficiency();
+					}
+				}
+				return $eff_b <=> $eff_a;
+			}
+		);
 
 		// Mark default resolution and sort sources within groups.
+		$is_first_group = true;
 		foreach ( $grouped_sources as $codec_id => &$group ) {
 			$sources = $group['sources'];
 
@@ -423,18 +421,16 @@ class Player {
 				}
 			);
 
-			// Mark default resolution.
-			if ( $codec_id === $auto_codec ) {
+			// Automatically mark default resolution on the most efficient codec group.
+			if ( $is_first_group ) {
 				$target_val = (int) preg_replace( '/[^0-9]/', '', (string) $auto_res );
 
 				if ( 'highest' === $auto_res ) {
 					$sources[0]['default_res'] = '1';
 					$this->default_res         = (string) ( $sources[0]['resolution'] ?? '' );
-					$this->default_codec       = (string) $codec_id;
 				} elseif ( 'lowest' === $auto_res ) {
 					$sources[ count( $sources ) - 1 ]['default_res'] = '1';
 					$this->default_res                               = (string) ( $sources[ count( $sources ) - 1 ]['resolution'] ?? '' );
-					$this->default_codec                             = (string) $codec_id;
 				} elseif ( $target_val > 0 ) {
 					// Find best fit: smallest resolution >= target.
 					// Since sources are sorted DESC, we find the last one that is >= target.
@@ -447,8 +443,8 @@ class Player {
 					}
 					$sources[ $best_fit_index ]['default_res'] = '1';
 					$this->default_res                         = (string) ( $sources[ $best_fit_index ]['resolution'] ?? '' );
-					$this->default_codec                       = (string) $codec_id;
 				}
+				$is_first_group = false;
 			}
 
 			$group['sources'] = $sources;
@@ -540,14 +536,12 @@ class Player {
 			'muted'                       => (bool) ( $this->atts['muted'] ?? false ),
 			'endofvideooverlay'           => (string) ( $this->atts['endofvideooverlay'] ?? '' ),
 			'auto_res'                    => (string) ( $this->atts['auto_res'] ?? 'automatic' ),
-			'auto_codec'                  => (string) ( $this->atts['auto_codec'] ?? 'h264' ),
 			'pixel_ratio'                 => (bool) ( $this->atts['pixel_ratio'] ?? false ),
 			'right_click'                 => (bool) ( $this->atts['right_click'] ?? false ),
 			'playback_rate'               => (bool) ( $this->atts['playback_rate'] ?? false ),
 			'title'                       => (string) ( $this->atts['stats_title'] ?? '' ),
 			'source_groups'               => (array) $this->get_sources(),
 			'default_res'                 => (string) $this->default_res,
-			'default_codec'               => (string) $this->default_codec,
 			'fixed_aspect'                => (string) ( $this->atts['fixed_aspect'] ?? 'vertical' ),
 			'default_ratio'               => (string) $this->get_fixed_aspect_ratio(),
 			'tracks'                      => (array) ( $this->atts['tracks'] ?? array() ),
@@ -735,10 +729,10 @@ class Player {
 
 		foreach ( $this->get_flat_sources() as $source ) {
 			$source_elements .= '<source src="' . $source['src'] . '" type="' . $source['type'];
-			// Include codecs if present. For adaptive streaming, these can be complex strings with dots and commas.
+			
 			if ( ! empty( $source['codecs'] ) ) {
-				// Use single quotes for the codecs parameter value to avoid breaking the double-quoted type attribute.
-				$source_elements .= '; codecs=\'' . $source['codecs'] . '\'';
+				// Use escaped double quotes for the codecs parameter value to comply with MIME standards.
+				$source_elements .= '; codecs=&quot;' . $source['codecs'] . '&quot;';
 			}
 			$source_elements .= '"';
 			$source_elements .= $this->get_source_atts( $source );

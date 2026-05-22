@@ -1,0 +1,63 @@
+// Editor: corner share blocks must not fill the overlay canvas row.
+
+.wp-block-videopack-player-container .videopack-video-block-container {
+	position: relative !important;
+
+	> .block-editor-inner-blocks {
+		position: relative !important;
+
+		> .block-editor-block-list__layout {
+			position: relative !important;
+		}
+	}
+}
+
+.wp-block-videopack-share.is-overlay:not(.is-inside-title-meta),
+.videopack-inner-blocks-overlay .wp-block-videopack-share.is-overlay:not(.is-inside-title-meta) {
+	position: absolute !important;
+	z-index: 150 !important;
+	width: auto !important;
+	height: auto !important;
+	min-height: 0 !important;
+	max-width: none !important;
+	margin: 0 !important;
+	inset: auto;
+	pointer-events: auto !important;
+
+	&.position-top {
+		top: 5px !important;
+		bottom: auto !important;
+	}
+
+	&.position-bottom {
+		bottom: 5px !important;
+		top: auto !important;
+	}
+
+	&.has-text-align-left {
+		left: 5px !important;
+		right: auto !important;
+	}
+
+	&.has-text-align-right {
+		right: 5px !important;
+		left: auto !important;
+	}
+
+	&.has-text-align-center {
+		left: 50% !important;
+		right: auto !important;
+		transform: translateX(-50%) !important;
+	}
+
+	&.is-selected,
+	&:focus-within {
+		z-index: 151 !important;
+	}
+
+	.videopack-share-wrapper {
+		position: relative !important;
+		margin: 0 !important;
+		pointer-events: auto !important;
+	}
+}

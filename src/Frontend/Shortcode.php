@@ -204,7 +204,6 @@ class Shortcode implements Hook_Subscriber {
 				'right_click',
 				'resize',
 				'auto_res',
-				'auto_codec',
 				'pixel_ratio',
 				'nativecontrolsfortouch',
 				'schema',
@@ -409,7 +408,6 @@ class Shortcode implements Hook_Subscriber {
 
 			$allowed_query_var_atts = array( // Attributes that can be changed via URL.
 				'auto_res',
-				'auto_codec',
 				'autoplay',
 				'controls',
 				'default_res',
@@ -589,6 +587,13 @@ class Shortcode implements Hook_Subscriber {
 		}
 		if ( ( empty( $height ) || $height === (int) ( $this->options['height'] ?? 540 ) ) && (int) $source->get_height() > 0 ) {
 			$query_atts['height'] = (int) $source->get_height();
+		}
+
+		// Auto-default gifmode to true if original source is a GIF.
+		if ( $post_id > 0 && 'image/gif' === get_post_mime_type( $post_id ) ) {
+			if ( ! is_array( $atts ) || ! array_key_exists( 'gifmode', $atts ) ) {
+				$query_atts['gifmode'] = true;
+			}
 		}
 
 		// Apply GIF mode overrides if enabled.
@@ -792,7 +797,10 @@ class Shortcode implements Hook_Subscriber {
 
 			$engine_inner = '';
 			if ( ( $query_atts['overlay_title'] ?? true ) !== false || ! empty( $query_atts['downloadlink'] ) || ! empty( $query_atts['embedcode'] ) ) {
-				$engine_inner .= '<!-- wp:videopack/title /-->';
+				$engine_inner .= $this->get_title_with_inner_blocks_markup(
+					! empty( $query_atts['downloadlink'] ),
+					! empty( $query_atts['embedcode'] )
+				);
 			}
 			if ( ! empty( $query_atts['watermark'] ) ) {
 				$engine_inner .= '<!-- wp:videopack/watermark /-->';
@@ -823,8 +831,43 @@ class Shortcode implements Hook_Subscriber {
 	}
 
 	/**
-	 * Simulates a videopack/player block.
+	 * Serialized title block markup with icon-only download/share children (legacy downloadlink/embedcode shortcodes).
+	 *
+	 * @param bool $include_download Whether to include the download block.
+	 * @param bool $include_share    Whether to include the share block.
+	 * @return string Block comment markup.
 	 */
+	private function get_title_with_inner_blocks_markup( bool $include_download, bool $include_share ): string {
+		$inner_blocks = '';
+		if ( $include_download ) {
+			$download_atts = wp_json_encode(
+				array(
+					'icon'         => true,
+					'text'         => false,
+					'styleType'    => 'text',
+					'downloadMode' => 'direct',
+				)
+			);
+			$inner_blocks .= '<!-- wp:videopack/download ' . $download_atts . ' /-->';
+		}
+		if ( $include_share ) {
+			$share_atts = wp_json_encode(
+				array(
+					'iconType'  => 'share',
+					'showText'  => false,
+					'styleType' => 'text',
+				)
+			);
+			$inner_blocks .= '<!-- wp:videopack/share ' . $share_atts . ' /-->';
+		}
+
+		if ( '' === $inner_blocks ) {
+			return '<!-- wp:videopack/title /-->';
+		}
+
+		return '<!-- wp:videopack/title -->' . $inner_blocks . '<!-- /wp:videopack/title -->';
+	}
+
 	/**
 	 * Simulates a videopack/player-container block for a single video.
 	 *
@@ -855,7 +898,10 @@ class Shortcode implements Hook_Subscriber {
 		// Build nested structure matching getListTemplate in templates.js.
 		$inner_blocks = '<!-- wp:videopack/player {"lock":{"remove":true,"move":false}} -->';
 		if ( ( $query_atts['overlay_title'] ?? true ) !== false || ! empty( $query_atts['downloadlink'] ) || ! empty( $query_atts['embedcode'] ) ) {
-			$inner_blocks .= '<!-- wp:videopack/title /-->';
+			$inner_blocks .= $this->get_title_with_inner_blocks_markup(
+				! empty( $query_atts['downloadlink'] ),
+				! empty( $query_atts['embedcode'] )
+			);
 		}
 		if ( ! empty( $query_atts['watermark'] ) ) {
 			$inner_blocks .= '<!-- wp:videopack/watermark /-->';

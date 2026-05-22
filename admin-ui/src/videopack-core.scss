@@ -15,3 +15,6 @@
 @use "./components/CompactColorPicker/CompactColorPicker.scss";
 @use "./components/TextTracks/TextTracks.scss";
 @use "./components/InspectorControls/CollectionSettingsPanel.scss";
+@use "./blocks/download/index.scss" as download;
+@use "./blocks/share/index.scss" as share;
+@use "./blocks/share/editor.scss" as shareEditor;

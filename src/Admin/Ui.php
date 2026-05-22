@@ -162,6 +162,8 @@ class Ui implements Hook_Subscriber {
 			'player',
 			'watermark',
 			'caption',
+			'download',
+			'share',
 		);
 
 		foreach ( $modular_blocks as $block_name ) {
@@ -296,6 +298,7 @@ class Ui implements Hook_Subscriber {
 				'videopack/isInsideThumbnail',
 				'videopack/isInsidePlayerOverlay',
 				'videopack/isInsidePlayerContainer',
+				'videopack/isInsideTitleMeta',
 				'videopack/exclude_hover_trigger',
 				'videopack/src',
 				'videopack/poster',
@@ -311,7 +314,6 @@ class Ui implements Hook_Subscriber {
 				'videopack/preload',
 				'videopack/volume',
 				'videopack/auto_res',
-				'videopack/auto_codec',
 				'videopack/sources',
 				'videopack/source_groups',
 				'videopack/text_tracks',
@@ -356,6 +358,8 @@ class Ui implements Hook_Subscriber {
 			'videopack/player',
 			'videopack/watermark',
 			'videopack/caption',
+			'videopack/download',
+			'videopack/share',
 		);
 
 		if ( in_array( $metadata['name'], $receives_shared_attributes, true ) ) {

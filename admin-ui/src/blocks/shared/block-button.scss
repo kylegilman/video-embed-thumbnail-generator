@@ -1,0 +1,65 @@
+// Shared button and icon styles across Videopack blocks
+
+@mixin button-surface {
+	background-color: var(
+		--videopack-title-background-color,
+		var(--videopack-title-bg-fallback, rgba(20, 20, 20, 0.9))
+	);
+	color: var(--videopack-title-color, #fff);
+	opacity: var(--videopack-title-bg-alpha, 0.9);
+	border-radius: 2px;
+	box-shadow: none;
+	backdrop-filter: none;
+	border: none;
+}
+
+@mixin standalone-button-base {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	text-decoration: none;
+	font-family: inherit;
+	font-size: inherit;
+	color: var(--videopack-title-color, inherit);
+	transition: opacity 0.15s ease;
+	border-radius: 2px;
+	line-height: 1;
+
+	&:hover {
+		opacity: 0.85;
+		transform: none;
+		box-shadow: none;
+	}
+
+	&.style-button {
+		@include button-surface;
+		padding: 4px 8px;
+	}
+
+	// Active state caret rotation for both trigger buttons
+	&.is-active {
+		.videopack-caret {
+			transform: rotate(180deg);
+		}
+	}
+}
+
+@mixin button-icon {
+	width: 1em;
+	height: 1em;
+	display: inline-block;
+	vertical-align: middle;
+	flex-shrink: 0;
+	fill: currentColor;
+	stroke: none;
+
+	&.stroke-icon,
+	&.ios-share-icon {
+		fill: none;
+		stroke: currentColor;
+	}
+}

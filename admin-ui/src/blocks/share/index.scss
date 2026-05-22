@@ -1,0 +1,375 @@
+@use "../shared/block-button.scss" as shared;
+@use '@wordpress/base-styles/colors';
+
+// Shared overlay surface (matches duration / view-count badges in Overlays.scss)
+%videopack-share-surface {
+	@include shared.button-surface;
+}
+
+.videopack-share-wrapper {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	font-family: inherit;
+	z-index: 10;
+}
+
+/* Player-corner overlay (not inside title meta bar) */
+.videopack-share-wrapper.is-overlay:not(.is-inside-title-meta) {
+	position: absolute;
+	margin: 5px;
+	font-size: 11px;
+	line-height: 1.4;
+
+	&.position-top {
+		top: 5px;
+		bottom: auto;
+	}
+
+	&.position-bottom {
+		bottom: 5px;
+		top: auto;
+	}
+
+	&.has-text-align-left {
+		left: 5px;
+		right: auto;
+	}
+
+	&.has-text-align-right {
+		right: 5px;
+		left: auto;
+	}
+
+	&.has-text-align-center {
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+	}
+
+	.videopack-share-link.style-button,
+	.videopack-share-link.style-text {
+		@extend %videopack-share-surface;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 8px;
+		cursor: pointer;
+		text-decoration: none;
+		font-family: inherit;
+		font-size: inherit;
+		line-height: inherit;
+		transition: opacity 0.15s ease;
+		border: none;
+
+		&:hover {
+			opacity: 0.85;
+			transform: none;
+			box-shadow: none;
+		}
+	}
+}
+
+.videopack-share-wrapper.is-inside-thumbnail {
+	margin: 5px;
+}
+
+/* Inside title meta bar — compact icon controls */
+.videopack-share-wrapper.is-inside-title-meta {
+	position: static;
+	margin: 0;
+	flex-shrink: 0;
+	overflow: visible;
+	min-width: 0;
+	color: inherit;
+
+	.videopack-share-link {
+		padding: 0;
+		gap: 1px;
+		width: auto;
+		min-width: 1.6em;
+		max-width: none;
+		height: 1.6em;
+		justify-content: center;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+		backdrop-filter: none;
+		opacity: 1;
+		color: inherit;
+		appearance: none;
+		-webkit-appearance: none;
+		font-family: inherit;
+		font-size: inherit;
+		line-height: 1;
+		border: none;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+
+		.videopack-share-text-label {
+			display: none;
+		}
+
+		&:hover {
+			opacity: 0.8;
+			transform: none;
+			box-shadow: none;
+		}
+	}
+}
+
+.videopack-share-wrapper.is-inside-title-meta.is-overlay {
+	position: static;
+	margin: 0;
+}
+
+.videopack-share-wrapper.has-text-align-left {
+	justify-content: flex-start;
+}
+.videopack-share-wrapper.has-text-align-center {
+	justify-content: center;
+}
+.videopack-share-wrapper.has-text-align-right {
+	justify-content: flex-end;
+}
+
+/* Inline / player-container (non-overlay standalone) */
+.videopack-share-wrapper:not(.is-overlay):not(.is-inside-title-meta) {
+	.videopack-share-link {
+		@include shared.standalone-button-base;
+	}
+
+	.videopack-click-trap {
+		display: none !important;
+	}
+
+	/* Standalone dropdown rendering */
+	.videopack-share-container {
+		@extend %videopack-share-surface;
+		position: absolute;
+		top: calc(100% + 4px);
+		left: auto;
+		right: 0;
+		width: max-content;
+		min-width: 260px;
+		padding: 12px 15px;
+		display: none;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 10px;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+		z-index: 100;
+		pointer-events: none;
+		background: var(--videopack-title-background-color, var(--videopack-title-bg-fallback, #222));
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.15s ease, visibility 0.15s ease;
+
+		&.is-visible {
+			display: flex;
+			opacity: 1;
+			visibility: visible;
+			pointer-events: auto;
+		}
+
+		.videopack-embedcode-container,
+		.videopack-start-at-container {
+			display: flex;
+			width: 100%;
+			align-items: center;
+			gap: 8px;
+			font-size: 0.9em;
+			color: inherit;
+
+			span {
+				display: inline-flex;
+				align-items: center;
+				white-space: nowrap;
+			}
+		}
+
+		.videopack-embedcode-container {
+			justify-content: space-between;
+
+			input.videopack-embed-code {
+				width: 160px;
+				flex-grow: 1;
+				background-color: #fff;
+				color: #333;
+				border: 1px solid #ccc;
+				border-radius: 2px;
+				padding: 2px 6px;
+				font-size: 12px;
+				height: 24px;
+			}
+		}
+
+		.videopack-start-at-container {
+			justify-content: flex-start;
+
+			label {
+				margin: 0;
+				cursor: pointer;
+				font-weight: normal;
+			}
+
+			input[type="checkbox"] {
+				margin: 0 4px 0 0;
+				cursor: pointer;
+			}
+
+			input.videopack-start-at {
+				width: 55px;
+				text-align: center;
+				background-color: #fff;
+				color: #333;
+				border: 1px solid #ccc;
+				border-radius: 2px;
+				padding: 2px 4px;
+				font-size: 12px;
+				height: 24px;
+				margin-left: auto;
+			}
+		}
+	}
+
+	&.has-text-align-left .videopack-share-container {
+		left: 0;
+		right: auto;
+	}
+
+	&.has-text-align-right .videopack-share-container {
+		left: auto;
+		right: 0;
+	}
+
+	&.has-text-align-center .videopack-share-container {
+		left: 50%;
+		transform: translateX(-50%);
+	}
+}
+
+.videopack-share-wrapper .videopack-icon-svg {
+	@include shared.button-icon;
+}
+
+.videopack-share-text-label {
+	line-height: 1;
+}
+
+/* Modern Sharing Services Grid and Brand Buttons styling */
+.videopack-share-services-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	width: 100%;
+	margin-bottom: 12px;
+	justify-content: flex-start;
+	box-sizing: border-box;
+
+	.videopack-share-container & {
+		justify-content: center;
+	}
+
+	.videopack-share-wrapper:not(.is-overlay) & {
+		justify-content: flex-start;
+	}
+}
+
+.videopack-share-btn {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	border: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	padding: 0;
+	margin: 0;
+	background-color: rgba(120, 120, 120, 0.15);
+	color: inherit;
+	transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+	outline: none;
+	box-sizing: border-box;
+
+	svg, .videopack-icon-svg {
+		width: 16px;
+		height: 16px;
+		fill: currentColor;
+		display: block;
+		margin: 0;
+		padding: 0;
+		transition: transform 0.15s ease;
+	}
+
+	&:hover {
+		transform: scale(1.1);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+		color: #fff;
+
+		svg, .videopack-icon-svg {
+			transform: scale(1.05);
+		}
+	}
+
+	&:active {
+		transform: scale(0.95);
+	}
+
+	&.videopack-btn-copylink {
+		&:hover {
+			background-color: colors.$gray-600;
+			color: #fff;
+		}
+		&.copied {
+			background-color: #198754;
+			color: #fff;
+			transform: scale(1.1);
+		}
+	}
+
+	&.videopack-btn-nativeshare {
+		&:hover {
+			background-color: colors.$gray-600;
+			color: #fff;
+		}
+	}
+
+	&.videopack-btn-bluesky {
+		&:hover {
+			background-color: #0085ff;
+			color: #fff;
+		}
+	}
+
+	&.videopack-btn-threads {
+		&:hover {
+			background-color: #101010;
+			color: #fff;
+		}
+	}
+
+	&.videopack-btn-facebook {
+		&:hover {
+			background-color: #1877f2;
+			color: #fff;
+		}
+	}
+
+	&.videopack-btn-reddit {
+		&:hover {
+			background-color: #ff4500;
+			color: #fff;
+		}
+	}
+
+	&.videopack-btn-email {
+		&:hover {
+			background-color: colors.$gray-600;
+			color: #fff;
+		}
+	}
+}
+

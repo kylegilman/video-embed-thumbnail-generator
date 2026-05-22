@@ -72,3 +72,94 @@
 		cursor: pointer;
 	}
 }
+
+// Title meta bar: editor Gutenberg wrappers only (spacing lives in Overlays.scss)
+.videopack-video-title-block .videopack-meta-icons {
+	> button.videopack-icons {
+		flex-shrink: 0;
+	}
+
+	> .block-editor-inner-blocks {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+		margin: 0;
+		min-width: 0;
+		position: relative !important;
+		top: auto !important;
+		left: auto !important;
+		width: auto !important;
+		height: auto !important;
+
+		.block-editor-block-list__layout {
+			display: inline-flex;
+			align-items: center;
+			gap: 0;
+			flex-wrap: nowrap;
+			margin: 0;
+			position: relative !important;
+			top: auto !important;
+			left: auto !important;
+			width: auto !important;
+			height: auto !important;
+		}
+
+		.block-editor-block-list__block {
+			position: relative !important;
+			margin: 0 !important;
+		}
+
+		.block-list-appender,
+		.block-editor-block-list__appender {
+			position: relative !important;
+			display: inline-flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			margin: 0 0 0 8px !important;
+			width: auto !important;
+			height: auto !important;
+
+			.block-editor-button-block-appender {
+				position: relative !important;
+				display: inline-flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				width: 24px !important;
+				height: 24px !important;
+				margin: 0 !important;
+				border: 1px dashed currentColor !important;
+				border-radius: 4px !important;
+				background: transparent !important;
+				color: inherit !important;
+				box-shadow: none !important;
+
+				svg {
+					width: 14px !important;
+					height: 14px !important;
+					fill: currentColor !important;
+				}
+			}
+		}
+	}
+
+	.wp-block-videopack-download,
+	.wp-block-videopack-share,
+	.videopack-download-wrapper.is-inside-title-meta,
+	.videopack-share-wrapper.is-inside-title-meta {
+		position: static !important;
+		top: auto !important;
+		bottom: auto !important;
+		left: auto !important;
+		right: auto !important;
+		margin: 0 !important;
+		width: auto !important;
+		max-width: none !important;
+	}
+
+	.wp-block-videopack-download.mode-menu .videopack-download-trigger,
+	.videopack-download-wrapper.is-inside-title-meta.mode-menu .videopack-download-trigger {
+		width: auto !important;
+		min-width: 1.6em;
+		max-width: none !important;
+	}
+}

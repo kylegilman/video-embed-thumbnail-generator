@@ -72,4 +72,25 @@
 	}
 }
 
+// Standardize standalone blocks (Share and Download buttons) inline layout and margins inside Gutenberg editor
+.wp-block-videopack-player-container {
+	.wp-block-videopack-share:not(.is-overlay):not(.is-inside-title-meta),
+	.wp-block-videopack-download:not(.is-overlay):not(.is-inside-title-meta) {
+		display: inline-flex !important;
+		align-items: center;
+		margin-right: 8px !important;
+		margin-bottom: 8px !important;
+		vertical-align: middle;
+	}
+}
+
+.wp-block-videopack-share:not(.is-overlay):not(.is-inside-title-meta),
+.wp-block-videopack-download:not(.is-overlay):not(.is-inside-title-meta) {
+	display: inline-flex !important;
+	align-items: center;
+	margin-right: 8px !important;
+	margin-bottom: 8px !important;
+	vertical-align: middle;
+}
+
 
