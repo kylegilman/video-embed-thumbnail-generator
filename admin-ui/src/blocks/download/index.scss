@@ -1,0 +1,523 @@
+@use "../shared/block-button.scss" as shared;
+
+// Shared overlay surface (matches duration / view-count badges in Overlays.scss)
+%videopack-download-surface {
+	@include shared.button-surface;
+}
+
+.videopack-download-wrapper {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	font-family: inherit;
+	z-index: 10;
+}
+
+/* Player-corner overlay (not inside title meta bar) */
+.videopack-download-wrapper.is-overlay:not(.is-inside-title-meta) {
+	position: absolute;
+	margin: 5px;
+	font-size: 11px;
+	line-height: 1.4;
+
+	&.position-top {
+		top: 5px;
+		bottom: auto;
+	}
+
+	&.position-bottom {
+		bottom: 5px;
+		top: auto;
+	}
+
+	&.has-text-align-left {
+		left: 5px;
+		right: auto;
+	}
+
+	&.has-text-align-right {
+		right: 5px;
+		left: auto;
+	}
+
+	&.has-text-align-center {
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+	}
+
+	.videopack-download-trigger,
+	.videopack-download-link.style-button,
+	.videopack-download-link.style-text {
+		@extend %videopack-download-surface;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 8px;
+		cursor: pointer;
+		text-decoration: none;
+		font-family: inherit;
+		font-size: inherit;
+		line-height: inherit;
+		transition: opacity 0.15s ease;
+
+		&:hover {
+			opacity: 0.85;
+			transform: none;
+			box-shadow: none;
+		}
+
+		&:active {
+			transform: none;
+		}
+	}
+
+	.videopack-download-dropdown-menu {
+		top: calc(100% + 4px);
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+		@extend %videopack-download-surface;
+		padding: 2px 0;
+		transition: opacity 0.15s ease, visibility 0.15s ease;
+
+		&.is-visible {
+			transform: translateX(-50%);
+		}
+	}
+
+	&.position-bottom .videopack-download-dropdown-menu {
+		top: auto;
+		bottom: calc(100% + 4px);
+		transform: translateX(-50%);
+
+		&.is-visible {
+			transform: translateX(-50%);
+		}
+	}
+
+	.videopack-download-dropdown-menu .videopack-download-link,
+	.videopack-download-dropdown-menu .videopack-download-submenu-trigger {
+		background: transparent;
+		color: inherit;
+		opacity: 1;
+		border-radius: 0;
+		padding: 4px 10px;
+		font-size: inherit;
+
+		&:hover {
+			background-color: hsla(0, 0%, 100%, 0.12);
+			transform: none;
+			box-shadow: none;
+		}
+	}
+
+	.videopack-download-dropdown-menu .videopack-download-menu-title {
+		padding: 4px 10px 2px;
+		font-size: 0.85em;
+		color: inherit;
+		opacity: 0.65;
+	}
+
+	.videopack-download-dropdown-menu .videopack-download-submenu {
+		@extend %videopack-download-surface;
+		padding: 2px 0;
+	}
+}
+
+.videopack-download-wrapper.is-inside-thumbnail {
+	margin: 5px;
+}
+
+/* Inside title meta bar — compact icon controls like share */
+.videopack-download-wrapper.is-inside-title-meta {
+	position: static;
+	margin: 0;
+	flex-shrink: 0;
+	overflow: visible;
+	min-width: 0;
+	color: inherit;
+
+	.videopack-download-menu-container {
+		overflow: visible;
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		vertical-align: middle;
+	}
+
+	&.mode-direct .videopack-download-trigger,
+	&.mode-direct .videopack-download-link {
+		width: 1.6em;
+	}
+
+	.videopack-download-trigger,
+	.videopack-download-link {
+		padding: 0;
+		gap: 1px;
+		width: auto;
+		min-width: 1.6em;
+		max-width: none;
+		height: 1.6em;
+		justify-content: center;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+		backdrop-filter: none;
+		opacity: 1;
+		color: inherit;
+		appearance: none;
+		-webkit-appearance: none;
+		font-family: inherit;
+		font-size: inherit;
+		line-height: 1;
+
+		.videopack-download-text-label {
+			display: none;
+		}
+
+		.videopack-caret {
+			font-size: 0.65em;
+			line-height: 1;
+			margin-left: 1px;
+			flex-shrink: 0;
+		}
+
+		&:hover {
+			opacity: 0.8;
+			transform: none;
+			box-shadow: none;
+		}
+	}
+
+	/* Popover below the icon; hidden menus must not affect layout */
+	.videopack-download-dropdown-menu {
+		top: calc(100% + 4px);
+		right: 0;
+		left: auto;
+		transform: none;
+		border-radius: 2px;
+		@extend %videopack-download-surface;
+		box-shadow: none;
+		backdrop-filter: none;
+		padding: 2px 0;
+		max-width: min(240px, 100%);
+
+		&:not(.is-visible) {
+			display: none;
+		}
+
+		&.align-left {
+			left: 0;
+			right: auto;
+		}
+
+		&.align-right {
+			left: auto;
+			right: 0;
+		}
+
+		&.opens-above {
+			top: auto;
+			bottom: calc(100% + 4px);
+		}
+
+		.videopack-download-link,
+		.videopack-download-submenu-trigger {
+			color: var(--videopack-title-color, #fff);
+			opacity: 1;
+			padding: 4px 10px;
+		}
+	}
+
+	.videopack-download-dropdown-menu .videopack-download-submenu {
+		@extend %videopack-download-surface;
+		border-radius: 2px;
+		box-shadow: none;
+		left: auto;
+		right: 100%;
+		margin-right: 2px;
+		padding: 2px 0;
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+
+		.videopack-download-link {
+			padding: 4px 10px;
+		}
+
+		&.opens-right {
+			left: 100%;
+			right: auto;
+			margin-left: 2px;
+			margin-right: 0;
+		}
+	}
+
+	.videopack-download-dropdown-menu .videopack-has-submenu:hover > .videopack-download-submenu,
+	.videopack-download-dropdown-menu .videopack-has-submenu.is-open > .videopack-download-submenu,
+	.videopack-download-dropdown-menu .videopack-download-submenu.is-visible {
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+	}
+}
+
+.videopack-download-wrapper.is-inside-title-meta.is-overlay {
+	position: static;
+	margin: 0;
+}
+
+.videopack-download-wrapper.has-text-align-left {
+	justify-content: flex-start;
+}
+.videopack-download-wrapper.has-text-align-center {
+	justify-content: center;
+}
+.videopack-download-wrapper.has-text-align-right {
+	justify-content: flex-end;
+}
+
+/* Inline / player-container (non-overlay) */
+.videopack-download-wrapper:not(.is-overlay):not(.is-inside-title-meta) {
+	.videopack-download-link,
+	.videopack-download-trigger {
+		@include shared.standalone-button-base;
+	}
+
+	.videopack-download-dropdown-menu {
+		top: calc(100% + 4px);
+		left: auto;
+		right: 0;
+		transform: none;
+		@extend %videopack-download-surface;
+		padding: 2px 0;
+
+		.videopack-download-submenu {
+			left: 100%;
+			right: auto;
+			margin-left: 2px;
+			margin-right: 0;
+
+			&.opens-left {
+				left: auto;
+				right: 100%;
+				margin-left: 0;
+				margin-right: 2px;
+			}
+		}
+
+		&.align-left {
+			left: 0;
+			right: auto;
+		}
+
+		&.align-right {
+			left: auto;
+			right: 0;
+		}
+
+		.videopack-download-link,
+		.videopack-download-submenu-trigger {
+			background: transparent;
+			color: inherit;
+			opacity: 1;
+
+			&:hover {
+				background-color: hsla(0, 0%, 100%, 0.12);
+			}
+		}
+
+		.videopack-download-submenu {
+			@extend %videopack-download-surface;
+			padding: 2px 0;
+		}
+	}
+}
+
+.videopack-download-wrapper .videopack-icon-svg {
+	@include shared.button-icon;
+}
+
+.videopack-download-text-label {
+	line-height: 1;
+}
+
+.videopack-caret {
+	font-size: 0.8em;
+	opacity: 0.7;
+	flex-shrink: 0;
+	margin-left: 2px;
+	transition: transform 0.15s ease;
+}
+
+.videopack-download-trigger.is-active .videopack-caret {
+	transform: rotate(180deg);
+}
+
+.videopack-download-menu-container {
+	position: relative;
+	display: inline-flex;
+	vertical-align: middle;
+}
+
+.videopack-download-dropdown-menu {
+	position: absolute;
+	z-index: 100;
+	pointer-events: none;
+	width: max-content;
+	min-width: 0;
+	white-space: nowrap;
+	font-size: 0.9em;
+
+	&:not(.is-visible) {
+		display: none;
+	}
+
+	&.is-visible {
+		display: block;
+		pointer-events: auto;
+	}
+}
+
+.videopack-download-dropdown-menu ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.videopack-download-dropdown-menu li {
+	margin: 0;
+	padding: 0;
+}
+
+.videopack-download-dropdown-menu .videopack-download-menu-title {
+	text-transform: uppercase;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	pointer-events: none;
+}
+
+.videopack-download-dropdown-menu .videopack-download-link {
+	display: block;
+	width: 100%;
+	padding: 4px 10px;
+	text-decoration: none;
+	text-align: left;
+	border-radius: 0;
+	font-size: inherit;
+}
+
+.videopack-download-dropdown-menu .videopack-download-menu-item {
+	position: relative;
+}
+
+.videopack-download-dropdown-menu .videopack-download-submenu-trigger {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 6px;
+	width: 100%;
+	padding: 4px 10px;
+	background: transparent;
+	border: none;
+	font-family: inherit;
+	font-size: inherit;
+	cursor: pointer;
+	text-align: left;
+	white-space: nowrap;
+	transition: background-color 0.15s ease;
+
+	&::before {
+		content: none;
+	}
+
+	&::after {
+		content: "›";
+		margin-left: auto;
+		opacity: 0.7;
+		flex-shrink: 0;
+		line-height: 1;
+	}
+}
+
+/* Title bar: submenus open left; indicator on the left */
+.videopack-download-wrapper.is-inside-title-meta .videopack-download-submenu-trigger {
+	&::before {
+		content: "‹";
+		opacity: 0.7;
+		flex-shrink: 0;
+		line-height: 1;
+	}
+
+	&::after {
+		content: none;
+		margin-left: 0;
+	}
+}
+
+.videopack-download-wrapper.is-inside-title-meta
+	.videopack-has-submenu:has(> .videopack-download-submenu.opens-right)
+	> .videopack-download-submenu-trigger {
+	&::before {
+		content: none;
+	}
+
+	&::after {
+		content: "›";
+		margin-left: auto;
+		opacity: 0.7;
+	}
+}
+
+.videopack-download-dropdown-menu .videopack-download-submenu {
+	position: absolute;
+	top: 0;
+	left: 100%;
+	right: auto;
+	margin-left: 2px;
+	margin-right: 0;
+	list-style: none;
+	margin-block: 0;
+	padding: 2px 0;
+	width: max-content;
+	min-width: 0;
+	z-index: 110;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+
+	.videopack-download-link {
+		padding: 4px 10px;
+	}
+
+	&.opens-left {
+		left: auto;
+		right: 100%;
+		margin-left: 0;
+		margin-right: 2px;
+	}
+}
+
+/* Title bar: submenus default to opening left */
+.videopack-download-wrapper.is-inside-title-meta .videopack-download-dropdown-menu .videopack-download-submenu {
+	left: auto;
+	right: 100%;
+	margin-left: 0;
+	margin-right: 2px;
+
+	&.opens-right {
+		left: 100%;
+		right: auto;
+		margin-left: 2px;
+		margin-right: 0;
+	}
+}
+
+.videopack-download-dropdown-menu .videopack-has-submenu.is-open > .videopack-download-submenu,
+.videopack-download-dropdown-menu .videopack-has-submenu:hover > .videopack-download-submenu,
+.videopack-download-dropdown-menu .videopack-download-submenu.is-visible {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+}

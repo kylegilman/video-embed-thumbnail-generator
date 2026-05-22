@@ -1,5 +1,5 @@
 /* global videopack_config */
-import { useEffect, useMemo } from '@wordpress/element';
+import { useMemo } from '@wordpress/element';
 import {
 	useBlockProps,
 	BlockControls,
@@ -16,8 +16,6 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import {
-	share as shareIcon,
-	download as downloadIcon,
 	title as titleIcon,
 	background as backgroundIcon,
 } from '@wordpress/icons';
@@ -26,6 +24,8 @@ import VideoTitle from '../../components/VideoTitle/VideoTitle';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import './editor.scss';
+
+const TITLE_CONTEXT_OPTS = { excludeKeys: [ 'downloadlink' ] };
 
 /**
  * Edit component for the Videopack Video Title block.
@@ -38,7 +38,11 @@ import './editor.scss';
  * @return {Element}                     The rendered component.
  */
 export default function Edit({ clientId, attributes, setAttributes, context }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(
+		attributes,
+		context,
+		TITLE_CONTEXT_OPTS
+	);
 	const { postId, postType } = vpContext.resolved;
 	const embedlink = context['videopack/embedlink'];
 	const {
@@ -47,8 +51,6 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 		position: attrPosition,
 		isOverlay: explicitIsOverlay,
 		textAlign: attrTextAlign,
-		downloadlink,
-		embedcode,
 		title_color,
 		title_background_color,
 		overlay_title,
@@ -67,12 +69,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 	const textAlign = attrTextAlign || (isInsideThumbnail ? 'center' : 'left');
 
 	const globalOptions = videopack_config?.options || {};
-	const finalDownloadLink =
-		downloadlink !== undefined
-			? downloadlink
-			: !!globalOptions.downloadlink;
-	const finalEmbedCode =
-		embedcode !== undefined ? embedcode : !!globalOptions.embedcode;
+
 	const finalOverlayTitle = useMemo(() => {
 		if (overlay_title !== undefined) {
 			return !!overlay_title;
@@ -91,27 +88,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 			: true;
 	}, [showBackground, globalOptions.showBackground]);
 
-	// For thumbnails, we only disable share and download features
-	useEffect(() => {
-		if (isInsideThumbnail) {
-			const newAttributes = {};
-			if (attributes.downloadlink) {
-				newAttributes.downloadlink = false;
-			}
-			if (attributes.embedcode) {
-				newAttributes.embedcode = false;
-			}
 
-			if (Object.keys(newAttributes).length > 0) {
-				setAttributes(newAttributes);
-			}
-		}
-	}, [
-		isInsideThumbnail,
-		attributes.downloadlink,
-		attributes.embedcode,
-		setAttributes,
-	]);
 
 	const isOverlay =
 		explicitIsOverlay !== undefined
@@ -192,30 +169,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 								})
 							}
 						/>
-						<ToolbarButton
-							icon={shareIcon}
-							label={__(
-								'Embed/Share Button',
-								'video-embed-thumbnail-generator'
-							)}
-							isPressed={finalEmbedCode}
-							onClick={() =>
-								setAttributes({ embedcode: !finalEmbedCode })
-							}
-						/>
-						<ToolbarButton
-							icon={downloadIcon}
-							label={__(
-								'Download Button',
-								'video-embed-thumbnail-generator'
-							)}
-							isPressed={finalDownloadLink}
-							onClick={() =>
-								setAttributes({
-									downloadlink: !finalDownloadLink,
-								})
-							}
-						/>
+
 						<ToolbarButton
 							icon={backgroundIcon}
 							label={

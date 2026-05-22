@@ -86,12 +86,13 @@ $badge-selectors: (
 		flex-direction: row;
 		flex-wrap: nowrap;
 		align-items: center;
-		padding: 0.5em 0.6em;
+		padding: 0.5em 0.75em;
 		min-height: 2.6em;
 		line-height: 1.2;
 		color: var(--videopack-title-color, #fff);
 		font-size: 15px;
-		padding: 0;
+		box-sizing: border-box;
+		overflow: visible;
 
 		&.has-text-align-left { justify-content: flex-start; }
 		&.has-text-align-right { justify-content: flex-end; }
@@ -114,7 +115,7 @@ $badge-selectors: (
 		}
 
 		.videopack-title {
-			padding-left: 4px;
+			padding: 0;
 			font-size: inherit;
 			margin: 0;
 			display: block;
@@ -137,7 +138,7 @@ $badge-selectors: (
 		}
 
 		.videopack-thumbnail-title-text {
-			padding-left: 4px;
+			padding: 0;
 			font-size: inherit;
 			margin: 0;
 			display: block;
@@ -196,22 +197,59 @@ $badge-selectors: (
 		}
 	}
 
-	// Meta Icons Logic
+	// Meta Icons Logic — gap on the flex row is the only spacing between icons
 	.videopack-meta-icons {
 		position: relative;
-		margin: 0 0 0 10px;
+		margin: 0 0 0 6px;
 		display: flex;
 		flex-direction: row;
 		flex-wrap: nowrap;
 		align-items: center;
 		flex-shrink: 0;
+		min-width: max-content;
+		overflow: visible;
+		gap: 4px;
 
-		button, a {
+		> .block-editor-inner-blocks {
+			display: inline-flex;
+			align-items: center;
+			flex-shrink: 0;
+			margin: 0;
+			position: static !important;
+			top: auto !important;
+			left: auto !important;
+			width: auto !important;
+			height: auto !important;
+
+			.block-editor-block-list__layout {
+				display: inline-flex;
+				align-items: center;
+				gap: 0;
+				flex-wrap: nowrap;
+				position: static !important;
+				top: auto !important;
+				left: auto !important;
+				width: auto !important;
+				height: auto !important;
+			}
+
+			.block-editor-block-list__block {
+				position: static !important;
+				margin: 0 !important;
+			}
+
+			.wp-block-videopack-download {
+				margin: 0;
+			}
+		}
+
+		> button,
+		> a {
 			background: transparent;
 			border: none;
 			box-shadow: none;
 			padding: 0;
-			margin: 0 3px;
+			margin: 0;
 			color: inherit;
 			cursor: pointer;
 			text-decoration: none;
@@ -251,6 +289,53 @@ $badge-selectors: (
 				&.close {
 					.videopack-close-svg { opacity: 1; visibility: visible; }
 					.videopack-share-svg { opacity: 0; visibility: hidden; }
+				}
+			}
+		}
+
+		.videopack-download-wrapper {
+			margin: 0;
+			flex-shrink: 0;
+			min-width: 0;
+			overflow: visible;
+			color: inherit;
+
+			&.mode-direct .videopack-download-trigger,
+			&.mode-direct .videopack-download-link {
+				width: 1.6em;
+			}
+
+			.videopack-download-trigger,
+			.videopack-download-link {
+				background: transparent;
+				border: none;
+				box-shadow: none;
+				padding: 0;
+				margin: 0;
+				color: inherit;
+				cursor: pointer;
+				text-decoration: none;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: auto;
+				min-width: 1.6em;
+				max-width: none;
+				height: 1.6em;
+				transition: opacity 0.15s ease;
+				font-size: 1em;
+				flex-shrink: 0;
+				appearance: none;
+				-webkit-appearance: none;
+				font-family: inherit;
+				line-height: 1;
+
+				&:hover {
+					opacity: 0.8;
+				}
+
+				&:focus {
+					outline: none;
 				}
 			}
 		}
@@ -444,7 +529,8 @@ $badge-selectors: (
 	position: absolute;
 	left: 0;
 	width: 100%;
-	padding: 4px;
+	padding: 4px 10px;
+	box-sizing: border-box;
 	z-index: 100;
 	--videopack-title-bg-alpha: 0.5;
 
@@ -530,20 +616,24 @@ $badge-selectors: (
 	align-items: center;
 	justify-content: center;
 	flex-wrap: wrap;
-	gap: 2em;
+	gap: 1em;
 	color: var(--videopack-title-color, white);
 	top: 0;
 	left: 0;
 	right: 0;
 	padding: 3em 2em;
 	width: 100%;
-	z-index: 101; // Sits behind Meta Bar (102)
+	z-index: 99; // Sits behind Meta Bar (102)
 	position: absolute;
 	border-radius: 0;
 	margin: 0;
 	opacity: 0;
 	visibility: hidden;
 	transition: opacity 0.3s, visibility 0.3s;
+
+	.videopack-share-services-grid {
+		margin-bottom: 6px;
+	}
 
 	// Inherited background color from skin or custom block override
 	background: linear-gradient(to bottom,
@@ -593,7 +683,9 @@ $badge-selectors: (
 	position: absolute;
 	top: 0;
 	bottom: 0;
-	z-index: 100; // Behind Share Container
+	left: 0;
+	right: 0;
+	z-index: 98; // Behind Share Container
 	opacity: 0;
 	visibility: hidden;
 	border: none;
@@ -601,6 +693,5 @@ $badge-selectors: (
 	&.is-visible {
 		opacity: 1;
 		visibility: visible;
-		bottom: -100vh;
 	}
 }

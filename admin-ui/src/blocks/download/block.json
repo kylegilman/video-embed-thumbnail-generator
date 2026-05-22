@@ -1,0 +1,74 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "videopack/download",
+	"title": "Videopack Video Download",
+	"category": "media",
+	"icon": "download",
+	"description": "Displays a dynamic download link, button, or quality dropdown list for the video.",
+	"parent": [
+		"videopack/title",
+		"videopack/player-container",
+		"videopack/player",
+		"videopack/thumbnail",
+		"videopack/loop"
+	],
+	"usesContext": [
+		"postId",
+		"postType",
+		"videopack/postId",
+		"videopack/attachmentId",
+		"videopack/isInsidePlayerOverlay",
+		"videopack/isInsidePlayerContainer",
+		"videopack/isInsideThumbnail",
+		"videopack/isInsideTitleMeta",
+		"videopack/textAlign",
+		"videopack/position",
+		"videopack/title_color",
+		"videopack/title_background_color"
+	],
+	"attributes": {
+		"icon": {
+			"type": "boolean"
+		},
+		"text": {
+			"type": "boolean"
+		},
+		"styleType": {
+			"type": "string"
+		},
+		"downloadMode": {
+			"type": "string"
+		},
+		"textAlign": {
+			"type": "string"
+		},
+		"position": {
+			"type": "string"
+		},
+		"title_color": {
+			"type": "string"
+		},
+		"title_background_color": {
+			"type": "string"
+		},
+		"isPreview": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"html": false,
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css"
+}

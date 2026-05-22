@@ -422,16 +422,7 @@ class Modular_Renderer {
 	 * @return string The SVG HTML.
 	 */
 	public static function get_svg_icon( $type ) {
-		switch ( $type ) {
-			case 'eye':
-				return '<svg class="videopack-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="16" width="16"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>';
-			case 'play':
-				return '<svg class="videopack-icon-svg" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="16" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>';
-			case 'playOutline':
-				return '<svg class="videopack-icon-svg" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7z" fill="none" /></svg>';
-			default:
-				return '';
-		}
+		return Icons::get( $type );
 	}
 
 	/**
@@ -444,9 +435,8 @@ class Modular_Renderer {
 	 */
 	public static function render_video_title( array $atts, $source, $id ) {
 		wp_enqueue_style( 'videopack-core' );
-		$options      = get_option( 'videopack_options', array() );
-		$downloadlink = self::is_true( $atts['downloadlink'] ?? ( $options['downloadlink'] ?? false ) );
-		$embedcode    = self::is_true( $atts['embedcode'] ?? ( $options['embedcode'] ?? false ) );
+		$options     = get_option( 'videopack_options', array() );
+		$inner_content = $atts['inner_content'] ?? '';
 
 		$title = ! empty( $atts['title'] ) ? $atts['title'] : ( $source ? $source->get_title() : '' );
 		$tag   = $atts['tagName'] ?? 'h3';
@@ -461,12 +451,6 @@ class Modular_Renderer {
 		$show_background = true;
 		if ( isset( $atts['showBackground'] ) ) {
 			$show_background = self::is_true( $atts['showBackground'] );
-		}
-
-		// Resolve Embed Link.
-		$embedlink = $atts['embedlink'] ?? '';
-		if ( empty( $embedlink ) && $embedcode && $source && $source->get_id() ) {
-			$embedlink = add_query_arg( 'videopack[enable]', 'true', get_permalink( $source->get_id() ) );
 		}
 
 		if ( ! $is_overlay ) {
@@ -502,13 +486,6 @@ class Modular_Renderer {
 		}
 
 		// Overlay Mode (Info Bar).
-		$has_embed    = $embedcode && ! empty( $embedlink ) && ! $is_inside_thumbnail;
-		$downloadlink = $downloadlink && ! $is_inside_thumbnail;
-		$share_svg    = '<svg class="videopack-icon-svg share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z" /></svg>';
-		$close_svg    = '<svg class="videopack-icon-svg close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" /></svg>';
-		$download_svg = '<svg class="videopack-icon-svg download-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" /></svg>';
-		$embed_svg    = '<svg class="videopack-icon-svg embed-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.8 10.7l-4.3-4.3-1.1 1.1 4.3 4.3c.1.1.1.3 0 .4l-4.3 4.3 1.1 1.1 4.3-4.3c.7-.8.7-1.9 0-2.6zM4.2 11.8l4.3-4.3-1-1-4.3 4.3c-.7.7-.7 1.8 0 2.5l4.3 4.3 1.1-1.1-4.3-4.3c-.2-.1-.2-.3-.1-.4z" /></svg>';
-
 		$text_align        = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_inside_thumbnail ? 'center' : 'left' );
 		$title_style_attrs = array();
 		if ( ! empty( $atts['title_color'] ) ) {
@@ -584,62 +561,379 @@ class Modular_Renderer {
 
 		$html .= '<div class="videopack-meta-icons">';
 
-		if ( $has_embed ) {
-			$html .= '<button type="button" class="videopack-meta-bar-button videopack-share-toggle" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">' . "\n";
-			$html .= '<span class="videopack-icons share">' . "\n";
-			$html .= '<span class="videopack-icon-container">' . $share_svg . $close_svg . '</span>' . "\n";
-			$html .= '</span>' . "\n";
+		if ( ! empty( $inner_content ) ) {
+			$html .= $inner_content;
+		}
+		$html .= '</div>' . "\n";
+		$html .= '</div>' . "\n";
+		$html .= '</div>' . "\n";
+
+		return $html;
+	}
+
+	/**
+	 * Format resolution label like video-quality-selector.js res_label.
+	 *
+	 * @param string|int $resolution Resolution value.
+	 * @return string Display label.
+	 */
+	private static function format_download_resolution_label( $resolution ): string {
+		$value = (string) $resolution;
+		if ( preg_match( '/^\d+$/', $value ) ) {
+			return $value . 'p';
+		}
+		return $value;
+	}
+
+	/**
+	 * Get player source_groups for download menu (same grouping as quality selector).
+	 *
+	 * @param \Videopack\Video_Source\Source              $source          Video source.
+	 * @param array                                       $options         Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Format registry.
+	 * @return array Player source groups.
+	 */
+	private static function get_player_source_groups_for_download( $source, array $options, $format_registry = null ): array {
+		$embed_method = $options['embed_method'] ?? 'Video.js';
+		$player       = \Videopack\Frontend\Video_Players\Player_Factory::create( $embed_method, $options, $format_registry );
+		$player->set_source( $source );
+		$player->set_atts(
+			array(
+				'auto_res' => $options['auto_res'] ?? 'automatic',
+			)
+		);
+		return $player->get_source_groups();
+	}
+
+	/**
+	 * Render download menu list items using player source_groups (matches quality selector).
+	 *
+	 * @param array $source_groups Player source groups.
+	 * @return string Menu list HTML.
+	 */
+	private static function render_download_menu_list( array $source_groups ): string {
+		$html = '';
+
+		if ( count( $source_groups ) > 1 ) {
+			foreach ( $source_groups as $group_id => $group ) {
+				$label   = $group['label'] ?? $group_id;
+				$items   = array();
+				$sources = $group['sources'] ?? array();
+				foreach ( $sources as $source_entry ) {
+					$resolution = $source_entry['resolution'] ?? ( $source_entry['data-res'] ?? '' );
+					$url        = $source_entry['src'] ?? '';
+					if ( empty( $resolution ) || empty( $url ) ) {
+						continue;
+					}
+					$items[] = array(
+						'url'   => $url,
+						'label' => self::format_download_resolution_label( $resolution ),
+					);
+				}
+				if ( empty( $items ) ) {
+					continue;
+				}
+				usort(
+					$items,
+					function ( $a, $b ) {
+						return (int) preg_replace( '/[^0-9]/', '', $b['label'] ) <=> (int) preg_replace( '/[^0-9]/', '', $a['label'] );
+					}
+				);
+				$html .= '<li class="videopack-download-menu-item videopack-has-submenu">' . "\n";
+				$html .= '<button type="button" class="videopack-download-submenu-trigger" aria-expanded="false">' . esc_html( $label ) . '</button>' . "\n";
+				$html .= '<ul class="videopack-download-submenu">' . "\n";
+				foreach ( $items as $item ) {
+					$html .= '<li><a class="videopack-download-link" href="' . esc_url( $item['url'] ) . '" download>' . esc_html( $item['label'] ) . '</a></li>' . "\n";
+				}
+				$html .= '</ul>' . "\n";
+				$html .= '</li>' . "\n";
+			}
+			return $html;
+		}
+
+		$flat_items = array();
+		foreach ( $source_groups as $group ) {
+			$sources = $group['sources'] ?? array();
+			foreach ( $sources as $source_entry ) {
+				$resolution = $source_entry['resolution'] ?? ( $source_entry['data-res'] ?? '' );
+				$url        = $source_entry['src'] ?? '';
+				if ( empty( $resolution ) || empty( $url ) ) {
+					continue;
+				}
+				$flat_items[] = array(
+					'url'        => $url,
+					'label'      => self::format_download_resolution_label( $resolution ),
+					'sort_value' => (int) preg_replace( '/[^0-9]/', '', (string) $resolution ),
+				);
+			}
+		}
+		usort(
+			$flat_items,
+			function ( $a, $b ) {
+				return $b['sort_value'] <=> $a['sort_value'];
+			}
+		);
+		foreach ( $flat_items as $item ) {
+			$html .= '<li><a class="videopack-download-link" href="' . esc_url( $item['url'] ) . '" download>' . esc_html( $item['label'] ) . '</a></li>' . "\n";
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Renders the download link HTML for a video.
+	 *
+	 * @param array $atts Block attributes, including alignment and visibility settings.
+	 * @param \Videopack\Video_Source\Source $source The video source object.
+	 * @return string The rendered HTML.
+	 */
+	public static function render_download( array $atts, $source, array $options = array(), $format_registry = null ) {
+		if ( ! $source ) {
+			return '';
+		}
+
+		if ( empty( $options ) ) {
+			$options = get_option( 'videopack_options', array() );
+		}
+
+		$is_inside_title_meta = ! empty( $atts['isInsideTitleMeta'] );
+		$is_overlay           = ( ! empty( $atts['isOverlay'] ) || ! empty( $atts['isInsideThumbnail'] ) || ! empty( $atts['isInsidePlayerOverlay'] ) ) && ! $is_inside_title_meta;
+		$position             = $atts['position'] ?? 'bottom';
+		$text_align = $atts['textAlign'] ?? 'left';
+
+		$show_icon  = $atts['icon'] ?? true;
+		$show_text  = $atts['text'] ?? false;
+		$style_type = $atts['styleType'] ?? 'text';
+		$mode       = $atts['downloadMode'] ?? 'direct';
+
+		$wrapper_class = 'videopack-download-wrapper videopack-download-block mode-' . esc_attr( $mode );
+		if ( $is_inside_title_meta ) {
+			$wrapper_class .= ' is-inside-title-meta';
+		}
+		if ( $is_overlay ) {
+			$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
+		}
+		if ( ! empty( $atts['wrapper_class'] ) ) {
+			$wrapper_class .= ' ' . $atts['wrapper_class'];
+		}
+		$wrapper_class .= ' has-text-align-' . esc_attr( $text_align );
+
+		$style = ! empty( $atts['style_vars'] ) ? ' style="' . esc_attr( $atts['style_vars'] ) . '"' : '';
+
+		$download_svg = Icons::get( 'download', 'download-icon' );
+
+		$trigger_inner = '';
+		if ( $show_icon || ( ! $show_icon && ! $show_text ) ) {
+			$trigger_inner .= '<span class="videopack-icon-container">' . $download_svg . '</span>' . "\n";
+		}
+		if ( $show_text ) {
+			$trigger_inner .= '<span class="videopack-download-text-label">' . esc_html__( 'Download', 'video-embed-thumbnail-generator' ) . '</span>' . "\n";
+		}
+
+		$element_class = 'videopack-icons style-' . esc_attr( $style_type );
+
+		$html = '<div class="' . esc_attr( $wrapper_class ) . '"' . $style . '>' . "\n";
+
+		if ( 'menu' === $mode ) {
+			$html .= '<div class="videopack-download-menu-container">' . "\n";
+			$html .= '<button type="button" class="videopack-download-trigger ' . esc_attr( $element_class ) . '" aria-expanded="false" aria-haspopup="true" title="' . esc_attr__( 'Download Video', 'video-embed-thumbnail-generator' ) . '">' . "\n";
+			$html .= $trigger_inner;
+			$html .= '<span class="videopack-caret">▼</span>' . "\n";
 			$html .= '</button>' . "\n";
-		}
-
-		if ( $downloadlink && $source ) {
-			$download_attributes = array(
-				'class="videopack-download-link"',
-				'href="' . esc_attr( $source->get_url() ) . '"',
+			$html .= '<div class="videopack-download-dropdown-menu">' . "\n";
+			$html .= '<ul>' . "\n";
+			$source_groups = self::get_player_source_groups_for_download( $source, $options, $format_registry );
+			$html         .= self::render_download_menu_list( $source_groups );
+			$html .= '</ul>' . "\n";
+			$html .= '</div>' . "\n";
+			$html .= '</div>' . "\n";
+		} else {
+			$link_attributes = array(
+				'class="videopack-download-link ' . esc_attr( $element_class ) . '"',
+				'href="' . esc_url( $source->get_url() ) . '"',
 				'download',
-				'data-alt_link="' . esc_attr( $source->get_download_url() ) . '"',
-				'title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"',
+				'data-alt_link="' . esc_url( $source->get_download_url() ) . '"',
+				'title="' . esc_attr__( 'Download Video', 'video-embed-thumbnail-generator' ) . '"',
 			);
-			$html               .= '<a ' . implode( ' ', $download_attributes ) . '>' . "\n";
-			$html               .= '<span class="videopack-icons download">' . "\n" . $download_svg . "\n" . '</span>' . "\n";
-			$html               .= '</a>' . "\n";
+			$html           .= '<a ' . implode( ' ', $link_attributes ) . '>' . "\n";
+			$html           .= $trigger_inner;
+			$html           .= '</a>' . "\n";
 		}
-		$html .= '</div>' . "\n";
+
 		$html .= '</div>' . "\n";
 
-		if ( $has_embed ) {
-			$html        .= '<button class="videopack-click-trap"></button>' . "\n";
-			$html        .= '<div class="videopack-share-container">' . "\n";
-			$iframe_title = sprintf(
-				/* translators: %s is the video title */
-				__( 'Video Player - %s', 'video-embed-thumbnail-generator' ),
-				$title
-			);
-			$allow_policy   = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
-			$sandbox_policy = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms';
+		return $html;
+	}
 
-			$embed_code  = sprintf(
-				'<iframe src="%1$s" width="%2$s" height="%3$s" style="border:0; width:100%%; aspect-ratio:%2$s/%3$s;" allow="%4$s" allowfullscreen credentialless sandbox="%5$s" loading="lazy" title="%6$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
-				esc_url( $embedlink ),
-				esc_attr( (string) ( $atts['width'] ?? 960 ) ),
-				esc_attr( (string) ( $atts['height'] ?? 540 ) ),
-				esc_attr( $allow_policy ),
-				esc_attr( $sandbox_policy ),
-				esc_attr( $iframe_title )
-			);
-			$html       .= '<span class="videopack-embedcode-container">' . "\n" .
-				'<span class="videopack-icons embed">' . "\n" . $embed_svg . "\n" . '</span>' . "\n" .
-				'<span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span>' . "\n" .
-				'<span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span>' . "\n" .
-				'</span>' . "\n";
-			$start_at_id = 'videopack-start-at-enable-' . $id;
-			$html       .= '<span class="videopack-start-at-container">' . "\n" .
-				'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" />' . "\n" .
-				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label>' . "\n" .
-				'<input type="text" class="videopack-start-at" value="00:00" />' . "\n" .
-				'</span>' . "\n";
-			$html       .= '</div>' . "\n";
+	/**
+	 * Renders the Video Share block.
+	 *
+	 * @param array                          $atts    Block attributes.
+	 * @param \Videopack\Video_Source\Source $source  The video source.
+	 * @param string|int                     $id      The player/post instance ID.
+	 * @param array                          $options Plugin options.
+	 * @return string The rendered HTML.
+	 */
+	public static function render_share( array $atts, $source, $id, array $options = array() ) {
+		if ( ! $source ) {
+			return '';
 		}
+
+		if ( empty( $options ) ) {
+			$options = get_option( 'videopack_options', array() );
+		}
+
+		$is_inside_title_meta = ! empty( $atts['isInsideTitleMeta'] );
+		$is_inside_thumbnail  = ! empty( $atts['isInsideThumbnail'] );
+		$is_overlay           = ( ! empty( $atts['isOverlay'] ) || $is_inside_thumbnail || ! empty( $atts['isInsidePlayerOverlay'] ) ) && ! $is_inside_title_meta;
+		$position             = $atts['position'] ?? 'top';
+		$text_align           = $atts['textAlign'] ?? ( $is_inside_thumbnail ? 'center' : 'left' );
+
+		$icon_type  = $atts['iconType'] ?? 'share';
+		$show_text  = $atts['showText'] ?? false;
+		$style_type = $atts['styleType'] ?? 'text';
+
+		$wrapper_class = 'videopack-share-wrapper videopack-share-block';
+		if ( $is_inside_title_meta ) {
+			$wrapper_class .= ' is-inside-title-meta';
+		}
+		if ( $is_overlay ) {
+			$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
+		}
+		if ( $is_inside_thumbnail ) {
+			$wrapper_class .= ' is-inside-thumbnail';
+		}
+		if ( ! empty( $atts['wrapper_class'] ) ) {
+			$wrapper_class .= ' ' . $atts['wrapper_class'];
+		}
+		$wrapper_class .= ' has-text-align-' . esc_attr( $text_align );
+
+		$style = ! empty( $atts['style_vars'] ) ? ' style="' . esc_attr( $atts['style_vars'] ) . '"' : '';
+
+		// SVGs definitions
+		$share_svg = Icons::get( 'share', 'share-icon' );
+		$close_svg = Icons::get( 'close', 'close-icon' );
+		
+		$external_svg = Icons::get( 'external', 'external-icon' );
+		$ios_share_svg = Icons::get( 'iosShare', 'ios-share-icon' );
+		$curve_share_svg = Icons::get( 'curveShare', 'curve-share-icon' );
+		
+		$embed_svg = Icons::get( 'embed', 'embed-icon' );
+
+		$icon_content = '';
+		if ( 'share' === $icon_type ) {
+			$icon_content = '<span class="videopack-icon-container">' . $share_svg . $close_svg . '</span>';
+		} elseif ( 'external' === $icon_type ) {
+			$icon_content = '<span class="videopack-icon-container">' . $external_svg . '</span>';
+		} elseif ( 'iosShare' === $icon_type ) {
+			$icon_content = '<span class="videopack-icon-container">' . $ios_share_svg . '</span>';
+		} elseif ( 'curveShare' === $icon_type ) {
+			$icon_content = '<span class="videopack-icon-container">' . $curve_share_svg . '</span>';
+		}
+
+		$trigger_inner = '';
+		if ( 'none' !== $icon_type ) {
+			$trigger_inner .= $icon_content . "\n";
+		}
+		if ( $show_text || 'none' === $icon_type ) {
+			$margin_style = ( 'none' !== $icon_type ) ? ' style="margin-left: 4px;"' : '';
+			$trigger_inner .= '<span class="videopack-share-text-label"' . $margin_style . '>' . esc_html__( 'Share', 'video-embed-thumbnail-generator' ) . '</span>' . "\n";
+		}
+
+		// In overlay mode, the dynamic icon class switches between 'share' and 'close'. 
+		// If icon is not standard 'share', it still acts as class for querySelector.
+		$element_class = 'videopack-share-link videopack-share-toggle videopack-icons style-' . esc_attr( $style_type ) . ' share';
+
+		$embedlink = $atts['embedlink'] ?? '';
+		if ( empty( $embedlink ) && $source->get_id() ) {
+			$embedlink = add_query_arg( 'videopack[enable]', 'true', get_permalink( $source->get_id() ) );
+		}
+
+		$html = '<div class="' . esc_attr( $wrapper_class ) . '"' . $style . '>' . "\n";
+		$html .= '<button type="button" class="' . esc_attr( $element_class ) . '" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">' . "\n";
+		$html .= $trigger_inner;
+		if ( ! $is_overlay && ! $is_inside_title_meta ) {
+			$html .= '<span class="videopack-caret">▼</span>' . "\n";
+		}
+		$html .= '</button>' . "\n";
+
+		// Click trap (used for the overlay popup closing trigger)
+		$html .= '<button class="videopack-click-trap"></button>' . "\n";
+
+		// Embed/Share Overlay / Dropdown Markup
+		$title = $atts['title'] ?? $source->get_title();
+		$iframe_title = sprintf(
+			/* translators: %s is the video title */
+			__( 'Video Player - %s', 'video-embed-thumbnail-generator' ),
+			$title
+		);
+		$allow_policy   = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
+		$sandbox_policy = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms';
+
+		$embed_code  = sprintf(
+			'<iframe src="%1$s" width="%2$s" height="%3$s" style="border:0; width:100%%; aspect-ratio:%2$s/%3$s;" allow="%4$s" allowfullscreen credentialless sandbox="%5$s" loading="lazy" title="%6$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
+			esc_url( $embedlink ),
+			esc_attr( (string) ( $atts['width'] ?? 960 ) ),
+			esc_attr( (string) ( $atts['height'] ?? 540 ) ),
+			esc_attr( $allow_policy ),
+			esc_attr( $sandbox_policy ),
+			esc_attr( $iframe_title )
+		);
+
+		$share_copy_link    = ! isset( $atts['shareCopyLink'] ) || $atts['shareCopyLink'];
+		$share_native_share = ! isset( $atts['shareNativeShare'] ) || $atts['shareNativeShare'];
+		$share_bluesky      = ! isset( $atts['shareBluesky'] ) || $atts['shareBluesky'];
+		$share_threads      = ! isset( $atts['shareThreads'] ) || $atts['shareThreads'];
+		$share_facebook     = ! isset( $atts['shareFacebook'] ) || $atts['shareFacebook'];
+		$share_reddit       = ! isset( $atts['shareReddit'] ) || $atts['shareReddit'];
+		$share_email        = ! isset( $atts['shareEmail'] ) || $atts['shareEmail'];
+
+		$has_services = $share_copy_link || $share_native_share || $share_bluesky || $share_threads || $share_facebook || $share_reddit || $share_email;
+
+		$html .= '<div class="videopack-share-container">' . "\n";
+
+		if ( $has_services ) {
+			$html .= '<div class="videopack-share-services-grid">' . "\n";
+			if ( $share_copy_link ) {
+				$html .= '<button type="button" class="videopack-share-btn videopack-btn-copylink" title="' . esc_attr__( 'Copy Link', 'video-embed-thumbnail-generator' ) . '">' . Icons::get( 'copyLink' ) . '</button>' . "\n";
+			}
+			if ( $share_native_share ) {
+				$grid_share_icon_type = $icon_type;
+				if ( 'none' === $grid_share_icon_type ) {
+					$grid_share_icon_type = 'share';
+				}
+				$html .= '<button type="button" class="videopack-share-btn videopack-btn-nativeshare" title="' . esc_attr__( 'Share via Device', 'video-embed-thumbnail-generator' ) . '">' . Icons::get( $grid_share_icon_type ) . '</button>' . "\n";
+			}
+			if ( $share_bluesky ) {
+				$html .= '<button type="button" class="videopack-share-btn videopack-btn-bluesky" title="' . esc_attr__( 'Share on Bluesky', 'video-embed-thumbnail-generator' ) . '">' . Icons::get( 'bluesky' ) . '</button>' . "\n";
+			}
+			if ( $share_threads ) {
+				$html .= '<button type="button" class="videopack-share-btn videopack-btn-threads" title="' . esc_attr__( 'Share on Threads', 'video-embed-thumbnail-generator' ) . '">' . Icons::get( 'threads' ) . '</button>' . "\n";
+			}
+			if ( $share_facebook ) {
+				$html .= '<button type="button" class="videopack-share-btn videopack-btn-facebook" title="' . esc_attr__( 'Share on Facebook', 'video-embed-thumbnail-generator' ) . '">' . Icons::get( 'facebook' ) . '</button>' . "\n";
+			}
+			if ( $share_reddit ) {
+				$html .= '<button type="button" class="videopack-share-btn videopack-btn-reddit" title="' . esc_attr__( 'Share on Reddit', 'video-embed-thumbnail-generator' ) . '">' . Icons::get( 'reddit' ) . '</button>' . "\n";
+			}
+			if ( $share_email ) {
+				$html .= '<button type="button" class="videopack-share-btn videopack-btn-email" title="' . esc_attr__( 'Share via Email', 'video-embed-thumbnail-generator' ) . '">' . Icons::get( 'email' ) . '</button>' . "\n";
+			}
+			$html .= '</div>' . "\n";
+		}
+
+		$html .= '<span class="videopack-embedcode-container">' . "\n" .
+			'<span class="videopack-icons embed">' . "\n" . $embed_svg . "\n" . '</span>' . "\n" .
+			'<span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span>' . "\n" .
+			'<span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span>' . "\n" .
+			'</span>' . "\n";
+		$start_at_id = 'videopack-start-at-enable-' . $id;
+		$html .= '<span class="videopack-start-at-container">' . "\n" .
+			'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" />' . "\n" .
+			'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label>' . "\n" .
+			'<input type="text" class="videopack-start-at" value="00:00" />' . "\n" .
+			'</span>' . "\n";
+		$html .= '</div>' . "\n";
 
 		$html .= '</div>' . "\n";
 
@@ -1090,5 +1384,29 @@ class Modular_Renderer {
 		</nav>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Recursively compiles a parsed block tree into a structured array for REST/JSON serialization.
+	 *
+	 * @param array $blocks Array of parsed blocks.
+	 * @return array The serialized block tree.
+	 */
+	public static function serialize_player_container( $blocks ) {
+		$serialized = array();
+		foreach ( $blocks as $block ) {
+			if ( empty( $block['blockName'] ) ) {
+				continue;
+			}
+			$node = array(
+				'name'       => $block['blockName'],
+				'attributes' => $block['attrs'] ?? array(),
+			);
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$node['innerBlocks'] = self::serialize_player_container( $block['innerBlocks'] );
+			}
+			$serialized[] = $node;
+		}
+		return $serialized;
 	}
 }

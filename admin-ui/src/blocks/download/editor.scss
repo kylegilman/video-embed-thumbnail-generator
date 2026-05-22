@@ -1,0 +1,79 @@
+// Editor: corner download blocks must not fill the overlay canvas row.
+
+.wp-block-videopack-player-container .videopack-video-block-container {
+	position: relative !important;
+
+	> .block-editor-inner-blocks {
+		position: relative !important;
+
+		> .block-editor-block-list__layout {
+			position: relative !important;
+		}
+	}
+}
+
+.wp-block-videopack-download.is-overlay:not(.is-inside-title-meta),
+.videopack-inner-blocks-overlay .wp-block-videopack-download.is-overlay:not(.is-inside-title-meta) {
+	position: absolute !important;
+	z-index: 150 !important;
+	width: auto !important;
+	height: auto !important;
+	min-height: 0 !important;
+	max-width: none !important;
+	margin: 0 !important;
+	inset: auto;
+	pointer-events: auto !important;
+
+	&.position-top {
+		top: 5px !important;
+		bottom: auto !important;
+	}
+
+	&.position-bottom {
+		bottom: 5px !important;
+		top: auto !important;
+	}
+
+	&.has-text-align-left {
+		left: 5px !important;
+		right: auto !important;
+	}
+
+	&.has-text-align-right {
+		right: 5px !important;
+		left: auto !important;
+	}
+
+	&.has-text-align-center {
+		left: 50% !important;
+		right: auto !important;
+		transform: translateX(-50%) !important;
+	}
+
+	&.is-selected,
+	&:focus-within {
+		z-index: 151 !important;
+	}
+
+	.videopack-download-wrapper {
+		position: relative !important;
+		margin: 0 !important;
+		pointer-events: auto !important;
+	}
+}
+
+// Title meta: menu mode needs room for icon + caret in the block editor.
+.videopack-video-title-block .videopack-meta-icons {
+	.wp-block-videopack-download.mode-menu,
+	.videopack-download-wrapper.is-inside-title-meta.mode-menu {
+		width: auto !important;
+		max-width: none !important;
+		flex-shrink: 0;
+
+		.videopack-download-trigger {
+			width: auto !important;
+			min-width: 1.6em;
+			max-width: none !important;
+		}
+	}
+}

@@ -169,7 +169,7 @@ class Gallery {
 				if ( ! is_admin() && $wp_query && $wp_query->is_main_query() && 'attachment' !== $wp_query->get( 'post_type' ) && is_array( $wp_query->posts ) ) {
 					$attachment_ids = array();
 					foreach ( $wp_query->posts as $q_post ) {
-						$video_id = $this->get_first_video_child( $q_post->ID );
+						$video_id = \Videopack\Common\Video_Discovery::get_first_video_child( $q_post->ID );
 						if ( $video_id ) {
 							$attachment_ids[]                               = (int) $video_id;
 							$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
@@ -198,10 +198,12 @@ class Gallery {
 					$attachment_ids = array();
 					if ( is_array( $preview_posts ) ) {
 						foreach ( $preview_posts as $q_post ) {
-							$video_id = $this->get_first_video_child( $q_post->ID );
-							if ( $video_id ) {
-								$attachment_ids[]                               = (int) $video_id;
-								$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
+							if ( 'attachment' !== $q_post->post_type ) {
+								$video_id = \Videopack\Common\Video_Discovery::get_first_video_child( $q_post->ID );
+								if ( $video_id ) {
+									$attachment_ids[]                               = (int) $video_id;
+									$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
+								}
 							}
 						}
 					}
@@ -301,33 +303,7 @@ class Gallery {
 		);
 	}
 
-	/**
-	 * Retrieves the ID of the first video attachment for a given post.
-	 *
-	 * @param int $post_id The parent post ID.
-	 * @return int|null The video attachment ID or null if not found.
-	 */
-	public function get_first_video_child( $post_id ) {
-		$args = array(
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'video',
-			'post_status'    => 'inherit',
-			'posts_per_page' => 1,
-			'post_parent'    => (int) $post_id,
-			'fields'         => 'ids',
-			'orderby'        => 'menu_order ID',
-			'order'          => 'ASC',
-			'meta_query'     => array(
-				array(
-					'key'     => '_kgflashmediaplayer-format',
-					'compare' => 'NOT EXISTS',
-				),
-			),
-		);
 
-		$children = get_posts( $args );
-		return ! empty( $children ) ? (int) $children[0] : null;
-	}
 
 	/**
 	 * Prepares video data for frontend JavaScript.
@@ -460,9 +436,7 @@ class Gallery {
 
 		$player_vars = (array) $player->prepare_video_vars();
 		$player->enqueue_scripts();
-		if ( ! $skip_html ) {
-			$player_vars['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_player_assembly( $player, $player->get_atts(), $source, $this->options );
-		}
+
 		$player_vars['sources']       = (array) $player->get_flat_sources();
 		$player_vars['poster']        = $poster_url;
 		$player_vars['attachment']    = (int) $data['id'];

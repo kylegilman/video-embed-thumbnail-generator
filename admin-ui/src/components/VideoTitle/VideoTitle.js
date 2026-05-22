@@ -1,17 +1,17 @@
 /* global videopack_config */
 import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
-import { RichText } from '@wordpress/block-editor';
+import { RichText, InnerBlocks } from '@wordpress/block-editor';
 import { Spinner, Icon } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
 import {
 	share as shareIcon,
-	download as downloadIcon,
 	close as closeIcon,
 	code as embedIcon,
 } from '@wordpress/icons';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideopackData from '../../hooks/useVideopackData';
+import VideopackContextBridge from '../VideopackContextBridge';
 
 /**
  * An internal component to display the video title with correct styling and data.
@@ -23,8 +23,8 @@ import useVideopackData from '../../hooks/useVideopackData';
  * @param {string}   root0.tagName               HTML tag name.
  * @param {string}   root0.textAlign             Text alignment.
  * @param {boolean}  root0.isOverlay             Whether it's an overlay.
- * @param {boolean}  root0.downloadlink          Whether to show download link.
  * @param {boolean}  root0.embedcode             Whether to show embed code.
+ * @param {Element}  root0.children              Optional preview children (e.g. download block).
  * @param {string}   root0.embedlink             Embed link.
  * @param {boolean}  root0.overlay_title         Whether to show title in overlay.
  * @param {boolean}  root0.showBackground        Whether to show background bar.
@@ -45,7 +45,6 @@ export default function VideoTitle({
 	tagName: Tag = 'h3',
 	textAlign,
 	isOverlay = false,
-	downloadlink,
 	embedcode,
 	embedlink,
 	overlay_title,
@@ -58,8 +57,11 @@ export default function VideoTitle({
 	context = {},
 	usePostTitle = false,
 	linkToPost = false,
+	children,
 }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		excludeKeys: [ 'downloadlink' ],
+	});
 	const {
 		postId: resolvedPostId,
 		attachmentId: resolvedAttachmentId,
@@ -79,59 +81,6 @@ export default function VideoTitle({
 	);
 	const displayTitle = decodeEntities(manualTitle || resolvedTitle || '');
 
-	const [startAtEnabled, setStartAtEnabled] = useState(false);
-	const [startAtTime, setStartAtTime] = useState('00:00');
-	const [shareIsOpen, setShareIsOpen] = useState(false);
-	const randomId = useMemo(() => Math.random().toString(36).substr(2, 9), []);
-
-	const baseEmbedLink = useCallback(() => {
-		if (embedlink) {
-			return String(embedlink);
-		}
-		return '';
-	}, [embedlink]);
-
-	const [currentEmbedCode, setCurrentEmbedCode] = useState(baseEmbedLink());
-
-	useEffect(() => {
-		const originalEmbedLink = baseEmbedLink();
-		if (!originalEmbedLink) {
-			setCurrentEmbedCode('');
-			return;
-		}
-
-		// Normalize to a clean URL if it was already an iframe.
-		let src = originalEmbedLink;
-		if (originalEmbedLink.includes('<iframe')) {
-			const tempDiv = document.createElement('div');
-			tempDiv.innerHTML = originalEmbedLink;
-			const iframe = tempDiv.querySelector('iframe');
-			src = iframe ? iframe.getAttribute('src') : originalEmbedLink;
-		}
-
-		src = src.replace(/&?videopack\[start\]=[^&]*/, '');
-		src = src.replace(/\?&/, '?').replace(/\?$/, '');
-
-		if (startAtEnabled && startAtTime) {
-			const separator = src.includes('?') ? '&' : '?';
-			src += `${separator}videopack[start]=${encodeURIComponent(
-				startAtTime
-			)}`;
-		}
-
-		const allowPolicy =
-			'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
-		const sandboxPolicy =
-			'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms';
-		const iframeTitle = displayTitle
-			? `Video Player - ${displayTitle}`
-			: 'Video Player';
-
-		const newEmbedCode = `<iframe src="${src}" width="960" height="540" style="border:0; width:100%; aspect-ratio:16/9;" allow="${allowPolicy}" allowfullscreen credentialless sandbox="${sandboxPolicy}" loading="lazy" title="${iframeTitle}" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
-
-		setCurrentEmbedCode(newEmbedCode);
-	}, [startAtEnabled, startAtTime, baseEmbedLink, displayTitle]);
-
 	if (isResolving && !displayTitle && !vpContext.resolved.isPreview) {
 		return <Spinner />;
 	}
@@ -147,20 +96,6 @@ export default function VideoTitle({
 	const finalTextAlign = textAlign || defaultAlign;
 
 	const globalOptions = videopack_config?.options || {};
-
-	let finalDownloadLink = !!globalOptions.downloadlink;
-	if (isInsideThumbnail) {
-		finalDownloadLink = false;
-	} else if (downloadlink !== undefined) {
-		finalDownloadLink = downloadlink;
-	}
-
-	let finalEmbedCode = !!globalOptions.embedcode;
-	if (isInsideThumbnail) {
-		finalEmbedCode = false;
-	} else if (embedcode !== undefined) {
-		finalEmbedCode = embedcode;
-	}
 
 	let finalOverlayTitle = true;
 	if (overlay_title !== undefined) {
@@ -201,18 +136,6 @@ export default function VideoTitle({
 
 	return (
 		<div {...finalBlockProps}>
-			<button
-				className={`videopack-click-trap${
-					shareIsOpen ? ' is-visible' : ''
-				}`}
-				onClick={() => {
-					setShareIsOpen(false);
-				}}
-				aria-label={__(
-					'Close share overlay',
-					'video-embed-thumbnail-generator'
-				)}
-			/>
 			<div className={`${barClass} has-text-align-${finalTextAlign}`}>
 				{finalOverlayTitle && (
 					<RichText
@@ -231,91 +154,34 @@ export default function VideoTitle({
 				)}
 				{isOverlay && (
 					<div className={iconsClass}>
-						{finalEmbedCode && (
-							<button
-								className={`videopack-icons ${
-									shareIsOpen ? 'close' : 'share'
-								}`}
-								onClick={() => setShareIsOpen(!shareIsOpen)}
-								title={
-									shareIsOpen
-										? __(
-												'Close',
-												'video-embed-thumbnail-generator'
-											)
-										: __(
-												'Share',
-												'video-embed-thumbnail-generator'
-											)
-								}
-							>
-								<Icon
-									icon={shareIsOpen ? closeIcon : shareIcon}
-									className="videopack-icon-svg"
+						<VideopackContextBridge
+							attributes={attributes}
+							context={context}
+							overrides={{
+								'videopack/isInsideTitleMeta': true,
+								...(context['videopack/source_groups'] &&
+								Object.keys(context['videopack/source_groups']).length > 0
+									? {
+											'videopack/source_groups':
+												context['videopack/source_groups'],
+										}
+									: {}),
+								...(context['videopack/sources']?.length > 0
+									? { 'videopack/sources': context['videopack/sources'] }
+									: {}),
+							}}
+						>
+							{ children || (
+								<InnerBlocks
+									allowedBlocks={ [ 'videopack/download', 'videopack/share' ] }
+									template={ [] }
+									templateLock={ false }
 								/>
-							</button>
-						)}
-						{finalDownloadLink && (
-							<button className="videopack-icons download">
-								<Icon
-									icon={downloadIcon}
-									className="videopack-icon-svg"
-								/>
-							</button>
-						)}
+							) }
+						</VideopackContextBridge>
 					</div>
 				)}
 			</div>
-			{isOverlay && finalEmbedCode && (
-				<div
-					className={`videopack-share-container${
-						shareIsOpen ? ' is-visible' : ''
-					}`}
-				>
-					<span className="videopack-embedcode-container">
-						<span className="videopack-icons embed">
-							<Icon
-								icon={embedIcon}
-								className="videopack-icon-svg"
-							/>
-						</span>
-						<span>
-							{__('Embed:', 'video-embed-thumbnail-generator')}
-						</span>
-						<span>
-							<input
-								className="videopack-embed-code"
-								type="text"
-								value={currentEmbedCode}
-								onClick={(e) => e.target.select()}
-								readOnly
-							/>
-						</span>
-					</span>
-					<span className="videopack-start-at-container">
-						<input
-							type="checkbox"
-							className="videopack-start-at-enable"
-							id={`videopack-start-at-enable-block-${randomId}`}
-							checked={startAtEnabled}
-							onChange={(e) =>
-								setStartAtEnabled(e.target.checked)
-							}
-						/>
-						<label
-							htmlFor={`videopack-start-at-enable-block-${randomId}`}
-						>
-							{__('Start at:', 'video-embed-thumbnail-generator')}
-						</label>
-						<input
-							type="text"
-							className="videopack-start-at"
-							value={startAtTime}
-							onChange={(e) => setStartAtTime(e.target.value)}
-						/>
-					</span>
-				</div>
-			)}
 		</div>
 	);
 }

@@ -7,9 +7,10 @@
 	pointer-events: none;
 	z-index: 120;
 
-	// Target Gutenberg internal wrappers (standard blocks)
-	.block-editor-inner-blocks,
-	.block-editor-block-list__layout {
+	// Only the player overlay's direct inner-blocks layout — not nested
+	// inner blocks (e.g. download inside title meta-icons).
+	> .block-editor-inner-blocks,
+	> .block-editor-inner-blocks > .block-editor-block-list__layout {
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -17,9 +18,23 @@
 		height: 100%;
 	}
 
+	// Overlay download (and similar badges) must not inherit the full overlay canvas size.
+	> .block-editor-inner-blocks
+		> .block-editor-block-list__layout
+		> .block-editor-block-list__block:has(
+			.videopack-download-wrapper.is-overlay:not(.is-inside-title-meta)
+		) {
+		position: absolute !important;
+		width: auto !important;
+		height: auto !important;
+		min-height: 0 !important;
+		pointer-events: auto;
+		z-index: 125;
+	}
+
 	// Fix for Gutenberg appender being absolute/0-height (user suggested)
 	// Standard Gutenberg appender positioned at the top for overlays
-	.block-list-appender {
+	> .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
 		position: absolute;
 		top: 20px;
 		right: 20px;
@@ -30,7 +45,10 @@
 		pointer-events: auto;
 	}
 
-	&.videopack-has-title-block .block-list-appender {
+	&.videopack-has-title-block
+		> .block-editor-inner-blocks
+		> .block-editor-block-list__layout
+		> .block-list-appender {
 		top: 50px;
 	}
 }
