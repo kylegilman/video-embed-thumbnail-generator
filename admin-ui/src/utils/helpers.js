@@ -27,7 +27,6 @@ export const normalizeOptions = (options) => {
 		'gallery_title',
 		'views',
 		'auto_res',
-		'auto_codec',
 	];
 
 	booleans.forEach((key) => {

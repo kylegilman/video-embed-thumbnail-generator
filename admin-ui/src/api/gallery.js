@@ -10,35 +10,14 @@ import { applyFilters } from '@wordpress/hooks';
 /**
  * Fetches encoding presets.
  *
- * @param {number|string} attachmentId   Optional. The video attachment ID.
- * @param {string}        url            Optional. The video source URL.
- * @param {Object}        probedMetadata Optional. Probed video dimensions/duration.
  * @param {AbortSignal}   signal         Optional. Abort signal.
  */
 export const getPresets = async (
-	attachmentId = null,
-	url = '',
-	probedMetadata = null,
 	signal = null
 ) => {
 	try {
-		const query = {
-			attachment_id: attachmentId,
-			url,
-		};
-		if (probedMetadata) {
-			if (probedMetadata.width) {
-				query.width = probedMetadata.width;
-			}
-			if (probedMetadata.height) {
-				query.height = probedMetadata.height;
-			}
-			if (probedMetadata.duration) {
-				query.duration = probedMetadata.duration;
-			}
-		}
 		return await apiFetch({
-			path: addQueryArgs('/videopack/v1/presets', query),
+			path: '/videopack/v1/presets',
 			signal,
 		});
 	} catch (error) {
@@ -95,12 +74,26 @@ export const getVideoFormats = async (
 	signal = null
 ) => {
 	try {
-		const presets = await getPresets(
-			attachmentId,
-			url,
-			probedMetadata,
-			signal
-		);
+		const query = {};
+		if (url) {
+			query.url = url;
+		}
+		if (probedMetadata) {
+			if (probedMetadata.width) {
+				query.width = probedMetadata.width;
+			}
+			if (probedMetadata.height) {
+				query.height = probedMetadata.height;
+			}
+			if (probedMetadata.duration) {
+				query.duration = probedMetadata.duration;
+			}
+		}
+
+		const presets = await apiFetch({
+			path: addQueryArgs(`/videopack/v1/attachment/${attachmentId}/formats`, query),
+			signal,
+		});
 
 		const merged = {};
 		presets.forEach((preset) => {

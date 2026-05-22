@@ -1,3 +1,28 @@
+import iconsData from '../../../src/icons.json';
+
+const createIcon = (name) => {
+	const icon = iconsData[name];
+	if (!icon) return null;
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox={icon.viewBox}
+			className="videopack-icon-svg"
+		>
+			{icon.paths.map((path, idx) => {
+				const props = {};
+				Object.keys(path).forEach((key) => {
+					const propName = key.includes('-')
+						? key.replace(/-([a-z])/g, (g) => g[1].toUpperCase())
+						: key;
+					props[propName] = path[key];
+				});
+				return <path key={idx} {...props} />;
+			})}
+		</svg>
+	);
+};
+
 const videopack = (
 	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 		<g transform="rotate(-45 200.518 199.773)">
@@ -832,18 +857,7 @@ const sortDescending = (
 	</svg>
 );
 
-const play = (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		height="24px"
-		viewBox="0 0 24 24"
-		width="24px"
-		fill="currentColor"
-	>
-		<path d="M8 5v14l11-7z" />
-	</svg>
-);
-
+const play = createIcon('play');
 const pause = (
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
@@ -855,22 +869,20 @@ const pause = (
 		<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
 	</svg>
 );
-
-const playOutline = (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		height="24px"
-		viewBox="0 0 24 24"
-		width="24px"
-		fill="none"
-		stroke="currentColor"
-		strokeWidth="2"
-		strokeLinecap="round"
-		strokeLinejoin="round"
-	>
-		<path d="M8 5v14l11-7z" fill="none" />
-	</svg>
-);
+const playOutline = createIcon('playOutline');
+const shareAlt1 = createIcon('iosShare');
+const shareAlt2 = createIcon('external');
+const shareAlt3 = createIcon('curveShare');
+const download = createIcon('download');
+const share = createIcon('share');
+const close = createIcon('close');
+const embed = createIcon('embed');
+const copyLink = createIcon('copyLink');
+const bluesky = createIcon('bluesky');
+const threads = createIcon('threads');
+const facebook = createIcon('facebook');
+const reddit = createIcon('reddit');
+const email = createIcon('email');
 
 export {
 	insertImage,
@@ -878,6 +890,9 @@ export {
 	play,
 	playOutline,
 	save,
+	shareAlt1,
+	shareAlt2,
+	shareAlt3,
 	sortAscending,
 	sortDescending,
 	volumeDown,
@@ -897,4 +912,14 @@ export {
 	videopackVideo,
 	videopackViewCount,
 	videopackWatermark,
+	download,
+	share,
+	close,
+	embed,
+	copyLink,
+	bluesky,
+	threads,
+	facebook,
+	reddit,
+	email,
 };

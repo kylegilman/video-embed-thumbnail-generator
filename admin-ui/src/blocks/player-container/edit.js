@@ -39,14 +39,17 @@ import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../components/AdditionalFormats/AdditionalFormats.js';
 import useVideoProbe from '../../hooks/useVideoProbe.js';
 import useVideopackContext from '../../hooks/useVideopackContext';
+import { getTitleInnerTemplate } from '../../utils/titleDownloadBlock';
 import './editor.scss';
 
-const ALLOWED_MEDIA_TYPES = ['video'];
+const ALLOWED_MEDIA_TYPES = ['video', 'image/gif'];
 
 const ALLOWED_BLOCKS = [
 	'videopack/player',
 	'videopack/view-count',
 	'videopack/caption',
+	'videopack/download',
+	'videopack/share',
 ];
 
 /**
@@ -536,7 +539,11 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		const engine_inner_blocks = [];
 
 		if (showTitleBar) {
-			engine_inner_blocks.push(['videopack/title', {}]);
+			engine_inner_blocks.push([
+				'videopack/title',
+				{},
+				getTitleInnerTemplate(!!globalOpts.downloadlink, !!globalOpts.embedcode),
+			]);
 		}
 
 		if (globalOpts.watermark) {
@@ -609,11 +616,12 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				icon={<BlockIcon icon={icon} />}
 				onSelect={onSelectVideo}
 				onSelectURL={onSelectURL}
-				accept="video/*"
+				accept="video/*,image/gif"
 				allowedTypes={ALLOWED_MEDIA_TYPES}
 				value={attributes}
 				onError={onUploadError}
 				placeholder={placeholder}
+				query={ { videopack_filter: 'select_video_source' } }
 			/>
 		);
 	} else if (!id && effectiveSrc && isBlobURL(effectiveSrc)) {
@@ -646,10 +654,11 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						mediaId={id}
 						mediaURL={effectiveSrc}
 						allowedTypes={ALLOWED_MEDIA_TYPES}
-						accept="video/*"
+						accept="video/*,image/gif"
 						onSelect={onSelectVideo}
 						onSelectURL={onSelectURL}
 						onError={onUploadError}
+						query={ { videopack_filter: 'select_video_source' } }
 					/>
 					<ToolbarButton
 						icon={resetIcon}

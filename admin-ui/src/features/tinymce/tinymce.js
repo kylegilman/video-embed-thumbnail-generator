@@ -6,6 +6,7 @@ import { createRoot, useState, useEffect, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { TemplatePreview } from '../../components/Preview';
 import { getGridTemplate, getListTemplate } from '../../utils/templates';
+import { getTitleInnerTemplate } from '../../utils/titleDownloadBlock';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideoQuery from '../../hooks/useVideoQuery';
 /* global videopack_config, tinymce, MutationObserver, videojs */
@@ -155,7 +156,11 @@ import './tinymce.scss';
 
 			const engineChildren = [];
 			if (showTitleBar) {
-				engineChildren.push(['videopack/title', {}]);
+				engineChildren.push([
+					'videopack/title',
+					{},
+					getTitleInnerTemplate(!!mergedAttributes.downloadlink, !!mergedAttributes.embedcode),
+				]);
 			}
 			if (mergedAttributes.watermark) {
 				engineChildren.push(['videopack/watermark', {}]);

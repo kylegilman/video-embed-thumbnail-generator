@@ -295,6 +295,14 @@ class Source_Attachment extends Source {
 			return (string) apply_filters( 'videopack_source_get_poster', (string) $this->metadata['poster'], $this );
 		}
 
+		// 5. Fallback to original GIF itself if mime type is image/gif.
+		if ( 'image/gif' === get_post_mime_type( $this->id ) ) {
+			$poster_url = wp_get_attachment_url( $this->id );
+			if ( $poster_url ) {
+				return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
+			}
+		}
+
 		return (string) apply_filters( 'videopack_source_get_poster', '', $this );
 	}
 

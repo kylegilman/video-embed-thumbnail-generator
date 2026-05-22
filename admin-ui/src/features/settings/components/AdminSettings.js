@@ -264,6 +264,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 				</div>
 				<div className="videopack-control-with-tooltip">
 					<Button
+						__next40pxDefaultSize
 						className="videopack-clear-button"
 						variant="secondary"
 						onClick={handleClearCache}

@@ -10,9 +10,13 @@ import CollectionWrapper from './parts/CollectionWrapper';
 import VideoLoop from './parts/VideoLoop';
 import Pagination from '../Pagination/Pagination';
 
+import { Icon, download as downloadIcon } from '@wordpress/icons';
 import playerContainerMetadata from '../../blocks/player-container/block.json';
 import thumbnailMetadata from '../../blocks/thumbnail/block.json';
 import titleMetadata from '../../blocks/title/block.json';
+import downloadMetadata from '../../blocks/download/block.json';
+import shareMetadata from '../../blocks/share/block.json';
+import { TITLE_DOWNLOAD_BLOCK_ATTRS } from '../../utils/titleDownloadBlock';
 import durationMetadata from '../../blocks/duration/block.json';
 import viewCountMetadata from '../../blocks/view-count/block.json';
 import watermarkMetadata from '../../blocks/watermark/block.json';
@@ -23,6 +27,8 @@ const BLOCK_METADATA = {
 	'videopack/player-container': playerContainerMetadata,
 	'videopack/thumbnail': thumbnailMetadata,
 	'videopack/title': titleMetadata,
+	'videopack/download': downloadMetadata,
+	'videopack/share': shareMetadata,
 	'videopack/duration': durationMetadata,
 	'videopack/view-count': viewCountMetadata,
 	'videopack/watermark': watermarkMetadata,
@@ -103,6 +109,88 @@ const PREVIEW_COMPONENTS = {
 			{...getCleanDomProps(props, 'videopack/title')}
 		/>
 	),
+	'videopack/download': (props) => {
+		const attrs = {
+			...TITLE_DOWNLOAD_BLOCK_ATTRS,
+			...props.attributes,
+		};
+		const styleType = attrs.styleType || 'text';
+		return (
+			<span
+				className={`videopack-download-wrapper videopack-download-block is-inside-title-meta mode-${attrs.downloadMode || 'direct'}`}
+				style={{ display: 'inline-flex', alignItems: 'center' }}
+			>
+				<button
+					type="button"
+					className={`videopack-download-link videopack-icons style-${styleType}`}
+				>
+					{attrs.icon !== false && (
+						<Icon
+							icon={downloadIcon}
+							className="videopack-icon-svg"
+						/>
+					)}
+				</button>
+			</span>
+		);
+	},
+	'videopack/share': (props) => {
+		const attrs = {
+			iconType: 'share',
+			showText: false,
+			styleType: 'text',
+			...props.attributes,
+		};
+		const styleType = attrs.styleType || 'text';
+		const iconType = attrs.iconType || 'share';
+
+		const shareIconSvg = (
+			<svg className="videopack-icon-svg share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+				<path d="M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z" />
+			</svg>
+		);
+		const externalIconSvg = (
+			<svg className="videopack-icon-svg external-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+				<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
+			</svg>
+		);
+		const iosShareIconSvg = (
+			<svg className="videopack-icon-svg ios-share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+				<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" />
+			</svg>
+		);
+
+		let activeIcon = null;
+		if (iconType === 'share') {
+			activeIcon = shareIconSvg;
+		} else if (iconType === 'external') {
+			activeIcon = externalIconSvg;
+		} else if (iconType === 'iosShare') {
+			activeIcon = iosShareIconSvg;
+		}
+
+		return (
+			<span
+				className="videopack-share-wrapper videopack-share-block is-inside-title-meta"
+				style={{ display: 'inline-flex', alignItems: 'center' }}
+			>
+				<button
+					type="button"
+					className={`videopack-share-link videopack-share-toggle videopack-icons style-${styleType}`}
+				>
+					{iconType !== 'none' && activeIcon}
+					{(attrs.showText || iconType === 'none') && (
+						<span
+							className="videopack-share-text-label"
+							style={iconType !== 'none' ? { marginLeft: '4px' } : undefined}
+						>
+							{__('Share', 'video-embed-thumbnail-generator')}
+						</span>
+					)}
+				</button>
+			</span>
+		);
+	},
 	'videopack/duration': (props) => (
 		<VideoDuration
 			{...props}

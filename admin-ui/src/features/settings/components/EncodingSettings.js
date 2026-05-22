@@ -55,6 +55,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		ffmpeg_error,
 		auto_encode,
 		auto_encode_gif,
+		keep_gif_source,
 		sample_rotate,
 		auto_publish_post,
 		active_encoder = 'ffmpeg',
@@ -66,7 +67,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const availableEncoders = applyFilters('videopack.settings.encoders', [
 		{
 			value: 'ffmpeg',
-			label: __('Local FFmpeg', 'video-embed-thumbnail-generator'),
+			label: __('Web Server FFmpeg', 'video-embed-thumbnail-generator'),
 		},
 	], settings);
 
@@ -89,14 +90,18 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const filteredCodecs = useMemo(() => {
 		const { codecs } = videopack_config;
 		return codecs.filter((codec) => {
-			if (
-				codec.id === 'av1' &&
-				(active_encoder === 'browser' ||
-					active_encoder === 'google_transcoder')
-			) {
-				return false;
-			}
-			if (codec.id === 'cmaf' && active_encoder === 'browser') {
+			const defaultSupported = ! (
+				( codec.id === 'av1' && active_encoder === 'browser' ) ||
+				( codec.id === 'cmaf' && active_encoder === 'browser' )
+			);
+			const isSupported = applyFilters(
+				'videopack.settings.codec_supported',
+				defaultSupported,
+				codec.id,
+				active_encoder,
+				settings
+			);
+			if ( ! isSupported ) {
 				return false;
 			}
 			if (codec.id === 'thumbnail') {
@@ -110,7 +115,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			}
 			return true;
 		});
-	}, [active_encoder, settings.ffmpeg_exists]);
+	}, [active_encoder, settings]);
 
 	useEffect(() => {
 		if (!encode) return;
@@ -118,26 +123,43 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		let changed = false;
 		const newEncode = { ...encode };
 
-		// Auto-disable AV1 for incompatible transcoders
-		if (
-			(active_encoder === 'browser' ||
-				active_encoder === 'google_transcoder') &&
-			encode.av1?.enabled
-		) {
-			newEncode.av1 = { ...newEncode.av1, enabled: false };
-			changed = true;
-		}
-
-		// Auto-disable Adaptive Streaming for Browser Encoding
-		if (active_encoder === 'browser' && encode.cmaf?.enabled) {
-			newEncode.cmaf = { ...newEncode.cmaf, enabled: false };
-			changed = true;
-		}
+		// Auto-disable unsupported codecs
+		Object.keys(encode).forEach((codecId) => {
+			if (encode[codecId]?.enabled) {
+				const defaultSupported = ! (
+					( codecId === 'av1' && active_encoder === 'browser' ) ||
+					( codecId === 'cmaf' && active_encoder === 'browser' )
+				);
+				const isSupported = applyFilters(
+					'videopack.settings.codec_supported',
+					defaultSupported,
+					codecId,
+					active_encoder,
+					settings
+				);
+				if (!isSupported) {
+					newEncode[codecId] = { ...newEncode[codecId], enabled: false };
+					changed = true;
+				}
+			}
+		});
 
 		if (changed) {
 			changeHandlerFactory.encode(newEncode);
 		}
-	}, [active_encoder, encode, changeHandlerFactory]);
+	}, [active_encoder, encode, changeHandlerFactory, settings]);
+
+	useEffect(() => {
+		const isDisabled = applyFilters(
+			'videopack.settings.auto_encode_gif.disabled',
+			effectiveFfmpegExists !== true,
+			active_encoder,
+			settings
+		);
+		if (isDisabled && auto_encode_gif) {
+			changeHandlerFactory.auto_encode_gif(false);
+		}
+	}, [active_encoder, auto_encode_gif, changeHandlerFactory, effectiveFfmpegExists, settings]);
 
 	useEffect(() => {
 		getUsersWithCapability('edit_others_video_encodes')
@@ -339,10 +361,13 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				.filter(
 					( c ) =>
 						c.is_video !== false &&
-						! (
-							c.id === 'av1' &&
-							( active_encoder === 'browser' ||
-								active_encoder === 'google_transcoder' )
+						c.id !== 'cmaf' &&
+						applyFilters(
+							'videopack.settings.codec_supported',
+							! ( c.id === 'av1' && active_encoder === 'browser' ),
+							c.id,
+							active_encoder,
+							settings
 						)
 				)
 				.map((codec) => ({ value: codec.id, label: codec.name })),
@@ -516,14 +541,14 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 
 	return (
 		<>
-			{availableEncoders.length > 1 && (
-				<PanelBody>
+			<PanelBody>
+				{availableEncoders.length > 1 && (
 					<PanelRow>
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__(
-								'Transcoding service',
+								'Encoding service',
 								'video-embed-thumbnail-generator'
 							)}
 							value={active_encoder}
@@ -531,145 +556,143 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 							onChange={changeHandlerFactory.active_encoder}
 						/>
 					</PanelRow>
-					{active_encoder === 'browser' && (
-						<>
-							<PanelRow className="videopack-panel-row-vertical">
-								<p>
-									{browser_encoder_assets_status === 'ready'
-										? __(
-												'The FFmpeg encoder library is currently hosted on your own server.',
+				)}
+				{active_encoder === 'browser' && (
+					<PanelRow className="videopack-panel-row-vertical">
+						<p>
+							{browser_encoder_assets_status === 'ready'
+								? __(
+										'The FFmpeg encoder library is currently hosted on your own server.',
+										'video-embed-thumbnail-generator'
+								  )
+								: __(
+										'The FFmpeg encoder library (30MB) is currently loaded from a global CDN. To improve privacy and reliability, you can download the library and host it on your own server.',
+										'video-embed-thumbnail-generator'
+								  )}
+						</p>
+						<Flex
+							align="flex-end"
+							justify="flex-start"
+							gap={2}
+							className="videopack-flex-bottom"
+						>
+							<Button
+								__next40pxDefaultSize
+								variant="secondary"
+								isBusy={isDownloadingAssets}
+								disabled={isDownloadingAssets}
+								onClick={async () => {
+									setIsDownloadingAssets(true);
+									try {
+										await downloadBrowserEncoderAssets();
+										changeHandlerFactory.browser_encoder_assets_status(
+											'ready'
+										);
+										videopack_config.browser_encoder_assets_status =
+											'ready';
+									} catch (error) {
+										alert(
+											__(
+												'Failed to download assets. Please check your server permissions.',
 												'video-embed-thumbnail-generator'
-										  )
-										: __(
-												'The FFmpeg encoder library (30MB) is currently loaded from a global CDN. To improve privacy and reliability, you can download the library and host it on your own server.',
-												'video-embed-thumbnail-generator'
-										  )}
-								</p>
-								<Flex
-									align="center"
-									justify="flex-start"
-									gap={2}
-								>
-									<Button
-										variant="secondary"
-										isBusy={isDownloadingAssets}
-										disabled={isDownloadingAssets}
-										onClick={async () => {
-											setIsDownloadingAssets(true);
+											)
+										);
+									} finally {
+										setIsDownloadingAssets(false);
+									}
+								}}
+							>
+								{browser_encoder_assets_status ===
+								'ready'
+									? __(
+											'Update assets',
+											'video-embed-thumbnail-generator'
+									  )
+									: __(
+											'Download and install assets',
+											'video-embed-thumbnail-generator'
+									  )}
+							</Button>
+							{browser_encoder_assets_status ===
+								'ready' && (
+								<Button
+									variant="link"
+									isDestructive
+									onClick={async () => {
+										if (
+											window.confirm(
+												__(
+													'Are you sure you want to delete the local FFmpeg assets? This will revert to using the CDN.',
+													'video-embed-thumbnail-generator'
+												)
+											)
+										) {
 											try {
-												await downloadBrowserEncoderAssets();
+												await deleteBrowserEncoderAssets();
 												changeHandlerFactory.browser_encoder_assets_status(
-													'ready'
+													'missing'
 												);
 												videopack_config.browser_encoder_assets_status =
-													'ready';
+													'missing';
 											} catch (error) {
 												alert(
 													__(
-														'Failed to download assets. Please check your server permissions.',
+														'Failed to delete assets.',
 														'video-embed-thumbnail-generator'
 													)
 												);
-											} finally {
-												setIsDownloadingAssets(false);
 											}
-										}}
-									>
-										{browser_encoder_assets_status ===
-										'ready'
-											? __(
-													'Update assets',
-													'video-embed-thumbnail-generator'
-											  )
-											: __(
-													'Download and install assets',
-													'video-embed-thumbnail-generator'
-											  )}
-									</Button>
-									{browser_encoder_assets_status ===
-										'ready' && (
-										<Button
-											variant="link"
-											isDestructive
-											onClick={async () => {
-												if (
-													window.confirm(
-														__(
-															'Are you sure you want to delete the local FFmpeg assets? This will revert to using the CDN.',
-															'video-embed-thumbnail-generator'
-														)
-													)
-												) {
-													try {
-														await deleteBrowserEncoderAssets();
-														changeHandlerFactory.browser_encoder_assets_status(
-															'missing'
-														);
-														videopack_config.browser_encoder_assets_status =
-															'missing';
-													} catch (error) {
-														alert(
-															__(
-																'Failed to delete assets.',
-																'video-embed-thumbnail-generator'
-															)
-														);
-													}
-												}
-											}}
-										>
-											{__(
-												'Delete local assets',
-												'video-embed-thumbnail-generator'
-											)}
-										</Button>
+										}
+									}}
+								>
+									{__(
+										'Delete local assets',
+										'video-embed-thumbnail-generator'
 									)}
-								</Flex>
-							</PanelRow>
-						</>
-					)}
-				</PanelBody>
-			)}
-			<PanelBody
-				className={
-					active_encoder !== 'ffmpeg' ? 'videopack-hidden' : ''
-				}
-			>
-				<PanelRow>
-					<TextControlOnBlur
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Path to FFmpeg folder on server',
-							'video-embed-thumbnail-generator'
+								</Button>
+							)}
+						</Flex>
+					</PanelRow>
+				)}
+				{active_encoder === 'ffmpeg' && (
+					<>
+						<PanelRow>
+							<TextControlOnBlur
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+								label={__(
+									'Path to FFmpeg folder on server',
+									'video-embed-thumbnail-generator'
+								)}
+								value={app_path}
+								onChange={changeHandlerFactory.app_path}
+								help={
+									isNetworkActive
+										? __(
+												'This setting is controlled at the network level.',
+												'video-embed-thumbnail-generator'
+											)
+										: __(
+												'Leave blank if FFmpeg is in your system path.'
+											)
+								}
+								disabled={isNetworkActive}
+								title={
+									isNetworkActive
+										? __(
+												'This setting is controlled by the network administrator.',
+												'video-embed-thumbnail-generator'
+											)
+										: null
+								}
+							/>
+						</PanelRow>
+						{effectiveFfmpegExists !== true && ffmpeg_error && (
+							<div className="notice notice-error videopack-ffmpeg-notice">
+								<p dangerouslySetInnerHTML={{ __html: ffmpeg_error }} />
+							</div>
 						)}
-						value={app_path}
-						onChange={changeHandlerFactory.app_path}
-						help={
-							isNetworkActive
-								? __(
-										'This setting is controlled at the network level.',
-										'video-embed-thumbnail-generator'
-									)
-								: __(
-										'Leave blank if FFmpeg is in your system path.'
-									)
-						}
-						disabled={isNetworkActive}
-						title={
-							isNetworkActive
-								? __(
-										'This setting is controlled by the network administrator.',
-										'video-embed-thumbnail-generator'
-									)
-								: null
-						}
-					/>
-				</PanelRow>
-				{effectiveFfmpegExists !== true && ffmpeg_error && (
-					<div className="notice notice-error videopack-ffmpeg-notice">
-						<p dangerouslySetInnerHTML={{ __html: ffmpeg_error }} />
-					</div>
+					</>
 				)}
 			</PanelBody>
 			<PanelBody
@@ -689,7 +712,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						</strong>
 						<VideopackTooltip
 							text={__(
-								'If you have FFmpeg and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Videopack will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. Different browsers have different playback capabilities. All browsers on all devices can play H.264. VP8 is an open-source codec supported by most devices, but not as effecient as the newer codecs H.265, VP9, and AV1, which are not as universally supported. AV1 can also be extremely CPU intensive to encode. If you must use AV1, make sure you have the libsvtav1 FFmpeg library installed. The reference libaom-av1 encoder is more commonly available in FFmpeg builds, but is much slower.',
+								'If you have FFmpeg and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also encode into several additional formats depending on the resolution of your original source. Videopack will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. Different browsers have different playback capabilities. All browsers on all devices can play H.264. VP8 is an open-source codec supported by most devices, but not as effecient as the newer codecs H.265, VP9, and AV1, which are not as universally supported. AV1 can also be extremely CPU intensive to encode. If you must use AV1, make sure you have the libsvtav1 FFmpeg library installed. The reference libaom-av1 encoder is more commonly available in FFmpeg builds, but is much slower.',
 								'video-embed-thumbnail-generator'
 							)}
 						/>
@@ -768,8 +791,42 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						)}
 						onChange={changeHandlerFactory.auto_encode_gif}
 						checked={auto_encode_gif}
-						disabled={effectiveFfmpegExists !== true}
+						disabled={applyFilters(
+							'videopack.settings.auto_encode_gif.disabled',
+							effectiveFfmpegExists !== true,
+							active_encoder,
+							settings
+						)}
+						help={applyFilters(
+							'videopack.settings.auto_encode_gif.help',
+							null,
+							active_encoder,
+							settings
+						)}
 					/>
+					{auto_encode_gif && (
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={__(
+								'Keep original GIF file as source',
+								'video-embed-thumbnail-generator'
+							)}
+							onChange={changeHandlerFactory.keep_gif_source}
+							checked={keep_gif_source}
+							disabled={applyFilters(
+								'videopack.settings.keep_gif_source.disabled',
+								effectiveFfmpegExists !== true,
+								active_encoder,
+								settings
+							)}
+							help={applyFilters(
+								'videopack.settings.keep_gif_source.help',
+								null,
+								active_encoder,
+								settings
+							)}
+						/>
+					)}
 				</BaseControl>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl

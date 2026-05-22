@@ -87,8 +87,11 @@ export default function useVideopackData(key, context = {}) {
 						record.videopack?.embedlink ||
 						'';
 					break;
+				case 'videopack':
+					data = record.videopack || null;
+					break;
 				default:
-					data = record[key] || null;
+					data = record[ key ] || null;
 			}
 
 			return { data, isResolving };

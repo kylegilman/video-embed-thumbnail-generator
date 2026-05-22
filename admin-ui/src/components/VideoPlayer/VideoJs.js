@@ -104,6 +104,16 @@ export const VideoJS = (props) => {
 					fluid: options.fluid !== undefined ? options.fluid : true,
 				};
 
+				// Prevent error if resolutionSelector plugin is requested but not loaded in the editor.
+				if (
+					playerOptions.plugins &&
+					playerOptions.plugins.resolutionSelector &&
+					typeof vjs.getPlugin !== 'undefined' &&
+					!vjs.getPlugin('resolutionSelector')
+				) {
+					delete playerOptions.plugins.resolutionSelector;
+				}
+
 				playerRef.current = vjs(
 					videoElement,
 					playerOptions,

@@ -5,6 +5,7 @@
 
 /* Main Gutenberg Block Wrapper */
 .wp-block-videopack-player-container {
+	position: relative;
 	width: 100%;
 	max-width: var(--wp--style--global--content-size);
 	margin-top: 1em;

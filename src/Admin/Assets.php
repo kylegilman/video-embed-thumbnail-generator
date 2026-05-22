@@ -205,6 +205,7 @@ class Assets implements Hook_Subscriber {
 		if ( in_array( (string) $hook_suffix, array( 'settings_page_video_embed_thumbnail_generator_settings', 'tools_page_videopack_encode_queue', 'settings_page_videopack_network_encoding_queue' ), true ) ) {
 			wp_enqueue_script( 'videopack-admin-screens' );
 			wp_enqueue_style( 'videopack-admin-screens' );
+			wp_enqueue_style( 'videopack-core' );
 
 			// Enqueue player for previews.
 			$this->enqueue_player_assets();

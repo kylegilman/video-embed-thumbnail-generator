@@ -91,9 +91,6 @@
 		"auto_res": {
 			"type": "string"
 		},
-		"auto_codec": {
-			"type": "string"
-		},
 		"sources": {
 			"type": "array",
 			"default": []

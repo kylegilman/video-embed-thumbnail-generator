@@ -25,6 +25,7 @@ import VideopackTooltip from './VideopackTooltip';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import useResolutions from '../../../hooks/useResolutions';
 import { BlockPreview } from '../../../components/Preview';
+import { TITLE_DOWNLOAD_BLOCK_ATTRS } from '../../../utils/titleDownloadBlock';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
@@ -39,7 +40,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		auto_res,
 		enable_custom_resolution,
 		custom_resolution,
-		auto_codec,
 		pixel_ratio,
 		find_formats,
 		fullwidth,
@@ -334,16 +334,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		return items;
 	};
 
-	const autoCodecOptions = () => {
-		const items = [];
-		videopack_config.codecs.forEach((codec) => {
-			items.push({
-				value: codec.id,
-				label: codec.name,
-			});
-		});
-		return items;
-	};
 
 	const watermarkSettings = {
 		url: watermark,
@@ -543,7 +533,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 										attributes={{
 											title: 'Sample Video',
 											overlay_title: !!overlay_title,
-											downloadlink: !!downloadlink,
 											embedcode: !!(
 												embeddable && embedcode
 											),
@@ -553,7 +542,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 										isInsidePlayerContainer={true}
 										isOverlay={true}
 										context={previewContext}
-									/>
+									>
+										{!!downloadlink && (
+											<BlockPreview
+												name="videopack/download"
+												attributes={
+													TITLE_DOWNLOAD_BLOCK_ATTRS
+												}
+												context={previewContext}
+												isInsidePlayerOverlay={true}
+												isInsidePlayerContainer={true}
+											/>
+										)}
+									</BlockPreview>
 								)}
 								{watermark && (
 									<BlockPreview
@@ -1014,17 +1015,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					</>
 				)}
 				<div className="videopack-setting-reduced-width">
-					<SelectControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Default codec',
-							'video-embed-thumbnail-generator'
-						)}
-						value={auto_codec}
-						onChange={changeHandlerFactory.auto_codec}
-						options={autoCodecOptions()}
-					/>
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize

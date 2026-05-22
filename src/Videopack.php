@@ -30,6 +30,7 @@ use Videopack\Admin\REST\Thumbnail_Controller;
 use Videopack\Admin\REST\Job_Controller;
 use Videopack\Admin\REST\Process_Controller;
 use Videopack\Admin\REST\Public_Controller;
+use Videopack\Admin\REST\Attachment_Controller;
 use Videopack\Admin\Screens;
 use Videopack\Admin\Ui;
 use Videopack\Frontend\Metadata;
@@ -156,6 +157,7 @@ class Videopack {
 		$this->loader->add_subscriber( new Job_Controller( $options, $format_registry ) );
 		$this->loader->add_subscriber( new Process_Controller( $options, $format_registry ) );
 		$this->loader->add_subscriber( new Public_Controller( $options, $format_registry ) );
+		$this->loader->add_subscriber( new Attachment_Controller( $options, $format_registry ) );
 
 		// Frontend Components.
 		$this->loader->add_subscriber( new Metadata( $options, $format_registry ) );
