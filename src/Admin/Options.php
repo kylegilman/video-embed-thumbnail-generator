@@ -166,6 +166,7 @@ class Options implements Hook_Subscriber {
 			// Automation Settings.
 			'auto_encode'                   => false,
 			'auto_encode_gif'               => false,
+			'keep_gif_source'               => false,
 			'auto_thumb'                    => false,
 			'auto_thumb_number'             => 1,
 			'auto_thumb_position'           => 50,
@@ -224,7 +225,6 @@ class Options implements Hook_Subscriber {
 			'endofvideooverlay'             => '',
 			'endofvideooverlaysame'         => false,
 			'auto_res'                      => 'automatic',
-			'auto_codec'                    => 'h264',
 			'pixel_ratio'                   => true,
 			'find_formats'                  => false,
 
@@ -693,7 +693,7 @@ class Options implements Hook_Subscriber {
 			$input['ffmpeg_exists']        = $network_options['ffmpeg_exists'] ?? $input['ffmpeg_exists'];
 
 			if ( ! empty( $network_options['superadmin_only_ffmpeg_settings'] ) ) {
-				$encoding_keys = array( 'hide_video_formats', 'error_email', 'ffmpeg_watermark', 'audio_bitrate', 'audio_channels', 'auto_encode', 'auto_encode_gif', 'auto_publish_post' );
+				$encoding_keys = array( 'hide_video_formats', 'error_email', 'ffmpeg_watermark', 'audio_bitrate', 'audio_channels', 'auto_encode', 'auto_encode_gif', 'keep_gif_source', 'auto_publish_post' );
 				foreach ( $encoding_keys as $key ) {
 					if ( isset( $this->options[ (string) $key ] ) ) {
 						$input[ (string) $key ] = $this->options[ (string) $key ];
@@ -731,6 +731,7 @@ class Options implements Hook_Subscriber {
 		if ( 'notinstalled' === apply_filters( 'videopack_ffmpeg_exists', $input['ffmpeg_exists'] ?? 'notinstalled', $input ) ) {
 			$input['auto_encode']     = false;
 			$input['auto_encode_gif'] = false;
+			$input['keep_gif_source'] = false;
 		}
 
 		if ( empty( $input['width'] ) ) {

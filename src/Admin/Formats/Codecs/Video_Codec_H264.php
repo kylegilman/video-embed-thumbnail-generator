@@ -24,6 +24,7 @@ class Video_Codec_H264 extends Video_Codec {
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
 			'codecs_att'     => 'avc1',
+			'efficiency'     => 20,
 			'vcodec'         => 'libx264',
 			'acodec'         => 'aac',
 			'rate_control'   => array(

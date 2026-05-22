@@ -218,4 +218,45 @@ class Video_Resolution {
 			$this->label = $height . 'p';
 		}
 	}
+
+	/**
+	 * Calculates the output dimensions for a given source dimension and target format height,
+	 * respecting a 16:9 bounding box (fuzzy resolution logic) and ensuring even numbers.
+	 *
+	 * @param int $source_w        The source video width.
+	 * @param int $source_h        The source video height.
+	 * @param int $max_h_for_format The target format height (e.g. 1080). Pass 0 or null for full resolution.
+	 * @return array {width: int, height: int} The calculated dimensions.
+	 */
+	public static function calculate_bounded_dimensions( int $source_w, int $source_h, $max_h_for_format ) {
+		$max_h_for_format = (int) $max_h_for_format;
+
+		if ( ! $max_h_for_format || $source_w <= 0 || $source_h <= 0 ) {
+			$width  = $source_w;
+			$height = $source_h;
+		} else {
+			// Maximum dimensions bounded by a 16:9 box for the target format height.
+			$max_w_for_format = (int) round( $max_h_for_format * ( 16 / 9 ) );
+			
+			$target_w_for_max_h = (int) round( ( $source_w / $source_h ) * $max_h_for_format );
+			
+			$width = (int) min( $source_w, $max_w_for_format, $target_w_for_max_h );
+			
+			$height = (int) round( ( $source_h / $source_w ) * $width );
+			
+			if ( $height > $max_h_for_format ) {
+				$height = $max_h_for_format;
+				$width  = (int) round( ( $source_w / $source_h ) * $height );
+			}
+		}
+
+		// Ensure even dimensions (required by almost all encoders)
+		$width  = (int) max( 2, $width - ( $width % 2 ) );
+		$height = (int) max( 2, $height - ( $height % 2 ) );
+
+		return array(
+			'width'  => $width,
+			'height' => $height,
+		);
+	}
 }
