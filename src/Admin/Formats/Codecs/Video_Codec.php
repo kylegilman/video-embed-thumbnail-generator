@@ -96,6 +96,16 @@ class Video_Codec {
 	protected $is_video;
 
 	/**
+	 * Codec efficiency priority score (higher is more efficient).
+	 *
+	 * Used to sort play sources so modern, highly efficient codecs (AV1, HEVC)
+	 * are prioritized by browsers over legacy fallback codecs (H.264).
+	 *
+	 * @var int
+	 */
+	protected $efficiency;
+
+	/**
 	 * Constructor for Video_Codec.
 	 *
 	 * @param array $properties Associative array of codec properties and values.
@@ -107,6 +117,7 @@ class Video_Codec {
 		$this->container               = $properties['container'] ?? 'mp4';
 		$this->mime_type               = $properties['mime'] ?? 'video/mp4';
 		$this->codecs_att              = $properties['codecs_att'] ?? 'avc1';
+		$this->efficiency              = $properties['efficiency'] ?? 0;
 		$this->vcodec                  = $properties['vcodec'] ?? 'libx264';
 		$this->acodec                  = $properties['acodec'] ?? 'aac';
 		$this->rate_control            = $properties['rate_control'] ?? array(
@@ -198,6 +209,15 @@ class Video_Codec {
 	 */
 	public function get_mime_type() {
 		return $this->mime_type;
+	}
+
+	/**
+	 * Get the codec efficiency priority score.
+	 *
+	 * @return int Codec efficiency score.
+	 */
+	public function get_efficiency(): int {
+		return (int) $this->efficiency;
 	}
 
 	/**

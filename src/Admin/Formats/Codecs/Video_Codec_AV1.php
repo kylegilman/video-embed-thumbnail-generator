@@ -24,6 +24,7 @@ class Video_Codec_AV1 extends Video_Codec {
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
 			'codecs_att'     => 'av01',
+			'efficiency'     => 50,
 			'vcodec'         => array( 'libsvtav1', 'libaom-av1' ),
 			'acodec'         => 'aac',
 			'rate_control'   => array(

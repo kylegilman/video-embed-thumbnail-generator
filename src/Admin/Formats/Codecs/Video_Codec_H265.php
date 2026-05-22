@@ -24,6 +24,7 @@ class Video_Codec_H265 extends Video_Codec {
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
 			'codecs_att'     => 'hvc1',
+			'efficiency'     => 40,
 			'vcodec'         => 'libx265',
 			'acodec'         => 'aac',
 			'rate_control'   => array(

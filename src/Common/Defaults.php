@@ -51,7 +51,6 @@ class Defaults {
 			'pauseothervideos'              => (bool) ( $options['pauseothervideos'] ?? true ),
 			'right_click'                   => (bool) ( $options['right_click'] ?? false ),
 			'auto_res'                      => (string) ( $options['auto_res'] ?? 'automatic' ),
-			'auto_codec'                    => (string) ( $options['auto_codec'] ?? 'h264' ),
 			'skin'                          => (string) ( ! empty( $options['skin'] ) ? $options['skin'] : 'vjs-theme-videopack' ),
 			'embed_method'                  => (string) ( ! empty( $options['embed_method'] ) ? $options['embed_method'] : 'Video.js' ),
 			'watermark'                     => (string) ( ! empty( $options['watermark'] ) ? $options['watermark'] : '' ),

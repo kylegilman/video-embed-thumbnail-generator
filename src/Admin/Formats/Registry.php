@@ -176,6 +176,23 @@ class Registry {
 	}
 
 	/**
+	 * Returns a specific video codec by its ID.
+	 *
+	 * @param string $codec_id The codec ID to retrieve.
+	 * @return \Videopack\Admin\Formats\Codecs\Video_Codec|null The codec object if found, null otherwise.
+	 */
+	public function get_codec( $codec_id ) {
+		$codecs = $this->get_video_codecs();
+		foreach ( $codecs as $codec ) {
+			if ( (string) $codec->get_id() === (string) $codec_id ) {
+				return $codec;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Returns translated video resolution name.
 	 *
 	 * @param string $name The resolution name.
@@ -259,6 +276,8 @@ class Registry {
 				$video_formats[ (string) $format->get_id() ] = $format;
 			}
 		}
+
+		$video_formats = (array) apply_filters( 'videopack_video_formats', $video_formats );
 
 		$formats_cache[ $cache_key ] = $video_formats;
 		return $video_formats;

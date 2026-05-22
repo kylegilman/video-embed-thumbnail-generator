@@ -24,6 +24,7 @@ class Video_Codec_VP9 extends Video_Codec {
 			'container'      => 'webm',
 			'mime'           => 'video/webm',
 			'codecs_att'     => 'vp09',
+			'efficiency'     => 30,
 			'vcodec'         => 'libvpx-vp9',
 			'acodec'         => 'libopus',
 			'rate_control'   => array(
