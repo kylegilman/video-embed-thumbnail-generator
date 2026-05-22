@@ -32,6 +32,7 @@ const EncodeProgress = ({
 		elapsed: 0,
 		remaining: null,
 	});
+	const [isExpanded, setIsExpanded] = useState(false);
 
 	const convertToTimecode = (time) => {
 		if (time === null || time === undefined || isNaN(time)) {
@@ -274,24 +275,46 @@ const EncodeProgress = ({
 	}
 
 	if (formatData?.status === 'failed' && formatData?.error_message) {
+		const fullError = formatData.error_message;
+		const firstLine = fullError.split('\n')[0] || fullError;
+		const shortError = firstLine.length > 120 ? firstLine.substring(0, 120) + '...' : firstLine;
+
 		return (
 			<div className="videopack-encode-error">
-				{sprintf(
-					/* translators: %s is an error message */
-					__('Error: %s.', 'video-embed-thumbnail-generator'),
-					formatData.error_message
-				)}{' '}
-				{hideCancel === false && formatData.job_id && (
+				<div className="videopack-encode-error-summary">
+					<span className="videopack-encode-error-label">
+						{__('Error:', 'video-embed-thumbnail-generator')}
+					</span>{' '}
+					<span className="videopack-encode-error-text-preview">{shortError}</span>
+				</div>
+				<div className="videopack-encode-error-toggle-container">
 					<Button
-						onClick={() => onCancelJob(formatData.job_id)}
+						onClick={() => setIsExpanded(!isExpanded)}
 						variant="link"
-						text={__(
-							'Delete Job',
-							'video-embed-thumbnail-generator'
-						)}
-						isDestructive
-						isBusy={deleteInProgress === formatData.job_id}
-					/>
+						className="videopack-encode-error-toggle"
+					>
+						{isExpanded
+							? __('Hide Details', 'video-embed-thumbnail-generator')
+							: __('Show Details', 'video-embed-thumbnail-generator')}
+					</Button>
+				</div>
+				{isExpanded && (
+					<pre className="videopack-encode-error-details">
+						{fullError}
+					</pre>
+				)}
+				{hideCancel === false && formatData.job_id && (
+					<div className="videopack-encode-error-actions">
+						<Button
+							onClick={() => onCancelJob(formatData.job_id)}
+							variant="secondary"
+							isDestructive
+							isBusy={deleteInProgress === formatData.job_id}
+							size="small"
+						>
+							{__('Delete Job', 'video-embed-thumbnail-generator')}
+						</Button>
+					</div>
 				)}
 			</div>
 		);

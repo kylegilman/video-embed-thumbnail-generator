@@ -354,7 +354,7 @@ class Encode_Attachment {
 			'cloud_provider'       => (string) $data_to_save['cloud_provider'],
 			'cloud_meta'           => json_encode( $data_to_save['cloud_meta'] ),
 		);
-		
+
 		if ( ! empty( $data_to_save['cloud_meta'] ) ) {
 		}
 
@@ -594,7 +594,7 @@ class Encode_Attachment {
 				$job_status = (string) $matching_encode_format->get_status();
 
 				if ( in_array( $job_status, array( Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
-					$progress = $matching_encode_format->get_progress();
+					$progress                 = $matching_encode_format->get_progress();
 					$format_array['progress'] = is_array( $progress ) ? $progress : (int) $progress;
 				}
 
@@ -669,7 +669,7 @@ class Encode_Attachment {
 			} else {
 				$format_array['status_l10n'] = (string) Encode_Format::get_status_label_static( (string) $format_array['status'] );
 			}
-			$format_array['video_duration']      = ( $video_metadata && $video_metadata->duration ) ? (int) round( (float) $video_metadata->duration * 1000000 ) : null;
+			$format_array['video_duration'] = ( $video_metadata && $video_metadata->duration ) ? (int) round( (float) $video_metadata->duration * 1000000 ) : null;
 
 			$video_formats_data[ $format_id ] = (array) $format_array;
 		}
@@ -797,6 +797,13 @@ class Encode_Attachment {
 	 * @return bool True if it's a replacement format, false otherwise.
 	 */
 	public function is_replacement_format( string $format_id ) {
+		if ( $this->is_attachment && is_numeric( $this->id ) ) {
+			$post_mime_type = (string) get_post_mime_type( (int) $this->id );
+			if ( 'image/gif' === $post_mime_type && ! empty( $this->options['keep_gif_source'] ) ) {
+				return false;
+			}
+		}
+
 		$all_video_formats = $this->format_registry->get_video_formats();
 		$format_obj        = $all_video_formats[ $format_id ] ?? null;
 		if ( ! $format_obj instanceof Video_Format ) {
@@ -866,12 +873,26 @@ class Encode_Attachment {
 
 		$process = new FFmpeg_Process( (array) $encode_array );
 		try {
-			$process->disableOutput();
 			$process->start();
 			$pid = (int) $process->getPID();
 			if ( $pid > 0 ) {
 				Debug_Logger::log( 'FFmpeg process started successfully', array( 'pid' => $pid ) );
 				$encode_format->set_encode_start( $pid, (int) time() );
+
+				// Wait a brief moment to see if the process terminates immediately on startup
+				usleep( 500000 ); // 0.5 seconds
+				if ( ! $process->isRunning() && $process->getExitCode() !== 0 ) {
+					$error_output = (string) $process->getErrorOutput();
+					$std_output   = (string) $process->getOutput();
+					$error_msg    = (string) __( 'FFmpeg failed immediately after starting.', 'video-embed-thumbnail-generator' );
+					if ( ! empty( $error_output ) ) {
+						$error_msg .= ' ' . $error_output;
+					} elseif ( ! empty( $std_output ) ) {
+						$error_msg .= ' ' . $std_output;
+					}
+					Debug_Logger::log( 'FFmpeg process failed immediately after starting', array( 'error' => $error_msg ) );
+					$encode_format->set_error( $error_msg );
+				}
 			} else {
 				$error_output = (string) $process->getErrorOutput();
 				$std_output   = (string) $process->getOutput();
@@ -943,38 +964,15 @@ class Encode_Attachment {
 			$resolution_config   = $video_format_config instanceof Video_Format ? $video_format_config->get_resolution() : null;
 
 			if ( $resolution_config instanceof \Videopack\Admin\Formats\Video_Resolution ) {
-				if ( 'fullres' === $resolution_config->get_id() || ! $resolution_config->get_height() ) {
-					$max_w_for_format = $source_w;
-					$max_h_for_format = $source_h;
-				} else {
-					$max_h_for_format = (int) $resolution_config->get_height();
-					$max_w_for_format = (int) round( $max_h_for_format * ( 16 / 9 ) );
-				}
-
-				if ( $source_h > 0 ) {
-					$target_w_for_max_h = (int) round( ( $source_w / $source_h ) * $max_h_for_format );
-				} else {
-					$target_w_for_max_h = $source_w;
-				}
-				$encode_movie_width = (int) min( $source_w, $max_w_for_format, $target_w_for_max_h );
-
-				if ( $source_w > 0 ) {
-					$encode_movie_height = (int) round( ( $source_h / $source_w ) * $encode_movie_width );
-				} else {
-					$encode_movie_height = (int) min( $source_h, $max_h_for_format );
-				}
-
-				if ( $encode_movie_height > $max_h_for_format ) {
-					$encode_movie_height = (int) $max_h_for_format;
-					if ( $source_h > 0 ) {
-						$encode_movie_width = (int) round( ( $source_w / $source_h ) * $encode_movie_height );
-					}
-				}
+				$max_h_for_format    = ( 'fullres' === $resolution_config->get_id() ) ? 0 : $resolution_config->get_height();
+				$dimensions          = \Videopack\Admin\Formats\Video_Resolution::calculate_bounded_dimensions( $source_w, $source_h, $max_h_for_format );
+				$encode_movie_width  = $dimensions['width'];
+				$encode_movie_height = $dimensions['height'];
 			}
+		} else {
+			$encode_movie_width  = (int) max( 2, $encode_movie_width - ( $encode_movie_width % 2 ) );
+			$encode_movie_height = (int) max( 2, $encode_movie_height - ( $encode_movie_height % 2 ) );
 		}
-
-		$encode_movie_width  = (int) max( 2, $encode_movie_width - ( $encode_movie_width % 2 ) );
-		$encode_movie_height = (int) max( 2, $encode_movie_height - ( $encode_movie_height % 2 ) );
 
 		$encode_format->set_encode_width( $encode_movie_width );
 		$encode_format->set_encode_height( $encode_movie_height );
@@ -1026,7 +1024,9 @@ class Encode_Attachment {
 
 		$builder->add_global_option( '-nostats' )
 				->add_global_option( '-hide_banner' )
-				->add_global_option( '-y' );
+				->add_global_option( '-y' )
+				->add_global_option( '-threads', (string) ( $this->options['threads'] ?? '0' ) )
+				->add_global_option( '-progress', $logfile );
 
 		// Input.
 		$input_source = (string) $this->encode_input;
@@ -1052,16 +1052,10 @@ class Encode_Attachment {
 			$output_options[] = '2';
 		}
 
-		$output_options[] = '-threads';
-		$output_options[] = (string) ( $this->options['threads'] ?? '0' );
-
 		if ( ! empty( $watermark_flags['input'] ) && ! empty( $watermark_flags['filter'] ) ) {
 			$output_options[] = '-filter_complex';
 			$output_options[] = (string) $watermark_flags['filter'];
 		}
-
-		$output_options[] = '-progress';
-		$output_options[] = $logfile;
 
 		$builder->add_output( $encode_format->get_path(), $output_options );
 
@@ -1081,6 +1075,8 @@ class Encode_Attachment {
 		);
 		$encode_array = array_values( (array) $encode_array );
 
+		$encode_format->set_logfile( $logfile );
+
 		$dimensions_for_filter = array(
 			'width'  => (int) $encode_format->get_encode_width(),
 			'height' => (int) $encode_format->get_encode_height(),
@@ -1089,7 +1085,6 @@ class Encode_Attachment {
 		$encode_array = (array) apply_filters( 'videopack_generate_encode_array', $encode_array, (string) $this->encode_input, (string) $encode_format->get_path(), $video_metadata, $format_id, $dimensions_for_filter['width'], $dimensions_for_filter['height'], $encode_format, $this );
 
 		$encode_format->set_encode_array( (array) $encode_array );
-		$encode_format->set_logfile( $logfile );
 
 		return (array) $encode_array;
 	}
@@ -1101,12 +1096,18 @@ class Encode_Attachment {
 	 * @return string
 	 */
 	private function get_command_string( $encode_array ) {
-		return implode( ' ', array_map( function( $arg ) {
-			if ( strpos( $arg, ' ' ) !== false || strpos( $arg, '"' ) !== false ) {
-				return '"' . str_replace( '"', '\\"', $arg ) . '"';
-			}
-			return $arg;
-		}, $encode_array ) );
+		return implode(
+			' ',
+			array_map(
+				function ( $arg ) {
+					if ( strpos( $arg, ' ' ) !== false || strpos( $arg, '"' ) !== false ) {
+							return '"' . str_replace( '"', '\\"', $arg ) . '"';
+					}
+					return $arg;
+				},
+				$encode_array
+			)
+		);
 	}
 
 	/**
@@ -1314,6 +1315,11 @@ class Encode_Attachment {
 	 * @return string Status string: 'ok_to_queue', 'already_exists', 'lowres', 'vcodec_unavailable', 'error_invalid_format_key'.
 	 */
 	public function check_if_can_queue( string $format_id ) {
+		$status = apply_filters( 'videopack_check_if_can_queue_attachment', 'ok_to_queue', $format_id, $this->id, $this->options );
+		if ( 'ok_to_queue' !== $status ) {
+			return $status;
+		}
+
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 		if ( ! $video_format_config instanceof Video_Format ) {
 			return apply_filters( 'videopack_check_if_can_queue', 'error_invalid_format_key', $format_id, $this );
@@ -1386,7 +1392,19 @@ class Encode_Attachment {
 		if ( ! empty( $existing_job ) ) {
 			$existing_job = (object) $existing_job;
 			if ( in_array( (string) $existing_job->status, array( 'deleted', 'canceled', 'failed' ), true ) ) {
-				$job_id      = (int) $existing_job->id;
+				$job_id = (int) $existing_job->id;
+
+				$all_video_formats   = (array) $this->format_registry->get_video_formats();
+				$video_format_config = $all_video_formats[ $format_id ] ?? null;
+				if ( ! $video_format_config instanceof Video_Format ) {
+					$output_path = '';
+					$output_url  = '';
+				} else {
+					$encode_info_obj = new Encode_Info( $this->id, (string) $this->url, $video_format_config, $this->options, $this->format_registry );
+					$output_path     = (string) $encode_info_obj->path;
+					$output_url      = (string) $encode_info_obj->url;
+				}
+
 				$update_data = array(
 					'status'               => apply_filters( 'videopack_queue_format_status', 'queued', $format_id, $this ),
 					'user_id'              => (int) $user_id,
@@ -1397,6 +1415,8 @@ class Encode_Attachment {
 					'failed_at'            => null,
 					'error_message'        => null,
 					'output_attachment_id' => null,
+					'output_path'          => $output_path,
+					'output_url'           => $output_url,
 					'retry_count'          => (int) ( ( $existing_job->retry_count ?? 0 ) + 1 ),
 					'created_at'           => (string) current_time( 'mysql', true ),
 					'updated_at'           => (string) current_time( 'mysql', true ),
@@ -1404,7 +1424,7 @@ class Encode_Attachment {
 				);
 
 				if ( ! empty( $meta ) ) {
-					$existing_meta           = ! empty( $existing_job->cloud_meta ) ? json_decode( $existing_job->cloud_meta, true ) : array();
+					$existing_meta             = ! empty( $existing_job->cloud_meta ) ? json_decode( $existing_job->cloud_meta, true ) : array();
 					$update_data['cloud_meta'] = wp_json_encode( array_merge( (array) $existing_meta, $meta ) );
 				}
 
@@ -1910,11 +1930,11 @@ class Encode_Attachment {
 	 * @return bool True if deletion succeeded or if no file existed.
 	 */
 	public function delete_format_by_id( string $format_id ) {
-		$encode_formats = $this->get_formats();
+		$encode_format = $this->get_encode_format( $format_id );
 
 		// If we have a formal job record, use the standard delete method.
-		if ( isset( $encode_formats[ $format_id ] ) ) {
-			return $this->delete_format( (int) $encode_formats[ $format_id ]->get_job_id() );
+		if ( $encode_format instanceof Encode_Format ) {
+			return $this->delete_format( (int) $encode_format->get_job_id() );
 		}
 
 		// Otherwise, manually resolve the path and delete it if permissions allow.
@@ -2282,6 +2302,14 @@ class Encode_Attachment {
 		if ( $this->is_replacement_format( $format_id ) ) {
 			Debug_Logger::log( 'Handling replacement format' );
 			return (bool) $this->replace_original_attachment( $encode_format );
+		}
+
+		if ( (int) $encode_format->get_id() > 0 ) {
+			$post_type = get_post_type( $encode_format->get_id() );
+			if ( 'attachment' !== $post_type ) {
+				Debug_Logger::log( 'Existing attachment ID is invalid or deleted, clearing it', array( 'old_id' => $encode_format->get_id() ) );
+				$encode_format->set_id( null );
+			}
 		}
 
 		if ( ! (int) $encode_format->get_id() ) {

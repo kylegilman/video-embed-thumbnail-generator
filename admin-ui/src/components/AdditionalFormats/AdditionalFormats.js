@@ -10,6 +10,7 @@ import {
 	PanelBody,
 	PanelRow,
 	Spinner,
+	Notice,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
 import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
@@ -204,6 +205,15 @@ const AdditionalFormats = ({
 					return;
 				}
 				console.error('Error fetching video formats:', error);
+				const errorMessage = sanitizeError(error);
+				/* translators: %s is the error details */
+				setEncodeMessage(
+					sprintf(
+						__('Error: %s', 'video-embed-thumbnail-generator'),
+						errorMessage
+					)
+				);
+				setVideoFormats({});
 			} finally {
 				setIsLoading(false);
 			}
@@ -785,6 +795,22 @@ const AdditionalFormats = ({
 				opened={isOpen}
 				onToggle={() => setIsOpen(!isOpen)}
 			>
+				{encodeMessage && (
+					<Notice
+						status={
+							(typeof encodeMessage === 'string' &&
+								(encodeMessage.includes(__('Error', 'video-embed-thumbnail-generator')) ||
+									encodeMessage.includes(':')))
+								? 'error'
+								: 'success'
+						}
+						isDismissible={true}
+						onRemove={() => setEncodeMessage(null)}
+						style={{ marginBottom: '15px' }}
+					>
+						{encodeMessage}
+					</Notice>
+				)}
 				{!videoFormats ? (
 					<div className="videopack-formats-loading">
 						<Spinner />
@@ -898,26 +924,32 @@ const AdditionalFormats = ({
 					</div>
 				)}
 				{!!effectiveFfmpegExists && videoFormats && canUploadFiles && (
-					<PanelRow className="videopack-encode-button-row">
-						<Button
-							variant="secondary"
-							onClick={handleEnqueue}
-							title={encodeButtonTitle()}
-							text={__(
-								'Encode',
-								'video-embed-thumbnail-generator'
-							)}
-							disabled={
-								isEncodeButtonDisabled || isProcessing
+					<>
+						{applyFilters(
+							'videopack.AdditionalFormats.extraContent',
+							null,
+							{
+								videoFormats,
+								options,
+								parentId,
 							}
-						/>
-						{(isLoading || isProcessing) && <Spinner />}
-						{encodeMessage && (
-							<span className="videopack-encode-message">
-								{encodeMessage}
-							</span>
 						)}
-					</PanelRow>
+						<PanelRow className="videopack-encode-button-row">
+							<Button
+								variant="secondary"
+								onClick={handleEnqueue}
+								title={encodeButtonTitle()}
+								text={__(
+									'Encode',
+									'video-embed-thumbnail-generator'
+								)}
+								disabled={
+									isEncodeButtonDisabled || isProcessing
+								}
+							/>
+							{(isLoading || isProcessing) && <Spinner />}
+						</PanelRow>
+					</>
 				)}
 			</PanelBody>
 		</>

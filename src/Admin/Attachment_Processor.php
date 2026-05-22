@@ -117,8 +117,17 @@ class Attachment_Processor implements Hook_Subscriber {
 
 		// Encoding.
 		if ( ! empty( $this->options['auto_encode'] ) ) {
-			$is_animated = ( 'image/gif' === $post->post_mime_type ) ? $this->is_animated_gif( (string) get_attached_file( (int) $post_id ) ) : false;
-			if ( ( ! $is_animated || ! empty( $this->options['auto_encode_gif'] ) ) && $this->is_video( $post ) ) {
+			$is_gif = ( 'image/gif' === $post->post_mime_type );
+			$is_animated = $is_gif ? $this->is_animated_gif( (string) get_attached_file( (int) $post_id ) ) : false;
+			$should_encode = false;
+
+			if ( ! $is_gif && $this->is_video( $post ) ) {
+				$should_encode = true;
+			} elseif ( $is_gif && $is_animated && ! empty( $this->options['auto_encode_gif'] ) ) {
+				$should_encode = apply_filters( 'videopack_should_auto_encode_gif', true, $post_id, $this->options );
+			}
+
+			if ( $should_encode ) {
 				$encode_queue      = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 				$movieurl          = (string) wp_get_attachment_url( (int) $post_id );
 				$encode_attachment = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, (int) $post_id, $movieurl );
@@ -155,12 +164,8 @@ class Attachment_Processor implements Hook_Subscriber {
 	 */
 	public function generate_thumbnails_with_ffmpeg( $post_id ) {
 		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
-		$cloud_ready   = (bool) apply_filters( 'videopack_transcoding_service_ready', false );
 
 		if ( ! apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
-			if ( $cloud_ready ) {
-				$this->enqueue_cloud_thumbnail( (int) $post_id );
-			}
 			return;
 		}
 
@@ -281,9 +286,8 @@ class Attachment_Processor implements Hook_Subscriber {
 		$count  = 0;
 
 		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
-		$cloud_ready   = (bool) apply_filters( 'videopack_transcoding_service_ready', false );
 
-		if ( ! apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) && ! $cloud_ready ) {
+		if ( ! apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
 			return array( 'total' => 0 );
 		}
 
@@ -433,32 +437,5 @@ class Attachment_Processor implements Hook_Subscriber {
 		}
 		fclose( $fh );
 		return $total_count > 1;
-	}
-
-	/**
-	 * Enqueues a cloud-based thumbnail generation job.
-	 *
-	 * @param int $post_id The attachment ID.
-	 */
-	protected function enqueue_cloud_thumbnail( int $post_id ) {
-		$url = (string) wp_get_attachment_url( $post_id );
-		if ( ! $url ) {
-			return;
-		}
-
-		$total_thumbs = intval( $this->options['auto_thumb_number'] ?? 1 );
-		$controller   = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
-
-		$controller->enqueue_encodes(
-			array(
-				'id'      => (int) $post_id,
-				'url'     => $url,
-				'formats' => array(
-					'thumbnail' => array(
-						'total_thumbnails' => $total_thumbs,
-					),
-				),
-			)
-		);
 	}
 }

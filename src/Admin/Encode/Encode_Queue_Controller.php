@@ -1367,6 +1367,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			'output_url'      => $job->get_url(),
 			'output_id'       => $job->get_id(), // Attachment ID of the output.
 			'error'           => $job->get_error(),
+			'error_message'   => $job->get_error(),
 			'created_at'      => $job->get_created_at(),
 			'started'         => $job->get_started(),
 			'video_title'     => $video_title,
