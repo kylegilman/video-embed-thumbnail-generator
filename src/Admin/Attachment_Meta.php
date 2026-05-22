@@ -750,6 +750,20 @@ class Attachment_Meta implements Hook_Subscriber {
 				},
 			)
 		);
+
+		register_post_meta(
+			'attachment',
+			'_videopack_browser_thumb_failed',
+			array(
+				'type'              => 'integer',
+				'single'            => true,
+				'show_in_rest'      => true,
+				'auth_callback'     => function () {
+					return current_user_can( 'edit_posts' );
+				},
+				'sanitize_callback' => 'absint',
+			)
+		);
 	}
 
 	/**

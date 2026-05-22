@@ -295,7 +295,7 @@ class Encode_Format {
 
 		$error_message = $format->set_or_null( $data, 'error_message' );
 		if ( ! empty( $error_message ) ) {
-			$format->set_error( $error_message );
+			$format->error = $error_message;
 		}
 
 		$completed_at = $format->set_or_null( $data, 'completed_at' );
@@ -328,8 +328,8 @@ class Encode_Format {
 			} else {
 				error_log( '[Videopack] Encode_Format json_decode failed for cloud_meta' );
 			}
-		} else {
-			error_log( '[Videopack] Encode_Format cloud_meta is empty in DB for job ' . ( $data['id'] ?? 'unknown' ) );
+		} elseif ( ! empty( $data['cloud_provider'] ) ) {
+			error_log( '[Videopack] Encode_Format cloud_meta is empty in DB for cloud job ' . ( $data['id'] ?? 'unknown' ) );
 		}
 
 		return $format;
@@ -926,7 +926,15 @@ class Encode_Format {
 			$this->progress = $progress_obj->to_array();
 
 			if ( isset( $this->progress['progress'] ) && 'end' === $this->progress['progress'] ) {
-				$this->set_needs_insert();
+				// Prevent false-positive successes where FFmpeg terminates on startup with an error.
+				// A successful encode must reach at least 95% progress, or have no duration metadata.
+				$percent        = isset( $this->progress['percent'] ) ? (int) $this->progress['percent'] : 0;
+				$video_duration = (int) $this->video_duration;
+				if ( $percent >= 95 || $video_duration <= 0 ) {
+					$this->set_needs_insert();
+				} else {
+					$this->set_error( __( 'Encoding process terminated prematurely.', 'video-embed-thumbnail-generator' ) );
+				}
 			} else {
 				$mtime = @filemtime( $this->logfile );
 				$fsize = @filesize( $this->logfile );

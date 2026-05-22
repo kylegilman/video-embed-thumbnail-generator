@@ -79,6 +79,15 @@ class FFmpeg_Command {
 	}
 
 	/**
+	 * Get the global options array.
+	 *
+	 * @return array
+	 */
+	public function get_global_options() {
+		return $this->global_options;
+	}
+
+	/**
 	 * Parses an options array, expanding associative keys into sequential items,
 	 * while safely dropping pairs that have empty values to prevent argument shifting.
 	 *
@@ -149,14 +158,14 @@ class FFmpeg_Command {
 
 		// Add inputs.
 		foreach ( $this->inputs as $input ) {
-			$command = array_merge( $command, $input['options'] );
+			$command   = array_merge( $command, $input['options'] );
 			$command[] = '-i';
 			$command[] = $input['path'];
 		}
 
 		// Add outputs.
 		foreach ( $this->outputs as $output ) {
-			$command = array_merge( $command, $output['options'] );
+			$command   = array_merge( $command, $output['options'] );
 			$command[] = $output['path'];
 		}
 
@@ -184,17 +193,17 @@ class FFmpeg_Command {
 	 * @return self
 	 */
 	public static function from_array( array $array ) {
-		$array = array_values( (array) $array );
+		$array   = array_values( (array) $array );
 		$builder = new self( $array[0] ?? null );
-		
+
 		$i_idx = array_search( '-i', $array );
 		if ( false !== $i_idx ) {
 			// Global options are between executable and first -i.
 			for ( $j = 1; $j < $i_idx; $j++ ) {
 				$builder->global_options[] = $array[ $j ];
 			}
-			
-			// For simplicity, we'll just treat everything after the first -i 
+
+			// For simplicity, we'll just treat everything after the first -i
 			// as a single output block for now if we don't want to parse complex commands.
 			// But for Videopack, it's usually [global] -i [input] [output_options] [output].
 			// We'll improve this if needed.

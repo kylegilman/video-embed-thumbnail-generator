@@ -611,6 +611,7 @@ class FFmpeg_Thumbnails {
 					$attachment_meta_instance->save( $current_meta );
 				}
 				delete_post_meta( (int) $attachment_id, '_videopack_needs_browser_thumb' );
+				delete_post_meta( (int) $attachment_id, '_videopack_browser_thumb_failed' );
 			}
 			update_post_meta( (int) $thumb_id, '_videopack-video-id', (int) $attachment_id );
 		}

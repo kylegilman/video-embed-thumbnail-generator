@@ -12,6 +12,7 @@ import {
 	useMemo,
 } from '@wordpress/element';
 import {
+	Panel,
 	PanelBody,
 	Button,
 	Spinner,
@@ -20,6 +21,7 @@ import {
 	__experimentalConfirmDialog as ConfirmDialog,
 	__experimentalDivider as Divider,
 } from '@wordpress/components';
+import { videopack } from '../../assets/icon';
 import { DataViews, filterSortAndPaginate } from '@wordpress/dataviews';
 import { decodeEntities } from '@wordpress/html-entities';
 import EncodeFormatStatus from '../../components/AdditionalFormats/EncodeFormatStatus';
@@ -32,8 +34,9 @@ import {
 	removeJob,
 	resetJob,
 } from '../../api/jobs';
-import { getBatchProgress } from '../../api/media';
+import { getBatchProgress, startBatchProcess } from '../../api/media';
 import { stripHtml } from '../../utils/helpers';
+import { applyFilters } from '@wordpress/hooks';
 
 const defaultLayouts = {
 	table: {
@@ -61,6 +64,122 @@ const EncodeQueue = () => {
 	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobIds: [] }
 	const [actingJobIds, setActingJobIds] = useState([]);
 	const [batchProgress, setBatchProgress] = useState({});
+	const [isRunningBatch, setIsRunningBatch] = useState({});
+
+	const defaultBatchProcesses = useMemo(() => {
+		const ffmpegExists =
+			window.videopack_config?.ffmpeg_exists === true ||
+			window.videopack_config?.ffmpeg_exists === 'true' ||
+			window.videopack_config?.ffmpeg_exists === 1 ||
+			window.videopack_config?.ffmpeg_exists === '1';
+		const isPro = !!window.videopack_config?.is_pro;
+
+		const processes = [
+			{
+				id: 'featured',
+				title: __('Set Featured Images', 'video-embed-thumbnail-generator'),
+				description: __('Scans all media library videos and automatically sets their thumbnail as the WordPress featured image on their parent posts.', 'video-embed-thumbnail-generator'),
+			},
+		];
+
+		// Conditionally add thumbs batch process
+		if (ffmpegExists || isPro) {
+			let thumbsTitle = __('Generate FFmpeg Thumbnails', 'video-embed-thumbnail-generator');
+			let thumbsDescription = __('Uses server-side FFmpeg to generate missing thumbnails in the background for all media library videos.', 'video-embed-thumbnail-generator');
+
+			if (isPro) {
+				thumbsTitle = __('Generate Thumbnails', 'video-embed-thumbnail-generator');
+				if (ffmpegExists) {
+					thumbsDescription = __('Generates missing thumbnails in the background for all media library videos using server-side FFmpeg.', 'video-embed-thumbnail-generator');
+				} else {
+					thumbsDescription = __('Generates missing thumbnails directly in your browser using HTML5 video and canvas decoding (falls back to FFmpeg.wasm).', 'video-embed-thumbnail-generator');
+				}
+			}
+
+			processes.push({
+				id: 'thumbs',
+				title: thumbsTitle,
+				description: thumbsDescription,
+			});
+		}
+
+		processes.push(
+			{
+				id: 'encoding',
+				title: __('Bulk Video Encoding', 'video-embed-thumbnail-generator'),
+				description: __('Enqueues all unencoded local videos for background encoding to your configured formats.', 'video-embed-thumbnail-generator'),
+			},
+			{
+				id: 'parents',
+				title: __('Set Thumbnail Parents', 'video-embed-thumbnail-generator'),
+				description: (window.videopack_config?.options?.thumb_parent || 'post') === 'video'
+					? __("Switches all existing thumbnail attachments to be children of the video itself", 'video-embed-thumbnail-generator')
+					: __("Switches all existing thumbnail attachments to be children of the video's parent post", 'video-embed-thumbnail-generator'),
+			}
+		);
+
+		return processes;
+	}, []);
+
+	const batchProcesses = useMemo(
+		() => {
+			const filtered = [
+				...applyFilters(
+					'videopack.queue.batch_processes',
+					defaultBatchProcesses
+				),
+			];
+			// Ensure the 'parents' batch process is always the very last one.
+			const parentsIdx = filtered.findIndex((p) => p.id === 'parents');
+			if (parentsIdx > -1) {
+				const [parentsItem] = filtered.splice(parentsIdx, 1);
+				filtered.push(parentsItem);
+			}
+			return filtered;
+		},
+		[defaultBatchProcesses]
+	);
+
+	const handleRunBatch = async (batchId) => {
+		setIsRunningBatch((prev) => ({ ...prev, [batchId]: true }));
+		try {
+			const additionalData = {};
+			if (batchId === 'parents') {
+				additionalData.target_parent = window.videopack_config?.options?.thumb_parent || 'post';
+			}
+			const response = await startBatchProcess(batchId, additionalData);
+			if (batchId === 'thumbs' && response.browser) {
+				window.dispatchEvent(new CustomEvent('videopack_trigger_browser_thumbnail_generation'));
+				setMessage({
+					type: 'success',
+					text: __('In-browser thumbnail generation has been initiated. Please keep this browser window open until the process completes.', 'video-embed-thumbnail-generator'),
+				});
+			} else {
+				setMessage({
+					type: 'success',
+					text:
+						response.message ||
+						__('Batch process started successfully.', 'video-embed-thumbnail-generator'),
+				});
+			}
+			fetchQueue();
+		} catch (error) {
+			console.error(`Error starting batch ${batchId}:`, error);
+			setMessage({
+				type: 'error',
+				text: sprintf(
+					/* translators: %s is an error message */
+					__(
+						'Failed to start batch process: %s',
+						'video-embed-thumbnail-generator'
+					),
+					error.message || error.code
+				),
+			});
+		} finally {
+			setIsRunningBatch((prev) => ({ ...prev, [batchId]: false }));
+		}
+	};
 
 	const isMultisite =
 		window.videopack?.isMultisite ||
@@ -140,7 +259,10 @@ const EncodeQueue = () => {
 		try {
 			const response = await toggleQueue(action);
 			setIsQueuePaused(response.queue_state === 'pause');
-			setMessage({ type: 'success', text: response.message });
+			const defaultMessage = action === 'play'
+				? __('Encoding queue resumed.', 'video-embed-thumbnail-generator')
+				: __('Encoding queue paused.', 'video-embed-thumbnail-generator');
+			setMessage({ type: 'success', text: response.message || defaultMessage });
 			fetchQueue(); // Refresh queue data after state change
 		} catch (error) {
 			console.error('Error toggling queue:', error);
@@ -178,6 +300,8 @@ const EncodeQueue = () => {
 			handleRemoveJobs(itemToActOn.jobIds);
 		} else if (itemToActOn.action === 'delete_permanently') {
 			handleDeleteJobs(itemToActOn.jobIds);
+		} else if (itemToActOn.action === 'run_batch') {
+			handleRunBatch(itemToActOn.batchId);
 		}
 		setIsConfirmOpen(false);
 		setItemToActOn(null);
@@ -187,7 +311,10 @@ const EncodeQueue = () => {
 		setIsClearing(true);
 		try {
 			const response = await clearQueue(type);
-			setMessage({ type: 'success', text: response.message });
+			const defaultMessage = type === 'all'
+				? __('All jobs cleared.', 'video-embed-thumbnail-generator')
+				: __('Completed jobs cleared.', 'video-embed-thumbnail-generator');
+			setMessage({ type: 'success', text: response.message || defaultMessage });
 			fetchQueue(); // Refresh queue data
 		} catch (error) {
 			console.error('Error clearing queue:', error);
@@ -676,118 +803,14 @@ const EncodeQueue = () => {
 
 	return (
 		<div className="wrap videopack-encode-queue">
-			<h1>{__('Videopack Queue', 'video-embed-thumbnail-generator')}</h1>
-
-			{Object.entries(batchProgress).map(([type, progress]) => {
-				if (
-					!progress ||
-					(progress.pending === 0 && progress['in-progress'] === 0)
-				) {
-					return null;
-				}
-
-				const labels = {
-					featured: __(
-						'Setting Featured Images',
-						'video-embed-thumbnail-generator'
-					),
-					parents: __(
-						'Updating Parents',
-						'video-embed-thumbnail-generator'
-					),
-					thumbs: __(
-						'Generating Thumbnails (FFmpeg)',
-						'video-embed-thumbnail-generator'
-					),
-					encoding: __(
-						'Bulk Encoding',
-						'video-embed-thumbnail-generator'
-					),
-					browser: __(
-						'Pending In-Browser Thumbnails',
-						'video-embed-thumbnail-generator'
-					),
-				};
-
-				const label = labels[type] || type;
-
-				return (
-					<PanelBody
-						key={type}
-						title={label}
-						initialOpen={true}
-						className="videopack-batch-progress-panel"
-					>
-						<div className="videopack-batch-progress-content">
-							<div className="videopack-batch-stats">
-								<span>
-									{sprintf(
-										/* translators: %d: number of pending items */
-										__(
-											'Pending: %d',
-											'video-embed-thumbnail-generator'
-										),
-										progress.pending
-									)}
-								</span>
-								<span>
-									{sprintf(
-										/* translators: %d: number of in-progress items */
-										__(
-											'In-Progress: %d',
-											'video-embed-thumbnail-generator'
-										),
-										progress['in-progress']
-									)}
-								</span>
-								<span>
-									{sprintf(
-										/* translators: %d: number of completed items */
-										__(
-											'Completed: %d',
-											'video-embed-thumbnail-generator'
-										),
-										progress.complete
-									)}
-								</span>
-								{progress.failed > 0 && (
-									<span className="videopack-failed-count">
-										{sprintf(
-											/* translators: %d: number of failed items */
-											__(
-												'Failed: %d',
-												'video-embed-thumbnail-generator'
-											),
-											progress.failed
-										)}
-									</span>
-								)}
-							</div>
-							{progress.total > 0 && (
-								<div className="videopack-meter">
-									<div
-										className="videopack-meter-bar"
-										style={{
-											width: `${Math.round(
-												((progress.complete +
-													progress.failed) /
-													progress.total) *
-													100
-											)}%`,
-										}}
-									></div>
-								</div>
-							)}
-						</div>
-					</PanelBody>
-				);
-			})}
-
-			{message && (
-				<Notice status={message.type} onRemove={() => setMessage(null)}>
-					{message.text}
-				</Notice>
-			)}
+			<h1>
+				<Icon
+					className="videopack-settings-icon"
+					icon={videopack}
+					size={40}
+				/>
+				{__('Videopack Queue', 'video-embed-thumbnail-generator')}
+			</h1>
 
 			{isConfirmOpen && (
 				<ConfirmDialog
@@ -796,6 +819,12 @@ const EncodeQueue = () => {
 						if (itemToActOn?.action === 'delete_permanently') {
 							return __(
 								'Delete Attachment?',
+								'video-embed-thumbnail-generator'
+							);
+						}
+						if (itemToActOn?.action === 'run_batch') {
+							return __(
+								'Start Batch Process?',
 								'video-embed-thumbnail-generator'
 							);
 						}
@@ -810,6 +839,9 @@ const EncodeQueue = () => {
 								'Delete',
 								'video-embed-thumbnail-generator'
 							);
+						}
+						if (itemToActOn?.action === 'run_batch') {
+							return __('Start', 'video-embed-thumbnail-generator');
 						}
 						return __('Confirm', 'video-embed-thumbnail-generator');
 					})()}
@@ -873,6 +905,16 @@ const EncodeQueue = () => {
 								itemToActOn.type
 							);
 						}
+						if (itemToActOn?.action === 'run_batch') {
+							return sprintf(
+								/* translators: %s: name of batch process */
+								__(
+									'Are you sure you want to start the "%s" batch process? This will unschedule any existing background tasks for this type.',
+									'video-embed-thumbnail-generator'
+								),
+								itemToActOn.batchTitle
+							);
+						}
 						return __(
 							'Are you sure you want to perform this action?',
 							'video-embed-thumbnail-generator'
@@ -881,67 +923,219 @@ const EncodeQueue = () => {
 				</ConfirmDialog>
 			)}
 
-			<PanelBody>
-				<div className="videopack-queue-controls">
-					<Button
-						variant="primary"
-						onClick={handleToggleQueue}
-						isBusy={isTogglingQueue}
-					>
-						<Icon
-							icon={
-								isQueuePaused
-									? 'controls-play'
-									: 'controls-pause'
-							}
-						/>
-						{isQueuePaused
-							? __(
-									'Play Queue',
-									'video-embed-thumbnail-generator'
-								)
-							: __(
-									'Pause Queue',
-									'video-embed-thumbnail-generator'
-								)}
-					</Button>
-					<Button
-						variant="secondary"
-						onClick={() =>
-							openConfirmDialog('clear', { type: 'completed' })
-						}
-						isBusy={isClearing}
-					>
-						{__(
-							'Clear Completed',
+			<Panel>
+				{Object.entries(batchProgress).map(([type, progress]) => {
+					if (
+						!progress ||
+						(progress.pending === 0 && progress['in-progress'] === 0)
+					) {
+						return null;
+					}
+
+					const defaultLabels = {
+						featured: __(
+							'Setting Featured Images',
 							'video-embed-thumbnail-generator'
-						)}
-					</Button>
-					<Button
-						variant="tertiary"
-						isDestructive
-						onClick={() =>
-							openConfirmDialog('clear', { type: 'all' })
-						}
-						isBusy={isClearing}
-					>
-						{__('Clear All', 'video-embed-thumbnail-generator')}
-					</Button>
-					{isLoading && <Spinner />}
-				</div>
-				<Divider />
-				<div className="videopack-dataviews-container">
-					<DataViews
-						data={processedData}
-						fields={fields}
-						view={view}
-						onChangeView={setView}
-						defaultLayouts={defaultLayouts}
-						actions={actions}
-						paginationInfo={paginationInfo}
-					/>
-				</div>
-			</PanelBody>
+						),
+						parents: __(
+							'Updating Parents',
+							'video-embed-thumbnail-generator'
+						),
+						thumbs: __(
+							'Generating Thumbnails (FFmpeg)',
+							'video-embed-thumbnail-generator'
+						),
+						encoding: __(
+							'Bulk Encoding',
+							'video-embed-thumbnail-generator'
+						),
+						browser: __(
+							'Pending In-Browser Thumbnails',
+							'video-embed-thumbnail-generator'
+						),
+					};
+
+					const filteredLabels = applyFilters(
+						'videopack.queue.batch_labels',
+						defaultLabels
+					);
+
+					const label = filteredLabels[type] || type;
+
+					return (
+						<PanelBody
+							key={type}
+							title={label}
+							initialOpen={true}
+							className="videopack-batch-progress-panel"
+						>
+							<div className="videopack-batch-progress-content">
+								<div className="videopack-batch-stats">
+									<span>
+										{sprintf(
+											/* translators: %d: number of pending items */
+											__(
+												'Pending: %d',
+												'video-embed-thumbnail-generator'
+											),
+											progress.pending
+										)}
+									</span>
+									<span>
+										{sprintf(
+											/* translators: %d: number of in-progress items */
+											__(
+												'In-Progress: %d',
+												'video-embed-thumbnail-generator'
+											),
+											progress['in-progress']
+										)}
+									</span>
+									<span>
+										{sprintf(
+											/* translators: %d: number of completed items */
+											__(
+												'Completed: %d',
+												'video-embed-thumbnail-generator'
+											),
+											progress.complete
+										)}
+									</span>
+									{progress.failed > 0 && (
+										<span className="videopack-failed-count">
+											{sprintf(
+												/* translators: %d: number of failed items */
+												__(
+													'Failed: %d',
+													'video-embed-thumbnail-generator'
+												),
+												progress.failed
+											)}
+										</span>
+									)}
+								</div>
+								{progress.total > 0 && (
+									<div className="videopack-meter">
+										<div
+											className="videopack-meter-bar"
+											style={{
+												width: `${Math.round(
+													((progress.complete +
+														progress.failed) /
+														progress.total) *
+														100
+												)}%`,
+											}}
+										></div>
+									</div>
+								)}
+							</div>
+						</PanelBody>
+					);
+				})}
+
+				{message && (
+					<Notice status={message.type} onRemove={() => setMessage(null)}>
+						{message.text}
+					</Notice>
+				)}
+
+				<PanelBody>
+					<div className="videopack-queue-controls">
+						<Button
+							variant="primary"
+							onClick={handleToggleQueue}
+							isBusy={isTogglingQueue}
+						>
+							<Icon
+								icon={
+									isQueuePaused
+										? 'controls-play'
+										: 'controls-pause'
+								}
+							/>
+							{isQueuePaused
+								? __(
+										'Play Queue',
+										'video-embed-thumbnail-generator'
+									)
+								: __(
+										'Pause Queue',
+										'video-embed-thumbnail-generator'
+									)}
+						</Button>
+						<Button
+							variant="secondary"
+							onClick={() =>
+								openConfirmDialog('clear', { type: 'completed' })
+							}
+							isBusy={isClearing}
+						>
+							{__(
+								'Clear Completed',
+								'video-embed-thumbnail-generator'
+							)}
+						</Button>
+						<Button
+							variant="tertiary"
+							isDestructive
+							onClick={() =>
+								openConfirmDialog('clear', { type: 'all' })
+							}
+							isBusy={isClearing}
+						>
+							{__('Clear All', 'video-embed-thumbnail-generator')}
+						</Button>
+						{isLoading && <Spinner />}
+					</div>
+					<Divider />
+					<div className="videopack-dataviews-container">
+						<DataViews
+							data={processedData}
+							fields={fields}
+							view={view}
+							onChangeView={setView}
+							defaultLayouts={defaultLayouts}
+							actions={actions}
+							paginationInfo={paginationInfo}
+						/>
+					</div>
+				</PanelBody>
+
+				<PanelBody
+					title={__('Centralized Batch Processes', 'video-embed-thumbnail-generator')}
+					initialOpen={false}
+					className="videopack-centralized-batch-panel"
+				>
+					<div className="videopack-batch-list">
+						{batchProcesses.map((process, index) => (
+							<div key={process.id}>
+								<div className="videopack-batch-item">
+									<div className="videopack-batch-info">
+										<h3 className="videopack-batch-title">{process.title}</h3>
+										<p className="videopack-batch-description">{process.description}</p>
+									</div>
+									<div className="videopack-batch-action">
+										<Button
+											variant="secondary"
+											onClick={() =>
+												openConfirmDialog('run_batch', {
+													batchId: process.id,
+													batchTitle: process.title,
+												})
+											}
+											isBusy={isRunningBatch[process.id]}
+										>
+											{__('Run Batch', 'video-embed-thumbnail-generator')}
+										</Button>
+									</div>
+								</div>
+								{index < batchProcesses.length - 1 && <Divider />}
+							</div>
+						))}
+					</div>
+				</PanelBody>
+			</Panel>
 		</div>
 	);
 };
