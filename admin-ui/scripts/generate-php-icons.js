@@ -7,16 +7,34 @@ const outputPath = path.resolve(__dirname, '../../src/Frontend/Icons.php');
 const icons = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
 
 let phpContent = `<?php
+/**
+ * Icons helper class.
+ *
+ * @package Videopack
+ */
+
 namespace Videopack\\Frontend;
 
 /**
- * Automatically generated file. Do not edit directly.
- * Generated from src/icons.json by npm run build.
+ * Class Icons
+ *
+ * Automatically generated from src/icons.json. Do not edit directly.
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Frontend
  */
 class Icons {
+
+	/**
+	 * Map of icon keys to their raw SVG markup strings.
+	 *
+	 * @var array
+	 */
 	private static $icons = array(
 `;
 
+const maxKeyLength = Math.max(...Object.keys(icons).map(k => k.length));
 for (const [key, icon] of Object.entries(icons)) {
 	let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.viewBox}" class="videopack-icon-svg" aria-hidden="true" focusable="false">`;
 	for (const pathObj of icon.paths) {
@@ -30,11 +48,19 @@ for (const [key, icon] of Object.entries(icons)) {
 	
 	// Escape single quotes for PHP
 	const escapedSvg = svg.replace(/'/g, "\\'");
-	phpContent += `\t\t'${key}' => '${escapedSvg}',\n`;
+	const padding = ' '.repeat(maxKeyLength - key.length);
+	phpContent += `\t\t'${key}'${padding} => '${escapedSvg}',\n`;
 }
 
 phpContent += `\t);
 
+	/**
+	 * Retrieve the raw SVG icon markup by its type name.
+	 *
+	 * @param string $type          The name identifier of the icon (e.g. 'download').
+	 * @param string $extra_classes Optional. Additional CSS classes to inject into the SVG tag.
+	 * @return string The SVG markup or empty string if not found.
+	 */
 	public static function get( $type, $extra_classes = '' ) {
 		if ( ! isset( self::$icons[ $type ] ) ) {
 			return '';

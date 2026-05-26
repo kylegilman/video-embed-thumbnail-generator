@@ -39,10 +39,10 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
 			// Use VideoFrame if supported for slightly better performance/memory
 			if (window.VideoFrame) {
 				try {
-					const frame = new VideoFrame(video);
+					const frame = new window.VideoFrame(video);
 					ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
 					frame.close();
-				} catch (e) {
+				} catch {
 					// Fallback to direct video drawing if VideoFrame fails
 					ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 				}

@@ -5355,7 +5355,7 @@ const external_wp_hooks_namespaceObject = window["wp"]["hooks"];
 /**
  * Fetches encoding presets.
  *
- * @param {AbortSignal}   signal         Optional. Abort signal.
+ * @param {AbortSignal} signal Optional. Abort signal.
  */
 const getPresets = async (signal = null) => {
   try {
@@ -5452,6 +5452,14 @@ const getVideoFormats = async (attachmentId, url = '', probedMetadata = null, si
  * @param {Object} args The query arguments for the gallery.
  */
 const getVideoGallery = async args => {
+  /**
+   * Filters the video gallery query. Returning a non-undefined value bypasses the REST API call.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre  Defaults to undefined.
+   * @param {Object}    args Query parameters.
+   */
   const pre = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.utils.pre_getVideoGallery', undefined, args);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -5461,6 +5469,14 @@ const getVideoGallery = async args => {
       path: (0,external_wp_url_namespaceObject.addQueryArgs)('/videopack/v1/video_gallery', args),
       method: 'GET'
     });
+    /**
+     * Filters the list of media items returned for the video gallery.
+     *
+     * @since 5.0.0
+     *
+     * @param {Object} response REST API response containing video list.
+     * @param {Object} args     Query parameters used for fetching.
+     */
     return (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.utils.getVideoGallery', response, args);
   } catch (error) {
     console.error('Error fetching video gallery:', error);
@@ -5513,6 +5529,16 @@ const getFreemiusPage = async page => {
  * @param {number} rotate     The rotation angle.
  */
 const testEncodeCommand = async (codec, resolution, rotate) => {
+  /**
+   * Filters the FFmpeg test command test response. Bypasses the REST API call if a non-undefined value is returned.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre        Defaults to undefined.
+   * @param {string}    codec      The codec to test.
+   * @param {string}    resolution Resolution to test.
+   * @param {number}    rotate     Rotation angle.
+   */
   const pre = applyFilters('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -5535,8 +5561,8 @@ const testEncodeCommand = async (codec, resolution, rotate) => {
 /**
  * Hook to query and search for videos or other content types in the WordPress database.
  *
- * @param {Object} attributes    Block attributes.
- * @param {number} previewPostId The ID of the post being previewed.
+ * @param {Object} inputAttributes Block attributes.
+ * @param {number} previewPostId   The ID of the post being previewed.
  * @return {Object} Query results including search results, categories, and tags.
  */
 function useVideoQuery(inputAttributes, previewPostId) {
@@ -5682,7 +5708,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
     }).finally(() => {
       setIsResolvingVideos(false);
     });
-  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving]);
+  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving, inputAttributes]);
   const categories = (0,external_wp_data_namespaceObject.useSelect)(select => {
     const {
       getEntityRecords
@@ -5896,7 +5922,15 @@ const normalizeSourceGroups = videoSources => {
 
 
 const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
-const VIDEOPACK_CONTEXT_KEYS = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
+const VIDEOPACK_CONTEXT_KEYS =
+/**
+ * Filters the list of Gutenberg block context keys that the hook listens to.
+ *
+ * @since 5.0.0
+ *
+ * @param {Array} contextKeys List of context key strings.
+ */
+(0,external_wp_hooks_namespaceObject.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -6155,6 +6189,13 @@ let settingsPromise = null;
  * Fetches global Videopack settings.
  */
 const getSettings = async () => {
+  /**
+   * Filters the settings fetching process. Returning a non-undefined value bypasses the REST API call.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre Defaults to undefined.
+   */
   const pre = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.utils.pre_getSettings', undefined);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -6171,6 +6212,13 @@ const getSettings = async () => {
     const result = allSettings.videopack_options || {};
     cachedSettings = result;
     settingsPromise = null;
+    /**
+     * Filters the global settings object retrieved from the server.
+     *
+     * @since 5.0.0
+     *
+     * @param {Object} settings Global settings options.
+     */
     return (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.utils.getSettings', cachedSettings);
   }).catch(error => {
     settingsPromise = null;
@@ -6193,7 +6241,7 @@ const saveWPSettings = async newSettings => {
     const response = await settings_apiFetch({
       path: '/wp/v2/settings',
       method: 'POST',
-      data: data
+      data
     });
     const result = response.videopack_options || {};
     cachedSettings = result;
@@ -6285,7 +6333,9 @@ const icons_namespaceObject = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0
 
 const createIcon = name => {
   const icon = icons_namespaceObject[name];
-  if (!icon) return null;
+  if (!icon) {
+    return null;
+  }
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: icon.viewBox,
@@ -8187,7 +8237,6 @@ function VideopackContextBridge({
 
 
 
-
 /**
  * An internal component to display the video title with correct styling and data.
  *
@@ -8198,9 +8247,7 @@ function VideopackContextBridge({
  * @param {string}   root0.tagName               HTML tag name.
  * @param {string}   root0.textAlign             Text alignment.
  * @param {boolean}  root0.isOverlay             Whether it's an overlay.
- * @param {boolean}  root0.embedcode             Whether to show embed code.
  * @param {Element}  root0.children              Optional preview children (e.g. download block).
- * @param {string}   root0.embedlink             Embed link.
  * @param {boolean}  root0.overlay_title         Whether to show title in overlay.
  * @param {boolean}  root0.showBackground        Whether to show background bar.
  * @param {Function} root0.onTitleChange         Callback for title change.
@@ -8221,8 +8268,6 @@ function VideoTitle({
   tagName: Tag = 'h3',
   textAlign,
   isOverlay = false,
-  embedcode,
-  embedlink,
   overlay_title,
   showBackground,
   onTitleChange,
@@ -8620,6 +8665,17 @@ function PlayButton({
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const embed_method = typeof config !== 'undefined' ? config.embed_method : 'Video.js';
   const vpContext = useVideopackContext(attributes, context);
+
+  /**
+   * Filters the React element used to render the player play button.
+   *
+   * Allowing full custom HTML/React play buttons for specific setups or styling extensions.
+   *
+   * @since 5.0.0
+   *
+   * @param {Element|null} customButton Custom play button element, defaults to null.
+   * @param {Object}       context      Context data including attributes, context, vpContext, and embed_method.
+   */
   const customButton = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.playButtonElement', null, {
     attributes,
     context,
@@ -9095,7 +9151,8 @@ const VideoJS = props => {
     onPlay,
     onPause,
     onReady,
-    onMetadataLoaded
+    onMetadataLoaded,
+    onEnded
   } = props;
   const previousSkinRef = (0,external_wp_element_namespaceObject.useRef)(skin);
   const previousPluginsRef = (0,external_wp_element_namespaceObject.useRef)(options?.plugins);
@@ -9164,7 +9221,7 @@ const VideoJS = props => {
           }
           this.on('play', onPlay);
           this.on('pause', onPause);
-          this.on('ended', props.onEnded);
+          this.on('ended', onEnded);
           this.on('loadedmetadata', function () {
             if (typeof onMetadataLoaded === 'function') {
               onMetadataLoaded({
@@ -9244,7 +9301,7 @@ const VideoJS = props => {
     return () => {
       clearTimeout(initTimer);
     };
-  }, [options, skin, onPlay, onPause, onReady, onMetadataLoaded]);
+  }, [options, skin, onPlay, onPause, onReady, onMetadataLoaded, onEnded]);
 
   // Dispose the player when the component unmounts
   (0,external_wp_element_namespaceObject.useEffect)(() => {
@@ -9779,7 +9836,15 @@ const VideoPlayer = ({
   } else if (Array.isArray(final_duotone)) {
     resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
   }
-  const players = (0,external_wp_element_namespaceObject.useMemo)(() => (0,external_wp_hooks_namespaceObject.applyFilters)('videopack_admin_players', DEFAULT_PLAYERS), []);
+  const players = (0,external_wp_element_namespaceObject.useMemo)(() => (0,external_wp_hooks_namespaceObject.applyFilters)(
+  /**
+   * Filters the registered admin preview player engines.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} players Object mapping player type names to React components.
+   */
+  'videopack_admin_players', DEFAULT_PLAYERS), []);
   const isVertical = (0,external_wp_element_namespaceObject.useMemo)(() => {
     let vertical = false;
     // Use browser-detected dimensions if available
@@ -9843,7 +9908,7 @@ const VideoPlayer = ({
 
     // Ensure unique classes and join
     return [...new Set(classes)].join(' ');
-  }, [contextClasses, final_embed_method, isFixedAspect, aspectRatio, resolvedDuotoneClass, loopDuotoneId]);
+  }, [contextClasses, isFixedAspect, aspectRatio, resolvedDuotoneClass, loopDuotoneId]);
   const actualAutoplay = (0,external_wp_element_namespaceObject.useMemo)(() => {
     return autoplay;
   }, [autoplay]);
@@ -9875,7 +9940,7 @@ const VideoPlayer = ({
       return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
     }
     return Math.random().toString(36).substr(2, 9);
-  }, [blockAttributes.id, source_groups, final_embed_method]);
+  }, [blockAttributes.id, source_groups]);
   const genericPlayerOptions = (0,external_wp_element_namespaceObject.useMemo)(() => ({
     poster,
     loop,
@@ -9891,7 +9956,16 @@ const VideoPlayer = ({
     autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
   }), [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method]);
   const videoJsOptions = (0,external_wp_element_namespaceObject.useMemo)(() => {
-    const isVjs = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack_is_videojs_player', final_embed_method === 'Video.js', final_embed_method);
+    const isVjs = (0,external_wp_hooks_namespaceObject.applyFilters)(
+    /**
+     * Filters whether a specific player method should be treated as a Video.js engine.
+     *
+     * @since 5.0.0
+     *
+     * @param {boolean} isVideojs True if player method uses Video.js, false otherwise.
+     * @param {string}  method    The selected player method name.
+     */
+    'videopack_is_videojs_player', final_embed_method === 'Video.js', final_embed_method);
     if (!isVjs) {
       return null;
     }
@@ -10563,6 +10637,7 @@ const usesDesignContext = (/* unused pure expression or super */ null && (['vide
 
 
 
+
 const BLOCK_METADATA = {
   'videopack/player-container': player_container_block_namespaceObject,
   'videopack/thumbnail': thumbnail_block_namespaceObject,
@@ -10720,7 +10795,7 @@ const PREVIEW_COMPONENTS = {
           style: iconType !== 'none' ? {
             marginLeft: '4px'
           } : undefined,
-          children: __('Share', 'video-embed-thumbnail-generator')
+          children: (0,external_wp_i18n_namespaceObject.__)('Share', 'video-embed-thumbnail-generator')
         })]
       })
     });

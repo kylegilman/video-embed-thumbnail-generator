@@ -18,18 +18,7 @@ use Symfony\Component\Process\Process;
  */
 class FFmpeg_Process extends Process {
 
-	/**
-	 * Constructor.
-	 *
-	 * @param mixed       $commandline The command line to run.
-	 * @param string|null $cwd         The working directory.
-	 * @param array|null  $env         The environment variables.
-	 * @param mixed       $input       The input.
-	 * @param int         $timeout     The timeout in seconds.
-	 */
-	public function __construct( $commandline, $cwd = null, array $env = null, $input = null, $timeout = 60 ) {
-		parent::__construct( $commandline, $cwd, $env, $input, $timeout );
-	}
+
 
 	/**
 	 * Destructor.

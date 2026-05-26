@@ -10,12 +10,26 @@ import { applyFilters } from '@wordpress/hooks';
  * Fetches the current video encoding queue.
  */
 export const getQueue = async () => {
+	/**
+	 * Filters the queue listing before fetching from the REST API.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param {undefined} pre Defaults to undefined. If a non-undefined value is returned, fetching is bypassed.
+	 */
 	const pre = applyFilters('videopack.utils.pre_getQueue', undefined);
 	if (typeof pre !== 'undefined') {
 		return pre;
 	}
 	try {
 		const response = await listJobs();
+		/**
+		 * Filters the list of encoding queue jobs retrieved from the server.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Array} response Array of job objects.
+		 */
 		return applyFilters('videopack.utils.getQueue', response || []);
 	} catch (error) {
 		console.error('Error fetching queue:', error);

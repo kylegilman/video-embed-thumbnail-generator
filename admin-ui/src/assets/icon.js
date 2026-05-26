@@ -2,7 +2,9 @@ import iconsData from '../../../src/icons.json';
 
 const createIcon = (name) => {
 	const icon = iconsData[name];
-	if (!icon) return null;
+	if (!icon) {
+		return null;
+	}
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

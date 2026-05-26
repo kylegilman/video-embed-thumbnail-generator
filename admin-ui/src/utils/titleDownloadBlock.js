@@ -24,10 +24,10 @@ export const TITLE_SHARE_BLOCK_ATTRS = {
 export const getTitleInnerTemplate = (includeDownload, includeShare) => {
 	const template = [];
 	if (includeDownload) {
-		template.push([ 'videopack/download', TITLE_DOWNLOAD_BLOCK_ATTRS ]);
+		template.push(['videopack/download', TITLE_DOWNLOAD_BLOCK_ATTRS]);
 	}
 	if (includeShare) {
-		template.push([ 'videopack/share', TITLE_SHARE_BLOCK_ATTRS ]);
+		template.push(['videopack/share', TITLE_SHARE_BLOCK_ATTRS]);
 	}
 	return template;
 };

@@ -221,6 +221,16 @@ class Ui implements Hook_Subscriber {
 			'instanceId'                  => array( 'type' => 'string' ),
 			'hover_effect'                => array( 'type' => 'string' ),
 		);
+				/**
+		 * Filters the shared block attributes mapped to all Videopack player blocks.
+		 *
+		 * This allows add-ons to inject custom design attributes (e.g. skin options, colors)
+		 * into player container blocks dynamically.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $shared_attributes Key-value array of attribute definitions.
+		 */
 		$shared_attributes = (array) apply_filters( 'videopack_shared_attributes', $shared_attributes );
 
 		$provides_context = array(
@@ -241,18 +251,28 @@ class Ui implements Hook_Subscriber {
 			'videopack/gallery_id'                  => 'gallery_id',
 			'videopack/gallery_category'            => 'gallery_category',
 			'videopack/gallery_tag'                 => 'gallery_tag',
-			'videopack/gallery_orderby'              => 'gallery_orderby',
-			'videopack/gallery_order'                => 'gallery_order',
-			'videopack/gallery_include'              => 'gallery_include',
-			'videopack/gallery_exclude'              => 'gallery_exclude',
-			'videopack/layout'                       => 'layout',
-			'videopack/columns'                      => 'columns',
-			'videopack/gallery_pagination'           => 'gallery_pagination',
-			'videopack/gallery_per_page'             => 'gallery_per_page',
-			'videopack/collectionId'                 => 'collectionId',
-			'videopack/instanceId'                   => 'instanceId',
-			'videopack/hover_effect'                 => 'hover_effect',
+			'videopack/gallery_orderby'             => 'gallery_orderby',
+			'videopack/gallery_order'               => 'gallery_order',
+			'videopack/gallery_include'             => 'gallery_include',
+			'videopack/gallery_exclude'             => 'gallery_exclude',
+			'videopack/layout'                      => 'layout',
+			'videopack/columns'                     => 'columns',
+			'videopack/gallery_pagination'          => 'gallery_pagination',
+			'videopack/gallery_per_page'            => 'gallery_per_page',
+			'videopack/collectionId'                => 'collectionId',
+			'videopack/instanceId'                  => 'instanceId',
+			'videopack/hover_effect'                => 'hover_effect',
 		);
+				/**
+		 * Filters the block context mappings that player container blocks provide to child blocks.
+		 *
+		 * Use this filter to enable sub-blocks (like loop, duration, title) to receive custom
+		 * dynamic values from the outer player block context.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $provides_context Map of context key to attribute name.
+		 */
 		$provides_context = (array) apply_filters( 'videopack_provides_context', $provides_context );
 
 		// Only map these to providesContext if the block actually has the attribute.
@@ -337,6 +357,15 @@ class Ui implements Hook_Subscriber {
 				'videopack/hover_effect',
 			)
 		);
+				/**
+		 * Filters the block context keys consumed by sub-blocks (children/internal components).
+		 *
+		 * This controls which attributes child blocks can access from parent block contexts.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $uses_context Simple list of context keys.
+		 */
 		$uses_context = (array) apply_filters( 'videopack_uses_context', $uses_context );
 
 		// Blocks that get shared attributes injected.
@@ -468,48 +497,100 @@ class Ui implements Hook_Subscriber {
 		 *     }
 		 * }
 		 */
+				/**
+		 * Filters the list of tabs displayed on the Videopack settings page in the admin panel.
+		 *
+		 * Add-ons should use this filter to add their own settings tabs.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $settings_tabs Associative array of tab definitions.
+		 */
 		$settings_tabs = (array) apply_filters( 'videopack_settings_tabs', $settings_tabs );
 
+		/**
+		 * Filters the central localization configuration data array passed to JavaScript.
+		 *
+		 * This array is injected as `videopack_config` in the Gutenberg block editor
+		 * and the Classic Editor UI. Use it to pass add-on settings or custom state to JS.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $config_data The complete config dictionary.
+		 */
 		return (array) apply_filters(
 			'videopack_config_data',
 			array(
-				'settings_tabs'          => $settings_tabs,
-				'url'                    => (string) plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
-				'codecs'                 => $codecs_data,
-				'resolutions'            => $resolutions_data,
-				'ffmpeg_exists'          => apply_filters( 'videopack_ffmpeg_exists', is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ) ),
-				'raw_ffmpeg_exists'      => is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ),
-				'browser_thumbnails'     => (bool) ( $options['browser_thumbnails'] ?? true ),
-				'auto_thumb'             => (bool) ( $options['auto_thumb'] ?? false ),
-				'auto_thumb_number'      => (int) ( $options['auto_thumb_number'] ?? 1 ),
-				'auto_thumb_position'    => (int) ( $options['auto_thumb_position'] ?? 50 ),
-				'ffmpeg_thumb_watermark' => (array) ( $options['ffmpeg_thumb_watermark'] ?? array() ),
-				'embed_method'           => (string) ( ! empty( $options['embed_method'] ) ? $options['embed_method'] : 'Video.js' ),
-				'watermark'              => (string) ( ! empty( $options['watermark'] ) ? $options['watermark'] : '' ),
-				'skin'                   => (string) ( ! empty( $options['skin'] ) ? $options['skin'] : 'vjs-theme-videopack' ),
-				'contentSize'            => $global_settings['layout']['contentSize'] ?? false,
-				'wideSize'               => $global_settings['layout']['wideSize'] ?? false,
-				'freemiusEnabled'        => $freemius_enabled,
-				'is_pro'                    => apply_filters( 'videopack_is_pro', false ),
-				'isTranscodingServiceReady' => (bool) apply_filters( 'videopack_transcoding_service_ready', false ),
-				'isMultisite'            => (bool) is_multisite(),
-				'isNetworkAdmin'         => (bool) is_network_admin(),
-				'isNetworkActive'        => ( null !== $fs ) && (bool) $fs->is_network_active(),
-				'isFfmpegOverridden'     => is_multisite() && (bool) ( \Videopack\Admin\Multisite::get_network_options()['superadmin_only_ffmpeg_settings'] ?? false ),
-				'isSuperAdmin'           => (bool) is_super_admin(),
-				'rest_url'               => (string) get_rest_url(),
-				'rest_url_render'        => (string) get_rest_url( null, 'videopack/v1/render-shortcode' ),
-				'replace_preview_video'  => (bool) ( $options['replace_preview_video'] ?? true ),
-				'align'                  => (string) ( $options['align'] ?? '' ),
-				'postId'                 => (int) ( is_admin() ? absint( wp_unslash( $_GET['post'] ?? ( get_queried_object_id() ? get_queried_object_id() : get_the_ID() ) ) ) : get_the_ID() ),
-				'videopack/postId'       => (int) ( is_admin() ? absint( wp_unslash( $_GET['post'] ?? ( get_queried_object_id() ? get_queried_object_id() : get_the_ID() ) ) ) : get_the_ID() ),
-				'themeColors'            => $theme_colors,
-				'globalStyles'           => function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
-				'mejs_controls_svg'      => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),
-				'options'                => array_merge( $options, array( 'ffmpeg_exists' => apply_filters( 'videopack_ffmpeg_exists', is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ) ) ) ),
-				'defaults'               => \Videopack\Common\Defaults::get_all( $options ),
-				'classic_embed_nonce'    => wp_create_nonce( 'videopack_classic_embed' ),
-				'queue_url'              => admin_url( 'tools.php?page=videopack_encode_queue' ),
+				'settings_tabs'             => $settings_tabs,
+				'url'                       => (string) plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
+				'codecs'                    => $codecs_data,
+				'resolutions'               => $resolutions_data,
+				'ffmpeg_exists'             => apply_filters(
+					/** This filter is documented in src/Admin/Options.php */
+					'videopack_ffmpeg_exists',
+					is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) )
+				),
+				'raw_ffmpeg_exists'         => is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ),
+				'browser_thumbnails'        => (bool) ( $options['browser_thumbnails'] ?? true ),
+				'auto_thumb'                => (bool) ( $options['auto_thumb'] ?? false ),
+				'auto_thumb_number'         => (int) ( $options['auto_thumb_number'] ?? 1 ),
+				'auto_thumb_position'       => (int) ( $options['auto_thumb_position'] ?? 50 ),
+				'ffmpeg_thumb_watermark'    => (array) ( $options['ffmpeg_thumb_watermark'] ?? array() ),
+				'embed_method'              => (string) ( ! empty( $options['embed_method'] ) ? $options['embed_method'] : 'Video.js' ),
+				'watermark'                 => (string) ( ! empty( $options['watermark'] ) ? $options['watermark'] : '' ),
+				'skin'                      => (string) ( ! empty( $options['skin'] ) ? $options['skin'] : 'vjs-theme-videopack' ),
+				'contentSize'               => $global_settings['layout']['contentSize'] ?? false,
+				'wideSize'                  => $global_settings['layout']['wideSize'] ?? false,
+				'freemiusEnabled'           => $freemius_enabled,
+				'is_pro'                    => apply_filters(
+					/**
+					 * Filters whether the Videopack Pro add-on is active and licensed.
+					 *
+					 * @since 5.0.0
+					 *
+					 * @param bool $is_pro True if Pro is active, false otherwise.
+					 */
+					'videopack_is_pro',
+					false
+				),
+				'isTranscodingServiceReady' => (bool) apply_filters(
+					/**
+					 * Filters whether a cloud transcoding service is fully configured and ready.
+					 *
+					 * @since 5.0.0
+					 *
+					 * @param bool $ready True if transcoding service is ready, false otherwise.
+					 */
+					'videopack_transcoding_service_ready',
+					false
+				),
+				'isMultisite'               => (bool) is_multisite(),
+				'isNetworkAdmin'            => (bool) is_network_admin(),
+				'isNetworkActive'           => ( null !== $fs ) && (bool) $fs->is_network_active(),
+				'isFfmpegOverridden'        => is_multisite() && (bool) ( \Videopack\Admin\Multisite::get_network_options()['superadmin_only_ffmpeg_settings'] ?? false ),
+				'isSuperAdmin'              => (bool) is_super_admin(),
+				'rest_url'                  => (string) get_rest_url(),
+				'rest_url_render'           => (string) get_rest_url( null, 'videopack/v1/render-shortcode' ),
+				'replace_preview_video'     => (bool) ( $options['replace_preview_video'] ?? true ),
+				'align'                     => (string) ( $options['align'] ?? '' ),
+				'postId'                    => (int) ( is_admin() ? absint( wp_unslash( $_GET['post'] ?? ( get_queried_object_id() ? get_queried_object_id() : get_the_ID() ) ) ) : get_the_ID() ),
+				'videopack/postId'          => (int) ( is_admin() ? absint( wp_unslash( $_GET['post'] ?? ( get_queried_object_id() ? get_queried_object_id() : get_the_ID() ) ) ) : get_the_ID() ),
+				'themeColors'               => $theme_colors,
+				'globalStyles'              => function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
+				'mejs_controls_svg'         => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),
+				'options'                   => array_merge(
+					$options,
+					array(
+						'ffmpeg_exists' => apply_filters(
+						/** This filter is documented in src/Admin/Options.php */
+							'videopack_ffmpeg_exists',
+							is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) )
+						),
+					)
+				),
+				'defaults'                  => \Videopack\Common\Defaults::get_all( $options ),
+				'classic_embed_nonce'       => wp_create_nonce( 'videopack_classic_embed' ),
+				'queue_url'                 => admin_url( 'tools.php?page=videopack_encode_queue' ),
 			)
 		);
 	}

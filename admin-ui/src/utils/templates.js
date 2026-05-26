@@ -50,7 +50,10 @@ export const getListTemplate = (options) => {
 		engineChildren.push([
 			'videopack/title',
 			{},
-			getTitleInnerTemplate(!!options?.downloadlink, !!options?.embedcode),
+			getTitleInnerTemplate(
+				!!options?.downloadlink,
+				!!options?.embedcode
+			),
 		]);
 	}
 	if (options?.watermark) {

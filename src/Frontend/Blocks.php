@@ -312,8 +312,8 @@ class Blocks implements Hook_Subscriber {
 		$instance_id   = $attributes['instanceId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
 		$collection_id = $attributes['collectionId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
 
-		$attributes['instanceId']   = $instance_id;
-		$attributes['collectionId'] = $collection_id;
+		$attributes['instanceId']                          = $instance_id;
+		$attributes['collectionId']                        = $collection_id;
 		self::$collection_metadata_cache[ $collection_id ] = array();
 
 		$gallery_handler = new Gallery( $this->options, $this->format_registry );
@@ -573,7 +573,7 @@ class Blocks implements Hook_Subscriber {
 		// Detect if we need to re-run player preparation because of block-level design overrides.
 		$force_refresh = false;
 		if ( $player_data ) {
-			$local_hover = $attributes['hover_effect'] ?? 'global';
+			$local_hover  = $attributes['hover_effect'] ?? 'global';
 			$cached_hover = $player_data['hover_effect'] ?? 'global';
 			if ( 'global' !== $local_hover && $local_hover !== $cached_hover ) {
 				$force_refresh = true;
@@ -590,7 +590,7 @@ class Blocks implements Hook_Subscriber {
 					'instanceId'   => $instance_id,
 				)
 			);
-			$prepared = $shortcode_handler->prepare_player( $prep_atts );
+			$prepared          = $shortcode_handler->prepare_player( $prep_atts );
 
 			if ( $prepared ) {
 				$player      = $prepared['player'];
@@ -750,9 +750,9 @@ class Blocks implements Hook_Subscriber {
 			array_merge(
 				$merged_attributes,
 				array(
-					'wrapper_class'  => $settings['classes'] . ' videopack-video-title-block',
-					'style_vars'     => $settings['style'],
-					'inner_content'  => $content,
+					'wrapper_class' => $settings['classes'] . ' videopack-video-title-block',
+					'style_vars'    => $settings['style'],
+					'inner_content' => $content,
 				)
 			),
 			$source,
@@ -775,7 +775,7 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		$is_inside_thumb = ! empty( $block->context['videopack/isInsideThumbnail'] );
-		// Do not render the download block inside a thumbnail to match legacy behavior
+		// Do not render the download block inside a thumbnail to match legacy behavior.
 		if ( $is_inside_thumb ) {
 			return '';
 		}
@@ -785,10 +785,10 @@ class Blocks implements Hook_Subscriber {
 			return '';
 		}
 
-		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
+		$settings          = Context_Manager::resolve( $attributes, $block->context, $this->options );
 		$merged_attributes = array_merge( $attributes, $settings['resolved'] );
-		
-		$is_inside_title = ! empty( $block->context['videopack/isInsideTitleMeta'] );
+
+		$is_inside_title            = ! empty( $block->context['videopack/isInsideTitleMeta'] );
 		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
 		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
 
@@ -796,11 +796,11 @@ class Blocks implements Hook_Subscriber {
 			array_merge(
 				$merged_attributes,
 				array(
-					'wrapper_class'            => $settings['classes'],
-					'style_vars'               => $settings['style'],
-					'isInsideTitleMeta'        => $is_inside_title,
-					'isInsidePlayerContainer'  => $is_inside_player_container,
-					'isInsidePlayerOverlay'    => $is_inside_player_overlay,
+					'wrapper_class'           => $settings['classes'],
+					'style_vars'              => $settings['style'],
+					'isInsideTitleMeta'       => $is_inside_title,
+					'isInsidePlayerContainer' => $is_inside_player_container,
+					'isInsidePlayerOverlay'   => $is_inside_player_overlay,
 				)
 			),
 			$source,
@@ -828,11 +828,11 @@ class Blocks implements Hook_Subscriber {
 			return '';
 		}
 
-		$settings = Context_Manager::resolve( $attributes, $block->context, $this->options );
+		$settings          = Context_Manager::resolve( $attributes, $block->context, $this->options );
 		$merged_attributes = array_merge( $attributes, $settings['resolved'] );
-		
-		$is_inside_thumb = ! empty( $block->context['videopack/isInsideThumbnail'] );
-		$is_inside_title = ! empty( $block->context['videopack/isInsideTitleMeta'] );
+
+		$is_inside_thumb            = ! empty( $block->context['videopack/isInsideThumbnail'] );
+		$is_inside_title            = ! empty( $block->context['videopack/isInsideTitleMeta'] );
 		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
 		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
 
@@ -840,12 +840,12 @@ class Blocks implements Hook_Subscriber {
 			array_merge(
 				$merged_attributes,
 				array(
-					'wrapper_class'            => $settings['classes'],
-					'style_vars'               => $settings['style'],
-					'isInsideTitleMeta'        => $is_inside_title,
-					'isInsidePlayerContainer'  => $is_inside_player_container,
-					'isInsidePlayerOverlay'    => $is_inside_player_overlay,
-					'isInsideThumbnail'        => $is_inside_thumb,
+					'wrapper_class'           => $settings['classes'],
+					'style_vars'              => $settings['style'],
+					'isInsideTitleMeta'       => $is_inside_title,
+					'isInsidePlayerContainer' => $is_inside_player_container,
+					'isInsidePlayerOverlay'   => $is_inside_player_overlay,
+					'isInsideThumbnail'       => $is_inside_thumb,
 				)
 			),
 			$source,

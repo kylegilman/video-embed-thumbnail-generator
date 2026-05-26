@@ -137,20 +137,31 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		changeHandlerFactory.encode(newEncode);
 	};
 
-	const embedMethodOptions = applyFilters('videopack_embed_method_options', [
-		{
-			value: 'Video.js',
-			label: __('Video.js', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'WordPress Default',
-			label: __('WordPress Default', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'None',
-			label: __('None', 'video-embed-thumbnail-generator'),
-		},
-	]);
+	const embedMethodOptions =
+		/**
+		 * Filters the list of available embed player methods (e.g. Video.js, MediaElement).
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Array} options Array of embed options containing value and label.
+		 */
+		applyFilters('videopack_embed_method_options', [
+			{
+				value: 'Video.js',
+				label: __('Video.js', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'WordPress Default',
+				label: __(
+					'WordPress Default',
+					'video-embed-thumbnail-generator'
+				),
+			},
+			{
+				value: 'None',
+				label: __('None', 'video-embed-thumbnail-generator'),
+			},
+		]);
 
 	const preloadOptions = [
 		{
@@ -250,6 +261,14 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			},
 		];
 
+		/**
+		 * Filters the list of available player skins based on the selected embed method.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Array}  options      List of skin option structures.
+		 * @param {string} embed_method The selected player embed method.
+		 */
 		return applyFilters(
 			'videopack_player_skin_options',
 			options,
@@ -334,7 +353,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		return items;
 	};
 
-
 	const watermarkSettings = {
 		url: watermark,
 		...watermark_styles,
@@ -402,6 +420,14 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						value={embed_method}
 						onChange={(value) => {
 							changeHandlerFactory.embed_method(value);
+							/**
+							 * Filters the default skin applied when selecting a player method.
+							 *
+							 * @since 5.0.0
+							 *
+							 * @param {string|undefined} default_skin Skin identifier.
+							 * @param {string}           value        The selected player method name.
+							 */
 							const defaultSkin = applyFilters(
 								'videopack_default_skin',
 								value === 'WordPress Default'
@@ -891,7 +917,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
-			{ applyFilters( 'videopack.settings.player.after_playback', null, { settings, changeHandlerFactory } ) }
+			{applyFilters(
+				/**
+				 * Action filter hook to render custom settings components after playback options.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {null}   empty   Null context value.
+				 * @param {Object} context Object containing settings and changeHandlerFactory.
+				 */
+				'videopack.settings.player.after_playback',
+				null,
+				{ settings, changeHandlerFactory }
+			)}
 			<PanelBody
 				title={__('Dimensions', 'video-embed-thumbnail-generator')}
 				initialOpen={true}
@@ -1051,7 +1089,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
-			{ applyFilters( 'videopack.settings.player.after_dimensions', null, { settings, changeHandlerFactory } ) }
+			{applyFilters(
+				/**
+				 * Action filter hook to render custom settings components after dimensions options.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {null}   empty   Null context value.
+				 * @param {Object} context Object containing settings and changeHandlerFactory.
+				 */
+				'videopack.settings.player.after_dimensions',
+				null,
+				{ settings, changeHandlerFactory }
+			)}
 			<PanelBody
 				title={__('Sharing', 'video-embed-thumbnail-generator')}
 				initialOpen={true}
@@ -1099,7 +1149,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
-			{ applyFilters( 'videopack.settings.player.after_sharing', null, { settings, changeHandlerFactory } ) }
+			{applyFilters(
+				/**
+				 * Action filter hook to render custom settings components after sharing options.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {null}   empty   Null context value.
+				 * @param {Object} context Object containing settings and changeHandlerFactory.
+				 */
+				'videopack.settings.player.after_sharing',
+				null,
+				{ settings, changeHandlerFactory }
+			)}
 			<WatermarkSettingsPanel
 				title={__(
 					'Watermark Overlay',
@@ -1138,7 +1200,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					</div>
 				)}
 			</WatermarkSettingsPanel>
-			{ applyFilters( 'videopack.settings.player.after_watermark', null, { settings, changeHandlerFactory } ) }
+			{applyFilters(
+				/**
+				 * Action filter hook to render custom settings components after watermark options.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {null}   empty   Null context value.
+				 * @param {Object} context Object containing settings and changeHandlerFactory.
+				 */
+				'videopack.settings.player.after_watermark',
+				null,
+				{ settings, changeHandlerFactory }
+			)}
 			<PanelBody
 				title={__('Video Sources', 'video-embed-thumbnail-generator')}
 			>
@@ -1214,7 +1288,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					</div>
 				</BaseControl>
 			</PanelBody>
-			{ applyFilters( 'videopack.settings.player.after_sources', null, { settings, changeHandlerFactory } ) }
+			{applyFilters(
+				/**
+				 * Action filter hook to render custom settings components after sources options.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {null}   empty   Null context value.
+				 * @param {Object} context Object containing settings and changeHandlerFactory.
+				 */
+				'videopack.settings.player.after_sources',
+				null,
+				{ settings, changeHandlerFactory }
+			)}
 		</>
 	);
 };

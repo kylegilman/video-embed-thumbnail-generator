@@ -109,7 +109,11 @@ class Attachment_Processor implements Hook_Subscriber {
 		if ( ! empty( $this->options['auto_thumb'] ) && $this->is_video( $post ) && 'image/gif' !== $post->post_mime_type ) {
 			if ( ! has_post_thumbnail( (int) $post_id ) ) {
 				$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
-				if ( apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
+				if ( apply_filters(
+					/** This filter is documented in src/Admin/Options.php */
+					'videopack_ffmpeg_exists',
+					$ffmpeg_exists
+				) ) {
 					$this->generate_thumbnails_with_ffmpeg( (int) $post_id );
 				}
 			}
@@ -117,14 +121,28 @@ class Attachment_Processor implements Hook_Subscriber {
 
 		// Encoding.
 		if ( ! empty( $this->options['auto_encode'] ) ) {
-			$is_gif = ( 'image/gif' === $post->post_mime_type );
-			$is_animated = $is_gif ? $this->is_animated_gif( (string) get_attached_file( (int) $post_id ) ) : false;
+			$is_gif        = ( 'image/gif' === $post->post_mime_type );
+			$is_animated   = $is_gif ? $this->is_animated_gif( (string) get_attached_file( (int) $post_id ) ) : false;
 			$should_encode = false;
 
 			if ( ! $is_gif && $this->is_video( $post ) ) {
 				$should_encode = true;
 			} elseif ( $is_gif && $is_animated && ! empty( $this->options['auto_encode_gif'] ) ) {
-				$should_encode = apply_filters( 'videopack_should_auto_encode_gif', true, $post_id, $this->options );
+								$should_encode = apply_filters(
+					/**
+					 * Filters whether an uploaded animated GIF should be automatically transcoded to a video format.
+					 *
+					 * @since 5.0.0
+					 *
+					 * @param bool  $should_encode True to transcode, false to skip.
+					 * @param int   $post_id       The attachment ID of the GIF.
+					 * @param array $options       The plugin settings array.
+					 */
+									'videopack_should_auto_encode_gif',
+									true,
+									$post_id,
+									$this->options
+								);
 			}
 
 			if ( $should_encode ) {
@@ -165,7 +183,11 @@ class Attachment_Processor implements Hook_Subscriber {
 	public function generate_thumbnails_with_ffmpeg( $post_id ) {
 		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
 
-		if ( ! apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
+		if ( ! apply_filters(
+			/** This filter is documented in src/Admin/Options.php */
+			'videopack_ffmpeg_exists',
+			$ffmpeg_exists
+		) ) {
 			return;
 		}
 
@@ -287,7 +309,11 @@ class Attachment_Processor implements Hook_Subscriber {
 
 		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
 
-		if ( ! apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
+		if ( ! apply_filters(
+			/** This filter is documented in src/Admin/Options.php */
+			'videopack_ffmpeg_exists',
+			$ffmpeg_exists
+		) ) {
 			return array( 'total' => 0 );
 		}
 

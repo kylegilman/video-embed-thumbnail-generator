@@ -311,10 +311,9 @@ class Gallery {
 	 * @param array  $video      Video data array.
 	 * @param array  $final_atts Final shortcode attributes.
 	 * @param string $layout     Optional. The gallery layout. Default 'gallery'.
-	 * @param bool   $skip_html  Optional. Whether to skip generating HTML. Default false.
 	 * @return array Prepared video data.
 	 */
-	public function prepare_video_data_for_js( $video, $final_atts, $layout = 'gallery', $skip_html = false ) {
+	public function prepare_video_data_for_js( $video, $final_atts, $layout = 'gallery' ) {
 
 		if ( $video instanceof \WP_Post ) {
 			$video_meta = $this->attachment_meta->set_post_id( (int) $video->ID );
@@ -567,7 +566,7 @@ class Gallery {
 
 		if ( (bool) $attachments->have_posts() ) {
 			foreach ( (array) $attachments->posts as $attachment ) {
-				$video_data = (array) $this->prepare_video_data_for_js( $attachment, $query_atts, $layout, $skip_html );
+				$video_data = (array) $this->prepare_video_data_for_js( $attachment, $query_atts, $layout );
 				if ( ! empty( $video_data ) ) {
 					$videos_data[] = (array) $video_data;
 				}

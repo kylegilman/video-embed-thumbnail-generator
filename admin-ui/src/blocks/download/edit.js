@@ -30,8 +30,13 @@ import {
  * @param {boolean}  root0.isSelected    Whether the block is selected.
  * @return {Element}                     The rendered component.
  */
-export default function Edit( { attributes, setAttributes, context, isSelected } ) {
-	const vpContext = useVideopackContext( attributes, context );
+export default function Edit({
+	attributes,
+	setAttributes,
+	context,
+	isSelected,
+}) {
+	const vpContext = useVideopackContext(attributes, context);
 
 	const {
 		icon = true,
@@ -43,74 +48,88 @@ export default function Edit( { attributes, setAttributes, context, isSelected }
 		title_background_color,
 	} = attributes;
 
-	const isInsideThumbnail = !! context[ 'videopack/isInsideThumbnail' ];
-	const isInsidePlayerOverlay = !! context[ 'videopack/isInsidePlayerOverlay' ];
-	const isInsideTitleMeta = !! context[ 'videopack/isInsideTitleMeta' ];
+	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
+	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
+	const isInsideTitleMeta = !!context['videopack/isInsideTitleMeta'];
 	const isOverlay =
-		isInsideThumbnail || ( isInsidePlayerOverlay && ! isInsideTitleMeta );
+		isInsideThumbnail || (isInsidePlayerOverlay && !isInsideTitleMeta);
 
 	const colorFallbacks = useMemo(
 		() =>
-			getColorFallbacks( {
+			getColorFallbacks({
 				title_color: vpContext.resolved.title_color,
-				title_background_color: vpContext.resolved.title_background_color,
-			} ),
+				title_background_color:
+					vpContext.resolved.title_background_color,
+			}),
 		[
 			vpContext.resolved.title_color,
 			vpContext.resolved.title_background_color,
 		]
 	);
 
-	const defaultAlign = useMemo( () => {
-		if ( isInsideThumbnail ) {
+	const defaultAlign = useMemo(() => {
+		if (isInsideThumbnail) {
 			return 'center';
 		}
 		return 'left';
-	}, [ isInsideThumbnail ] );
+	}, [isInsideThumbnail]);
 
-	const finalTextAlign = textAlign || context[ 'videopack/textAlign' ] || defaultAlign;
-	const position = attributes.position || context[ 'videopack/position' ] || 'top';
+	const finalTextAlign =
+		textAlign || context['videopack/textAlign'] || defaultAlign;
+	const position =
+		attributes.position || context['videopack/position'] || 'top';
 
 	const attachmentId = vpContext.resolved.attachmentId;
 	const videoSrc = vpContext.resolved.src;
 
-	const { data: vpData, isResolving: isResolvingVideopack } = useVideopackData(
-		'videopack',
-		context
-	);
+	const { data: vpData, isResolving: isResolvingVideopack } =
+		useVideopackData('videopack', context);
 
-	const contextSourceGroups = context[ 'videopack/source_groups' ];
+	const contextSourceGroups = context['videopack/source_groups'];
 	const hasContextSourceGroups =
 		contextSourceGroups &&
 		typeof contextSourceGroups === 'object' &&
-		! Array.isArray( contextSourceGroups ) &&
-		Object.keys( contextSourceGroups ).length > 0;
+		!Array.isArray(contextSourceGroups) &&
+		Object.keys(contextSourceGroups).length > 0;
 
 	const { formats: fetchedSourceGroups, isLoading: isLoadingSources } =
 		useVideoFormats(
-			! hasContextSourceGroups && attachmentId ? attachmentId : null,
-			! hasContextSourceGroups && ! attachmentId && videoSrc ? videoSrc : null
+			!hasContextSourceGroups && attachmentId ? attachmentId : null,
+			!hasContextSourceGroups && !attachmentId && videoSrc
+				? videoSrc
+				: null
 		);
 
-	const sourceGroups = useMemo( () => {
-		if ( hasContextSourceGroups ) {
+	const sourceGroups = useMemo(() => {
+		if (hasContextSourceGroups) {
 			return contextSourceGroups;
 		}
-		if ( vpData?.source_groups && Object.keys( vpData.source_groups ).length > 0 ) {
+		if (
+			vpData?.source_groups &&
+			Object.keys(vpData.source_groups).length > 0
+		) {
 			return vpData.source_groups;
 		}
-		if ( fetchedSourceGroups && Object.keys( fetchedSourceGroups ).length > 0 ) {
+		if (
+			fetchedSourceGroups &&
+			Object.keys(fetchedSourceGroups).length > 0
+		) {
 			return fetchedSourceGroups;
 		}
 		return {};
-	}, [ hasContextSourceGroups, contextSourceGroups, vpData, fetchedSourceGroups ] );
+	}, [
+		hasContextSourceGroups,
+		contextSourceGroups,
+		vpData,
+		fetchedSourceGroups,
+	]);
 
-	const downloadMenu = useMemo( () => {
-		const menu = buildDownloadMenuFromSourceGroups( sourceGroups );
-		if ( menu.hasMultipleCodecs || menu.flatItems.length > 0 ) {
+	const downloadMenu = useMemo(() => {
+		const menu = buildDownloadMenuFromSourceGroups(sourceGroups);
+		if (menu.hasMultipleCodecs || menu.flatItems.length > 0) {
 			return menu;
 		}
-		if ( isLoadingSources || isResolvingVideopack ) {
+		if (isLoadingSources || isResolvingVideopack) {
 			return { hasMultipleCodecs: false, groups: [], flatItems: [] };
 		}
 		return {
@@ -118,253 +137,310 @@ export default function Edit( { attributes, setAttributes, context, isSelected }
 			groups: [],
 			flatItems: getMockDownloadMenuItems(),
 		};
-	}, [ sourceGroups, isLoadingSources, isResolvingVideopack ] );
+	}, [sourceGroups, isLoadingSources, isResolvingVideopack]);
 
-	const blockProps = useBlockProps( {
-		className: `videopack-download-block videopack-download-wrapper ${ vpContext.classes } ${
-			isOverlay ? `is-overlay position-${ position }` : ''
-		} ${ isInsideThumbnail ? 'is-inside-thumbnail' : '' } ${
+	const blockProps = useBlockProps({
+		className: `videopack-download-block videopack-download-wrapper ${vpContext.classes} ${
+			isOverlay ? `is-overlay position-${position}` : ''
+		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${ isInsideTitleMeta ? 'is-inside-title-meta' : '' } has-text-align-${ finalTextAlign } mode-${ downloadMode }`,
+		} ${isInsideTitleMeta ? 'is-inside-title-meta' : ''} has-text-align-${finalTextAlign} mode-${downloadMode}`,
 		style: {
 			...vpContext.style,
 			display: 'inline-flex',
 			alignItems: 'center',
 		},
-	} );
+	});
 
 	const THEME_COLORS = videopack_config?.themeColors;
 
-	const [ isOpen, setIsOpen ] = useState( false );
-	const [ openSubmenu, setOpenSubmenu ] = useState( null );
-	const menuContainerRef = useRef( null );
+	const [isOpen, setIsOpen] = useState(false);
+	const [openSubmenu, setOpenSubmenu] = useState(null);
+	const menuContainerRef = useRef(null);
 
-	useEffect( () => {
-		if ( downloadMode !== 'menu' ) {
-			setIsOpen( false );
-			setOpenSubmenu( null );
+	useEffect(() => {
+		if (downloadMode !== 'menu') {
+			setIsOpen(false);
+			setOpenSubmenu(null);
 		}
-	}, [ downloadMode ] );
+	}, [downloadMode]);
 
-	useEffect( () => {
-		if ( ! isOpen ) {
+	useEffect(() => {
+		if (!isOpen) {
 			return undefined;
 		}
-		const handleOutside = ( event ) => {
-			if ( menuContainerRef.current && ! menuContainerRef.current.contains( event.target ) ) {
-				setIsOpen( false );
-				setOpenSubmenu( null );
+		const handleOutside = (event) => {
+			if (
+				menuContainerRef.current &&
+				!menuContainerRef.current.contains(event.target)
+			) {
+				setIsOpen(false);
+				setOpenSubmenu(null);
 			}
 		};
-		document.addEventListener( 'mousedown', handleOutside );
-		return () => document.removeEventListener( 'mousedown', handleOutside );
-	}, [ isOpen ] );
+		document.addEventListener('mousedown', handleOutside);
+		return () => document.removeEventListener('mousedown', handleOutside);
+	}, [isOpen]);
 
-	useEffect( () => {
-		if ( ! isSelected ) {
-			setIsOpen( false );
-			setOpenSubmenu( null );
+	useEffect(() => {
+		if (!isSelected) {
+			setIsOpen(false);
+			setOpenSubmenu(null);
 		}
-	}, [ isSelected ] );
+	}, [isSelected]);
 
-	const triggerClassName = `videopack-download-trigger videopack-icons style-${ styleType }${ isOpen ? ' is-active' : '' }`;
-	const linkClassName = `videopack-download-link videopack-icons style-${ styleType }`;
+	const triggerClassName = `videopack-download-trigger videopack-icons style-${styleType}${isOpen ? ' is-active' : ''}`;
+	const linkClassName = `videopack-download-link videopack-icons style-${styleType}`;
 
 	const renderTriggerContent = () => (
 		<>
-			{ icon && <Icon icon={ downloadIcon } className="videopack-icon-svg download-icon" /> }
-			{ text && (
+			{icon && (
+				<Icon
+					icon={downloadIcon}
+					className="videopack-icon-svg download-icon"
+				/>
+			)}
+			{text && (
 				<span className="videopack-download-text-label">
-					{ __( 'Download', 'video-embed-thumbnail-generator' ) }
+					{__('Download', 'video-embed-thumbnail-generator')}
 				</span>
-			) }
+			)}
 		</>
 	);
 
-	const renderFlatMenuItems = ( formats ) =>
-		formats.map( ( format, index ) => (
-			<li key={ index }>
-				<a
-					href="#"
-					onClick={ ( e ) => e.preventDefault() }
+	const renderFlatMenuItems = (formats) =>
+		formats.map((format, index) => (
+			<li key={index}>
+				<button
+					type="button"
+					onClick={(e) => e.preventDefault()}
 					className="videopack-download-link"
 				>
-					{ format.label }
-				</a>
+					{format.label}
+				</button>
 			</li>
-		) );
+		));
 
 	const renderMenuList = () => {
-		if ( downloadMenu.hasMultipleCodecs ) {
-			return downloadMenu.groups.map( ( group ) => (
-						<li
-							key={ group.id }
-							className={ `videopack-download-menu-item videopack-has-submenu${
-								openSubmenu === group.id ? ' is-open' : ''
-							}` }
-						>
-							<button
-								type="button"
-								className="videopack-download-submenu-trigger"
-								aria-expanded={ openSubmenu === group.id }
-								onClick={ ( e ) => {
-									e.preventDefault();
-									e.stopPropagation();
-									setOpenSubmenu(
-										openSubmenu === group.id ? null : group.id
-									);
-								} }
-							>
-								{ group.label }
-							</button>
-							<ul
-								className={ `videopack-download-submenu${
-									openSubmenu === group.id ? ' is-visible' : ''
-								}` }
-							>
-								{ renderFlatMenuItems( group.items ) }
-							</ul>
-						</li>
-					) );
+		if (downloadMenu.hasMultipleCodecs) {
+			return downloadMenu.groups.map((group) => (
+				<li
+					key={group.id}
+					className={`videopack-download-menu-item videopack-has-submenu${
+						openSubmenu === group.id ? ' is-open' : ''
+					}`}
+				>
+					<button
+						type="button"
+						className="videopack-download-submenu-trigger"
+						aria-expanded={openSubmenu === group.id}
+						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							setOpenSubmenu(
+								openSubmenu === group.id ? null : group.id
+							);
+						}}
+					>
+						{group.label}
+					</button>
+					<ul
+						className={`videopack-download-submenu${
+							openSubmenu === group.id ? ' is-visible' : ''
+						}`}
+					>
+						{renderFlatMenuItems(group.items)}
+					</ul>
+				</li>
+			));
 		}
-		return renderFlatMenuItems( downloadMenu.flatItems );
+		return renderFlatMenuItems(downloadMenu.flatItems);
 	};
 
 	return (
 		<>
 			<BlockControls>
-				{ isOverlay && (
+				{isOverlay && (
 					<BlockVerticalAlignmentControl
-						value={ position }
-						onChange={ ( nextPosition ) => {
-							setAttributes( {
+						value={position}
+						onChange={(nextPosition) => {
+							setAttributes({
 								position: nextPosition || undefined,
-							} );
-						} }
+							});
+						}}
 					/>
-				) }
+				)}
 				<AlignmentControl
-					value={ finalTextAlign }
-					onChange={ ( nextAlign ) => {
-						setAttributes( { textAlign: nextAlign } );
-					} }
+					value={finalTextAlign}
+					onChange={(nextAlign) => {
+						setAttributes({ textAlign: nextAlign });
+					}}
 				/>
-				<ToolbarGroup label={ __( 'Toggle Visuals', 'video-embed-thumbnail-generator' ) }>
+				<ToolbarGroup
+					label={__(
+						'Toggle Visuals',
+						'video-embed-thumbnail-generator'
+					)}
+				>
 					<ToolbarButton
-						icon={ downloadIcon }
-						label={ __( 'Toggle Icon', 'video-embed-thumbnail-generator' ) }
-						onClick={ () => setAttributes( { icon: ! icon } ) }
-						isPressed={ icon }
+						icon={downloadIcon}
+						label={__(
+							'Toggle Icon',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={() => setAttributes({ icon: !icon })}
+						isPressed={icon}
 					/>
 					<ToolbarButton
-						icon={ mediaAndText }
-						label={ __( 'Toggle Text', 'video-embed-thumbnail-generator' ) }
-						onClick={ () => setAttributes( { text: ! text } ) }
-						isPressed={ text }
+						icon={mediaAndText}
+						label={__(
+							'Toggle Text',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={() => setAttributes({ text: !text })}
+						isPressed={text}
 					/>
 				</ToolbarGroup>
-				<ToolbarGroup label={ __( 'Style Type', 'video-embed-thumbnail-generator' ) }>
+				<ToolbarGroup
+					label={__('Style Type', 'video-embed-thumbnail-generator')}
+				>
 					<ToolbarButton
-						label={ __( 'Link Style', 'video-embed-thumbnail-generator' ) }
-						onClick={ () => setAttributes( { styleType: 'text' } ) }
-						isPressed={ styleType === 'text' }
+						label={__(
+							'Link Style',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={() => setAttributes({ styleType: 'text' })}
+						isPressed={styleType === 'text'}
 					>
-						{ __( 'Link', 'video-embed-thumbnail-generator' ) }
+						{__('Link', 'video-embed-thumbnail-generator')}
 					</ToolbarButton>
 					<ToolbarButton
-						label={ __( 'Button Style', 'video-embed-thumbnail-generator' ) }
-						onClick={ () => setAttributes( { styleType: 'button' } ) }
-						isPressed={ styleType === 'button' }
+						label={__(
+							'Button Style',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={() => setAttributes({ styleType: 'button' })}
+						isPressed={styleType === 'button'}
 					>
-						{ __( 'Button', 'video-embed-thumbnail-generator' ) }
+						{__('Button', 'video-embed-thumbnail-generator')}
 					</ToolbarButton>
 				</ToolbarGroup>
-				<ToolbarGroup label={ __( 'Download Mode', 'video-embed-thumbnail-generator' ) }>
+				<ToolbarGroup
+					label={__(
+						'Download Mode',
+						'video-embed-thumbnail-generator'
+					)}
+				>
 					<ToolbarButton
-						label={ __( 'Direct Link', 'video-embed-thumbnail-generator' ) }
-						onClick={ () => setAttributes( { downloadMode: 'direct' } ) }
-						isPressed={ downloadMode === 'direct' }
+						label={__(
+							'Direct Link',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={() =>
+							setAttributes({ downloadMode: 'direct' })
+						}
+						isPressed={downloadMode === 'direct'}
 					>
-						{ __( 'Direct', 'video-embed-thumbnail-generator' ) }
+						{__('Direct', 'video-embed-thumbnail-generator')}
 					</ToolbarButton>
 					<ToolbarButton
-						label={ __( 'Quality Dropdown Menu', 'video-embed-thumbnail-generator' ) }
-						onClick={ () => setAttributes( { downloadMode: 'menu' } ) }
-						isPressed={ downloadMode === 'menu' }
+						label={__(
+							'Quality Dropdown Menu',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={() => setAttributes({ downloadMode: 'menu' })}
+						isPressed={downloadMode === 'menu'}
 					>
-						{ __( 'Menu', 'video-embed-thumbnail-generator' ) }
+						{__('Menu', 'video-embed-thumbnail-generator')}
 					</ToolbarButton>
 				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
-				<PanelBody title={ __( 'Colors', 'video-embed-thumbnail-generator' ) } initialOpen={ true }>
+				<PanelBody
+					title={__('Colors', 'video-embed-thumbnail-generator')}
+					initialOpen={true}
+				>
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
-							{ __( 'Colors', 'video-embed-thumbnail-generator' ) }
+							{__('Colors', 'video-embed-thumbnail-generator')}
 						</p>
 						<div className="videopack-color-flex-row">
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={ __( 'Text', 'video-embed-thumbnail-generator' ) }
-									value={ title_color }
-									onChange={ ( value ) => setAttributes( { title_color: value } ) }
-									colors={ THEME_COLORS }
-									fallbackValue={ colorFallbacks.title_color }
+									label={__(
+										'Text',
+										'video-embed-thumbnail-generator'
+									)}
+									value={title_color}
+									onChange={(value) =>
+										setAttributes({ title_color: value })
+									}
+									colors={THEME_COLORS}
+									fallbackValue={colorFallbacks.title_color}
 								/>
 							</div>
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={ __( 'Background', 'video-embed-thumbnail-generator' ) }
-									value={ title_background_color }
-									onChange={ ( value ) =>
-										setAttributes( { title_background_color: value } )
+									label={__(
+										'Background',
+										'video-embed-thumbnail-generator'
+									)}
+									value={title_background_color}
+									onChange={(value) =>
+										setAttributes({
+											title_background_color: value,
+										})
 									}
-									colors={ THEME_COLORS }
-									fallbackValue={ colorFallbacks.title_background_color }
+									colors={THEME_COLORS}
+									fallbackValue={
+										colorFallbacks.title_background_color
+									}
 								/>
 							</div>
 						</div>
 					</div>
 				</PanelBody>
 			</InspectorControls>
-			<div { ...blockProps }>
-				{ downloadMode === 'menu' ? (
+			<div {...blockProps}>
+				{downloadMode === 'menu' ? (
 					<div
 						className="videopack-download-menu-container"
-						ref={ menuContainerRef }
+						ref={menuContainerRef}
 					>
 						<button
 							type="button"
-							className={ triggerClassName }
-							aria-expanded={ isOpen }
+							className={triggerClassName}
+							aria-expanded={isOpen}
 							aria-haspopup="true"
-							onClick={ ( e ) => {
+							onClick={(e) => {
 								e.preventDefault();
-								setIsOpen( ! isOpen );
-								if ( isOpen ) {
-									setOpenSubmenu( null );
+								setIsOpen(!isOpen);
+								if (isOpen) {
+									setOpenSubmenu(null);
 								}
-							} }
+							}}
 						>
-							{ renderTriggerContent() }
+							{renderTriggerContent()}
 							<span className="videopack-caret">▼</span>
 						</button>
 						<div
-							className={ `videopack-download-dropdown-menu${ isOpen ? ' is-visible' : '' }` }
-							onClick={ ( e ) => e.stopPropagation() }
+							className={`videopack-download-dropdown-menu${isOpen ? ' is-visible' : ''}`}
+							onClick={(e) => e.stopPropagation()}
+							onKeyDown={(e) => e.stopPropagation()}
+							role="presentation"
 						>
-							<ul>{ renderMenuList() }</ul>
+							<ul>{renderMenuList()}</ul>
 						</div>
 					</div>
 				) : (
 					<button
 						type="button"
-						className={ linkClassName }
-						onClick={ ( e ) => e.preventDefault() }
+						className={linkClassName}
+						onClick={(e) => e.preventDefault()}
 					>
-						{ renderTriggerContent() }
+						{renderTriggerContent()}
 					</button>
-				) }
+				)}
 			</div>
 		</>
 	);

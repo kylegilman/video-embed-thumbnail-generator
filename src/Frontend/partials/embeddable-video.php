@@ -16,7 +16,14 @@ $content_width      = 4096;
 remove_action( 'wp_head', '_admin_bar_bump_cb' ); // Don't show the WordPress admin bar if you're logged in.
 add_filter( 'show_admin_bar', '__return_false' );
 
-$options_manager = apply_filters( 'videopack_get_options_manager', null );
+		/**
+		 * Filters to retrieve the central Videopack settings options manager instance.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param object|null $options_manager Null by default, or the Options manager class.
+		 */
+		$options_manager = apply_filters( 'videopack_get_options_manager', null );
 if ( ! $options_manager ) {
 	$options_manager = new \Videopack\Admin\Options();
 	$options_manager->load_options();

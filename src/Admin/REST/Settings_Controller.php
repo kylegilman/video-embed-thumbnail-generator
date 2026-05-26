@@ -110,6 +110,14 @@ class Settings_Controller extends Controller {
 		$option_manager = new \Videopack\Admin\Options();
 		$defaults       = $option_manager->get_default();
 
+				/**
+		 * Filters the REST response listing all default settings.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_defaults', new \WP_REST_Response( $defaults, 200 ), $request );
 	}
 
@@ -145,6 +153,14 @@ class Settings_Controller extends Controller {
 			return new \WP_Error( 'rest_invalid_format', (string) $result['output'], array( 'status' => 400 ) );
 		}
 
+				/**
+		 * Filters the REST response returning FFmpeg test diagnostic output.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_ffmpeg_test', new \WP_REST_Response( $result, 200 ), $request );
 	}
 

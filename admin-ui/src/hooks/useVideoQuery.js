@@ -6,8 +6,8 @@ import { getVideoGallery } from '../api/gallery';
 /**
  * Hook to query and search for videos or other content types in the WordPress database.
  *
- * @param {Object} attributes    Block attributes.
- * @param {number} previewPostId The ID of the post being previewed.
+ * @param {Object} inputAttributes Block attributes.
+ * @param {number} previewPostId   The ID of the post being previewed.
  * @return {Object} Query results including search results, categories, and tags.
  */
 export default function useVideoQuery(inputAttributes, previewPostId) {
@@ -48,7 +48,6 @@ export default function useVideoQuery(inputAttributes, previewPostId) {
 		};
 	}, []);
 
-
 	const [videoResults, setVideoResults] = useState([]);
 	const [totalResults, setTotalResults] = useState(0);
 	const [maxNumPages, setMaxNumPages] = useState(1);
@@ -86,7 +85,8 @@ export default function useVideoQuery(inputAttributes, previewPostId) {
 						results.map((res) => ({
 							id: res.id,
 							title: {
-								rendered: res.title?.rendered || res.title || ''
+								rendered:
+									res.title?.rendered || res.title || '',
 							},
 						}))
 					);
@@ -103,7 +103,6 @@ export default function useVideoQuery(inputAttributes, previewPostId) {
 
 		return () => abortController.abort();
 	}, [searchString, viewablePostTypes]);
-
 
 	useEffect(() => {
 		if (isSaving || isAutosaving) {
@@ -201,8 +200,8 @@ export default function useVideoQuery(inputAttributes, previewPostId) {
 		attributes.prioritizePostData,
 		isSaving,
 		isAutosaving,
+		inputAttributes,
 	]);
-
 
 	const categories = useSelect((select) => {
 		const { getEntityRecords } = select('core');
@@ -228,17 +227,14 @@ export default function useVideoQuery(inputAttributes, previewPostId) {
 		[gallery_source, gallery_include]
 	);
 
-	const { customGalleries } = useSelect(
-		(select) => {
-			const { getEntityRecords } = select('core');
-			return {
-				customGalleries: getEntityRecords('postType', 'videopack_gallery', {
-					per_page: -1,
-				}),
-			};
-		},
-		[]
-	);
+	const { customGalleries } = useSelect((select) => {
+		const { getEntityRecords } = select('core');
+		return {
+			customGalleries: getEntityRecords('postType', 'videopack_gallery', {
+				per_page: -1,
+			}),
+		};
+	}, []);
 
 	return {
 		isResolving: isResolvingVideos,

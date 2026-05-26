@@ -150,7 +150,9 @@ class Edit_Posts implements Hook_Subscriber {
 				}
 
 				/**
-				 * Filter the shortcode attributes before building the shortcode string.
+				 * Filters the shortcode attributes before building the Classic Editor video shortcode string.
+				 *
+				 * @since 5.0.0
 				 *
 				 * @param array $shortcode_atts     Associative array of attribute name => value.
 				 * @param int   $attachment_id      The attachment ID.

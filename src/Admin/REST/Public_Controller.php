@@ -147,31 +147,32 @@ class Public_Controller extends Controller {
 			return new \WP_Error( 'rest_invalid_param', 'Missing Video ID.', array( 'status' => 400 ) );
 		}
 
-		$post_id = \Videopack\Common\Video_Discovery::get_first_video_child( $id ) ?: (int) $id;
-		$source  = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
-		
+		$first_child = \Videopack\Common\Video_Discovery::get_first_video_child( $id );
+		$post_id     = $first_child ? $first_child : (int) $id;
+		$source      = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
+
 		if ( ! $source || ! $source->exists() ) {
 			return new \WP_Error( 'rest_source_not_found', 'Video source could not be found.', array( 'status' => 404 ) );
 		}
 
 		$template_json = $request->get_param( 'inner_blocks_template' );
-		$blocks = $template_json ? json_decode( wp_unslash( $template_json ), true ) : array();
+		$blocks        = $template_json ? json_decode( wp_unslash( $template_json ), true ) : array();
 
-		// Ensure we start with a player-container at the root
+		// Ensure we start with a player-container at the root.
 		if ( empty( $blocks ) || 'videopack/player-container' !== $blocks[0]['blockName'] ) {
 			$blocks = array(
 				array(
-					'blockName' => 'videopack/player-container',
-					'attrs' => array( 'id' => $post_id ),
+					'blockName'   => 'videopack/player-container',
+					'attrs'       => array( 'id' => $post_id ),
 					'innerBlocks' => $blocks,
-				)
+				),
 			);
 		} else {
 			$blocks[0]['attrs']['id'] = $post_id;
 		}
 
 		$serialized_tree = \Videopack\Frontend\Modular_Renderer::serialize_player_container( $blocks );
-		
+
 		$response = array(
 			'html' => do_blocks( serialize_blocks( $blocks ) ),
 			'tree' => $serialized_tree,
@@ -270,12 +271,23 @@ class Public_Controller extends Controller {
 		$presets     = array();
 		$all_formats = (array) $this->format_registry->get_video_formats( (bool) ( $this->options['hide_video_formats'] ?? false ) );
 		foreach ( $all_formats as $id => $obj ) {
-			$data = (array) $obj->to_array();
-			$presets[] = array_merge( $data, array(
-				'id'            => (string) $id,
-				'attachment_id' => null,
-			) );
+			$data      = (array) $obj->to_array();
+			$presets[] = array_merge(
+				$data,
+				array(
+					'id'            => (string) $id,
+					'attachment_id' => null,
+				)
+			);
 		}
+				/**
+		 * Filters the REST response listing active resolution/codec presets.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_presets_get', new \WP_REST_Response( $presets, 200 ), $request );
 	}
 
@@ -342,7 +354,7 @@ class Public_Controller extends Controller {
 			if ( is_wp_error( $result ) ) {
 				$error_details = $result->get_error_message();
 			} elseif ( $result instanceof \WP_REST_Response ) {
-				$data = $result->get_data();
+				$data          = $result->get_data();
 				$error_details = is_string( $data ) ? $data : wp_json_encode( $data );
 			}
 

@@ -200,7 +200,9 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 			return localValue;
 		}
 		return (
-			globalOptions.title_position || globalDefaults.title_position || 'top'
+			globalOptions.title_position ||
+			globalDefaults.title_position ||
+			'top'
 		);
 	}
 

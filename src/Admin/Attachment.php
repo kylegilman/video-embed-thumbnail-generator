@@ -123,6 +123,17 @@ class Attachment implements Hook_Subscriber {
 			$post_id = null;
 		}
 
+				/**
+		 * Filters the attachment ID mapped from a given video URL.
+		 *
+		 * This filter allows custom resolution logic when trying to match an external or
+		 * local video file URL back to a media library attachment ID.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param int    $post_id The detected attachment ID, or 0 if not found.
+		 * @param string $url     The video URL being queried.
+		 */
 		return (int) apply_filters( 'videopack_url_to_id', (int) $post_id, $url );
 	}
 

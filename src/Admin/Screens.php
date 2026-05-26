@@ -227,7 +227,11 @@ class Screens implements Hook_Subscriber {
 	 */
 	public function add_encode_queue_page() {
 		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
-		if ( apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) ) {
+		if ( apply_filters(
+			/** This filter is documented in src/Admin/Options.php */
+			'videopack_ffmpeg_exists',
+			$ffmpeg_exists
+		) ) {
 			add_submenu_page(
 				'tools.php',
 				(string) esc_html_x( 'Videopack Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
@@ -246,6 +250,14 @@ class Screens implements Hook_Subscriber {
 	 */
 	public function output_encode_queue_page() {
 		echo '<div id="videopack-queue-root"></div>';
+				/**
+		 * Fires after rendering the transcode queue management page in the admin tools panel.
+		 *
+		 * Use this action to inject custom admin widgets, scripts, or debug info below
+		 * the transcode job list tables.
+		 *
+		 * @since 5.0.0
+		 */
 		do_action( 'videopack_admin_queue_page_after' );
 	}
 
@@ -734,7 +746,7 @@ class Screens implements Hook_Subscriber {
 		$target = "{$wpdb->posts}.post_mime_type = 'image/gif'";
 		if ( false !== strpos( $where, $target ) ) {
 			$replacement = "({$wpdb->posts}.post_mime_type = 'image/gif' AND {$wpdb->posts}.ID IN (SELECT DISTINCT post_parent FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_parent > 0 AND post_mime_type LIKE 'video/%'))";
-			$where = str_replace( $target, $replacement, $where );
+			$where       = str_replace( $target, $replacement, $where );
 		}
 		return $where;
 	}

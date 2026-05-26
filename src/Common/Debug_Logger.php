@@ -22,8 +22,9 @@ class Debug_Logger {
 	/**
 	 * Log a message to the debug log.
 	 *
-	 * @param string $message The message to log.
-	 * @param array  $context Optional context data.
+	 * @param string $message           The message to log.
+	 * @param array  $context           Optional context data.
+	 * @param bool   $include_backtrace Optional. Whether to include a backtrace in the log. Default false.
 	 * @return void
 	 */
 	public static function log( $message, array $context = array(), $include_backtrace = false ) {

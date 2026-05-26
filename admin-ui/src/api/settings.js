@@ -12,6 +12,13 @@ let settingsPromise = null;
  * Fetches global Videopack settings.
  */
 export const getSettings = async () => {
+	/**
+	 * Filters the settings fetching process. Returning a non-undefined value bypasses the REST API call.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param {undefined} pre Defaults to undefined.
+	 */
 	const pre = applyFilters('videopack.utils.pre_getSettings', undefined);
 	if (typeof pre !== 'undefined') {
 		return pre;
@@ -30,6 +37,13 @@ export const getSettings = async () => {
 			const result = allSettings.videopack_options || {};
 			cachedSettings = result;
 			settingsPromise = null;
+			/**
+			 * Filters the global settings object retrieved from the server.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param {Object} settings Global settings options.
+			 */
 			return applyFilters('videopack.utils.getSettings', cachedSettings);
 		})
 		.catch((error) => {
@@ -52,12 +66,10 @@ export const saveWPSettings = async (newSettings) => {
 			videopack_options: newSettings,
 		};
 
-
-
 		const response = await apiFetch({
 			path: '/wp/v2/settings',
 			method: 'POST',
-			data: data,
+			data,
 		});
 
 		const result = response.videopack_options || {};

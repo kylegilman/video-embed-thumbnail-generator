@@ -383,7 +383,7 @@ class Player {
 		}
 
 		// Sort groups strictly so that higher efficiency codecs are ordered first.
-		$registry = new \Videopack\Admin\Formats\Registry( $this->options );
+		$registry         = new \Videopack\Admin\Formats\Registry( $this->options );
 		$available_codecs = $registry->get_video_codecs();
 
 		uksort(
@@ -729,7 +729,7 @@ class Player {
 
 		foreach ( $this->get_flat_sources() as $source ) {
 			$source_elements .= '<source src="' . $source['src'] . '" type="' . $source['type'];
-			
+
 			if ( ! empty( $source['codecs'] ) ) {
 				// Use escaped double quotes for the codecs parameter value to comply with MIME standards.
 				$source_elements .= '; codecs=&quot;' . $source['codecs'] . '&quot;';

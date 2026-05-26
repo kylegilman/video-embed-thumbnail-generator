@@ -318,7 +318,15 @@ const external_wp_hooks_namespaceObject = window["wp"]["hooks"];
 
 
 const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
-const VIDEOPACK_CONTEXT_KEYS = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
+const VIDEOPACK_CONTEXT_KEYS =
+/**
+ * Filters the list of Gutenberg block context keys that the hook listens to.
+ *
+ * @since 5.0.0
+ *
+ * @param {Array} contextKeys List of context key strings.
+ */
+(0,external_wp_hooks_namespaceObject.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -572,6 +580,17 @@ function PlayButton({
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const embed_method = typeof config !== 'undefined' ? config.embed_method : 'Video.js';
   const vpContext = useVideopackContext(attributes, context);
+
+  /**
+   * Filters the React element used to render the player play button.
+   *
+   * Allowing full custom HTML/React play buttons for specific setups or styling extensions.
+   *
+   * @since 5.0.0
+   *
+   * @param {Element|null} customButton Custom play button element, defaults to null.
+   * @param {Object}       context      Context data including attributes, context, vpContext, and embed_method.
+   */
   const customButton = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.playButtonElement', null, {
     attributes,
     context,
@@ -753,7 +772,9 @@ const icons_namespaceObject = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0
 
 const createIcon = name => {
   const icon = icons_namespaceObject[name];
-  if (!icon) return null;
+  if (!icon) {
+    return null;
+  }
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: icon.viewBox,

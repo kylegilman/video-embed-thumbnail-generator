@@ -39,7 +39,13 @@ class Video_Source_Finder {
 			return (bool) $exists;
 		}
 
-		$response = wp_remote_head( $url, array( 'redirection' => 5, 'timeout' => 5 ) );
+		$response = wp_remote_head(
+			$url,
+			array(
+				'redirection' => 5,
+				'timeout'     => 5,
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			set_transient( $transient_key, 'no', DAY_IN_SECONDS );

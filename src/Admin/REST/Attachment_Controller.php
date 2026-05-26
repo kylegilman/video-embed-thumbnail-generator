@@ -103,6 +103,14 @@ class Attachment_Controller extends Controller {
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
+				/**
+		 * Filters the REST response after registering an external video URL.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_register_url', new \WP_REST_Response( array( 'attachment_id' => (int) $result ), 200 ), $request );
 	}
 
@@ -128,11 +136,22 @@ class Attachment_Controller extends Controller {
 		$encoder            = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id, $url, $browser_metadata );
 		$video_formats_data = (array) $encoder->get_all_formats_with_status();
 		foreach ( $video_formats_data as $id => $data ) {
-			$presets[] = array_merge( $data, array(
-				'id'            => (string) $id,
-				'attachment_id' => $data['id'] ?? null,
-			) );
+			$presets[] = array_merge(
+				$data,
+				array(
+					'id'            => (string) $id,
+					'attachment_id' => $data['id'] ?? null,
+				)
+			);
 		}
+				/**
+		 * Filters the REST response returning list of transcoded format video links.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_attachment_formats_get', new \WP_REST_Response( $presets, 200 ), $request );
 	}
 
@@ -157,6 +176,14 @@ class Attachment_Controller extends Controller {
 			return $result;
 		}
 
+				/**
+		 * Filters the REST response after deleting a specific video format attachment.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_delete_format_by_id', new \WP_REST_Response( array( 'success' => $result ), 200 ), $request );
 	}
 }

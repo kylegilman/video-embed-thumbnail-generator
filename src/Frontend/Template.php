@@ -374,6 +374,8 @@ class Template implements Hook_Subscriber {
 			/**
 			 * Action to end file download logging.
 			 *
+			 * @since 5.0.0
+			 *
 			 * @param mixed $download_log The log identifier.
 			 * @param bool  $complete     Whether the download was complete.
 			 */

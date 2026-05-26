@@ -25,7 +25,7 @@ import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import './editor.scss';
 
-const TITLE_CONTEXT_OPTS = { excludeKeys: [ 'downloadlink' ] };
+const TITLE_CONTEXT_OPTS = { excludeKeys: ['downloadlink'] };
 
 /**
  * Edit component for the Videopack Video Title block.
@@ -87,8 +87,6 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 			? !!globalOptions.showBackground
 			: true;
 	}, [showBackground, globalOptions.showBackground]);
-
-
 
 	const isOverlay =
 		explicitIsOverlay !== undefined

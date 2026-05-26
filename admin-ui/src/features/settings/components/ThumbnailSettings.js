@@ -37,7 +37,8 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	} = settings;
 
 	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' && ( !!config.isTranscodingServiceReady || !!config.is_pro ) ) ||
+		(active_encoder !== 'ffmpeg' &&
+			(!!config.isTranscodingServiceReady || !!config.is_pro)) ||
 		ffmpeg_exists === true ||
 		ffmpeg_exists === 'true' ||
 		ffmpeg_exists === 1 ||
@@ -250,8 +251,8 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 											'video-embed-thumbnail-generator'
 										)}
 										checked={
-											!!encode?.thumbnail
-												?.resolutions?.sprite
+											!!encode?.thumbnail?.resolutions
+												?.sprite
 										}
 										onChange={(isChecked) => {
 											const newEncode = {
@@ -260,8 +261,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 													...encode?.thumbnail,
 													enabled: isChecked,
 													resolutions: {
-														...encode
-															?.thumbnail
+														...encode?.thumbnail
 															?.resolutions,
 														sprite: isChecked,
 													},
@@ -272,7 +272,8 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 											);
 										}}
 										disabled={
-											! config.is_pro && effectiveFfmpegExists !== true
+											!config.is_pro &&
+											effectiveFfmpegExists !== true
 										}
 									/>
 								</div>
@@ -340,7 +341,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							checked={
 								!!browser_thumbnails ||
 								(!!config.cloud_enabled &&
-									! (
+									!(
 										config.raw_ffmpeg_exists === true ||
 										config.raw_ffmpeg_exists === 'true' ||
 										config.raw_ffmpeg_exists === 1 ||
@@ -350,7 +351,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							onChange={changeHandlerFactory.browser_thumbnails}
 							disabled={
 								!!config.cloud_enabled &&
-								! (
+								!(
 									config.raw_ffmpeg_exists === true ||
 									config.raw_ffmpeg_exists === 'true' ||
 									config.raw_ffmpeg_exists === 1 ||
@@ -359,7 +360,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							}
 							help={
 								!!config.cloud_enabled &&
-								! (
+								!(
 									config.raw_ffmpeg_exists === true ||
 									config.raw_ffmpeg_exists === 'true' ||
 									config.raw_ffmpeg_exists === 1 ||
@@ -367,7 +368,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 								)
 									? __(
 											'In-browser thumbnail generation is required when using cloud encoding without FFmpeg installed on your server.'
-									  )
+										)
 									: null
 							}
 						/>

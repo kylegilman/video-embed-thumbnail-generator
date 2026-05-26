@@ -439,7 +439,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 								$update_data,
 								array( 'id' => $job_id )
 							);
-							
+
 							// For cloud jobs, we use the recurring heartbeat for polling, so we don't necessarily need an immediate videopack_handle_job action,
 							// but it doesn't hurt.
 							as_schedule_single_action( time() + 30, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
@@ -494,7 +494,19 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 									$update_data,
 									array( 'id' => $job_id )
 								);
-								do_action( 'videopack_job_completed', $job_id, $encode_format_obj );
+								do_action(
+									/**
+									 * Fires when a single video transcode job successfully completes.
+									 *
+									 * @since 5.0.0
+									 *
+									 * @param int    $job_id            The Action Scheduler job ID.
+									 * @param object $encode_format_obj The Video_Format transcoded.
+									 */
+									'videopack_job_completed',
+									$job_id,
+									$encode_format_obj
+								);
 								$this->maybe_auto_publish_post( $job['attachment_id'], $job['blog_id'] );
 							} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
 								// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -675,10 +687,22 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				$attachment_identifier = ! empty( $job_data['attachment_id'] ) ? $job_data['attachment_id'] : $job_data['input_url'];
 				$encoder               = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $job_data['input_url'] );
 				$encode_format         = Encode_Format::from_array( $job_data );
-				
+
 				$progress = null;
 				if ( ! empty( $encode_format->get_cloud_job_id() ) ) {
-					do_action( 'videopack_check_cloud_job_status', $encode_format, $job_data );
+					do_action(
+						/**
+						 * Fires when polling progress/status of a cloud offloaded transcode job.
+						 *
+						 * @since 5.0.0
+						 *
+						 * @param object $encode_format The Video_Format being processed.
+						 * @param array  $job_data      The cloud job response status payload.
+						 */
+						'videopack_check_cloud_job_status',
+						$encode_format,
+						$job_data
+					);
 					$progress_data = $encode_format->get_progress();
 					$progress      = is_array( $progress_data ) ? ( $progress_data['percent'] ?? null ) : null;
 				} else {
@@ -688,15 +712,15 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 				$status_changed_now = $encode_format->get_status() !== $job_data['status'];
 				$cloud_meta_now     = json_encode( $encode_format->get_cloud_meta() );
-				$cloud_meta_changed = $encode_format->get_cloud_job_id() !== ( $job_data['cloud_job_id'] ?? null ) 
+				$cloud_meta_changed = $encode_format->get_cloud_job_id() !== ( $job_data['cloud_job_id'] ?? null )
 					|| $encode_format->get_cloud_provider() !== ( $job_data['cloud_provider'] ?? null )
 					|| $cloud_meta_now !== ( $job_data['cloud_meta'] ?? null );
-				
+
 				$progress_changed = null !== $progress && (int) $progress !== (int) ( $job_data['progress'] ?? -1 );
 
 				if ( $status_changed_now || $cloud_meta_changed || $progress_changed ) {
-					$new_status  = $encode_format->get_status();
-					
+					$new_status = $encode_format->get_status();
+
 					$update_data = array(
 						'status'         => $new_status,
 						'updated_at'     => current_time( 'mysql', true ),
@@ -759,16 +783,16 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				);
 				// Reschedule the job. The handle_job action will check the status and decide how to proceed.
 				$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => (int) $stuck_job['id'] ), 'videopack_encode_jobs' );
-				
+
 				// Slightly update updated_at and save action_id to prevent repeated rescheduling in the same heartbeat.
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$wpdb->update( 
-					$this->queue_table_name, 
-					array( 
+				$wpdb->update(
+					$this->queue_table_name,
+					array(
 						'updated_at' => current_time( 'mysql', true ),
 						'action_id'  => $action_id,
-					), 
-					array( 'id' => (int) $stuck_job['id'] ) 
+					),
+					array( 'id' => (int) $stuck_job['id'] )
 				);
 			}
 		}
@@ -798,7 +822,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			foreach ( $active_with_actions as $job_row ) {
 				$action_id = (int) $job_row['action_id'];
 				$job_id    = (int) $job_row['id'];
-				
+
 				if ( class_exists( 'ActionScheduler_Store' ) ) {
 					$status = \ActionScheduler_Store::instance()->get_status( $action_id );
 					if ( \ActionScheduler_Store::STATUS_FAILED === $status ) {
@@ -1084,6 +1108,8 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 			/**
 			 * Fires after an encoding job is removed from the queue.
+			 *
+			 * @since 5.0.0
 			 *
 			 * @param int   $job_id The ID of the job being removed.
 			 * @param array $job    The raw job data (fetched before deletion).
@@ -1428,7 +1454,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			}
 		}
 
-
 		if ( ! $replacement_requested ) {
 			return $format_ids;
 		}
@@ -1686,7 +1711,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			);
 		}
 	}
-	
+
 	/**
 	 * Handles Action Scheduler failures and timeouts by marking the corresponding job as failed.
 	 *

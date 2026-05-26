@@ -87,10 +87,15 @@ const DEFAULT_CONTEXT_KEYS = [
 	'isInsideTitleMeta',
 ];
 
-export const VIDEOPACK_CONTEXT_KEYS = applyFilters(
-	'videopack.contextKeys',
-	DEFAULT_CONTEXT_KEYS
-);
+export const VIDEOPACK_CONTEXT_KEYS =
+	/**
+	 * Filters the list of Gutenberg block context keys that the hook listens to.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param {Array} contextKeys List of context key strings.
+	 */
+	applyFilters('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -101,10 +106,8 @@ export const VIDEOPACK_CONTEXT_KEYS = applyFilters(
  * @return {Object} Resolved values, styles, and classes.
  */
 export default function useVideopackContext(attributes, context, options = {}) {
-	const {
-		excludeHoverTrigger: optionsExclude = false,
-		excludeKeys = [],
-	} = options;
+	const { excludeHoverTrigger: optionsExclude = false, excludeKeys = [] } =
+		options;
 	// The hover trigger exclusion should NOT be inherited from parents by default,
 	// as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
 	const excludeHoverTrigger =

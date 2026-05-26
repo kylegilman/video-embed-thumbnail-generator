@@ -21,7 +21,6 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 	const [bitrates, setBitrates] = useState([]);
 	const { resolutions } = videopack_config;
 	const {
-		encode,
 		ffmpeg_exists,
 		h264_profile,
 		h264_level,
@@ -30,9 +29,24 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		active_encoder = 'ffmpeg',
 	} = settings;
 
-	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
+	const effectiveFfmpegExists =
+		(active_encoder !== 'ffmpeg' &&
+			(!!videopack_config.isTranscodingServiceReady ||
+				!!videopack_config.is_pro)) ||
+		ffmpeg_exists === true ||
+		ffmpeg_exists === 'true' ||
+		ffmpeg_exists === 1 ||
+		ffmpeg_exists === '1';
 
 	const encodeKey = applyFilters(
+		/**
+		 * Filters the settings array key used for storing encoder settings.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {string} encodeKey The settings key (e.g. 'encode').
+		 * @param {string} encoder   The identifier of the active encoder.
+		 */
 		'videopack.settings.encodeKey',
 		'encode',
 		active_encoder
@@ -242,22 +256,38 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 	);
 
 	const marks = applyFilters(
+		/**
+		 * Filters the list of slider mark indicators for the quality/CRF slider.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Array|null} marks   Custom marks array or null to use defaults.
+		 * @param {Object}     context Context details: codec, active_encoder, rateControl, generateMarks.
+		 */
 		'videopack.settings.qualityMarks',
 		null,
-		{ codec, active_encoder, rateControl: currentRateControl, generateMarks }
+		{
+			codec,
+			active_encoder,
+			rateControl: currentRateControl,
+			generateMarks,
+		}
 	);
 
 	const qualityScale = applyFilters(
+		/**
+		 * Filters the quality scale limits (min, max, step, marks) for the codec quality slider.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Object} scale   Configuration containing min, max, step, marks.
+		 * @param {Object} context Context details: codec, active_encoder, rateControl.
+		 */
 		'videopack.settings.qualityScale',
 		{
 			min:
-				currentRateControl === 'crf'
-					? codec.rate_control.crf.min
-					: 0.1,
-			max:
-				currentRateControl === 'crf'
-					? codec.rate_control.crf.max
-					: 50,
+				currentRateControl === 'crf' ? codec.rate_control.crf.min : 0.1,
+			max: currentRateControl === 'crf' ? codec.rate_control.crf.max : 50,
 			step: currentRateControl === 'crf' ? 1 : 0.5,
 			marks: marks || generateMarks(currentRateControl),
 		},
@@ -343,6 +373,14 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 	}, [localVbr, codec, resolutions]);
 
 	const rateControlOptions = applyFilters(
+		/**
+		 * Filters the choices list for rate control (CRF vs ABR) on a specific codec.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Array}  options Options containing label and value.
+		 * @param {Object} context Context details: codec, active_encoder.
+		 */
 		'videopack.settings.rateControlOptions',
 		[
 			{

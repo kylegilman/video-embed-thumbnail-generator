@@ -159,7 +159,10 @@ import './tinymce.scss';
 				engineChildren.push([
 					'videopack/title',
 					{},
-					getTitleInnerTemplate(!!mergedAttributes.downloadlink, !!mergedAttributes.embedcode),
+					getTitleInnerTemplate(
+						!!mergedAttributes.downloadlink,
+						!!mergedAttributes.embedcode
+					),
 				]);
 			}
 			if (mergedAttributes.watermark) {

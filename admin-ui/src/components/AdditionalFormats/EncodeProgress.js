@@ -87,7 +87,7 @@ const EncodeProgress = ({
 					}
 					return {
 						...prev,
-						percent: percent,
+						percent,
 					};
 				});
 			}
@@ -277,7 +277,10 @@ const EncodeProgress = ({
 	if (formatData?.status === 'failed' && formatData?.error_message) {
 		const fullError = formatData.error_message;
 		const firstLine = fullError.split('\n')[0] || fullError;
-		const shortError = firstLine.length > 120 ? firstLine.substring(0, 120) + '...' : firstLine;
+		const shortError =
+			firstLine.length > 120
+				? firstLine.substring(0, 120) + '...'
+				: firstLine;
 
 		return (
 			<div className="videopack-encode-error">
@@ -285,7 +288,9 @@ const EncodeProgress = ({
 					<span className="videopack-encode-error-label">
 						{__('Error:', 'video-embed-thumbnail-generator')}
 					</span>{' '}
-					<span className="videopack-encode-error-text-preview">{shortError}</span>
+					<span className="videopack-encode-error-text-preview">
+						{shortError}
+					</span>
 				</div>
 				<div className="videopack-encode-error-toggle-container">
 					<Button
@@ -294,8 +299,14 @@ const EncodeProgress = ({
 						className="videopack-encode-error-toggle"
 					>
 						{isExpanded
-							? __('Hide Details', 'video-embed-thumbnail-generator')
-							: __('Show Details', 'video-embed-thumbnail-generator')}
+							? __(
+									'Hide Details',
+									'video-embed-thumbnail-generator'
+								)
+							: __(
+									'Show Details',
+									'video-embed-thumbnail-generator'
+								)}
 					</Button>
 				</div>
 				{isExpanded && (
@@ -312,7 +323,10 @@ const EncodeProgress = ({
 							isBusy={deleteInProgress === formatData.job_id}
 							size="small"
 						>
-							{__('Delete Job', 'video-embed-thumbnail-generator')}
+							{__(
+								'Delete Job',
+								'video-embed-thumbnail-generator'
+							)}
 						</Button>
 					</div>
 				)}

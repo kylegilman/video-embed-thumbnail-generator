@@ -59,8 +59,16 @@ class Thumbnail_Controller extends Controller {
 					'callback'            => array( $this, 'thumb_generate' ),
 					'permission_callback' => function () {
 						$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
-						$is_cloud_ready = ! empty( $this->options['cloud']['enable_transcoding'] ) && apply_filters( 'videopack_transcoding_service_ready', false );
-						return (bool) ( $this->can_make_thumbnails() && ( apply_filters( 'videopack_ffmpeg_exists', $ffmpeg_exists ) || $is_cloud_ready ) );
+						$is_cloud_ready = ! empty( $this->options['cloud']['enable_transcoding'] ) && apply_filters(
+							/** This filter is documented in src/Admin/Ui.php */
+							'videopack_transcoding_service_ready',
+							false
+						);
+						return (bool) ( $this->can_make_thumbnails() && ( apply_filters(
+							/** This filter is documented in src/Admin/Options.php */
+							'videopack_ffmpeg_exists',
+							$ffmpeg_exists
+						) || $is_cloud_ready ) );
 					},
 					'args'                => array(
 						'url'              => array(
@@ -108,28 +116,28 @@ class Thumbnail_Controller extends Controller {
 				'callback'            => array( $this, 'thumb_upload_save' ),
 				'permission_callback' => array( $this, 'can_make_thumbnails' ),
 				'args'                => array(
-					'attachment_id' => array(
+					'attachment_id'   => array(
 						'type'     => 'number',
 						'required' => true,
 					),
-					'parent_id'     => array(
+					'parent_id'       => array(
 						'type'     => 'number',
 						'required' => false,
 						'default'  => 0,
 					),
-					'url'           => array(
+					'url'             => array(
 						'type'     => 'string',
 						'required' => false,
 					),
-					'post_name'     => array(
+					'post_name'       => array(
 						'type'     => 'string',
 						'required' => true,
 					),
-					'featured'      => array(
+					'featured'        => array(
 						'type'     => 'boolean',
 						'required' => false,
 					),
-					'set_poster'    => array(
+					'set_poster'      => array(
 						'type'     => 'boolean',
 						'required' => false,
 						'default'  => true,
@@ -205,8 +213,7 @@ class Thumbnail_Controller extends Controller {
 
 		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 
-		$time              = $request->get_param( 'time' );
-
+		$time = $request->get_param( 'time' );
 
 		if ( ! is_null( $time ) ) {
 			$result = $ffmpeg_thumbnails->generate_thumbnail_at_timecode( (int) $attachment_id, (float) $time );
@@ -222,7 +229,7 @@ class Thumbnail_Controller extends Controller {
 		// Fallback to Cloud Transcoding if FFmpeg failed but cloud IS available.
 		if ( is_wp_error( $result ) && $is_cloud_ready ) {
 			$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
-			$enqueue_result = $queue_controller->enqueue_encodes(
+			$enqueue_result   = $queue_controller->enqueue_encodes(
 				array(
 					'id'      => (int) $attachment_id,
 					'url'     => (string) wp_get_attachment_url( (int) $attachment_id ),
@@ -245,11 +252,18 @@ class Thumbnail_Controller extends Controller {
 			}
 		}
 
-
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
+		/**
+		 * Filters the REST response after successfully generating a temporary thumbnail.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters(
 			'videopack_rest_thumb_generate',
 			new \WP_REST_Response(
@@ -290,6 +304,14 @@ class Thumbnail_Controller extends Controller {
 			$results[]            = $res;
 		}
 
+				/**
+		 * Filters the REST response after successfully saving all generated thumbnails.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_thumb_save_all', new \WP_REST_Response( $results, 200 ), $request );
 	}
 
@@ -323,6 +345,14 @@ class Thumbnail_Controller extends Controller {
 			return new \WP_Error( 'upload_failed', $response['error'] ?? 'Could not save uploaded thumbnail.', array( 'status' => 500 ) );
 		}
 
+				/**
+		 * Filters the REST response after successfully saving an uploaded thumbnail.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_thumb_upload_save', new \WP_REST_Response( $response, 200 ), $request );
 	}
 
@@ -357,6 +387,14 @@ class Thumbnail_Controller extends Controller {
 			$params['featured'] ?? null
 		);
 
+				/**
+		 * Filters the REST response after successfully saving a single video thumbnail.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_thumb_save', new \WP_REST_Response( $response, 200 ), $request );
 	}
 
@@ -370,6 +408,14 @@ class Thumbnail_Controller extends Controller {
 		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options );
 		$attachment      = new \Videopack\Admin\Attachment_Processor( $this->options, $this->format_registry, $attachment_meta );
 		$results         = $attachment->get_thumbnail_candidates();
+				/**
+		 * Filters the REST response containing the list of videos that need thumbnails.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_get_thumbnail_candidates', new \WP_REST_Response( $results, 200 ), $request );
 	}
 }

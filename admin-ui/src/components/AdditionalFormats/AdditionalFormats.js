@@ -62,6 +62,7 @@ const getOrdinal = (n, locale = 'en-US') => {
  * @param {string}   props.src            Video source URL.
  * @param {Object}   props.probedMetadata Metadata from video probing.
  * @param {boolean}  props.isProbing      Whether the video is currently being probed.
+ * @param {boolean}  props.isDiscovering  Whether formats are being discovered.
  * @return {Element} The rendered component.
  */
 const AdditionalFormats = ({
@@ -77,7 +78,14 @@ const AdditionalFormats = ({
 	const parentId = providedParentId || attributes.id || 0;
 	const src = propSrc || attributes.src;
 	const { ffmpeg_exists, active_encoder = 'ffmpeg' } = options;
-	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
+	const effectiveFfmpegExists =
+		(active_encoder !== 'ffmpeg' &&
+			(!!videopack_config.isTranscodingServiceReady ||
+				!!videopack_config.is_pro)) ||
+		ffmpeg_exists === true ||
+		ffmpeg_exists === 'true' ||
+		ffmpeg_exists === 1 ||
+		ffmpeg_exists === '1';
 	const [videoFormats, setVideoFormats] = useState(null);
 	const isExternal = useMemo(() => {
 		let isSrcExternal = false;
@@ -206,9 +214,9 @@ const AdditionalFormats = ({
 				}
 				console.error('Error fetching video formats:', error);
 				const errorMessage = sanitizeError(error);
-				/* translators: %s is the error details */
 				setEncodeMessage(
 					sprintf(
+						/* translators: %s is the error details */
 						__('Error: %s', 'video-embed-thumbnail-generator'),
 						errorMessage
 					)
@@ -218,7 +226,14 @@ const AdditionalFormats = ({
 				setIsLoading(false);
 			}
 		},
-		[attributes.id, src, updateVideoFormats]
+		[
+			attributes.id,
+			src,
+			updateVideoFormats,
+			probedMetadata,
+			sanitizeError,
+			videoFormats,
+		]
 	);
 
 	const pollVideoFormats = useCallback(
@@ -243,7 +258,7 @@ const AdditionalFormats = ({
 			}
 			return null;
 		},
-		[src, attributes.id, updateVideoFormats]
+		[src, attributes.id, updateVideoFormats, probedMetadata]
 	);
 
 	// Initial fetch
@@ -260,7 +275,7 @@ const AdditionalFormats = ({
 		const controller = new AbortController();
 		fetchVideoFormats(controller.signal);
 		return () => controller.abort();
-	}, [fetchVideoFormats, isProbing, isOpen, isDiscovering]);
+	}, [fetchVideoFormats, isProbing, isOpen, isDiscovering, videoFormats]);
 
 	const shouldPoll = (formats) => {
 		if (!formats) {
@@ -289,19 +304,27 @@ const AdditionalFormats = ({
 		const handleBrowserProgress = (event) => {
 			const { job_id, format_id, percent } = event.detail;
 			setVideoFormats((prevFormats) => {
-				if (!prevFormats) return prevFormats;
+				if (!prevFormats) {
+					return prevFormats;
+				}
 				const updatedFormats = { ...prevFormats };
 				const format = updatedFormats[format_id];
-				if (format && (format.job_id === job_id || (!format.job_id && format.status === 'browser_pending'))) {
+				if (
+					format &&
+					(format.job_id === job_id ||
+						(!format.job_id && format.status === 'browser_pending'))
+				) {
 					updatedFormats[format_id] = {
 						...format,
 						status: 'encoding',
 						encoding_now: true,
 						progress: {
-							...(typeof format.progress === 'object' ? format.progress : {}),
-							percent: percent,
-							status: 'encoding'
-						}
+							...(typeof format.progress === 'object'
+								? format.progress
+								: {}),
+							percent,
+							status: 'encoding',
+						},
 					};
 					return updatedFormats;
 				}
@@ -309,7 +332,10 @@ const AdditionalFormats = ({
 			});
 		};
 
-		window.addEventListener('videopack_browser_progress', handleBrowserProgress);
+		window.addEventListener(
+			'videopack_browser_progress',
+			handleBrowserProgress
+		);
 
 		// Manage polling logic based on isEncoding state
 		if (isEncoding && isOpen) {
@@ -343,7 +369,10 @@ const AdditionalFormats = ({
 
 		return () => {
 			isMounted = false;
-			window.removeEventListener('videopack_browser_progress', handleBrowserProgress);
+			window.removeEventListener(
+				'videopack_browser_progress',
+				handleBrowserProgress
+			);
 			if (pollTimer) {
 				clearTimeout(pollTimer);
 			}
@@ -376,6 +405,17 @@ const AdditionalFormats = ({
 			}
 
 			// Allow extensions (Pro) to modify the state based on checkboxes.
+			/**
+			 * Filters the updated video formats list after checking/unchecking a checkbox.
+			 *
+			 * Useful for extensions to perform custom validations or toggle other codecs accordingly.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param {Object}  updatedFormats Copy of the video formats state object.
+			 * @param {string}  formatId       The resolution format ID that was changed.
+			 * @param {boolean} isChecked      True if format is checked, false otherwise.
+			 */
 			return applyFilters(
 				'videopack.handle_format_checkbox',
 				updatedFormats,
@@ -448,13 +488,16 @@ const AdditionalFormats = ({
 				);
 
 				const encodeList = response?.encode_list || [];
-				const cmafPartsCount = encodeList.filter( item => item.id?.startsWith('cmaf_') ).length;
+				const cmafPartsCount = encodeList.filter((item) =>
+					item.id?.startsWith('cmaf_')
+				).length;
 				const otherJobsCount = encodeList.length - cmafPartsCount;
-				const effectiveJobCount = ( cmafPartsCount > 0 ? 1 : 0 ) + otherJobsCount;
+				const effectiveJobCount =
+					(cmafPartsCount > 0 ? 1 : 0) + otherJobsCount;
 
 				let successMsg = (
 					<span>
-						{ sprintf(
+						{sprintf(
 							/* translators: %1$d is the number of jobs. %2$s is the ordinal position (e.g. 1st, 2nd). */
 							_n(
 								'%1$d job added to queue in %2$s position.',
@@ -464,26 +507,31 @@ const AdditionalFormats = ({
 							),
 							effectiveJobCount,
 							ordinalPosition
-						) }
+						)}
 					</span>
 				);
 
-				if ( active_encoder === 'browser' ) {
+				if (active_encoder === 'browser') {
 					successMsg = (
 						<div>
-							<p>{ successMsg }</p>
+							<p>{successMsg}</p>
 							<p>
-								{ __( 'Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator' ) }
-								{ ' ' }
-								<a href={ videopack_config.queue_url }>
-									{ __( 'Go to Queue Page', 'video-embed-thumbnail-generator' ) }
+								{__(
+									'Browser encoding is active. Processing will only occur while the Videopack Queue page is open.',
+									'video-embed-thumbnail-generator'
+								)}{' '}
+								<a href={videopack_config.queue_url}>
+									{__(
+										'Go to Queue Page',
+										'video-embed-thumbnail-generator'
+									)}
 								</a>
 							</p>
 						</div>
 					);
 				}
 
-				setEncodeMessage( successMsg );
+				setEncodeMessage(successMsg);
 			}
 			fetchVideoFormats(); // Re-fetch to update statuses
 		} catch (error) {
@@ -738,6 +786,16 @@ const AdditionalFormats = ({
 
 	const groupedFormats = videoFormats
 		? applyFilters(
+				/**
+				 * Filters the grouped formats list before rendering additional formats choices.
+				 *
+				 * Allows custom sorting, layout, or injecting custom codecs into grouped categories.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {Object} groupedFormats Object mapping codec keys to arrays of formats.
+				 * @param {Object} videoFormats   The original flat video formats state object.
+				 */
 				'videopack.grouped_formats',
 				Object.values(videoFormats).reduce((acc, format) => {
 					if (!format.codec || !format.codec.id) {
@@ -776,7 +834,8 @@ const AdditionalFormats = ({
 						}
 						// Otherwise, sort by resolution height in descending order.
 						return (
-							(b.resolution.height || 0) - (a.resolution.height || 0)
+							(b.resolution.height || 0) -
+							(a.resolution.height || 0)
 						);
 					});
 					return acc;
@@ -798,9 +857,11 @@ const AdditionalFormats = ({
 				{encodeMessage && (
 					<Notice
 						status={
-							(typeof encodeMessage === 'string' &&
-								(encodeMessage.includes(__('Error', 'video-embed-thumbnail-generator')) ||
-									encodeMessage.includes(':')))
+							typeof encodeMessage === 'string' &&
+							(encodeMessage.includes(
+								__('Error', 'video-embed-thumbnail-generator')
+							) ||
+								encodeMessage.includes(':'))
 								? 'error'
 								: 'success'
 						}
@@ -850,68 +911,73 @@ const AdditionalFormats = ({
 									return a.localeCompare(b);
 								})
 								.map((codecId) => {
-								const codecGroup = groupedFormats[codecId];
-								if (codecGroup.formats.length === 0) {
-									return null;
-								}
-								return (
-									<li key={codecId}>
-										<h4 className="videopack-codec-name">
-											{codecGroup.name}
-										</h4>
-										<ul>
-											{codecGroup.formats.map(
-												(formatData) => {
-													const formatId =
-														formatData.format_id;
-													return (
-														<EncodeFormatStatus
-															key={formatId}
-															formatId={formatId}
-															parentId={parentId}
-															formatData={
-																formatData
-															}
-															ffmpegExists={
-																effectiveFfmpegExists
-															}
-															onCheckboxChange={
-																handleFormatCheckbox
-															}
-															onSelectFormat={
-																onSelectFormat
-															}
-															isProcessing={isProcessing}
-															processingId={processingId}
-															deleteInProgress={
-																deleteInProgress
-															}
-															onDeleteFile={() =>
-																openConfirmDialog(
-																	'file',
+									const codecGroup = groupedFormats[codecId];
+									if (codecGroup.formats.length === 0) {
+										return null;
+									}
+									return (
+										<li key={codecId}>
+											<h4 className="videopack-codec-name">
+												{codecGroup.name}
+											</h4>
+											<ul>
+												{codecGroup.formats.map(
+													(formatData) => {
+														const formatId =
+															formatData.format_id;
+														return (
+															<EncodeFormatStatus
+																key={formatId}
+																formatId={
 																	formatId
-																)
-															}
-															onCancelJob={() =>
-																openConfirmDialog(
-																	'job',
-																	formatId
-																)
-															}
-															deleteInProgress={
-																deleteInProgress
-															}
-															onRefresh={
-																fetchVideoFormats
-															}
-														/>
-													);
-												}
-											)}
-										</ul>
-									</li>
-								);
-							})}
+																}
+																parentId={
+																	parentId
+																}
+																formatData={
+																	formatData
+																}
+																ffmpegExists={
+																	effectiveFfmpegExists
+																}
+																onCheckboxChange={
+																	handleFormatCheckbox
+																}
+																onSelectFormat={
+																	onSelectFormat
+																}
+																isProcessing={
+																	isProcessing
+																}
+																processingId={
+																	processingId
+																}
+																deleteInProgress={
+																	deleteInProgress
+																}
+																onDeleteFile={() =>
+																	openConfirmDialog(
+																		'file',
+																		formatId
+																	)
+																}
+																onCancelJob={() =>
+																	openConfirmDialog(
+																		'job',
+																		formatId
+																	)
+																}
+																onRefresh={
+																	fetchVideoFormats
+																}
+															/>
+														);
+													}
+												)}
+											</ul>
+										</li>
+									);
+								})}
 						</ul>
 						<ConfirmDialog
 							isOpen={isConfirmOpen}
@@ -926,6 +992,14 @@ const AdditionalFormats = ({
 				{!!effectiveFfmpegExists && videoFormats && canUploadFiles && (
 					<>
 						{applyFilters(
+							/**
+							 * Action filter hook to render extra custom UI inside the Additional Formats panel.
+							 *
+							 * @since 5.0.0
+							 *
+							 * @param {null}   empty   Null context value.
+							 * @param {Object} context Context object containing videoFormats, options, parentId.
+							 */
 							'videopack.AdditionalFormats.extraContent',
 							null,
 							{

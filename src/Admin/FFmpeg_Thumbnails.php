@@ -369,11 +369,13 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Saves a thumbnail image from an uploaded blob to the Media Library.
 	 *
-	 * @param int    $attachment_id   The ID of the video attachment.
-	 * @param string $post_name       The name of the video post.
-	 * @param array  $file_info       The uploaded file data from $_FILES.
-	 * @param int    $force_parent_id Optional. Parent ID to set.
-	 * @param bool   $force_featured  Optional. Force featured status.
+	 * @param int    $attachment_id    The ID of the video attachment.
+	 * @param string $post_name        The name of the video post.
+	 * @param array  $file_info        The uploaded file data from $_FILES.
+	 * @param int    $force_parent_id  Optional. Parent ID to set.
+	 * @param bool   $force_featured   Optional. Force featured status.
+	 * @param bool   $force_set_poster Optional. Whether to force setting the poster. Default true.
+	 * @param string $filename_suffix  Optional. Suffix for the thumbnail filename. Default '_thumb'.
 	 * @return array Result with 'thumb_id' and 'error'.
 	 */
 	public function save_from_blob( $attachment_id, $post_name, $file_info, $force_parent_id = 0, $force_featured = null, $force_set_poster = true, $filename_suffix = '_thumb' ) {
@@ -405,12 +407,14 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Saves a thumbnail image to the Media Library.
 	 *
-	 * @param int       $attachment_id   Video attachment ID.
-	 * @param string    $post_name       Video post name.
-	 * @param string    $thumb_url       Thumbnail URL (local temp or remote).
-	 * @param int|bool  $thumbnail_index Optional. Index for the thumbnail filename.
-	 * @param int       $force_parent_id Optional. Parent ID to set.
-	 * @param bool|null $force_featured  Optional. Flag to force featured status.
+	 * @param int       $attachment_id    Video attachment ID.
+	 * @param string    $post_name        Video post name.
+	 * @param string    $thumb_url        Thumbnail URL (local temp or remote).
+	 * @param int|bool  $thumbnail_index  Optional. Index for the thumbnail filename.
+	 * @param int       $force_parent_id  Optional. Parent ID to set.
+	 * @param bool|null $force_featured   Optional. Flag to force featured status.
+	 * @param bool      $force_set_poster Optional. Whether to force setting the poster. Default true.
+	 * @param string    $filename_suffix  Optional. Suffix for the thumbnail filename. Default '_thumb'.
 	 * @return array Result of the save operation.
 	 */
 	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false, $force_parent_id = 0, $force_featured = null, $force_set_poster = true, $filename_suffix = '_thumb' ) {
@@ -425,8 +429,8 @@ class FFmpeg_Thumbnails {
 				delete_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster' );
 				delete_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id' );
 
-				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
-				$current_meta             = $attachment_meta_instance->get();
+				$attachment_meta_instance  = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
+				$current_meta              = $attachment_meta_instance->get();
 				$current_meta['poster']    = null;
 				$current_meta['poster_id'] = null;
 				$attachment_meta_instance->save( $current_meta );
@@ -452,13 +456,18 @@ class FFmpeg_Thumbnails {
 
 			$video_post_title = (string) html_entity_decode( (string) get_the_title( (int) $attachment_id ), ENT_QUOTES, 'UTF-8' );
 			/**
-			 * Filters the type of description appended to the newly created thumbnail title.
+			 * Filters the description type suffix for a generated thumbnail file.
 			 *
-			 * @param string $desc_type       The type of description (default 'thumbnail').
-			 * @param string $filename_suffix The filename suffix used for the thumbnail.
+			 * Default is 'thumbnail'. Allows customizing attachment description metadata.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param string $desc_type       The thumbnail description type label.
+			 * @param string $filename_suffix The custom suffix appended to the thumbnail file name.
 			 */
-			$desc_type        = (string) apply_filters( 'videopack_thumb_desc_type', 'thumbnail', $filename_suffix );
-			$desc             = $video_post_title . ' ' . (string) esc_html_x( $desc_type, 'text appended to newly created attachment titles', 'video-embed-thumbnail-generator' );
+			$desc_type = (string) apply_filters( 'videopack_thumb_desc_type', 'thumbnail', $filename_suffix );
+			$suffix    = ( 'thumbnail' === $desc_type ) ? esc_html_x( 'thumbnail', 'text appended to newly created attachment titles', 'video-embed-thumbnail-generator' ) : esc_html( $desc_type );
+			$desc      = $video_post_title . ' ' . (string) $suffix;
 			if ( $thumbnail_index ) {
 				$desc .= ' ' . (string) $thumbnail_index;
 			}
@@ -624,6 +633,16 @@ class FFmpeg_Thumbnails {
 		 * @param string  $final_poster_url Thumbnail URL.
 		 * @param int     $thumb_id         Thumbnail ID.
 		 */
+				/**
+		 * Filters the final URL of the poster thumbnail after it is successfully saved to the media library.
+		 *
+		 * Useful for modifying paths, offloading to CDNs, or storing custom thumbnail size versions.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param string $final_poster_url The absolute URL to the saved poster thumbnail image.
+		 * @param int    $thumb_id         The attachment ID of the saved thumbnail image.
+		 */
 		$final_poster_url = apply_filters( 'videopack_post_save_thumb', $final_poster_url, (int) $thumb_id );
 
 		return array(
@@ -666,6 +685,14 @@ class FFmpeg_Thumbnails {
 		 *
 		 * @param bool   $exists Whether the thumbnail exists.
 		 * @param string $path   The file path.
+		 */
+				/**
+		 * Filters whether a thumbnail file actually exists on the filesystem.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param bool   $exists True if the file exists, false otherwise.
+		 * @param string $path   The absolute filesystem path being checked.
 		 */
 		return (bool) apply_filters( 'videopack_thumb_exists', $exists, $path );
 	}
