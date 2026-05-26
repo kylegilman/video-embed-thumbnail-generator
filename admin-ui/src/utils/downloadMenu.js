@@ -1,18 +1,16 @@
-import { __ } from '@wordpress/i18n';
-
 /**
  * Format a resolution value the same way as video-quality-selector.js res_label.
  *
  * @param {string|number} res Resolution value.
  * @return {string} Display label.
  */
-export function formatDownloadResolutionLabel( res ) {
-	if ( res === undefined || res === null || res === '' ) {
+export function formatDownloadResolutionLabel(res) {
+	if (res === undefined || res === null || res === '') {
 		return '';
 	}
-	const value = String( res );
-	if ( /^\d+$/.test( value ) ) {
-		return `${ value }p`;
+	const value = String(res);
+	if (/^\d+$/.test(value)) {
+		return `${value}p`;
 	}
 	return value;
 }
@@ -23,14 +21,14 @@ export function formatDownloadResolutionLabel( res ) {
  * @param {Object} source Player source object.
  * @return {{label: string, src: string}|null} Menu item or null if not downloadable.
  */
-function sourceToDownloadItem( source ) {
-	const resolution = source.resolution || source[ 'data-res' ];
+function sourceToDownloadItem(source) {
+	const resolution = source.resolution || source['data-res'];
 	const src = source.src || source.url || '';
-	if ( ! resolution || ! src ) {
+	if (!resolution || !src) {
 		return null;
 	}
 	return {
-		label: formatDownloadResolutionLabel( resolution ),
+		label: formatDownloadResolutionLabel(resolution),
 		src,
 	};
 }
@@ -41,15 +39,15 @@ function sourceToDownloadItem( source ) {
  * @param {Array} items Download items.
  * @return {Array} Sorted items.
  */
-function sortDownloadItems( items ) {
-	return [ ...items ].sort( ( a, b ) => {
-		const aNum = parseInt( String( a.label ), 10 );
-		const bNum = parseInt( String( b.label ), 10 );
-		if ( Number.isNaN( aNum ) || Number.isNaN( bNum ) ) {
+function sortDownloadItems(items) {
+	return [...items].sort((a, b) => {
+		const aNum = parseInt(String(a.label), 10);
+		const bNum = parseInt(String(b.label), 10);
+		if (Number.isNaN(aNum) || Number.isNaN(bNum)) {
 			return 0;
 		}
 		return bNum - aNum;
-	} );
+	});
 }
 
 /**
@@ -58,29 +56,33 @@ function sortDownloadItems( items ) {
  * @param {Object} sourceGroups Grouped sources { codecId: { label, sources } }.
  * @return {{hasMultipleCodecs: boolean, groups: Array, flatItems: Array}} Menu structure.
  */
-export function buildDownloadMenuFromSourceGroups( sourceGroups ) {
-	if ( ! sourceGroups || typeof sourceGroups !== 'object' || Array.isArray( sourceGroups ) ) {
+export function buildDownloadMenuFromSourceGroups(sourceGroups) {
+	if (
+		!sourceGroups ||
+		typeof sourceGroups !== 'object' ||
+		Array.isArray(sourceGroups)
+	) {
 		return { hasMultipleCodecs: false, groups: [], flatItems: [] };
 	}
 
-	const groupIds = Object.keys( sourceGroups );
+	const groupIds = Object.keys(sourceGroups);
 
-	if ( groupIds.length > 1 ) {
+	if (groupIds.length > 1) {
 		const groups = groupIds
-			.map( ( groupId ) => {
-				const group = sourceGroups[ groupId ] || {};
+			.map((groupId) => {
+				const group = sourceGroups[groupId] || {};
 				const items = sortDownloadItems(
-					( group.sources || [] )
-						.map( sourceToDownloadItem )
-						.filter( Boolean )
+					(group.sources || [])
+						.map(sourceToDownloadItem)
+						.filter(Boolean)
 				);
 				return {
 					id: groupId,
 					label: group.label || groupId,
 					items,
 				};
-			} )
-			.filter( ( group ) => group.items.length > 0 );
+			})
+			.filter((group) => group.items.length > 0);
 
 		return {
 			hasMultipleCodecs: groups.length > 1,
@@ -90,20 +92,20 @@ export function buildDownloadMenuFromSourceGroups( sourceGroups ) {
 	}
 
 	const flatItems = [];
-	groupIds.forEach( ( groupId ) => {
-		const group = sourceGroups[ groupId ] || {};
-		( group.sources || [] ).forEach( ( source ) => {
-			const item = sourceToDownloadItem( source );
-			if ( item ) {
-				flatItems.push( item );
+	groupIds.forEach((groupId) => {
+		const group = sourceGroups[groupId] || {};
+		(group.sources || []).forEach((source) => {
+			const item = sourceToDownloadItem(source);
+			if (item) {
+				flatItems.push(item);
 			}
-		} );
-	} );
+		});
+	});
 
 	return {
 		hasMultipleCodecs: false,
 		groups: [],
-		flatItems: sortDownloadItems( flatItems ),
+		flatItems: sortDownloadItems(flatItems),
 	};
 }
 

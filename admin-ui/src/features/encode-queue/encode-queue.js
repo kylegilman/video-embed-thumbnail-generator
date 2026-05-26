@@ -77,22 +77,43 @@ const EncodeQueue = () => {
 		const processes = [
 			{
 				id: 'featured',
-				title: __('Set Featured Images', 'video-embed-thumbnail-generator'),
-				description: __('Scans all media library videos and automatically sets their thumbnail as the WordPress featured image on their parent posts.', 'video-embed-thumbnail-generator'),
+				title: __(
+					'Set Featured Images',
+					'video-embed-thumbnail-generator'
+				),
+				description: __(
+					'Scans all media library videos and automatically sets their thumbnail as the WordPress featured image on their parent posts.',
+					'video-embed-thumbnail-generator'
+				),
 			},
 		];
 
 		// Conditionally add thumbs batch process
 		if (ffmpegExists || isPro) {
-			let thumbsTitle = __('Generate FFmpeg Thumbnails', 'video-embed-thumbnail-generator');
-			let thumbsDescription = __('Uses server-side FFmpeg to generate missing thumbnails in the background for all media library videos.', 'video-embed-thumbnail-generator');
+			let thumbsTitle = __(
+				'Generate FFmpeg Thumbnails',
+				'video-embed-thumbnail-generator'
+			);
+			let thumbsDescription = __(
+				'Uses server-side FFmpeg to generate missing thumbnails in the background for all media library videos.',
+				'video-embed-thumbnail-generator'
+			);
 
 			if (isPro) {
-				thumbsTitle = __('Generate Thumbnails', 'video-embed-thumbnail-generator');
+				thumbsTitle = __(
+					'Generate Thumbnails',
+					'video-embed-thumbnail-generator'
+				);
 				if (ffmpegExists) {
-					thumbsDescription = __('Generates missing thumbnails in the background for all media library videos using server-side FFmpeg.', 'video-embed-thumbnail-generator');
+					thumbsDescription = __(
+						'Generates missing thumbnails in the background for all media library videos using server-side FFmpeg.',
+						'video-embed-thumbnail-generator'
+					);
 				} else {
-					thumbsDescription = __('Generates missing thumbnails directly in your browser using HTML5 video and canvas decoding (falls back to FFmpeg.wasm).', 'video-embed-thumbnail-generator');
+					thumbsDescription = __(
+						'Generates missing thumbnails directly in your browser using HTML5 video and canvas decoding (falls back to FFmpeg.wasm).',
+						'video-embed-thumbnail-generator'
+					);
 				}
 			}
 
@@ -106,60 +127,92 @@ const EncodeQueue = () => {
 		processes.push(
 			{
 				id: 'encoding',
-				title: __('Bulk Video Encoding', 'video-embed-thumbnail-generator'),
-				description: __('Enqueues all unencoded local videos for background encoding to your configured formats.', 'video-embed-thumbnail-generator'),
+				title: __(
+					'Bulk Video Encoding',
+					'video-embed-thumbnail-generator'
+				),
+				description: __(
+					'Enqueues all unencoded local videos for background encoding to your configured formats.',
+					'video-embed-thumbnail-generator'
+				),
 			},
 			{
 				id: 'parents',
-				title: __('Set Thumbnail Parents', 'video-embed-thumbnail-generator'),
-				description: (window.videopack_config?.options?.thumb_parent || 'post') === 'video'
-					? __("Switches all existing thumbnail attachments to be children of the video itself", 'video-embed-thumbnail-generator')
-					: __("Switches all existing thumbnail attachments to be children of the video's parent post", 'video-embed-thumbnail-generator'),
+				title: __(
+					'Set Thumbnail Parents',
+					'video-embed-thumbnail-generator'
+				),
+				description:
+					(window.videopack_config?.options?.thumb_parent ||
+						'post') === 'video'
+						? __(
+								'Switches all existing thumbnail attachments to be children of the video itself',
+								'video-embed-thumbnail-generator'
+							)
+						: __(
+								"Switches all existing thumbnail attachments to be children of the video's parent post",
+								'video-embed-thumbnail-generator'
+							),
 			}
 		);
 
 		return processes;
 	}, []);
 
-	const batchProcesses = useMemo(
-		() => {
-			const filtered = [
-				...applyFilters(
-					'videopack.queue.batch_processes',
-					defaultBatchProcesses
-				),
-			];
-			// Ensure the 'parents' batch process is always the very last one.
-			const parentsIdx = filtered.findIndex((p) => p.id === 'parents');
-			if (parentsIdx > -1) {
-				const [parentsItem] = filtered.splice(parentsIdx, 1);
-				filtered.push(parentsItem);
-			}
-			return filtered;
-		},
-		[defaultBatchProcesses]
-	);
+	const batchProcesses = useMemo(() => {
+		const filtered = [
+			...applyFilters(
+				/**
+				 * Filters the list of bulk batch processes available in the video queue panel.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {Array} processes Array of batch process descriptor objects.
+				 */
+				'videopack.queue.batch_processes',
+				defaultBatchProcesses
+			),
+		];
+		// Ensure the 'parents' batch process is always the very last one.
+		const parentsIdx = filtered.findIndex((p) => p.id === 'parents');
+		if (parentsIdx > -1) {
+			const [parentsItem] = filtered.splice(parentsIdx, 1);
+			filtered.push(parentsItem);
+		}
+		return filtered;
+	}, [defaultBatchProcesses]);
 
 	const handleRunBatch = async (batchId) => {
 		setIsRunningBatch((prev) => ({ ...prev, [batchId]: true }));
 		try {
 			const additionalData = {};
 			if (batchId === 'parents') {
-				additionalData.target_parent = window.videopack_config?.options?.thumb_parent || 'post';
+				additionalData.target_parent =
+					window.videopack_config?.options?.thumb_parent || 'post';
 			}
 			const response = await startBatchProcess(batchId, additionalData);
 			if (batchId === 'thumbs' && response.browser) {
-				window.dispatchEvent(new CustomEvent('videopack_trigger_browser_thumbnail_generation'));
+				window.dispatchEvent(
+					new CustomEvent(
+						'videopack_trigger_browser_thumbnail_generation'
+					)
+				);
 				setMessage({
 					type: 'success',
-					text: __('In-browser thumbnail generation has been initiated. Please keep this browser window open until the process completes.', 'video-embed-thumbnail-generator'),
+					text: __(
+						'In-browser thumbnail generation has been initiated. Please keep this browser window open until the process completes.',
+						'video-embed-thumbnail-generator'
+					),
 				});
 			} else {
 				setMessage({
 					type: 'success',
 					text:
 						response.message ||
-						__('Batch process started successfully.', 'video-embed-thumbnail-generator'),
+						__(
+							'Batch process started successfully.',
+							'video-embed-thumbnail-generator'
+						),
 				});
 			}
 			fetchQueue();
@@ -259,10 +312,20 @@ const EncodeQueue = () => {
 		try {
 			const response = await toggleQueue(action);
 			setIsQueuePaused(response.queue_state === 'pause');
-			const defaultMessage = action === 'play'
-				? __('Encoding queue resumed.', 'video-embed-thumbnail-generator')
-				: __('Encoding queue paused.', 'video-embed-thumbnail-generator');
-			setMessage({ type: 'success', text: response.message || defaultMessage });
+			const defaultMessage =
+				action === 'play'
+					? __(
+							'Encoding queue resumed.',
+							'video-embed-thumbnail-generator'
+						)
+					: __(
+							'Encoding queue paused.',
+							'video-embed-thumbnail-generator'
+						);
+			setMessage({
+				type: 'success',
+				text: response.message || defaultMessage,
+			});
 			fetchQueue(); // Refresh queue data after state change
 		} catch (error) {
 			console.error('Error toggling queue:', error);
@@ -311,10 +374,17 @@ const EncodeQueue = () => {
 		setIsClearing(true);
 		try {
 			const response = await clearQueue(type);
-			const defaultMessage = type === 'all'
-				? __('All jobs cleared.', 'video-embed-thumbnail-generator')
-				: __('Completed jobs cleared.', 'video-embed-thumbnail-generator');
-			setMessage({ type: 'success', text: response.message || defaultMessage });
+			const defaultMessage =
+				type === 'all'
+					? __('All jobs cleared.', 'video-embed-thumbnail-generator')
+					: __(
+							'Completed jobs cleared.',
+							'video-embed-thumbnail-generator'
+						);
+			setMessage({
+				type: 'success',
+				text: response.message || defaultMessage,
+			});
 			fetchQueue(); // Refresh queue data
 		} catch (error) {
 			console.error('Error clearing queue:', error);
@@ -428,7 +498,10 @@ const EncodeQueue = () => {
 				type: 'success',
 				text:
 					ids.length === 1
-						? __('Job status reset.', 'video-embed-thumbnail-generator')
+						? __(
+								'Job status reset.',
+								'video-embed-thumbnail-generator'
+							)
 						: sprintf(
 								/* translators: %d: number of jobs reset */
 								__(
@@ -768,24 +841,38 @@ const EncodeQueue = () => {
 				label: __('Reset Status', 'video-embed-thumbnail-generator'),
 				supportsBulk: true,
 				isEligible: (item) => {
-					if (!['encoding', 'browser_encoding'].includes(item.status)) {
+					if (
+						!['encoding', 'browser_encoding'].includes(item.status)
+					) {
 						return false;
 					}
 					// Only allow reset if it's "stuck" (not updated in the last minute)
-					if (!item.updated_at) return true; // If no timestamp, assume stuck
-					const updatedAt = new Date(item.updated_at + ' UTC').getTime();
+					if (!item.updated_at) {
+						return true;
+					} // If no timestamp, assume stuck
+					const updatedAt = new Date(
+						item.updated_at + ' UTC'
+					).getTime();
 					const now = new Date().getTime();
-					return (now - updatedAt) > 60000; // 1 minute
+					return now - updatedAt > 60000; // 1 minute
 				},
 				callback: (items) => {
 					const eligibleItems = items.filter((item) => {
-						if (!['encoding', 'browser_encoding'].includes(item.status)) {
+						if (
+							!['encoding', 'browser_encoding'].includes(
+								item.status
+							)
+						) {
 							return false;
 						}
-						if (!item.updated_at) return true;
-						const updatedAt = new Date(item.updated_at + ' UTC').getTime();
+						if (!item.updated_at) {
+							return true;
+						}
+						const updatedAt = new Date(
+							item.updated_at + ' UTC'
+						).getTime();
 						const now = new Date().getTime();
-						return (now - updatedAt) > 60000;
+						return now - updatedAt > 60000;
 					});
 					if (eligibleItems.length > 0) {
 						handleResetJobs(eligibleItems.map((i) => i.id));
@@ -841,7 +928,10 @@ const EncodeQueue = () => {
 							);
 						}
 						if (itemToActOn?.action === 'run_batch') {
-							return __('Start', 'video-embed-thumbnail-generator');
+							return __(
+								'Start',
+								'video-embed-thumbnail-generator'
+							);
 						}
 						return __('Confirm', 'video-embed-thumbnail-generator');
 					})()}
@@ -927,7 +1017,8 @@ const EncodeQueue = () => {
 				{Object.entries(batchProgress).map(([type, progress]) => {
 					if (
 						!progress ||
-						(progress.pending === 0 && progress['in-progress'] === 0)
+						(progress.pending === 0 &&
+							progress['in-progress'] === 0)
 					) {
 						return null;
 					}
@@ -956,6 +1047,13 @@ const EncodeQueue = () => {
 					};
 
 					const filteredLabels = applyFilters(
+						/**
+						 * Filters the display labels for bulk queue batch types.
+						 *
+						 * @since 5.0.0
+						 *
+						 * @param {Object} labels Object mapping batch type identifiers to localized label strings.
+						 */
 						'videopack.queue.batch_labels',
 						defaultLabels
 					);
@@ -1035,7 +1133,10 @@ const EncodeQueue = () => {
 				})}
 
 				{message && (
-					<Notice status={message.type} onRemove={() => setMessage(null)}>
+					<Notice
+						status={message.type}
+						onRemove={() => setMessage(null)}
+					>
 						{message.text}
 					</Notice>
 				)}
@@ -1067,7 +1168,9 @@ const EncodeQueue = () => {
 						<Button
 							variant="secondary"
 							onClick={() =>
-								openConfirmDialog('clear', { type: 'completed' })
+								openConfirmDialog('clear', {
+									type: 'completed',
+								})
 							}
 							isBusy={isClearing}
 						>
@@ -1103,7 +1206,10 @@ const EncodeQueue = () => {
 				</PanelBody>
 
 				<PanelBody
-					title={__('Centralized Batch Processes', 'video-embed-thumbnail-generator')}
+					title={__(
+						'Centralized Batch Processes',
+						'video-embed-thumbnail-generator'
+					)}
 					initialOpen={false}
 					className="videopack-centralized-batch-panel"
 				>
@@ -1112,8 +1218,12 @@ const EncodeQueue = () => {
 							<div key={process.id}>
 								<div className="videopack-batch-item">
 									<div className="videopack-batch-info">
-										<h3 className="videopack-batch-title">{process.title}</h3>
-										<p className="videopack-batch-description">{process.description}</p>
+										<h3 className="videopack-batch-title">
+											{process.title}
+										</h3>
+										<p className="videopack-batch-description">
+											{process.description}
+										</p>
 									</div>
 									<div className="videopack-batch-action">
 										<Button
@@ -1126,11 +1236,16 @@ const EncodeQueue = () => {
 											}
 											isBusy={isRunningBatch[process.id]}
 										>
-											{__('Run Batch', 'video-embed-thumbnail-generator')}
+											{__(
+												'Run Batch',
+												'video-embed-thumbnail-generator'
+											)}
 										</Button>
 									</div>
 								</div>
-								{index < batchProcesses.length - 1 && <Divider />}
+								{index < batchProcesses.length - 1 && (
+									<Divider />
+								)}
 							</div>
 						))}
 					</div>

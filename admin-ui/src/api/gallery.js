@@ -10,11 +10,9 @@ import { applyFilters } from '@wordpress/hooks';
 /**
  * Fetches encoding presets.
  *
- * @param {AbortSignal}   signal         Optional. Abort signal.
+ * @param {AbortSignal} signal Optional. Abort signal.
  */
-export const getPresets = async (
-	signal = null
-) => {
+export const getPresets = async (signal = null) => {
 	try {
 		return await apiFetch({
 			path: '/videopack/v1/presets',
@@ -91,7 +89,10 @@ export const getVideoFormats = async (
 		}
 
 		const presets = await apiFetch({
-			path: addQueryArgs(`/videopack/v1/attachment/${attachmentId}/formats`, query),
+			path: addQueryArgs(
+				`/videopack/v1/attachment/${attachmentId}/formats`,
+				query
+			),
 			signal,
 		});
 
@@ -123,6 +124,14 @@ export const getVideoFormats = async (
  * @param {Object} args The query arguments for the gallery.
  */
 export const getVideoGallery = async (args) => {
+	/**
+	 * Filters the video gallery query. Returning a non-undefined value bypasses the REST API call.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param {undefined} pre  Defaults to undefined.
+	 * @param {Object}    args Query parameters.
+	 */
 	const pre = applyFilters(
 		'videopack.utils.pre_getVideoGallery',
 		undefined,
@@ -136,6 +145,14 @@ export const getVideoGallery = async (args) => {
 			path: addQueryArgs('/videopack/v1/video_gallery', args),
 			method: 'GET',
 		});
+		/**
+		 * Filters the list of media items returned for the video gallery.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Object} response REST API response containing video list.
+		 * @param {Object} args     Query parameters used for fetching.
+		 */
 		return applyFilters('videopack.utils.getVideoGallery', response, args);
 	} catch (error) {
 		console.error('Error fetching video gallery:', error);
@@ -191,6 +208,16 @@ export const getFreemiusPage = async (page) => {
  * @param {number} rotate     The rotation angle.
  */
 export const testEncodeCommand = async (codec, resolution, rotate) => {
+	/**
+	 * Filters the FFmpeg test command test response. Bypasses the REST API call if a non-undefined value is returned.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param {undefined} pre        Defaults to undefined.
+	 * @param {string}    codec      The codec to test.
+	 * @param {string}    resolution Resolution to test.
+	 * @param {number}    rotate     Rotation angle.
+	 */
 	const pre = applyFilters(
 		'videopack.utils.pre_testEncodeCommand',
 		undefined,

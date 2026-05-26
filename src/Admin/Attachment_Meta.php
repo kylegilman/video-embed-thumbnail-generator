@@ -139,87 +139,100 @@ class Attachment_Meta implements Hook_Subscriber {
 	 * @return array Default meta values.
 	 */
 	public function get_defaults() {
-		return (array) apply_filters( 'videopack_attachment_meta_defaults', array(
-			'embed'                       => (string) ( $this->options['default_insert'] ?? 'Single Video' ),
-			'width'                       => (string) ( $this->options['width'] ?? '' ),
-			'height'                      => (string) ( $this->options['height'] ?? '' ),
-			'actualwidth'                 => null,
-			'actualheight'                => null,
-			'downloadlink'                => (bool) ( $this->options['downloadlink'] ?? false ),
-			'track'                       => array(),
-			'starts'                      => 0,
-			'play_25'                     => 0,
-			'play_50'                     => 0,
-			'play_75'                     => 0,
-			'completeviews'               => 0,
-			'pickedformat'                => null,
-			'encode'                      => (array) ( $this->options['encode'] ?? array() ),
-			'rotate'                      => null,
-			'autothumb_error'             => null,
-			'total_thumbnails'            => (int) ( $this->options['total_thumbnails'] ?? 4 ),
-			'randomize'                   => false,
-			'forcefirst'                  => false,
-			'featured'                    => (bool) ( $this->options['featured'] ?? true ),
-			'thumbtime'                   => null,
-			'lockaspect'                  => true,
-			'showtitle'                   => true,
-			'gallery_columns'             => (int) ( $this->options['gallery_columns'] ?? 4 ),
-			'gallery_exclude'             => null,
-			'gallery_include'             => null,
-			'gallery_orderby'             => 'menu_order ID',
-			'gallery_order'               => 'asc',
-			'gallery_id'                  => null,
-			'duration'                    => null,
-			'aspect'                      => null,
-			'original_replaced'           => null,
-			'featuredchanged'             => false,
-			'url'                         => null,
-			'poster'                      => null,
-			'poster_id'                   => null,
-			'maxwidth'                    => null,
-			'maxheight'                   => null,
-			'animated'                    => 'notchecked',
-			'frame_rate'                  => null,
-			'codec'                       => null,
-			'worked'                      => false,
-			// Player settings.
-			'autoplay'                    => (bool) ( $this->options['autoplay'] ?? false ),
-			'loop'                        => (bool) ( $this->options['loop'] ?? false ),
-			'muted'                       => (bool) ( $this->options['muted'] ?? false ),
-			'controls'                    => (bool) ( $this->options['controls'] ?? true ),
-			'volume'                      => (float) ( $this->options['volume'] ?? 1.0 ),
-			'preload'                     => (string) ( $this->options['preload'] ?? 'metadata' ),
-			'playback_rate'               => (bool) ( $this->options['playback_rate'] ?? false ),
-			'playsinline'                 => (bool) ( $this->options['playsinline'] ?? true ),
-			'right_click'                 => (bool) ( $this->options['right_click'] ?? true ),
-			'gifmode'                     => (bool) ( $this->options['gifmode'] ?? false ),
-			'fixed_aspect'                => (string) ( $this->options['fixed_aspect'] ?? 'vertical' ),
-			'align'                       => (string) ( $this->options['align'] ?? '' ),
-			'fullwidth'                   => (bool) ( $this->options['fullwidth'] ?? false ),
-			'resize'                      => (bool) ( $this->options['resize'] ?? true ),
-			'inline'                      => (bool) ( $this->options['inline'] ?? false ),
-			'embeddable'                  => (bool) ( $this->options['embeddable'] ?? false ),
-			'embedcode'                   => (bool) ( $this->options['embedcode'] ?? false ),
-			'overlay_title'               => (bool) ( $this->options['overlay_title'] ?? false ),
-			'views'                       => (bool) ( $this->options['views'] ?? false ),
-			'watermark'                   => (string) ( $this->options['watermark'] ?? '' ),
-			'watermark_link_to'           => (string) ( $this->options['watermark_link_to'] ?? 'none' ),
-			'watermark_url'               => (string) ( $this->options['watermark_url'] ?? '' ),
-			'ffmpeg_watermark_url'        => null,
-			'is_remote'                   => false,
-			'cloud'                       => null,
-			'legacy_dimensions'           => null,
-			'title_color'                 => null,
-			'title_background_color'      => null,
-			'pagination_color'            => null,
-			'pagination_background_color' => null,
-			'pagination_active_bg_color'  => null,
-			'pagination_active_color'     => null,
-			'play_button_color'           => null,
-			'play_button_secondary_color' => null,
-			'control_bar_bg_color'        => null,
-			'control_bar_color'           => null,
-		) );
+				/**
+		 * Filters the default metadata values assigned to a new video attachment.
+		 *
+		 * Use this filter to inject additional custom metadata keys and default values
+		 * managed by add-ons (such as cloud storage or playback settings).
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $default_meta Associative array of default attachment metadata.
+		 */
+		return (array) apply_filters(
+			'videopack_attachment_meta_defaults',
+			array(
+				'embed'                       => (string) ( $this->options['default_insert'] ?? 'Single Video' ),
+				'width'                       => (string) ( $this->options['width'] ?? '' ),
+				'height'                      => (string) ( $this->options['height'] ?? '' ),
+				'actualwidth'                 => null,
+				'actualheight'                => null,
+				'downloadlink'                => (bool) ( $this->options['downloadlink'] ?? false ),
+				'track'                       => array(),
+				'starts'                      => 0,
+				'play_25'                     => 0,
+				'play_50'                     => 0,
+				'play_75'                     => 0,
+				'completeviews'               => 0,
+				'pickedformat'                => null,
+				'encode'                      => (array) ( $this->options['encode'] ?? array() ),
+				'rotate'                      => null,
+				'autothumb_error'             => null,
+				'total_thumbnails'            => (int) ( $this->options['total_thumbnails'] ?? 4 ),
+				'randomize'                   => false,
+				'forcefirst'                  => false,
+				'featured'                    => (bool) ( $this->options['featured'] ?? true ),
+				'thumbtime'                   => null,
+				'lockaspect'                  => true,
+				'showtitle'                   => true,
+				'gallery_columns'             => (int) ( $this->options['gallery_columns'] ?? 4 ),
+				'gallery_exclude'             => null,
+				'gallery_include'             => null,
+				'gallery_orderby'             => 'menu_order ID',
+				'gallery_order'               => 'asc',
+				'gallery_id'                  => null,
+				'duration'                    => null,
+				'aspect'                      => null,
+				'original_replaced'           => null,
+				'featuredchanged'             => false,
+				'url'                         => null,
+				'poster'                      => null,
+				'poster_id'                   => null,
+				'maxwidth'                    => null,
+				'maxheight'                   => null,
+				'animated'                    => 'notchecked',
+				'frame_rate'                  => null,
+				'codec'                       => null,
+				'worked'                      => false,
+				// Player settings.
+				'autoplay'                    => (bool) ( $this->options['autoplay'] ?? false ),
+				'loop'                        => (bool) ( $this->options['loop'] ?? false ),
+				'muted'                       => (bool) ( $this->options['muted'] ?? false ),
+				'controls'                    => (bool) ( $this->options['controls'] ?? true ),
+				'volume'                      => (float) ( $this->options['volume'] ?? 1.0 ),
+				'preload'                     => (string) ( $this->options['preload'] ?? 'metadata' ),
+				'playback_rate'               => (bool) ( $this->options['playback_rate'] ?? false ),
+				'playsinline'                 => (bool) ( $this->options['playsinline'] ?? true ),
+				'right_click'                 => (bool) ( $this->options['right_click'] ?? true ),
+				'gifmode'                     => (bool) ( $this->options['gifmode'] ?? false ),
+				'fixed_aspect'                => (string) ( $this->options['fixed_aspect'] ?? 'vertical' ),
+				'align'                       => (string) ( $this->options['align'] ?? '' ),
+				'fullwidth'                   => (bool) ( $this->options['fullwidth'] ?? false ),
+				'resize'                      => (bool) ( $this->options['resize'] ?? true ),
+				'inline'                      => (bool) ( $this->options['inline'] ?? false ),
+				'embeddable'                  => (bool) ( $this->options['embeddable'] ?? false ),
+				'embedcode'                   => (bool) ( $this->options['embedcode'] ?? false ),
+				'overlay_title'               => (bool) ( $this->options['overlay_title'] ?? false ),
+				'views'                       => (bool) ( $this->options['views'] ?? false ),
+				'watermark'                   => (string) ( $this->options['watermark'] ?? '' ),
+				'watermark_link_to'           => (string) ( $this->options['watermark_link_to'] ?? 'none' ),
+				'watermark_url'               => (string) ( $this->options['watermark_url'] ?? '' ),
+				'ffmpeg_watermark_url'        => null,
+				'is_remote'                   => false,
+				'cloud'                       => null,
+				'legacy_dimensions'           => null,
+				'title_color'                 => null,
+				'title_background_color'      => null,
+				'pagination_color'            => null,
+				'pagination_background_color' => null,
+				'pagination_active_bg_color'  => null,
+				'pagination_active_color'     => null,
+				'play_button_color'           => null,
+				'play_button_secondary_color' => null,
+				'control_bar_bg_color'        => null,
+				'control_bar_color'           => null,
+			)
+		);
 	}
 
 	/**
@@ -367,6 +380,17 @@ class Attachment_Meta implements Hook_Subscriber {
 				$external_url = get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-externalurl', true );
 				if ( $external_url && ( empty( $meta_data['actualwidth'] ) || empty( $meta_data['actualheight'] ) || empty( $meta_data['duration'] ) ) ) {
 					$is_local = (bool) ( strpos( $external_url, home_url() ) === 0 );
+										/**
+					 * Filters whether to skip fetching metadata (like duration/dimensions) from a remote URL.
+					 *
+					 * Returning true prevents remote network requests for external video links.
+					 *
+					 * @since 5.0.0
+					 *
+					 * @param bool   $skip         True to skip remote fetching, false to perform it.
+					 * @param int    $post_id      The attachment ID.
+					 * @param string $external_url The external video file URL.
+					 */
 					$skip_remote = $is_local || apply_filters( 'videopack_skip_remote_metadata_fetch', false, (int) $this->post_id, $external_url );
 					if ( ! $skip_remote ) {
 						$remote_metadata = $this->fetch_remote_metadata( (string) $external_url, (int) $this->post_id );
@@ -384,13 +408,24 @@ class Attachment_Meta implements Hook_Subscriber {
 		}
 
 		$this->meta_data = (array) $meta_data;
+				/**
+		 * Filters the complete metadata array loaded for a specific video attachment.
+		 *
+		 * Allows add-ons to dynamically filter or add custom runtime properties to the
+		 * attachment metadata before it is consumed by the player or editors.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $meta_data     The complete attachment metadata array.
+		 * @param int   $attachment_id The attachment ID.
+		 */
 		$meta_data = (array) apply_filters( 'videopack_attachment_meta', $meta_data, (int) $this->post_id );
 
 		if ( ! empty( $meta_data['cloud']['url'] ) ) {
 			$meta_data['url'] = $meta_data['cloud']['url'];
 		}
 
-		self::$getting_meta = false;
+		self::$getting_meta                       = false;
 		self::$meta_cache[ (int) $this->post_id ] = $meta_data;
 
 		return $meta_data;
@@ -812,9 +847,9 @@ class Attachment_Meta implements Hook_Subscriber {
 			'cloud'                       => array(
 				'type'       => 'object',
 				'properties' => array(
-					'file_name' => array( 'type' => 'string' ),
-					'bucket'    => array( 'type' => 'string' ),
-					'url'       => array( 'type' => 'string' ),
+					'file_name'   => array( 'type' => 'string' ),
+					'bucket'      => array( 'type' => 'string' ),
+					'url'         => array( 'type' => 'string' ),
 					'permissions' => array( 'type' => 'string' ),
 				),
 			),
@@ -896,6 +931,15 @@ class Attachment_Meta implements Hook_Subscriber {
 			$final_schema[ $key ]['sanitize_callback'] = array( $this, 'sanitize_meta_value' );
 		}
 
+				/**
+		 * Filters the database schema mapping used for attachment postmeta storage.
+		 *
+		 * Controls how settings/metadata fields map to direct postmeta database keys.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $schema The active schema mapping dictionary.
+		 */
 		return (array) apply_filters( 'videopack_post_meta_schema', $final_schema );
 	}
 

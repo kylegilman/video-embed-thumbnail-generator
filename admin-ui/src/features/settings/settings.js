@@ -89,7 +89,7 @@ const VideopackSettingsPage = () => {
 			settings.sample_codec &&
 			settings.sample_resolution &&
 			settings.ffmpeg_exists === true &&
-			( settings.active_encoder === 'ffmpeg' || ! settings.active_encoder )
+			(settings.active_encoder === 'ffmpeg' || !settings.active_encoder)
 		) {
 			testFfmpeg(
 				settings.sample_codec,
@@ -162,8 +162,6 @@ const VideopackSettingsPage = () => {
 			return acc;
 		}, {});
 
-
-
 		return handlers;
 	}, [settings]);
 
@@ -226,6 +224,13 @@ const VideopackSettingsPage = () => {
 			);
 		}
 
+		/**
+		 * Filters the active settings tabs array in the React Admin panel.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Array} defaultTabs Array of tab objects.
+		 */
 		return applyFilters('videopack.settings.tabs', defaultTabs);
 	}, []);
 

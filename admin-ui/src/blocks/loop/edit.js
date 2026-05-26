@@ -890,8 +890,10 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 															attributes: {
 																icon: true,
 																text: false,
-																styleType: 'text',
-																downloadMode: 'direct',
+																styleType:
+																	'text',
+																downloadMode:
+																	'direct',
 															},
 															innerBlocks: [],
 														},

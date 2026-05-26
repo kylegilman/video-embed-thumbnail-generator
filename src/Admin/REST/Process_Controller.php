@@ -18,6 +18,13 @@ class Process_Controller extends Controller {
 	 * Registers REST API routes for batch processes.
 	 */
 	public function register_routes() {
+				/**
+		 * Filters the available batch processing types.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $batch_types List of batch type names.
+		 */
 		$batch_types    = apply_filters( 'videopack_batch_types', array( 'featured', 'parents', 'thumbs', 'encoding' ) );
 		$progress_types = array_merge( $batch_types, array( 'all', 'browser' ) );
 
@@ -79,6 +86,15 @@ class Process_Controller extends Controller {
 				$allowed = $this->can_manage_options() && $this->can_make_thumbnails() && $this->can_encode_videos();
 				break;
 		}
+				/**
+		 * Filters permissions checking for batch processes.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param bool             $allowed Whether user has permission.
+		 * @param string           $type    Batch process type.
+		 * @param \WP_REST_Request $request The REST request.
+		 */
 		return apply_filters( 'videopack_batch_permissions', $allowed, $type, $request );
 	}
 
@@ -92,8 +108,16 @@ class Process_Controller extends Controller {
 			return new \WP_Error( 'as_missing', 'Action Scheduler is not available.', array( 'status' => 500 ) );
 		}
 
-		$type   = (string) $request->get_param( 'type' );
+		$type = (string) $request->get_param( 'type' );
+		/**
+		 * Filters Action Scheduler group names associated with each batch type.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $groups Key-value mapping of batch types to Action Scheduler groups.
+		 */
 		$groups = apply_filters(
+			/** This filter is documented in src/Admin/REST/Process_Controller.php */
 			'videopack_batch_groups',
 			array(
 				'featured' => 'videopack-featured-images',
@@ -129,12 +153,29 @@ class Process_Controller extends Controller {
 				break;
 		}
 
+				/**
+		 * Filters the result of a specific batch process execution.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array                  $result  The batch execution result array.
+		 * @param \WP_REST_Request       $request The REST request.
+		 * @param \Videopack\Admin\REST\Process_Controller $controller The controller instance.
+		 */
 		$result = apply_filters( "videopack_batch_process_{$type}", $result, $request, $this );
 
 		if ( empty( $result ) ) {
 			return new \WP_Error( 'invalid_type', 'Invalid batch type.', array( 'status' => 400 ) );
 		}
 
+				/**
+		 * Filters the REST response after starting a batch process.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_batch_process', new \WP_REST_Response( $result, 200 ), $request );
 	}
 
@@ -170,6 +211,13 @@ class Process_Controller extends Controller {
 				}
 			}
 			$counts['browser'] = (array) apply_filters(
+				/**
+				 * Filters the progress counts for browser-based (client-side) thumbnail generation.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param array $progress_counts Standard counts dictionary with pending/in-progress/complete/failed keys.
+				 */
 				'videopack_rest_browser_thumbnail_progress',
 				array(
 					'pending'     => 0,
@@ -180,6 +228,7 @@ class Process_Controller extends Controller {
 			);
 		} elseif ( 'browser' === $type ) {
 			$counts = (array) apply_filters(
+				/** This filter is documented in src/Admin/REST/Process_Controller.php */
 				'videopack_rest_browser_thumbnail_progress',
 				array(
 					'pending'     => 0,
@@ -198,7 +247,19 @@ class Process_Controller extends Controller {
 		$response = new \WP_REST_Response( (array) $counts, 200 );
 		set_transient( $cache_key, $response, 10 );
 
-		return apply_filters( 'videopack_rest_batch_progress', $response, $request );
+				return apply_filters(
+			/**
+			 * Filters the REST response containing batch progress status details.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param \WP_REST_Response $response The REST response.
+			 * @param \WP_REST_Request  $request  The REST request.
+			 */
+					'videopack_rest_batch_progress',
+					$response,
+					$request
+				);
 	}
 
 	/**

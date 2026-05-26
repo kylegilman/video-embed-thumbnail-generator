@@ -311,15 +311,15 @@ class Encode_Format {
 		$format->set_video_title( $format->set_or_null( $data, 'video_title' ) );
 		$format->set_video_duration( (int) $format->set_or_null( $data, 'video_duration' ) );
 
-		$format->attachment_id = $format->set_or_null( $data, 'attachment_id' );
-		$format->input_url     = $format->set_or_null( $data, 'input_url' );
-		$format->blog_id       = $format->set_or_null( $data, 'blog_id' );
-		$format->created_at    = $format->set_or_null( $data, 'created_at' );
-		$format->updated_at    = $format->set_or_null( $data, 'updated_at' );
-		$format->cloud_job_id  = $format->set_or_null( $data, 'cloud_job_id' );
-		$format->cloud_provider = $format->set_or_null( $data, 'cloud_provider' );
+		$format->attachment_id    = $format->set_or_null( $data, 'attachment_id' );
+		$format->input_url        = $format->set_or_null( $data, 'input_url' );
+		$format->blog_id          = $format->set_or_null( $data, 'blog_id' );
+		$format->created_at       = $format->set_or_null( $data, 'created_at' );
+		$format->updated_at       = $format->set_or_null( $data, 'updated_at' );
+		$format->cloud_job_id     = $format->set_or_null( $data, 'cloud_job_id' );
+		$format->cloud_provider   = $format->set_or_null( $data, 'cloud_provider' );
 		$format->progress_percent = $format->set_or_null( $data, 'progress' );
-		
+
 		$cloud_meta = $format->set_or_null( $data, 'cloud_meta' );
 		if ( ! empty( $cloud_meta ) ) {
 			$decoded = json_decode( $cloud_meta, true );
@@ -820,12 +820,15 @@ class Encode_Format {
 	public function set_error( ?string $error ) {
 		$this->set_status( self::STATUS_FAILED );
 		$this->error = $error;
-		\Videopack\Common\Debug_Logger::log( 'Encode_Format: Job failed', array( 
-			'job_id' => $this->job_id,
-			'format' => $this->format_id,
-			'error'  => $error,
-			'status' => $this->status
-		) );
+		\Videopack\Common\Debug_Logger::log(
+			'Encode_Format: Job failed',
+			array(
+				'job_id' => $this->job_id,
+				'format' => $this->format_id,
+				'error'  => $error,
+				'status' => $this->status,
+			)
+		);
 	}
 
 	/**
@@ -916,12 +919,15 @@ class Encode_Format {
 			&& $this->logfile
 			&& file_exists( $this->logfile )
 		) {
-			\Videopack\Common\Debug_Logger::log( 'Encode_Format: Checking progress', array(
-				'job_id'   => $this->job_id,
-				'duration' => $this->video_duration,
-				'started'  => $this->started,
-				'logfile'  => $this->logfile,
-			) );
+			\Videopack\Common\Debug_Logger::log(
+				'Encode_Format: Checking progress',
+				array(
+					'job_id'   => $this->job_id,
+					'duration' => $this->video_duration,
+					'started'  => $this->started,
+					'logfile'  => $this->logfile,
+				)
+			);
 			$progress_obj   = Encode_Progress::from_log_file( $this->logfile, (int) $this->video_duration, (int) $this->started, (int) $this->job_id );
 			$this->progress = $progress_obj->to_array();
 
@@ -938,7 +944,7 @@ class Encode_Format {
 			} else {
 				$mtime = @filemtime( $this->logfile );
 				$fsize = @filesize( $this->logfile );
-				
+
 				// Grace period: If the file is empty, give it at least 30 seconds before checking timeout.
 				$is_new_and_empty = ( $fsize === 0 && ( time() - $this->get_started() < 30 ) );
 
@@ -1045,10 +1051,14 @@ class Encode_Format {
 		}
 
 		if ( strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN' ) {
-			$output = array();
-			// Use /NH (No Header) and search for the PID specifically.
-			exec( 'tasklist /NH /FI "PID eq ' . (int) $this->pid . '"', $output );
-			return ! empty( $output ) && strpos( $output[0], (string) $this->pid ) !== false;
+			$process = new \Symfony\Component\Process\Process( array( 'tasklist', '/NH', '/FI', 'PID eq ' . (int) $this->pid ) );
+			try {
+				$process->run();
+				$output = (string) $process->getOutput();
+				return ! empty( $output ) && strpos( $output, (string) $this->pid ) !== false;
+			} catch ( \Exception $e ) {
+				return false;
+			}
 		} else {
 			return function_exists( 'posix_kill' ) ? posix_kill( (int) $this->pid, 0 ) : true;
 		}

@@ -105,7 +105,7 @@ const Thumbnails = ({
 		}
 
 		return () => clearInterval(pollInterval);
-	}, [id]);
+	}, [id, cloudJobs.length, fetchSpriteStatus]);
 
 	const fetchSpriteStatus = useCallback(async () => {
 		if (!id || !src) {
@@ -965,18 +965,21 @@ const Thumbnails = ({
 			<PanelBody
 				title={__('Thumbnails', 'video-embed-thumbnail-generator')}
 			>
-				{showFailedNotice && Number(videoData?.record?.meta?.['_videopack_browser_thumb_failed']) === 1 && (
-					<Notice
-						status="error"
-						onRemove={() => setShowFailedNotice(false)}
-						isDismissible={true}
-					>
-						{__(
-							'Automatic in-browser thumbnail generation failed for this video (possibly due to CORS or canvas limitations). You can try generating thumbnails manually below.',
-							'video-embed-thumbnail-generator'
-						)}
-					</Notice>
-				)}
+				{showFailedNotice &&
+					Number(
+						videoData?.record?.meta?._videopack_browser_thumb_failed
+					) === 1 && (
+						<Notice
+							status="error"
+							onRemove={() => setShowFailedNotice(false)}
+							isDismissible={true}
+						>
+							{__(
+								'Automatic in-browser thumbnail generation failed for this video (possibly due to CORS or canvas limitations). You can try generating thumbnails manually below.',
+								'video-embed-thumbnail-generator'
+							)}
+						</Notice>
+					)}
 				{poster && (
 					<img
 						className="videopack-current-thumbnail"
@@ -1164,8 +1167,8 @@ const Thumbnails = ({
 							)}
 						</p>
 						<div className="videopack-sprite-tiles-grid">
-							{spriteTiles.map((src, index) => (
-								<img key={index} src={src} alt="" />
+							{spriteTiles.map((tileSrc, index) => (
+								<img key={index} src={tileSrc} alt="" />
 							))}
 						</div>
 					</div>

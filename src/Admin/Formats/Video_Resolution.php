@@ -237,20 +237,20 @@ class Video_Resolution {
 		} else {
 			// Maximum dimensions bounded by a 16:9 box for the target format height.
 			$max_w_for_format = (int) round( $max_h_for_format * ( 16 / 9 ) );
-			
+
 			$target_w_for_max_h = (int) round( ( $source_w / $source_h ) * $max_h_for_format );
-			
+
 			$width = (int) min( $source_w, $max_w_for_format, $target_w_for_max_h );
-			
+
 			$height = (int) round( ( $source_h / $source_w ) * $width );
-			
+
 			if ( $height > $max_h_for_format ) {
 				$height = $max_h_for_format;
 				$width  = (int) round( ( $source_w / $source_h ) * $height );
 			}
 		}
 
-		// Ensure even dimensions (required by almost all encoders)
+		// Ensure even dimensions (required by almost all encoders).
 		$width  = (int) max( 2, $width - ( $width % 2 ) );
 		$height = (int) max( 2, $height - ( $height % 2 ) );
 

@@ -91,7 +91,7 @@ export default function useVideopackData(key, context = {}) {
 					data = record.videopack || null;
 					break;
 				default:
-					data = record[ key ] || null;
+					data = record[key] || null;
 			}
 
 			return { data, isResolving };

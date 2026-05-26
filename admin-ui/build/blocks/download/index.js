@@ -78,7 +78,9 @@ const icons_namespaceObject = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0
 
 const createIcon = name => {
   const icon = icons_namespaceObject[name];
-  if (!icon) return null;
+  if (!icon) {
+    return null;
+  }
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: icon.viewBox,
@@ -1179,7 +1181,15 @@ const external_wp_hooks_namespaceObject = window["wp"]["hooks"];
 
 
 const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
-const VIDEOPACK_CONTEXT_KEYS = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
+const VIDEOPACK_CONTEXT_KEYS =
+/**
+ * Filters the list of Gutenberg block context keys that the hook listens to.
+ *
+ * @since 5.0.0
+ *
+ * @param {Array} contextKeys List of context key strings.
+ */
+(0,external_wp_hooks_namespaceObject.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -1525,7 +1535,7 @@ const external_wp_url_namespaceObject = window["wp"]["url"];
 /**
  * Fetches encoding presets.
  *
- * @param {AbortSignal}   signal         Optional. Abort signal.
+ * @param {AbortSignal} signal Optional. Abort signal.
  */
 const getPresets = async (signal = null) => {
   try {
@@ -1622,6 +1632,14 @@ const getVideoFormats = async (attachmentId, url = '', probedMetadata = null, si
  * @param {Object} args The query arguments for the gallery.
  */
 const getVideoGallery = async args => {
+  /**
+   * Filters the video gallery query. Returning a non-undefined value bypasses the REST API call.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre  Defaults to undefined.
+   * @param {Object}    args Query parameters.
+   */
   const pre = applyFilters('videopack.utils.pre_getVideoGallery', undefined, args);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -1631,6 +1649,14 @@ const getVideoGallery = async args => {
       path: addQueryArgs('/videopack/v1/video_gallery', args),
       method: 'GET'
     });
+    /**
+     * Filters the list of media items returned for the video gallery.
+     *
+     * @since 5.0.0
+     *
+     * @param {Object} response REST API response containing video list.
+     * @param {Object} args     Query parameters used for fetching.
+     */
     return applyFilters('videopack.utils.getVideoGallery', response, args);
   } catch (error) {
     console.error('Error fetching video gallery:', error);
@@ -1683,6 +1709,16 @@ const getFreemiusPage = async page => {
  * @param {number} rotate     The rotation angle.
  */
 const testEncodeCommand = async (codec, resolution, rotate) => {
+  /**
+   * Filters the FFmpeg test command test response. Bypasses the REST API call if a non-undefined value is returned.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre        Defaults to undefined.
+   * @param {string}    codec      The codec to test.
+   * @param {string}    resolution Resolution to test.
+   * @param {number}    rotate     Rotation angle.
+   */
   const pre = applyFilters('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -1742,8 +1778,6 @@ const useVideoFormats = (id, src) => {
   };
 };
 ;// ./src/utils/downloadMenu.js
-
-
 /**
  * Format a resolution value the same way as video-quality-selector.js res_label.
  *
@@ -2009,8 +2043,8 @@ function Edit({
     })]
   });
   const renderFlatMenuItems = formats => formats.map((format, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("li", {
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("a", {
-      href: "#",
+    children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
+      type: "button",
       onClick: e => e.preventDefault(),
       className: "videopack-download-link",
       children: format.label
@@ -2167,6 +2201,8 @@ function Edit({
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
           className: `videopack-download-dropdown-menu${isOpen ? ' is-visible' : ''}`,
           onClick: e => e.stopPropagation(),
+          onKeyDown: e => e.stopPropagation(),
+          role: "presentation",
           children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("ul", {
             children: renderMenuList()
           })

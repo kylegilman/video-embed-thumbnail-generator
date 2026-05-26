@@ -211,9 +211,8 @@ class Encode_Info {
 			if ( $meta_format == $this->format->get_id()
 				|| ( $legacy_id_exists && $meta_format == $this->format->get_legacy_id() )
 				|| ( $meta_format == false
-					&& ( ! empty( $wp_attached_file ) && substr( $wp_attached_file, -strlen( $this->format->get_suffix() ) ) === $this->format->get_suffix()
-						|| ( $legacy_id_exists && ! empty( $wp_attached_file ) && substr( $wp_attached_file, -strlen( $this->format->get_legacy_suffix() ) ) === $this->format->get_legacy_suffix()
-						)
+					&& ( ( ! empty( $wp_attached_file ) && substr( $wp_attached_file, -strlen( $this->format->get_suffix() ) ) === $this->format->get_suffix() )
+						|| ( $legacy_id_exists && ! empty( $wp_attached_file ) && substr( $wp_attached_file, -strlen( $this->format->get_legacy_suffix() ) ) === $this->format->get_legacy_suffix() )
 					)
 				)
 			) {

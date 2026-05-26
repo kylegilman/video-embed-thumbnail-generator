@@ -91,7 +91,7 @@ class FFmpeg_Command {
 	 * Parses an options array, expanding associative keys into sequential items,
 	 * while safely dropping pairs that have empty values to prevent argument shifting.
 	 *
-	 * @param array $options
+	 * @param array $options The options array to parse.
 	 * @return array
 	 */
 	private function parse_options( array $options ) {
@@ -185,32 +185,6 @@ class FFmpeg_Command {
 		return array_values( $command );
 	}
 
-	/**
-	 * Static helper to create a builder from an existing array.
-	 * Useful for legacy code integration.
-	 *
-	 * @param array $array Existing command array.
-	 * @return self
-	 */
-	public static function from_array( array $array ) {
-		$array   = array_values( (array) $array );
-		$builder = new self( $array[0] ?? null );
-
-		$i_idx = array_search( '-i', $array );
-		if ( false !== $i_idx ) {
-			// Global options are between executable and first -i.
-			for ( $j = 1; $j < $i_idx; $j++ ) {
-				$builder->global_options[] = $array[ $j ];
-			}
-
-			// For simplicity, we'll just treat everything after the first -i
-			// as a single output block for now if we don't want to parse complex commands.
-			// But for Videopack, it's usually [global] -i [input] [output_options] [output].
-			// We'll improve this if needed.
-		}
-
-		return $builder;
-	}
 
 	/**
 	 * Convert the command to a string for display or shell execution.

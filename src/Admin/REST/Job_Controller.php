@@ -143,6 +143,14 @@ class Job_Controller extends Controller {
 		}
 
 		$created_jobs = $queue_controller->get_jobs_list_data( $queue_controller->get_queue_items( get_current_blog_id() ), $attachment_id ? $attachment_id : $input_url );
+		/**
+		 * Filters the REST response after successfully enqueuing transcoding jobs.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters(
 			'videopack_rest_jobs_create',
 			new \WP_REST_Response(
@@ -168,6 +176,14 @@ class Job_Controller extends Controller {
 		$input            = $request->get_param( 'input' );
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 		$jobs             = (array) $queue_controller->get_jobs_list_data( (array) $queue_controller->get_queue_items( (int) get_current_blog_id() ), $input );
+				/**
+		 * Filters the REST response listing active/completed transcoding jobs.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_jobs_list', new \WP_REST_Response( $jobs, 200 ), $request );
 	}
 
@@ -186,6 +202,14 @@ class Job_Controller extends Controller {
 			$queue_controller->pause();
 		}
 
+				/**
+		 * Filters the REST response after controlling queue state (play/pause).
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_jobs_control', new \WP_REST_Response( array( 'queue_state' => $action ), 200 ), $request );
 	}
 
@@ -199,6 +223,14 @@ class Job_Controller extends Controller {
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 		$queue_controller->clear_completed_queue( 'completed' === $type ? 'completed' : 'all' );
 
+				/**
+		 * Filters the REST response after clearing completed/all transcoding jobs.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_jobs_clear', new \WP_REST_Response( array( 'cleared' => true ), 200 ), $request );
 	}
 
@@ -214,6 +246,14 @@ class Job_Controller extends Controller {
 		if ( is_wp_error( $prepared ) ) {
 			return $prepared;
 		}
+				/**
+		 * Filters the REST response for retrieving single transcode job details.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters( 'videopack_rest_job_get', new \WP_REST_Response( (array) $prepared, 200 ), $request );
 	}
 
@@ -236,6 +276,14 @@ class Job_Controller extends Controller {
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
+		/**
+		 * Filters the REST response after successfully deleting a transcode job.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters(
 			'videopack_rest_job_delete',
 			new \WP_REST_Response(
@@ -262,6 +310,14 @@ class Job_Controller extends Controller {
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
+		/**
+		 * Filters the REST response after successfully retrying a failed transcode job.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
 		return apply_filters(
 			'videopack_rest_job_retry',
 			new \WP_REST_Response(
@@ -274,5 +330,4 @@ class Job_Controller extends Controller {
 			$request
 		);
 	}
-
 }

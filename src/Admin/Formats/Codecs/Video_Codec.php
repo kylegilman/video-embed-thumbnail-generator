@@ -267,6 +267,13 @@ class Video_Codec {
 		 *
 		 * @param array $aac_array List of AAC encoding libraries.
 		 */
+				/**
+		 * Filters the supported FFmpeg AAC audio encoders array.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $aac_array List of encoder string identifiers (e.g. 'aac', 'libfdk_aac').
+		 */
 		return apply_filters( 'videopack_aac_encoders', $aac_array );
 	}
 

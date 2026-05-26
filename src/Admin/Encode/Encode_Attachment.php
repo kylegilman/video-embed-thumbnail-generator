@@ -355,9 +355,6 @@ class Encode_Attachment {
 			'cloud_meta'           => json_encode( $data_to_save['cloud_meta'] ),
 		);
 
-		if ( ! empty( $data_to_save['cloud_meta'] ) ) {
-		}
-
 		if ( 'failed' === (string) $data_to_save['status'] ) {
 			$current_failed_at = $wpdb->get_var( $wpdb->prepare( 'SELECT failed_at FROM %i WHERE id = %d', $this->queue_table_name, $job_id ) );
 			if ( empty( $current_failed_at ) ) {
@@ -847,6 +844,17 @@ class Encode_Attachment {
 	 * @return \Videopack\Admin\Encode\Encode_Format The updated format object.
 	 */
 	public function start_encode( Encode_Format $encode_format ) {
+				/**
+		 * Filters before a local transcode operation starts.
+		 *
+		 * Returning a non-null value can pre-empt local encoding (useful for offloading).
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param mixed  $pre_start     Null by default, or pre-empted status response.
+		 * @param object $encode_format The Video_Format being transcoded.
+		 * @param object $attachment    The Encode_Attachment instance.
+		 */
 		$pre_start = apply_filters( 'videopack_pre_start_encode', null, $encode_format, $this );
 		if ( $pre_start instanceof Encode_Format ) {
 			return $pre_start;
@@ -879,7 +887,7 @@ class Encode_Attachment {
 				Debug_Logger::log( 'FFmpeg process started successfully', array( 'pid' => $pid ) );
 				$encode_format->set_encode_start( $pid, (int) time() );
 
-				// Wait a brief moment to see if the process terminates immediately on startup
+				// Wait a brief moment to see if the process terminates immediately on startup.
 				usleep( 500000 ); // 0.5 seconds
 				if ( ! $process->isRunning() && $process->getExitCode() !== 0 ) {
 					$error_output = (string) $process->getErrorOutput();
@@ -925,6 +933,14 @@ class Encode_Attachment {
 			$encode_format->set_error( $msg );
 		} finally {
 			$this->save_format( $encode_format );
+						/**
+			 * Fires when a video transcode operation begins.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param object $encode_format The Video_Format being transcoded.
+			 * @param object $attachment    The Encode_Attachment instance.
+			 */
 			do_action( 'videopack_start_encode', $encode_format, $this );
 			return $encode_format;
 		}
@@ -1082,6 +1098,21 @@ class Encode_Attachment {
 			'height' => (int) $encode_format->get_encode_height(),
 		);
 
+				/**
+		 * Filters the array of parameters passed to the transcode runner or FFmpeg arguments array.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array  $encode_array   List of parameters and arguments for transcoding.
+		 * @param string $encode_input   The input video file URL or path.
+		 * @param string $output_path    The target output file path.
+		 * @param object $video_metadata The parsed video metadata object.
+		 * @param string $format_id      The format key.
+		 * @param int    $width          The target video width.
+		 * @param int    $height         The target video height.
+		 * @param object $encode_format  The Video_Format being transcoded.
+		 * @param object $attachment     The Encode_Attachment instance.
+		 */
 		$encode_array = (array) apply_filters( 'videopack_generate_encode_array', $encode_array, (string) $this->encode_input, (string) $encode_format->get_path(), $video_metadata, $format_id, $dimensions_for_filter['width'], $dimensions_for_filter['height'], $encode_format, $this );
 
 		$encode_format->set_encode_array( (array) $encode_array );
@@ -1293,6 +1324,14 @@ class Encode_Attachment {
 		if ( empty( $this->codecs ) ) {
 			$this->set_codecs();
 		}
+				/**
+		 * Filters the list of codecs supported for encoding.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array  $codecs     Associative array of codecs.
+		 * @param object $attachment The Encode_Attachment instance.
+		 */
 		return (array) apply_filters( 'videopack_get_codecs', (array) $this->codecs, $this );
 	}
 
@@ -1315,6 +1354,16 @@ class Encode_Attachment {
 	 * @return string Status string: 'ok_to_queue', 'already_exists', 'lowres', 'vcodec_unavailable', 'error_invalid_format_key'.
 	 */
 	public function check_if_can_queue( string $format_id ) {
+				/**
+		 * Filters the queue check status for a specific attachment and format.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param string $status    The queue eligibility status (default 'ok_to_queue').
+		 * @param string $format_id The target format identifier.
+		 * @param int    $post_id   The video attachment ID.
+		 * @param array  $options   Plugin options array.
+		 */
 		$status = apply_filters( 'videopack_check_if_can_queue_attachment', 'ok_to_queue', $format_id, $this->id, $this->options );
 		if ( 'ok_to_queue' !== $status ) {
 			return $status;
@@ -1322,6 +1371,15 @@ class Encode_Attachment {
 
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 		if ( ! $video_format_config instanceof Video_Format ) {
+					/**
+		 * Filters whether a transcode job can be queued for a specific format.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param string $status    The queue check result.
+		 * @param string $format_id The format identifier.
+		 * @param object $attachment The Encode_Attachment instance.
+		 */
 			return apply_filters( 'videopack_check_if_can_queue', 'error_invalid_format_key', $format_id, $this );
 		}
 
@@ -1406,7 +1464,21 @@ class Encode_Attachment {
 				}
 
 				$update_data = array(
-					'status'               => apply_filters( 'videopack_queue_format_status', 'queued', $format_id, $this ),
+					'status'               => apply_filters(
+					/**
+					 * Filters the initial status string assigned to a queued transcode format format item.
+					 *
+					 * @since 5.0.0
+					 *
+					 * @param string $status    Initial queue status (default 'queued').
+					 * @param string $format_id The format identifier.
+					 * @param object $attachment The Encode_Attachment instance.
+					 */
+						'videopack_queue_format_status',
+						'queued',
+						$format_id,
+						$this
+					),
 					'user_id'              => (int) $user_id,
 					'pid'                  => null,
 					'logfile_path'         => null,
@@ -1434,7 +1506,21 @@ class Encode_Attachment {
 					array( 'id' => $job_id )
 				);
 
-				do_action( 'videopack_queue_format', $job_id, $format_id, $this );
+				do_action(
+				/**
+				 * Fires after a specific format transcode job has been enqueued.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param int    $job_id    The Action Scheduler job ID.
+				 * @param string $format_id The format identifier.
+				 * @param object $attachment The Encode_Attachment instance.
+				 */
+					'videopack_queue_format',
+					$job_id,
+					$format_id,
+					$this
+				);
 
 				return array(
 					'status' => 'success',
@@ -1474,7 +1560,13 @@ class Encode_Attachment {
 			'attachment_id'  => $is_attachment ? (int) $this->id : null,
 			'input_url'      => (string) $this->url,
 			'format_id'      => (string) $format_id,
-			'status'         => apply_filters( 'videopack_queue_format_status', 'queued', $format_id, $this ),
+			'status'         => apply_filters(
+			/** This filter is documented in src/Admin/Encode/Encode_Attachment.php */
+				'videopack_queue_format_status',
+				'queued',
+				$format_id,
+				$this
+			),
 			'output_path'    => $output_path,
 			'output_url'     => $output_url,
 
@@ -1495,7 +1587,13 @@ class Encode_Attachment {
 		}
 		$job_id = (int) $wpdb->insert_id;
 
-		do_action( 'videopack_queue_format', $job_id, $format_id, $this );
+		do_action(
+				/** This action is documented in src/Admin/Encode/Encode_Attachment.php */
+			'videopack_queue_format',
+			$job_id,
+			$format_id,
+			$this
+		);
 
 		return array(
 			'status' => 'success',
@@ -1779,7 +1877,21 @@ class Encode_Attachment {
 
 		$this->save_format( $encode_format );
 
-		do_action( 'videopack_cancel_encoding', $job_id, $encode_format, $this );
+				do_action(
+			/**
+			 * Fires when a transcode job is cancelled.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param int    $job_id        The transcode job ID.
+			 * @param object $encode_format The Video_Format being cancelled.
+			 * @param object $attachment    The Encode_Attachment instance.
+			 */
+					'videopack_cancel_encoding',
+					$job_id,
+					$encode_format,
+					$this
+				);
 
 		return (bool) $canceled;
 	}
@@ -1912,7 +2024,19 @@ class Encode_Attachment {
 		$current_meta['ffmpeg_watermark_url'] = ! empty( $this->options['ffmpeg_watermark']['url'] ) ? (string) $this->options['ffmpeg_watermark']['url'] : null;
 		$attachment_meta_instance->save( $current_meta );
 
-		do_action( 'videopack_cron_new_attachment', $video_id, 'thumbs' );
+				do_action(
+			/**
+			 * Fires to trigger cron processing of a new attachment (e.g. thumb generation).
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param int    $video_id The video attachment ID.
+			 * @param string $action   The action key (e.g. 'thumbs').
+			 */
+					'videopack_cron_new_attachment',
+					$video_id,
+					'thumbs'
+				);
 
 		$replacing_format->set_path( $new_filename );
 		$replacing_format->set_url( $new_url );
@@ -2032,7 +2156,21 @@ class Encode_Attachment {
 
 		$this->save_format( $encode_format );
 
-		do_action( 'videopack_delete_format', $job_id, $encode_format, $this );
+				do_action(
+			/**
+			 * Fires when a generated video format is deleted from the filesystem and database.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param int    $job_id        The job ID.
+			 * @param object $encode_format The Video_Format being deleted.
+			 * @param object $attachment    The Encode_Attachment instance.
+			 */
+					'videopack_delete_format',
+					$job_id,
+					$encode_format,
+					$this
+				);
 
 		return (bool) $overall_success;
 	}
@@ -2150,7 +2288,10 @@ class Encode_Attachment {
 		if ( $existing_attachment_id <= 0 ) {
 			$wp_filetype = (array) wp_check_filetype( (string) basename( $path ) );
 			$title_base  = (string) ( $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( (int) $this->id ) );
-			$label       = $encode_format->get_label() ?: ( $video_format_config instanceof Video_Format ? $video_format_config->get_label() : '' );
+			$label = $encode_format->get_label();
+			if ( empty( $label ) ) {
+				$label = $video_format_config instanceof Video_Format ? $video_format_config->get_label() : '';
+			}
 			$title       = (string) ( $title_base . ' ' . $label );
 
 			$author_id_from_parent = (int) ( $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id() );
@@ -2219,7 +2360,21 @@ class Encode_Attachment {
 						'attachment_id' => $new_attachment_id,
 					)
 				);
-				do_action( 'videopack_attachment_inserted', $new_attachment_id, $encode_format, $this );
+								do_action(
+					/**
+					 * Fires after a newly transcoded format is successfully inserted into the media library as an attachment.
+					 *
+					 * @since 5.0.0
+					 *
+					 * @param int    $new_attachment_id The newly inserted attachment ID.
+					 * @param object $encode_format     The Video_Format of the transcoded file.
+					 * @param object $attachment        The Encode_Attachment instance.
+					 */
+									'videopack_attachment_inserted',
+									$new_attachment_id,
+									$encode_format,
+									$this
+								);
 				return true;
 			}
 
@@ -2259,7 +2414,23 @@ class Encode_Attachment {
 	 */
 	public function insert_attachment( Encode_Format $encode_format ) {
 		error_log( sprintf( '[Videopack] core insert_attachment called for job %d', $encode_format->get_job_id() ) );
-		$pre_inserted = apply_filters( 'videopack_pre_insert_attachment', null, $encode_format, $this );
+				$pre_inserted = apply_filters(
+			/**
+			 * Filters before inserting a transcoded file as a new media library attachment.
+			 *
+			 * Returning a non-null attachment ID bypasses the standard attachment insertion.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param int|null $pre_inserted  Null by default, or custom attachment ID.
+			 * @param object   $encode_format The Video_Format being inserted.
+			 * @param object   $attachment    The Encode_Attachment instance.
+			 */
+					'videopack_pre_insert_attachment',
+					null,
+					$encode_format,
+					$this
+				);
 		if ( null !== $pre_inserted ) {
 			error_log( sprintf( '[Videopack] pre_insert_attachment hook returned: %s', var_export( $pre_inserted, true ) ) );
 			return (bool) $pre_inserted;

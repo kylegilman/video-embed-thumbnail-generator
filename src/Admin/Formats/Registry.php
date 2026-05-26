@@ -37,6 +37,8 @@ class Registry {
 
 	/**
 	 * Recursion guard.
+	 *
+	 * @var bool
 	 */
 	private static $getting_resolutions = false;
 
@@ -54,6 +56,15 @@ class Registry {
 			new Codecs\Video_Codec_AV1(),
 		);
 
+				/**
+		 * Filters the registered list of video codec class names.
+		 *
+		 * Add-ons can use this filter to register custom video codecs.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $codecs Array of fully-qualified codec class names.
+		 */
 		$codecs = (array) apply_filters( 'videopack_video_codecs', $codecs );
 		return $codecs;
 	}
@@ -152,7 +163,14 @@ class Registry {
 		}
 
 		self::$getting_resolutions = true;
-		$resolutions = (array) apply_filters( 'videopack_video_resolutions', $resolutions );
+				/**
+		 * Filters the registered list of video resolution objects/configurations.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $resolutions Array of resolution instances or configurations.
+		 */
+		$resolutions               = (array) apply_filters( 'videopack_video_resolutions', $resolutions );
 		self::$getting_resolutions = false;
 
 		return $resolutions;
@@ -227,6 +245,13 @@ class Registry {
 				}
 				return (string) esc_html__( 'Custom', 'video-embed-thumbnail-generator' );
 			default:
+								/**
+				 * Filters the localizable string name for a video resolution.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param string $name The resolution string label.
+				 */
 				return (string) apply_filters( 'videopack_resolution_l10n', $name );
 		}
 	}
@@ -239,7 +264,7 @@ class Registry {
 	 */
 	public function get_video_formats( $hide_formats = false ) {
 		static $formats_cache = array();
-		$cache_key = $hide_formats ? 'hidden' : 'all';
+		$cache_key            = $hide_formats ? 'hidden' : 'all';
 		if ( isset( $formats_cache[ $cache_key ] ) ) {
 			return $formats_cache[ $cache_key ];
 		}
@@ -277,6 +302,13 @@ class Registry {
 			}
 		}
 
+				/**
+		 * Filters the complete registered list of output video formats.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $video_formats Array of Video_Format objects.
+		 */
 		$video_formats = (array) apply_filters( 'videopack_video_formats', $video_formats );
 
 		$formats_cache[ $cache_key ] = $video_formats;

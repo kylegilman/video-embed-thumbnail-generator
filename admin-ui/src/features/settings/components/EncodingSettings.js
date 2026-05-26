@@ -3,7 +3,12 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 import { getUsersWithCapability } from '../../../utils/utils';
-import { startBatchProcess, getBatchProgress, downloadBrowserEncoderAssets, deleteBrowserEncoderAssets } from '../../../api/media';
+import {
+	startBatchProcess,
+	getBatchProgress,
+	downloadBrowserEncoderAssets,
+	deleteBrowserEncoderAssets,
+} from '../../../api/media';
 import useBatchProcess from '../../../hooks/useBatchProcess';
 import {
 	BaseControl,
@@ -62,14 +67,36 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		browser_encoder_assets_status = 'missing',
 	} = settings;
 
-	const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
+	const effectiveFfmpegExists =
+		(active_encoder !== 'ffmpeg' &&
+			(!!videopack_config.isTranscodingServiceReady ||
+				!!videopack_config.is_pro)) ||
+		ffmpeg_exists === true ||
+		ffmpeg_exists === 'true' ||
+		ffmpeg_exists === 1 ||
+		ffmpeg_exists === '1';
 
-	const availableEncoders = applyFilters('videopack.settings.encoders', [
-		{
-			value: 'ffmpeg',
-			label: __('Web Server FFmpeg', 'video-embed-thumbnail-generator'),
-		},
-	], settings);
+	const availableEncoders =
+		/**
+		 * Filters the list of available encoders in the dropdown list.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Array} encoders List of active encoder choices.
+		 */
+		applyFilters(
+			'videopack.settings.encoders',
+			[
+				{
+					value: 'ffmpeg',
+					label: __(
+						'Web Server FFmpeg',
+						'video-embed-thumbnail-generator'
+					),
+				},
+			],
+			settings
+		);
 
 	const [users, setUsers] = useState(null);
 	const [isDownloadingAssets, setIsDownloadingAssets] = useState(false);
@@ -90,18 +117,28 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const filteredCodecs = useMemo(() => {
 		const { codecs } = videopack_config;
 		return codecs.filter((codec) => {
-			const defaultSupported = ! (
-				( codec.id === 'av1' && active_encoder === 'browser' ) ||
-				( codec.id === 'cmaf' && active_encoder === 'browser' )
+			const defaultSupported = !(
+				(codec.id === 'av1' && active_encoder === 'browser') ||
+				(codec.id === 'cmaf' && active_encoder === 'browser')
 			);
 			const isSupported = applyFilters(
+				/**
+				 * Filters whether a specific video codec and resolution is supported by the active encoder.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {boolean} supported      True if supported, false otherwise.
+				 * @param {string}  codecId        Video codec ID string.
+				 * @param {string}  active_encoder The active encoder identifier.
+				 * @param {Object}  settings       The global plugin settings object.
+				 */
 				'videopack.settings.codec_supported',
 				defaultSupported,
 				codec.id,
 				active_encoder,
 				settings
 			);
-			if ( ! isSupported ) {
+			if (!isSupported) {
 				return false;
 			}
 			if (codec.id === 'thumbnail') {
@@ -118,7 +155,9 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	}, [active_encoder, settings]);
 
 	useEffect(() => {
-		if (!encode) return;
+		if (!encode) {
+			return;
+		}
 
 		let changed = false;
 		const newEncode = { ...encode };
@@ -126,11 +165,12 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		// Auto-disable unsupported codecs
 		Object.keys(encode).forEach((codecId) => {
 			if (encode[codecId]?.enabled) {
-				const defaultSupported = ! (
-					( codecId === 'av1' && active_encoder === 'browser' ) ||
-					( codecId === 'cmaf' && active_encoder === 'browser' )
+				const defaultSupported = !(
+					(codecId === 'av1' && active_encoder === 'browser') ||
+					(codecId === 'cmaf' && active_encoder === 'browser')
 				);
 				const isSupported = applyFilters(
+					/** This filter is documented in src/features/settings/components/EncodingSettings.js */
 					'videopack.settings.codec_supported',
 					defaultSupported,
 					codecId,
@@ -138,7 +178,10 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					settings
 				);
 				if (!isSupported) {
-					newEncode[codecId] = { ...newEncode[codecId], enabled: false };
+					newEncode[codecId] = {
+						...newEncode[codecId],
+						enabled: false,
+					};
 					changed = true;
 				}
 			}
@@ -151,6 +194,16 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 
 	useEffect(() => {
 		const isDisabled = applyFilters(
+			/**
+			 * Filters whether the animated GIF auto-transcode setting toggle should be disabled.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param {boolean} disabled       True if toggle should be disabled.
+			 * @param {boolean} ffmpegExists   True if FFmpeg is detected.
+			 * @param {string}  active_encoder The active encoder identifier.
+			 * @param {Object}  settings       The global plugin settings object.
+			 */
 			'videopack.settings.auto_encode_gif.disabled',
 			effectiveFfmpegExists !== true,
 			active_encoder,
@@ -159,7 +212,13 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		if (isDisabled && auto_encode_gif) {
 			changeHandlerFactory.auto_encode_gif(false);
 		}
-	}, [active_encoder, auto_encode_gif, changeHandlerFactory, effectiveFfmpegExists, settings]);
+	}, [
+		active_encoder,
+		auto_encode_gif,
+		changeHandlerFactory,
+		effectiveFfmpegExists,
+		settings,
+	]);
 
 	useEffect(() => {
 		getUsersWithCapability('edit_others_video_encodes')
@@ -179,8 +238,16 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 
 	const EncodeFormatGrid = () => {
 		const { codecs } = videopack_config;
-		const { encode: currentEncode, ffmpeg_exists: rawFfmpegExists } = settings;
-		const ffmpegExists = ( settings.active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || rawFfmpegExists === true || rawFfmpegExists === 'true' || rawFfmpegExists === 1 || rawFfmpegExists === '1';
+		const { encode: currentEncode, ffmpeg_exists: rawFfmpegExists } =
+			settings;
+		const ffmpegExists =
+			(settings.active_encoder !== 'ffmpeg' &&
+				(!!videopack_config.isTranscodingServiceReady ||
+					!!videopack_config.is_pro)) ||
+			rawFfmpegExists === true ||
+			rawFfmpegExists === 'true' ||
+			rawFfmpegExists === 1 ||
+			rawFfmpegExists === '1';
 
 		const handleCheckboxChange = (codecId, resolutionId, isChecked) => {
 			const newEncode = JSON.parse(JSON.stringify(currentEncode || {}));
@@ -238,7 +305,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 
 			changeHandlerFactory.encode(newEncode);
 		};
-
 
 		const filteredResolutions = currentResolutions;
 		return (
@@ -359,12 +425,13 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			},
 			...codecs
 				.filter(
-					( c ) =>
+					(c) =>
 						c.is_video !== false &&
 						c.id !== 'cmaf' &&
 						applyFilters(
+							/** This filter is documented in src/features/settings/components/EncodingSettings.js */
 							'videopack.settings.codec_supported',
-							! ( c.id === 'av1' && active_encoder === 'browser' ),
+							!(c.id === 'av1' && active_encoder === 'browser'),
 							c.id,
 							active_encoder,
 							settings
@@ -564,11 +631,11 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 								? __(
 										'The FFmpeg encoder library is currently hosted on your own server.',
 										'video-embed-thumbnail-generator'
-								  )
+									)
 								: __(
 										'The FFmpeg encoder library (30MB) is currently loaded from a global CDN. To improve privacy and reliability, you can download the library and host it on your own server.',
 										'video-embed-thumbnail-generator'
-								  )}
+									)}
 						</p>
 						<Flex
 							align="flex-end"
@@ -591,7 +658,12 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 										videopack_config.browser_encoder_assets_status =
 											'ready';
 									} catch (error) {
-										alert(
+										console.error(
+											'Failed to download browser encoder assets:',
+											error
+										);
+										// eslint-disable-next-line no-alert
+										window.alert(
 											__(
 												'Failed to download assets. Please check your server permissions.',
 												'video-embed-thumbnail-generator'
@@ -602,24 +674,23 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 									}
 								}}
 							>
-								{browser_encoder_assets_status ===
-								'ready'
+								{browser_encoder_assets_status === 'ready'
 									? __(
 											'Update assets',
 											'video-embed-thumbnail-generator'
-									  )
+										)
 									: __(
 											'Download and install assets',
 											'video-embed-thumbnail-generator'
-									  )}
+										)}
 							</Button>
-							{browser_encoder_assets_status ===
-								'ready' && (
+							{browser_encoder_assets_status === 'ready' && (
 								<Button
 									variant="link"
 									isDestructive
 									onClick={async () => {
 										if (
+											// eslint-disable-next-line no-alert
 											window.confirm(
 												__(
 													'Are you sure you want to delete the local FFmpeg assets? This will revert to using the CDN.',
@@ -635,7 +706,12 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 												videopack_config.browser_encoder_assets_status =
 													'missing';
 											} catch (error) {
-												alert(
+												console.error(
+													'Failed to delete browser encoder assets:',
+													error
+												);
+												// eslint-disable-next-line no-alert
+												window.alert(
 													__(
 														'Failed to delete assets.',
 														'video-embed-thumbnail-generator'
@@ -689,7 +765,11 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						</PanelRow>
 						{effectiveFfmpegExists !== true && ffmpeg_error && (
 							<div className="notice notice-error videopack-ffmpeg-notice">
-								<p dangerouslySetInnerHTML={{ __html: ffmpeg_error }} />
+								<p
+									dangerouslySetInnerHTML={{
+										__html: ffmpeg_error,
+									}}
+								/>
 							</div>
 						)}
 					</>
@@ -792,12 +872,22 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						onChange={changeHandlerFactory.auto_encode_gif}
 						checked={auto_encode_gif}
 						disabled={applyFilters(
+							/** This filter is documented in src/features/settings/components/EncodingSettings.js */
 							'videopack.settings.auto_encode_gif.disabled',
 							effectiveFfmpegExists !== true,
 							active_encoder,
 							settings
 						)}
 						help={applyFilters(
+							/**
+							 * Filters custom descriptive help text for the Auto Encode GIFs option.
+							 *
+							 * @since 5.0.0
+							 *
+							 * @param {string|null} helpText       Custom help text or null for default.
+							 * @param {string}      active_encoder Active encoder.
+							 * @param {Object}      settings       The global settings object.
+							 */
 							'videopack.settings.auto_encode_gif.help',
 							null,
 							active_encoder,
@@ -814,12 +904,31 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 							onChange={changeHandlerFactory.keep_gif_source}
 							checked={keep_gif_source}
 							disabled={applyFilters(
+								/**
+								 * Filters whether the "Keep Original GIF" option toggle is disabled.
+								 *
+								 * @since 5.0.0
+								 *
+								 * @param {boolean} disabled       True to disable the toggle.
+								 * @param {boolean} ffmpegExists   True if FFmpeg is active.
+								 * @param {string}  active_encoder Active encoder.
+								 * @param {Object}  settings       The global settings object.
+								 */
 								'videopack.settings.keep_gif_source.disabled',
 								effectiveFfmpegExists !== true,
 								active_encoder,
 								settings
 							)}
 							help={applyFilters(
+								/**
+								 * Filters custom descriptive help text for the Keep Original GIF option.
+								 *
+								 * @since 5.0.0
+								 *
+								 * @param {string|null} helpText       Custom help text or null for default.
+								 * @param {string}      active_encoder Active encoder.
+								 * @param {Object}      settings       The global settings object.
+								 */
 								'videopack.settings.keep_gif_source.help',
 								null,
 								active_encoder,
@@ -917,36 +1026,60 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				title={__('Video quality', 'video-embed-thumbnail-generator')}
 				initialOpen={!!effectiveFfmpegExists}
 			>
-				{applyFilters('videopack.settings.encoding.before_quality', null, {
-					settings,
-					changeHandlerFactory,
-					ffmpegTest,
-				})}
-				{filteredCodecs.map(
-					(codec) => {
-						if ( ! encode?.[codec.id]?.enabled ) return null;
-						const content = applyFilters(
-							'videopack.settings.encoding.codec_settings',
-							<PerCodecQualitySettings
-								key={codec.id}
-								codec={codec}
-								settings={settings}
-								changeHandlerFactory={changeHandlerFactory}
-							/>,
-							{ codec, settings, changeHandlerFactory }
-						);
-						if ( ! content ) return null;
-						return (
-							<PanelBody 
-								key={codec.id} 
-								title={codec.label || codec.name} 
-								initialOpen={false}
-							>
-								{content}
-							</PanelBody>
-						);
+				{applyFilters(
+					/**
+					 * Action filter hook to render custom settings components before codec quality panels.
+					 *
+					 * @since 5.0.0
+					 *
+					 * @param {null}   empty   Null context value.
+					 * @param {Object} context Object containing settings, changeHandlerFactory, etc.
+					 */
+					'videopack.settings.encoding.before_quality',
+					null,
+					{
+						settings,
+						changeHandlerFactory,
+						ffmpegTest,
 					}
 				)}
+				{filteredCodecs.map((codec) => {
+					if (!encode?.[codec.id]?.enabled) {
+						return null;
+					}
+					const content = applyFilters(
+						/**
+						 * Filters the rendered settings panel for a codec block.
+						 *
+						 * Enables extensions to insert custom fields or override the quality settings layout entirely.
+						 *
+						 * @since 5.0.0
+						 *
+						 * @param {Element} panel   React element representing codec settings.
+						 * @param {Object}  context Object containing codec details, settings, and changeHandlerFactory.
+						 */
+						'videopack.settings.encoding.codec_settings',
+						<PerCodecQualitySettings
+							key={codec.id}
+							codec={codec}
+							settings={settings}
+							changeHandlerFactory={changeHandlerFactory}
+						/>,
+						{ codec, settings, changeHandlerFactory }
+					);
+					if (!content) {
+						return null;
+					}
+					return (
+						<PanelBody
+							key={codec.id}
+							title={codec.label || codec.name}
+							initialOpen={false}
+						>
+							{content}
+						</PanelBody>
+					);
+				})}
 			</PanelBody>
 			<PanelBody
 				title={__('Audio', 'video-embed-thumbnail-generator')}
@@ -1011,7 +1144,9 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						max={10}
 						step={1}
 						marks={generateNonCrfMarks('simultaneous')}
-						disabled={isNetworkActive || effectiveFfmpegExists !== true}
+						disabled={
+							isNetworkActive || effectiveFfmpegExists !== true
+						}
 						title={
 							isNetworkActive
 								? __(
@@ -1165,11 +1300,23 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					{encodingBatch.confirmDialog.message}
 				</ConfirmDialog>
 			)}
-			{applyFilters('videopack.settings.encoding.after_panels', null, {
-				settings,
-				changeHandlerFactory,
-				ffmpegTest,
-			})}
+			{applyFilters(
+				/**
+				 * Action filter hook to render custom settings components after encoding settings panels.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {null}   empty   Null context value.
+				 * @param {Object} context Object containing settings, changeHandlerFactory, etc.
+				 */
+				'videopack.settings.encoding.after_panels',
+				null,
+				{
+					settings,
+					changeHandlerFactory,
+					ffmpegTest,
+				}
+			)}
 		</>
 	);
 };

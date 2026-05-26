@@ -191,6 +191,15 @@ class Video_Format {
 		 * @param \Videopack\Admin\Formats\Codecs\Video_Codec $codec      Video codec object.
 		 * @param \Videopack\Admin\Formats\Video_Resolution   $resolution Video resolution object.
 		 */
+				/**
+		 * Filters the filename suffix for a generated video format file.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param string $suffix     The suffix string (e.g., '_h264_360p').
+		 * @param string $codec      The video codec identifier.
+		 * @param object $resolution The resolution configuration object.
+		 */
 		return apply_filters( 'videopack_video_format_suffix', $suffix, $this->codec, $this->resolution );
 	}
 

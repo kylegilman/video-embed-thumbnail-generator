@@ -3,7 +3,12 @@
 
 	<description>Custom Videopack Coding Standards</description>
 
-	<exclude-pattern type="relative">^/video-js/*</exclude-pattern>
+	<exclude-pattern>*/video-js/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/admin-ui/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/admin-ui/build/*</exclude-pattern>
+	<exclude-pattern>*/tmp/*</exclude-pattern>
 
 	<rule ref="PHPCompatibility" />
 	<config name="testVersion" value="7.2-"/>

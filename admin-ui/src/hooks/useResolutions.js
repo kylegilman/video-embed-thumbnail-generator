@@ -11,6 +11,7 @@ import { __, sprintf } from '@wordpress/i18n';
  *
  * @param {boolean}       enable_custom_resolution Whether to include the custom resolution in the list.
  * @param {string|number} custom_resolution        The height of the custom resolution.
+ * @param {boolean}       onlyStandard             Whether to show only standard resolutions.
  * @return {Array} List of resolution objects.
  */
 const useResolutions = (
@@ -23,7 +24,7 @@ const useResolutions = (
 		let resolutionsList = videopack_config.resolutions.filter(
 			(r) =>
 				!r.is_custom &&
-				( onlyStandard ? r.is_standard !== false : r.is_video !== false )
+				(onlyStandard ? r.is_standard !== false : r.is_video !== false)
 		);
 
 		if (enable_custom_resolution) {
@@ -57,7 +58,7 @@ const useResolutions = (
 			}
 			return b.height - a.height;
 		});
-	}, [enable_custom_resolution, custom_resolution]);
+	}, [enable_custom_resolution, custom_resolution, onlyStandard]);
 };
 
 export default useResolutions;

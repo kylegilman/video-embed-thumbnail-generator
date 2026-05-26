@@ -168,7 +168,7 @@ class Video_Metadata {
 					$this->actualheight = $wp_metadata['height'] ?? null;
 					$this->duration     = $wp_metadata['length'] ?? null;
 					$this->codec        = $wp_metadata['videocodec'] ?? $wp_metadata['codec'] ?? null;
-					
+
 					if ( $this->actualwidth && $this->actualheight && $this->codec ) {
 						$this->worked = true;
 						return; // Success, no need for FFmpeg.

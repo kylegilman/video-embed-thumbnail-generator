@@ -115,7 +115,7 @@ class Modular_Renderer {
 		if ( ! empty( $atts['wrapper_class'] ) ) {
 			$classes[] = $atts['wrapper_class'];
 		}
-		
+
 		$embed_method = $atts['embed_method'] ?? $options['embed_method'] ?? 'Video.js';
 		if ( $embed_method ) {
 			$classes[] = 'videopack-embed-' . sanitize_title( (string) $embed_method );
@@ -435,7 +435,7 @@ class Modular_Renderer {
 	 */
 	public static function render_video_title( array $atts, $source, $id ) {
 		wp_enqueue_style( 'videopack-core' );
-		$options     = get_option( 'videopack_options', array() );
+		$options       = get_option( 'videopack_options', array() );
 		$inner_content = $atts['inner_content'] ?? '';
 
 		$title = ! empty( $atts['title'] ) ? $atts['title'] : ( $source ? $source->get_title() : '' );
@@ -588,8 +588,8 @@ class Modular_Renderer {
 	/**
 	 * Get player source_groups for download menu (same grouping as quality selector).
 	 *
-	 * @param \Videopack\Video_Source\Source              $source          Video source.
-	 * @param array                                       $options         Plugin options.
+	 * @param \Videopack\Video_Source\Source         $source          Video source.
+	 * @param array                                  $options         Plugin options.
 	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Format registry.
 	 * @return array Player source groups.
 	 */
@@ -683,8 +683,10 @@ class Modular_Renderer {
 	/**
 	 * Renders the download link HTML for a video.
 	 *
-	 * @param array $atts Block attributes, including alignment and visibility settings.
-	 * @param \Videopack\Video_Source\Source $source The video source object.
+	 * @param array                                  $atts            Block attributes, including alignment and visibility settings.
+	 * @param \Videopack\Video_Source\Source         $source          The video source object.
+	 * @param array                                  $options         Optional. Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Format registry.
 	 * @return string The rendered HTML.
 	 */
 	public static function render_download( array $atts, $source, array $options = array(), $format_registry = null ) {
@@ -699,7 +701,7 @@ class Modular_Renderer {
 		$is_inside_title_meta = ! empty( $atts['isInsideTitleMeta'] );
 		$is_overlay           = ( ! empty( $atts['isOverlay'] ) || ! empty( $atts['isInsideThumbnail'] ) || ! empty( $atts['isInsidePlayerOverlay'] ) ) && ! $is_inside_title_meta;
 		$position             = $atts['position'] ?? 'bottom';
-		$text_align = $atts['textAlign'] ?? 'left';
+		$text_align           = $atts['textAlign'] ?? 'left';
 
 		$show_icon  = $atts['icon'] ?? true;
 		$show_text  = $atts['text'] ?? false;
@@ -735,18 +737,18 @@ class Modular_Renderer {
 		$html = '<div class="' . esc_attr( $wrapper_class ) . '"' . $style . '>' . "\n";
 
 		if ( 'menu' === $mode ) {
-			$html .= '<div class="videopack-download-menu-container">' . "\n";
-			$html .= '<button type="button" class="videopack-download-trigger ' . esc_attr( $element_class ) . '" aria-expanded="false" aria-haspopup="true" title="' . esc_attr__( 'Download Video', 'video-embed-thumbnail-generator' ) . '">' . "\n";
-			$html .= $trigger_inner;
-			$html .= '<span class="videopack-caret">▼</span>' . "\n";
-			$html .= '</button>' . "\n";
-			$html .= '<div class="videopack-download-dropdown-menu">' . "\n";
-			$html .= '<ul>' . "\n";
+			$html         .= '<div class="videopack-download-menu-container">' . "\n";
+			$html         .= '<button type="button" class="videopack-download-trigger ' . esc_attr( $element_class ) . '" aria-expanded="false" aria-haspopup="true" title="' . esc_attr__( 'Download Video', 'video-embed-thumbnail-generator' ) . '">' . "\n";
+			$html         .= $trigger_inner;
+			$html         .= '<span class="videopack-caret">▼</span>' . "\n";
+			$html         .= '</button>' . "\n";
+			$html         .= '<div class="videopack-download-dropdown-menu">' . "\n";
+			$html         .= '<ul>' . "\n";
 			$source_groups = self::get_player_source_groups_for_download( $source, $options, $format_registry );
 			$html         .= self::render_download_menu_list( $source_groups );
-			$html .= '</ul>' . "\n";
-			$html .= '</div>' . "\n";
-			$html .= '</div>' . "\n";
+			$html         .= '</ul>' . "\n";
+			$html         .= '</div>' . "\n";
+			$html         .= '</div>' . "\n";
 		} else {
 			$link_attributes = array(
 				'class="videopack-download-link ' . esc_attr( $element_class ) . '"',
@@ -810,14 +812,14 @@ class Modular_Renderer {
 
 		$style = ! empty( $atts['style_vars'] ) ? ' style="' . esc_attr( $atts['style_vars'] ) . '"' : '';
 
-		// SVGs definitions
+		// SVGs definitions.
 		$share_svg = Icons::get( 'share', 'share-icon' );
 		$close_svg = Icons::get( 'close', 'close-icon' );
-		
-		$external_svg = Icons::get( 'external', 'external-icon' );
-		$ios_share_svg = Icons::get( 'iosShare', 'ios-share-icon' );
+
+		$external_svg    = Icons::get( 'external', 'external-icon' );
+		$ios_share_svg   = Icons::get( 'iosShare', 'ios-share-icon' );
 		$curve_share_svg = Icons::get( 'curveShare', 'curve-share-icon' );
-		
+
 		$embed_svg = Icons::get( 'embed', 'embed-icon' );
 
 		$icon_content = '';
@@ -836,11 +838,11 @@ class Modular_Renderer {
 			$trigger_inner .= $icon_content . "\n";
 		}
 		if ( $show_text || 'none' === $icon_type ) {
-			$margin_style = ( 'none' !== $icon_type ) ? ' style="margin-left: 4px;"' : '';
+			$margin_style   = ( 'none' !== $icon_type ) ? ' style="margin-left: 4px;"' : '';
 			$trigger_inner .= '<span class="videopack-share-text-label"' . $margin_style . '>' . esc_html__( 'Share', 'video-embed-thumbnail-generator' ) . '</span>' . "\n";
 		}
 
-		// In overlay mode, the dynamic icon class switches between 'share' and 'close'. 
+		// In overlay mode, the dynamic icon class switches between 'share' and 'close'.
 		// If icon is not standard 'share', it still acts as class for querySelector.
 		$element_class = 'videopack-share-link videopack-share-toggle videopack-icons style-' . esc_attr( $style_type ) . ' share';
 
@@ -849,7 +851,7 @@ class Modular_Renderer {
 			$embedlink = add_query_arg( 'videopack[enable]', 'true', get_permalink( $source->get_id() ) );
 		}
 
-		$html = '<div class="' . esc_attr( $wrapper_class ) . '"' . $style . '>' . "\n";
+		$html  = '<div class="' . esc_attr( $wrapper_class ) . '"' . $style . '>' . "\n";
 		$html .= '<button type="button" class="' . esc_attr( $element_class ) . '" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">' . "\n";
 		$html .= $trigger_inner;
 		if ( ! $is_overlay && ! $is_inside_title_meta ) {
@@ -857,11 +859,11 @@ class Modular_Renderer {
 		}
 		$html .= '</button>' . "\n";
 
-		// Click trap (used for the overlay popup closing trigger)
+		// Click trap (used for the overlay popup closing trigger).
 		$html .= '<button class="videopack-click-trap"></button>' . "\n";
 
-		// Embed/Share Overlay / Dropdown Markup
-		$title = $atts['title'] ?? $source->get_title();
+		// Embed/Share Overlay / Dropdown Markup.
+		$title        = $atts['title'] ?? $source->get_title();
 		$iframe_title = sprintf(
 			/* translators: %s is the video title */
 			__( 'Video Player - %s', 'video-embed-thumbnail-generator' ),
@@ -870,7 +872,7 @@ class Modular_Renderer {
 		$allow_policy   = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
 		$sandbox_policy = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms';
 
-		$embed_code  = sprintf(
+		$embed_code = sprintf(
 			'<iframe src="%1$s" width="%2$s" height="%3$s" style="border:0; width:100%%; aspect-ratio:%2$s/%3$s;" allow="%4$s" allowfullscreen credentialless sandbox="%5$s" loading="lazy" title="%6$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
 			esc_url( $embedlink ),
 			esc_attr( (string) ( $atts['width'] ?? 960 ) ),
@@ -922,18 +924,18 @@ class Modular_Renderer {
 			$html .= '</div>' . "\n";
 		}
 
-		$html .= '<span class="videopack-embedcode-container">' . "\n" .
+		$html       .= '<span class="videopack-embedcode-container">' . "\n" .
 			'<span class="videopack-icons embed">' . "\n" . $embed_svg . "\n" . '</span>' . "\n" .
 			'<span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span>' . "\n" .
 			'<span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span>' . "\n" .
 			'</span>' . "\n";
 		$start_at_id = 'videopack-start-at-enable-' . $id;
-		$html .= '<span class="videopack-start-at-container">' . "\n" .
+		$html       .= '<span class="videopack-start-at-container">' . "\n" .
 			'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" />' . "\n" .
 			'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label>' . "\n" .
 			'<input type="text" class="videopack-start-at" value="00:00" />' . "\n" .
 			'</span>' . "\n";
-		$html .= '</div>' . "\n";
+		$html       .= '</div>' . "\n";
 
 		$html .= '</div>' . "\n";
 

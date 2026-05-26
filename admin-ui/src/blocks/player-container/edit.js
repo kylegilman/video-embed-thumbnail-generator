@@ -64,7 +64,9 @@ const ALLOWED_BLOCKS = [
  */
 export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const { id, src } = attributes;
-	const [temporarySrc, setTemporarySrc] = useState(isBlobURL(src) ? src : null);
+	const [temporarySrc, setTemporarySrc] = useState(
+		isBlobURL(src) ? src : null
+	);
 	const effectiveSrc = temporarySrc || src;
 	const [options, setOptions] = useState();
 	const config =
@@ -102,6 +104,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		isDiscovering,
 	} = effectiveDesign;
 
+	const contextAttachmentId = context['videopack/attachmentId'];
 	const {
 		mediaUpload,
 		isSiteEditor,
@@ -112,10 +115,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		(select) => {
 			const editorStore = select(blockEditorStore);
 			const editor = select('core/editor');
-			const core = select('core');
 			const postType = editor?.getCurrentPostType();
 			const effectiveId =
-				id || context['videopack/attachmentId'] || resolvedAttachmentId;
+				id || contextAttachmentId || resolvedAttachmentId;
 
 			return {
 				mediaUpload: editorStore.getSettings()?.mediaUpload,
@@ -130,11 +132,11 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 								'postType',
 								'attachment',
 								effectiveId
-						  )
+							)
 						: null,
 			};
 		},
-		[clientId, id, context['videopack/attachmentId'], resolvedAttachmentId]
+		[clientId, id, contextAttachmentId, resolvedAttachmentId]
 	);
 
 	const isDynamic =
@@ -150,7 +152,11 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const hasResolved = !!attachment || (!effectiveId && !effectiveSrc);
 
 	const videoData = useMemo(
-		() => ({ record: attachment, setRecord: setAttachmentOverride, hasResolved }),
+		() => ({
+			record: attachment,
+			setRecord: setAttachmentOverride,
+			hasResolved,
+		}),
 		[attachment, hasResolved]
 	);
 
@@ -266,7 +272,15 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					context['videopack/caption']
 				),
 		};
-	}, [attributes, attachment, options, config, context, effectiveDesign]);
+	}, [
+		attributes,
+		attachment,
+		options,
+		config,
+		context,
+		effectiveDesign,
+		effectiveSrc,
+	]);
 
 	const attributesRef = useRef(attributes);
 	const isMountedRef = useRef(false);
@@ -288,7 +302,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				return;
 			}
 
-			const media_src = attachmentObject.source_url || attachmentObject.url;
+			const media_src =
+				attachmentObject.source_url || attachmentObject.url;
 			const media_attributes = {
 				src: isBlobURL(media_src) ? undefined : media_src,
 				id: attachmentObject.id,
@@ -542,7 +557,10 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			engine_inner_blocks.push([
 				'videopack/title',
 				{},
-				getTitleInnerTemplate(!!globalOpts.downloadlink, !!globalOpts.embedcode),
+				getTitleInnerTemplate(
+					!!globalOpts.downloadlink,
+					!!globalOpts.embedcode
+				),
 			]);
 		}
 
@@ -621,7 +639,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				value={attributes}
 				onError={onUploadError}
 				placeholder={placeholder}
-				query={ { videopack_filter: 'select_video_source' } }
+				query={{ videopack_filter: 'select_video_source' }}
 			/>
 		);
 	} else if (!id && effectiveSrc && isBlobURL(effectiveSrc)) {
@@ -658,7 +676,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						onSelect={onSelectVideo}
 						onSelectURL={onSelectURL}
 						onError={onUploadError}
-						query={ { videopack_filter: 'select_video_source' } }
+						query={{ videopack_filter: 'select_video_source' }}
 					/>
 					<ToolbarButton
 						icon={resetIcon}

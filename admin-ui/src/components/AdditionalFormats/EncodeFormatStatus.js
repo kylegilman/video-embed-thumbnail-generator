@@ -24,7 +24,9 @@ import './EncodeFormatStatus.scss';
  * @param {number}   props.parentId         ID of the parent video attachment.
  * @param {boolean}  props.showLabel        Whether to show the format label.
  * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
- * @param {boolean}  props.isBusy           Whether the format is currently being processed.
+ * @param {boolean}  props.isProcessing     Whether the format is currently being processed.
+ * @param {string}   props.processingId     The ID of the format being processed.
+ * @param {boolean}  props.hideButtons      Whether to hide control buttons.
  * @return {Element} The rendered component.
  */
 const EncodeFormatStatus = ({
@@ -201,19 +203,21 @@ const EncodeFormatStatus = ({
 					/>
 				)}
 
-			{formatData.deletable && !formatData.encoding_now && !hideButtons && (
-				<Button
-					isBusy={deleteInProgress === formatId}
-					disabled={isProcessing || !!deleteInProgress}
-					onClick={onDeleteFile}
-					variant="link"
-					text={__(
-						'Delete permanently',
-						'video-embed-thumbnail-generator'
-					)}
-					isDestructive
-				/>
-			)}
+			{formatData.deletable &&
+				!formatData.encoding_now &&
+				!hideButtons && (
+					<Button
+						isBusy={deleteInProgress === formatId}
+						disabled={isProcessing || !!deleteInProgress}
+						onClick={onDeleteFile}
+						variant="link"
+						text={__(
+							'Delete permanently',
+							'video-embed-thumbnail-generator'
+						)}
+						isDestructive
+					/>
+				)}
 
 			{(formatData.encoding_now ||
 				formatData.status === 'browser_pending' ||

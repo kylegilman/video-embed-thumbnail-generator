@@ -138,30 +138,43 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 	}, [model]);
 
 	// Merging wrapper that mirrors the block editor's setAttributes behavior.
-	const mergeAttributes = useCallback((newAttrs) => {
-		setRawAttributes((prev) => {
-			const updated = { ...prev, ...newAttrs };
-			
-			// Sync back to the record meta if it exists, to prevent the useEffect from reverting.
-			if (record) {
-				const currentMeta = record.meta?.['_videopack-meta'] || {};
-				const updatedMeta = { ...currentMeta, ...updated };
-				
-				// We need to update the record state too so the initialization useEffect doesn't overwrite us.
-				setRecord(prevRecord => ({
-					...prevRecord,
-					meta: {
-						...prevRecord.meta,
-						'_videopack-meta': updatedMeta,
-						'_kgflashmediaplayer-poster': updated.poster !== undefined ? updated.poster : prevRecord.meta?.['_kgflashmediaplayer-poster'],
-						'_kgflashmediaplayer-poster-id': updated.poster_id !== undefined ? updated.poster_id : prevRecord.meta?.['_kgflashmediaplayer-poster-id'],
-					}
-				}));
-			}
-			
-			return updated;
-		});
-	}, [record]);
+	const mergeAttributes = useCallback(
+		(newAttrs) => {
+			setRawAttributes((prev) => {
+				const updated = { ...prev, ...newAttrs };
+
+				// Sync back to the record meta if it exists, to prevent the useEffect from reverting.
+				if (record) {
+					const currentMeta = record.meta?.['_videopack-meta'] || {};
+					const updatedMeta = { ...currentMeta, ...updated };
+
+					// We need to update the record state too so the initialization useEffect doesn't overwrite us.
+					setRecord((prevRecord) => ({
+						...prevRecord,
+						meta: {
+							...prevRecord.meta,
+							'_videopack-meta': updatedMeta,
+							'_kgflashmediaplayer-poster':
+								updated.poster !== undefined
+									? updated.poster
+									: prevRecord.meta?.[
+											'_kgflashmediaplayer-poster'
+										],
+							'_kgflashmediaplayer-poster-id':
+								updated.poster_id !== undefined
+									? updated.poster_id
+									: prevRecord.meta?.[
+											'_kgflashmediaplayer-poster-id'
+										],
+						},
+					}));
+				}
+
+				return updated;
+			});
+		},
+		[record]
+	);
 
 	// Calculate and initialize the combined attributes object.
 	useEffect(() => {
@@ -265,14 +278,16 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 								mergeAttributes(data.meta['_videopack-meta']);
 							}
 							if (data.featured_media !== undefined) {
-								mergeAttributes({ poster_id: data.featured_media });
+								mergeAttributes({
+									poster_id: data.featured_media,
+								});
 							}
 						},
 						save: async () => {
-							// AttachmentDetails uses useVideoSettings with autoSave: true, 
+							// AttachmentDetails uses useVideoSettings with autoSave: true,
 							// so we don't need to do anything here as it's already debounced/saving.
 							return attachment.record;
-						}
+						},
 					}}
 					options={options}
 					parentId={attachment.record?.post || 0}

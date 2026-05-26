@@ -197,7 +197,12 @@ export default function Edit(props) {
 		}
 
 		return overrides;
-	}, [context, effectiveAttributes.id, parentAttributes.source_groups, parentAttributes.sources]);
+	}, [
+		context,
+		effectiveAttributes.id,
+		parentAttributes.source_groups,
+		parentAttributes.sources,
+	]);
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-player-engine-block videopack-wrapper ${contextClasses}`,
@@ -251,7 +256,9 @@ export default function Edit(props) {
 				attributes={{
 					...parentAttributes,
 					restartCount,
-					...(formats && !hasSources ? { source_groups: formats } : {}),
+					...(formats && !hasSources
+						? { source_groups: formats }
+						: {}),
 				}}
 				context={context}
 				isSelected={isSelected}

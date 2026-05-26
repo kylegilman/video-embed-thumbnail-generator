@@ -898,14 +898,26 @@ const VideoSettings = ({
 					handleSettingChange('text_tracks', newTracks)
 				}
 			/>
-			{applyFilters('videopack.videoSettings.panels', [], {
-				attributes,
-				setAttributes,
-				options,
-				displayAttributes,
-				handleSettingChange,
-				isBlockEditor,
-			})}
+			{applyFilters(
+				/**
+				 * Filters the extra custom panels appended to the block sidebar/settings.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {Array}  panels  Array of panel React elements, defaults to empty array.
+				 * @param {Object} context Context details including attributes, setAttributes, options, displayAttributes, handleSettingChange, isBlockEditor.
+				 */
+				'videopack.videoSettings.panels',
+				[],
+				{
+					attributes,
+					setAttributes,
+					options,
+					displayAttributes,
+					handleSettingChange,
+					isBlockEditor,
+				}
+			)}
 			<PanelBody
 				title={__('Sharing', 'video-embed-thumbnail-generator')}
 				initialOpen={false}

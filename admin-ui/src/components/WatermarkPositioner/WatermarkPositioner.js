@@ -540,7 +540,6 @@ const WatermarkPositioner = ({
 		// Keyboard resizing is temporarily disabled during percentage refactor for stability
 	};
 
-
 	useEffect(() => {
 		// Clean logs and ensure no leaking listeners
 		return () => {};

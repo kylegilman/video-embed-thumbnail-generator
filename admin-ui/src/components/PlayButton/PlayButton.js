@@ -17,6 +17,16 @@ export default function PlayButton({ attributes = {}, context = {} }) {
 		typeof config !== 'undefined' ? config.embed_method : 'Video.js';
 	const vpContext = useVideopackContext(attributes, context);
 
+	/**
+	 * Filters the React element used to render the player play button.
+	 *
+	 * Allowing full custom HTML/React play buttons for specific setups or styling extensions.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param {Element|null} customButton Custom play button element, defaults to null.
+	 * @param {Object}       context      Context data including attributes, context, vpContext, and embed_method.
+	 */
 	const customButton = applyFilters('videopack.playButtonElement', null, {
 		attributes,
 		context,

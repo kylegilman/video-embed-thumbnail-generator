@@ -60,7 +60,13 @@ class Encode_Progress {
 		}
 
 		$fsize = @filesize( $log_file );
-		\Videopack\Common\Debug_Logger::log( 'Encode_Progress: File check', array( 'file' => $log_file, 'size' => $fsize ) );
+		\Videopack\Common\Debug_Logger::log(
+			'Encode_Progress: File check',
+			array(
+				'file' => $log_file,
+				'size' => $fsize,
+			)
+		);
 
 		if ( $fsize === 0 ) {
 			\Videopack\Common\Debug_Logger::log( 'Encode_Progress: Log file is empty', array( 'file' => $log_file ) );
@@ -76,36 +82,39 @@ class Encode_Progress {
 			if ( $read_len > 0 ) {
 				@fseek( $handle, -$read_len, SEEK_END );
 				$content = @fread( $handle, $read_len );
-				
+
 				\Videopack\Common\Debug_Logger::log( 'Encode_Progress: Content read', array( 'len' => strlen( (string) $content ) ) );
 
 				// Handle mixed line endings (Windows FFmpeg often uses \r).
 				$content = preg_replace( '/\r\n|\r|\n/', "\n", (string) $content );
 				$lines   = explode( "\n", $content );
-				
+
 				// Skip the first partial line if we didn't read from the start.
 				if ( $fsize > $read_len ) {
 					array_shift( $lines );
 				}
-				
+
 				foreach ( $lines as $line ) {
 					$line = trim( $line );
 					if ( strpos( $line, '=' ) !== false ) {
 						list( $key, $value ) = explode( '=', $line, 2 );
-						$key   = trim( $key );
-						$value = trim( $value );
+						$key                 = trim( $key );
+						$value               = trim( $value );
 						if ( $value !== 'N/A' ) {
 							$parsed_data[ $key ] = $value;
 						}
 					}
 				}
-				
+
 				if ( empty( $parsed_data['out_time_us'] ) && empty( $parsed_data['out_time_ms'] ) ) {
-					\Videopack\Common\Debug_Logger::log( 'Encode_Progress: No time data found in parsed lines', array(
-						'job_id'      => $job_id,
-						'line_count'  => count( $lines ),
-						'last_line'   => end( $lines ),
-					) );
+					\Videopack\Common\Debug_Logger::log(
+						'Encode_Progress: No time data found in parsed lines',
+						array(
+							'job_id'     => $job_id,
+							'line_count' => count( $lines ),
+							'last_line'  => end( $lines ),
+						)
+					);
 				}
 			}
 			@fclose( $handle );
@@ -117,20 +126,27 @@ class Encode_Progress {
 		$progress->calculate();
 
 		if ( ! empty( $parsed_data ) ) {
-			\Videopack\Common\Debug_Logger::log( 'Encode_Progress: Parsed results', array(
-				'job_id' => $job_id,
-				'time'   => $parsed_data['out_time_us'] ?? 'N/A',
-				'percent' => $progress->data['percent']
-			) );
+			\Videopack\Common\Debug_Logger::log(
+				'Encode_Progress: Parsed results',
+				array(
+					'job_id'  => $job_id,
+					'time'    => $parsed_data['out_time_us'] ?? 'N/A',
+					'percent' => $progress->data['percent'],
+				)
+			);
 		}
 
 		// Diagnostic logging if we have data but no time.
 		if ( ! empty( $parsed_data ) && $progress->data['percent'] === 0 && ! is_numeric( $progress->data['out_time_us'] ) ) {
-			\Videopack\Common\Debug_Logger::log( 'Encode_Progress: Numeric time missing in parsed data', array(
-				'keys' => array_keys( $parsed_data ),
-				'last_line' => end( $lines ) ?: 'N/A',
-				'file_size' => $fsize
-			) );
+			$last_line = end( $lines );
+			\Videopack\Common\Debug_Logger::log(
+				'Encode_Progress: Numeric time missing in parsed data',
+				array(
+					'keys'      => array_keys( $parsed_data ),
+					'last_line' => $last_line ? $last_line : 'N/A',
+					'file_size' => $fsize,
+				)
+			);
 		}
 
 		return $progress;
@@ -205,10 +221,13 @@ class Encode_Progress {
 					$out_time_us = $ms_val * 1000;
 				}
 			} else {
-				\Videopack\Common\Debug_Logger::log( 'Encode_Progress: No numeric time found', array( 
-					'out_time_us' => $raw_us, 
-					'out_time_ms' => $raw_ms 
-				) );
+				\Videopack\Common\Debug_Logger::log(
+					'Encode_Progress: No numeric time found',
+					array(
+						'out_time_us' => $raw_us,
+						'out_time_ms' => $raw_ms,
+					)
+				);
 			}
 
 			if ( $out_time_us > 0 ) {

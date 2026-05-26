@@ -104,7 +104,7 @@ class Metadata implements Hook_Subscriber {
 		}
 
 		$start_time = microtime( true );
-		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
+		$source     = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
 		if ( ! $source || ! (bool) $source->exists() ) {
 			return array( 'url' => '' );
 		}

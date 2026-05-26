@@ -105,6 +105,14 @@ abstract class Controller extends \WP_REST_Controller implements Hook_Subscriber
 	 * @return bool
 	 */
 	public function public_permissions( \WP_REST_Request $request ): bool {
+				/**
+		 * Filters public access permission for Videopack public REST endpoints.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param bool             $allowed Whether access is allowed.
+		 * @param \WP_REST_Request $request The REST request.
+		 */
 		return (bool) apply_filters( 'videopack_rest_public_permission', true, $request );
 	}
 

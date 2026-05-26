@@ -20,7 +20,15 @@ import { useRef, useEffect } from '@wordpress/element';
 export const VideoJS = (props) => {
 	const videoRef = useRef(null);
 	const playerRef = useRef(null);
-	const { options, skin, onPlay, onPause, onReady, onMetadataLoaded } = props;
+	const {
+		options,
+		skin,
+		onPlay,
+		onPause,
+		onReady,
+		onMetadataLoaded,
+		onEnded,
+	} = props;
 	const previousSkinRef = useRef(skin);
 	const previousPluginsRef = useRef(options?.plugins);
 
@@ -123,7 +131,7 @@ export const VideoJS = (props) => {
 						}
 						this.on('play', onPlay);
 						this.on('pause', onPause);
-						this.on('ended', props.onEnded);
+						this.on('ended', onEnded);
 						this.on('loadedmetadata', function () {
 							if (typeof onMetadataLoaded === 'function') {
 								onMetadataLoaded({
@@ -215,7 +223,7 @@ export const VideoJS = (props) => {
 		return () => {
 			clearTimeout(initTimer);
 		};
-	}, [options, skin, onPlay, onPause, onReady, onMetadataLoaded]);
+	}, [options, skin, onPlay, onPause, onReady, onMetadataLoaded, onEnded]);
 
 	// Dispose the player when the component unmounts
 	useEffect(() => {

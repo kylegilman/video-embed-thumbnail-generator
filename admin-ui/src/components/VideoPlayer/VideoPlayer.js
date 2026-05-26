@@ -186,7 +186,18 @@ const VideoPlayer = ({
 	}
 
 	const players = useMemo(
-		() => applyFilters('videopack_admin_players', DEFAULT_PLAYERS),
+		() =>
+			applyFilters(
+				/**
+				 * Filters the registered admin preview player engines.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param {Object} players Object mapping player type names to React components.
+				 */
+				'videopack_admin_players',
+				DEFAULT_PLAYERS
+			),
 		[]
 	);
 
@@ -292,7 +303,6 @@ const VideoPlayer = ({
 		return [...new Set(classes)].join(' ');
 	}, [
 		contextClasses,
-		final_embed_method,
 		isFixedAspect,
 		aspectRatio,
 		resolvedDuotoneClass,
@@ -332,7 +342,7 @@ const VideoPlayer = ({
 			return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
 		}
 		return Math.random().toString(36).substr(2, 9);
-	}, [blockAttributes.id, source_groups, final_embed_method]);
+	}, [blockAttributes.id, source_groups]);
 
 	const genericPlayerOptions = useMemo(
 		() => ({
@@ -370,6 +380,14 @@ const VideoPlayer = ({
 
 	const videoJsOptions = useMemo(() => {
 		const isVjs = applyFilters(
+			/**
+			 * Filters whether a specific player method should be treated as a Video.js engine.
+			 *
+			 * @since 5.0.0
+			 *
+			 * @param {boolean} isVideojs True if player method uses Video.js, false otherwise.
+			 * @param {string}  method    The selected player method name.
+			 */
 			'videopack_is_videojs_player',
 			final_embed_method === 'Video.js',
 			final_embed_method
@@ -447,15 +465,13 @@ const VideoPlayer = ({
 	const handlePlay = useCallback(() => {
 		console.log('VideoPlayer: handlePlay triggered');
 		if (wrapperRef.current) {
-
 			const elements = Array.from(
 				wrapperRef.current.querySelectorAll(
 					'.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'
 				)
 			);
-			const parent = wrapperRef.current.parentElement?.closest(
-				'.videopack-wrapper'
-			);
+			const parent =
+				wrapperRef.current.parentElement?.closest('.videopack-wrapper');
 			if (parent) {
 				Array.from(
 					parent.querySelectorAll(
@@ -477,15 +493,13 @@ const VideoPlayer = ({
 	const handlePause = useCallback(() => {
 		console.log('VideoPlayer: handlePause triggered');
 		if (wrapperRef.current) {
-
 			const elements = Array.from(
 				wrapperRef.current.querySelectorAll(
 					'.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'
 				)
 			);
-			const parent = wrapperRef.current.parentElement?.closest(
-				'.videopack-wrapper'
-			);
+			const parent =
+				wrapperRef.current.parentElement?.closest('.videopack-wrapper');
 			if (parent) {
 				Array.from(
 					parent.querySelectorAll(

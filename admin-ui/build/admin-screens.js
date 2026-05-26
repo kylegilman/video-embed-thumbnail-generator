@@ -32,7 +32,7 @@
 /**
  * Fetches encoding presets.
  *
- * @param {AbortSignal}   signal         Optional. Abort signal.
+ * @param {AbortSignal} signal Optional. Abort signal.
  */
 const getPresets = async (signal = null) => {
   try {
@@ -129,6 +129,14 @@ const getVideoFormats = async (attachmentId, url = '', probedMetadata = null, si
  * @param {Object} args The query arguments for the gallery.
  */
 const getVideoGallery = async args => {
+  /**
+   * Filters the video gallery query. Returning a non-undefined value bypasses the REST API call.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre  Defaults to undefined.
+   * @param {Object}    args Query parameters.
+   */
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoGallery', undefined, args);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -138,6 +146,14 @@ const getVideoGallery = async args => {
       path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/video_gallery', args),
       method: 'GET'
     });
+    /**
+     * Filters the list of media items returned for the video gallery.
+     *
+     * @since 5.0.0
+     *
+     * @param {Object} response REST API response containing video list.
+     * @param {Object} args     Query parameters used for fetching.
+     */
     return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoGallery', response, args);
   } catch (error) {
     console.error('Error fetching video gallery:', error);
@@ -190,6 +206,16 @@ const getFreemiusPage = async page => {
  * @param {number} rotate     The rotation angle.
  */
 const testEncodeCommand = async (codec, resolution, rotate) => {
+  /**
+   * Filters the FFmpeg test command test response. Bypasses the REST API call if a non-undefined value is returned.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre        Defaults to undefined.
+   * @param {string}    codec      The codec to test.
+   * @param {string}    resolution Resolution to test.
+   * @param {number}    rotate     Rotation angle.
+   */
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -239,12 +265,26 @@ const testEncodeCommand = async (codec, resolution, rotate) => {
  * Fetches the current video encoding queue.
  */
 const getQueue = async () => {
+  /**
+   * Filters the queue listing before fetching from the REST API.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre Defaults to undefined. If a non-undefined value is returned, fetching is bypassed.
+   */
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getQueue', undefined);
   if (typeof pre !== 'undefined') {
     return pre;
   }
   try {
     const response = await listJobs();
+    /**
+     * Filters the list of encoding queue jobs retrieved from the server.
+     *
+     * @since 5.0.0
+     *
+     * @param {Array} response Array of job objects.
+     */
     return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getQueue', response || []);
   } catch (error) {
     console.error('Error fetching queue:', error);
@@ -654,6 +694,13 @@ let settingsPromise = null;
  * Fetches global Videopack settings.
  */
 const getSettings = async () => {
+  /**
+   * Filters the settings fetching process. Returning a non-undefined value bypasses the REST API call.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre Defaults to undefined.
+   */
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__.applyFilters)('videopack.utils.pre_getSettings', undefined);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -670,6 +717,13 @@ const getSettings = async () => {
     const result = allSettings.videopack_options || {};
     cachedSettings = result;
     settingsPromise = null;
+    /**
+     * Filters the global settings object retrieved from the server.
+     *
+     * @since 5.0.0
+     *
+     * @param {Object} settings Global settings options.
+     */
     return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__.applyFilters)('videopack.utils.getSettings', cachedSettings);
   }).catch(error => {
     settingsPromise = null;
@@ -692,7 +746,7 @@ const saveWPSettings = async newSettings => {
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings',
       method: 'POST',
-      data: data
+      data
     });
     const result = response.videopack_options || {};
     cachedSettings = result;
@@ -801,7 +855,9 @@ const clearUrlCache = async () => {
 
 const createIcon = name => {
   const icon = _src_icons_json__WEBPACK_IMPORTED_MODULE_0__[name];
-  if (!icon) return null;
+  if (!icon) {
+    return null;
+  }
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: icon.viewBox,
@@ -2546,8 +2602,8 @@ var external_wp_data_ = __webpack_require__(143);
 /**
  * Hook to query and search for videos or other content types in the WordPress database.
  *
- * @param {Object} attributes    Block attributes.
- * @param {number} previewPostId The ID of the post being previewed.
+ * @param {Object} inputAttributes Block attributes.
+ * @param {number} previewPostId   The ID of the post being previewed.
  * @return {Object} Query results including search results, categories, and tags.
  */
 function useVideoQuery(inputAttributes, previewPostId) {
@@ -2693,7 +2749,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
     }).finally(() => {
       setIsResolvingVideos(false);
     });
-  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving]);
+  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving, inputAttributes]);
   const categories = (0,external_wp_data_.useSelect)(select => {
     const {
       getEntityRecords
@@ -2911,7 +2967,15 @@ const normalizeSourceGroups = videoSources => {
 
 
 const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
-const VIDEOPACK_CONTEXT_KEYS = (0,external_wp_hooks_.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
+const VIDEOPACK_CONTEXT_KEYS =
+/**
+ * Filters the list of Gutenberg block context keys that the hook listens to.
+ *
+ * @since 5.0.0
+ *
+ * @param {Array} contextKeys List of context key strings.
+ */
+(0,external_wp_hooks_.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -3286,7 +3350,6 @@ function VideopackContextBridge({
 
 
 
-
 /**
  * An internal component to display the video title with correct styling and data.
  *
@@ -3297,9 +3360,7 @@ function VideopackContextBridge({
  * @param {string}   root0.tagName               HTML tag name.
  * @param {string}   root0.textAlign             Text alignment.
  * @param {boolean}  root0.isOverlay             Whether it's an overlay.
- * @param {boolean}  root0.embedcode             Whether to show embed code.
  * @param {Element}  root0.children              Optional preview children (e.g. download block).
- * @param {string}   root0.embedlink             Embed link.
  * @param {boolean}  root0.overlay_title         Whether to show title in overlay.
  * @param {boolean}  root0.showBackground        Whether to show background bar.
  * @param {Function} root0.onTitleChange         Callback for title change.
@@ -3320,8 +3381,6 @@ function VideoTitle({
   tagName: Tag = 'h3',
   textAlign,
   isOverlay = false,
-  embedcode,
-  embedlink,
   overlay_title,
   showBackground,
   onTitleChange,
@@ -3721,6 +3780,17 @@ function PlayButton({
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const embed_method = typeof config !== 'undefined' ? config.embed_method : 'Video.js';
   const vpContext = useVideopackContext(attributes, context);
+
+  /**
+   * Filters the React element used to render the player play button.
+   *
+   * Allowing full custom HTML/React play buttons for specific setups or styling extensions.
+   *
+   * @since 5.0.0
+   *
+   * @param {Element|null} customButton Custom play button element, defaults to null.
+   * @param {Object}       context      Context data including attributes, context, vpContext, and embed_method.
+   */
   const customButton = (0,external_wp_hooks_.applyFilters)('videopack.playButtonElement', null, {
     attributes,
     context,
@@ -4196,7 +4266,8 @@ const VideoJS = props => {
     onPlay,
     onPause,
     onReady,
-    onMetadataLoaded
+    onMetadataLoaded,
+    onEnded
   } = props;
   const previousSkinRef = (0,external_wp_element_.useRef)(skin);
   const previousPluginsRef = (0,external_wp_element_.useRef)(options?.plugins);
@@ -4265,7 +4336,7 @@ const VideoJS = props => {
           }
           this.on('play', onPlay);
           this.on('pause', onPause);
-          this.on('ended', props.onEnded);
+          this.on('ended', onEnded);
           this.on('loadedmetadata', function () {
             if (typeof onMetadataLoaded === 'function') {
               onMetadataLoaded({
@@ -4345,7 +4416,7 @@ const VideoJS = props => {
     return () => {
       clearTimeout(initTimer);
     };
-  }, [options, skin, onPlay, onPause, onReady, onMetadataLoaded]);
+  }, [options, skin, onPlay, onPause, onReady, onMetadataLoaded, onEnded]);
 
   // Dispose the player when the component unmounts
   (0,external_wp_element_.useEffect)(() => {
@@ -4880,7 +4951,15 @@ const VideoPlayer = ({
   } else if (Array.isArray(final_duotone)) {
     resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
   }
-  const players = (0,external_wp_element_.useMemo)(() => (0,external_wp_hooks_.applyFilters)('videopack_admin_players', DEFAULT_PLAYERS), []);
+  const players = (0,external_wp_element_.useMemo)(() => (0,external_wp_hooks_.applyFilters)(
+  /**
+   * Filters the registered admin preview player engines.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} players Object mapping player type names to React components.
+   */
+  'videopack_admin_players', DEFAULT_PLAYERS), []);
   const isVertical = (0,external_wp_element_.useMemo)(() => {
     let vertical = false;
     // Use browser-detected dimensions if available
@@ -4944,7 +5023,7 @@ const VideoPlayer = ({
 
     // Ensure unique classes and join
     return [...new Set(classes)].join(' ');
-  }, [contextClasses, final_embed_method, isFixedAspect, aspectRatio, resolvedDuotoneClass, loopDuotoneId]);
+  }, [contextClasses, isFixedAspect, aspectRatio, resolvedDuotoneClass, loopDuotoneId]);
   const actualAutoplay = (0,external_wp_element_.useMemo)(() => {
     return autoplay;
   }, [autoplay]);
@@ -4976,7 +5055,7 @@ const VideoPlayer = ({
       return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
     }
     return Math.random().toString(36).substr(2, 9);
-  }, [blockAttributes.id, source_groups, final_embed_method]);
+  }, [blockAttributes.id, source_groups]);
   const genericPlayerOptions = (0,external_wp_element_.useMemo)(() => ({
     poster,
     loop,
@@ -4992,7 +5071,16 @@ const VideoPlayer = ({
     autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
   }), [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method]);
   const videoJsOptions = (0,external_wp_element_.useMemo)(() => {
-    const isVjs = (0,external_wp_hooks_.applyFilters)('videopack_is_videojs_player', final_embed_method === 'Video.js', final_embed_method);
+    const isVjs = (0,external_wp_hooks_.applyFilters)(
+    /**
+     * Filters whether a specific player method should be treated as a Video.js engine.
+     *
+     * @since 5.0.0
+     *
+     * @param {boolean} isVideojs True if player method uses Video.js, false otherwise.
+     * @param {string}  method    The selected player method name.
+     */
+    'videopack_is_videojs_player', final_embed_method === 'Video.js', final_embed_method);
     if (!isVjs) {
       return null;
     }
@@ -5664,6 +5752,7 @@ const usesDesignContext = (/* unused pure expression or super */ null && (['vide
 
 
 
+
 const BLOCK_METADATA = {
   'videopack/player-container': block_namespaceObject,
   'videopack/thumbnail': thumbnail_block_namespaceObject,
@@ -5821,7 +5910,7 @@ const PREVIEW_COMPONENTS = {
           style: iconType !== 'none' ? {
             marginLeft: '4px'
           } : undefined,
-          children: __('Share', 'video-embed-thumbnail-generator')
+          children: (0,external_wp_i18n_.__)('Share', 'video-embed-thumbnail-generator')
         })]
       })
     });
@@ -6353,7 +6442,8 @@ const VideoCollectionSettings = ({
       value: 'vjs-theme-sea',
       label: (0,external_wp_i18n_.__)('Sea', 'video-embed-thumbnail-generator')
     }];
-    return (0,external_wp_hooks_.applyFilters)('videopack_player_skin_options', options, embed_method);
+    return (0,external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/PlayerSettings.js */
+    'videopack_player_skin_options', options, embed_method);
   }, [embed_method]);
   const previewQueryAttributes = (0,external_wp_element_.useMemo)(() => {
     const isPaginationEnabled = gallery_pagination === true || gallery_pagination === 1 || gallery_pagination === '1';
@@ -6776,10 +6866,10 @@ const captureVideoFrame = (source, time, watermarkOptions = null) => {
       // Use VideoFrame if supported for slightly better performance/memory
       if (window.VideoFrame) {
         try {
-          const frame = new VideoFrame(video);
+          const frame = new window.VideoFrame(video);
           ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
           frame.close();
-        } catch (e) {
+        } catch {
           // Fallback to direct video drawing if VideoFrame fails
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         }
@@ -7839,6 +7929,7 @@ const WatermarkSettingsPanel = ({
  *
  * @param {boolean}       enable_custom_resolution Whether to include the custom resolution in the list.
  * @param {string|number} custom_resolution        The height of the custom resolution.
+ * @param {boolean}       onlyStandard             Whether to show only standard resolutions.
  * @return {Array} List of resolution objects.
  */
 const useResolutions = (enable_custom_resolution, custom_resolution, onlyStandard = true) => {
@@ -7871,7 +7962,7 @@ const useResolutions = (enable_custom_resolution, custom_resolution, onlyStandar
       }
       return b.height - a.height;
     });
-  }, [enable_custom_resolution, custom_resolution]);
+  }, [enable_custom_resolution, custom_resolution, onlyStandard]);
 };
 /* harmony default export */ const hooks_useResolutions = (useResolutions);
 ;// ./src/features/settings/components/PlayerSettings.js
@@ -7998,7 +8089,15 @@ const PlayerSettings = ({
     }
     changeHandlerFactory.encode(newEncode);
   };
-  const embedMethodOptions = (0,external_wp_hooks_.applyFilters)('videopack_embed_method_options', [{
+  const embedMethodOptions =
+  /**
+   * Filters the list of available embed player methods (e.g. Video.js, MediaElement).
+   *
+   * @since 5.0.0
+   *
+   * @param {Array} options Array of embed options containing value and label.
+   */
+  (0,external_wp_hooks_.applyFilters)('videopack_embed_method_options', [{
     value: 'Video.js',
     label: (0,external_wp_i18n_.__)('Video.js', 'video-embed-thumbnail-generator')
   }, {
@@ -8070,6 +8169,15 @@ const PlayerSettings = ({
       value: 'vjs-theme-sea',
       label: (0,external_wp_i18n_.__)('Sea', 'video-embed-thumbnail-generator')
     }];
+
+    /**
+     * Filters the list of available player skins based on the selected embed method.
+     *
+     * @since 5.0.0
+     *
+     * @param {Array}  options      List of skin option structures.
+     * @param {string} embed_method The selected player embed method.
+     */
     return (0,external_wp_hooks_.applyFilters)('videopack_player_skin_options', options, embed_method);
   }, [embed_method]);
   const alignOptions = [{
@@ -8165,6 +8273,14 @@ const PlayerSettings = ({
           value: embed_method,
           onChange: value => {
             changeHandlerFactory.embed_method(value);
+            /**
+             * Filters the default skin applied when selecting a player method.
+             *
+             * @since 5.0.0
+             *
+             * @param {string|undefined} default_skin Skin identifier.
+             * @param {string}           value        The selected player method name.
+             */
             const defaultSkin = (0,external_wp_hooks_.applyFilters)('videopack_default_skin', value === 'WordPress Default' ? 'vjs-theme-videopack' : undefined, value);
             if (defaultSkin) {
               changeHandlerFactory.skin(defaultSkin);
@@ -8471,7 +8587,16 @@ const PlayerSettings = ({
           text: (0,external_wp_i18n_.__)('Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.', 'video-embed-thumbnail-generator')
         })]
       })]
-    }), (0,external_wp_hooks_.applyFilters)('videopack.settings.player.after_playback', null, {
+    }), (0,external_wp_hooks_.applyFilters)(
+    /**
+     * Action filter hook to render custom settings components after playback options.
+     *
+     * @since 5.0.0
+     *
+     * @param {null}   empty   Null context value.
+     * @param {Object} context Object containing settings and changeHandlerFactory.
+     */
+    'videopack.settings.player.after_playback', null, {
       settings,
       changeHandlerFactory
     }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
@@ -8576,7 +8701,16 @@ const PlayerSettings = ({
           text: (0,external_wp_i18n_.__)('Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.', 'video-embed-thumbnail-generator')
         })]
       })]
-    }), (0,external_wp_hooks_.applyFilters)('videopack.settings.player.after_dimensions', null, {
+    }), (0,external_wp_hooks_.applyFilters)(
+    /**
+     * Action filter hook to render custom settings components after dimensions options.
+     *
+     * @since 5.0.0
+     *
+     * @param {null}   empty   Null context value.
+     * @param {Object} context Object containing settings and changeHandlerFactory.
+     */
+    'videopack.settings.player.after_dimensions', null, {
       settings,
       changeHandlerFactory
     }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
@@ -8608,7 +8742,16 @@ const PlayerSettings = ({
           text: (0,external_wp_i18n_.__)("Videopack creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video's WordPress database ID could potentially use the method to download videos they might not otherwise have access to.", 'video-embed-thumbnail-generator')
         })]
       })]
-    }), (0,external_wp_hooks_.applyFilters)('videopack.settings.player.after_sharing', null, {
+    }), (0,external_wp_hooks_.applyFilters)(
+    /**
+     * Action filter hook to render custom settings components after sharing options.
+     *
+     * @since 5.0.0
+     *
+     * @param {null}   empty   Null context value.
+     * @param {Object} context Object containing settings and changeHandlerFactory.
+     */
+    'videopack.settings.player.after_sharing', null, {
       settings,
       changeHandlerFactory
     }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(WatermarkSettingsPanel_WatermarkSettingsPanel, {
@@ -8634,7 +8777,16 @@ const PlayerSettings = ({
           onChange: changeHandlerFactory.watermark_url
         })]
       })
-    }), (0,external_wp_hooks_.applyFilters)('videopack.settings.player.after_watermark', null, {
+    }), (0,external_wp_hooks_.applyFilters)(
+    /**
+     * Action filter hook to render custom settings components after watermark options.
+     *
+     * @since 5.0.0
+     *
+     * @param {null}   empty   Null context value.
+     * @param {Object} context Object containing settings and changeHandlerFactory.
+     */
+    'videopack.settings.player.after_watermark', null, {
       settings,
       changeHandlerFactory
     }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
@@ -8677,7 +8829,16 @@ const PlayerSettings = ({
           }, codec.id))
         })
       })]
-    }), (0,external_wp_hooks_.applyFilters)('videopack.settings.player.after_sources', null, {
+    }), (0,external_wp_hooks_.applyFilters)(
+    /**
+     * Action filter hook to render custom settings components after sources options.
+     *
+     * @since 5.0.0
+     *
+     * @param {null}   empty   Null context value.
+     * @param {Object} context Object containing settings and changeHandlerFactory.
+     */
+    'videopack.settings.player.after_sources', null, {
       settings,
       changeHandlerFactory
     })]
@@ -9146,6 +9307,7 @@ var external_wp_url_ = __webpack_require__(832);
  * @param {string}            videoSrc     The source URL of the video.
  * @param {number}            parentId     Optional. The parent post ID.
  * @param {boolean}           featured     Optional. Whether to set as featured image.
+ * @param {Object}            extraData    Optional. Additional data to send.
  */
 const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0, featured = null, extraData = {}) => {
   return new Promise((resolve, reject) => {
@@ -9319,7 +9481,6 @@ const PerCodecQualitySettings = ({
     resolutions
   } = videopack_config;
   const {
-    encode,
     ffmpeg_exists,
     h264_profile,
     h264_level,
@@ -9328,7 +9489,16 @@ const PerCodecQualitySettings = ({
     active_encoder = 'ffmpeg'
   } = settings;
   const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && (!!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
-  const encodeKey = (0,external_wp_hooks_.applyFilters)('videopack.settings.encodeKey', 'encode', active_encoder);
+  const encodeKey = (0,external_wp_hooks_.applyFilters)(
+  /**
+   * Filters the settings array key used for storing encoder settings.
+   *
+   * @since 5.0.0
+   *
+   * @param {string} encodeKey The settings key (e.g. 'encode').
+   * @param {string} encoder   The identifier of the active encoder.
+   */
+  'videopack.settings.encodeKey', 'encode', active_encoder);
   const currentEncode = settings[encodeKey] || {};
   const codecEncodeSettings = currentEncode[codec.id] || {};
   const {
@@ -9558,13 +9728,31 @@ const PerCodecQualitySettings = ({
     }
     return marks;
   }, [codec]);
-  const marks = (0,external_wp_hooks_.applyFilters)('videopack.settings.qualityMarks', null, {
+  const marks = (0,external_wp_hooks_.applyFilters)(
+  /**
+   * Filters the list of slider mark indicators for the quality/CRF slider.
+   *
+   * @since 5.0.0
+   *
+   * @param {Array|null} marks   Custom marks array or null to use defaults.
+   * @param {Object}     context Context details: codec, active_encoder, rateControl, generateMarks.
+   */
+  'videopack.settings.qualityMarks', null, {
     codec,
     active_encoder,
     rateControl: currentRateControl,
     generateMarks
   });
-  const qualityScale = (0,external_wp_hooks_.applyFilters)('videopack.settings.qualityScale', {
+  const qualityScale = (0,external_wp_hooks_.applyFilters)(
+  /**
+   * Filters the quality scale limits (min, max, step, marks) for the codec quality slider.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} scale   Configuration containing min, max, step, marks.
+   * @param {Object} context Context details: codec, active_encoder, rateControl.
+   */
+  'videopack.settings.qualityScale', {
     min: currentRateControl === 'crf' ? codec.rate_control.crf.min : 0.1,
     max: currentRateControl === 'crf' ? codec.rate_control.crf.max : 50,
     step: currentRateControl === 'crf' ? 1 : 0.5,
@@ -9636,7 +9824,16 @@ const PerCodecQualitySettings = ({
     });
     setBitrates(newBitrates);
   }, [localVbr, codec, resolutions]);
-  const rateControlOptions = (0,external_wp_hooks_.applyFilters)('videopack.settings.rateControlOptions', [{
+  const rateControlOptions = (0,external_wp_hooks_.applyFilters)(
+  /**
+   * Filters the choices list for rate control (CRF vs ABR) on a specific codec.
+   *
+   * @since 5.0.0
+   *
+   * @param {Array}  options Options containing label and value.
+   * @param {Object} context Context details: codec, active_encoder.
+   */
+  'videopack.settings.rateControlOptions', [{
     label: (0,external_wp_i18n_.__)('Constant Rate Factor (CRF)', 'video-embed-thumbnail-generator'),
     value: 'crf'
   }, {
@@ -9791,7 +9988,15 @@ const EncodingSettings = ({
     browser_encoder_assets_status = 'missing'
   } = settings;
   const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && (!!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
-  const availableEncoders = (0,external_wp_hooks_.applyFilters)('videopack.settings.encoders', [{
+  const availableEncoders =
+  /**
+   * Filters the list of available encoders in the dropdown list.
+   *
+   * @since 5.0.0
+   *
+   * @param {Array} encoders List of active encoder choices.
+   */
+  (0,external_wp_hooks_.applyFilters)('videopack.settings.encoders', [{
     value: 'ffmpeg',
     label: (0,external_wp_i18n_.__)('Web Server FFmpeg', 'video-embed-thumbnail-generator')
   }], settings);
@@ -9807,7 +10012,18 @@ const EncodingSettings = ({
     } = videopack_config;
     return codecs.filter(codec => {
       const defaultSupported = !(codec.id === 'av1' && active_encoder === 'browser' || codec.id === 'cmaf' && active_encoder === 'browser');
-      const isSupported = (0,external_wp_hooks_.applyFilters)('videopack.settings.codec_supported', defaultSupported, codec.id, active_encoder, settings);
+      const isSupported = (0,external_wp_hooks_.applyFilters)(
+      /**
+       * Filters whether a specific video codec and resolution is supported by the active encoder.
+       *
+       * @since 5.0.0
+       *
+       * @param {boolean} supported      True if supported, false otherwise.
+       * @param {string}  codecId        Video codec ID string.
+       * @param {string}  active_encoder The active encoder identifier.
+       * @param {Object}  settings       The global plugin settings object.
+       */
+      'videopack.settings.codec_supported', defaultSupported, codec.id, active_encoder, settings);
       if (!isSupported) {
         return false;
       }
@@ -9819,7 +10035,9 @@ const EncodingSettings = ({
     });
   }, [active_encoder, settings]);
   (0,external_wp_element_.useEffect)(() => {
-    if (!encode) return;
+    if (!encode) {
+      return;
+    }
     let changed = false;
     const newEncode = {
       ...encode
@@ -9829,7 +10047,8 @@ const EncodingSettings = ({
     Object.keys(encode).forEach(codecId => {
       if (encode[codecId]?.enabled) {
         const defaultSupported = !(codecId === 'av1' && active_encoder === 'browser' || codecId === 'cmaf' && active_encoder === 'browser');
-        const isSupported = (0,external_wp_hooks_.applyFilters)('videopack.settings.codec_supported', defaultSupported, codecId, active_encoder, settings);
+        const isSupported = (0,external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
+        'videopack.settings.codec_supported', defaultSupported, codecId, active_encoder, settings);
         if (!isSupported) {
           newEncode[codecId] = {
             ...newEncode[codecId],
@@ -9844,7 +10063,18 @@ const EncodingSettings = ({
     }
   }, [active_encoder, encode, changeHandlerFactory, settings]);
   (0,external_wp_element_.useEffect)(() => {
-    const isDisabled = (0,external_wp_hooks_.applyFilters)('videopack.settings.auto_encode_gif.disabled', effectiveFfmpegExists !== true, active_encoder, settings);
+    const isDisabled = (0,external_wp_hooks_.applyFilters)(
+    /**
+     * Filters whether the animated GIF auto-transcode setting toggle should be disabled.
+     *
+     * @since 5.0.0
+     *
+     * @param {boolean} disabled       True if toggle should be disabled.
+     * @param {boolean} ffmpegExists   True if FFmpeg is detected.
+     * @param {string}  active_encoder The active encoder identifier.
+     * @param {Object}  settings       The global plugin settings object.
+     */
+    'videopack.settings.auto_encode_gif.disabled', effectiveFfmpegExists !== true, active_encoder, settings);
     if (isDisabled && auto_encode_gif) {
       changeHandlerFactory.auto_encode_gif(false);
     }
@@ -9989,7 +10219,8 @@ const EncodingSettings = ({
     }, {
       value: 'same',
       label: (0,external_wp_i18n_.__)('Same format as original', 'video-embed-thumbnail-generator')
-    }, ...codecs.filter(c => c.is_video !== false && c.id !== 'cmaf' && (0,external_wp_hooks_.applyFilters)('videopack.settings.codec_supported', !(c.id === 'av1' && active_encoder === 'browser'), c.id, active_encoder, settings)).map(codec => ({
+    }, ...codecs.filter(c => c.is_video !== false && c.id !== 'cmaf' && (0,external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
+    'videopack.settings.codec_supported', !(c.id === 'av1' && active_encoder === 'browser'), c.id, active_encoder, settings)).map(codec => ({
       value: codec.id,
       label: codec.name
     }))];
@@ -10161,7 +10392,9 @@ const EncodingSettings = ({
                 changeHandlerFactory.browser_encoder_assets_status('ready');
                 videopack_config.browser_encoder_assets_status = 'ready';
               } catch (error) {
-                alert((0,external_wp_i18n_.__)('Failed to download assets. Please check your server permissions.', 'video-embed-thumbnail-generator'));
+                console.error('Failed to download browser encoder assets:', error);
+                // eslint-disable-next-line no-alert
+                window.alert((0,external_wp_i18n_.__)('Failed to download assets. Please check your server permissions.', 'video-embed-thumbnail-generator'));
               } finally {
                 setIsDownloadingAssets(false);
               }
@@ -10171,13 +10404,17 @@ const EncodingSettings = ({
             variant: "link",
             isDestructive: true,
             onClick: async () => {
-              if (window.confirm((0,external_wp_i18n_.__)('Are you sure you want to delete the local FFmpeg assets? This will revert to using the CDN.', 'video-embed-thumbnail-generator'))) {
+              if (
+              // eslint-disable-next-line no-alert
+              window.confirm((0,external_wp_i18n_.__)('Are you sure you want to delete the local FFmpeg assets? This will revert to using the CDN.', 'video-embed-thumbnail-generator'))) {
                 try {
                   await (0,media/* deleteBrowserEncoderAssets */.Li)();
                   changeHandlerFactory.browser_encoder_assets_status('missing');
                   videopack_config.browser_encoder_assets_status = 'missing';
                 } catch (error) {
-                  alert((0,external_wp_i18n_.__)('Failed to delete assets.', 'video-embed-thumbnail-generator'));
+                  console.error('Failed to delete browser encoder assets:', error);
+                  // eslint-disable-next-line no-alert
+                  window.alert((0,external_wp_i18n_.__)('Failed to delete assets.', 'video-embed-thumbnail-generator'));
                 }
               }
             },
@@ -10261,15 +10498,47 @@ const EncodingSettings = ({
           label: (0,external_wp_i18n_.__)('Convert animated GIFs to H.264', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.auto_encode_gif,
           checked: auto_encode_gif,
-          disabled: (0,external_wp_hooks_.applyFilters)('videopack.settings.auto_encode_gif.disabled', effectiveFfmpegExists !== true, active_encoder, settings),
-          help: (0,external_wp_hooks_.applyFilters)('videopack.settings.auto_encode_gif.help', null, active_encoder, settings)
+          disabled: (0,external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
+          'videopack.settings.auto_encode_gif.disabled', effectiveFfmpegExists !== true, active_encoder, settings),
+          help: (0,external_wp_hooks_.applyFilters)(
+          /**
+           * Filters custom descriptive help text for the Auto Encode GIFs option.
+           *
+           * @since 5.0.0
+           *
+           * @param {string|null} helpText       Custom help text or null for default.
+           * @param {string}      active_encoder Active encoder.
+           * @param {Object}      settings       The global settings object.
+           */
+          'videopack.settings.auto_encode_gif.help', null, active_encoder, settings)
         }), auto_encode_gif && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
           label: (0,external_wp_i18n_.__)('Keep original GIF file as source', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.keep_gif_source,
           checked: keep_gif_source,
-          disabled: (0,external_wp_hooks_.applyFilters)('videopack.settings.keep_gif_source.disabled', effectiveFfmpegExists !== true, active_encoder, settings),
-          help: (0,external_wp_hooks_.applyFilters)('videopack.settings.keep_gif_source.help', null, active_encoder, settings)
+          disabled: (0,external_wp_hooks_.applyFilters)(
+          /**
+           * Filters whether the "Keep Original GIF" option toggle is disabled.
+           *
+           * @since 5.0.0
+           *
+           * @param {boolean} disabled       True to disable the toggle.
+           * @param {boolean} ffmpegExists   True if FFmpeg is active.
+           * @param {string}  active_encoder Active encoder.
+           * @param {Object}  settings       The global settings object.
+           */
+          'videopack.settings.keep_gif_source.disabled', effectiveFfmpegExists !== true, active_encoder, settings),
+          help: (0,external_wp_hooks_.applyFilters)(
+          /**
+           * Filters custom descriptive help text for the Keep Original GIF option.
+           *
+           * @since 5.0.0
+           *
+           * @param {string|null} helpText       Custom help text or null for default.
+           * @param {string}      active_encoder Active encoder.
+           * @param {Object}      settings       The global settings object.
+           */
+          'videopack.settings.keep_gif_source.help', null, active_encoder, settings)
         })]
       }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
@@ -10322,13 +10591,35 @@ const EncodingSettings = ({
     }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
       title: (0,external_wp_i18n_.__)('Video quality', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists,
-      children: [(0,external_wp_hooks_.applyFilters)('videopack.settings.encoding.before_quality', null, {
+      children: [(0,external_wp_hooks_.applyFilters)(
+      /**
+       * Action filter hook to render custom settings components before codec quality panels.
+       *
+       * @since 5.0.0
+       *
+       * @param {null}   empty   Null context value.
+       * @param {Object} context Object containing settings, changeHandlerFactory, etc.
+       */
+      'videopack.settings.encoding.before_quality', null, {
         settings,
         changeHandlerFactory,
         ffmpegTest
       }), filteredCodecs.map(codec => {
-        if (!encode?.[codec.id]?.enabled) return null;
-        const content = (0,external_wp_hooks_.applyFilters)('videopack.settings.encoding.codec_settings', /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(components_PerCodecQualitySettings, {
+        if (!encode?.[codec.id]?.enabled) {
+          return null;
+        }
+        const content = (0,external_wp_hooks_.applyFilters)(
+        /**
+         * Filters the rendered settings panel for a codec block.
+         *
+         * Enables extensions to insert custom fields or override the quality settings layout entirely.
+         *
+         * @since 5.0.0
+         *
+         * @param {Element} panel   React element representing codec settings.
+         * @param {Object}  context Object containing codec details, settings, and changeHandlerFactory.
+         */
+        'videopack.settings.encoding.codec_settings', /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(components_PerCodecQualitySettings, {
           codec: codec,
           settings: settings,
           changeHandlerFactory: changeHandlerFactory
@@ -10337,7 +10628,9 @@ const EncodingSettings = ({
           settings,
           changeHandlerFactory
         });
-        if (!content) return null;
+        if (!content) {
+          return null;
+        }
         return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
           title: codec.label || codec.name,
           initialOpen: false,
@@ -10454,7 +10747,16 @@ const EncodingSettings = ({
       onCancel: encodingBatch.closeConfirmDialog,
       confirmButtonText: encodingBatch.confirmDialog.isAlert ? (0,external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator'),
       children: encodingBatch.confirmDialog.message
-    }), (0,external_wp_hooks_.applyFilters)('videopack.settings.encoding.after_panels', null, {
+    }), (0,external_wp_hooks_.applyFilters)(
+    /**
+     * Action filter hook to render custom settings components after encoding settings panels.
+     *
+     * @since 5.0.0
+     *
+     * @param {null}   empty   Null context value.
+     * @param {Object} context Object containing settings, changeHandlerFactory, etc.
+     */
+    'videopack.settings.encoding.after_panels', null, {
       settings,
       changeHandlerFactory,
       ffmpegTest
@@ -10934,6 +11236,14 @@ const VideopackSettingsPage = () => {
         })
       });
     }
+
+    /**
+     * Filters the active settings tabs array in the React Admin panel.
+     *
+     * @since 5.0.0
+     *
+     * @param {Array} defaultTabs Array of tab objects.
+     */
     return (0,external_wp_hooks_.applyFilters)('videopack.settings.tabs', defaultTabs);
   }, []);
   const onTabSelect = tabName => {
@@ -31883,7 +32193,7 @@ const EncodeProgress = ({
           }
           return {
             ...prev,
-            percent: percent
+            percent
           };
         });
       }
@@ -32057,7 +32367,9 @@ const EncodeProgress = ({
  * @param {number}   props.parentId         ID of the parent video attachment.
  * @param {boolean}  props.showLabel        Whether to show the format label.
  * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
- * @param {boolean}  props.isBusy           Whether the format is currently being processed.
+ * @param {boolean}  props.isProcessing     Whether the format is currently being processed.
+ * @param {string}   props.processingId     The ID of the format being processed.
+ * @param {boolean}  props.hideButtons      Whether to hide control buttons.
  * @return {Element} The rendered component.
  */
 
@@ -32365,12 +32677,20 @@ const EncodeQueue = () => {
     }, {
       id: 'parents',
       title: (0,external_wp_i18n_.__)('Set Thumbnail Parents', 'video-embed-thumbnail-generator'),
-      description: (window.videopack_config?.options?.thumb_parent || 'post') === 'video' ? (0,external_wp_i18n_.__)("Switches all existing thumbnail attachments to be children of the video itself", 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)("Switches all existing thumbnail attachments to be children of the video's parent post", 'video-embed-thumbnail-generator')
+      description: (window.videopack_config?.options?.thumb_parent || 'post') === 'video' ? (0,external_wp_i18n_.__)('Switches all existing thumbnail attachments to be children of the video itself', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)("Switches all existing thumbnail attachments to be children of the video's parent post", 'video-embed-thumbnail-generator')
     });
     return processes;
   }, []);
   const batchProcesses = (0,external_wp_element_.useMemo)(() => {
-    const filtered = [...(0,external_wp_hooks_.applyFilters)('videopack.queue.batch_processes', defaultBatchProcesses)];
+    const filtered = [...(0,external_wp_hooks_.applyFilters)(
+    /**
+     * Filters the list of bulk batch processes available in the video queue panel.
+     *
+     * @since 5.0.0
+     *
+     * @param {Array} processes Array of batch process descriptor objects.
+     */
+    'videopack.queue.batch_processes', defaultBatchProcesses)];
     // Ensure the 'parents' batch process is always the very last one.
     const parentsIdx = filtered.findIndex(p => p.id === 'parents');
     if (parentsIdx > -1) {
@@ -32807,7 +33127,9 @@ const EncodeQueue = () => {
         return false;
       }
       // Only allow reset if it's "stuck" (not updated in the last minute)
-      if (!item.updated_at) return true; // If no timestamp, assume stuck
+      if (!item.updated_at) {
+        return true;
+      } // If no timestamp, assume stuck
       const updatedAt = new Date(item.updated_at + ' UTC').getTime();
       const now = new Date().getTime();
       return now - updatedAt > 60000; // 1 minute
@@ -32817,7 +33139,9 @@ const EncodeQueue = () => {
         if (!['encoding', 'browser_encoding'].includes(item.status)) {
           return false;
         }
-        if (!item.updated_at) return true;
+        if (!item.updated_at) {
+          return true;
+        }
         const updatedAt = new Date(item.updated_at + ' UTC').getTime();
         const now = new Date().getTime();
         return now - updatedAt > 60000;
@@ -32901,7 +33225,15 @@ const EncodeQueue = () => {
           encoding: (0,external_wp_i18n_.__)('Bulk Encoding', 'video-embed-thumbnail-generator'),
           browser: (0,external_wp_i18n_.__)('Pending In-Browser Thumbnails', 'video-embed-thumbnail-generator')
         };
-        const filteredLabels = (0,external_wp_hooks_.applyFilters)('videopack.queue.batch_labels', defaultLabels);
+        const filteredLabels = (0,external_wp_hooks_.applyFilters)(
+        /**
+         * Filters the display labels for bulk queue batch types.
+         *
+         * @since 5.0.0
+         *
+         * @param {Object} labels Object mapping batch type identifiers to localized label strings.
+         */
+        'videopack.queue.batch_labels', defaultLabels);
         const label = filteredLabels[type] || type;
         return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
           title: label,

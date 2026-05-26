@@ -1,14 +1,10 @@
 /* global videopack_config */
-import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
+
 import { RichText, InnerBlocks } from '@wordpress/block-editor';
-import { Spinner, Icon } from '@wordpress/components';
+import { Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
-import {
-	share as shareIcon,
-	close as closeIcon,
-	code as embedIcon,
-} from '@wordpress/icons';
+
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideopackData from '../../hooks/useVideopackData';
 import VideopackContextBridge from '../VideopackContextBridge';
@@ -23,9 +19,7 @@ import VideopackContextBridge from '../VideopackContextBridge';
  * @param {string}   root0.tagName               HTML tag name.
  * @param {string}   root0.textAlign             Text alignment.
  * @param {boolean}  root0.isOverlay             Whether it's an overlay.
- * @param {boolean}  root0.embedcode             Whether to show embed code.
  * @param {Element}  root0.children              Optional preview children (e.g. download block).
- * @param {string}   root0.embedlink             Embed link.
  * @param {boolean}  root0.overlay_title         Whether to show title in overlay.
  * @param {boolean}  root0.showBackground        Whether to show background bar.
  * @param {Function} root0.onTitleChange         Callback for title change.
@@ -45,8 +39,6 @@ export default function VideoTitle({
 	tagName: Tag = 'h3',
 	textAlign,
 	isOverlay = false,
-	embedcode,
-	embedlink,
 	overlay_title,
 	showBackground,
 	onTitleChange,
@@ -60,7 +52,7 @@ export default function VideoTitle({
 	children,
 }) {
 	const vpContext = useVideopackContext(attributes, context, {
-		excludeKeys: [ 'downloadlink' ],
+		excludeKeys: ['downloadlink'],
 	});
 	const {
 		postId: resolvedPostId,
@@ -160,24 +152,33 @@ export default function VideoTitle({
 							overrides={{
 								'videopack/isInsideTitleMeta': true,
 								...(context['videopack/source_groups'] &&
-								Object.keys(context['videopack/source_groups']).length > 0
+								Object.keys(context['videopack/source_groups'])
+									.length > 0
 									? {
 											'videopack/source_groups':
-												context['videopack/source_groups'],
+												context[
+													'videopack/source_groups'
+												],
 										}
 									: {}),
 								...(context['videopack/sources']?.length > 0
-									? { 'videopack/sources': context['videopack/sources'] }
+									? {
+											'videopack/sources':
+												context['videopack/sources'],
+										}
 									: {}),
 							}}
 						>
-							{ children || (
+							{children || (
 								<InnerBlocks
-									allowedBlocks={ [ 'videopack/download', 'videopack/share' ] }
-									template={ [] }
-									templateLock={ false }
+									allowedBlocks={[
+										'videopack/download',
+										'videopack/share',
+									]}
+									template={[]}
+									templateLock={false}
 								/>
-							) }
+							)}
 						</VideopackContextBridge>
 					</div>
 				)}

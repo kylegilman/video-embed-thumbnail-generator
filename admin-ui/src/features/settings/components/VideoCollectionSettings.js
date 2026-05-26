@@ -94,6 +94,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		];
 
 		return applyFilters(
+			/** This filter is documented in src/features/settings/components/PlayerSettings.js */
 			'videopack_player_skin_options',
 			options,
 			embed_method
@@ -159,7 +160,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 											isOverlay: true,
 											showBackground: true,
 										},
-								  ]
+									]
 								: null,
 						].filter(Boolean),
 					],
@@ -357,9 +358,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={(val) => {
-							handlers.enable_collection_video_limit(
-								val
-							);
+							handlers.enable_collection_video_limit(val);
 							if (!val) {
 								handlers.collection_video_limit(-1);
 							} else if (Number(collection_video_limit) === -1) {
@@ -387,9 +386,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 										? 12
 										: collection_video_limit
 								}
-								onChange={
-									handlers.collection_video_limit
-								}
+								onChange={handlers.collection_video_limit}
 							/>
 						</div>
 					)}
@@ -535,9 +532,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 										'video-embed-thumbnail-generator'
 									)}
 									value={title_background_color}
-									onChange={
-										handlers.title_background_color
-									}
+									onChange={handlers.title_background_color}
 									colors={videopack_config.themeColors}
 									fallbackValue={
 										colorFallbacks.title_background_color
@@ -566,9 +561,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 												)
 									}
 									value={play_button_color}
-									onChange={
-										handlers.play_button_color
-									}
+									onChange={handlers.play_button_color}
 									colors={videopack_config.themeColors}
 									fallbackValue={
 										colorFallbacks.play_button_color
@@ -616,9 +609,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 										'video-embed-thumbnail-generator'
 									)}
 									value={pagination_color}
-									onChange={
-										handlers.pagination_color
-									}
+									onChange={handlers.pagination_color}
 									colors={videopack_config.themeColors}
 									fallbackValue={
 										colorFallbacks.pagination_color
@@ -664,9 +655,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 										'video-embed-thumbnail-generator'
 									)}
 									value={pagination_active_color}
-									onChange={
-										handlers.pagination_active_color
-									}
+									onChange={handlers.pagination_active_color}
 									colors={videopack_config.themeColors}
 									fallbackValue={
 										colorFallbacks.pagination_active_color

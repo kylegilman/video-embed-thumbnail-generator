@@ -34,7 +34,9 @@ export default function QuerySettings({
 		}
 
 		// Check if it's in the search results
-		const found = (searchResults || []).find((res) => res.id === gallery_id);
+		const found = (searchResults || []).find(
+			(res) => res.id === gallery_id
+		);
 		if (found) {
 			setCurrentPost(found);
 			return;
@@ -49,7 +51,10 @@ export default function QuerySettings({
 					setCurrentPost({
 						id: results[0].id,
 						title: {
-							rendered: results[0].title?.rendered || results[0].title || '',
+							rendered:
+								results[0].title?.rendered ||
+								results[0].title ||
+								'',
 						},
 					});
 				}
@@ -78,7 +83,11 @@ export default function QuerySettings({
 	}
 	if (searchResults) {
 		searchResults.forEach((post) => {
-			if (!optionsForSelect.find((o) => String(o.value) === String(post.id))) {
+			if (
+				!optionsForSelect.find(
+					(o) => String(o.value) === String(post.id)
+				)
+			) {
 				optionsForSelect.push({
 					value: String(post.id),
 					label: decodeEntities(post.title.rendered),

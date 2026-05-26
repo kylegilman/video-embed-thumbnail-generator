@@ -294,6 +294,17 @@ class Options implements Hook_Subscriber {
 			}
 		}
 
+				/**
+		 * Filters the default settings for the Videopack plugin.
+		 *
+		 * This filter is used by the plugin and its add-ons to define initial values
+		 * for all setting options. Any custom setting registered by an add-on must be
+		 * declared here to prevent it from being stripped during load and validation.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $default_options Associative array of option keys and their default values.
+		 */
 		return (array) apply_filters( 'videopack_default_options', $default_options );
 	}
 
@@ -326,6 +337,16 @@ class Options implements Hook_Subscriber {
 
 		$this->formats_registry = new Formats\Registry( $this->options );
 
+				/**
+		 * Fires immediately after the plugin options have been successfully loaded.
+		 *
+		 * This action provides a hook for add-ons to run initialization routines
+		 * that depend on the final configuration settings of the base plugin.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \Videopack\Admin\Options $options_instance The Options manager instance.
+		 */
 		do_action( 'videopack_options_loaded', $this );
 	}
 
@@ -484,6 +505,16 @@ class Options implements Hook_Subscriber {
 			unset( $safe_options[ $key ] );
 		}
 
+				/**
+		 * Filters the plugin options exposed to non-administrator users via the REST API.
+		 *
+		 * By default, sensitive options (e.g. system paths, credentials) are stripped.
+		 * Use this filter to expose additional safe options or further restrict access.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $safe_options Associative array of sanitized and safe plugin options.
+		 */
 		return (array) apply_filters( 'videopack_options_for_rest', $safe_options );
 	}
 
@@ -501,7 +532,12 @@ class Options implements Hook_Subscriber {
 				'show_in_rest'      => array(
 					'schema' => array(
 						'type'                 => 'object',
-						'properties'           => (array) apply_filters( 'videopack_settings_schema', $this->settings_schema( (array) $this->get_default() ), (array) $this->get_default() ),
+						'properties'           => (array) apply_filters(
+							/** This filter is documented in src/Admin/Options.php */
+							'videopack_settings_schema',
+							$this->settings_schema( (array) $this->get_default() ),
+							(array) $this->get_default()
+						),
 						'additionalProperties' => true,
 					),
 				),
@@ -604,6 +640,17 @@ class Options implements Hook_Subscriber {
 			}
 		}
 
+				/**
+		 * Filters the FFmpeg availability status on the server.
+		 *
+		 * This filter is used to override whether FFmpeg is considered active, allowing
+		 * custom transcoders, cloud offloading, or custom server setups to bypass the local
+		 * checks.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param bool|string $ffmpeg_exists 'notchecked', true/false, or 'notinstalled'.
+		 */
 		$options['ffmpeg_exists'] = apply_filters( 'videopack_ffmpeg_exists', $options['ffmpeg_exists'] );
 
 		// Ensure registry is using merged options.
@@ -714,6 +761,17 @@ class Options implements Hook_Subscriber {
 			}
 		}
 
+				/**
+		 * Filters the settings schema definition used for REST API validation and Gutenberg.
+		 *
+		 * Add-ons must use this filter to specify the data types and validation
+		 * rules of their custom settings, enabling automatic sanitization.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param array $schema   The JSON schema-compatible array of setting properties.
+		 * @param array $defaults The default options array.
+		 */
 		$schema = (array) apply_filters( 'videopack_settings_schema', $this->settings_schema( (array) $this->get_default() ), (array) $this->get_default() );
 		$input  = (array) \Videopack\Common\Sanitizer::sanitize_options_recursively( (array) $input, $schema );
 
@@ -728,7 +786,12 @@ class Options implements Hook_Subscriber {
 			$input['browser_thumbnails'] = true;
 		}
 
-		if ( 'notinstalled' === apply_filters( 'videopack_ffmpeg_exists', $input['ffmpeg_exists'] ?? 'notinstalled', $input ) ) {
+		if ( 'notinstalled' === apply_filters(
+			/** This filter is documented in src/Admin/Options.php */
+			'videopack_ffmpeg_exists',
+			$input['ffmpeg_exists'] ?? 'notinstalled',
+			$input
+		) ) {
 			$input['auto_encode']     = false;
 			$input['auto_encode_gif'] = false;
 			$input['keep_gif_source'] = false;
@@ -942,6 +1005,4 @@ class Options implements Hook_Subscriber {
 		}
 		return (array) $options;
 	}
-
-
 }

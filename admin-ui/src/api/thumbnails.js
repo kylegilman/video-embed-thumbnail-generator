@@ -13,6 +13,7 @@ import { addQueryArgs, getFilename } from '@wordpress/url';
  * @param {string}            videoSrc     The source URL of the video.
  * @param {number}            parentId     Optional. The parent post ID.
  * @param {boolean}           featured     Optional. Whether to set as featured image.
+ * @param {Object}            extraData    Optional. Additional data to send.
  */
 export const createThumbnailFromCanvas = (
 	canvas,
