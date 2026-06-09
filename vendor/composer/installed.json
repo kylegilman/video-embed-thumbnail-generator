@@ -29,7 +29,7 @@
             },
             "time": "2026-03-25T15:26:13+00:00",
             "type": "library",
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "files": [
                     "start.php"
