@@ -1567,11 +1567,11 @@ const WatermarkPositioner = ({
     const containerWidth = containerDimensions.width;
 
     // Use transientScale if available, else settings.scale
-    const currentScale = transientScale !== null ? transientScale : Number(settings.scale || settings.watermark_scale || 10);
-    const currentX = transientPercentages?.x !== undefined && transientPercentages !== null ? transientPercentages.x : Number(settings.x || settings.watermark_x || 0);
-    const currentY = transientPercentages?.y !== undefined && transientPercentages !== null ? transientPercentages.y : Number(settings.y || settings.watermark_y || 0);
-    const currentAlign = settings.align || settings.watermark_align || 'center';
-    const currentValign = settings.valign || settings.watermark_valign || 'center';
+    const currentScale = transientScale !== null ? transientScale : Number(settings.watermark_scale || settings.scale || 10);
+    const currentX = transientPercentages?.x !== undefined && transientPercentages !== null ? transientPercentages.x : Number(settings.watermark_x || settings.x || 0);
+    const currentY = transientPercentages?.y !== undefined && transientPercentages !== null ? transientPercentages.y : Number(settings.watermark_y || settings.y || 0);
+    const currentAlign = settings.watermark_align || settings.align || 'center';
+    const currentValign = settings.watermark_valign || settings.valign || 'center';
     const style = {
       position: 'absolute',
       width: `${currentScale}%`,
@@ -1635,8 +1635,8 @@ const WatermarkPositioner = ({
     if (watermarkRef.current) {
       watermarkRef.current.focus();
     }
-    const initialX = Number(settings.x || settings.watermark_x || 0);
-    const initialY = Number(settings.y || settings.watermark_y || 0);
+    const initialX = Number(settings.watermark_x || settings.x || 0);
+    const initialY = Number(settings.watermark_y || settings.y || 0);
     setIsDragging(true);
     setTransientPercentages({
       x: initialX,
@@ -1656,9 +1656,9 @@ const WatermarkPositioner = ({
       watermarkRef.current.focus();
     }
     setIsResizing(true);
-    const currentScale = transientScale !== null ? transientScale : Number(settings.scale || settings.watermark_scale || 10);
-    const initialX = Number(settings.x || settings.watermark_x || 0);
-    const initialY = Number(settings.y || settings.watermark_y || 0);
+    const currentScale = transientScale !== null ? transientScale : Number(settings.watermark_scale || settings.scale || 10);
+    const initialX = Number(settings.watermark_x || settings.x || 0);
+    const initialY = Number(settings.watermark_y || settings.y || 0);
     setTransientScale(currentScale);
     setTransientPercentages({
       x: initialX,
@@ -1725,8 +1725,8 @@ const WatermarkPositioner = ({
       let newScale = newWidth / containerWidth * 100;
       newScale = Math.round(newScale * 100) / 100;
       newScale = Math.max(1, Math.min(100, newScale));
-      const currentAlignment = s.settings.align || s.settings.watermark_align || 'center';
-      const currentVerticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
+      const currentAlignment = settings.watermark_align || settings.align || 'center';
+      const currentVerticalAlignment = settings.watermark_valign || settings.valign || 'center';
       let newX = dragStart.initialX;
       let newY = dragStart.initialY;
       const scaleDiff = newScale - initialScale;
@@ -1784,7 +1784,7 @@ const WatermarkPositioner = ({
     setIsResizing(false);
     const finalX = s.transientPercentages.x;
     const finalY = s.transientPercentages.y;
-    const finalScale = wasResizing && s.transientScale !== null ? s.transientScale : Number(s.settings.scale || s.settings.watermark_scale || 10);
+    const finalScale = wasResizing && s.transientScale !== null ? s.transientScale : Number(s.settings.watermark_scale || s.settings.scale || 10);
     const currentRatio = s.aspectRatio;
     const {
       width: containerWidth,
@@ -1793,8 +1793,8 @@ const WatermarkPositioner = ({
 
     // Preserve attributes based on what's being used (settings vs block-editor styles)
     const isBlock = Object.prototype.hasOwnProperty.call(s.settings, 'watermark_scale') || Object.prototype.hasOwnProperty.call(s.settings, 'watermark');
-    const currentAlign = s.settings.align || s.settings.watermark_align || 'center';
-    const currentValign = s.settings.valign || s.settings.watermark_valign || 'bottom';
+    const currentAlign = s.settings.watermark_align || s.settings.align || 'center';
+    const currentValign = s.settings.watermark_valign || s.settings.valign || 'bottom';
 
     // 1. Calculate absolute top-left percentage (L, T)
     let L = finalX;
@@ -1909,8 +1909,8 @@ const WatermarkPositioner = ({
     const stepPx = e.shiftKey ? 10 : 1;
     const stepXPct = stepPx / containerDimensions.width * 100;
     const stepYPct = stepPx / containerDimensions.height * 100;
-    const currentAlignment = settings.align || settings.watermark_align || 'center';
-    const currentVerticalAlignment = settings.valign || settings.watermark_valign || 'center';
+    const currentAlignment = settings.watermark_align || settings.align || 'center';
+    const currentVerticalAlignment = settings.watermark_valign || settings.valign || 'center';
     switch (e.key) {
       case 'ArrowUp':
         newY += currentVerticalAlignment === 'top' ? -stepYPct : stepYPct;
@@ -3976,8 +3976,9 @@ const Thumbnails = ({
 }) => {
   const {
     id,
-    poster
+    poster: rawPoster
   } = attributes;
+  const resolvedPoster = videoData?.record?.videopack?.poster || videoData?.record?.meta?.['_videopack-meta']?.poster || rawPoster;
   const src = propSrc || attributes.src;
   const total_thumbnails = attributes.total_thumbnails || videoData?.record?.total_thumbnails || options.total_thumbnails;
   const thumbVideoPanel = (0,external_wp_element_namespaceObject.useRef)();
@@ -3991,37 +3992,11 @@ const Thumbnails = ({
   const [isSaving, setIsSaving] = (0,external_wp_element_namespaceObject.useState)(false);
   const [isModalOpen, setIsModalOpen] = (0,external_wp_element_namespaceObject.useState)(false);
   const [spriteMessage, setSpriteMessage] = (0,external_wp_element_namespaceObject.useState)(null);
-  const [cloudJobs, setCloudJobs] = (0,external_wp_element_namespaceObject.useState)([]);
+  const [activeJobs, setActiveJobs] = (0,external_wp_element_namespaceObject.useState)([]);
   const [existingSprite, setExistingSprite] = (0,external_wp_element_namespaceObject.useState)(null); // { id, url, status }
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = (0,external_wp_element_namespaceObject.useState)(false);
   const [isDeleting, setIsDeleting] = (0,external_wp_element_namespaceObject.useState)(false);
   const [showFailedNotice, setShowFailedNotice] = (0,external_wp_element_namespaceObject.useState)(true);
-
-  // Poll for active thumbnail jobs if any exist
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    let pollInterval;
-    const checkJobs = async () => {
-      try {
-        const jobs = await listJobs(id);
-        const activeThumbnailJobs = jobs.filter(job => (job.format_id === 'thumbnail' || job.format_id === 'thumbnail_sprite') && ['queued', 'processing', 'encoding', 'cloud_encoding'].includes(job.status));
-        setCloudJobs(activeThumbnailJobs);
-        if (activeThumbnailJobs.length === 0 && cloudJobs.length > 0) {
-          fetchSpriteStatus();
-          // Jobs just finished, maybe refresh the poster if it was just set
-          if (id) {
-            // Optionally trigger a refresh of videoData if needed
-          }
-        }
-      } catch (error) {
-        console.error('Error polling jobs:', error);
-      }
-    };
-    if (id) {
-      checkJobs();
-      pollInterval = setInterval(checkJobs, 10000); // Poll every 10 seconds
-    }
-    return () => clearInterval(pollInterval);
-  }, [id, cloudJobs.length, fetchSpriteStatus]);
   const fetchSpriteStatus = (0,external_wp_element_namespaceObject.useCallback)(async () => {
     if (!id || !src) {
       return;
@@ -4046,6 +4021,32 @@ const Thumbnails = ({
       console.error('Error fetching sprite status:', error);
     }
   }, [id, src, probedMetadata]);
+
+  // Poll for active thumbnail jobs if any exist
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    let pollInterval;
+    const checkJobs = async () => {
+      try {
+        const jobs = await listJobs(id);
+        const activeThumbnailJobs = jobs.filter(job => (job.format_id === 'thumbnail' || job.format_id === 'thumbnail_sprite') && ['queued', 'processing', 'encoding'].includes(job.status));
+        setActiveJobs(activeThumbnailJobs);
+        if (activeThumbnailJobs.length === 0 && activeJobs.length > 0) {
+          fetchSpriteStatus();
+          // Jobs just finished, maybe refresh the poster if it was just set
+          if (id) {
+            // Optionally trigger a refresh of videoData if needed
+          }
+        }
+      } catch (error) {
+        console.error('Error polling jobs:', error);
+      }
+    };
+    if (id) {
+      checkJobs();
+      pollInterval = setInterval(checkJobs, 10000); // Poll every 10 seconds
+    }
+    return () => clearInterval(pollInterval);
+  }, [id, activeJobs.length, fetchSpriteStatus]);
   (0,external_wp_element_namespaceObject.useEffect)(() => {
     fetchSpriteStatus();
   }, [fetchSpriteStatus]);
@@ -4072,18 +4073,18 @@ const Thumbnails = ({
   })();
   const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
   (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (window.mejs && window.mejs.players && poster) {
+    if (window.mejs && window.mejs.players && resolvedPoster) {
       // Find the MediaElement.js player within the media modal
       const mejsContainer = document.querySelector('.media-modal .mejs-container, .wp_attachment_holder .mejs-container');
       if (mejsContainer) {
         const mejsId = mejsContainer.id;
         if (mejsId && window.mejs.players[mejsId]) {
           const player = window.mejs.players[mejsId];
-          player.setPoster(poster);
+          player.setPoster(resolvedPoster);
         }
       }
     }
-  }, [poster]);
+  }, [resolvedPoster]);
   (0,external_wp_element_namespaceObject.useEffect)(() => {
     if (spriteMessage && spriteMessage.type !== 'error') {
       const timer = setTimeout(() => {
@@ -4093,9 +4094,10 @@ const Thumbnails = ({
     }
   }, [spriteMessage]);
   function onSelectPoster(image) {
+    const cleanUrl = image.url ? image.url.replace(/&amp;/g, '&') : '';
     setAttributes({
       ...attributes,
-      poster: image.url,
+      poster: cleanUrl,
       poster_id: Number(image.id)
     });
   }
@@ -4115,14 +4117,6 @@ const Thumbnails = ({
       let workingId = Number(id);
       for (let i = 1; i <= Number(total_thumbnails); i++) {
         const response = await generateThumb(i, type, workingId, featured);
-        if (response?.status === 'cloud_queued') {
-          setSpriteMessage({
-            type: 'success',
-            text: (0,external_wp_i18n_namespaceObject.__)('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator')
-          });
-          setIsSaving(false);
-          return;
-        }
         if (response?.attachment_id && workingId === 0) {
           workingId = parseInt(response.attachment_id, 10) || 0;
           setAttributes({
@@ -4273,11 +4267,6 @@ const Thumbnails = ({
   const generateThumb = (0,external_wp_element_namespaceObject.useCallback)(async (i, type, forceId = null, forceFeatured = null, time = null) => {
     try {
       const response = await generateThumbnail(src, total_thumbnails, i, forceId !== null ? forceId : id, type, parentId, forceFeatured !== null ? forceFeatured : featured, time);
-      if (response.status === 202) {
-        return {
-          status: 'cloud_queued'
-        };
-      }
       const data = await response.json();
       return data;
     } catch (error) {
@@ -4316,14 +4305,6 @@ const Thumbnails = ({
         if (!!ffmpegExists) {
           try {
             const response = await generateThumb(index, type, workingId, featured);
-            if (response?.status === 'cloud_queued') {
-              setSpriteMessage({
-                type: 'success',
-                text: (0,external_wp_i18n_namespaceObject.__)('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator')
-              });
-              setIsSaving(false);
-              return; // Stop the loop, it's offloaded to cloud
-            }
             if (response?.attachment_id && workingId === 0) {
               workingId = parseInt(response.attachment_id, 10) || 0;
               setAttributes({
@@ -4449,13 +4430,14 @@ const Thumbnails = ({
   };
   const setPosterData = async (new_poster, new_poster_id, new_attachment_id) => {
     try {
+      const cleanPoster = new_poster ? new_poster.replace(/&amp;/g, '&') : '';
       const existingMeta = videoData?.record?.meta?.['_videopack-meta'] || {};
       const metaData = {
-        '_kgflashmediaplayer-poster': new_poster || '',
+        '_kgflashmediaplayer-poster': cleanPoster || '',
         '_kgflashmediaplayer-poster-id': new_poster_id ? Number(new_poster_id) : 0,
         '_videopack-meta': {
           ...existingMeta,
-          poster: new_poster || '',
+          poster: cleanPoster || '',
           poster_id: new_poster_id ? Number(new_poster_id) : 0
         }
       };
@@ -4501,7 +4483,7 @@ const Thumbnails = ({
       }
       const finalAttributes = {
         ...attributes,
-        poster: new_poster || undefined,
+        poster: cleanPoster || undefined,
         poster_id: new_poster_id || undefined
       };
 
@@ -4584,13 +4566,7 @@ const Thumbnails = ({
       if (!!ffmpegExists) {
         try {
           const response = await generateThumb(1, 'generate', null, null, ref.current.currentTime);
-          if (response?.status === 'cloud_queued') {
-            setSpriteMessage({
-              type: 'success',
-              text: (0,external_wp_i18n_namespaceObject.__)('Thumbnail generation enqueued in the cloud. This may take a few minutes.', 'video-embed-thumbnail-generator')
-            });
-            setIsSaving(false);
-          } else if (response?.real_thumb_url) {
+          if (response?.real_thumb_url) {
             await setImgAsPoster(response.real_thumb_url);
           } else {
             setIsSaving(false);
@@ -4648,9 +4624,9 @@ const Thumbnails = ({
         onRemove: () => setShowFailedNotice(false),
         isDismissible: true,
         children: (0,external_wp_i18n_namespaceObject.__)('Automatic in-browser thumbnail generation failed for this video (possibly due to CORS or canvas limitations). You can try generating thumbnails manually below.', 'video-embed-thumbnail-generator')
-      }), poster && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("img", {
+      }), resolvedPoster && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("img", {
         className: "videopack-current-thumbnail",
-        src: poster,
+        src: resolvedPoster ? resolvedPoster.replace(/&amp;/g, '&') : '',
         alt: (0,external_wp_i18n_namespaceObject.__)('Current Thumbnail', 'video-embed-thumbnail-generator')
       }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.BaseControl, {
         className: "editor-video-poster-control",
@@ -4666,17 +4642,17 @@ const Thumbnails = ({
             variant: "secondary",
             onClick: open,
             ref: posterImageButton,
-            children: !poster ? (0,external_wp_i18n_namespaceObject.__)('Select', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_namespaceObject.__)('Replace', 'video-embed-thumbnail-generator')
+            children: !resolvedPoster ? (0,external_wp_i18n_namespaceObject.__)('Select', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_namespaceObject.__)('Replace', 'video-embed-thumbnail-generator')
           })
-        }), !!poster && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+        }), !!resolvedPoster && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
           onClick: onRemovePoster,
           variant: "tertiary",
           children: (0,external_wp_i18n_namespaceObject.__)('Remove', 'video-embed-thumbnail-generator')
         })]
-      }), cloudJobs.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+      }), activeJobs.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
         className: "videopack-active-jobs",
         children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {}), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
-          children: (0,external_wp_i18n_namespaceObject.__)('Cloud thumbnail generation in progress…', 'video-embed-thumbnail-generator')
+          children: (0,external_wp_i18n_namespaceObject.__)('Thumbnail generation in progress…', 'video-embed-thumbnail-generator')
         })]
       }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
         label: (0,external_wp_i18n_namespaceObject.__)("Set as post's featured image", 'video-embed-thumbnail-generator'),
@@ -4833,25 +4809,13 @@ const Thumbnails = ({
           disabled: (canvasTainted || isProbing) && !ffmpegExists,
           isModal: true
         })
-      }), isConfirmDeleteOpen && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.Modal, {
+      }), isConfirmDeleteOpen && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.__experimentalConfirmDialog, {
+        isOpen: isConfirmDeleteOpen,
         title: (0,external_wp_i18n_namespaceObject.__)('Delete Sprite Sheet', 'video-embed-thumbnail-generator'),
-        onRequestClose: () => setIsConfirmDeleteOpen(false),
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
-          children: (0,external_wp_i18n_namespaceObject.__)('Are you sure you want to permanently delete this sprite sheet? This action cannot be undone.', 'video-embed-thumbnail-generator')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-          className: "videopack-modal-actions",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-            variant: "secondary",
-            onClick: () => setIsConfirmDeleteOpen(false),
-            children: (0,external_wp_i18n_namespaceObject.__)('Cancel', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-            variant: "primary",
-            isDestructive: true,
-            onClick: handleDeleteSprite,
-            disabled: isDeleting,
-            children: isDeleting ? /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {}) : (0,external_wp_i18n_namespaceObject.__)('Delete', 'video-embed-thumbnail-generator')
-          })]
-        })]
+        confirmButtonText: (0,external_wp_i18n_namespaceObject.__)('Delete', 'video-embed-thumbnail-generator'),
+        onConfirm: handleDeleteSprite,
+        onCancel: () => setIsConfirmDeleteOpen(false),
+        children: (0,external_wp_i18n_namespaceObject.__)('Are you sure you want to permanently delete this sprite sheet? This action cannot be undone.', 'video-embed-thumbnail-generator')
       })]
     })
   });
@@ -5197,7 +5161,7 @@ const EncodeFormatStatus = ({
     if (isProcessing || !!deleteInProgress) {
       return true;
     }
-    return data.exists && data.status !== 'error' || ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists', 'browser_pending', 'browser_encoding'].includes(data.status);
+    return data.exists && data.status !== 'error' || ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists', 'browser_pending', 'browser_encoding', 'cloud_encoding', 'offloading'].includes(data.status);
   };
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("li", {
     className: "videopack-format-row",
@@ -5393,7 +5357,7 @@ const AdditionalFormats = ({
 
           // Carry over UI-only 'checked' state or initialize it.
           // If the status is one where encoding is already done or in progress, uncheck it.
-          const isBusyOrDone = ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists', 'browser_pending', 'browser_encoding'].includes(newFormat.status);
+          const isBusyOrDone = ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists', 'browser_pending', 'browser_encoding', 'cloud_encoding', 'offloading'].includes(newFormat.status);
           newFormat.checked = oldFormat && !isBusyOrDone ? !!oldFormat.checked : false;
         });
 
@@ -5587,7 +5551,7 @@ const AdditionalFormats = ({
     setIsProcessing(true);
 
     // Get list of format IDs that are checked and available
-    const formatsToEncode = Object.entries(videoFormats).filter(([, value]) => value.checked && !['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists'].includes(value.status) && !value.exists).reduce((acc, [formatId]) => {
+    const formatsToEncode = Object.entries(videoFormats).filter(([, value]) => value.checked && !['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement', 'remote_exists', 'cloud_encoding', 'offloading'].includes(value.status) && !value.exists).reduce((acc, [formatId]) => {
       acc[formatId] = true; // Backend expects an object { format_id: true, ... }
       return acc;
     }, {});
@@ -5832,15 +5796,7 @@ const AdditionalFormats = ({
       title: (0,external_wp_i18n_namespaceObject.__)('Additional Formats', 'video-embed-thumbnail-generator'),
       opened: isOpen,
       onToggle: () => setIsOpen(!isOpen),
-      children: [encodeMessage && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Notice, {
-        status: typeof encodeMessage === 'string' && (encodeMessage.includes((0,external_wp_i18n_namespaceObject.__)('Error', 'video-embed-thumbnail-generator')) || encodeMessage.includes(':')) ? 'error' : 'success',
-        isDismissible: true,
-        onRemove: () => setEncodeMessage(null),
-        style: {
-          marginBottom: '15px'
-        },
-        children: encodeMessage
-      }), !videoFormats ? /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+      children: [!videoFormats ? /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
         className: "videopack-formats-loading",
         children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {}), isLoading && isExternal && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
           className: "videopack-external-check-notice",
@@ -5924,6 +5880,15 @@ const AdditionalFormats = ({
             disabled: isEncodeButtonDisabled || isProcessing
           }), (isLoading || isProcessing) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {})]
         })]
+      }), encodeMessage && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Notice, {
+        status: typeof encodeMessage === 'string' && (encodeMessage.includes((0,external_wp_i18n_namespaceObject.__)('Error', 'video-embed-thumbnail-generator')) || encodeMessage.includes(':')) ? 'error' : 'success',
+        isDismissible: true,
+        onRemove: () => setEncodeMessage(null),
+        style: {
+          marginTop: '15px',
+          marginBottom: '0'
+        },
+        children: encodeMessage
       })]
     })
   });
@@ -6397,7 +6362,15 @@ const AttachmentDetails = ({
     }
     return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
       className: "videopack-attachment-details",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(Thumbnails_Thumbnails, {
+      children: [(window.videopackAttachmentDetailsExtensions || []).map((Extension, idx) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(Extension, {
+        attachmentId: attachmentId,
+        model: model,
+        attributes: attributes,
+        setAttributes: mergeAttributes,
+        options: options,
+        record: record,
+        setRecord: setRecord
+      }, idx)), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(Thumbnails_Thumbnails, {
         setAttributes: handleSettingChange,
         attributes: attributes,
         videoData: {
@@ -6998,6 +6971,9 @@ const VideoJS = props => {
         const videoElement = doc.createElement('video');
         videoElement.className = `video-js ${skin || ''} vjs-big-play-centered`;
         videoElement.setAttribute('playsinline', '');
+        if (options.crossorigin) {
+          videoElement.setAttribute('crossorigin', options.crossorigin);
+        }
         videoRef.current.appendChild(videoElement);
         const playerOptions = {
           ...options,
@@ -7705,7 +7681,8 @@ const VideoPlayer = ({
     duotone,
     fixed_aspect,
     fullwidth,
-    loopDuotoneId
+    loopDuotoneId,
+    crossorigin
   } = resolved;
   const source_groups = (0,external_wp_element_namespaceObject.useMemo)(() => {
     // If we have valid groups, use them (handle empty array vs object)
@@ -7851,20 +7828,25 @@ const VideoPlayer = ({
     }
     return Math.random().toString(36).substr(2, 9);
   }, [blockAttributes.id, source_groups]);
-  const genericPlayerOptions = (0,external_wp_element_namespaceObject.useMemo)(() => ({
-    poster,
-    loop,
-    preload,
-    controls: !!controls,
-    muted,
-    playsInline: playsinline,
-    className: 'videopack-video',
-    sources: finalizedSources,
-    src,
-    tracks: text_tracks,
-    volume,
-    autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
-  }), [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method]);
+  const genericPlayerOptions = (0,external_wp_element_namespaceObject.useMemo)(() => {
+    const config = window.videopack_config || {};
+    const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
+    return {
+      poster,
+      loop,
+      preload,
+      controls: !!controls,
+      muted,
+      playsInline: playsinline,
+      className: 'videopack-video',
+      sources: finalizedSources,
+      src,
+      tracks: text_tracks,
+      volume,
+      crossorigin: resolvedCrossorigin,
+      autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
+    };
+  }, [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method, crossorigin]);
   const videoJsOptions = (0,external_wp_element_namespaceObject.useMemo)(() => {
     const isVjs = (0,external_wp_hooks_namespaceObject.applyFilters)(
     /**
@@ -7879,6 +7861,8 @@ const VideoPlayer = ({
     if (!isVjs) {
       return null;
     }
+    const config = window.videopack_config || {};
+    const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
     const options = {
       autoplay: actualAutoplay,
       controls,
@@ -7894,6 +7878,7 @@ const VideoPlayer = ({
       loop,
       playsinline,
       volume,
+      crossorigin: resolvedCrossorigin,
       playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
       sources: finalizedSources.map(s => ({
         src: s.src,
@@ -7923,7 +7908,7 @@ const VideoPlayer = ({
       };
     }
     return options;
-  }, [final_embed_method, actualAutoplay, controls, muted, preload, poster, loop, playback_rate, playsinline, volume, auto_res, finalizedSources, source_groups, text_tracks, aspectRatio]);
+  }, [final_embed_method, actualAutoplay, controls, muted, preload, poster, loop, playback_rate, playsinline, volume, auto_res, finalizedSources, source_groups, text_tracks, aspectRatio, crossorigin]);
   const handlePlay = (0,external_wp_element_namespaceObject.useCallback)(() => {
     console.log('VideoPlayer: handlePlay triggered');
     if (wrapperRef.current) {
@@ -9496,7 +9481,7 @@ const duration_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"http
 ;// ./src/blocks/view-count/block.json
 const view_count_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/view-count","title":"Videopack View Count","category":"media","icon":"visibility","description":"Displays the view count of the video.","usesContext":["postId","postType"],"attributes":{"iconType":{"type":"string","default":"none"},"showText":{"type":"boolean","default":true},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"iconType":"playOutline","isPreview":true}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 ;// ./src/blocks/watermark/block.json
-const watermark_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/watermark","title":"Videopack Watermark","category":"media","icon":"art","description":"Displays a watermark overlay on the video.","parent":["videopack/player-container","videopack/player"],"attributes":{"watermark":{"type":"string"},"watermark_link_to":{"type":"string","default":"false"},"watermark_url":{"type":"string"},"watermark_align":{"type":"string","default":"right"},"watermark_valign":{"type":"string","default":"bottom"},"watermark_scale":{"type":"number","default":10},"watermark_x":{"type":"number","default":5},"watermark_y":{"type":"number","default":7},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"watermark":"https://s.w.org/style/images/about/WordPress-logotype-wmark.png","isPreview":true}},"supports":{"html":false,"reusable":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
+const watermark_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/watermark","title":"Videopack Watermark","category":"media","icon":"art","description":"Displays a watermark overlay on the video.","parent":["videopack/player-container","videopack/player"],"attributes":{"watermark":{"type":"string"},"watermark_link_to":{"type":"string","default":"false"},"watermark_url":{"type":"string"},"watermark_align":{"type":"string"},"watermark_valign":{"type":"string"},"watermark_scale":{"type":"number"},"watermark_x":{"type":"number"},"watermark_y":{"type":"number"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"watermark":"https://s.w.org/style/images/about/WordPress-logotype-wmark.png","isPreview":true}},"supports":{"html":false,"reusable":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 ;// ./src/blocks/play-button/block.json
 const play_button_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/play-button","title":"Videopack Play Button","category":"media","icon":"controls-play","description":"Displays a play button overlay.","attributes":{"play_button_color":{"type":"string"},"play_button_secondary_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"isPreview":true}},"supports":{"html":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 ;// ./src/blocks/shared/design-context.js
@@ -10069,7 +10054,7 @@ const AttachmentPreview = ({
       style: containerStyle,
       children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(VideoPlayer_VideoPlayer, {
         attributes: attributes,
-        children: [(attributes.overlay_title || attributes.downloadlink || attributes.embeddable && attributes.embedcode) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(BlockPreview, {
+        children: [(attributes.overlay_title || attributes.downloadlink || attributes.embeddable && attributes.embedcode) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(BlockPreview, {
           name: "videopack/title",
           attributes: {
             title: attributes.title,
@@ -10081,13 +10066,19 @@ const AttachmentPreview = ({
           isInsidePlayerContainer: true,
           isOverlay: true,
           context: previewContext,
-          children: !!attributes.downloadlink && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(BlockPreview, {
+          children: [!!attributes.downloadlink && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(BlockPreview, {
             name: "videopack/download",
             attributes: TITLE_DOWNLOAD_BLOCK_ATTRS,
             context: previewContext,
             isInsidePlayerOverlay: true,
             isInsidePlayerContainer: true
-          })
+          }), !!(attributes.embeddable && attributes.embedcode) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(BlockPreview, {
+            name: "videopack/share",
+            attributes: TITLE_SHARE_BLOCK_ATTRS,
+            context: previewContext,
+            isInsidePlayerOverlay: true,
+            isInsidePlayerContainer: true
+          })]
         }), attributes.watermark && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(BlockPreview, {
           name: "videopack/watermark",
           isInsidePlayerOverlay: true,

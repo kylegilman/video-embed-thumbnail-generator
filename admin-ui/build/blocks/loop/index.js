@@ -9205,6 +9205,9 @@ const VideoJS = props => {
         const videoElement = doc.createElement('video');
         videoElement.className = `video-js ${skin || ''} vjs-big-play-centered`;
         videoElement.setAttribute('playsinline', '');
+        if (options.crossorigin) {
+          videoElement.setAttribute('crossorigin', options.crossorigin);
+        }
         videoRef.current.appendChild(videoElement);
         const playerOptions = {
           ...options,
@@ -9795,7 +9798,8 @@ const VideoPlayer = ({
     duotone,
     fixed_aspect,
     fullwidth,
-    loopDuotoneId
+    loopDuotoneId,
+    crossorigin
   } = resolved;
   const source_groups = (0,external_wp_element_namespaceObject.useMemo)(() => {
     // If we have valid groups, use them (handle empty array vs object)
@@ -9941,20 +9945,25 @@ const VideoPlayer = ({
     }
     return Math.random().toString(36).substr(2, 9);
   }, [blockAttributes.id, source_groups]);
-  const genericPlayerOptions = (0,external_wp_element_namespaceObject.useMemo)(() => ({
-    poster,
-    loop,
-    preload,
-    controls: !!controls,
-    muted,
-    playsInline: playsinline,
-    className: 'videopack-video',
-    sources: finalizedSources,
-    src,
-    tracks: text_tracks,
-    volume,
-    autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
-  }), [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method]);
+  const genericPlayerOptions = (0,external_wp_element_namespaceObject.useMemo)(() => {
+    const config = window.videopack_config || {};
+    const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
+    return {
+      poster,
+      loop,
+      preload,
+      controls: !!controls,
+      muted,
+      playsInline: playsinline,
+      className: 'videopack-video',
+      sources: finalizedSources,
+      src,
+      tracks: text_tracks,
+      volume,
+      crossorigin: resolvedCrossorigin,
+      autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
+    };
+  }, [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method, crossorigin]);
   const videoJsOptions = (0,external_wp_element_namespaceObject.useMemo)(() => {
     const isVjs = (0,external_wp_hooks_namespaceObject.applyFilters)(
     /**
@@ -9969,6 +9978,8 @@ const VideoPlayer = ({
     if (!isVjs) {
       return null;
     }
+    const config = window.videopack_config || {};
+    const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
     const options = {
       autoplay: actualAutoplay,
       controls,
@@ -9984,6 +9995,7 @@ const VideoPlayer = ({
       loop,
       playsinline,
       volume,
+      crossorigin: resolvedCrossorigin,
       playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
       sources: finalizedSources.map(s => ({
         src: s.src,
@@ -10013,7 +10025,7 @@ const VideoPlayer = ({
       };
     }
     return options;
-  }, [final_embed_method, actualAutoplay, controls, muted, preload, poster, loop, playback_rate, playsinline, volume, auto_res, finalizedSources, source_groups, text_tracks, aspectRatio]);
+  }, [final_embed_method, actualAutoplay, controls, muted, preload, poster, loop, playback_rate, playsinline, volume, auto_res, finalizedSources, source_groups, text_tracks, aspectRatio, crossorigin]);
   const handlePlay = (0,external_wp_element_namespaceObject.useCallback)(() => {
     console.log('VideoPlayer: handlePlay triggered');
     if (wrapperRef.current) {
@@ -10543,7 +10555,7 @@ const duration_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"http
 ;// ./src/blocks/view-count/block.json
 const view_count_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/view-count","title":"Videopack View Count","category":"media","icon":"visibility","description":"Displays the view count of the video.","usesContext":["postId","postType"],"attributes":{"iconType":{"type":"string","default":"none"},"showText":{"type":"boolean","default":true},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"iconType":"playOutline","isPreview":true}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 ;// ./src/blocks/watermark/block.json
-const watermark_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/watermark","title":"Videopack Watermark","category":"media","icon":"art","description":"Displays a watermark overlay on the video.","parent":["videopack/player-container","videopack/player"],"attributes":{"watermark":{"type":"string"},"watermark_link_to":{"type":"string","default":"false"},"watermark_url":{"type":"string"},"watermark_align":{"type":"string","default":"right"},"watermark_valign":{"type":"string","default":"bottom"},"watermark_scale":{"type":"number","default":10},"watermark_x":{"type":"number","default":5},"watermark_y":{"type":"number","default":7},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"watermark":"https://s.w.org/style/images/about/WordPress-logotype-wmark.png","isPreview":true}},"supports":{"html":false,"reusable":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
+const watermark_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/watermark","title":"Videopack Watermark","category":"media","icon":"art","description":"Displays a watermark overlay on the video.","parent":["videopack/player-container","videopack/player"],"attributes":{"watermark":{"type":"string"},"watermark_link_to":{"type":"string","default":"false"},"watermark_url":{"type":"string"},"watermark_align":{"type":"string"},"watermark_valign":{"type":"string"},"watermark_scale":{"type":"number"},"watermark_x":{"type":"number"},"watermark_y":{"type":"number"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"watermark":"https://s.w.org/style/images/about/WordPress-logotype-wmark.png","isPreview":true}},"supports":{"html":false,"reusable":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 ;// ./src/blocks/play-button/block.json
 const play_button_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/play-button","title":"Videopack Play Button","category":"media","icon":"controls-play","description":"Displays a play button overlay.","attributes":{"play_button_color":{"type":"string"},"play_button_secondary_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"isPreview":true}},"supports":{"html":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 ;// ./src/blocks/shared/design-context.js
