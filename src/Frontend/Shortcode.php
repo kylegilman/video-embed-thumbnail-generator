@@ -650,7 +650,7 @@ class Shortcode implements Hook_Subscriber {
 			$query_atts['gallery_thumb'] = (int) $query_atts['gallery_thumb'];
 		}
 
-		return (array) $query_atts;
+		return (array) apply_filters( 'videopack_get_final_atts', (array) $query_atts, $source );
 	}
 
 	/**

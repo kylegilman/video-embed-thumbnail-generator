@@ -226,32 +226,7 @@ class Thumbnail_Controller extends Controller {
 			);
 		}
 
-		// Fallback to Cloud Transcoding if FFmpeg failed but cloud IS available.
-		if ( is_wp_error( $result ) && $is_cloud_ready ) {
-			$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
-			$enqueue_result   = $queue_controller->enqueue_encodes(
-				array(
-					'id'      => (int) $attachment_id,
-					'url'     => (string) wp_get_attachment_url( (int) $attachment_id ),
-					'formats' => array(
-						$format_id => array(
-							'total_thumbnails' => (int) $request->get_param( 'total_thumbnails' ),
-						),
-					),
-				)
-			);
-
-			if ( ! empty( $enqueue_result['results'][ $format_id ] ) && 'success' === $enqueue_result['results'][ $format_id ]['status'] ) {
-				return new \WP_REST_Response(
-					array(
-						'status'  => 'enqueued',
-						'message' => __( 'Thumbnail generation offloaded to cloud service.', 'video-embed-thumbnail-generator' ),
-					),
-					202
-				);
-			}
-		}
-
+		// Fallback to Cloud Transcoding (handled via filter in premium add-ons).
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -338,6 +313,8 @@ class Thumbnail_Controller extends Controller {
 		}
 
 		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
+		error_log( 'Videopack debug: set_poster parameter is: ' . var_export( $request->get_param( 'set_poster' ), true ) );
+		error_log( 'Videopack debug: featured parameter is: ' . var_export( $request->get_param( 'featured' ), true ) );
 		$response   = (array) $thumbnails->save_from_blob( (int) $attachment_id, $post_name, (array) $files['file'], (int) $request->get_param( 'parent_id' ), $request->get_param( 'featured' ), $request->get_param( 'set_poster' ), $request->get_param( 'filename_suffix' ) );
 
 		$response['attachment_id'] = (int) $attachment_id;

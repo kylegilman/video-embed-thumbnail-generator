@@ -104,6 +104,9 @@ export const VideoJS = (props) => {
 				const videoElement = doc.createElement('video');
 				videoElement.className = `video-js ${skin || ''} vjs-big-play-centered`;
 				videoElement.setAttribute('playsinline', '');
+				if (options.crossorigin) {
+					videoElement.setAttribute('crossorigin', options.crossorigin);
+				}
 
 				videoRef.current.appendChild(videoElement);
 
@@ -111,6 +114,8 @@ export const VideoJS = (props) => {
 					...options,
 					fluid: options.fluid !== undefined ? options.fluid : true,
 				};
+
+
 
 				// Prevent error if resolutionSelector plugin is requested but not loaded in the editor.
 				if (

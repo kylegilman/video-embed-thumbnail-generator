@@ -442,4 +442,53 @@ class Video_Codec {
 
 		return $flags;
 	}
+
+	/**
+	 * Get the target bitrate for this codec based on plugin options and dimensions.
+	 *
+	 * @param array $dimensions    Dimensions array.
+	 * @param array $plugin_options Plugin options.
+	 * @param bool  $is_cloud      Whether this is a cloud encode.
+	 * @return int Target bitrate in kbps.
+	 */
+	public function get_configured_bitrate( array $dimensions, array $plugin_options, bool $is_cloud = false ): int {
+		$codec_id = $this->get_id();
+		if ( $is_cloud && isset( $plugin_options['cloud_encode'][ $codec_id ]['vbr'] ) ) {
+			$vbr = $plugin_options['cloud_encode'][ $codec_id ]['vbr'];
+		} else {
+			$vbr = $plugin_options['encode'][ $codec_id ]['vbr'] ?? null;
+		}
+
+		return (int) max( 100, $this->get_bitrate( $dimensions, $vbr ) );
+	}
+
+	/**
+	 * Get the configured rate control mode (crf or vbr).
+	 *
+	 * @param array $plugin_options Options array.
+	 * @param bool  $is_cloud      Whether this is a cloud encode.
+	 * @return string
+	 */
+	public function get_configured_rate_control_mode( array $plugin_options, bool $is_cloud = false ): string {
+		$codec_id = $this->get_id();
+		if ( $is_cloud ) {
+			return (string) ( $plugin_options['cloud_encode'][ $codec_id ]['rate_control'] ?? 'crf' );
+		}
+		return (string) ( $plugin_options['encode'][ $codec_id ]['rate_control'] ?? $plugin_options['rate_control'] ?? 'crf' );
+	}
+
+	/**
+	 * Get the configured quality (CRF) value.
+	 *
+	 * @param array $plugin_options Options array.
+	 * @param bool  $is_cloud      Whether this is a cloud encode.
+	 * @return float
+	 */
+	public function get_configured_quality( array $plugin_options, bool $is_cloud = false ): float {
+		$codec_id = $this->get_id();
+		if ( $is_cloud ) {
+			return (float) ( $plugin_options['cloud_encode'][ $codec_id ]['crf'] ?? 8 );
+		}
+		return (float) ( $plugin_options['encode'][ $codec_id ]['crf'] ?? $this->get_default_crf() );
+	}
 }

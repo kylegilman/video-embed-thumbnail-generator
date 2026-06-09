@@ -8,6 +8,7 @@ import {
 	PanelBody,
 	RadioControl,
 	ToggleControl,
+	TextControl,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import VideopackTooltip from './VideopackTooltip';
@@ -36,6 +37,8 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 		replace_video_block,
 		replace_preview_video,
 		rewrite_attachment_url,
+		restrict_playback_by_capability,
+		view_restricted_message,
 	} = settings;
 
 	const [isClearingCache, setIsClearingCache] = useState(false);
@@ -92,6 +95,29 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 			changeHandlerFactory.capabilities(updatedCapabilities);
 		};
 
+		const getCapabilityLabel = (capabilityKey) => {
+			const labels = {
+				make_video_thumbnails: __(
+					'Can make thumbnails',
+					'video-embed-thumbnail-generator'
+				),
+				encode_videos: __(
+					'Can encode videos',
+					'video-embed-thumbnail-generator'
+				),
+				edit_others_video_encodes: __(
+					"Can edit other users' encoded videos",
+					'video-embed-thumbnail-generator'
+				),
+				view_full_length_video: __(
+					'Can view full length videos',
+					'videopack-pro'
+				),
+			};
+
+			return labels[capabilityKey] || capitalizeFirstLetter(capabilityKey.replace(/_/g, ' '));
+		};
+
 		return (
 			<PanelBody
 				title={__(
@@ -105,81 +131,31 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					gap={20}
 					className="videopack-setting-capabilities"
 				>
-					<FlexItem>
-						<p>
-							{__(
-								'Can make thumbnails',
-								'video-embed-thumbnail-generator'
-							)}
-						</p>
-						{Object.entries(capabilities.make_video_thumbnails).map(
-							([roleKey, isEnabled]) => (
-								<CheckboxControl
-									__nextHasNoMarginBottom
-									key={`${roleKey}-make-thumbnails`}
-									label={capitalizeFirstLetter(roleKey)}
-									checked={isEnabled}
-									onChange={(isChecked) =>
-										handleCapabilityChange(
-											roleKey,
-											'make_video_thumbnails',
-											isChecked
-										)
-									}
-								/>
-							)
-						)}
-					</FlexItem>
-					<FlexItem>
-						<p>
-							{__(
-								'Can encode videos',
-								'video-embed-thumbnail-generator'
-							)}
-						</p>
-						{Object.entries(capabilities.encode_videos).map(
-							([roleKey, isEnabled]) => (
-								<CheckboxControl
-									__nextHasNoMarginBottom
-									key={`${roleKey}-encode-videos`}
-									label={capitalizeFirstLetter(roleKey)}
-									checked={isEnabled}
-									onChange={(isChecked) =>
-										handleCapabilityChange(
-											roleKey,
-											'encode_videos',
-											isChecked
-										)
-									}
-								/>
-							)
-						)}
-					</FlexItem>
-					<FlexItem>
-						<p>
-							{__(
-								"Can edit other users' encoded videos",
-								'video-embed-thumbnail-generator'
-							)}
-						</p>
-						{Object.entries(
-							capabilities.edit_others_video_encodes
-						).map(([roleKey, isEnabled]) => (
-							<CheckboxControl
-								__nextHasNoMarginBottom
-								key={`${roleKey}-edit-encodes`}
-								label={capitalizeFirstLetter(roleKey)}
-								checked={isEnabled}
-								onChange={(isChecked) =>
-									handleCapabilityChange(
-										roleKey,
-										'edit_others_video_encodes',
-										isChecked
-									)
-								}
-							/>
-						))}
-					</FlexItem>
+					{Object.entries(capabilities).map(([capabilityKey, roles]) => {
+						if (capabilityKey === 'view_full_length_video' && !restrict_playback_by_capability) {
+							return null;
+						}
+						return (
+							<FlexItem key={capabilityKey}>
+								<p>{getCapabilityLabel(capabilityKey)}</p>
+								{Object.entries(roles).map(([roleKey, isEnabled]) => (
+									<CheckboxControl
+										__nextHasNoMarginBottom
+										key={`${roleKey}-${capabilityKey}`}
+										label={capitalizeFirstLetter(roleKey)}
+										checked={isEnabled}
+										onChange={(isChecked) =>
+											handleCapabilityChange(
+												roleKey,
+												capabilityKey,
+												isChecked
+											)
+										}
+									/>
+								))}
+							</FlexItem>
+						);
+					})}
 				</Flex>
 			</PanelBody>
 		);
@@ -412,6 +388,51 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					</FlexItem>
 				</Flex>
 			</PanelBody>
+			{restrict_playback_by_capability !== undefined && (
+				<PanelBody
+					title={__(
+						'Playback Restriction Settings',
+						'videopack-pro'
+					)}
+					initialOpen={true}
+				>
+					<div className="videopack-control-with-tooltip">
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={__(
+								'Restrict full-length video playback by capability',
+								'videopack-pro'
+							)}
+							onChange={changeHandlerFactory.restrict_playback_by_capability}
+							checked={!!restrict_playback_by_capability}
+						/>
+						<VideopackTooltip
+							text={__(
+								'When enabled, only logged-in roles checked in the "User capabilities" checklist are allowed to view the full-length video. Guests and unprivileged users will be restricted to the trailer, or see the restricted overlay if no trailer is available.',
+								'videopack-pro'
+							)}
+						/>
+					</div>
+					{restrict_playback_by_capability && (
+						<div className="videopack-setting-reduced-width" style={{ marginTop: '15px' }}>
+							<TextControl
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+								label={__(
+									'Restricted Playback Message',
+									'videopack-pro'
+								)}
+								value={view_restricted_message || ''}
+								placeholder={__(
+									'Log in or subscribe to see this video',
+									'videopack-pro'
+								)}
+								onChange={changeHandlerFactory.view_restricted_message}
+							/>
+						</div>
+					)}
+				</PanelBody>
+			)}
 			{capabilities && <RolesCheckboxes />}
 		</>
 	);

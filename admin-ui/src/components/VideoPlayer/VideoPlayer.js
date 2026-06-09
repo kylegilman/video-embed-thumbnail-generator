@@ -135,6 +135,7 @@ const VideoPlayer = ({
 		fixed_aspect,
 		fullwidth,
 		loopDuotoneId,
+		crossorigin,
 	} = resolved;
 
 	const source_groups = useMemo(() => {
@@ -344,8 +345,10 @@ const VideoPlayer = ({
 		return Math.random().toString(36).substr(2, 9);
 	}, [blockAttributes.id, source_groups]);
 
-	const genericPlayerOptions = useMemo(
-		() => ({
+	const genericPlayerOptions = useMemo(() => {
+		const config = window.videopack_config || {};
+		const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
+		return {
 			poster,
 			loop,
 			preload,
@@ -357,26 +360,27 @@ const VideoPlayer = ({
 			src,
 			tracks: text_tracks,
 			volume,
+			crossorigin: resolvedCrossorigin,
 			autoPlay:
 				final_embed_method === 'WordPress Default'
 					? false
 					: actualAutoplay,
-		}),
-		[
-			poster,
-			loop,
-			actualAutoplay,
-			preload,
-			controls,
-			muted,
-			volume,
-			playsinline,
-			src,
-			finalizedSources,
-			text_tracks,
-			final_embed_method,
-		]
-	);
+		};
+	}, [
+		poster,
+		loop,
+		actualAutoplay,
+		preload,
+		controls,
+		muted,
+		volume,
+		playsinline,
+		src,
+		finalizedSources,
+		text_tracks,
+		final_embed_method,
+		crossorigin,
+	]);
 
 	const videoJsOptions = useMemo(() => {
 		const isVjs = applyFilters(
@@ -396,6 +400,9 @@ const VideoPlayer = ({
 			return null;
 		}
 
+		const config = window.videopack_config || {};
+		const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
+
 		const options = {
 			autoplay: actualAutoplay,
 			controls,
@@ -409,6 +416,7 @@ const VideoPlayer = ({
 			loop,
 			playsinline,
 			volume,
+			crossorigin: resolvedCrossorigin,
 			playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
 			sources: finalizedSources.map((s) => ({
 				src: s.src,
@@ -460,6 +468,7 @@ const VideoPlayer = ({
 		source_groups,
 		text_tracks,
 		aspectRatio,
+		crossorigin,
 	]);
 
 	const handlePlay = useCallback(() => {

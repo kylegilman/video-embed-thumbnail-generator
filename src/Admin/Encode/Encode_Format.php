@@ -400,6 +400,23 @@ class Encode_Format {
 				'video_duration' => $this->get_video_duration(),
 			);
 			return $this->progress;
+		} elseif ( $this->status === self::STATUS_CLOUD_ENCODING ) {
+			// Cloud encoding jobs: read percentage from progress_percent set by the transcoder's check_status().
+			$percent    = (int) $this->progress_percent;
+			$elapsed    = time() - $this->get_started();
+			$speed      = $elapsed > 0 ? ( $percent / 100 ) * ( ( $this->get_video_duration() / 1000000 ) / $elapsed ) : 0;
+			$speed      = $speed * 0.9; // Slightly underestimate to avoid getting ahead of server sync.
+
+			$this->progress = array(
+				'percent'        => $percent,
+				'status'         => 'cloud_encoding',
+				'started'        => $this->get_started(),
+				'elapsed'        => $elapsed,
+				'speed'          => sprintf( '%.2fx', max( 0.01, $speed ) ),
+				'fps'            => '--',
+				'video_duration' => $this->get_video_duration(),
+			);
+			return $this->progress;
 		} elseif ( in_array( $this->status, array( self::STATUS_NEEDS_INSERT, self::STATUS_PENDING_REPLACEMENT, self::STATUS_COMPLETED ), true ) ) {
 			// If it's finishing or finished, mock the progress as 100%.
 			$this->progress = Encode_Progress::finished( (int) $this->video_duration, (int) $this->started, (int) $this->job_id )->to_array();
@@ -678,6 +695,15 @@ class Encode_Format {
 	 */
 	public function get_video_title() {
 		return (string) $this->video_title;
+	}
+
+	/**
+	 * Get the video title (alias for backward compatibility).
+	 *
+	 * @return string
+	 */
+	public function get_title() {
+		return $this->get_video_title();
 	}
 
 	/**

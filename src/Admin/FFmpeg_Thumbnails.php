@@ -114,7 +114,7 @@ class FFmpeg_Thumbnails {
 		$thumb_options[] = $output;
 
 		$commandline = (array) array_merge( $before_thumb_options, $thumb_options );
-		$process     = new \Videopack\Admin\Encode\FFmpeg_process( $commandline );
+		$process     = new \Videopack\Admin\Encode\FFmpeg_Process( $commandline );
 
 		try {
 			$process->run();
@@ -418,6 +418,13 @@ class FFmpeg_Thumbnails {
 	 * @return array Result of the save operation.
 	 */
 	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false, $force_parent_id = 0, $force_featured = null, $force_set_poster = true, $filename_suffix = '_thumb' ) {
+		if ( is_string( $force_set_poster ) ) {
+			$force_set_poster_lower = strtolower( $force_set_poster );
+			$force_set_poster       = ( 'false' !== $force_set_poster_lower && '0' !== $force_set_poster_lower && '' !== $force_set_poster_lower && 'undefined' !== $force_set_poster_lower && 'null' !== $force_set_poster_lower );
+		} else {
+			$force_set_poster = (bool) $force_set_poster;
+		}
+
 		$user_ID = (int) get_current_user_id();
 		$uploads = wp_upload_dir();
 
@@ -597,6 +604,8 @@ class FFmpeg_Thumbnails {
 				}
 
 				if ( $force_set_poster ) {
+					error_log( 'Videopack debug: setting post thumbnail for attachment ' . $attachment_id . ' with thumb ' . $thumb_id );
+					error_log( 'Videopack debug: call stack: ' . wp_debug_backtrace_summary() );
 					set_post_thumbnail( (int) $attachment_id, (int) $thumb_id );
 				}
 
@@ -611,6 +620,7 @@ class FFmpeg_Thumbnails {
 				}
 
 				if ( $force_set_poster ) {
+					error_log( 'Videopack debug: updating poster metadata for attachment ' . $attachment_id );
 					update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster', $final_poster_url );
 					update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id', (int) $thumb_id );
 

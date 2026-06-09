@@ -134,6 +134,12 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				'priority'      => 10,
 				'accepted_args' => 2,
 			),
+			array(
+				'hook'          => 'action_scheduler_failed_execution',
+				'callback'      => 'handle_as_failure',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
 		);
 	}
 
@@ -433,6 +439,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 								$update_data['cloud_provider'] = $started_format->get_cloud_provider();
 							}
 
+							if ( ! empty( $started_format->get_cloud_meta() ) ) {
+								$update_data['cloud_meta'] = json_encode( $started_format->get_cloud_meta() );
+							}
+
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 							$wpdb->update(
 								$this->queue_table_name,
@@ -685,11 +695,15 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			foreach ( $active_encodes as $job_data ) {
 				$job_id                = $job_data['id'];
 				$attachment_identifier = ! empty( $job_data['attachment_id'] ) ? $job_data['attachment_id'] : $job_data['input_url'];
+
+				Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Heartbeat - Processing active job ID: %d | Format: %s | DB Status: %s | Cloud Job ID: %s', $job_id, $job_data['format_id'], $job_data['status'], $job_data['cloud_job_id'] ) );
+
 				$encoder               = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $job_data['input_url'] );
 				$encode_format         = Encode_Format::from_array( $job_data );
 
 				$progress = null;
 				if ( ! empty( $encode_format->get_cloud_job_id() ) ) {
+					Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d has Cloud Job ID: %s. Firing check action...', $job_id, $encode_format->get_cloud_job_id() ) );
 					do_action(
 						/**
 						 * Fires when polling progress/status of a cloud offloaded transcode job.
@@ -705,9 +719,11 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 					);
 					$progress_data = $encode_format->get_progress();
 					$progress      = is_array( $progress_data ) ? ( $progress_data['percent'] ?? null ) : null;
+					Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d after check action. Status: %s | Progress: %s', $job_id, $encode_format->get_status(), $progress !== null ? $progress . '%' : 'NULL' ) );
 				} else {
 					$progress_data = $encode_format->get_progress(); // Updates internal status if log says 'end' or if it timed out.
 					$progress      = is_array( $progress_data ) ? ( $progress_data['percent'] ?? null ) : null;
+					Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d local encode progress: %s | Status: %s', $job_id, $progress !== null ? $progress . '%' : 'NULL', $encode_format->get_status() ) );
 				}
 
 				$status_changed_now = $encode_format->get_status() !== $job_data['status'];
@@ -717,6 +733,8 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 					|| $cloud_meta_now !== ( $job_data['cloud_meta'] ?? null );
 
 				$progress_changed = null !== $progress && (int) $progress !== (int) ( $job_data['progress'] ?? -1 );
+
+				Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d check changes | status_changed_now: %d (Format status: %s vs DB: %s) | cloud_meta_changed: %d | progress_changed: %d', $job_id, $status_changed_now, $encode_format->get_status(), $job_data['status'], $cloud_meta_changed, $progress_changed ) );
 
 				if ( $status_changed_now || $cloud_meta_changed || $progress_changed ) {
 					$new_status = $encode_format->get_status();
@@ -737,18 +755,24 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 						$update_data['error_message'] = $encode_format->get_error();
 					}
 
+					Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d Updating database with status: %s, progress: %s', $job_id, $new_status, $progress !== null ? $progress . '%' : 'NULL' ) );
+
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update(
+					$updated_rows = $wpdb->update(
 						$this->queue_table_name,
 						$update_data,
 						array( 'id' => $job_id )
 					);
+					Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d DB update complete. Rows affected: %s', $job_id, var_export( $updated_rows, true ) ) );
 					$status_changed = true;
 
 					if ( Encode_Format::STATUS_NEEDS_INSERT === $new_status ) {
+						Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d has STATUS_NEEDS_INSERT. Scheduling videopack_handle_job action...', $job_id ) );
 						// Trigger immediate handling by the handle_job action.
-						as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+						$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+						Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d videopack_handle_job action scheduled. Action ID: %s', $job_id, $action_id ) );
 					} elseif ( Encode_Format::STATUS_FAILED === $new_status ) {
+						Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d failed. Sending error email.', $job_id ) );
 						$this->send_error_email( $job_id );
 					}
 				}

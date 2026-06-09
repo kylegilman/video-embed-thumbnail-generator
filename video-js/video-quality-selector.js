@@ -7,6 +7,32 @@
  */
 if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.videojs.getPlugin('resolutionSelector')) {
 	(function (videojs) {
+		// Globally propagate query parameters for private HLS/DASH bucket playback using Video.js (VHS)
+		if (videojs.Vhs && videojs.Vhs.xhr && typeof videojs.Vhs.xhr.beforeRequest !== 'function') {
+			videojs.Vhs.xhr.beforeRequest = function (options) {
+				const players = videojs.getPlayers();
+				let queryString = '';
+				for (const id in players) {
+					const p = players[id];
+					if (p && !p.isDisposed()) {
+						const src = p.currentSrc();
+						if (src && src.includes('?')) {
+							if (src.includes('Signature=') || src.includes('Expires=')) {
+								queryString = src.substring(src.indexOf('?') + 1);
+								break;
+							}
+						}
+					}
+				}
+
+				if (queryString && options.uri && !options.uri.includes('Signature=') && !options.uri.includes('Expires=')) {
+					const separator = options.uri.includes('?') ? '&' : '?';
+					options.uri += separator + queryString;
+				}
+				return options;
+			};
+		}
+
 		const methods = {
 			res_label: function (res) {
 				if (res === 'Auto') { return res; }

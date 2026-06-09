@@ -10,6 +10,7 @@ import {
 	Spinner,
 	ToggleControl,
 	Notice,
+	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
@@ -44,7 +45,11 @@ const Thumbnails = ({
 	isProbing,
 	probedMetadata,
 }) => {
-	const { id, poster } = attributes;
+	const { id, poster: rawPoster } = attributes;
+	const resolvedPoster =
+		videoData?.record?.videopack?.poster ||
+		videoData?.record?.meta?.['_videopack-meta']?.poster ||
+		rawPoster;
 	const src = propSrc || attributes.src;
 	const total_thumbnails =
 		attributes.total_thumbnails ||
@@ -61,51 +66,11 @@ const Thumbnails = ({
 	const [isSaving, setIsSaving] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [spriteMessage, setSpriteMessage] = useState(null);
-	const [cloudJobs, setCloudJobs] = useState([]);
+	const [activeJobs, setActiveJobs] = useState([]);
 	const [existingSprite, setExistingSprite] = useState(null); // { id, url, status }
 	const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [showFailedNotice, setShowFailedNotice] = useState(true);
-
-	// Poll for active thumbnail jobs if any exist
-	useEffect(() => {
-		let pollInterval;
-
-		const checkJobs = async () => {
-			try {
-				const jobs = await listJobs(id);
-				const activeThumbnailJobs = jobs.filter(
-					(job) =>
-						(job.format_id === 'thumbnail' ||
-							job.format_id === 'thumbnail_sprite') &&
-						[
-							'queued',
-							'processing',
-							'encoding',
-							'cloud_encoding',
-						].includes(job.status)
-				);
-				setCloudJobs(activeThumbnailJobs);
-
-				if (activeThumbnailJobs.length === 0 && cloudJobs.length > 0) {
-					fetchSpriteStatus();
-					// Jobs just finished, maybe refresh the poster if it was just set
-					if (id) {
-						// Optionally trigger a refresh of videoData if needed
-					}
-				}
-			} catch (error) {
-				console.error('Error polling jobs:', error);
-			}
-		};
-
-		if (id) {
-			checkJobs();
-			pollInterval = setInterval(checkJobs, 10000); // Poll every 10 seconds
-		}
-
-		return () => clearInterval(pollInterval);
-	}, [id, cloudJobs.length, fetchSpriteStatus]);
 
 	const fetchSpriteStatus = useCallback(async () => {
 		if (!id || !src) {
@@ -128,6 +93,45 @@ const Thumbnails = ({
 			console.error('Error fetching sprite status:', error);
 		}
 	}, [id, src, probedMetadata]);
+
+	// Poll for active thumbnail jobs if any exist
+	useEffect(() => {
+		let pollInterval;
+
+		const checkJobs = async () => {
+			try {
+				const jobs = await listJobs(id);
+				const activeThumbnailJobs = jobs.filter(
+					(job) =>
+						(job.format_id === 'thumbnail' ||
+							job.format_id === 'thumbnail_sprite') &&
+						[
+							'queued',
+							'processing',
+							'encoding',
+						].includes(job.status)
+				);
+				setActiveJobs(activeThumbnailJobs);
+
+				if (activeThumbnailJobs.length === 0 && activeJobs.length > 0) {
+					fetchSpriteStatus();
+					// Jobs just finished, maybe refresh the poster if it was just set
+					if (id) {
+						// Optionally trigger a refresh of videoData if needed
+					}
+				}
+			} catch (error) {
+				console.error('Error polling jobs:', error);
+			}
+		};
+
+		if (id) {
+			checkJobs();
+			pollInterval = setInterval(checkJobs, 10000); // Poll every 10 seconds
+		}
+
+		return () => clearInterval(pollInterval);
+	}, [id, activeJobs.length, fetchSpriteStatus]);
 
 	useEffect(() => {
 		fetchSpriteStatus();
@@ -165,7 +169,7 @@ const Thumbnails = ({
 	const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
 
 	useEffect(() => {
-		if (window.mejs && window.mejs.players && poster) {
+		if (window.mejs && window.mejs.players && resolvedPoster) {
 			// Find the MediaElement.js player within the media modal
 			const mejsContainer = document.querySelector(
 				'.media-modal .mejs-container, .wp_attachment_holder .mejs-container'
@@ -174,11 +178,11 @@ const Thumbnails = ({
 				const mejsId = mejsContainer.id;
 				if (mejsId && window.mejs.players[mejsId]) {
 					const player = window.mejs.players[mejsId];
-					player.setPoster(poster);
+					player.setPoster(resolvedPoster);
 				}
 			}
 		}
-	}, [poster]);
+	}, [resolvedPoster]);
 
 	useEffect(() => {
 		if (spriteMessage && spriteMessage.type !== 'error') {
@@ -190,9 +194,10 @@ const Thumbnails = ({
 	}, [spriteMessage]);
 
 	function onSelectPoster(image) {
+		const cleanUrl = image.url ? image.url.replace(/&amp;/g, '&') : '';
 		setAttributes({
 			...attributes,
-			poster: image.url,
+			poster: cleanUrl,
 			poster_id: Number(image.id),
 		});
 	}
@@ -221,17 +226,7 @@ const Thumbnails = ({
 					featured
 				);
 
-				if (response?.status === 'cloud_queued') {
-					setSpriteMessage({
-						type: 'success',
-						text: __(
-							'Thumbnail generation enqueued in the cloud. This may take a few minutes.',
-							'video-embed-thumbnail-generator'
-						),
-					});
-					setIsSaving(false);
-					return;
-				}
+
 
 				if (response?.attachment_id && workingId === 0) {
 					workingId = parseInt(response.attachment_id, 10) || 0;
@@ -462,9 +457,7 @@ const Thumbnails = ({
 					time
 				);
 
-				if (response.status === 202) {
-					return { status: 'cloud_queued' };
-				}
+
 
 				const data = await response.json();
 				return data;
@@ -526,17 +519,7 @@ const Thumbnails = ({
 								workingId,
 								featured
 							);
-							if (response?.status === 'cloud_queued') {
-								setSpriteMessage({
-									type: 'success',
-									text: __(
-										'Thumbnail generation enqueued in the cloud. This may take a few minutes.',
-										'video-embed-thumbnail-generator'
-									),
-								});
-								setIsSaving(false);
-								return; // Stop the loop, it's offloaded to cloud
-							}
+
 							if (response?.attachment_id && workingId === 0) {
 								workingId =
 									parseInt(response.attachment_id, 10) || 0;
@@ -714,17 +697,18 @@ const Thumbnails = ({
 		new_attachment_id
 	) => {
 		try {
+			const cleanPoster = new_poster ? new_poster.replace(/&amp;/g, '&') : '';
 			const existingMeta =
 				videoData?.record?.meta?.['_videopack-meta'] || {};
 
 			const metaData = {
-				'_kgflashmediaplayer-poster': new_poster || '',
+				'_kgflashmediaplayer-poster': cleanPoster || '',
 				'_kgflashmediaplayer-poster-id': new_poster_id
 					? Number(new_poster_id)
 					: 0,
 				'_videopack-meta': {
 					...existingMeta,
-					poster: new_poster || '',
+					poster: cleanPoster || '',
 					poster_id: new_poster_id ? Number(new_poster_id) : 0,
 				},
 			};
@@ -781,7 +765,7 @@ const Thumbnails = ({
 
 			const finalAttributes = {
 				...attributes,
-				poster: new_poster || undefined,
+				poster: cleanPoster || undefined,
 				poster_id: new_poster_id || undefined,
 			};
 
@@ -888,16 +872,7 @@ const Thumbnails = ({
 						null,
 						ref.current.currentTime
 					);
-					if (response?.status === 'cloud_queued') {
-						setSpriteMessage({
-							type: 'success',
-							text: __(
-								'Thumbnail generation enqueued in the cloud. This may take a few minutes.',
-								'video-embed-thumbnail-generator'
-							),
-						});
-						setIsSaving(false);
-					} else if (response?.real_thumb_url) {
+					if (response?.real_thumb_url) {
 						await setImgAsPoster(response.real_thumb_url);
 					} else {
 						setIsSaving(false);
@@ -980,10 +955,10 @@ const Thumbnails = ({
 							)}
 						</Notice>
 					)}
-				{poster && (
+				{resolvedPoster && (
 					<img
 						className="videopack-current-thumbnail"
-						src={poster}
+						src={resolvedPoster ? resolvedPoster.replace(/&amp;/g, '&') : ''}
 						alt={__(
 							'Current Thumbnail',
 							'video-embed-thumbnail-generator'
@@ -1010,7 +985,7 @@ const Thumbnails = ({
 								onClick={open}
 								ref={posterImageButton}
 							>
-								{!poster
+								{!resolvedPoster
 									? __(
 											'Select',
 											'video-embed-thumbnail-generator'
@@ -1022,18 +997,18 @@ const Thumbnails = ({
 							</Button>
 						)}
 					/>
-					{!!poster && (
+					{!!resolvedPoster && (
 						<Button onClick={onRemovePoster} variant="tertiary">
 							{__('Remove', 'video-embed-thumbnail-generator')}
 						</Button>
 					)}
 				</BaseControl>
-				{cloudJobs.length > 0 && (
+				{activeJobs.length > 0 && (
 					<div className="videopack-active-jobs">
 						<Spinner />
 						<p>
 							{__(
-								'Cloud thumbnail generation in progress…',
+								'Thumbnail generation in progress…',
 								'video-embed-thumbnail-generator'
 							)}
 						</p>
@@ -1304,46 +1279,24 @@ const Thumbnails = ({
 					</Modal>
 				)}
 				{isConfirmDeleteOpen && (
-					<Modal
+					<ConfirmDialog
+						isOpen={isConfirmDeleteOpen}
 						title={__(
 							'Delete Sprite Sheet',
 							'video-embed-thumbnail-generator'
 						)}
-						onRequestClose={() => setIsConfirmDeleteOpen(false)}
+						confirmButtonText={__(
+							'Delete',
+							'video-embed-thumbnail-generator'
+						)}
+						onConfirm={handleDeleteSprite}
+						onCancel={() => setIsConfirmDeleteOpen(false)}
 					>
-						<p>
-							{__(
-								'Are you sure you want to permanently delete this sprite sheet? This action cannot be undone.',
-								'video-embed-thumbnail-generator'
-							)}
-						</p>
-						<div className="videopack-modal-actions">
-							<Button
-								variant="secondary"
-								onClick={() => setIsConfirmDeleteOpen(false)}
-							>
-								{__(
-									'Cancel',
-									'video-embed-thumbnail-generator'
-								)}
-							</Button>
-							<Button
-								variant="primary"
-								isDestructive
-								onClick={handleDeleteSprite}
-								disabled={isDeleting}
-							>
-								{isDeleting ? (
-									<Spinner />
-								) : (
-									__(
-										'Delete',
-										'video-embed-thumbnail-generator'
-									)
-								)}
-							</Button>
-						</div>
-					</Modal>
+						{__(
+							'Are you sure you want to permanently delete this sprite sheet? This action cannot be undone.',
+							'video-embed-thumbnail-generator'
+						)}
+					</ConfirmDialog>
 				)}
 			</PanelBody>
 		</div>

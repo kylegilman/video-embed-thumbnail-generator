@@ -287,6 +287,13 @@ class Encode_Info {
 	 * @param string $url The URL to check.
 	 */
 	protected function check_url_exists( $url ) {
+		// Prevent checking additional formats that have the same URL/path as the original.
+		$clean_url      = strtok( $url, '?#' );
+		$clean_original = strtok( $this->url, '?#' );
+		if ( $clean_url && $clean_original && rawurldecode( $clean_url ) === rawurldecode( $clean_original ) ) {
+			return;
+		}
+
 		if ( $this->source->url_exists( $url ) ) {
 			$this->exists = true;
 			$this->url    = $url;
@@ -303,7 +310,7 @@ class Encode_Info {
 		$moviefilename = $this->basename . $this->format->get_suffix();
 
 		// Use the same directory as the original file if it's a local attachment.
-		if ( $local_file && file_exists( $local_file ) ) {
+		if ( $local_file && ( strpos( $local_file, '/' ) !== false || strpos( $local_file, '\\' ) !== false ) ) {
 			$base_path = dirname( $local_file );
 			$base_url  = dirname( (string) wp_get_attachment_url( $this->id ) );
 		} else {
