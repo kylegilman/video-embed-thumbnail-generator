@@ -172,18 +172,6 @@ function videopack_cleanup_plugin() {
 	wp_clear_scheduled_hook( 'videopack_cleanup_generated_thumbnails' );
 	$cleanup->cleanup_generated_thumbnails_handler(); // Run this now because cron won't do it later.
 	$cleanup->delete_transients(); // Clear URL cache.
-
-	$wp_roles = wp_roles();
-	if ( is_object( $wp_roles )
-		&& property_exists( $wp_roles, 'roles' )
-		&& isset( $current_options['capabilities'] ) && is_array( $current_options['capabilities'] )
-		) {
-		foreach ( array_keys( $current_options['capabilities'] ) as $capability ) {
-			foreach ( array_keys( $wp_roles->roles ) as $role ) {
-				$wp_roles->remove_cap( $role, $capability );
-			}
-		}
-	}
 }
 
 /**
@@ -213,11 +201,6 @@ function videopack_activate_plugin( bool $network_wide ) {
 function videopack_activate_plugin_handler() {
 	$options_manager = new \Videopack\Admin\Options();
 	$options_manager->load_options();
-	$current_options = $options_manager->get_options();
-
-	if ( isset( $current_options['capabilities'] ) && is_array( $current_options['capabilities'] ) ) {
-		$options_manager->set_capabilities( $current_options['capabilities'] );
-	}
 }
 register_activation_hook( __FILE__, 'videopack_activate_plugin' );
 
@@ -279,7 +262,7 @@ function videopack_uninstall_plugin() {
 
 	if ( ! is_multisite() ) {
 		delete_option( 'videopack_options' );
-
+ 
 		$table_name = $wpdb->prefix . 'videopack_encoding_queue';
 		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_name ) );
 	} else {
