@@ -69,23 +69,23 @@ const WatermarkPositioner = ({
 		const currentScale =
 			transientScale !== null
 				? transientScale
-				: Number(settings.scale || settings.watermark_scale || 10);
+				: Number(settings.watermark_scale || settings.scale || 10);
 
 		const currentX =
 			transientPercentages?.x !== undefined &&
 			transientPercentages !== null
 				? transientPercentages.x
-				: Number(settings.x || settings.watermark_x || 0);
+				: Number(settings.watermark_x || settings.x || 0);
 		const currentY =
 			transientPercentages?.y !== undefined &&
 			transientPercentages !== null
 				? transientPercentages.y
-				: Number(settings.y || settings.watermark_y || 0);
+				: Number(settings.watermark_y || settings.y || 0);
 
 		const currentAlign =
-			settings.align || settings.watermark_align || 'center';
+			settings.watermark_align || settings.align || 'center';
 		const currentValign =
-			settings.valign || settings.watermark_valign || 'center';
+			settings.watermark_valign || settings.valign || 'center';
 
 		const style = {
 			position: 'absolute',
@@ -179,8 +179,8 @@ const WatermarkPositioner = ({
 			watermarkRef.current.focus();
 		}
 
-		const initialX = Number(settings.x || settings.watermark_x || 0);
-		const initialY = Number(settings.y || settings.watermark_y || 0);
+		const initialX = Number(settings.watermark_x || settings.x || 0);
+		const initialY = Number(settings.watermark_y || settings.y || 0);
 
 		setIsDragging(true);
 		setTransientPercentages({ x: initialX, y: initialY });
@@ -203,10 +203,10 @@ const WatermarkPositioner = ({
 		const currentScale =
 			transientScale !== null
 				? transientScale
-				: Number(settings.scale || settings.watermark_scale || 10);
+				: Number(settings.watermark_scale || settings.scale || 10);
 
-		const initialX = Number(settings.x || settings.watermark_x || 0);
-		const initialY = Number(settings.y || settings.watermark_y || 0);
+		const initialX = Number(settings.watermark_x || settings.x || 0);
+		const initialY = Number(settings.watermark_y || settings.y || 0);
 
 		setTransientScale(currentScale);
 		setTransientPercentages({ x: initialX, y: initialY });
@@ -286,9 +286,9 @@ const WatermarkPositioner = ({
 			newScale = Math.max(1, Math.min(100, newScale));
 
 			const currentAlignment =
-				s.settings.align || s.settings.watermark_align || 'center';
+				settings.watermark_align || settings.align || 'center';
 			const currentVerticalAlignment =
-				s.settings.valign || s.settings.watermark_valign || 'center';
+				settings.watermark_valign || settings.valign || 'center';
 
 			let newX = dragStart.initialX;
 			let newY = dragStart.initialY;
@@ -355,7 +355,7 @@ const WatermarkPositioner = ({
 		const finalScale =
 			wasResizing && s.transientScale !== null
 				? s.transientScale
-				: Number(s.settings.scale || s.settings.watermark_scale || 10);
+				: Number(s.settings.watermark_scale || s.settings.scale || 10);
 
 		const currentRatio = s.aspectRatio;
 		const { width: containerWidth, height: containerHeight } =
@@ -369,9 +369,9 @@ const WatermarkPositioner = ({
 			) || Object.prototype.hasOwnProperty.call(s.settings, 'watermark');
 
 		const currentAlign =
-			s.settings.align || s.settings.watermark_align || 'center';
+			s.settings.watermark_align || s.settings.align || 'center';
 		const currentValign =
-			s.settings.valign || s.settings.watermark_valign || 'bottom';
+			s.settings.watermark_valign || s.settings.valign || 'bottom';
 
 		// 1. Calculate absolute top-left percentage (L, T)
 		let L = finalX;
@@ -504,9 +504,9 @@ const WatermarkPositioner = ({
 		const stepYPct = (stepPx / containerDimensions.height) * 100;
 
 		const currentAlignment =
-			settings.align || settings.watermark_align || 'center';
+			settings.watermark_align || settings.align || 'center';
 		const currentVerticalAlignment =
-			settings.valign || settings.watermark_valign || 'center';
+			settings.watermark_valign || settings.valign || 'center';
 
 		switch (e.key) {
 			case 'ArrowUp':
