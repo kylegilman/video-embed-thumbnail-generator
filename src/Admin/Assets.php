@@ -209,6 +209,15 @@ class Assets implements Hook_Subscriber {
 
 			// Enqueue player for previews.
 			$this->enqueue_player_assets();
+
+			// Enqueue Freemius admin page styles if Freemius is enabled.
+			if ( function_exists( 'videopack_fs' ) && function_exists( 'fs_enqueue_local_style' ) ) {
+				fs_enqueue_local_style( 'fs_common', '/admin/common.css' );
+				fs_enqueue_local_style( 'fs_dialog_boxes', '/admin/dialog-boxes.css' );
+				fs_enqueue_local_style( 'fs_account', '/admin/account.css' );
+				fs_enqueue_local_style( 'fs_addons', '/admin/add-ons.css' );
+				fs_enqueue_local_style( 'fs_connect', '/admin/connect.css' );
+			}
 		}
 
 		// Classic Editor TinyMCE Plugin (Main Host Page).

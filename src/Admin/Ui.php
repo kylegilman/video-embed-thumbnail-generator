@@ -220,6 +220,14 @@ class Ui implements Hook_Subscriber {
 			'collectionId'                => array( 'type' => 'string' ),
 			'instanceId'                  => array( 'type' => 'string' ),
 			'hover_effect'                => array( 'type' => 'string' ),
+			'watermark'                   => array( 'type' => 'string' ),
+			'watermark_styles'            => array( 'type' => 'object' ),
+			'watermark_link_to'           => array( 'type' => 'string' ),
+			'watermark_align'             => array( 'type' => 'string' ),
+			'watermark_valign'            => array( 'type' => 'string' ),
+			'watermark_scale'             => array( 'type' => 'number' ),
+			'watermark_x'                 => array( 'type' => 'number' ),
+			'watermark_y'                 => array( 'type' => 'number' ),
 		);
 				/**
 		 * Filters the shared block attributes mapped to all Videopack player blocks.
@@ -262,6 +270,14 @@ class Ui implements Hook_Subscriber {
 			'videopack/collectionId'                => 'collectionId',
 			'videopack/instanceId'                  => 'instanceId',
 			'videopack/hover_effect'                => 'hover_effect',
+			'videopack/watermark'                   => 'watermark',
+			'videopack/watermark_styles'            => 'watermark_styles',
+			'videopack/watermark_link_to'           => 'watermark_link_to',
+			'videopack/watermark_align'             => 'watermark_align',
+			'videopack/watermark_valign'            => 'watermark_valign',
+			'videopack/watermark_scale'             => 'watermark_scale',
+			'videopack/watermark_x'                 => 'watermark_x',
+			'videopack/watermark_y'                 => 'watermark_y',
 		);
 				/**
 		 * Filters the block context mappings that player container blocks provide to child blocks.
@@ -355,6 +371,14 @@ class Ui implements Hook_Subscriber {
 				'videopack/collectionId',
 				'videopack/instanceId',
 				'videopack/hover_effect',
+				'videopack/watermark',
+				'videopack/watermark_styles',
+				'videopack/watermark_link_to',
+				'videopack/watermark_align',
+				'videopack/watermark_valign',
+				'videopack/watermark_scale',
+				'videopack/watermark_x',
+				'videopack/watermark_y',
 			)
 		);
 				/**
@@ -415,9 +439,6 @@ class Ui implements Hook_Subscriber {
 
 		return $metadata;
 	}
-
-
-
 
 	/**
 	 * Prepares and returns the videopack_config data for JavaScript.
@@ -591,6 +612,9 @@ class Ui implements Hook_Subscriber {
 				'defaults'                  => \Videopack\Common\Defaults::get_all( $options ),
 				'classic_embed_nonce'       => wp_create_nonce( 'videopack_classic_embed' ),
 				'queue_url'                 => admin_url( 'tools.php?page=videopack_encode_queue' ),
+				'freemius_base_url'         => is_network_admin()
+					? network_admin_url( 'settings.php?page=video_embed_thumbnail_generator_settings-' )
+					: admin_url( 'options-general.php?page=video_embed_thumbnail_generator_settings-' ),
 			)
 		);
 	}

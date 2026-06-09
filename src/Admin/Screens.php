@@ -59,6 +59,10 @@ class Screens implements Hook_Subscriber {
 	public function get_actions(): array {
 		return array(
 			array(
+				'hook'     => 'admin_init',
+				'callback' => 'redirect_freemius_submenus',
+			),
+			array(
 				'hook'     => 'admin_menu',
 				'callback' => 'add_settings_page',
 			),
@@ -120,6 +124,18 @@ class Screens implements Hook_Subscriber {
 	public function get_filters(): array {
 		return array(
 			array(
+				'hook'          => 'fs_is_submenu_visible_video-embed-thumbnail-generator',
+				'callback'      => 'hide_freemius_submenu_items',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'          => 'fs_is_submenu_visible_videopack-pro',
+				'callback'      => 'hide_freemius_submenu_items',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
 				'hook'     => 'plugin_action_links_' . VIDEOPACK_BASENAME,
 				'callback' => 'plugin_action_links',
 			),
@@ -148,6 +164,40 @@ class Screens implements Hook_Subscriber {
 				'callback' => 'add_query_vars',
 			),
 		);
+	}
+
+	/**
+	 * Hides Freemius submenus from the sidebar menu list.
+	 *
+	 * @param bool   $is_visible Whether the submenu is visible.
+	 * @param string $id         The submenu ID.
+	 * @return bool Always false to hide.
+	 */
+	public function hide_freemius_submenu_items( $is_visible, $id ) {
+		return false;
+	}
+
+	/**
+	 * Redirects direct hits to Freemius submenus to the corresponding settings tab.
+	 *
+	 * @return void
+	 */
+	public function redirect_freemius_submenus() {
+		global $pagenow;
+		if ( in_array( $pagenow, array( 'options-general.php', 'settings.php' ), true ) && isset( $_GET['page'] ) ) {
+			$page = sanitize_text_field( wp_unslash( $_GET['page'] ) );
+
+			if ( 0 === strpos( $page, 'video_embed_thumbnail_generator_settings-' ) ) {
+				$tab = str_replace( 'video_embed_thumbnail_generator_settings-', '', $page );
+
+				$redirect_url = is_network_admin()
+					? network_admin_url( 'settings.php?page=video_embed_thumbnail_generator_settings#' . $tab )
+					: admin_url( 'options-general.php?page=video_embed_thumbnail_generator_settings#' . $tab );
+
+				wp_safe_redirect( $redirect_url );
+				exit;
+			}
+		}
 	}
 
 	/**
