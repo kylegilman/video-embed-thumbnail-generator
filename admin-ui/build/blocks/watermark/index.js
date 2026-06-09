@@ -79,11 +79,11 @@ const WatermarkPositioner = ({
     const containerWidth = containerDimensions.width;
 
     // Use transientScale if available, else settings.scale
-    const currentScale = transientScale !== null ? transientScale : Number(settings.scale || settings.watermark_scale || 10);
-    const currentX = transientPercentages?.x !== undefined && transientPercentages !== null ? transientPercentages.x : Number(settings.x || settings.watermark_x || 0);
-    const currentY = transientPercentages?.y !== undefined && transientPercentages !== null ? transientPercentages.y : Number(settings.y || settings.watermark_y || 0);
-    const currentAlign = settings.align || settings.watermark_align || 'center';
-    const currentValign = settings.valign || settings.watermark_valign || 'center';
+    const currentScale = transientScale !== null ? transientScale : Number(settings.watermark_scale || settings.scale || 10);
+    const currentX = transientPercentages?.x !== undefined && transientPercentages !== null ? transientPercentages.x : Number(settings.watermark_x || settings.x || 0);
+    const currentY = transientPercentages?.y !== undefined && transientPercentages !== null ? transientPercentages.y : Number(settings.watermark_y || settings.y || 0);
+    const currentAlign = settings.watermark_align || settings.align || 'center';
+    const currentValign = settings.watermark_valign || settings.valign || 'center';
     const style = {
       position: 'absolute',
       width: `${currentScale}%`,
@@ -147,8 +147,8 @@ const WatermarkPositioner = ({
     if (watermarkRef.current) {
       watermarkRef.current.focus();
     }
-    const initialX = Number(settings.x || settings.watermark_x || 0);
-    const initialY = Number(settings.y || settings.watermark_y || 0);
+    const initialX = Number(settings.watermark_x || settings.x || 0);
+    const initialY = Number(settings.watermark_y || settings.y || 0);
     setIsDragging(true);
     setTransientPercentages({
       x: initialX,
@@ -168,9 +168,9 @@ const WatermarkPositioner = ({
       watermarkRef.current.focus();
     }
     setIsResizing(true);
-    const currentScale = transientScale !== null ? transientScale : Number(settings.scale || settings.watermark_scale || 10);
-    const initialX = Number(settings.x || settings.watermark_x || 0);
-    const initialY = Number(settings.y || settings.watermark_y || 0);
+    const currentScale = transientScale !== null ? transientScale : Number(settings.watermark_scale || settings.scale || 10);
+    const initialX = Number(settings.watermark_x || settings.x || 0);
+    const initialY = Number(settings.watermark_y || settings.y || 0);
     setTransientScale(currentScale);
     setTransientPercentages({
       x: initialX,
@@ -237,8 +237,8 @@ const WatermarkPositioner = ({
       let newScale = newWidth / containerWidth * 100;
       newScale = Math.round(newScale * 100) / 100;
       newScale = Math.max(1, Math.min(100, newScale));
-      const currentAlignment = s.settings.align || s.settings.watermark_align || 'center';
-      const currentVerticalAlignment = s.settings.valign || s.settings.watermark_valign || 'center';
+      const currentAlignment = settings.watermark_align || settings.align || 'center';
+      const currentVerticalAlignment = settings.watermark_valign || settings.valign || 'center';
       let newX = dragStart.initialX;
       let newY = dragStart.initialY;
       const scaleDiff = newScale - initialScale;
@@ -296,7 +296,7 @@ const WatermarkPositioner = ({
     setIsResizing(false);
     const finalX = s.transientPercentages.x;
     const finalY = s.transientPercentages.y;
-    const finalScale = wasResizing && s.transientScale !== null ? s.transientScale : Number(s.settings.scale || s.settings.watermark_scale || 10);
+    const finalScale = wasResizing && s.transientScale !== null ? s.transientScale : Number(s.settings.watermark_scale || s.settings.scale || 10);
     const currentRatio = s.aspectRatio;
     const {
       width: containerWidth,
@@ -305,8 +305,8 @@ const WatermarkPositioner = ({
 
     // Preserve attributes based on what's being used (settings vs block-editor styles)
     const isBlock = Object.prototype.hasOwnProperty.call(s.settings, 'watermark_scale') || Object.prototype.hasOwnProperty.call(s.settings, 'watermark');
-    const currentAlign = s.settings.align || s.settings.watermark_align || 'center';
-    const currentValign = s.settings.valign || s.settings.watermark_valign || 'bottom';
+    const currentAlign = s.settings.watermark_align || s.settings.align || 'center';
+    const currentValign = s.settings.watermark_valign || s.settings.valign || 'bottom';
 
     // 1. Calculate absolute top-left percentage (L, T)
     let L = finalX;
@@ -421,8 +421,8 @@ const WatermarkPositioner = ({
     const stepPx = e.shiftKey ? 10 : 1;
     const stepXPct = stepPx / containerDimensions.width * 100;
     const stepYPct = stepPx / containerDimensions.height * 100;
-    const currentAlignment = settings.align || settings.watermark_align || 'center';
-    const currentVerticalAlignment = settings.valign || settings.watermark_valign || 'center';
+    const currentAlignment = settings.watermark_align || settings.align || 'center';
+    const currentVerticalAlignment = settings.watermark_valign || settings.valign || 'center';
     switch (e.key) {
       case 'ArrowUp':
         newY += currentVerticalAlignment === 'top' ? -stepYPct : stepYPct;
@@ -1492,7 +1492,7 @@ function Edit({
       },
       children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(WatermarkPositioner_WatermarkPositioner, {
         containerDimensions: containerDimensions,
-        settings: attributes,
+        settings: resolved,
         onChange: newAttrs => setAttributes(newAttrs),
         isSelected: isSelected,
         showBackground: false,

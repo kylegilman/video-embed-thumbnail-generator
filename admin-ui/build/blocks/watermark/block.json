@@ -22,24 +22,19 @@
       "type": "string"
     },
     "watermark_align": {
-      "type": "string",
-      "default": "right"
+      "type": "string"
     },
     "watermark_valign": {
-      "type": "string",
-      "default": "bottom"
+      "type": "string"
     },
     "watermark_scale": {
-      "type": "number",
-      "default": 10
+      "type": "number"
     },
     "watermark_x": {
-      "type": "number",
-      "default": 5
+      "type": "number"
     },
     "watermark_y": {
-      "type": "number",
-      "default": 7
+      "type": "number"
     },
     "isPreview": {
       "type": "boolean",
