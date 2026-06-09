@@ -121,6 +121,8 @@ const EncodeFormatStatus = ({
 				'remote_exists',
 				'browser_pending',
 				'browser_encoding',
+				'cloud_encoding',
+				'offloading',
 			].includes(data.status)
 		);
 	};
