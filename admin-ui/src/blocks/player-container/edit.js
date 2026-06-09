@@ -111,6 +111,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		editorPostId,
 		innerBlocks,
 		attachmentFromStore,
+		attachmentError,
 	} = useSelect(
 		(select) => {
 			const editorStore = select(blockEditorStore);
@@ -118,6 +119,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			const postType = editor?.getCurrentPostType();
 			const effectiveId =
 				id || contextAttachmentId || resolvedAttachmentId;
+			const isAttachmentIdValid =
+				effectiveId && typeof effectiveId === 'number';
 
 			return {
 				mediaUpload: editorStore.getSettings()?.mediaUpload,
@@ -126,14 +129,20 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					postType === 'wp_template_part',
 				editorPostId: editor?.getCurrentPostId(),
 				innerBlocks: editorStore.getBlocks(clientId),
-				attachmentFromStore:
-					effectiveId && typeof effectiveId === 'number'
-						? select('core').getEntityRecord(
-								'postType',
-								'attachment',
-								effectiveId
-							)
-						: null,
+				attachmentFromStore: isAttachmentIdValid
+					? select('core').getEntityRecord(
+							'postType',
+							'attachment',
+							effectiveId
+						)
+					: null,
+				attachmentError: isAttachmentIdValid
+					? select('core').getResolutionError('getEntityRecord', [
+							'postType',
+							'attachment',
+							effectiveId,
+						])
+					: null,
 			};
 		},
 		[clientId, id, contextAttachmentId, resolvedAttachmentId]
@@ -400,6 +409,32 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		attachmentOverride,
 		setAttributesFromMedia,
 	]);
+
+	useEffect(() => {
+		if (attachmentError) {
+			const status =
+				attachmentError.data?.status || attachmentError.status;
+			if (
+				status === 404 ||
+				attachmentError.code === 'rest_post_invalid_id'
+			) {
+				setAttributes({
+					id: undefined,
+					src: undefined,
+					poster: undefined,
+					sources: [],
+					source_groups: {},
+				});
+				createErrorNotice(
+					__(
+						'The selected video attachment could not be found and may have been deleted. Resetting block.',
+						'video-embed-thumbnail-generator'
+					),
+					{ type: 'snackbar' }
+				);
+			}
+		}
+	}, [attachmentError, setAttributes, createErrorNotice]);
 
 	const onUploadError = useCallback(
 		(message) => {

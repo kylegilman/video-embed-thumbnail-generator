@@ -524,7 +524,7 @@ export default function Edit({
 				>
 					<WatermarkPositioner
 						containerDimensions={containerDimensions}
-						settings={attributes}
+						settings={resolved}
 						onChange={(newAttrs) => setAttributes(newAttrs)}
 						isSelected={isSelected}
 						showBackground={false}
