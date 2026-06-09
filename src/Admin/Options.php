@@ -38,6 +38,15 @@ class Options implements Hook_Subscriber {
 	);
 
 	/**
+	 * Returns default capabilities filtered for extensibility.
+	 *
+	 * @return array Default capabilities.
+	 */
+	public function get_default_capabilities(): array {
+		return (array) apply_filters( 'videopack_default_capabilities', $this->default_capabilities );
+	}
+
+	/**
 	 * Options array.
 	 *
 	 * @var array $options
@@ -104,7 +113,14 @@ class Options implements Hook_Subscriber {
 	 * @return array
 	 */
 	public function get_filters(): array {
-		return array();
+		return array(
+			array(
+				'hook'          => 'user_has_cap',
+				'callback'      => 'filter_user_has_cap',
+				'priority'      => 10,
+				'accepted_args' => 4,
+			),
+		);
 	}
 
 	/**
@@ -266,7 +282,7 @@ class Options implements Hook_Subscriber {
 			'sample_rotate'                 => false,
 		);
 
-		foreach ( $this->default_capabilities as $videopack_capability => $wp_capability ) {
+		foreach ( $this->get_default_capabilities() as $videopack_capability => $wp_capability ) {
 			$enabled_roles = (array) array_keys( $this->get_roles_with_capability( (string) $wp_capability ) );
 			$default_options['capabilities'][ (string) $videopack_capability ] = (array) $this->get_all_roles_with_capability( $enabled_roles );
 		}
@@ -467,14 +483,30 @@ class Options implements Hook_Subscriber {
 			}
 
 			$options_to_init = (array) $this->merge_options_with_defaults( (array) $old_options, $options_to_init );
+
+			// Clean up legacy capabilities from WordPress roles in the database.
+			$wp_roles = wp_roles();
+			if ( $wp_roles instanceof \WP_Roles ) {
+				$caps_to_clean = array(
+					'make_video_thumbnails',
+					'encode_videos',
+					'edit_others_video_encodes',
+					'view_full_length_video',
+				);
+
+				foreach ( (array) $wp_roles->roles as $role => $role_info ) {
+					foreach ( $caps_to_clean as $cap ) {
+						if ( isset( $role_info['capabilities'][ $cap ] ) ) {
+							$wp_roles->remove_cap( (string) $role, $cap );
+						}
+					}
+				}
+			}
+
 			delete_option( 'kgvid_video_embed_options' );
 		}
 
 		$this->set_capabilities( (array) ( $options_to_init['capabilities'] ?? array() ) );
-
-		if ( ( $options_to_init['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-			$options_to_init = (array) $this->validate_ffmpeg_settings( $options_to_init );
-		}
 
 		return $options_to_init;
 	}
@@ -807,9 +839,7 @@ class Options implements Hook_Subscriber {
 		}
 
 		if ( isset( $input['capabilities'] ) && is_array( $input['capabilities'] ) ) {
-			if ( $input['capabilities'] !== ( $this->options['capabilities'] ?? array() ) ) {
-				$input['capabilities'] = (array) $this->set_capabilities( $input['capabilities'] );
-			}
+			$input['capabilities'] = (array) $this->set_capabilities( $input['capabilities'] );
 		}
 
 		if ( isset( $input['auto_thumb_number'] ) ) {
@@ -875,7 +905,7 @@ class Options implements Hook_Subscriber {
 	 * @return array Validated input options.
 	 */
 	public function validate_ffmpeg_settings( array $input ) {
-		$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $input, $this->get_formats_registry() );
+		$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $input, new Formats\Registry( $input ) );
 		$ffmpeg_info   = (array) $ffmpeg_tester->check_ffmpeg_exists( (string) ( $input['app_path'] ?? '' ) );
 
 		if ( true === $ffmpeg_info['ffmpeg_exists'] ) {
@@ -936,16 +966,7 @@ class Options implements Hook_Subscriber {
 		return $all_roles;
 	}
 
-	/**
-	 * Sets plugin capabilities for WordPress roles.
-	 *
-	 * @param array $capabilities The capabilities to set.
-	 * @return array The cleaned capabilities.
-	 */
 	public function set_capabilities( array $capabilities ): array {
-		$wp_roles               = wp_roles();
-		$plugin_capability_keys = (array) array_keys( $this->default_capabilities );
-
 		$clean_capabilities = array();
 		foreach ( $capabilities as $capability => $roles ) {
 			if ( is_array( $roles ) ) {
@@ -956,22 +977,6 @@ class Options implements Hook_Subscriber {
 					},
 					ARRAY_FILTER_USE_KEY
 				);
-			}
-		}
-
-		if ( $wp_roles instanceof \WP_Roles ) {
-			foreach ( (array) $wp_roles->roles as $role => $role_info ) {
-				foreach ( $plugin_capability_keys as $capability ) {
-					$enabled_roles          = (array) ( $clean_capabilities[ (string) $capability ] ?? array() );
-					$has_capability         = ! empty( $role_info['capabilities'][ (string) $capability ] );
-					$should_have_capability = ! empty( $enabled_roles[ (string) $role ] );
-
-					if ( $should_have_capability && ! $has_capability ) {
-						$wp_roles->add_cap( (string) $role, (string) $capability );
-					} elseif ( ! $should_have_capability && $has_capability ) {
-						$wp_roles->remove_cap( (string) $role, (string) $capability );
-					}
-				}
 			}
 		}
 		return $clean_capabilities;
@@ -1004,5 +1009,40 @@ class Options implements Hook_Subscriber {
 			}
 		}
 		return (array) $options;
+	}
+
+	/**
+	 * Dynamically maps Videopack capabilities to user roles at runtime.
+	 *
+	 * @param array    $allcaps Array of all capabilities for the user.
+	 * @param array    $caps    Primitive capabilities being checked.
+	 * @param array    $args    Arguments passed to current_user_can().
+	 * @param \WP_User $user    The user object.
+	 * @return array
+	 */
+	public function filter_user_has_cap( $allcaps, $caps, $args, $user ) {
+		$capability = $args[0] ?? '';
+		if ( empty( $capability ) ) {
+			return $allcaps;
+		}
+
+		$default_caps = $this->get_default_capabilities();
+		if ( ! array_key_exists( $capability, $default_caps ) ) {
+			return $allcaps;
+		}
+
+		// Check options for roles assigned to this capability.
+		$capabilities_options = $this->options['capabilities'] ?? array();
+		$allowed_roles        = $capabilities_options[ $capability ] ?? array();
+
+		// Check if the user has any of the allowed roles.
+		foreach ( (array) $user->roles as $role ) {
+			if ( ! empty( $allowed_roles[ $role ] ) ) {
+				$allcaps[ $capability ] = true;
+				break;
+			}
+		}
+
+		return $allcaps;
 	}
 }
