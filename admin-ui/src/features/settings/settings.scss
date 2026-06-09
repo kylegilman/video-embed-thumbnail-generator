@@ -9,9 +9,6 @@
 }
 
 .wrap.videopack-settings {
-	container-type: inline-size;
-	container-name: videopack-settings;
-
 	h1 {
 		margin-bottom: 20px;
 		display: flex;
@@ -144,7 +141,7 @@
 	}
 
 	// Responsive layout: collapse to single column if less than 500px
-	@container videopack-settings (max-width: 500px) {
+	@media (max-width: 500px) {
 		.videopack-player-settings-flex {
 			flex-direction: column;
 			gap: 0;

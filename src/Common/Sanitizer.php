@@ -27,6 +27,10 @@ class Sanitizer {
 	 * @return mixed Sanitized input.
 	 */
 	public static function sanitize_options_recursively( $input, $schema_properties = array() ) {
+		if ( is_object( $input ) ) {
+			$input = (array) $input;
+		}
+
 		if ( ! is_array( $input ) ) {
 			return sanitize_text_field( (string) $input );
 		}
@@ -35,6 +39,10 @@ class Sanitizer {
 
 		foreach ( $input as $key => $value ) {
 			$key = (string) $key;
+
+			if ( is_object( $value ) ) {
+				$value = (array) $value;
+			}
 
 			if ( ! isset( $schema_properties[ $key ] ) ) {
 				$sanitized_input[ $key ] = is_array( $value ) ? self::sanitize_options_recursively( $value ) : sanitize_text_field( (string) $value );
@@ -94,6 +102,9 @@ class Sanitizer {
 					$sanitized_input[ $key ] = array();
 					if ( is_array( $value ) ) {
 						foreach ( $value as $item ) {
+							if ( is_object( $item ) ) {
+								$item = (array) $item;
+							}
 							$item_schema = (array) ( $property_schema['items'] ?? array() );
 							if ( isset( $item_schema['type'] ) ) {
 								$temp_sanitized            = self::sanitize_options_recursively( array( 'item' => $item ), array( 'item' => $item_schema ) );

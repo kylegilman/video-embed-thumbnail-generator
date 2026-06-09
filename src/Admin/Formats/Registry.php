@@ -211,6 +211,28 @@ class Registry {
 	}
 
 	/**
+	 * Returns a specific video format by its ID.
+	 *
+	 * @param string $format_id The format ID to retrieve.
+	 * @return \Videopack\Admin\Formats\Video_Format|null The format object if found, null otherwise.
+	 */
+	public function get_format( $format_id ) {
+		$formats = $this->get_video_formats();
+		return $formats[ $format_id ] ?? null;
+	}
+
+	/**
+	 * Resolves the codec ID for a given format ID.
+	 *
+	 * @param string $format_id The format ID.
+	 * @return string Codec ID or empty string if not found.
+	 */
+	public function get_codec_id( $format_id ) {
+		$format = $this->get_format( $format_id );
+		return $format ? (string) $format->get_codec()->get_id() : '';
+	}
+
+	/**
 	 * Returns translated video resolution name.
 	 *
 	 * @param string $name The resolution name.

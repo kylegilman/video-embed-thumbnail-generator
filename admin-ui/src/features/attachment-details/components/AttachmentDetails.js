@@ -268,6 +268,18 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 
 		return (
 			<div className="videopack-attachment-details">
+				{(window.videopackAttachmentDetailsExtensions || []).map((Extension, idx) => (
+					<Extension
+						key={idx}
+						attachmentId={attachmentId}
+						model={model}
+						attributes={attributes}
+						setAttributes={mergeAttributes}
+						options={options}
+						record={record}
+						setRecord={setRecord}
+					/>
+				))}
 				<Thumbnails
 					setAttributes={handleSettingChange}
 					attributes={attributes}

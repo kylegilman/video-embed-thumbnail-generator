@@ -11,7 +11,10 @@ import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer.js';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe.js';
 import { getSettings } from '../../../api/settings';
 import { BlockPreview } from '../../../components/Preview';
-import { TITLE_DOWNLOAD_BLOCK_ATTRS } from '../../../utils/titleDownloadBlock';
+import {
+	TITLE_DOWNLOAD_BLOCK_ATTRS,
+	TITLE_SHARE_BLOCK_ATTRS,
+} from '../../../utils/titleDownloadBlock';
 
 /**
  * AttachmentPreview component.
@@ -300,6 +303,15 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 								<BlockPreview
 									name="videopack/download"
 									attributes={TITLE_DOWNLOAD_BLOCK_ATTRS}
+									context={previewContext}
+									isInsidePlayerOverlay={true}
+									isInsidePlayerContainer={true}
+								/>
+							)}
+							{!!(attributes.embeddable && attributes.embedcode) && (
+								<BlockPreview
+									name="videopack/share"
+									attributes={TITLE_SHARE_BLOCK_ATTRS}
 									context={previewContext}
 									isInsidePlayerOverlay={true}
 									isInsidePlayerContainer={true}

@@ -25,7 +25,10 @@ import VideopackTooltip from './VideopackTooltip';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import useResolutions from '../../../hooks/useResolutions';
 import { BlockPreview } from '../../../components/Preview';
-import { TITLE_DOWNLOAD_BLOCK_ATTRS } from '../../../utils/titleDownloadBlock';
+import {
+	TITLE_DOWNLOAD_BLOCK_ATTRS,
+	TITLE_SHARE_BLOCK_ATTRS,
+} from '../../../utils/titleDownloadBlock';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
@@ -574,6 +577,17 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 												name="videopack/download"
 												attributes={
 													TITLE_DOWNLOAD_BLOCK_ATTRS
+												}
+												context={previewContext}
+												isInsidePlayerOverlay={true}
+												isInsidePlayerContainer={true}
+											/>
+										)}
+										{!!(embeddable && embedcode) && (
+											<BlockPreview
+												name="videopack/share"
+												attributes={
+													TITLE_SHARE_BLOCK_ATTRS
 												}
 												context={previewContext}
 												isInsidePlayerOverlay={true}
