@@ -165,6 +165,8 @@ const AdditionalFormats = ({
 						'remote_exists',
 						'browser_pending',
 						'browser_encoding',
+						'cloud_encoding',
+						'offloading',
 					].includes(newFormat.status);
 
 					newFormat.checked =
@@ -445,6 +447,8 @@ const AdditionalFormats = ({
 						'needs_insert',
 						'pending_replacement',
 						'remote_exists',
+						'cloud_encoding',
+						'offloading',
 					].includes(value.status) &&
 					!value.exists
 			)
@@ -854,24 +858,6 @@ const AdditionalFormats = ({
 				opened={isOpen}
 				onToggle={() => setIsOpen(!isOpen)}
 			>
-				{encodeMessage && (
-					<Notice
-						status={
-							typeof encodeMessage === 'string' &&
-							(encodeMessage.includes(
-								__('Error', 'video-embed-thumbnail-generator')
-							) ||
-								encodeMessage.includes(':'))
-								? 'error'
-								: 'success'
-						}
-						isDismissible={true}
-						onRemove={() => setEncodeMessage(null)}
-						style={{ marginBottom: '15px' }}
-					>
-						{encodeMessage}
-					</Notice>
-				)}
 				{!videoFormats ? (
 					<div className="videopack-formats-loading">
 						<Spinner />
@@ -1024,6 +1010,24 @@ const AdditionalFormats = ({
 							{(isLoading || isProcessing) && <Spinner />}
 						</PanelRow>
 					</>
+				)}
+				{encodeMessage && (
+					<Notice
+						status={
+							typeof encodeMessage === 'string' &&
+							(encodeMessage.includes(
+								__('Error', 'video-embed-thumbnail-generator')
+							) ||
+								encodeMessage.includes(':'))
+								? 'error'
+								: 'success'
+						}
+						isDismissible={true}
+						onRemove={() => setEncodeMessage(null)}
+						style={{ marginTop: '15px', marginBottom: '0' }}
+					>
+						{encodeMessage}
+					</Notice>
 				)}
 			</PanelBody>
 		</>
