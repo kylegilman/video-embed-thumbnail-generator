@@ -297,7 +297,7 @@ class Registry {
 
 		foreach ( $video_codecs as $codec ) {
 			$codec_id = (string) $codec->get_id();
-			if ( $hide_formats && ! empty( $this->options['hide_video_formats'] ) && empty( $this->options['encode'][ $codec_id ]['enabled'] ) ) {
+			if ( $hide_formats && empty( $this->options['encode'][ $codec_id ]['enabled'] ) ) {
 				continue;
 			}
 			foreach ( $video_resolutions as $resolution ) {
