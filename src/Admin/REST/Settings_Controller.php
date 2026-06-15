@@ -144,10 +144,9 @@ class Settings_Controller extends Controller {
 		$codec      = (string) $request->get_param( 'codec' );
 		$resolution = (string) $request->get_param( 'resolution' );
 		$format     = $codec . '_' . $resolution;
-		$rotate     = (bool) $request->get_param( 'rotate' );
 
 		$tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options, $this->format_registry );
-		$result = $tester->run_test_encode( $format, $rotate );
+		$result = $tester->run_test_encode( $format );
 
 		if ( isset( $result['output'] ) && strpos( (string) $result['output'], 'Invalid video format' ) !== false ) {
 			return new \WP_Error( 'rest_invalid_format', (string) $result['output'], array( 'status' => 400 ) );
