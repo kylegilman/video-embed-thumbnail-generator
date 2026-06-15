@@ -67,14 +67,7 @@ const EncodeQueue = () => {
 	const [isRunningBatch, setIsRunningBatch] = useState({});
 
 	const defaultBatchProcesses = useMemo(() => {
-		const ffmpegExists =
-			window.videopack_config?.ffmpeg_exists === true ||
-			window.videopack_config?.ffmpeg_exists === 'true' ||
-			window.videopack_config?.ffmpeg_exists === 1 ||
-			window.videopack_config?.ffmpeg_exists === '1';
-		const isPro = !!window.videopack_config?.is_pro;
-
-		const processes = [
+		return [
 			{
 				id: 'featured',
 				title: __(
@@ -83,56 +76,6 @@ const EncodeQueue = () => {
 				),
 				description: __(
 					'Scans all media library videos and automatically sets their thumbnail as the WordPress featured image on their parent posts.',
-					'video-embed-thumbnail-generator'
-				),
-			},
-		];
-
-		// Conditionally add thumbs batch process
-		if (ffmpegExists || isPro) {
-			let thumbsTitle = __(
-				'Generate FFmpeg Thumbnails',
-				'video-embed-thumbnail-generator'
-			);
-			let thumbsDescription = __(
-				'Uses server-side FFmpeg to generate missing thumbnails in the background for all media library videos.',
-				'video-embed-thumbnail-generator'
-			);
-
-			if (isPro) {
-				thumbsTitle = __(
-					'Generate Thumbnails',
-					'video-embed-thumbnail-generator'
-				);
-				if (ffmpegExists) {
-					thumbsDescription = __(
-						'Generates missing thumbnails in the background for all media library videos using server-side FFmpeg.',
-						'video-embed-thumbnail-generator'
-					);
-				} else {
-					thumbsDescription = __(
-						'Generates missing thumbnails directly in your browser using HTML5 video and canvas decoding (falls back to FFmpeg.wasm).',
-						'video-embed-thumbnail-generator'
-					);
-				}
-			}
-
-			processes.push({
-				id: 'thumbs',
-				title: thumbsTitle,
-				description: thumbsDescription,
-			});
-		}
-
-		processes.push(
-			{
-				id: 'encoding',
-				title: __(
-					'Bulk Video Encoding',
-					'video-embed-thumbnail-generator'
-				),
-				description: __(
-					'Enqueues all unencoded local videos for background encoding to your configured formats.',
 					'video-embed-thumbnail-generator'
 				),
 			},
@@ -154,21 +97,12 @@ const EncodeQueue = () => {
 								'video-embed-thumbnail-generator'
 							),
 			}
-		);
-
-		return processes;
+		];
 	}, []);
 
 	const batchProcesses = useMemo(() => {
 		const filtered = [
 			...applyFilters(
-				/**
-				 * Filters the list of bulk batch processes available in the video queue panel.
-				 *
-				 * @since 5.0.0
-				 *
-				 * @param {Array} processes Array of batch process descriptor objects.
-				 */
 				'videopack.queue.batch_processes',
 				defaultBatchProcesses
 			),
@@ -181,6 +115,80 @@ const EncodeQueue = () => {
 		}
 		return filtered;
 	}, [defaultBatchProcesses]);
+
+	const bulkOptions = useMemo(() => {
+		const ffmpegExists =
+			window.videopack_config?.ffmpeg_exists === true ||
+			window.videopack_config?.ffmpeg_exists === 'true' ||
+			window.videopack_config?.ffmpeg_exists === 1 ||
+			window.videopack_config?.ffmpeg_exists === '1';
+
+		const optionsList = [];
+
+		if (ffmpegExists) {
+			optionsList.push({
+				id: 'thumbs',
+				label: __('Poster Thumbnails', 'video-embed-thumbnail-generator'),
+				description: __('Generates missing poster thumbnails for all media library videos.', 'video-embed-thumbnail-generator'),
+			});
+		}
+
+		optionsList.push({
+			id: 'encoding',
+			label: __('Video Formats', 'video-embed-thumbnail-generator'),
+			description: __('Enqueues all unencoded local videos for background encoding to your configured formats.', 'video-embed-thumbnail-generator'),
+		});
+
+		return applyFilters('videopack.queue.bulk_options', optionsList, { ffmpegExists });
+	}, []);
+
+	const [checkedBulkIds, setCheckedBulkIds] = useState({});
+
+	useEffect(() => {
+		if (bulkOptions && bulkOptions.length > 0) {
+			const initialChecked = {};
+			bulkOptions.forEach((opt) => {
+				initialChecked[opt.id] = true;
+			});
+			setCheckedBulkIds(initialChecked);
+		}
+	}, [bulkOptions]);
+
+	const handleToggleBulkOption = (id) => {
+		setCheckedBulkIds((prev) => ({
+			...prev,
+			[id]: !prev[id],
+		}));
+	};
+
+	const [isQueueingBulk, setIsQueueingBulk] = useState(false);
+
+	const handleRunSelectedBulk = async () => {
+		const selectedIds = Object.keys(checkedBulkIds).filter((id) => checkedBulkIds[id]);
+		if (selectedIds.length === 0) {
+			return;
+		}
+		setIsQueueingBulk(true);
+		for (const id of selectedIds) {
+			setIsRunningBatch((prev) => ({ ...prev, [id]: true }));
+			try {
+				const response = await startBatchProcess(id);
+				if (id === 'thumbs' && response && response.browser) {
+					window.dispatchEvent(
+						new CustomEvent(
+							'videopack_trigger_browser_thumbnail_generation'
+						)
+					);
+				}
+			} catch (err) {
+				console.error(`Failed to start batch process: ${id}`, err);
+			} finally {
+				setIsRunningBatch((prev) => ({ ...prev, [id]: false }));
+			}
+		}
+		setIsQueueingBulk(false);
+		fetchQueue();
+	};
 
 	const handleRunBatch = async (batchId) => {
 		setIsRunningBatch((prev) => ({ ...prev, [batchId]: true }));
@@ -1207,7 +1215,55 @@ const EncodeQueue = () => {
 
 				<PanelBody
 					title={__(
-						'Centralized Batch Processes',
+						'Bulk Video Processing',
+						'video-embed-thumbnail-generator'
+					)}
+					initialOpen={true}
+					className="videopack-bulk-processing-panel"
+				>
+					<div className="videopack-bulk-description">
+						{__(
+							'Select the items you would like to generate or queue for all videos in your media library:',
+							'video-embed-thumbnail-generator'
+						)}
+					</div>
+					<div className="videopack-bulk-options-list">
+						{bulkOptions.map((option) => (
+							<div key={option.id} className="videopack-bulk-option-item">
+								<label className="videopack-bulk-option-label">
+									<input
+										type="checkbox"
+										checked={!!checkedBulkIds[option.id]}
+										onChange={() => handleToggleBulkOption(option.id)}
+									/>
+									<span className="videopack-bulk-option-title">
+										{option.label}
+									</span>
+								</label>
+								<p className="videopack-bulk-option-desc">
+									{option.description}
+								</p>
+							</div>
+						))}
+					</div>
+					<div className="videopack-bulk-action-container">
+						<Button
+							variant="primary"
+							onClick={handleRunSelectedBulk}
+							isBusy={isQueueingBulk}
+							disabled={Object.values(checkedBulkIds).filter(Boolean).length === 0}
+						>
+							{__(
+								'Queue Selected Processes',
+								'video-embed-thumbnail-generator'
+							)}
+						</Button>
+					</div>
+				</PanelBody>
+
+				<PanelBody
+					title={__(
+						'Queue Utilities',
 						'video-embed-thumbnail-generator'
 					)}
 					initialOpen={false}
@@ -1237,7 +1293,7 @@ const EncodeQueue = () => {
 											isBusy={isRunningBatch[process.id]}
 										>
 											{__(
-												'Run Batch',
+												'Run Utility',
 												'video-embed-thumbnail-generator'
 											)}
 										</Button>
