@@ -78,10 +78,14 @@ const AdditionalFormats = ({
 	const parentId = providedParentId || attributes.id || 0;
 	const src = propSrc || attributes.src;
 	const { ffmpeg_exists, active_encoder = 'ffmpeg' } = options;
+	const activeEncoderReady = applyFilters(
+		'videopack.encoder.is_ready',
+		!!videopack_config.isTranscodingServiceReady,
+		active_encoder,
+		options
+	);
 	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' &&
-			(!!videopack_config.isTranscodingServiceReady ||
-				!!videopack_config.is_pro)) ||
+		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
 		ffmpeg_exists === true ||
 		ffmpeg_exists === 'true' ||
 		ffmpeg_exists === 1 ||

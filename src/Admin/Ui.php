@@ -563,17 +563,6 @@ class Ui implements Hook_Subscriber {
 				'contentSize'               => $global_settings['layout']['contentSize'] ?? false,
 				'wideSize'                  => $global_settings['layout']['wideSize'] ?? false,
 				'freemiusEnabled'           => $freemius_enabled,
-				'is_pro'                    => apply_filters(
-					/**
-					 * Filters whether the Videopack Pro add-on is active and licensed.
-					 *
-					 * @since 5.0.0
-					 *
-					 * @param bool $is_pro True if Pro is active, false otherwise.
-					 */
-					'videopack_is_pro',
-					false
-				),
 				'isTranscodingServiceReady' => (bool) apply_filters(
 					/**
 					 * Filters whether a cloud transcoding service is fully configured and ready.

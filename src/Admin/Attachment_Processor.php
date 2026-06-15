@@ -198,13 +198,12 @@ class Attachment_Processor implements Hook_Subscriber {
 
 		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options, $this->format_registry );
 		$filepath          = (string) get_attached_file( (int) $post_id );
+		$ffmpeg_path       = ! empty( $this->options['app_path'] ) ? (string) $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
+		$video_metadata    = new \Videopack\Admin\Encode\Video_Metadata( (int) $post_id, $filepath, true, $ffmpeg_path, $this->options );
 		$thumb_ids         = array();
 		$total_thumbs      = intval( $this->options['auto_thumb_number'] ?? 1 );
 
 		if ( 1 === $total_thumbs ) {
-			$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? (string) $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
-			$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $post_id, $filepath, true, $ffmpeg_path, $this->options );
-
 			if ( $video_metadata->worked && ! empty( $video_metadata->duration ) ) {
 				$position = intval( $this->options['auto_thumb_position'] ?? 0 );
 				$timecode = 0.1;
@@ -248,6 +247,8 @@ class Attachment_Processor implements Hook_Subscriber {
 				}
 			}
 		}
+
+		do_action( 'videopack_generate_extra_thumbnails', $post_id, $filepath, $video_metadata );
 	}
 
 	/**

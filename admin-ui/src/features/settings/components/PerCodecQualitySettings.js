@@ -29,10 +29,14 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		active_encoder = 'ffmpeg',
 	} = settings;
 
+	const activeEncoderReady = applyFilters(
+		'videopack.encoder.is_ready',
+		!!videopack_config.isTranscodingServiceReady,
+		active_encoder,
+		settings
+	);
 	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' &&
-			(!!videopack_config.isTranscodingServiceReady ||
-				!!videopack_config.is_pro)) ||
+		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
 		ffmpeg_exists === true ||
 		ffmpeg_exists === 'true' ||
 		ffmpeg_exists === 1 ||

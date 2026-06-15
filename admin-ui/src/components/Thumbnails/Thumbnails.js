@@ -13,6 +13,7 @@ import {
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
+import { applyFilters } from '@wordpress/hooks';
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
 import apiFetch from '@wordpress/api-fetch';
@@ -137,10 +138,14 @@ const Thumbnails = ({
 		fetchSpriteStatus();
 	}, [fetchSpriteStatus]);
 	const { active_encoder = 'ffmpeg' } = options;
+	const activeEncoderReady = applyFilters(
+		'videopack.encoder.is_ready',
+		!!videopack_config.isTranscodingServiceReady,
+		active_encoder,
+		options
+	);
 	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' &&
-			(!!videopack_config.isTranscodingServiceReady ||
-				!!videopack_config.is_pro)) ||
+		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
 		(!!videopack_config.ffmpeg_exists &&
 			videopack_config.ffmpeg_exists !== 'notinstalled');
 	const ffmpegExists = effectiveFfmpegExists;
@@ -260,10 +265,14 @@ const Thumbnails = ({
 		const rawFfmpegExists =
 			!!videopack_config.ffmpeg_exists &&
 			videopack_config.ffmpeg_exists !== 'notinstalled';
+		const activeEncoderReady = applyFilters(
+			'videopack.encoder.is_ready',
+			!!videopack_config.isTranscodingServiceReady,
+			active_encoder,
+			options
+		);
 		const activeEncoderIsCloud =
-			active_encoder !== 'ffmpeg' &&
-			(!!videopack_config.isTranscodingServiceReady ||
-				!!videopack_config.is_pro);
+			active_encoder !== 'ffmpeg' && activeEncoderReady;
 
 		if (
 			!browserThumbnailsEnabled &&
@@ -1076,38 +1085,20 @@ const Thumbnails = ({
 						>
 							{__('Random', 'video-embed-thumbnail-generator')}
 						</Button>
-						{videopack_config.is_pro && (
-							<Button
-								variant="secondary"
-								onClick={
-									existingSprite
-										? () => setIsConfirmDeleteOpen(true)
-										: handleGenerateSprite
-								}
-								className={
-									existingSprite
-										? 'videopack-delete-sprite'
-										: 'videopack-generate-sprite'
-								}
-								disabled={
-									isSaving ||
-									isProbing ||
-									(canvasTainted && !ffmpegExists) ||
-									isDeleting
-								}
-								isBusy={isDeleting}
-								isDestructive={!!existingSprite}
-							>
-								{existingSprite
-									? __(
-											'Delete Sprite',
-											'video-embed-thumbnail-generator'
-										)
-									: __(
-											'Sprite',
-											'video-embed-thumbnail-generator'
-										)}
-							</Button>
+						{applyFilters(
+							'videopack.thumbnail.actions',
+							null,
+							{
+								id,
+								isSaving,
+								isProbing,
+								ffmpegExists,
+								existingSprite,
+								isDeleting,
+								handleGenerateSprite,
+								setIsConfirmDeleteOpen,
+								canvasTainted,
+							}
 						)}
 					</div>
 				</div>
