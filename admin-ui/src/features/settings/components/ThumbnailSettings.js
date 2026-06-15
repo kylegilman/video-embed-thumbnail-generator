@@ -1,4 +1,5 @@
 import { __, sprintf } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 import {
 	Button,
 	PanelBody,
@@ -32,13 +33,17 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 		auto_thumb,
 		auto_thumb_number,
 		auto_thumb_position,
-		encode,
 		active_encoder = 'ffmpeg',
 	} = settings;
 
+	const activeEncoderReady = applyFilters(
+		'videopack.encoder.is_ready',
+		!!config.isTranscodingServiceReady,
+		active_encoder,
+		settings
+	);
 	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' &&
-			(!!config.isTranscodingServiceReady || !!config.is_pro)) ||
+		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
 		ffmpeg_exists === true ||
 		ffmpeg_exists === 'true' ||
 		ffmpeg_exists === 1 ||
@@ -185,7 +190,6 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 
 		return (
 			<span>
-				{__('Generate', 'video-embed-thumbnail-generator')}
 				<TextControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
@@ -221,116 +225,6 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							onChange={changeHandlerFactory.total_thumbnails}
 						/>
 					</div>
-					{!!effectiveFfmpegExists ? (
-						<>
-							<div className="videopack-setting-extra-margin">
-								<span className="videopack-settings-label">
-									{__(
-										'Auto-generate thumbnails on upload',
-										'video-embed-thumbnail-generator'
-									)}
-								</span>
-								<ToggleControl
-									className="videopack-vertical-center"
-									__nextHasNoMarginBottom
-									label={autoThumbLabel()}
-									onChange={changeHandlerFactory.auto_thumb}
-									checked={!!auto_thumb}
-								/>
-							</div>
-							{config.is_pro && (
-								<div className="videopack-setting-extra-margin">
-									<ToggleControl
-										__nextHasNoMarginBottom
-										label={__(
-											'Generate thumbnail sprites',
-											'video-embed-thumbnail-generator'
-										)}
-										help={__(
-											'Creates a tiled image of video frames for use with player progress bar previews.',
-											'video-embed-thumbnail-generator'
-										)}
-										checked={
-											!!encode?.thumbnail?.resolutions
-												?.sprite
-										}
-										onChange={(isChecked) => {
-											const newEncode = {
-												...encode,
-												thumbnail: {
-													...encode?.thumbnail,
-													enabled: isChecked,
-													resolutions: {
-														...encode?.thumbnail
-															?.resolutions,
-														sprite: isChecked,
-													},
-												},
-											};
-											changeHandlerFactory.encode(
-												newEncode
-											);
-										}}
-										disabled={
-											!config.is_pro &&
-											effectiveFfmpegExists !== true
-										}
-									/>
-								</div>
-							)}
-							<div className="videopack-setting-extra-margin">
-								<div className="videopack-control-with-tooltip">
-									<Button
-										__next40pxDefaultSize
-										variant="secondary"
-										onClick={handleGenerateAllThumbnails}
-										disabled={
-											effectiveFfmpegExists !== true ||
-											generationBatch.isProcessing
-										}
-									>
-										{generationBatch.isProcessing
-											? sprintf(
-													/* translators: %1$d: current count, %2$d: total count */
-													__(
-														'Processing %1$d / %2$d',
-														'video-embed-thumbnail-generator'
-													),
-													generationBatch.progress
-														.current,
-													generationBatch.progress
-														.total
-												)
-											: __(
-													'Generate thumbnails for old videos',
-													'video-embed-thumbnail-generator'
-												)}
-									</Button>
-									<VideopackTooltip
-										text={__(
-											"Automatically generate thumbnails for every video in the Media Library that doesn't already have them. Uses the automatic thumbnail settings above.",
-											'video-embed-thumbnail-generator'
-										)}
-									/>
-								</div>
-							</div>
-						</>
-					) : (
-						<div className="videopack-setting-extra-margin">
-							<p className="description" style={{ marginTop: 0 }}>
-								{__(
-									'Automatic thumbnail generation requires FFmpeg or Videopack Pro.',
-									'video-embed-thumbnail-generator'
-								)}{' '}
-								<ExternalLink href="https://www.videopack.video/pro/">
-									{__(
-										'Upgrade to Pro',
-										'video-embed-thumbnail-generator'
-									)}
-								</ExternalLink>
-							</p>
-						</div>
-					)}
 					{!!effectiveFfmpegExists && (
 						<ToggleControl
 							__nextHasNoMarginBottom
@@ -372,6 +266,85 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 									: null
 							}
 						/>
+					)}
+					{!!effectiveFfmpegExists ? (
+						<>
+							<div className="videopack-setting-extra-margin">
+								<span className="videopack-settings-label">
+									{__(
+										'Auto-generate on upload:',
+										'video-embed-thumbnail-generator'
+									)}
+								</span>
+								<ToggleControl
+									className="videopack-vertical-center"
+									__nextHasNoMarginBottom
+									label={autoThumbLabel()}
+									onChange={changeHandlerFactory.auto_thumb}
+									checked={!!auto_thumb}
+								/>
+							</div>
+							<div className="videopack-setting-extra-margin">
+								<div className="videopack-control-with-tooltip">
+									<Button
+										__next40pxDefaultSize
+										variant="secondary"
+										onClick={handleGenerateAllThumbnails}
+										disabled={
+											effectiveFfmpegExists !== true ||
+											generationBatch.isProcessing
+										}
+									>
+										{generationBatch.isProcessing
+											? sprintf(
+													/* translators: %1$d: current count, %2$d: total count */
+													__(
+														'Processing %1$d / %2$d',
+														'video-embed-thumbnail-generator'
+													),
+													generationBatch.progress
+														.current,
+													generationBatch.progress
+														.total
+												)
+											: __(
+													'Generate thumbnails for old videos',
+													'video-embed-thumbnail-generator'
+												)}
+									</Button>
+									<VideopackTooltip
+										text={__(
+											"Automatically generate thumbnails for every video in the Media Library that doesn't already have them. Uses the automatic thumbnail settings above.",
+											'video-embed-thumbnail-generator'
+										)}
+									/>
+								</div>
+							</div>
+							{applyFilters(
+								'videopack.settings.thumbnail.extra_controls',
+								null,
+								{
+									settings,
+									changeHandlerFactory,
+									effectiveFfmpegExists,
+								}
+							)}
+						</>
+					) : (
+						<div className="videopack-setting-extra-margin">
+							<p className="description" style={{ marginTop: 0 }}>
+								{__(
+									'Automatic thumbnail generation requires FFmpeg or Videopack Pro.',
+									'video-embed-thumbnail-generator'
+								)}{' '}
+								<ExternalLink href="https://www.videopack.video/pro/">
+									{__(
+										'Upgrade to Pro',
+										'video-embed-thumbnail-generator'
+									)}
+								</ExternalLink>
+							</p>
+						</div>
 					)}
 				</PanelBody>
 				<PanelBody

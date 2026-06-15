@@ -540,12 +540,10 @@ class Encode_Attachment {
 				}
 			}
 
-			if ( (bool) ( $this->options['hide_video_formats'] ?? false ) ) {
-				$is_enabled_in_options = $video_format_obj->is_enabled();
+			$is_enabled_in_options = $video_format_obj->is_enabled();
 
-				if ( ! $is_enabled_in_options && ! $file_exists && ! $job_exists ) {
-					continue;
-				}
+			if ( ! $is_enabled_in_options && ! $file_exists && ! $job_exists ) {
+				continue;
 			}
 
 			if ( $this->is_unnecessary_encode( $video_format_obj ) && ! $file_exists && ! $job_exists ) {
@@ -686,7 +684,7 @@ class Encode_Attachment {
 	protected function is_unnecessary_encode( Video_Format $video_format_obj ) {
 		$video_metadata = $this->get_video_metadata();
 		if ( ! $video_metadata || ! (bool) $video_metadata->worked || ! $video_format_obj->get_resolution() ) {
-			return false;
+			return (bool) apply_filters( 'videopack_is_unnecessary_encode', false, $video_format_obj, $this );
 		}
 
 		$target_height = (int) $video_format_obj->get_resolution()->get_height();
@@ -695,21 +693,21 @@ class Encode_Attachment {
 		$source_width  = (int) ( $video_metadata->actualwidth ?? 0 );
 
 		if ( (bool) $video_format_obj->get_replaces_original() || ! is_numeric( $target_height ) ) {
-			return false;
+			return (bool) apply_filters( 'videopack_is_unnecessary_encode', false, $video_format_obj, $this );
 		}
+
+		$is_unnecessary = false;
 
 		// Don't upscale.
 		if ( $source_height > 0 && ( $source_height < $target_height || $source_width < $target_width ) ) {
 			if ( ! empty( $this->options['allow_upscale'] ) ) {
-				return false;
-			}
-
-			if ( $source_height < $target_height ) {
-				return true;
+				$is_unnecessary = false;
+			} elseif ( $source_height < $target_height ) {
+				$is_unnecessary = true;
 			}
 		}
 
-		if ( $source_height === $target_height || $source_width === $target_width ) {
+		if ( ! $is_unnecessary && ( $source_height === $target_height || $source_width === $target_width ) ) {
 			$source_codec_name       = (string) ( $video_metadata->codec ?? '' );
 			$normalized_source_codec = '';
 			if ( ! empty( $source_codec_name ) ) {
@@ -725,11 +723,11 @@ class Encode_Attachment {
 			$target_codec_id = (string) $video_format_obj->get_codec()->get_id();
 
 			if ( $target_codec_id === $normalized_source_codec ) {
-				return true;
+				$is_unnecessary = true;
 			}
 		}
 
-		return false;
+		return (bool) apply_filters( 'videopack_is_unnecessary_encode', $is_unnecessary, $video_format_obj, $this );
 	}
 
 	/**
@@ -1682,8 +1680,7 @@ class Encode_Attachment {
 				$is_potentially_available = true;
 			} elseif ( strpos( $format_key, 'custom_' ) === 0 ) {
 				$is_potentially_available = true;
-			} elseif ( empty( $this->options['hide_video_formats'] ) ) {
-				$is_potentially_available = true;
+
 			} elseif ( isset( $this->options['encode'][ $target_codec_id ]['resolutions'][ $target_resolution_id ] ) &&
 					true === (bool) $this->options['encode'][ $target_codec_id ]['resolutions'][ $target_resolution_id ]
 			) {
