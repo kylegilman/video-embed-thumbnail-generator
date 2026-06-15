@@ -122,32 +122,3 @@ export const getBatchProgress = async (type) => {
 		throw error;
 	}
 };
-/**
- * Downloads the browser encoder assets (ffmpeg.wasm) to the local server.
- */
-export const downloadBrowserEncoderAssets = async () => {
-	try {
-		return await apiFetch({
-			path: '/videopack/v1/browser-encoder/download-assets',
-			method: 'POST',
-		});
-	} catch (error) {
-		console.error('Error downloading browser encoder assets:', error);
-		throw error;
-	}
-};
-
-/**
- * Deletes the browser encoder assets from the local server.
- */
-export const deleteBrowserEncoderAssets = async () => {
-	try {
-		return await apiFetch({
-			path: '/videopack/v1/browser-encoder/delete-assets',
-			method: 'POST',
-		});
-	} catch (error) {
-		console.error('Error deleting browser encoder assets:', error);
-		throw error;
-	}
-};
