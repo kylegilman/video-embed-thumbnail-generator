@@ -391,51 +391,6 @@ const NetworkSettingsPage = () => {
 						/>
 					</div>
 				</PanelBody>
-				{settings.restrict_playback_by_capability !== undefined && (
-					<PanelBody
-						title={__(
-							'Playback Restriction Settings for New Sites',
-							'videopack-pro'
-						)}
-						initialOpen={true}
-					>
-						<div className="videopack-control-with-tooltip">
-							<ToggleControl
-								__nextHasNoMarginBottom
-								label={__(
-									'Restrict full-length video playback by capability',
-									'videopack-pro'
-								)}
-								onChange={changeHandlerFactory.restrict_playback_by_capability}
-								checked={!!settings.restrict_playback_by_capability}
-							/>
-							<VideopackTooltip
-								text={__(
-									'When enabled, only logged-in roles checked in the "User capabilities" checklist are allowed to view the full-length video. Guests and unprivileged users will be restricted to the trailer, or see the restricted overlay if no trailer is available.',
-									'videopack-pro'
-								)}
-							/>
-						</div>
-						{settings.restrict_playback_by_capability && (
-							<div className="videopack-setting-reduced-width" style={{ marginTop: '15px' }}>
-								<TextControl
-									__nextHasNoMarginBottom
-									__next40pxDefaultSize
-									label={__(
-										'Restricted Playback Message',
-										'videopack-pro'
-									)}
-									value={settings.view_restricted_message || ''}
-									placeholder={__(
-										'Log in or subscribe to see this video',
-										'videopack-pro'
-									)}
-									onChange={changeHandlerFactory.view_restricted_message}
-								/>
-							</div>
-						)}
-					</PanelBody>
-				)}
 				{settings.default_capabilities && <RolesCheckboxes />}
 				<PanelRow>
 					<Button

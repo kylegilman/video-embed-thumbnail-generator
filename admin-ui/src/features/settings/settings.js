@@ -58,7 +58,7 @@ const VideopackSettingsPage = () => {
 	}, [settings]);
 
 	const testFfmpeg = useCallback(
-		(codec, resolution, rotate) => {
+		(codec, resolution) => {
 			if (activeTab === 'encoding') {
 				setFfmpegTest({
 					command: __(
@@ -70,7 +70,7 @@ const VideopackSettingsPage = () => {
 						'video-embed-thumbnail-generator'
 					),
 				});
-				testEncodeCommand(codec, resolution, rotate)
+				testEncodeCommand(codec, resolution)
 					.then((response) => {
 						setFfmpegTest(response);
 					})
@@ -93,8 +93,7 @@ const VideopackSettingsPage = () => {
 		) {
 			testFfmpeg(
 				settings.sample_codec,
-				settings.sample_resolution,
-				settings.sample_rotate
+				settings.sample_resolution
 			);
 		}
 	}, [settings, activeTab, isSettingsChanged, testFfmpeg]);

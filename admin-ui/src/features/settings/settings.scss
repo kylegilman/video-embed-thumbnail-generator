@@ -157,6 +157,32 @@
 		}
 	}
 
+	.videopack-flex-row-responsive {
+		display: flex;
+		gap: 20px;
+		align-items: flex-start;
+		width: 100%;
+
+		.videopack-flex-col-responsive {
+			flex: 1 1 33.33%;
+			max-width: 33.33%;
+			box-sizing: border-box;
+		}
+	}
+
+	@media (max-width: 782px) {
+		.videopack-flex-row-responsive {
+			flex-direction: column;
+			gap: 10px;
+
+			.videopack-flex-col-responsive {
+				flex: 1 1 100%;
+				max-width: 100%;
+				width: 100%;
+			}
+		}
+	}
+
 	.components-base-control.components-toggle-control,
 	.videopack-component-margin {
 		margin-top: 10px;
@@ -409,46 +435,7 @@
 			display: inline-block;
 		}
 	}
-	.videopack-constant-setup {
-		margin-bottom: 20px;
 
-		.videopack-code-snippet {
-			background: colors.$gray-100;
-			border: 1px solid colors.$gray-300;
-			padding: 15px;
-			border-radius: 4px;
-			overflow-x: auto;
-			margin: 10px 0;
-
-			code {
-				font-family: monospace;
-				font-size: 12px;
-				color: colors.$gray-900;
-			}
-		}
-	}
-
-	.videopack-constant-notice {
-		margin-bottom: 20px;
-		
-		p {
-			margin: 0;
-		}
-	}
-
-	.videopack-cloud-bucket-row,
-	.videopack-cloud-secret-row {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-
-		.components-base-control,
-		.components-base-control__field,
-		.components-button {
-			margin-bottom: 0 !important;
-			margin-top: 0 !important;
-		}
-	}
 }
 
 .components-tooltip.videopack-tooltip {
