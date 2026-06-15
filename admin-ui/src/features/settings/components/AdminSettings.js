@@ -8,7 +8,6 @@ import {
 	PanelBody,
 	RadioControl,
 	ToggleControl,
-	TextControl,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import VideopackTooltip from './VideopackTooltip';
@@ -37,8 +36,6 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 		replace_video_block,
 		replace_preview_video,
 		rewrite_attachment_url,
-		restrict_playback_by_capability,
-		view_restricted_message,
 	} = settings;
 
 	const [isClearingCache, setIsClearingCache] = useState(false);
@@ -115,7 +112,10 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 				),
 			};
 
-			return labels[capabilityKey] || capitalizeFirstLetter(capabilityKey.replace(/_/g, ' '));
+			return (
+				labels[capabilityKey] ||
+				capitalizeFirstLetter(capabilityKey.replace(/_/g, ' '))
+			);
 		};
 
 		return (
@@ -131,31 +131,40 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					gap={20}
 					className="videopack-setting-capabilities"
 				>
-					{Object.entries(capabilities).map(([capabilityKey, roles]) => {
-						if (capabilityKey === 'view_full_length_video' && !restrict_playback_by_capability) {
-							return null;
+					{Object.entries(capabilities).map(
+						([capabilityKey, roles]) => {
+							if (
+								capabilityKey === 'view_full_length_video' &&
+								!settings.restrict_playback_by_capability
+							) {
+								return null;
+							}
+							return (
+								<FlexItem key={capabilityKey}>
+									<p>{getCapabilityLabel(capabilityKey)}</p>
+									{Object.entries(roles).map(
+										([roleKey, isEnabled]) => (
+											<CheckboxControl
+												__nextHasNoMarginBottom
+												key={`${roleKey}-${capabilityKey}`}
+												label={capitalizeFirstLetter(
+													roleKey
+												)}
+												checked={isEnabled}
+												onChange={(isChecked) =>
+													handleCapabilityChange(
+														roleKey,
+														capabilityKey,
+														isChecked
+													)
+												}
+											/>
+										)
+									)}
+								</FlexItem>
+							);
 						}
-						return (
-							<FlexItem key={capabilityKey}>
-								<p>{getCapabilityLabel(capabilityKey)}</p>
-								{Object.entries(roles).map(([roleKey, isEnabled]) => (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={`${roleKey}-${capabilityKey}`}
-										label={capitalizeFirstLetter(roleKey)}
-										checked={isEnabled}
-										onChange={(isChecked) =>
-											handleCapabilityChange(
-												roleKey,
-												capabilityKey,
-												isChecked
-											)
-										}
-									/>
-								))}
-							</FlexItem>
-						);
-					})}
+					)}
 				</Flex>
 			</PanelBody>
 		);
@@ -388,51 +397,6 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					</FlexItem>
 				</Flex>
 			</PanelBody>
-			{restrict_playback_by_capability !== undefined && (
-				<PanelBody
-					title={__(
-						'Playback Restriction Settings',
-						'videopack-pro'
-					)}
-					initialOpen={true}
-				>
-					<div className="videopack-control-with-tooltip">
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label={__(
-								'Restrict full-length video playback by capability',
-								'videopack-pro'
-							)}
-							onChange={changeHandlerFactory.restrict_playback_by_capability}
-							checked={!!restrict_playback_by_capability}
-						/>
-						<VideopackTooltip
-							text={__(
-								'When enabled, only logged-in roles checked in the "User capabilities" checklist are allowed to view the full-length video. Guests and unprivileged users will be restricted to the trailer, or see the restricted overlay if no trailer is available.',
-								'videopack-pro'
-							)}
-						/>
-					</div>
-					{restrict_playback_by_capability && (
-						<div className="videopack-setting-reduced-width" style={{ marginTop: '15px' }}>
-							<TextControl
-								__nextHasNoMarginBottom
-								__next40pxDefaultSize
-								label={__(
-									'Restricted Playback Message',
-									'videopack-pro'
-								)}
-								value={view_restricted_message || ''}
-								placeholder={__(
-									'Log in or subscribe to see this video',
-									'videopack-pro'
-								)}
-								onChange={changeHandlerFactory.view_restricted_message}
-							/>
-						</div>
-					)}
-				</PanelBody>
-			)}
 			{capabilities && <RolesCheckboxes />}
 		</>
 	);
