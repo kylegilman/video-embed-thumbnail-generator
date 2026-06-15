@@ -46,12 +46,9 @@ class FFmpeg_Tester {
 	 * @return array An associative array containing 'command' (the FFmpeg command executed)
 	 *               and 'output' (the FFmpeg process output), or an error message if the format is invalid.
 	 */
-	public function run_test_encode( string $format_id, bool $rotate ): array {
+	public function run_test_encode( string $format_id ): array {
 
 		$sample_video_path = VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4';
-		if ( $rotate === true ) {
-			$sample_video_path = VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984-rotated.mp4';
-		}
 
 		// Create an Encode_Attachment instance for the sample video.
 		// The 'sample_test_id' is an arbitrary ID for this test, as it's not a real attachment.

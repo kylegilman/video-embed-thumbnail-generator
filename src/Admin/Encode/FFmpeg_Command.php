@@ -185,6 +185,79 @@ class FFmpeg_Command {
 		return array_values( $command );
 	}
 
+	/**
+	 * Creates an FFmpeg_Command instance from a raw command array.
+	 *
+	 * @param array $command Raw command array.
+	 * @return self
+	 */
+	public static function from_array( array $command ) {
+		$builder = new self();
+		if ( empty( $command ) ) {
+			return $builder;
+		}
+
+		// The first argument is typically the executable path if it doesn't start with '-'
+		$first = reset( $command );
+		if ( $first && strpos( $first, '-' ) !== 0 ) {
+			$executable = array_shift( $command );
+			$builder->set_executable( $executable );
+		}
+
+		$current_options = array();
+		$has_inputs = false;
+
+		while ( ! empty( $command ) ) {
+			$arg = array_shift( $command );
+			if ( $arg === '-i' ) {
+				$input_path = array_shift( $command );
+				if ( ! $has_inputs ) {
+					// Options before the first input are global options
+					foreach ( $current_options as $opt ) {
+						$builder->add_global_option( $opt );
+					}
+					$builder->add_input( $input_path );
+					$has_inputs = true;
+				} else {
+					$builder->add_input( $input_path, $current_options );
+				}
+				$current_options = array();
+			} else {
+				$current_options[] = $arg;
+			}
+		}
+
+		if ( ! empty( $current_options ) ) {
+			$output_path = array_pop( $current_options );
+			$builder->add_output( $output_path, $current_options );
+		}
+
+		return $builder;
+	}
+
+	/**
+	 * Gets options for a specific input.
+	 *
+	 * @param int $index Input index.
+	 * @return array
+	 */
+	public function get_input_options( int $index ) {
+		return isset( $this->inputs[ $index ] ) ? $this->inputs[ $index ]['options'] : array();
+	}
+
+	/**
+	 * Sets options for a specific input.
+	 *
+	 * @param int   $index   Input index.
+	 * @param array $options Options to set.
+	 * @return $this
+	 */
+	public function set_input_options( int $index, array $options ) {
+		if ( isset( $this->inputs[ $index ] ) ) {
+			$this->inputs[ $index ]['options'] = $this->parse_options( $options );
+		}
+		return $this;
+	}
 
 	/**
 	 * Convert the command to a string for display or shell execution.
