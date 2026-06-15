@@ -905,9 +905,8 @@ const getFreemiusPage = async page => {
  *
  * @param {string} codec      The codec to test.
  * @param {string} resolution The resolution to test.
- * @param {number} rotate     The rotation angle.
  */
-const testEncodeCommand = async (codec, resolution, rotate) => {
+const testEncodeCommand = async (codec, resolution) => {
   /**
    * Filters the FFmpeg test command test response. Bypasses the REST API call if a non-undefined value is returned.
    *
@@ -916,15 +915,14 @@ const testEncodeCommand = async (codec, resolution, rotate) => {
    * @param {undefined} pre        Defaults to undefined.
    * @param {string}    codec      The codec to test.
    * @param {string}    resolution Resolution to test.
-   * @param {number}    rotate     Rotation angle.
    */
-  const pre = applyFilters('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
+  const pre = applyFilters('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution);
   if (typeof pre !== 'undefined') {
     return pre;
   }
   try {
     return await gallery_apiFetch({
-      path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}&rotate=${rotate}`
+      path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}`
     });
   } catch (error) {
     console.error('Error testing encode command:', error);
