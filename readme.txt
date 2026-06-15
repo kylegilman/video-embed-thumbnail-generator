@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, thumbnail, resolutions
 Requires at least: 5.0
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.2
 Stable tag: 4.10.6
 License: GPLv2 or later
@@ -105,8 +105,11 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.10.6 - February XX, 2026 =
+= 4.10.6 - June 15, 2026 =
 * Fixed bug that caused a fatal error when video posts are duplicated.
+* Fixed bug that triggered _load_textdomain_just_in_time (again).
+* Added 'videopack_save_thumb_location' filter to set thumbnails to save to a custom location.
+* Updated dependencies Freemius SDK and Symfony/Process
 
 = 4.10.5 - January 24, 2026 =
 * Fixed bug that caused 404 errors when WordPress Default Player is selected.

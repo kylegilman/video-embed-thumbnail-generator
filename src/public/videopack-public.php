@@ -588,8 +588,8 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 	if ( $query_atts['gallery_orderby'] == 'menu_order' ) {
 		$query_atts['gallery_orderby'] = 'menu_order ID';
 	}
-	if ( $options['gallery_pagination'] != 'on'
-		&& empty( $query_atts['gallery_per_page'] )
+	if ( ( $options['gallery_pagination'] != 'on'
+		&& empty( $query_atts['gallery_per_page'] ) )
 		|| $query_atts['gallery_per_page'] == 'false'
 	) {
 		$query_atts['gallery_per_page'] = -1;
@@ -2197,11 +2197,10 @@ function kgvid_enable_redirect() {
 		&& property_exists( $post, 'post_mime_type' )
 		&& strpos( $post->post_mime_type, 'video' ) !== false;
 
-	if ( $is_video
-		&& (
-			$kgvid_video_embed['enable'] === 'true'
+	if ( ( $is_video
+		&& ( $kgvid_video_embed['enable'] === 'true'
 			|| ( $kgvid_video_embed['download'] === 'true' && $options['click_download'] === 'on' )
-		)
+		) )
 		|| array_key_exists( 'sample', $kgvid_video_embed )
 	) {
 		return $kgvid_video_embed;

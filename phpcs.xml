@@ -18,8 +18,7 @@
 	<rule ref="WordPress.Security.ValidatedSanitizedInput">
         <properties>
             <property name="customSanitizingFunctions" type="array">
-				<element value="\Videopack\Common\Sanitize::text_field"/>
-				<element value="\Videopack\Common\Validate::text_field"/>
+				<element value="kgvid_sanitize_text_field"/>
             </property>
         </properties>
     </rule>
