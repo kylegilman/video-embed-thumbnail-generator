@@ -269,7 +269,7 @@ class Public_Controller extends Controller {
 	 */
 	public function presets_get( \WP_REST_Request $request ) {
 		$presets     = array();
-		$all_formats = (array) $this->format_registry->get_video_formats( (bool) ( $this->options['hide_video_formats'] ?? false ) );
+		$all_formats = (array) $this->format_registry->get_video_formats( true );
 		foreach ( $all_formats as $id => $obj ) {
 			$data      = (array) $obj->to_array();
 			$presets[] = array_merge(

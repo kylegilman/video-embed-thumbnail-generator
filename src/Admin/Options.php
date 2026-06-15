@@ -132,7 +132,7 @@ class Options implements Hook_Subscriber {
 		$default_options = array(
 			// General Settings.
 			'embed_method'                  => 'Video.js',
-			'hide_video_formats'            => true,
+
 			'hide_thumbnails'               => false,
 			'delete_child_thumbnails'       => false,
 			'delete_child_encoded'          => true,
@@ -279,7 +279,6 @@ class Options implements Hook_Subscriber {
 			// Testing & Debug.
 			'sample_codec'                  => 'h264',
 			'sample_resolution'             => 360,
-			'sample_rotate'                 => false,
 		);
 
 		foreach ( $this->get_default_capabilities() as $videopack_capability => $wp_capability ) {
@@ -772,7 +771,7 @@ class Options implements Hook_Subscriber {
 			$input['ffmpeg_exists']        = $network_options['ffmpeg_exists'] ?? $input['ffmpeg_exists'];
 
 			if ( ! empty( $network_options['superadmin_only_ffmpeg_settings'] ) ) {
-				$encoding_keys = array( 'hide_video_formats', 'error_email', 'ffmpeg_watermark', 'audio_bitrate', 'audio_channels', 'auto_encode', 'auto_encode_gif', 'keep_gif_source', 'auto_publish_post' );
+				$encoding_keys = array( 'error_email', 'ffmpeg_watermark', 'audio_bitrate', 'audio_channels', 'auto_encode', 'auto_encode_gif', 'keep_gif_source', 'auto_publish_post' );
 				foreach ( $encoding_keys as $key ) {
 					if ( isset( $this->options[ (string) $key ] ) ) {
 						$input[ (string) $key ] = $this->options[ (string) $key ];
