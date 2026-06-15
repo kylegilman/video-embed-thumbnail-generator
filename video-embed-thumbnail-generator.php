@@ -4,14 +4,14 @@
  *
  * @package           Videopack
  * @author            Kyle Gilman
- * @copyright         2023 Kyle Gilman
+ * @copyright         2025 Kyle Gilman
  * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin
  * Plugin Name: Videopack
  * Plugin URI: https://www.videopack.video/
  * Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
- * Version: 4.10.3
+ * Version: 4.10.6
  * Author: Kyle Gilman
  * Author URI: https://www.kylegilman.net/
  * Text Domain: video-embed-thumbnail-generator
@@ -59,7 +59,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		define( 'VIDEOPACK_BASENAME', plugin_basename( __FILE__ ) );
 	}
 	if ( ! defined( 'VIDEOPACK_VERSION' ) ) {
-		define( 'VIDEOPACK_VERSION', '4.10.3' );
+		define( 'VIDEOPACK_VERSION', '4.10.6' );
 	}
 	if ( ! defined( 'VIDEOPACK_FREEMIUS_ENABLED' ) ) {
 		define( 'VIDEOPACK_FREEMIUS_ENABLED', true );
@@ -225,21 +225,6 @@ function kgvid_uninstall_plugin() {
 		}
 	}
 }
-
-function kgvid_videopack_fs_loaded() {
-	// add Freemius customizations after Freemius is loaded
-
-	if ( function_exists( 'videopack_fs' ) ) {
-
-		videopack_fs()->override_i18n(
-			array(
-				'yee-haw' => esc_html__( 'Great', 'video-embed-thumbnail-generator' ),
-				'woot'    => esc_html__( 'Great', 'video-embed-thumbnail-generator' ),
-			)
-		);
-	}
-}
-add_action( 'videopack_fs_loaded', 'kgvid_videopack_fs_loaded' );
 
 if ( VIDEOPACK_FREEMIUS_ENABLED && file_exists( __DIR__ . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
 	// Create a helper function for easy SDK access.

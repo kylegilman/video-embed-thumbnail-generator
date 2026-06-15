@@ -279,7 +279,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 		wp_register_script( 'mejs-speed', plugins_url( '/js/mejs-speed.js', __FILE__ ), array( 'mediaelement' ), VIDEOPACK_VERSION, true );
 
-		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/video-js.min.css', '', $options['videojs_version'] ); // gives access to video-js icons for resolution gear selector and social logos
+		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css', '', $options['videojs_version'] ); // gives access to video-js icons for resolution gear selector and social logos
 
 	}
 
@@ -301,7 +301,7 @@ function kgvid_get_first_embedded_video( $post ) {
 
 	$first_embedded_video_meta = get_post_meta( $post->ID, '_kgvid_first_embedded_video', true );
 
-	if ( ! empty( $first_embedded_video_meta ) ) {
+	if ( ! empty( $first_embedded_video_meta ) && is_array( $first_embedded_video_meta ) ) {
 
 		if ( is_array( $first_embedded_video_meta['atts'] ) ) {
 			$dataattributes = array_map( 'kgvid_build_paired_attributes', array_values( $first_embedded_video_meta['atts'] ), array_keys( $first_embedded_video_meta['atts'] ) );
@@ -588,8 +588,8 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 	if ( $query_atts['gallery_orderby'] == 'menu_order' ) {
 		$query_atts['gallery_orderby'] = 'menu_order ID';
 	}
-	if ( $options['gallery_pagination'] != 'on'
-		&& empty( $query_atts['gallery_per_page'] )
+	if ( ( $options['gallery_pagination'] != 'on'
+		&& empty( $query_atts['gallery_per_page'] ) )
 		|| $query_atts['gallery_per_page'] == 'false'
 	) {
 		$query_atts['gallery_per_page'] = -1;
@@ -2197,11 +2197,10 @@ function kgvid_enable_redirect() {
 		&& property_exists( $post, 'post_mime_type' )
 		&& strpos( $post->post_mime_type, 'video' ) !== false;
 
-	if ( $is_video
-		&& (
-			$kgvid_video_embed['enable'] === 'true'
+	if ( ( $is_video
+		&& ( $kgvid_video_embed['enable'] === 'true'
 			|| ( $kgvid_video_embed['download'] === 'true' && $options['click_download'] === 'on' )
-		)
+		) )
 		|| array_key_exists( 'sample', $kgvid_video_embed )
 	) {
 		return $kgvid_video_embed;

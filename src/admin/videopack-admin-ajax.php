@@ -59,8 +59,8 @@ function kgvid_update_child_format() {
 		foreach ( $video_encode_queue as $video_key => $video_entry ) {
 			if ( ! empty( $video_entry['attachmentID'] )
 				&& $video_entry['attachmentID'] === $parent_id
-				&& ( array_key_exists( 'blog_id', $video_entry )
-					&& $video_entry['blog_id'] === $blog_id
+				&& ( ( array_key_exists( 'blog_id', $video_entry )
+					&& $video_entry['blog_id'] === $blog_id )
 					|| $blog_id == 'false'
 				)
 				&& array_key_exists( 'encode_formats', $video_entry )

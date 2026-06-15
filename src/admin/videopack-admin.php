@@ -1527,7 +1527,7 @@ function kgvid_plugin_playback_settings_section_callback() {
 	echo "<div class='kgvid_setting_nearvid general-tab' style='max-width:" . esc_attr( $options['width'] ) . "px;'>";
 	echo "<div id='kgvid_above_sample_vid'>";
 	echo "<span><input type='hidden' name='kgvid_video_embed_options[overlay_title]' value='false'><input class='affects_player' " . checked( $options['overlay_title'], 'on', false ) . " id='overlay_title' name='kgvid_video_embed_options[overlay_title]' type='checkbox' /><label for='overlay_title'>" . esc_html__( 'Overlay video title', 'video-embed-thumbnail-generator' ) . '</label></span>';
-	echo "<span><input class='affects_player' " . checked( $options['downloadlink'], 'on', false ) . " id='downloadlink' name='kgvid_video_embed_options[downloadlink]' type='checkbox' /> <label for='downloadlink'>" . esc_html__( 'Show download link', 'video-embed-thumbnail-generator' ) . '</label></span>';
+	echo "<span><input type='hidden' name='kgvid_video_embed_options[downloadlink]' value='false'><input class='affects_player' " . checked( $options['downloadlink'], 'on', false ) . " id='downloadlink' name='kgvid_video_embed_options[downloadlink]' type='checkbox' /> <label for='downloadlink'>" . esc_html__( 'Show download link', 'video-embed-thumbnail-generator' ) . '</label></span>';
 	echo '<span><span>' . esc_html__( 'Sharing:', 'video-embed-thumbnail-generator' ) . '</span><br>';
 	echo "<input class='affects_player' " . checked( $options['overlay_embedcode'], 'on', false ) . " id='overlay_embedcode' name='kgvid_video_embed_options[overlay_embedcode]' type='checkbox' " . disabled( $embed_disabled, true, false ) . "/> <label for='overlay_embedcode'>" . esc_html__( 'Embed code', 'video-embed-thumbnail-generator' ) . '</label><br>';
 	echo "<input type='hidden' name='kgvid_video_embed_options[twitter_button]' value='false'><input class='affects_player' " . checked( $options['twitter_button'], 'on', false ) . " id='twitter_button' name='kgvid_video_embed_options[twitter_button]' type='checkbox' onchange='kgvid_hide_plugin_settings();' /> <label for='twitter_button'>" . esc_html__( 'Twitter button', 'video-embed-thumbnail-generator' ) . '</label>';
@@ -2386,14 +2386,14 @@ function kgvid_test_ffmpeg_options_callback() {
 	echo '<p>' . sprintf( esc_html__( '%s test output:', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>' ) . "<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>" . sprintf( esc_html__( 'For help interpreting this output, %stry our Wiki page on Github', 'video-embed-thumbnail-generator' ), "<a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>" ) . "</a>.</p></div>\n\t";
 }
 
-// end of settings page callback functions
+function kgvid_load_textdomain() {
+	load_plugin_textdomain( 'video-embed-thumbnail-generator', false, dirname( VIDEOPACK_BASENAME ) . '/languages' );
+}
+add_action( 'plugins_loaded', 'kgvid_load_textdomain' );
 
 function kgvid_init_plugin() {
 
-	load_plugin_textdomain( 'video-embed-thumbnail-generator', false, dirname( VIDEOPACK_BASENAME ) . '/languages' );
-
 	if ( is_videopack_active_for_network() ) {
-
 		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
 
 		if ( ! is_array( $network_options ) ) { // if the network options haven't been set yet
@@ -3446,13 +3446,39 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 					$thumb_index        = intval( $thumb_index );
 					++$thumb_index;
 				}
-
 				while ( is_file( $uploads['path'] . '/' . $posterfile_noindex . $thumb_index . '.jpg' ) ) {
 					++$thumb_index; // increment the filename until we get one that doesn't exist
 				}
 
-				$final_posterpath = $uploads['path'] . '/' . $posterfile_noindex . $thumb_index . '.jpg';
-				$thumb_url        = $uploads['url'] . '/' . $posterfile_noindex . $thumb_index . '.jpg';
+				/**
+				 * Filters the final path and URL of the poster file when avoiding duplicates.
+				 *
+				 * @since 4.10.7
+				 *
+				 * @param array  $location            {
+				 *     Array containing the path and URL of the poster file.
+				 *
+				 *     @type string $path The final path of the poster file.
+				 *     @type string $url  The URL of the poster file.
+				 * }
+				 * @param int    $post_id             The post ID of the video.
+				 * @param string $post_name           The title/name of the video post.
+				 * @param int    $thumb_index         The index/counter appended to the filename.
+				 * @param string $posterfile_noindex  The filename base without the index suffix.
+				 */
+				$location         = apply_filters(
+					'videopack_save_thumb_location',
+					array(
+						'path' => $uploads['path'] . '/' . $posterfile_noindex . $thumb_index . '.jpg',
+						'url'  => $uploads['url'] . '/' . $posterfile_noindex . $thumb_index . '.jpg',
+					),
+					$post_id,
+					$post_name,
+					$thumb_index,
+					$posterfile_noindex
+				);
+				$final_posterpath = $location['path'];
+				$thumb_url        = $location['url'];
 
 			} elseif ( is_file( $tmp_posterpath ) ) { // if a new thumbnail was just entered that's exactly the same as the old one, use the old one
 
@@ -3547,8 +3573,10 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 				return $arr;
 			}
 
-			if ( $local_src === wp_get_attachment_url( $thumb_id ) ) {
+			$local_src = wp_get_attachment_url( $thumb_id );
+			if ( $local_src ) {
 				update_post_meta( $post_id, '_kgflashmediaplayer-poster', $local_src );
+				$thumb_url = $local_src;
 			}
 		} //end sideload
 
