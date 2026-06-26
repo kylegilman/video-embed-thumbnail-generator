@@ -59,7 +59,7 @@ class Thumbnail_Controller extends Controller {
 					'callback'            => array( $this, 'thumb_generate' ),
 					'permission_callback' => function () {
 						$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
-						$is_cloud_ready = ! empty( $this->options['cloud']['enable_transcoding'] ) && apply_filters(
+						$is_cloud_ready = apply_filters(
 							/** This filter is documented in src/Admin/Ui.php */
 							'videopack_transcoding_service_ready',
 							false
@@ -315,7 +315,7 @@ class Thumbnail_Controller extends Controller {
 		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 		error_log( 'Videopack debug: set_poster parameter is: ' . var_export( $request->get_param( 'set_poster' ), true ) );
 		error_log( 'Videopack debug: featured parameter is: ' . var_export( $request->get_param( 'featured' ), true ) );
-		$response   = (array) $thumbnails->save_from_blob( (int) $attachment_id, $post_name, (array) $files['file'], (int) $request->get_param( 'parent_id' ), $request->get_param( 'featured' ), $request->get_param( 'set_poster' ), $request->get_param( 'filename_suffix' ) );
+		$response = (array) $thumbnails->save_from_blob( (int) $attachment_id, $post_name, (array) $files['file'], (int) $request->get_param( 'parent_id' ), $request->get_param( 'featured' ), $request->get_param( 'set_poster' ), $request->get_param( 'filename_suffix' ) );
 
 		$response['attachment_id'] = (int) $attachment_id;
 		if ( empty( $response['thumb_id'] ) ) {

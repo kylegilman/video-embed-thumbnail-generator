@@ -220,6 +220,15 @@ class Encode_Attachment {
 	}
 
 	/**
+	 * Gets the input path.
+	 *
+	 * @return string
+	 */
+	public function get_input_path() {
+		return $this->encode_input;
+	}
+
+	/**
 	 * Determines if the input source is a WordPress attachment and sets the input path.
 	 *
 	 * @return void
@@ -350,9 +359,7 @@ class Encode_Attachment {
 			'completed_at'         => $data_to_save['ended'] ? (string) gmdate( 'Y-m-d H:i:s', (int) $data_to_save['ended'] ) : null,
 			'error_message'        => (string) $data_to_save['error'],
 			'temp_watermark_path'  => (string) $data_to_save['temp_watermark_path'],
-			'cloud_job_id'         => (string) $data_to_save['cloud_job_id'],
-			'cloud_provider'       => (string) $data_to_save['cloud_provider'],
-			'cloud_meta'           => json_encode( $data_to_save['cloud_meta'] ),
+			'extra_meta'           => wp_json_encode( $encode_format->get_extra_meta() ),
 		);
 
 		if ( 'failed' === (string) $data_to_save['status'] ) {
@@ -1096,22 +1103,16 @@ class Encode_Attachment {
 			'height' => (int) $encode_format->get_encode_height(),
 		);
 
-				/**
+		/**
 		 * Filters the array of parameters passed to the transcode runner or FFmpeg arguments array.
 		 *
 		 * @since 5.0.0
 		 *
-		 * @param array  $encode_array   List of parameters and arguments for transcoding.
-		 * @param string $encode_input   The input video file URL or path.
-		 * @param string $output_path    The target output file path.
-		 * @param object $video_metadata The parsed video metadata object.
-		 * @param string $format_id      The format key.
-		 * @param int    $width          The target video width.
-		 * @param int    $height         The target video height.
-		 * @param object $encode_format  The Video_Format being transcoded.
-		 * @param object $attachment     The Encode_Attachment instance.
+		 * @param array                       $encode_array   List of parameters and arguments for transcoding.
+		 * @param \Videopack\Admin\Encode\Encode_Format  $encode_format  The Encode_Format being transcoded.
+		 * @param \Videopack\Admin\Encode\Encode_Attachment $attachment     The Encode_Attachment instance.
 		 */
-		$encode_array = (array) apply_filters( 'videopack_generate_encode_array', $encode_array, (string) $this->encode_input, (string) $encode_format->get_path(), $video_metadata, $format_id, $dimensions_for_filter['width'], $dimensions_for_filter['height'], $encode_format, $this );
+		$encode_array = (array) apply_filters( 'videopack_generate_encode_array', $encode_array, $encode_format, $this );
 
 		$encode_format->set_encode_array( (array) $encode_array );
 
@@ -1494,8 +1495,9 @@ class Encode_Attachment {
 				);
 
 				if ( ! empty( $meta ) ) {
-					$existing_meta             = ! empty( $existing_job->cloud_meta ) ? json_decode( $existing_job->cloud_meta, true ) : array();
-					$update_data['cloud_meta'] = wp_json_encode( array_merge( (array) $existing_meta, $meta ) );
+					$existing_meta             = ! empty( $existing_job->extra_meta ) ? json_decode( $existing_job->extra_meta, true ) : array();
+					$existing_meta             = array_merge( $existing_meta, $meta );
+					$update_data['extra_meta'] = wp_json_encode( $existing_meta );
 				}
 
 				$wpdb->update(
@@ -1553,9 +1555,18 @@ class Encode_Attachment {
 			$output_path     = (string) $encode_info_obj->path;
 			$output_url      = (string) $encode_info_obj->url;
 		}
+		$parent_id = 0;
+		if ( $is_attachment ) {
+			$post = get_post( (int) $this->id );
+			if ( $post ) {
+				$parent_id = (int) $post->post_parent;
+			}
+		}
+
 		$job_data = array(
 			'blog_id'        => (int) $blog_id,
 			'attachment_id'  => $is_attachment ? (int) $this->id : null,
+			'parent_id'      => $parent_id,
 			'input_url'      => (string) $this->url,
 			'format_id'      => (string) $format_id,
 			'status'         => apply_filters(
@@ -1570,10 +1581,10 @@ class Encode_Attachment {
 
 			'user_id'        => (int) $user_id,
 			'video_title'    => (string) $this->get_video_title(),
-			'video_duration' => (int) $this->get_video_duration(),
+			'video_duration' => (int) apply_filters( 'videopack_queue_job_video_duration', (int) $this->get_video_duration(), $format_id, $this ),
 			'created_at'     => (string) current_time( 'mysql', true ),
 			'updated_at'     => (string) current_time( 'mysql', true ),
-			'cloud_meta'     => ! empty( $meta ) ? wp_json_encode( $meta ) : null,
+			'extra_meta'     => ! empty( $meta ) ? wp_json_encode( $meta ) : null,
 		);
 
 		$inserted = $wpdb->insert( (string) $this->queue_table_name, $job_data );
@@ -2285,11 +2296,11 @@ class Encode_Attachment {
 		if ( $existing_attachment_id <= 0 ) {
 			$wp_filetype = (array) wp_check_filetype( (string) basename( $path ) );
 			$title_base  = (string) ( $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( (int) $this->id ) );
-			$label = $encode_format->get_label();
+			$label       = $encode_format->get_label();
 			if ( empty( $label ) ) {
 				$label = $video_format_config instanceof Video_Format ? $video_format_config->get_label() : '';
 			}
-			$title       = (string) ( $title_base . ' ' . $label );
+			$title = (string) ( $title_base . ' ' . $label );
 
 			$author_id_from_parent = (int) ( $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id() );
 			$author_id             = $user_id > 0 ? $user_id : $author_id_from_parent;
@@ -2449,7 +2460,7 @@ class Encode_Attachment {
 			)
 		);
 
-		$is_cloud_job = (bool) $encode_format->get_cloud_provider();
+		$is_remote_job = apply_filters( 'videopack_is_cloud_job', false, $encode_format );
 
 		if ( ! $video_format_config instanceof Video_Format ) {
 			/* translators: %s is the video format ID (ex. 'mp4_720p'). */
@@ -2459,7 +2470,7 @@ class Encode_Attachment {
 			return false;
 		}
 
-		if ( ! $is_cloud_job && ( empty( $path ) || ! is_file( $path ) ) ) {
+		if ( ! $is_remote_job && ( empty( $path ) || ! is_file( $path ) ) ) {
 			/* translators: %1$s is the file path, %2$s is the format ID. */
 			$encode_format->set_error( (string) sprintf( (string) __( 'Encoded file not found at path: %1$s for format %2$s', 'video-embed-thumbnail-generator' ), $path, $format_id ) );
 			$this->save_format( $encode_format );

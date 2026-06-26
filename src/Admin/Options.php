@@ -965,6 +965,12 @@ class Options implements Hook_Subscriber {
 		return $all_roles;
 	}
 
+	/**
+	 * Cleans and filters capabilities.
+	 *
+	 * @param array $capabilities The capabilities array to sanitize.
+	 * @return array The cleaned capabilities array.
+	 */
 	public function set_capabilities( array $capabilities ): array {
 		$clean_capabilities = array();
 		foreach ( $capabilities as $capability => $roles ) {

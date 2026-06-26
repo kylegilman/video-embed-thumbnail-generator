@@ -66,6 +66,27 @@ class Registry {
 		 * @param array $codecs Array of fully-qualified codec class names.
 		 */
 		$codecs = (array) apply_filters( 'videopack_video_codecs', $codecs );
+
+		// Sort codecs by an explicit priority order so that standard fallbacks appear first.
+		$order = array(
+			'h264' => 1,
+			'h265' => 2,
+			'vp8'  => 3,
+			'vp9'  => 4,
+			'av1'  => 5,
+		);
+
+		usort(
+			$codecs,
+			function ( $a, $b ) use ( $order ) {
+				$id_a   = method_exists( $a, 'get_id' ) ? $a->get_id() : '';
+				$id_b   = method_exists( $b, 'get_id' ) ? $b->get_id() : '';
+				$rank_a = $order[ $id_a ] ?? 99;
+				$rank_b = $order[ $id_b ] ?? 99;
+				return $rank_a <=> $rank_b;
+			}
+		);
+
 		return $codecs;
 	}
 

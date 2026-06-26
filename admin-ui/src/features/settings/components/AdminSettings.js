@@ -10,6 +10,7 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { applyFilters } from '@wordpress/hooks';
 import VideopackTooltip from './VideopackTooltip';
 import { clearUrlCache } from '../../../api/settings';
 
@@ -398,6 +399,10 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 				</Flex>
 			</PanelBody>
 			{capabilities && <RolesCheckboxes />}
+			{applyFilters('videopack.settings.admin.after_capabilities', null, {
+				settings,
+				changeHandlerFactory,
+			})}
 		</>
 	);
 };

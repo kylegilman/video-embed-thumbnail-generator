@@ -96,8 +96,7 @@
   backdrop-filter: none;
   opacity: 1;
   color: inherit;
-  -moz-appearance: none;
-       appearance: none;
+  appearance: none;
   -webkit-appearance: none;
   font-family: inherit;
   font-size: inherit;
@@ -174,7 +173,6 @@
   top: calc(100% + 4px);
   right: auto;
   left: 0;
-  width: -moz-max-content;
   width: max-content;
   min-width: 260px;
   padding: 12px 15px;

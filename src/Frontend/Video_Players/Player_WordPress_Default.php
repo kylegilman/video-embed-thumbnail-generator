@@ -103,8 +103,23 @@ class Player_WordPress_Default extends Player {
 	 * @return array The modified video variables.
 	 */
 	public static function filter_video_vars( array $video_variables, array $atts ): array {
+		$features = array( 'playpause', 'progress', 'volume', 'tracks' );
+
+		$total_sources = 0;
+		if ( ! empty( $video_variables['source_groups'] ) && is_array( $video_variables['source_groups'] ) ) {
+			foreach ( $video_variables['source_groups'] as $group ) {
+				if ( ! empty( $group['sources'] ) && is_array( $group['sources'] ) ) {
+					$total_sources += count( $group['sources'] );
+				}
+			}
+		}
+
+		if ( $total_sources > 1 ) {
+			$features[] = 'sourcechooser';
+		}
+
 		$mejs_settings = array(
-			'features'              => array( 'playpause', 'progress', 'volume', 'tracks', 'sourcechooser' ),
+			'features'              => $features,
 			'classPrefix'           => 'mejs-',
 			'stretching'            => 'responsive',
 			'pluginPath'            => includes_url( 'js/mediaelement/', 'relative' ),
@@ -127,6 +142,8 @@ class Player_WordPress_Default extends Player {
 
 		// Localize MediaElement.js settings.
 		wp_localize_script( 'wp-mediaelement', '_wpmejsSettings', $mejs_settings );
+
+		$video_variables['mejs_settings'] = $mejs_settings;
 
 		return $video_variables;
 	}

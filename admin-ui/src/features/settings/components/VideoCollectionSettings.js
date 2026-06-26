@@ -468,7 +468,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 					/>
 					<VideopackTooltip
 						text={__(
-							'The actual number of columns displayed may be lower than this value depending on the gallery alignment and the width of the container. Narrower widths will automatically collapse to fewer columns for better responsiveness.',
+							'The actual number of columns displayed may be lower than this value depending on the gallery Alignment / Width setting and the width of the container. Narrower widths will automatically collapse to fewer columns.',
 							'video-embed-thumbnail-generator'
 						)}
 					/>

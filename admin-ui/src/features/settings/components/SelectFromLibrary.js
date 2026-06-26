@@ -5,9 +5,9 @@ import TextControlOnBlur from './TextControlOnBlur';
 const SelectFromLibrary = ({ value, onChange, label, children, ...props }) => {
 	const openMediaLibrary = () => {
 		const frame = window.wp.media({
-			title: __('Select Image', 'video-embed-thumbnail-generator'),
+			title: __('Select Image', 'videopack-player-pro'),
 			button: {
-				text: __('Use this image', 'video-embed-thumbnail-generator'),
+				text: __('Use this image', 'videopack-player-pro'),
 			},
 			multiple: false,
 			library: {
@@ -46,6 +46,11 @@ const SelectFromLibrary = ({ value, onChange, label, children, ...props }) => {
 						'video-embed-thumbnail-generator'
 					)}
 				</Button>
+				{value && (
+					<div className="videopack-select-from-library-preview">
+						<img src={value} alt="" />
+					</div>
+				)}
 				{children}
 			</div>
 		</div>

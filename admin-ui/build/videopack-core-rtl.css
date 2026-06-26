@@ -187,13 +187,12 @@
 }
 .videopack-video-title .videopack-meta-icons {
   position: relative;
-  margin: 0 6px 0 0;
+  margin: 0 auto 0 0;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
   flex-shrink: 0;
-  min-width: -moz-max-content;
   min-width: max-content;
   overflow: visible;
   gap: 4px;
@@ -323,8 +322,7 @@
   transition: opacity 0.15s ease;
   font-size: 1em;
   flex-shrink: 0;
-  -moz-appearance: none;
-       appearance: none;
+  appearance: none;
   -webkit-appearance: none;
   font-family: inherit;
   line-height: 1;
@@ -393,7 +391,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  width: -moz-fit-content;
   width: fit-content;
   white-space: nowrap;
 }
@@ -1145,7 +1142,6 @@
 .video-js.vjs-theme-sea .vjs-big-play-button {
   width: 3.433em;
   height: 2.633em;
-  -o-object-fit: contain;
   object-fit: contain;
   background-color: hsla(0, 0%, 100%, 0.25);
   border: none;
@@ -1278,8 +1274,7 @@
 .videopack-wrapper .videopack-player picture.vjs-poster img {
   width: 100%;
   height: 100%;
-  -o-object-fit: contain;
-     object-fit: contain;
+  object-fit: contain;
 }
 .videopack-wrapper .videopack-icon-svg,
 .videopack-wrapper .videopack-icons svg,
@@ -2691,8 +2686,7 @@
   right: 0;
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   display: block;
 }
 .videopack-inner-blocks-container {
@@ -2713,7 +2707,7 @@
   display: none;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.75);
   width: 100vw;
   height: 100vh;
   z-index: 100000;
@@ -2737,7 +2731,9 @@
 }
 .videopack-modal-overlay .videopack-modal-container .modal-content {
   position: relative;
-  padding: 0;
+  padding: 15px;
+  border-radius: 15px;
+  background-color: #fff;
   width: 100%;
   flex-grow: 1;
   display: flex;
@@ -2812,7 +2808,6 @@
   align-items: center;
   margin: 1.5em 0;
   -webkit-user-select: none;
-     -moz-user-select: none;
           user-select: none;
   width: 100%;
 }
@@ -2858,9 +2853,7 @@
   text-decoration: none;
   outline: none;
   box-shadow: none;
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
+  appearance: none;
 }
 .videopack-pagination .page-numbers:hover:not(.current):not(:disabled) {
   border-color: var(--videopack-pagination-active-bg, #1e1e1e);
@@ -3039,6 +3032,9 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+.videopack-thumbnail-generator .videopack-generation-actions button.is-secondary {
+  margin-bottom: 0;
+}
 .videopack-thumbnail-generator button.components-button.videopack-use-this-frame.is-secondary {
   display: block;
   margin-right: auto;
@@ -3178,7 +3174,6 @@ picture.vjs-poster {
   width: 100%;
   overflow: hidden;
   -webkit-user-select: none;
-     -moz-user-select: none;
           user-select: none;
   container-type: inline-size;
 }
@@ -3390,11 +3385,6 @@ picture.vjs-poster {
   padding: 1px 4px;
   border-radius: 4px;
 }
-/** @format */
-/**
- * Deprecated colors.
- * Please avoid using these.
- */
 .videopack-formats-container {
   width: 100%;
   margin-bottom: 20px;
@@ -3425,7 +3415,7 @@ picture.vjs-poster {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  background: #f6f7f7;
+  background: #fff;
 }
 .videopack-formats-list > li ul {
   list-style: none;
@@ -3722,7 +3712,7 @@ picture.vjs-poster {
 .videopack-text-tracks-list .videopack-text-track-item {
   margin-bottom: 24px;
   padding: 16px;
-  background: #f6f7f7;
+  background: #fff;
   border-radius: 8px;
   border: 1px solid #ddd;
   transition: all 0.2s ease-in-out;
@@ -3776,7 +3766,6 @@ picture.vjs-poster {
 }
 .videopack-text-tracks-actions .components-button {
   flex: 1 1 auto;
-  min-width: -moz-fit-content;
   min-width: fit-content;
   justify-content: center;
   white-space: nowrap;
@@ -3829,8 +3818,7 @@ picture.vjs-poster {
 .videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail img {
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 .videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail svg {
   width: 16px;
@@ -4010,8 +3998,7 @@ picture.vjs-poster {
   backdrop-filter: none;
   opacity: 1;
   color: inherit;
-  -moz-appearance: none;
-       appearance: none;
+  appearance: none;
   -webkit-appearance: none;
   font-family: inherit;
   font-size: inherit;
@@ -4223,7 +4210,6 @@ picture.vjs-poster {
   position: absolute;
   z-index: 100;
   pointer-events: none;
-  width: -moz-max-content;
   width: max-content;
   min-width: 0;
   white-space: nowrap;
@@ -4318,7 +4304,6 @@ picture.vjs-poster {
   list-style: none;
   margin-block: 0;
   padding: 2px 0;
-  width: -moz-max-content;
   width: max-content;
   min-width: 0;
   z-index: 110;
@@ -4446,8 +4431,7 @@ picture.vjs-poster {
   backdrop-filter: none;
   opacity: 1;
   color: inherit;
-  -moz-appearance: none;
-       appearance: none;
+  appearance: none;
   -webkit-appearance: none;
   font-family: inherit;
   font-size: inherit;
@@ -4524,7 +4508,6 @@ picture.vjs-poster {
   top: calc(100% + 4px);
   right: auto;
   left: 0;
-  width: -moz-max-content;
   width: max-content;
   min-width: 260px;
   padding: 12px 15px;
@@ -4770,4 +4753,9 @@ picture.vjs-poster {
   position: relative !important;
   margin: 0 !important;
   pointer-events: auto !important;
+}
+.videopack-inspector-controls .components-notice,
+.videopack-attachment-details .components-notice {
+  margin-top: 15px;
+  margin-bottom: 15px;
 }

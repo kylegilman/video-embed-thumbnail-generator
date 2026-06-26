@@ -1,46 +1,32 @@
 <?php
 /**
- * Plugin Name
+ * Videopack
  *
  * @package           Videopack
  * @author            Kyle Gilman
  * @copyright         2026 Kyle Gilman
- * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin
- * Plugin Name: Videopack
- * Plugin URI: https://www.videopack.video/
- * Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
- * Version: 5.0
- * Author: Kyle Gilman
- * Author URI: https://www.kylegilman.net/
- * Text Domain: video-embed-thumbnail-generator
- * Domain Path: /languages
+ * Plugin Name:       Videopack
+ * Plugin URI:        https://www.videopack.video/
+ * Description:       Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
+ * Version:           5.0
+ * Author:            Kyle Gilman
+ * Author URI:        https://www.kylegilman.net/
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       video-embed-thumbnail-generator
+ * Domain Path:       /languages
+ * Requires PHP:      7.2
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * any later version.
+ * Credits & Bundled Libraries:
+ * 1) Video-JS Player (http://www.videojs.com/) - Licensed under LGPL
+ * 2) Adaptation of Dominic's Video.js Resolution Selector (https://github.com/dominic-p/videojs-resolution-selector)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * 1) Includes Video-JS Player
- * Website: http://www.videojs.com/
- * License: http://www.gnu.org/licenses/lgpl.html
- * 2) Includes an adaptation of Dominic's Video.js Resolution Selector
- * Website: https://github.com/dominic-p/videojs-resolution-selector
- *
- * =Translators=
- * Spanish: Andrew Kurtis, Webhostinghub http://www.webhostinghub.com/
- * French: F.R. "Friss" Ferry, friss.designs@gmail.com
- * Bulgarian: Emil Georgiev, svinqvmraka@gmail.com
+ * Translators:
+ * - Spanish: Andrew Kurtis, Webhostinghub (http://www.webhostinghub.com/)
+ * - French: F.R. "Friss" Ferry (friss.designs@gmail.com)
+ * - Bulgarian: Emil Georgiev (svinqvmraka@gmail.com)
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -60,7 +46,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		define( 'VIDEOPACK_VERSION', '5.0' );
 	}
 	if ( ! defined( 'VIDEOPACK_VIDEOJS_VERSION' ) ) {
-		define( 'VIDEOPACK_VIDEOJS_VERSION', '8.21.1' );
+		define( 'VIDEOPACK_VIDEOJS_VERSION', '8.23.7' );
 	}
 	if ( ! defined( 'VIDEOPACK_FREEMIUS_ENABLED' ) ) {
 		define( 'VIDEOPACK_FREEMIUS_ENABLED', true );
@@ -262,7 +248,7 @@ function videopack_uninstall_plugin() {
 
 	if ( ! is_multisite() ) {
 		delete_option( 'videopack_options' );
- 
+
 		$table_name = $wpdb->prefix . 'videopack_encoding_queue';
 		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_name ) );
 	} else {

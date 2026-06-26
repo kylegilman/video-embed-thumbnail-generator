@@ -336,6 +336,11 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 											codec.id
 										)
 								)
+								.filter(
+									(resolution) =>
+										codec.id !== 'cmaf' ||
+										resolution.is_standard !== false
+								)
 								.map((resolution) => {
 									const formatId = `${codec.id}_${resolution.id}`;
 									const isReplacement =
@@ -507,12 +512,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						onChange={handleResolutionChange}
 					/>
 				)}
-				<VideopackTooltip
-					text={__(
-						'Choose a format to replace the original uploaded video. If "None" is selected, the original video will be kept and additional formats will be created alongside it.',
-						'video-embed-thumbnail-generator'
-					)}
-				/>
 			</div>
 		);
 	};

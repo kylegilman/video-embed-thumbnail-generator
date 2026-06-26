@@ -172,7 +172,10 @@
 #videopack-attachment-details-root {
   clear: both;
 }
-
+#videopack-attachment-details-root .components-notice {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
 #videopack-attachment-preview-root {
   width: 100%;
   height: auto;
@@ -181,28 +184,23 @@
   overflow: hidden;
   margin: 0 auto;
 }
-
 #videopack-attachment-preview-root .videopack-attachment-preview,
 #videopack-attachment-preview-root .videopack-wrapper {
   width: 100% !important;
   display: block;
   margin: 0;
 }
-
 #videopack-attachment-preview-root .videopack-player {
   width: 100% !important;
   display: block;
 }
-
 #videopack-attachment-preview-root .video-js {
   width: 100% !important;
 }
-
 .attachment-details .attachment-media-view .thumbnail {
   width: 100%;
   display: block;
 }
-
 #videopack-auto-gen-notice {
   position: fixed;
   bottom: 20px;

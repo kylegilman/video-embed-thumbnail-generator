@@ -8,4 +8,4 @@
 /.CONTRIBUTING.md export-ignore
 /.README.md export-ignore
 
-* text=auto
+* text=auto eol=lf

@@ -197,7 +197,7 @@ class FFmpeg_Command {
 			return $builder;
 		}
 
-		// The first argument is typically the executable path if it doesn't start with '-'
+		// The first argument is typically the executable path if it doesn't start with '-'.
 		$first = reset( $command );
 		if ( $first && strpos( $first, '-' ) !== 0 ) {
 			$executable = array_shift( $command );
@@ -205,14 +205,14 @@ class FFmpeg_Command {
 		}
 
 		$current_options = array();
-		$has_inputs = false;
+		$has_inputs      = false;
 
 		while ( ! empty( $command ) ) {
 			$arg = array_shift( $command );
 			if ( $arg === '-i' ) {
 				$input_path = array_shift( $command );
 				if ( ! $has_inputs ) {
-					// Options before the first input are global options
+					// Options before the first input are global options.
 					foreach ( $current_options as $opt ) {
 						$builder->add_global_option( $opt );
 					}
@@ -256,6 +256,50 @@ class FFmpeg_Command {
 		if ( isset( $this->inputs[ $index ] ) ) {
 			$this->inputs[ $index ]['options'] = $this->parse_options( $options );
 		}
+		return $this;
+	}
+
+	/**
+	 * Gets options for a specific output.
+	 *
+	 * @param int $index Output index.
+	 * @return array
+	 */
+	public function get_output_options( int $index ) {
+		return isset( $this->outputs[ $index ] ) ? $this->outputs[ $index ]['options'] : array();
+	}
+
+	/**
+	 * Sets options for a specific output.
+	 *
+	 * @param int   $index   Output index.
+	 * @param array $options Options to set.
+	 * @return $this
+	 */
+	public function set_output_options( int $index, array $options ) {
+		if ( isset( $this->outputs[ $index ] ) ) {
+			$this->outputs[ $index ]['options'] = $this->parse_options( $options );
+		}
+		return $this;
+	}
+
+	/**
+	 * Clears all inputs from the command builder.
+	 *
+	 * @return $this
+	 */
+	public function clear_inputs() {
+		$this->inputs = array();
+		return $this;
+	}
+
+	/**
+	 * Clears all outputs from the command builder.
+	 *
+	 * @return $this
+	 */
+	public function clear_outputs() {
+		$this->outputs = array();
 		return $this;
 	}
 

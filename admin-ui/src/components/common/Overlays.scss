@@ -200,7 +200,7 @@ $badge-selectors: (
 	// Meta Icons Logic — gap on the flex row is the only spacing between icons
 	.videopack-meta-icons {
 		position: relative;
-		margin: 0 0 0 6px;
+		margin: 0 0 0 auto;
 		display: flex;
 		flex-direction: row;
 		flex-wrap: nowrap;

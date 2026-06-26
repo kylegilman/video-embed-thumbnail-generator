@@ -15,7 +15,8 @@ export default function CollectionWrapper({
 }) {
 	const { resolved, style, classes } = useVideopackContext(
 		attributes,
-		context
+		context,
+		{ excludeHoverTrigger: true }
 	);
 	const { layout = 'grid', columns = 3, align = '' } = resolved;
 

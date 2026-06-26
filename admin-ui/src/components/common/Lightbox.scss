@@ -8,7 +8,7 @@
 	display: none;
 	justify-content: center;
 	align-items: center;
-	background: rgba(0, 0, 0, 0.45);
+	background: rgba(0, 0, 0, 0.75);
 	width: 100vw;
 	height: 100vh;
 	z-index: 100000;
@@ -33,7 +33,9 @@
 
 		.modal-content {
 			position: relative;
-			padding: 0;
+			padding: 15px;
+			border-radius: 15px;
+			background-color: colors.$white;
 			width: 100%;
 			flex-grow: 1;
 			display: flex;

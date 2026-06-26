@@ -4,6 +4,7 @@
 
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, CheckboxControl, Spinner } from '@wordpress/components';
+import { applyFilters } from '@wordpress/hooks';
 import EncodeProgress from './EncodeProgress';
 import './EncodeFormatStatus.scss';
 
@@ -111,19 +112,20 @@ const EncodeFormatStatus = ({
 		}
 		return (
 			(data.exists && data.status !== 'error') ||
-			[
-				'queued',
-				'encoding',
-				'processing',
-				'completed',
-				'needs_insert',
-				'pending_replacement',
-				'remote_exists',
-				'browser_pending',
-				'browser_encoding',
-				'cloud_encoding',
-				'offloading',
-			].includes(data.status)
+			applyFilters(
+				'videopack.busyOrDoneStatuses',
+				[
+					'queued',
+					'encoding',
+					'processing',
+					'completed',
+					'needs_insert',
+					'pending_replacement',
+					'remote_exists',
+					'browser_pending',
+					'browser_encoding',
+				]
+			).includes(data.status)
 		);
 	};
 

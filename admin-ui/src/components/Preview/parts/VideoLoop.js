@@ -20,7 +20,8 @@ export default function VideoLoop({
 }) {
 	const { resolved, style, classes } = useVideopackContext(
 		attributes,
-		context
+		context,
+		{ excludeHoverTrigger: true }
 	);
 	const { videos = [], layout = 'grid', columns = 3, duotone } = resolved;
 
@@ -80,7 +81,7 @@ export default function VideoLoop({
 				{videos.map((video, index) => (
 					<div
 						key={video.attachment_id || index}
-						className="videopack-collection-item"
+						className="videopack-collection-item videopack-hover-trigger"
 					>
 						{innerBlocks ? (
 							<TemplatePreview

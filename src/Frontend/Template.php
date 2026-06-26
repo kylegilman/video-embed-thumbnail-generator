@@ -284,6 +284,11 @@ class Template implements Hook_Subscriber {
 
 			$filepath = get_attached_file( get_the_ID() );
 			if ( ! $filepath || ! file_exists( $filepath ) ) {
+				$source = \Videopack\Video_Source\Source_Factory::create( get_the_ID(), $this->options );
+				if ( $source && $source->exists() ) {
+					wp_redirect( $source->get_url() );
+					exit;
+				}
 				return;
 			}
 			$filetype = wp_check_filetype( $filepath );

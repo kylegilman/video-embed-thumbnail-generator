@@ -10,7 +10,7 @@ namespace Videopack\Video_Source;
 /**
  * Class Source_Attachment
  *
- * Handles video sources that are WordPress attachments stored locally (or on a cloud provider via hybrid attachment).
+ * Handles video sources that are WordPress attachments stored locally (or on a remote storage provider via hybrid attachment).
  *
  * @since 5.0.0
  * @package Videopack\Video_Source
@@ -154,11 +154,11 @@ class Source_Attachment extends Source {
 	 * Sets whether the video source exists.
 	 */
 	protected function set_exists(): void {
-		$external_url = $this->metadata['url'] ?? null;
-		$is_remote    = (bool) ( $this->metadata['is_remote'] ?? false );
-		$is_cloud     = ! empty( $this->metadata['cloud']['file_name'] ?? '' );
+		$external_url      = $this->metadata['url'] ?? null;
+		$is_remote         = (bool) ( $this->metadata['is_remote'] ?? false );
+		$is_remote_storage = (bool) apply_filters( 'videopack_source_is_cloud', false, $this->metadata, $this );
 
-		if ( $external_url || $is_remote || $is_cloud ) {
+		if ( $external_url || $is_remote || $is_remote_storage ) {
 			$this->exists = true; // Assume it exists if it's a remote URL or marked as remote.
 			return;
 		}
@@ -169,7 +169,7 @@ class Source_Attachment extends Source {
 			return;
 		}
 
-		// Fallback for cloud-offloaded attachments.
+		// Fallback for remote-offloaded attachments.
 		// If the attachment URL is different from the local upload URL structure, or if a filter says so.
 		$this->exists = (bool) apply_filters( 'videopack_attachment_exists', false, (int) $this->id );
 
@@ -186,11 +186,11 @@ class Source_Attachment extends Source {
 	 * Sets the direct path to the video.
 	 */
 	protected function set_direct_path(): void {
-		$external_url = $this->metadata['url'] ?? null;
-		$is_remote    = (bool) ( $this->metadata['is_remote'] ?? false );
-		$is_cloud     = ! empty( $this->metadata['cloud']['file_name'] ?? '' );
+		$external_url      = $this->metadata['url'] ?? null;
+		$is_remote         = (bool) ( $this->metadata['is_remote'] ?? false );
+		$is_remote_storage = (bool) apply_filters( 'videopack_source_is_cloud', false, $this->metadata, $this );
 
-		if ( $external_url || $is_remote || $is_cloud ) {
+		if ( $external_url || $is_remote || $is_remote_storage ) {
 			$this->direct_path = (string) ( $external_url ? $external_url : $this->get_url() );
 			return;
 		}
@@ -206,8 +206,8 @@ class Source_Attachment extends Source {
 	 * Sets whether the video source is local.
 	 */
 	protected function set_local(): void {
-		$is_cloud    = ! empty( $this->metadata['cloud']['file_name'] ?? '' );
-		$this->local = ! $is_cloud;
+		$is_remote_storage = (bool) apply_filters( 'videopack_source_is_cloud', false, $this->metadata, $this );
+		$this->local       = ! $is_remote_storage;
 	}
 
 	/**
@@ -339,6 +339,7 @@ class Source_Attachment extends Source {
 	 * @return string The download URL.
 	 */
 	public function get_download_url(): string {
-		return (string) add_query_arg( 'videopack[download]', 'true', get_permalink( $this->get_id() ) );
+		$url = (string) add_query_arg( 'videopack[download]', 'true', get_permalink( $this->get_id() ) );
+		return (string) apply_filters( 'videopack_attachment_get_download_url', $url, $this );
 	}
 }

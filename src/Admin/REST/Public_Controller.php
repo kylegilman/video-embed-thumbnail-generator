@@ -158,6 +158,69 @@ class Public_Controller extends Controller {
 		$template_json = $request->get_param( 'inner_blocks_template' );
 		$blocks        = $template_json ? json_decode( wp_unslash( $template_json ), true ) : array();
 
+		// If no custom template is provided, build default blocks based on global options.
+		if ( empty( $blocks ) ) {
+			$title_inner_blocks = array();
+			if ( ! empty( $this->options['downloadlink'] ) ) {
+				$title_inner_blocks[] = array(
+					'blockName' => 'videopack/download',
+					'attrs'     => array(
+						'icon'         => true,
+						'text'         => false,
+						'styleType'    => 'text',
+						'downloadMode' => 'direct',
+					),
+				);
+			}
+			if ( ! empty( $this->options['embedcode'] ) ) {
+				$title_inner_blocks[] = array(
+					'blockName' => 'videopack/share',
+					'attrs'     => array(
+						'iconType'  => 'share',
+						'showText'  => false,
+						'styleType' => 'text',
+					),
+				);
+			}
+
+			$player_inner_blocks = array();
+			if ( ( $this->options['overlay_title'] ?? true ) !== false || ! empty( $title_inner_blocks ) ) {
+				$player_inner_blocks[] = array(
+					'blockName'   => 'videopack/title',
+					'attrs'       => array(),
+					'innerBlocks' => $title_inner_blocks,
+				);
+			}
+			if ( ! empty( $this->options['watermark'] ) ) {
+				$player_inner_blocks[] = array(
+					'blockName' => 'videopack/watermark',
+					'attrs'     => array(),
+				);
+			}
+
+			$inner_blocks = array(
+				array(
+					'blockName'   => 'videopack/player',
+					'attrs'       => array(
+						'lock' => array(
+							'remove' => true,
+							'move'   => false,
+						),
+					),
+					'innerBlocks' => $player_inner_blocks,
+				),
+			);
+
+			if ( ! empty( $this->options['views'] ) ) {
+				$inner_blocks[] = array(
+					'blockName' => 'videopack/view-count',
+					'attrs'     => array(),
+				);
+			}
+
+			$blocks = $inner_blocks;
+		}
+
 		// Ensure we start with a player-container at the root.
 		if ( empty( $blocks ) || 'videopack/player-container' !== $blocks[0]['blockName'] ) {
 			$blocks = array(

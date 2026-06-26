@@ -226,7 +226,7 @@
 			const hasAdaptive = activeSources.some((s) => s.type && (s.type.startsWith('application/x-mpegURL') || s.type.startsWith('application/dash+xml')));
 			const source_groups = videoVars.source_groups || {};
 
-			if (typeof videojs.getPlugin === 'function' && videojs.getPlugin('resolutionSelector') && (hasResolutions || hasAdaptive || (source_groups && Object.keys(source_groups).length > 1))) {
+			if (typeof videojs.getPlugin === 'function' && videojs.getPlugin('resolutionSelector') && ((hasResolutions && activeSources.length > 1) || hasAdaptive || (source_groups && Object.keys(source_groups).length > 1))) {
 				if (videojs.VERSION.split('.')[0] >= 5) {
 					videojsOptions.plugins = videojsOptions.plugins || {};
 					videojsOptions.plugins.resolutionSelector = {
@@ -1911,7 +1911,8 @@
 						}
 					}, 100);
 				} else if (videoData.embed_method === 'WordPress Default' && typeof window.MediaElementPlayer !== 'undefined') {
-					const settings = Object.assign({}, window._wpmejsSettings || {});
+					const videoVars = videoData.player_vars || videoData;
+					const settings = Object.assign({}, window._wpmejsSettings || {}, videoVars.mejs_settings || {});
 					settings.success = (mediaElement, domObject, player) => {
 						this.currentGalleryPlayer = player;
 						if (!playerWrapper.dataset.videopackInitialized) {
@@ -1929,8 +1930,23 @@
 						});
 					};
 					// Ensure video has an ID
-					if (videoElement && !videoElement.id) {
-						videoElement.id = 'wp_mep_' + newId;
+					if (videoElement) {
+						if (!videoElement.id) {
+							videoElement.id = 'wp_mep_' + newId;
+						}
+						// Catch play interruption AbortError to prevent uncaught console exceptions
+						const originalPlay = videoElement.play;
+						videoElement.play = function () {
+							const promise = originalPlay.apply(this, arguments);
+							if (promise !== undefined) {
+								promise.catch((error) => {
+									if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
+										console.error(error);
+									}
+								});
+							}
+							return promise;
+						};
 					}
 					this.currentGalleryPlayer = new window.MediaElementPlayer(videoElement, settings);
 				} else {
@@ -1953,7 +1969,6 @@
 				}
 
 				// Re-initialize share interaction for the injected HTML
-				this.setupShareInteraction(playerContainer);
 				this.setupMetaBar(playerContainer);
 			};
 

@@ -96,7 +96,7 @@ const EncodeQueue = () => {
 								"Switches all existing thumbnail attachments to be children of the video's parent post",
 								'video-embed-thumbnail-generator'
 							),
-			}
+			},
 		];
 	}, []);
 
@@ -128,18 +128,26 @@ const EncodeQueue = () => {
 		if (ffmpegExists) {
 			optionsList.push({
 				id: 'thumbs',
-				label: __('Poster Thumbnails', 'video-embed-thumbnail-generator'),
-				description: __('Generates missing poster thumbnails for all media library videos.', 'video-embed-thumbnail-generator'),
+				label: __('Thumbnails', 'video-embed-thumbnail-generator'),
+				description: __(
+					'Generates thumbnails in the background for all media library videos using server-side FFmpeg.',
+					'video-embed-thumbnail-generator'
+				),
 			});
 		}
 
 		optionsList.push({
 			id: 'encoding',
 			label: __('Video Formats', 'video-embed-thumbnail-generator'),
-			description: __('Enqueues all unencoded local videos for background encoding to your configured formats.', 'video-embed-thumbnail-generator'),
+			description: __(
+				'Enqueues all videos for encoding to your configured formats.',
+				'video-embed-thumbnail-generator'
+			),
 		});
 
-		return applyFilters('videopack.queue.bulk_options', optionsList, { ffmpegExists });
+		return applyFilters('videopack.queue.bulk_options', optionsList, {
+			ffmpegExists,
+		});
 	}, []);
 
 	const [checkedBulkIds, setCheckedBulkIds] = useState({});
@@ -164,7 +172,9 @@ const EncodeQueue = () => {
 	const [isQueueingBulk, setIsQueueingBulk] = useState(false);
 
 	const handleRunSelectedBulk = async () => {
-		const selectedIds = Object.keys(checkedBulkIds).filter((id) => checkedBulkIds[id]);
+		const selectedIds = Object.keys(checkedBulkIds).filter(
+			(id) => checkedBulkIds[id]
+		);
 		if (selectedIds.length === 0) {
 			return;
 		}
@@ -637,6 +647,22 @@ const EncodeQueue = () => {
 					enableSorting: true,
 				},
 				{
+					id: 'parent_post',
+					label: __('Parent Post', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) =>
+						item.parent_title ||
+						__('Unattached', 'video-embed-thumbnail-generator'),
+					render: ({ item }) =>
+						item.parent_edit_link ? (
+							<a href={item.parent_edit_link}>
+								{decodeEntities(item.parent_title)}
+							</a>
+						) : (
+							__('Unattached', 'video-embed-thumbnail-generator')
+						),
+					enableSorting: true,
+				},
+				{
 					id: 'format_name',
 					label: __('Format', 'video-embed-thumbnail-generator'),
 					getValue: ({ item }) => item.format_name,
@@ -1041,7 +1067,7 @@ const EncodeQueue = () => {
 							'video-embed-thumbnail-generator'
 						),
 						thumbs: __(
-							'Generating Thumbnails (FFmpeg)',
+							'Generating Thumbnails',
 							'video-embed-thumbnail-generator'
 						),
 						encoding: __(
@@ -1223,18 +1249,27 @@ const EncodeQueue = () => {
 				>
 					<div className="videopack-bulk-description">
 						{__(
-							'Select the items you would like to generate or queue for all videos in your media library:',
+							'Select the items you would like to generate for all videos in your media library (will not overwrite existing files):',
 							'video-embed-thumbnail-generator'
 						)}
 					</div>
 					<div className="videopack-bulk-options-list">
 						{bulkOptions.map((option) => (
-							<div key={option.id} className="videopack-bulk-option-item">
-								<label className="videopack-bulk-option-label">
+							<div
+								key={option.id}
+								className="videopack-bulk-option-item"
+							>
+								<label
+									className="videopack-bulk-option-label"
+									htmlFor={`bulk-option-${option.id}`}
+								>
 									<input
+										id={`bulk-option-${option.id}`}
 										type="checkbox"
 										checked={!!checkedBulkIds[option.id]}
-										onChange={() => handleToggleBulkOption(option.id)}
+										onChange={() =>
+											handleToggleBulkOption(option.id)
+										}
 									/>
 									<span className="videopack-bulk-option-title">
 										{option.label}
@@ -1251,16 +1286,18 @@ const EncodeQueue = () => {
 							variant="primary"
 							onClick={handleRunSelectedBulk}
 							isBusy={isQueueingBulk}
-							disabled={Object.values(checkedBulkIds).filter(Boolean).length === 0}
+							disabled={
+								Object.values(checkedBulkIds).filter(Boolean)
+									.length === 0
+							}
 						>
 							{__(
-								'Queue Selected Processes',
+								'Generate Selected',
 								'video-embed-thumbnail-generator'
 							)}
 						</Button>
 					</div>
 				</PanelBody>
-
 				<PanelBody
 					title={__(
 						'Queue Utilities',

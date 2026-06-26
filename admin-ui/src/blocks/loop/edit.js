@@ -787,6 +787,8 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				blockClientId || name
 			}-${index}`;
 
+			console.log('[Videopack Debug] renderBlockPreview:', name, 'itemKey:', itemKey);
+
 			// If it's a Videopack block we have in our registry, use the high-perf visual component.
 			if (name.startsWith('videopack/')) {
 				const currentFlags = { ...parentFlags };
@@ -825,6 +827,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 						context={{
 							...previewContext,
 							...currentFlags,
+							'videopack/isPreview': true,
 							'videopack/isInsideThumbnail':
 								currentFlags.isInsideThumbnail,
 							'videopack/isInsidePlayerOverlay':

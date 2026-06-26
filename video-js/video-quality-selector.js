@@ -617,7 +617,7 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				if (controlBar) {
 					controlBar.addChild(resolutionSelector, {}, 11);
 					
-					const has_static = (available_res && available_res.length > 0) || (source_groups && Object.keys(source_groups).length > 1);
+					const has_static = (available_res && available_res.length > 1) || (source_groups && Object.keys(source_groups).length > 1);
 					const has_hls_init = player.qualityLevels && player.qualityLevels().length > 0;
 
 					if (!has_static && !has_hls_init) {
