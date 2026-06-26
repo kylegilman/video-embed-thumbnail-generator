@@ -183,10 +183,11 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			id BIGINT UNSIGNED AUTO_INCREMENT,
 			blog_id BIGINT UNSIGNED NOT NULL DEFAULT 1,
 			attachment_id BIGINT UNSIGNED NULL,
+			parent_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
 			output_attachment_id BIGINT UNSIGNED NULL,
 			input_url VARCHAR(1024) NOT NULL,
 			format_id VARCHAR(100) NOT NULL,
-			status ENUM('queued', 'processing', 'encoding', 'cloud_encoding', 'browser_pending', 'browser_encoding', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled', 'deleted') NOT NULL DEFAULT 'queued',
+			status VARCHAR(50) NOT NULL DEFAULT 'queued',
 			output_path VARCHAR(1024) NULL,
 			output_url VARCHAR(1024) NULL,
 			user_id BIGINT UNSIGNED NULL,
@@ -204,14 +205,13 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			temp_watermark_path VARCHAR(1024) NULL,
 			retry_count TINYINT UNSIGNED NOT NULL DEFAULT 0,
 			encode_options_hash VARCHAR(32) NULL,
-			cloud_job_id VARCHAR(255) NULL,
-			cloud_provider VARCHAR(100) NULL,
-			cloud_meta TEXT NULL,
+			extra_meta TEXT NULL,
 			progress TINYINT UNSIGNED NULL,
 			mailed TINYINT(1) NOT NULL DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY idx_blog_id (blog_id),
 			KEY idx_attachment_id_blog_id (attachment_id, blog_id),
+			KEY idx_parent_id (parent_id),
 			KEY idx_input_url_blog_id (input_url(191), blog_id),
 			KEY idx_format_id (format_id),
 			KEY idx_status_blog_id (status, blog_id),
@@ -416,9 +416,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 						$started_format = $encoder->start_encode( $encode_format_obj ); // This starts FFmpeg and updates $encode_format_obj with PID.
 
-						$is_cloud_job = (bool) $started_format->get_cloud_provider();
+						$started_statuses = apply_filters( 'videopack_started_job_statuses', array( Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_BROWSER_PENDING ), $started_format );
+						$job_status       = $started_format->get_status();
 
-						if ( ( $started_format->get_pid() && $started_format->get_status() === Encode_Format::STATUS_ENCODING ) || ( $is_cloud_job && ( $started_format->get_status() === Encode_Format::STATUS_CLOUD_ENCODING || $started_format->get_status() === Encode_Format::STATUS_ENCODING ) ) || $started_format->get_status() === Encode_Format::STATUS_BROWSER_PENDING ) {
+						if ( ( $started_format->get_pid() && $job_status === Encode_Format::STATUS_ENCODING ) || in_array( $job_status, $started_statuses, true ) ) {
 							$update_data = array(
 								'status' => $started_format->get_status(),
 							);
@@ -431,16 +432,8 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 								$update_data['logfile_path'] = $started_format->get_logfile();
 							}
 
-							if ( $started_format->get_cloud_job_id() ) {
-								$update_data['cloud_job_id'] = $started_format->get_cloud_job_id();
-							}
-
-							if ( $started_format->get_cloud_provider() ) {
-								$update_data['cloud_provider'] = $started_format->get_cloud_provider();
-							}
-
-							if ( ! empty( $started_format->get_cloud_meta() ) ) {
-								$update_data['cloud_meta'] = json_encode( $started_format->get_cloud_meta() );
+							if ( ! empty( $started_format->get_extra_meta() ) ) {
+								$update_data['extra_meta'] = wp_json_encode( $started_format->get_extra_meta() );
 							}
 
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -686,9 +679,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		// 1. Check active encoding jobs to see if they finished.
 		// This ensures that even if ActionScheduler is slow, a heartbeat (like a UI refresh)
 		// will advance the status of finished jobs and free up capacity.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$active_encodes = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE status IN ('processing', 'encoding', 'cloud_encoding')", $this->queue_table_name ), ARRAY_A );
+		$active_statuses     = apply_filters( 'videopack_active_job_statuses', array( 'processing', 'encoding' ) );
+		$status_placeholders = implode( ',', array_fill( 0, count( $active_statuses ), '%s' ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$active_encodes = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE status IN ($status_placeholders)", array_merge( array( $this->queue_table_name ), $active_statuses ) ), ARRAY_A );
 		$status_changed = false;
 
 		if ( ! empty( $active_encodes ) ) {
@@ -696,14 +690,13 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				$job_id                = $job_data['id'];
 				$attachment_identifier = ! empty( $job_data['attachment_id'] ) ? $job_data['attachment_id'] : $job_data['input_url'];
 
-				Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Heartbeat - Processing active job ID: %d | Format: %s | DB Status: %s | Cloud Job ID: %s', $job_id, $job_data['format_id'], $job_data['status'], $job_data['cloud_job_id'] ) );
+				$encoder       = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $job_data['input_url'] );
+				$encode_format = Encode_Format::from_array( $job_data );
 
-				$encoder               = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $job_data['input_url'] );
-				$encode_format         = Encode_Format::from_array( $job_data );
-
-				$progress = null;
-				if ( ! empty( $encode_format->get_cloud_job_id() ) ) {
-					Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d has Cloud Job ID: %s. Firing check action...', $job_id, $encode_format->get_cloud_job_id() ) );
+				$progress      = null;
+				$is_remote_job = apply_filters( 'videopack_is_cloud_job', false, $encode_format );
+				if ( $is_remote_job ) {
+					Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d is a cloud job. Firing check action...', $job_id ) );
 					do_action(
 						/**
 						 * Fires when polling progress/status of a cloud offloaded transcode job.
@@ -727,25 +720,21 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				}
 
 				$status_changed_now = $encode_format->get_status() !== $job_data['status'];
-				$cloud_meta_now     = json_encode( $encode_format->get_cloud_meta() );
-				$cloud_meta_changed = $encode_format->get_cloud_job_id() !== ( $job_data['cloud_job_id'] ?? null )
-					|| $encode_format->get_cloud_provider() !== ( $job_data['cloud_provider'] ?? null )
-					|| $cloud_meta_now !== ( $job_data['cloud_meta'] ?? null );
+				$extra_meta_now     = wp_json_encode( $encode_format->get_extra_meta() );
+				$extra_meta_changed = $extra_meta_now !== ( $job_data['extra_meta'] ?? null );
 
 				$progress_changed = null !== $progress && (int) $progress !== (int) ( $job_data['progress'] ?? -1 );
 
-				Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d check changes | status_changed_now: %d (Format status: %s vs DB: %s) | cloud_meta_changed: %d | progress_changed: %d', $job_id, $status_changed_now, $encode_format->get_status(), $job_data['status'], $cloud_meta_changed, $progress_changed ) );
+				Debug_Logger::log( sprintf( '[Encode_Queue_Controller] Job ID: %d check changes | status_changed_now: %d (Format status: %s vs DB: %s) | extra_meta_changed: %d | progress_changed: %d', $job_id, $status_changed_now, $encode_format->get_status(), $job_data['status'], $extra_meta_changed, $progress_changed ) );
 
-				if ( $status_changed_now || $cloud_meta_changed || $progress_changed ) {
+				if ( $status_changed_now || $extra_meta_changed || $progress_changed ) {
 					$new_status = $encode_format->get_status();
 
 					$update_data = array(
-						'status'         => $new_status,
-						'updated_at'     => current_time( 'mysql', true ),
-						'cloud_job_id'   => $encode_format->get_cloud_job_id(),
-						'cloud_provider' => $encode_format->get_cloud_provider(),
-						'cloud_meta'     => $cloud_meta_now,
-						'progress'       => $progress,
+						'status'     => $new_status,
+						'updated_at' => current_time( 'mysql', true ),
+						'extra_meta' => $extra_meta_now,
+						'progress'   => $progress,
 					);
 
 					if ( Encode_Format::STATUS_NEEDS_INSERT === $new_status ) {
@@ -1375,6 +1364,17 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			$attachment_link = get_edit_post_link( $attachment_id );
 		}
 
+		$parent_id        = (int) $job->get_parent_id();
+		$parent_title     = '';
+		$parent_edit_link = '';
+		if ( $parent_id ) {
+			$parent_post = get_post( $parent_id );
+			if ( $parent_post ) {
+				$parent_title     = $parent_post->post_title;
+				$parent_edit_link = get_edit_post_link( $parent_id );
+			}
+		}
+
 		// Ensure duration is set for progress calculation.
 		if ( ! $video_duration ) {
 			$attachment_key = ! empty( $attachment_id ) ? (string) $attachment_id : $job->get_input_url();
@@ -1409,31 +1409,32 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$format_name   = isset( $video_formats[ $job->get_format_id() ] ) ? $video_formats[ $job->get_format_id() ]->get_short_name() : $job->get_format_id();
 
 		$response = array(
-			'id'              => $job->get_job_id(),
-			'status'          => $status,
-			'status_l10n'     => $job->get_status_label(),
-			'preset'          => $job->get_format_id(),
-			'format_name'     => $format_name,
-			'output_url'      => $job->get_url(),
-			'output_id'       => $job->get_id(), // Attachment ID of the output.
-			'error'           => $job->get_error(),
-			'error_message'   => $job->get_error(),
-			'created_at'      => $job->get_created_at(),
-			'started'         => $job->get_started(),
-			'video_title'     => $video_title,
-			'video_duration'  => $job->get_video_duration(),
-			'user_name'       => $user_name,
-			'blog_name'       => $blog_name,
-			'poster_url'      => $poster_url,
-			'attachment_link' => $attachment_link,
-			'attachment_id'   => $attachment_id,
-			'cloud_job_id'    => $job->get_cloud_job_id(),
-			'cloud_provider'  => $job->get_cloud_provider(),
-			'cloud_meta'      => $job->get_cloud_meta(),
-			'updated_at'      => $job->get_updated_at(),
-			'exists'          => in_array( $status, array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_REMOTE_EXISTS ), true ),
-			'encoding_now'    => in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING ), true ),
-			'deletable'       => ! empty( $job->get_job_id() ),
+			'id'               => $job->get_job_id(),
+			'status'           => $status,
+			'status_l10n'      => $job->get_status_label(),
+			'preset'           => $job->get_format_id(),
+			'format_name'      => $format_name,
+			'output_url'       => $job->get_url(),
+			'output_id'        => $job->get_id(), // Attachment ID of the output.
+			'error'            => $job->get_error(),
+			'error_message'    => $job->get_error(),
+			'created_at'       => $job->get_created_at(),
+			'started'          => $job->get_started(),
+			'video_title'      => $video_title,
+			'video_duration'   => $job->get_video_duration(),
+			'user_name'        => $user_name,
+			'blog_name'        => $blog_name,
+			'poster_url'       => $poster_url,
+			'attachment_link'  => $attachment_link,
+			'attachment_id'    => $attachment_id,
+			'parent_id'        => $parent_id,
+			'parent_title'     => $parent_title,
+			'parent_edit_link' => $parent_edit_link,
+			'extra_meta'       => $job->get_extra_meta(),
+			'updated_at'       => $job->get_updated_at(),
+			'exists'           => in_array( $status, array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_REMOTE_EXISTS ), true ),
+			'encoding_now'     => in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING ), true ),
+			'deletable'        => ! empty( $job->get_job_id() ),
 		);
 
 		if ( in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
@@ -1443,7 +1444,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			}
 		}
 
-		return $response;
+		return apply_filters( 'videopack_queue_job_response', $response, $job );
 	}
 
 	/**
@@ -1654,33 +1655,19 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$parent_id = $video_attachment->post_parent;
 		global $wpdb;
 
-		// Get all unique attachment IDs that have pending jobs.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$incomplete_job_attachment_ids = $wpdb->get_col(
+		$has_sibling_jobs = $wpdb->get_var(
 			$wpdb->prepare(
-				'SELECT DISTINCT attachment_id FROM %i WHERE status IN (%s, %s, %s, %s, %s, %s) AND blog_id = %d AND attachment_id IS NOT NULL',
+				"SELECT id FROM %i WHERE parent_id = %d AND blog_id = %d AND status NOT IN ( 'completed', 'failed', 'canceled', 'deleted' ) LIMIT 1",
 				$this->queue_table_name,
-				Encode_Format::STATUS_QUEUED,
-				Encode_Format::STATUS_PROCESSING,
-				Encode_Format::STATUS_ENCODING,
-				Encode_Format::STATUS_CLOUD_ENCODING,
-				Encode_Format::STATUS_NEEDS_INSERT,
-				Encode_Format::STATUS_PENDING_REPLACEMENT,
+				$parent_id,
 				$blog_id
 			)
 		);
 
-		if ( ! empty( $incomplete_job_attachment_ids ) ) {
-			// Determine if any of these incomplete jobs belong to attachments that share the same parent_id.
-			$ids_string = implode( ',', array_map( 'intval', $incomplete_job_attachment_ids ) );
-
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$has_sibling_jobs = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE ID IN ($ids_string) AND post_parent = %d LIMIT 1", $parent_id ) );
-
-			if ( $has_sibling_jobs ) {
-				// There's still an active job for the same parent post, so don't publish yet.
-				return;
-			}
+		if ( $has_sibling_jobs ) {
+			// There's still an active job for the same parent post, so don't publish yet.
+			return;
 		}
 
 		// All jobs for all attachments on this parent post have completed.

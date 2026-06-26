@@ -173,6 +173,10 @@
 		align-items: center;
 		gap: 8px;
 		flex-wrap: wrap;
+
+		button.is-secondary {
+			margin-bottom: 0;
+		}
 	}
 
 	button.components-button.videopack-use-this-frame.is-secondary {

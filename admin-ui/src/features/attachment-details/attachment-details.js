@@ -264,6 +264,3 @@ function initVideopackMediaExtension(attempts = 0) {
 
 // Start the extension initialization.
 initVideopackMediaExtension();
-
-// --- Auto-Generation Logic ---
-// Moved to Videopack Pro.

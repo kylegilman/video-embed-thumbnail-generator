@@ -154,8 +154,7 @@
   backdrop-filter: none;
   opacity: 1;
   color: inherit;
-  -moz-appearance: none;
-       appearance: none;
+  appearance: none;
   -webkit-appearance: none;
   font-family: inherit;
   font-size: inherit;
@@ -367,7 +366,6 @@
   position: absolute;
   z-index: 100;
   pointer-events: none;
-  width: -moz-max-content;
   width: max-content;
   min-width: 0;
   white-space: nowrap;
@@ -462,7 +460,6 @@
   list-style: none;
   margin-block: 0;
   padding: 2px 0;
-  width: -moz-max-content;
   width: max-content;
   min-width: 0;
   z-index: 110;

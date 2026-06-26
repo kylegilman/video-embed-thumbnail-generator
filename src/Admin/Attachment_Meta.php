@@ -139,7 +139,7 @@ class Attachment_Meta implements Hook_Subscriber {
 	 * @return array Default meta values.
 	 */
 	public function get_defaults() {
-				/**
+		/**
 		 * Filters the default metadata values assigned to a new video attachment.
 		 *
 		 * Use this filter to inject additional custom metadata keys and default values
@@ -219,7 +219,6 @@ class Attachment_Meta implements Hook_Subscriber {
 				'watermark_url'               => (string) ( $this->options['watermark_url'] ?? '' ),
 				'ffmpeg_watermark_url'        => null,
 				'is_remote'                   => false,
-				'cloud'                       => null,
 				'legacy_dimensions'           => null,
 				'title_color'                 => null,
 				'title_background_color'      => null,
@@ -420,10 +419,6 @@ class Attachment_Meta implements Hook_Subscriber {
 		 * @param int   $attachment_id The attachment ID.
 		 */
 		$meta_data = (array) apply_filters( 'videopack_attachment_meta', $meta_data, (int) $this->post_id );
-
-		if ( ! empty( $meta_data['cloud']['url'] ) ) {
-			$meta_data['url'] = $meta_data['cloud']['url'];
-		}
 
 		self::$getting_meta                       = false;
 		self::$meta_cache[ (int) $this->post_id ] = $meta_data;
@@ -844,15 +839,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'play_25'                     => array( 'type' => array( 'string', 'number' ) ),
 			'play_50'                     => array( 'type' => array( 'string', 'number' ) ),
 			'play_75'                     => array( 'type' => array( 'string', 'number' ) ),
-			'cloud'                       => array(
-				'type'       => 'object',
-				'properties' => array(
-					'file_name'   => array( 'type' => 'string' ),
-					'bucket'      => array( 'type' => 'string' ),
-					'url'         => array( 'type' => 'string' ),
-					'permissions' => array( 'type' => 'string' ),
-				),
-			),
+
 			'poster'                      => array(
 				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',

@@ -308,7 +308,9 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 									isInsidePlayerContainer={true}
 								/>
 							)}
-							{!!(attributes.embeddable && attributes.embedcode) && (
+							{!!(
+								attributes.embeddable && attributes.embedcode
+							) && (
 								<BlockPreview
 									name="videopack/share"
 									attributes={TITLE_SHARE_BLOCK_ATTRS}

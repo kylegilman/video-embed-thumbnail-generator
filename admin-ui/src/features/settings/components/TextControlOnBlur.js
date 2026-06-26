@@ -1,6 +1,5 @@
 import { TextControl } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 
 const TextControlOnBlur = ({ value, onChange, ...props }) => {
 	const [innerValue, setInnerValue] = useState(value);
@@ -14,22 +13,9 @@ const TextControlOnBlur = ({ value, onChange, ...props }) => {
 	};
 
 	const handleOnBlur = (event) => {
-		console.log(
-			'TextControlOnBlur: blurred, calling onChange with:',
-			innerValue
-		);
 		onChange(innerValue);
 		if (props.onBlur) {
 			props.onBlur(event);
-		}
-	};
-
-	const handleOnFocus = (event) => {
-		if (innerValue === __('No limit', 'video-embed-thumbnail-generator')) {
-			setInnerValue('');
-		}
-		if (props.onFocus) {
-			props.onFocus(event);
 		}
 	};
 
@@ -39,7 +25,7 @@ const TextControlOnBlur = ({ value, onChange, ...props }) => {
 			value={innerValue}
 			onChange={handleOnChange}
 			onBlur={handleOnBlur}
-			onFocus={handleOnFocus}
+			type="search"
 		/>
 	);
 };

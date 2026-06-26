@@ -4,11 +4,12 @@
 	font-size: small;
 }
 
-.videopack-hidden {
-	display: none !important;
-}
-
 .wrap.videopack-settings {
+	.components-notice {
+		margin-top: 15px;
+		margin-bottom: 15px;
+	}
+
 	h1 {
 		margin-bottom: 20px;
 		display: flex;
@@ -66,7 +67,7 @@
 	}
 
 	.videopack-library-button {
-		margin-left: 20px;
+		margin-left: 9px;
 		vertical-align: text-bottom;
 
 		&.no-vertical-align {
@@ -213,11 +214,24 @@
 
 		.videopack-library-button-wrapper {
 			display: inline-flex;
-			align-items: center;
+			align-items: flex-end;
 
 			.videopack-tooltip-trigger {
 				margin-left: 5px;
 			}
+		}
+	}
+
+	.videopack-select-from-library-preview {
+		display: flex;
+		align-items: center;
+		margin-left: 15px;
+
+		img {
+			max-width: 100px;
+			max-height: 100px;
+			border-radius: 4px;
+			border: 1px solid colors.$gray-400;
 		}
 	}
 

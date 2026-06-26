@@ -1,5 +1,4 @@
 @use "@wordpress/base-styles/colors";
-@use "@wordpress/base-styles/colors.native" as native;
 
 .videopack-formats-container {
 	width: 100%;
@@ -30,7 +29,7 @@
 		padding: 10px;
 		border: 1px solid colors.$gray-300;
 		border-radius: 4px;
-		background: native.$gray-0;
+		background: colors.$white;
 
 		ul {
 			list-style: none;

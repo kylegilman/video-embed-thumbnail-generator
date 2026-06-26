@@ -271,13 +271,13 @@ const Thumbnails = ({
 			active_encoder,
 			options
 		);
-		const activeEncoderIsCloud =
+		const isExternalEncoder =
 			active_encoder !== 'ffmpeg' && activeEncoderReady;
 
 		if (
 			!browserThumbnailsEnabled &&
 			rawFfmpegExists &&
-			!activeEncoderIsCloud
+			!isExternalEncoder
 		) {
 			try {
 				const activeId = id || 0;

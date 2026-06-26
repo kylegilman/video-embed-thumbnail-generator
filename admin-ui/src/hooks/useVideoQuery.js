@@ -200,7 +200,7 @@ export default function useVideoQuery(inputAttributes, previewPostId) {
 		attributes.prioritizePostData,
 		isSaving,
 		isAutosaving,
-		inputAttributes,
+		!!inputAttributes,
 	]);
 
 	const categories = useSelect((select) => {

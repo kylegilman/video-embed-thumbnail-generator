@@ -96,7 +96,7 @@ export default function CollectionInspectorControls({
 	);
 
 	return (
-		<>
+		<div className="videopack-inspector-controls">
 			<PanelBody
 				title={__('Layout Settings', 'video-embed-thumbnail-generator')}
 			>
@@ -128,7 +128,7 @@ export default function CollectionInspectorControls({
 								'video-embed-thumbnail-generator'
 							),
 							value: 'grid',
-						},
+							},
 						{
 							label: __(
 								'List',
@@ -163,6 +163,6 @@ export default function CollectionInspectorControls({
 				showSkinSettings={showSkinSettings}
 				hasPaginationBlock={hasPaginationBlock}
 			/>
-		</>
+		</div>
 	);
 }

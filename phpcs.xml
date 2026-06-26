@@ -11,7 +11,7 @@
 	<exclude-pattern>*/tmp/*</exclude-pattern>
 
 	<rule ref="PHPCompatibility" />
-	<config name="testVersion" value="7.2-"/>
+	<config name="testVersion" value="7.3-"/>
 
 	<rule ref="WordPress"/>
     <config name="minimum_wp_version" value="6.2"/>

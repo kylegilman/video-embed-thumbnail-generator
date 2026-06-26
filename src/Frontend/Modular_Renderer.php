@@ -757,6 +757,7 @@ class Modular_Renderer {
 				'data-alt_link="' . esc_url( $source->get_download_url() ) . '"',
 				'title="' . esc_attr__( 'Download Video', 'video-embed-thumbnail-generator' ) . '"',
 			);
+			$link_attributes = apply_filters( 'videopack_download_link_attributes', $link_attributes, $source );
 			$html           .= '<a ' . implode( ' ', $link_attributes ) . '>' . "\n";
 			$html           .= $trigger_inner;
 			$html           .= '</a>' . "\n";
@@ -1260,7 +1261,41 @@ class Modular_Renderer {
 			// Auto-assembly logic for standalone players/legacy shortcodes.
 
 			// Video Title / Social Bar.
-			$title_atts      = array_merge( $atts, array( 'isOverlay' => true ) );
+			$title_inner_content = '';
+			if ( ! empty( $atts['downloadlink'] ) || ! empty( $options['downloadlink'] ) ) {
+				$title_inner_content .= self::render_download(
+					array(
+						'icon'              => true,
+						'text'              => false,
+						'styleType'         => 'text',
+						'downloadMode'      => 'direct',
+						'isInsideTitleMeta' => true,
+					),
+					$source,
+					$options
+				);
+			}
+			if ( ! empty( $atts['embedcode'] ) || ! empty( $options['embedcode'] ) ) {
+				$title_inner_content .= self::render_share(
+					array(
+						'iconType'          => 'share',
+						'showText'          => false,
+						'styleType'         => 'text',
+						'isInsideTitleMeta' => true,
+					),
+					$source,
+					$player->get_id(),
+					$options
+				);
+			}
+
+			$title_atts = array_merge(
+				$atts,
+				array(
+					'isOverlay'     => true,
+					'inner_content' => $title_inner_content,
+				)
+			);
 			$player_content .= self::render_video_title( $title_atts, $source, $player->get_id() );
 
 			// Watermark.

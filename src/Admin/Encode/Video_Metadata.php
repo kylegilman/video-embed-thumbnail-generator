@@ -192,7 +192,7 @@ class Video_Metadata {
 
 		$result = null;
 
-		$get_info = new FFmpeg_process(
+		$get_info = new FFmpeg_Process(
 			array(
 				$this->ffmpeg_path,
 				'-i',

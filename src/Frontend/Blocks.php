@@ -792,7 +792,7 @@ class Blocks implements Hook_Subscriber {
 		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
 		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
 
-		return Modular_Renderer::render_download(
+		$html = Modular_Renderer::render_download(
 			array_merge(
 				$merged_attributes,
 				array(
@@ -807,6 +807,8 @@ class Blocks implements Hook_Subscriber {
 			$this->options,
 			$this->format_registry
 		);
+
+		return apply_filters( 'videopack_render_download', $html, $post_id, $attributes, $block );
 	}
 
 	/**
@@ -836,7 +838,7 @@ class Blocks implements Hook_Subscriber {
 		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
 		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
 
-		return Modular_Renderer::render_share(
+		$html = Modular_Renderer::render_share(
 			array_merge(
 				$merged_attributes,
 				array(
@@ -852,6 +854,8 @@ class Blocks implements Hook_Subscriber {
 			(string) ( $block->context['videopack/instanceId'] ?? ( $block->context['videopack/postId'] ?? $post_id ) ),
 			$this->options
 		);
+
+		return apply_filters( 'videopack_render_share', $html, $post_id, $attributes, $block );
 	}
 
 	/**

@@ -7,7 +7,6 @@ import {
 	RangeControl,
 	TextControl,
 	ToggleControl,
-	ExternalLink,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
 import { startBatchProcess, getBatchProgress } from '../../../api/media';
@@ -48,6 +47,12 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 		ffmpeg_exists === 'true' ||
 		ffmpeg_exists === 1 ||
 		ffmpeg_exists === '1';
+
+	const browserThumbnailsRequirement = applyFilters(
+		'videopack.settings.browserThumbnailsRequirement',
+		{ force: false, help: null },
+		config
+	);
 
 	const featuredBatch = useBatchProcess();
 	const parentsBatch = useBatchProcess();
@@ -234,40 +239,14 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							value={browser_thumbnails}
 							checked={
 								!!browser_thumbnails ||
-								(!!config.cloud_enabled &&
-									!(
-										config.raw_ffmpeg_exists === true ||
-										config.raw_ffmpeg_exists === 'true' ||
-										config.raw_ffmpeg_exists === 1 ||
-										config.raw_ffmpeg_exists === '1'
-									))
+								!!browserThumbnailsRequirement.force
 							}
 							onChange={changeHandlerFactory.browser_thumbnails}
-							disabled={
-								!!config.cloud_enabled &&
-								!(
-									config.raw_ffmpeg_exists === true ||
-									config.raw_ffmpeg_exists === 'true' ||
-									config.raw_ffmpeg_exists === 1 ||
-									config.raw_ffmpeg_exists === '1'
-								)
-							}
-							help={
-								!!config.cloud_enabled &&
-								!(
-									config.raw_ffmpeg_exists === true ||
-									config.raw_ffmpeg_exists === 'true' ||
-									config.raw_ffmpeg_exists === 1 ||
-									config.raw_ffmpeg_exists === '1'
-								)
-									? __(
-											'In-browser thumbnail generation is required when using cloud encoding without FFmpeg installed on your server.'
-										)
-									: null
-							}
+							disabled={!!browserThumbnailsRequirement.force}
+							help={browserThumbnailsRequirement.help}
 						/>
 					)}
-					{!!effectiveFfmpegExists ? (
+					{!!effectiveFfmpegExists && (
 						<>
 							<div className="videopack-setting-extra-margin">
 								<span className="videopack-settings-label">
@@ -330,21 +309,6 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 								}
 							)}
 						</>
-					) : (
-						<div className="videopack-setting-extra-margin">
-							<p className="description" style={{ marginTop: 0 }}>
-								{__(
-									'Automatic thumbnail generation requires FFmpeg or Videopack Pro.',
-									'video-embed-thumbnail-generator'
-								)}{' '}
-								<ExternalLink href="https://www.videopack.video/pro/">
-									{__(
-										'Upgrade to Pro',
-										'video-embed-thumbnail-generator'
-									)}
-								</ExternalLink>
-							</p>
-						</div>
 					)}
 				</PanelBody>
 				<PanelBody

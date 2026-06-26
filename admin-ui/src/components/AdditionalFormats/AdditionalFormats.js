@@ -159,19 +159,20 @@ const AdditionalFormats = ({
 
 					// Carry over UI-only 'checked' state or initialize it.
 					// If the status is one where encoding is already done or in progress, uncheck it.
-					const isBusyOrDone = [
-						'queued',
-						'encoding',
-						'processing',
-						'completed',
-						'needs_insert',
-						'pending_replacement',
-						'remote_exists',
-						'browser_pending',
-						'browser_encoding',
-						'cloud_encoding',
-						'offloading',
-					].includes(newFormat.status);
+					const isBusyOrDone = applyFilters(
+						'videopack.busyOrDoneStatuses',
+						[
+							'queued',
+							'encoding',
+							'processing',
+							'completed',
+							'needs_insert',
+							'pending_replacement',
+							'remote_exists',
+							'browser_pending',
+							'browser_encoding',
+						]
+					).includes(newFormat.status);
 
 					newFormat.checked =
 						oldFormat && !isBusyOrDone
@@ -443,7 +444,7 @@ const AdditionalFormats = ({
 			.filter(
 				([, value]) =>
 					value.checked &&
-					![
+					!applyFilters('videopack.nonQueueableStatuses', [
 						'queued',
 						'encoding',
 						'processing',
@@ -451,9 +452,7 @@ const AdditionalFormats = ({
 						'needs_insert',
 						'pending_replacement',
 						'remote_exists',
-						'cloud_encoding',
-						'offloading',
-					].includes(value.status) &&
+					]).includes(value.status) &&
 					!value.exists
 			)
 			.reduce((acc, [formatId]) => {
