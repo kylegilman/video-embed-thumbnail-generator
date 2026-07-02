@@ -102,11 +102,7 @@ class Modular_Renderer {
 		wp_enqueue_style( 'videopack-core' );
 		wp_enqueue_script( 'videopack-core' );
 		$is_modular_engine = ! empty( $atts['is_modular_engine'] );
-		$exclude_hover     = ! empty( $atts['exclude_hover_trigger'] );
 		$classes           = array( 'videopack-wrapper' );
-		if ( ! $exclude_hover ) {
-			$classes[] = 'videopack-hover-trigger';
-		}
 
 		if ( $is_block ) {
 			$classes[] = 'videopack-video-block-container';
@@ -120,6 +116,8 @@ class Modular_Renderer {
 		if ( $embed_method ) {
 			$classes[] = 'videopack-embed-' . sanitize_title( (string) $embed_method );
 		}
+
+		$classes = (array) apply_filters( 'videopack_video_container_classes', $classes, $atts );
 
 		// Title visibility is now managed by the title/meta bars themselves.
 
@@ -700,7 +698,7 @@ class Modular_Renderer {
 
 		$is_inside_title_meta = ! empty( $atts['isInsideTitleMeta'] );
 		$is_overlay           = ( ! empty( $atts['isOverlay'] ) || ! empty( $atts['isInsideThumbnail'] ) || ! empty( $atts['isInsidePlayerOverlay'] ) ) && ! $is_inside_title_meta;
-		$position             = $atts['position'] ?? 'bottom';
+		$position             = $atts['position'] ?? 'top';
 		$text_align           = $atts['textAlign'] ?? 'left';
 
 		$show_icon  = $atts['icon'] ?? true;

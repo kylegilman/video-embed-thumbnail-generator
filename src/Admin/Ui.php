@@ -219,7 +219,6 @@ class Ui implements Hook_Subscriber {
 			'source_groups'               => array( 'type' => 'object' ),
 			'collectionId'                => array( 'type' => 'string' ),
 			'instanceId'                  => array( 'type' => 'string' ),
-			'hover_effect'                => array( 'type' => 'string' ),
 			'watermark'                   => array( 'type' => 'string' ),
 			'watermark_styles'            => array( 'type' => 'object' ),
 			'watermark_link_to'           => array( 'type' => 'string' ),

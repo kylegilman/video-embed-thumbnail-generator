@@ -3,6 +3,7 @@
  */
 
 import { __ } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 import {
 	saveNetworkSettings,
 	getNetworkSettings,
@@ -209,7 +210,10 @@ const NetworkSettingsPage = () => {
 				),
 			};
 
-			return labels[capabilityKey] || capitalizeFirstLetter(capabilityKey.replace(/_/g, ' '));
+			return (
+				labels[capabilityKey] ||
+				capitalizeFirstLetter(capabilityKey.replace(/_/g, ' '))
+			);
 		};
 
 		return (
@@ -225,33 +229,42 @@ const NetworkSettingsPage = () => {
 					gap={20}
 					className="videopack-setting-capabilities"
 				>
-					{Object.entries(settings.default_capabilities).map(([capabilityKey, roles]) => {
-						if (capabilityKey === 'view_full_length_video' && !settings.restrict_playback_by_capability) {
-							return null;
+					{Object.entries(settings.default_capabilities).map(
+						([capabilityKey, roles]) => {
+							if (
+								capabilityKey === 'view_full_length_video' &&
+								!settings.restrict_playback_by_capability
+							) {
+								return null;
+							}
+							return (
+								<FlexItem key={capabilityKey}>
+									<p className="videopack-settings-label">
+										{getCapabilityLabel(capabilityKey)}
+									</p>
+									{Object.entries(roles).map(
+										([roleKey, isEnabled]) => (
+											<CheckboxControl
+												__nextHasNoMarginBottom
+												key={`${roleKey}-${capabilityKey}`}
+												label={capitalizeFirstLetter(
+													roleKey
+												)}
+												checked={isEnabled}
+												onChange={(isChecked) =>
+													handleCapabilityChange(
+														roleKey,
+														capabilityKey,
+														isChecked
+													)
+												}
+											/>
+										)
+									)}
+								</FlexItem>
+							);
 						}
-						return (
-							<FlexItem key={capabilityKey}>
-								<p className="videopack-settings-label">
-									{getCapabilityLabel(capabilityKey)}
-								</p>
-								{Object.entries(roles).map(([roleKey, isEnabled]) => (
-									<CheckboxControl
-										__nextHasNoMarginBottom
-										key={`${roleKey}-${capabilityKey}`}
-										label={capitalizeFirstLetter(roleKey)}
-										checked={isEnabled}
-										onChange={(isChecked) =>
-											handleCapabilityChange(
-												roleKey,
-												capabilityKey,
-												isChecked
-											)
-										}
-									/>
-								))}
-							</FlexItem>
-						);
-					})}
+					)}
 				</Flex>
 			</PanelBody>
 		);
@@ -392,6 +405,12 @@ const NetworkSettingsPage = () => {
 					</div>
 				</PanelBody>
 				{settings.default_capabilities && <RolesCheckboxes />}
+				{applyFilters(
+					'videopack.settings.network.panels',
+					[],
+					settings,
+					changeHandlerFactory
+				)}
 				<PanelRow>
 					<Button
 						variant="primary"
