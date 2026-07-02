@@ -6,7 +6,7 @@
 	"category": "media",
 	"icon": "format-image",
 	"editorStyle": "file:./index.css",
-	"description": "Displays the video poster image. Can contain the play button and duration overlays.",
+	"description": "Displays the video poster image. Can contain overlays.",
 	"attributes": {
 		"linkTo": {
 			"type": "string",

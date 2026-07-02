@@ -347,7 +347,9 @@ const VideoPlayer = ({
 
 	const genericPlayerOptions = useMemo(() => {
 		const config = window.videopack_config || {};
-		const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
+		const resolvedCrossorigin = config.with_credentials
+			? 'use-credentials'
+			: crossorigin;
 		return {
 			poster,
 			loop,
@@ -401,7 +403,9 @@ const VideoPlayer = ({
 		}
 
 		const config = window.videopack_config || {};
-		const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
+		const resolvedCrossorigin = config.with_credentials
+			? 'use-credentials'
+			: crossorigin;
 
 		const options = {
 			autoplay: actualAutoplay,

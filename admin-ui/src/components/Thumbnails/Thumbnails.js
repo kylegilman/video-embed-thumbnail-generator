@@ -106,11 +106,9 @@ const Thumbnails = ({
 					(job) =>
 						(job.format_id === 'thumbnail' ||
 							job.format_id === 'thumbnail_sprite') &&
-						[
-							'queued',
-							'processing',
-							'encoding',
-						].includes(job.status)
+						['queued', 'processing', 'encoding'].includes(
+							job.status
+						)
 				);
 				setActiveJobs(activeThumbnailJobs);
 
@@ -231,8 +229,6 @@ const Thumbnails = ({
 					featured
 				);
 
-
-
 				if (response?.attachment_id && workingId === 0) {
 					workingId = parseInt(response.attachment_id, 10) || 0;
 					setAttributes({
@@ -265,12 +261,6 @@ const Thumbnails = ({
 		const rawFfmpegExists =
 			!!videopack_config.ffmpeg_exists &&
 			videopack_config.ffmpeg_exists !== 'notinstalled';
-		const activeEncoderReady = applyFilters(
-			'videopack.encoder.is_ready',
-			!!videopack_config.isTranscodingServiceReady,
-			active_encoder,
-			options
-		);
 		const isExternalEncoder =
 			active_encoder !== 'ffmpeg' && activeEncoderReady;
 
@@ -465,8 +455,6 @@ const Thumbnails = ({
 					forceFeatured !== null ? forceFeatured : featured,
 					time
 				);
-
-
 
 				const data = await response.json();
 				return data;
@@ -706,7 +694,9 @@ const Thumbnails = ({
 		new_attachment_id
 	) => {
 		try {
-			const cleanPoster = new_poster ? new_poster.replace(/&amp;/g, '&') : '';
+			const cleanPoster = new_poster
+				? new_poster.replace(/&amp;/g, '&')
+				: '';
 			const existingMeta =
 				videoData?.record?.meta?.['_videopack-meta'] || {};
 
@@ -967,7 +957,11 @@ const Thumbnails = ({
 				{resolvedPoster && (
 					<img
 						className="videopack-current-thumbnail"
-						src={resolvedPoster ? resolvedPoster.replace(/&amp;/g, '&') : ''}
+						src={
+							resolvedPoster
+								? resolvedPoster.replace(/&amp;/g, '&')
+								: ''
+						}
 						alt={__(
 							'Current Thumbnail',
 							'video-embed-thumbnail-generator'
@@ -1085,21 +1079,17 @@ const Thumbnails = ({
 						>
 							{__('Random', 'video-embed-thumbnail-generator')}
 						</Button>
-						{applyFilters(
-							'videopack.thumbnail.actions',
-							null,
-							{
-								id,
-								isSaving,
-								isProbing,
-								ffmpegExists,
-								existingSprite,
-								isDeleting,
-								handleGenerateSprite,
-								setIsConfirmDeleteOpen,
-								canvasTainted,
-							}
-						)}
+						{applyFilters('videopack.thumbnail.actions', null, {
+							id,
+							isSaving,
+							isProbing,
+							ffmpegExists,
+							existingSprite,
+							isDeleting,
+							handleGenerateSprite,
+							setIsConfirmDeleteOpen,
+							canvasTainted,
+						})}
 					</div>
 				</div>
 				{spriteMessage && (

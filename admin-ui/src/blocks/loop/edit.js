@@ -787,7 +787,12 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				blockClientId || name
 			}-${index}`;
 
-			console.log('[Videopack Debug] renderBlockPreview:', name, 'itemKey:', itemKey);
+			console.log(
+				'[Videopack Debug] renderBlockPreview:',
+				name,
+				'itemKey:',
+				itemKey
+			);
 
 			// If it's a Videopack block we have in our registry, use the high-perf visual component.
 			if (name.startsWith('videopack/')) {

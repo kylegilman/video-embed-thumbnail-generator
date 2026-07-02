@@ -3720,7 +3720,6 @@ const Thumbnails = ({
     setSpriteTiles([]);
     const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
     const rawFfmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
-    const activeEncoderReady = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.encoder.is_ready', !!videopack_config.isTranscodingServiceReady, active_encoder, options);
     const isExternalEncoder = active_encoder !== 'ffmpeg' && activeEncoderReady;
     if (!browserThumbnailsEnabled && rawFfmpegExists && !isExternalEncoder) {
       try {
