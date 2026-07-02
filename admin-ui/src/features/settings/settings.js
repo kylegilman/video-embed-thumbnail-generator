@@ -104,12 +104,12 @@ const VideopackSettingsPage = () => {
 				console.error(error);
 			});
 
-		const handlePopState = () => {
-			setActiveTab(window.location.hash.substring(1));
+		const handleHashChange = () => {
+			setActiveTab(window.location.hash.substring(1) || 'player');
 		};
-		window.addEventListener('popstate', handlePopState);
+		window.addEventListener('hashchange', handleHashChange);
 		return () => {
-			window.removeEventListener('popstate', handlePopState);
+			window.removeEventListener('hashchange', handleHashChange);
 		};
 	}, []);
 
@@ -289,6 +289,7 @@ const VideopackSettingsPage = () => {
 			</h1>
 			<Panel>
 				<TabPanel
+					key={activeTab}
 					tabs={tabs}
 					initialTabName={activeTab}
 					onSelect={onTabSelect}

@@ -5,7 +5,7 @@
 	"title": "Videopack Video Share",
 	"category": "media",
 	"icon": "share",
-	"description": "Displays a share/embed toggle link or button for the video.",
+	"description": "Displays a share/embed link or button for the video.",
 	"parent": [
 		"videopack/title",
 		"videopack/player-container",

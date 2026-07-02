@@ -118,6 +118,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 		function videopack_fs_loaded() {
 			// Add Freemius customizations after Freemius is loaded.
 			if ( function_exists( 'videopack_fs' ) ) {
+				videopack_fs()->override_i18n(
+					array(
+						'yee-haw' => 'Great',
+						'w00t'    => 'Great',
+					)
+				);
 				videopack_fs()->add_filter(
 					'hide_account_tabs',
 					function () {

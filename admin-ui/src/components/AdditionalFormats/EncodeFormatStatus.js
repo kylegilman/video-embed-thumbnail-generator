@@ -112,20 +112,17 @@ const EncodeFormatStatus = ({
 		}
 		return (
 			(data.exists && data.status !== 'error') ||
-			applyFilters(
-				'videopack.busyOrDoneStatuses',
-				[
-					'queued',
-					'encoding',
-					'processing',
-					'completed',
-					'needs_insert',
-					'pending_replacement',
-					'remote_exists',
-					'browser_pending',
-					'browser_encoding',
-				]
-			).includes(data.status)
+			applyFilters('videopack.busyOrDoneStatuses', [
+				'queued',
+				'encoding',
+				'processing',
+				'completed',
+				'needs_insert',
+				'pending_replacement',
+				'remote_exists',
+				'browser_pending',
+				'browser_encoding',
+			]).includes(data.status)
 		);
 	};
 

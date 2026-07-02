@@ -50,7 +50,8 @@
 	}
 	
 	// Align to center
-	&.position-center { 
+	&.position-center,
+	&.position-middle { 
 		top: 50%; 
 		bottom: auto;
 		transform: translateY(-50%);

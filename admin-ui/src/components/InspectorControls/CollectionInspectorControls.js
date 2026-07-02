@@ -128,7 +128,7 @@ export default function CollectionInspectorControls({
 								'video-embed-thumbnail-generator'
 							),
 							value: 'grid',
-							},
+						},
 						{
 							label: __(
 								'List',

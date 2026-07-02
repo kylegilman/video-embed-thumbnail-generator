@@ -7,7 +7,15 @@ import AdditionalFormats from '../../components/AdditionalFormats/AdditionalForm
 /**
  * Shared component to display inspector panels for Videopack video blocks.
  *
- * @param {Object} props Component props.
+ * @param {Object}   props                 Component props.
+ * @param {Object}   props.attributes      Block attributes.
+ * @param {Function} props.setAttributes   Function to update block attributes.
+ * @param {Object}   props.options         Global Videopack options.
+ * @param {boolean}  props.isProbing       Whether the video is currently being probed.
+ * @param {Object}   props.probedMetadata  Metadata from video probing.
+ * @param {string}   props.fallbackTitle   Fallback title.
+ * @param {string}   props.fallbackCaption Fallback caption.
+ * @param {boolean}  props.isDiscovering   Whether formats are being discovered.
  * @return {Object} The rendered component.
  */
 export default function VideopackInspectorPanels({
@@ -79,20 +87,20 @@ export default function VideopackInspectorPanels({
 				isProbing={isProbing}
 				probedMetadata={probedMetadata}
 			/>
-			{(window.videopackAttachmentDetailsExtensionsBelowThumbnails || []).map(
-				(Extension, idx) => (
-					<Extension
-						key={`ext-bottom-${idx}`}
-						attachmentId={effectiveId}
-						model={null}
-						attributes={attributes}
-						setAttributes={setAttributes}
-						options={options}
-						record={record}
-						setRecord={setRecord}
-					/>
-				)
-			)}
+			{(
+				window.videopackAttachmentDetailsExtensionsBelowThumbnails || []
+			).map((Extension, idx) => (
+				<Extension
+					key={`ext-bottom-${idx}`}
+					attachmentId={effectiveId}
+					model={null}
+					attributes={attributes}
+					setAttributes={setAttributes}
+					options={options}
+					record={record}
+					setRecord={setRecord}
+				/>
+			))}
 			<VideoSettings
 				setAttributes={setAttributes}
 				attributes={attributes}

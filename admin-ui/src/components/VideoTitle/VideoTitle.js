@@ -169,16 +169,17 @@ export default function VideoTitle({
 									: {}),
 							}}
 						>
-							{children || (vpContext.resolved.isPreview ? null : (
-								<InnerBlocks
-									allowedBlocks={[
-										'videopack/download',
-										'videopack/share',
-									]}
-									template={[]}
-									templateLock={false}
-								/>
-							))}
+							{children ||
+								(vpContext.resolved.isPreview ? null : (
+									<InnerBlocks
+										allowedBlocks={[
+											'videopack/download',
+											'videopack/share',
+										]}
+										template={[]}
+										templateLock={false}
+									/>
+								))}
 						</VideopackContextBridge>
 					</div>
 				)}

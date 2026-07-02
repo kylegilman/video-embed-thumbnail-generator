@@ -308,20 +308,21 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 					isProbing={isProbing}
 					probedMetadata={effectiveMetadata}
 				/>
-				{(window.videopackAttachmentDetailsExtensionsBelowThumbnails || []).map(
-					(Extension, idx) => (
-						<Extension
-							key={`below-${idx}`}
-							attachmentId={attachmentId}
-							model={model}
-							attributes={attributes}
-							setAttributes={mergeAttributes}
-							options={options}
-							record={record}
-							setRecord={setRecord}
-						/>
-					)
-				)}
+				{(
+					window.videopackAttachmentDetailsExtensionsBelowThumbnails ||
+					[]
+				).map((Extension, idx) => (
+					<Extension
+						key={`below-${idx}`}
+						attachmentId={attachmentId}
+						model={model}
+						attributes={attributes}
+						setAttributes={mergeAttributes}
+						options={options}
+						record={record}
+						setRecord={setRecord}
+					/>
+				))}
 				<VideoSettings
 					setAttributes={handleSettingChange}
 					attributes={attributes}
