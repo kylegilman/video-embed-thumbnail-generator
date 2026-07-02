@@ -866,21 +866,26 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$encoding_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE status IN ('processing', 'encoding')", $this->queue_table_name ) );
 		$capacity       = (int) ( $this->options['simultaneous_encodes'] ?? 1 );
 
-		if ( $encoding_count >= $capacity ) {
-			return; // Max concurrent encodes reached.
-		}
-
-		$needed = $capacity - $encoding_count;
-
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$next_jobs = $wpdb->get_results(
-			$wpdb->prepare( 'SELECT id FROM %i WHERE status = %s ORDER BY created_at ASC LIMIT %d', $this->queue_table_name, Encode_Format::STATUS_QUEUED, $needed ),
+			$wpdb->prepare( 'SELECT * FROM %i WHERE status = %s ORDER BY created_at ASC LIMIT 50', $this->queue_table_name, Encode_Format::STATUS_QUEUED ),
 			ARRAY_A
 		);
 
 		if ( ! empty( $next_jobs ) ) {
+			$local_jobs_started = 0;
 			foreach ( $next_jobs as $job_row ) {
-				$job_id = $job_row['id'];
+				$job_id        = $job_row['id'];
+				$encode_format = Encode_Format::from_array( $job_row );
+				$is_remote_job = apply_filters( 'videopack_is_cloud_job', false, $encode_format );
+
+				if ( ! $is_remote_job ) {
+					if ( ( $encoding_count + $local_jobs_started ) >= $capacity ) {
+						continue; // Skip this local job due to max concurrent encodes limit.
+					}
+					$local_jobs_started++;
+				}
+
 				// Schedule to handle this specific job.
 				$existing_actions = as_get_scheduled_actions(
 					array(
