@@ -140,16 +140,19 @@ class Multisite implements Hook_Subscriber {
 	 * @return array Default network settings.
 	 */
 	public function get_default_network_settings_structure() {
-		return array(
-			'app_path'                        => (string) ( $this->default_options['app_path'] ?? '' ),
-			'ffmpeg_exists'                   => $this->default_options['ffmpeg_exists'] ?? 'notchecked',
-			'simultaneous_encodes'            => (int) ( $this->default_options['simultaneous_encodes'] ?? 1 ),
-			'threads'                         => (int) ( $this->default_options['threads'] ?? 1 ),
-			'nice'                            => (bool) ( $this->default_options['nice'] ?? true ),
-			'default_capabilities'            => (array) ( $this->default_options['capabilities'] ?? array() ),
-			'superadmin_only_ffmpeg_settings' => false,
-			'network_error_email'             => (string) ( $this->default_options['error_email'] ?? '' ),
-			'queue_control'                   => (string) ( $this->default_options['queue_control'] ?? 'enabled' ),
+		return (array) apply_filters(
+			'videopack_default_network_settings',
+			array(
+				'app_path'                        => (string) ( $this->default_options['app_path'] ?? '' ),
+				'ffmpeg_exists'                   => $this->default_options['ffmpeg_exists'] ?? 'notchecked',
+				'simultaneous_encodes'            => (int) ( $this->default_options['simultaneous_encodes'] ?? 1 ),
+				'threads'                         => (int) ( $this->default_options['threads'] ?? 1 ),
+				'nice'                            => (bool) ( $this->default_options['nice'] ?? true ),
+				'default_capabilities'            => (array) ( $this->default_options['capabilities'] ?? array() ),
+				'superadmin_only_ffmpeg_settings' => false,
+				'network_error_email'             => (string) ( $this->default_options['error_email'] ?? '' ),
+				'queue_control'                   => (string) ( $this->default_options['queue_control'] ?? 'enabled' ),
+			)
 		);
 	}
 
@@ -552,6 +555,6 @@ class Multisite implements Hook_Subscriber {
 		$options['app_path']      = (string) ( $this->network_options['app_path'] ?? $options['app_path'] ?? '' );
 		$options['ffmpeg_exists'] = $this->network_options['ffmpeg_exists'] ?? $options['ffmpeg_exists'] ?? 'notchecked';
 
-		return (array) $options;
+		return (array) apply_filters( 'videopack_override_local_options', $options, $this->network_options );
 	}
 }

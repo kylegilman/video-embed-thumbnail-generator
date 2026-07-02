@@ -326,6 +326,21 @@ class Blocks implements Hook_Subscriber {
 		$total_pages = (int) $query->max_num_pages;
 		$skin        = $attributes['skin'] ?? ( $this->options['skin'] ?? 'vjs-theme-videopack' );
 
+		// Resolve any template overrides from inner blocks (e.g. thumbnail or player hover effects).
+		$shared_attrs_schema = (array) apply_filters( 'videopack_shared_attributes', array() );
+		if ( ! empty( $shared_attrs_schema ) && ! empty( $block->inner_blocks ) ) {
+			$template_overrides = $this->find_inner_block_attributes(
+				$block->inner_blocks,
+				array( 'videopack/thumbnail', 'videopack/player' ),
+				array_keys( $shared_attrs_schema )
+			);
+			foreach ( $template_overrides as $key => $val ) {
+				if ( ! empty( $val ) && 'global' !== $val ) {
+					$attributes[ $key ] = $val;
+				}
+			}
+		}
+
 		$settings              = Context_Manager::resolve( $attributes, $block->context, $this->options );
 		$normalized_attributes = array_merge( $this->options, $attributes, $settings['resolved'] );
 
@@ -573,10 +588,14 @@ class Blocks implements Hook_Subscriber {
 		// Detect if we need to re-run player preparation because of block-level design overrides.
 		$force_refresh = false;
 		if ( $player_data ) {
-			$local_hover  = $attributes['hover_effect'] ?? 'global';
-			$cached_hover = $player_data['hover_effect'] ?? 'global';
-			if ( 'global' !== $local_hover && $local_hover !== $cached_hover ) {
-				$force_refresh = true;
+			$force_refresh_keys = (array) apply_filters( 'videopack_force_refresh_keys', array() );
+			foreach ( $force_refresh_keys as $key ) {
+				$local_val  = $attributes[ $key ] ?? 'global';
+				$cached_val = $player_data[ $key ] ?? 'global';
+				if ( 'global' !== $local_val && $local_val !== $cached_val ) {
+					$force_refresh = true;
+					break;
+				}
 			}
 		}
 
@@ -640,11 +659,8 @@ class Blocks implements Hook_Subscriber {
 			$inner_content .= $cloned_inner->render();
 		}
 
-		$exclude_hover = ! empty( $settings['resolved']['exclude_hover_trigger'] );
-		$classes       = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
-		if ( ! $exclude_hover ) {
-			$classes[] = 'videopack-hover-trigger';
-		}
+		$classes = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
+		$classes = (array) apply_filters( 'videopack_thumbnail_wrapper_classes', $classes, $settings['resolved'], $attributes );
 		$classes[] = $settings['classes'];
 
 		if ( 'none' !== $link_to ) {
@@ -679,7 +695,7 @@ class Blocks implements Hook_Subscriber {
 
 		$html .= '</div>';
 
-		return $html;
+		return apply_filters( 'videopack_render_thumbnail', $html, $post_id, $attributes );
 	}
 
 	/**
@@ -775,10 +791,6 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		$is_inside_thumb = ! empty( $block->context['videopack/isInsideThumbnail'] );
-		// Do not render the download block inside a thumbnail to match legacy behavior.
-		if ( $is_inside_thumb ) {
-			return '';
-		}
 
 		$source = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
 		if ( ! $source ) {
@@ -801,6 +813,7 @@ class Blocks implements Hook_Subscriber {
 					'isInsideTitleMeta'       => $is_inside_title,
 					'isInsidePlayerContainer' => $is_inside_player_container,
 					'isInsidePlayerOverlay'   => $is_inside_player_overlay,
+					'isInsideThumbnail'       => $is_inside_thumb,
 				)
 			),
 			$source,
@@ -1050,6 +1063,32 @@ class Blocks implements Hook_Subscriber {
 		return sprintf( '%d:%02d', $m, $s );
 	}
 
+
+	/**
+	 * Recursively finds attributes inside inner blocks.
+	 *
+	 * @param array $inner_blocks   The inner blocks.
+	 * @param array $target_names   Block names to match.
+	 * @param array $attribute_keys Attribute keys to extract.
+	 * @return array The found attributes.
+	 */
+	private function find_inner_block_attributes( $inner_blocks, $target_names, $attribute_keys ) {
+		$found = array();
+		foreach ( $inner_blocks as $inner_block ) {
+			if ( in_array( $inner_block->name, $target_names, true ) ) {
+				foreach ( $attribute_keys as $key ) {
+					if ( isset( $inner_block->attributes[ $key ] ) ) {
+						$found[ $key ] = $inner_block->attributes[ $key ];
+					}
+				}
+			}
+			if ( ! empty( $inner_block->inner_blocks ) ) {
+				$nested = $this->find_inner_block_attributes( $inner_block->inner_blocks, $target_names, $attribute_keys );
+				$found  = array_merge( $nested, $found );
+			}
+		}
+		return $found;
+	}
 
 	/**
 	 * Renders the global lightbox modal in the footer.
