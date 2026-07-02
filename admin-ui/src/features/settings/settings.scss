@@ -442,11 +442,138 @@
 		}
 	}
 
+	.videopack-constant-setup {
+		margin-top: 15px;
+		margin-bottom: 20px;
+		padding: 15px;
+		background-color: #f6f7f7;
+		border-left: 4px solid #72aee6;
+		border-radius: 4px;
+
+		&.position-bottom {
+			margin-top: 20px;
+			border-top: 1px solid #e0e0e0;
+			padding-top: 20px;
+			margin-bottom: 0;
+		}
+
+		&.position-top {
+			margin-top: 20px;
+			border-top: none;
+			padding-top: 0;
+			margin-bottom: 20px;
+		}
+
+		.description {
+			font-weight: 500;
+			color: #1d2327;
+		}
+
+		p {
+			&:first-child {
+				font-weight: 600;
+				margin-bottom: 8px;
+			}
+
+			&.description {
+				margin-bottom: 8px;
+
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+		}
+
+		ul, ol {
+			padding-left: 20px;
+			margin: 0 0 12px 0;
+			font-size: 13px;
+			line-height: 1.5;
+		}
+
+		ul {
+			list-style-type: disc;
+		}
+
+		ol {
+			margin-bottom: 8px;
+		}
+
+		.videopack-code-snippet {
+			background: colors.$gray-100;
+			border: 1px solid colors.$gray-300;
+			padding: 15px;
+			border-radius: 4px;
+			overflow-x: auto;
+			margin: 10px 0;
+			font-size: 11px;
+			white-space: pre-wrap;
+
+			code {
+				font-family: monospace;
+				font-size: 12px;
+				color: colors.$gray-900;
+			}
+		}
+	}
+
 	.freemius-page-container {
 		margin: 0 20px;
 
 		#fs_addons .fs-cards-list {
 			display: inline-block;
+		}
+	}
+
+	.videopack-grid-row-align {
+		display: grid;
+		grid-template-columns: minmax(100px, 400px) auto;
+		grid-template-rows: auto auto auto auto;
+		gap: 6px 12px;
+		align-items: center;
+		margin-bottom: 24px;
+
+		.components-base-control,
+		.components-base-control__field {
+			display: contents;
+		}
+
+		.components-base-control__label {
+			grid-column: 1 / -1;
+			grid-row: 1;
+			margin-bottom: 0 !important;
+		}
+
+		.components-text-control__input,
+		.components-select-control__input,
+		.components-textarea-control__input,
+		input,
+		select {
+			grid-column: 1;
+			grid-row: 2;
+			margin-bottom: 0 !important;
+		}
+
+		.videopack-input-suffix {
+			grid-column: 2;
+			grid-row: 2;
+			font-size: 13px;
+			color: colors.$gray-700;
+			font-weight: 500;
+		}
+
+		.components-base-control__help {
+			grid-column: 1 / -1;
+			grid-row: 3;
+			margin-top: 0 !important;
+			margin-bottom: 0 !important;
+		}
+
+		.videopack-error-text {
+			grid-column: 1 / -1;
+			grid-row: 4;
+			margin-top: 0 !important;
+			margin-bottom: 0 !important;
 		}
 	}
 

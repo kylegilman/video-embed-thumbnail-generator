@@ -45,7 +45,8 @@ $badge-selectors: (
 
 		&.position-top { top: 0; bottom: auto; }
 		&.position-bottom { bottom: 0; top: auto; }
-		&.position-center {
+		&.position-center,
+		&.position-middle {
 			top: 50%;
 			bottom: auto;
 			transform: translateY(-50%);
@@ -63,7 +64,8 @@ $badge-selectors: (
 
 	&.position-top { top: 0; bottom: auto; }
 	&.position-bottom { bottom: 0; top: auto; }
-	&.position-center {
+	&.position-center,
+	&.position-middle {
 		top: 50%;
 		bottom: auto;
 		transform: translateY(-50%);
@@ -369,7 +371,8 @@ $badge-selectors: (
 		transform: translateX(-50%);
 	}
 
-	&.position-center {
+	&.position-center,
+	&.position-middle {
 		top: 50%;
 		bottom: auto;
 		transform: translateY(-50%);
@@ -554,7 +557,7 @@ $badge-selectors: (
 		}
 	}
 
-	:is(&.position-center, .videopack-video-title-block.position-center &) {
+	:is(&.position-center, &.position-middle, .videopack-video-title-block.position-center &, .videopack-video-title-block.position-middle &) {
 		top: 50%;
 		bottom: auto;
 		transform: translateY(-50%);
