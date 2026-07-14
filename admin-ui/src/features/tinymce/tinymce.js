@@ -197,13 +197,6 @@ import './tinymce.scss';
 				className="videopack-tinymce-wrapper"
 				style={themePresetsStyle}
 			>
-				{videopack_config?.globalStyles && (
-					<style
-						dangerouslySetInnerHTML={{
-							__html: videopack_config.globalStyles,
-						}}
-					/>
-				)}
 				<TemplatePreview
 					attributes={mergedAttributes}
 					template={template}

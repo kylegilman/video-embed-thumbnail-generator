@@ -36,32 +36,39 @@ export default function Edit(props) {
 	const [options, setOptions] = useState({});
 	const [restartCount, setRestartCount] = useState(0);
 
-	const { parentClientId, parentAttributes, hasTitleBlock, isAnySelected } =
-		useSelect(
-			(select) => {
-				const {
-					getBlockRootClientId,
-					getBlockAttributes,
-					getBlocks,
-					isBlockSelected,
-					hasSelectedInnerBlock,
-				} = select(blockEditorStore);
-				const rootId = getBlockRootClientId(clientId);
-				const blocks = getBlocks(clientId);
+	const {
+		parentClientId,
+		parentAttributes,
+		hasTitleBlock,
+		isAnySelected,
+		editorPostId,
+	} = useSelect(
+		(select) => {
+			const {
+				getBlockRootClientId,
+				getBlockAttributes,
+				getBlocks,
+				isBlockSelected,
+				hasSelectedInnerBlock,
+			} = select(blockEditorStore);
+			const rootId = getBlockRootClientId(clientId);
+			const blocks = getBlocks(clientId);
+			const editor = select('core/editor');
 
-				return {
-					parentClientId: rootId,
-					parentAttributes: rootId ? getBlockAttributes(rootId) : {},
-					hasTitleBlock: blocks.some(
-						(block) => block.name === 'videopack/title'
-					),
-					isAnySelected:
-						isBlockSelected(clientId) ||
-						hasSelectedInnerBlock(clientId, true),
-				};
-			},
-			[clientId]
-		);
+			return {
+				parentClientId: rootId,
+				parentAttributes: rootId ? getBlockAttributes(rootId) : {},
+				hasTitleBlock: blocks.some(
+					(block) => block.name === 'videopack/title'
+				),
+				isAnySelected:
+					isBlockSelected(clientId) ||
+					hasSelectedInnerBlock(clientId, true),
+				editorPostId: editor?.getCurrentPostId(),
+			};
+		},
+		[clientId]
+	);
 
 	const resetPlayer = useCallback(() => {
 		setRestartCount((prev) => prev + 1);
@@ -96,10 +103,6 @@ export default function Edit(props) {
 		[]
 	);
 
-	const editorPostId = useSelect(
-		(select) => select('core/editor')?.getCurrentPostId(),
-		[]
-	);
 	const isSiteEditor = useSelect((select) => {
 		const postType = select('core/editor')?.getCurrentPostType();
 		return postType === 'wp_template' || postType === 'wp_template_part';
@@ -236,7 +239,7 @@ export default function Edit(props) {
 					attributes={effectiveAttributes}
 					videoData={videoData}
 					options={options}
-					parentId={parentAttributes.id || 0}
+					parentId={editorPostId || 0}
 				/>
 				<VideoSettings
 					setAttributes={setParentAttributes}

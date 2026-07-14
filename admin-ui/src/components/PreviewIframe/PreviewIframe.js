@@ -164,6 +164,7 @@ const PreviewIframe = ({
 			// Inject theme styles from WordPress global styles.
 			if (!doc.getElementById('videopack-global-styles')) {
 				const globalStyles =
+					window.parent?.document?.getElementById('global-styles-inline-css')?.textContent ||
 					window.videopack_config?.globalStyles ||
 					window.videopack_config?.global_styles;
 				if (globalStyles) {

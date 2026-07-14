@@ -10,7 +10,6 @@ import {
 	Spinner,
 	ToggleControl,
 	Notice,
-	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
@@ -24,9 +23,7 @@ import {
 	setPosterImage,
 	createThumbnailFromCanvas,
 } from '../../api/thumbnails';
-import { getVideoFormats } from '../../api/gallery';
-import { deleteFile } from '../../api/media';
-import { enqueueJob, listJobs } from '../../api/jobs';
+import { listJobs } from '../../api/jobs';
 import {
 	captureVideoFrame,
 	calculateTimecodes,
@@ -66,34 +63,8 @@ const Thumbnails = ({
 	const [thumbChoices, setThumbChoices] = useState([]);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [spriteMessage, setSpriteMessage] = useState(null);
 	const [activeJobs, setActiveJobs] = useState([]);
-	const [existingSprite, setExistingSprite] = useState(null); // { id, url, status }
-	const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
 	const [showFailedNotice, setShowFailedNotice] = useState(true);
-
-	const fetchSpriteStatus = useCallback(async () => {
-		if (!id || !src) {
-			return;
-		}
-		try {
-			const formats = await getVideoFormats(id, src, probedMetadata);
-			const spriteFormat = formats.thumbnail_sprite;
-			console.log('Sprite detection:', { id, spriteFormat });
-			if (spriteFormat && spriteFormat.exists) {
-				setExistingSprite({
-					id: spriteFormat.id,
-					url: spriteFormat.url,
-					status: spriteFormat.status,
-				});
-			} else {
-				setExistingSprite(null);
-			}
-		} catch (error) {
-			console.error('Error fetching sprite status:', error);
-		}
-	}, [id, src, probedMetadata]);
 
 	// Poll for active thumbnail jobs if any exist
 	useEffect(() => {
@@ -104,21 +75,12 @@ const Thumbnails = ({
 				const jobs = await listJobs(id);
 				const activeThumbnailJobs = jobs.filter(
 					(job) =>
-						(job.format_id === 'thumbnail' ||
-							job.format_id === 'thumbnail_sprite') &&
+						job.format_id === 'thumbnail' &&
 						['queued', 'processing', 'encoding'].includes(
 							job.status
 						)
 				);
 				setActiveJobs(activeThumbnailJobs);
-
-				if (activeThumbnailJobs.length === 0 && activeJobs.length > 0) {
-					fetchSpriteStatus();
-					// Jobs just finished, maybe refresh the poster if it was just set
-					if (id) {
-						// Optionally trigger a refresh of videoData if needed
-					}
-				}
 			} catch (error) {
 				console.error('Error polling jobs:', error);
 			}
@@ -130,11 +92,7 @@ const Thumbnails = ({
 		}
 
 		return () => clearInterval(pollInterval);
-	}, [id, activeJobs.length, fetchSpriteStatus]);
-
-	useEffect(() => {
-		fetchSpriteStatus();
-	}, [fetchSpriteStatus]);
+	}, [id]);
 	const { active_encoder = 'ffmpeg' } = options;
 	const activeEncoderReady = applyFilters(
 		'videopack.encoder.is_ready',
@@ -187,21 +145,29 @@ const Thumbnails = ({
 		}
 	}, [resolvedPoster]);
 
-	useEffect(() => {
-		if (spriteMessage && spriteMessage.type !== 'error') {
-			const timer = setTimeout(() => {
-				setSpriteMessage(null);
-			}, 10000);
-			return () => clearTimeout(timer);
-		}
-	}, [spriteMessage]);
-
 	function onSelectPoster(image) {
 		const cleanUrl = image.url ? image.url.replace(/&amp;/g, '&') : '';
+		const attachment = videoData?.record;
+		const attachmentPoster =
+			attachment?.videopack?.poster ||
+			attachment?.meta?.['_videopack-meta']?.poster ||
+			'';
+		const attachmentPosterId =
+			attachment?.meta?.['_videopack-meta']?.poster_id ||
+			attachment?.meta?.['_kgflashmediaplayer-poster-id'] ||
+			0;
+
+		const finalPoster =
+			cleanUrl && cleanUrl !== attachmentPoster ? cleanUrl : undefined;
+		const finalPosterId =
+			image.id && Number(image.id) !== Number(attachmentPosterId)
+				? Number(image.id)
+				: undefined;
+
 		setAttributes({
 			...attributes,
-			poster: cleanUrl,
-			poster_id: Number(image.id),
+			poster: finalPoster,
+			poster_id: finalPosterId,
 		});
 	}
 
@@ -215,7 +181,8 @@ const Thumbnails = ({
 	const handleGenerate = async (type = 'generate') => {
 		setIsSaving(true);
 		setThumbChoices([]);
-		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
+		const browserThumbnailsEnabled =
+			videopack_config.options.browser_thumbnails;
 
 		if (!browserThumbnailsEnabled && !!ffmpegExists) {
 			// Browser thumbnails explicitly disabled, use FFmpeg directly
@@ -249,183 +216,6 @@ const Thumbnails = ({
 		} else {
 			// Attempt browser-based generation
 			generateThumbCanvases(type);
-		}
-	};
-
-	const [spriteTiles, setSpriteTiles] = useState([]);
-	const handleGenerateSprite = async () => {
-		setIsSaving(true);
-		setSpriteTiles([]);
-
-		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
-		const rawFfmpegExists =
-			!!videopack_config.ffmpeg_exists &&
-			videopack_config.ffmpeg_exists !== 'notinstalled';
-		const isExternalEncoder =
-			active_encoder !== 'ffmpeg' && activeEncoderReady;
-
-		if (
-			!browserThumbnailsEnabled &&
-			rawFfmpegExists &&
-			!isExternalEncoder
-		) {
-			try {
-				const activeId = id || 0;
-				await enqueueJob(
-					activeId,
-					src,
-					{ thumbnail_sprite: true },
-					parentId
-				);
-				let successMsg = __(
-					'Sprite generation enqueued. Check Additional Formats panel for progress.',
-					'video-embed-thumbnail-generator'
-				);
-				if (videopack_config.active_encoder === 'browser') {
-					successMsg = (
-						<div>
-							<p>{successMsg}</p>
-							<p>
-								{__(
-									'Browser encoding is active. Processing will only occur while the Videopack Queue page is open.',
-									'video-embed-thumbnail-generator'
-								)}{' '}
-								<a href={videopack_config.queue_url}>
-									{__(
-										'Go to Queue Page',
-										'video-embed-thumbnail-generator'
-									)}
-								</a>
-							</p>
-						</div>
-					);
-				}
-				setSpriteMessage({
-					type: 'success',
-					text: successMsg,
-				});
-				// If we have an Additional Formats panel nearby, it will handle polling.
-				fetchSpriteStatus(); // Initial check after enqueue
-			} catch (error) {
-				console.error('Sprite enqueue failed', error);
-				setSpriteMessage({
-					type: 'error',
-					text: __(
-						'Error: Failed to enqueue sprite generation.',
-						'video-embed-thumbnail-generator'
-					),
-				});
-			} finally {
-				setIsSaving(false);
-			}
-			return;
-		}
-
-		const tileWidth = 160;
-		const columns = 10;
-
-		const targetCount = 100;
-		const duration = videoRef.current.duration;
-		const spriteInterval = Math.max(1.0, duration / targetCount);
-		const totalTiles = Math.ceil(duration / spriteInterval);
-		const timePoints = [];
-		for (let i = 0; i < totalTiles; i++) {
-			timePoints.push(i * spriteInterval);
-		}
-
-		const canvases = [];
-		try {
-			for (const time of timePoints) {
-				const canvas = await captureVideoFrame(
-					src,
-					time,
-					options?.ffmpeg_thumb_watermark || {}
-				);
-				// Resize canvas to tileWidth
-				const tileCanvas = document.createElement('canvas');
-				tileCanvas.width = tileWidth;
-				tileCanvas.height = (tileWidth * canvas.height) / canvas.width;
-				const tctx = tileCanvas.getContext('2d');
-				tctx.drawImage(
-					canvas,
-					0,
-					0,
-					tileCanvas.width,
-					tileCanvas.height
-				);
-				canvases.push(tileCanvas);
-				setSpriteTiles((prev) => [
-					...prev,
-					tileCanvas.toDataURL('image/jpeg', 0.6),
-				]);
-			}
-
-			const rows = Math.ceil(canvases.length / columns);
-			const tileHeight = canvases[0].height;
-
-			const spriteCanvas = document.createElement('canvas');
-			spriteCanvas.width = tileWidth * columns;
-			spriteCanvas.height = tileHeight * rows;
-			const ctx = spriteCanvas.getContext('2d');
-
-			canvases.forEach((canvas, index) => {
-				const x = (index % columns) * tileWidth;
-				const y = Math.floor(index / columns) * tileHeight;
-				ctx.drawImage(canvas, x, y);
-			});
-
-			await createThumbnailFromCanvas(
-				spriteCanvas,
-				id,
-				src,
-				parentId,
-				false,
-				{
-					is_sprite: true,
-					interval: spriteInterval,
-					total_tiles: canvases.length,
-					width: tileWidth,
-					set_poster: false,
-					filename_suffix: '_thumbnail-sprite',
-				}
-			);
-			fetchSpriteStatus();
-		} catch (error) {
-			console.error('Sprite generation failed', error);
-		} finally {
-			setIsSaving(false);
-			setSpriteTiles([]);
-		}
-	};
-
-	const handleDeleteSprite = async () => {
-		if (!existingSprite || !existingSprite.id) {
-			return;
-		}
-
-		setIsConfirmDeleteOpen(false);
-		setIsDeleting(true);
-		try {
-			await deleteFile(existingSprite.id);
-			setExistingSprite(null);
-			setSpriteMessage({
-				type: 'success',
-				text: __(
-					'Sprite sheet deleted successfully.',
-					'video-embed-thumbnail-generator'
-				),
-			});
-		} catch (error) {
-			console.error('Failed to delete sprite:', error);
-			setSpriteMessage({
-				type: 'error',
-				text: __(
-					'Error: Failed to delete sprite sheet.',
-					'video-embed-thumbnail-generator'
-				),
-			});
-		} finally {
-			setIsDeleting(false);
 		}
 	};
 
@@ -764,8 +554,8 @@ const Thumbnails = ({
 
 			const finalAttributes = {
 				...attributes,
-				poster: cleanPoster || undefined,
-				poster_id: new_poster_id || undefined,
+				poster: undefined,
+				poster_id: undefined,
 			};
 
 			// If we just created the attachment, ensure the ID is included
@@ -885,7 +675,8 @@ const Thumbnails = ({
 			}
 		};
 
-		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
+		const browserThumbnailsEnabled =
+			videopack_config.options.browser_thumbnails;
 
 		if (!browserThumbnailsEnabled || canvasTainted) {
 			await runFfmpegFallback();
@@ -1081,27 +872,18 @@ const Thumbnails = ({
 						</Button>
 						{applyFilters('videopack.thumbnail.actions', null, {
 							id,
+							src,
+							parentId,
 							isSaving,
 							isProbing,
 							ffmpegExists,
-							existingSprite,
-							isDeleting,
-							handleGenerateSprite,
-							setIsConfirmDeleteOpen,
 							canvasTainted,
+							probedMetadata,
+							options,
 						})}
 					</div>
 				</div>
-				{spriteMessage && (
-					<Notice
-						status={spriteMessage.type}
-						onRemove={() => setSpriteMessage(null)}
-						isDismissible={true}
-						className="videopack-sprite-notice"
-					>
-						{spriteMessage.text}
-					</Notice>
-				)}
+
 				{canvasTainted && !isProbing && !ffmpegExists && (
 					<div className="videopack-security-error-notice">
 						{__(
@@ -1110,25 +892,7 @@ const Thumbnails = ({
 						)}
 					</div>
 				)}
-				{spriteTiles.length > 0 && (
-					<div className="videopack-sprite-generation-preview">
-						<p>
-							{sprintf(
-								/* translators: %d is the number of tiles captured */
-								__(
-									'Capturing sprite tiles… (%d)',
-									'video-embed-thumbnail-generator'
-								),
-								spriteTiles.length
-							)}
-						</p>
-						<div className="videopack-sprite-tiles-grid">
-							{spriteTiles.map((tileSrc, index) => (
-								<img key={index} src={tileSrc} alt="" />
-							))}
-						</div>
-					</div>
-				)}
+
 				{thumbChoices.length > 0 && (
 					<Button
 						variant="primary"
@@ -1259,26 +1023,7 @@ const Thumbnails = ({
 						/>
 					</Modal>
 				)}
-				{isConfirmDeleteOpen && (
-					<ConfirmDialog
-						isOpen={isConfirmDeleteOpen}
-						title={__(
-							'Delete Sprite Sheet',
-							'video-embed-thumbnail-generator'
-						)}
-						confirmButtonText={__(
-							'Delete',
-							'video-embed-thumbnail-generator'
-						)}
-						onConfirm={handleDeleteSprite}
-						onCancel={() => setIsConfirmDeleteOpen(false)}
-					>
-						{__(
-							'Are you sure you want to permanently delete this sprite sheet? This action cannot be undone.',
-							'video-embed-thumbnail-generator'
-						)}
-					</ConfirmDialog>
-				)}
+
 			</PanelBody>
 		</div>
 	);
