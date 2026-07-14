@@ -63,6 +63,15 @@ const EncodeQueue = () => {
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobIds: [] }
 	const [actingJobIds, setActingJobIds] = useState([]);
+
+	const hasTranscoder = useMemo(() => {
+		return (
+			window.videopack_config?.ffmpeg_exists === true ||
+			window.videopack_config?.ffmpeg_exists === 'true' ||
+			window.videopack_config?.ffmpeg_exists === 1 ||
+			window.videopack_config?.ffmpeg_exists === '1'
+		);
+	}, []);
 	const [batchProgress, setBatchProgress] = useState({});
 	const [isRunningBatch, setIsRunningBatch] = useState({});
 
@@ -117,15 +126,9 @@ const EncodeQueue = () => {
 	}, [defaultBatchProcesses]);
 
 	const bulkOptions = useMemo(() => {
-		const ffmpegExists =
-			window.videopack_config?.ffmpeg_exists === true ||
-			window.videopack_config?.ffmpeg_exists === 'true' ||
-			window.videopack_config?.ffmpeg_exists === 1 ||
-			window.videopack_config?.ffmpeg_exists === '1';
-
 		const optionsList = [];
 
-		if (ffmpegExists) {
+		if (hasTranscoder) {
 			optionsList.push({
 				id: 'thumbs',
 				label: __('Thumbnails', 'video-embed-thumbnail-generator'),
@@ -146,9 +149,9 @@ const EncodeQueue = () => {
 		});
 
 		return applyFilters('videopack.queue.bulk_options', optionsList, {
-			ffmpegExists,
+			ffmpegExists: hasTranscoder,
 		});
-	}, []);
+	}, [hasTranscoder]);
 
 	const [checkedBulkIds, setCheckedBulkIds] = useState({});
 
@@ -930,7 +933,7 @@ const EncodeQueue = () => {
 					icon={videopack}
 					size={40}
 				/>
-				{__('Videopack Queue', 'video-embed-thumbnail-generator')}
+				{__('Videopack Processing', 'video-embed-thumbnail-generator')}
 			</h1>
 
 			{isConfirmOpen && (
@@ -1048,124 +1051,6 @@ const EncodeQueue = () => {
 			)}
 
 			<Panel>
-				{Object.entries(batchProgress).map(([type, progress]) => {
-					if (
-						!progress ||
-						(progress.pending === 0 &&
-							progress['in-progress'] === 0)
-					) {
-						return null;
-					}
-
-					const defaultLabels = {
-						featured: __(
-							'Setting Featured Images',
-							'video-embed-thumbnail-generator'
-						),
-						parents: __(
-							'Updating Parents',
-							'video-embed-thumbnail-generator'
-						),
-						thumbs: __(
-							'Generating Thumbnails',
-							'video-embed-thumbnail-generator'
-						),
-						encoding: __(
-							'Bulk Encoding',
-							'video-embed-thumbnail-generator'
-						),
-						browser: __(
-							'Pending In-Browser Thumbnails',
-							'video-embed-thumbnail-generator'
-						),
-					};
-
-					const filteredLabels = applyFilters(
-						/**
-						 * Filters the display labels for bulk queue batch types.
-						 *
-						 * @since 5.0.0
-						 *
-						 * @param {Object} labels Object mapping batch type identifiers to localized label strings.
-						 */
-						'videopack.queue.batch_labels',
-						defaultLabels
-					);
-
-					const label = filteredLabels[type] || type;
-
-					return (
-						<PanelBody
-							key={type}
-							title={label}
-							initialOpen={true}
-							className="videopack-batch-progress-panel"
-						>
-							<div className="videopack-batch-progress-content">
-								<div className="videopack-batch-stats">
-									<span>
-										{sprintf(
-											/* translators: %d: number of pending items */
-											__(
-												'Pending: %d',
-												'video-embed-thumbnail-generator'
-											),
-											progress.pending
-										)}
-									</span>
-									<span>
-										{sprintf(
-											/* translators: %d: number of in-progress items */
-											__(
-												'In-Progress: %d',
-												'video-embed-thumbnail-generator'
-											),
-											progress['in-progress']
-										)}
-									</span>
-									<span>
-										{sprintf(
-											/* translators: %d: number of completed items */
-											__(
-												'Completed: %d',
-												'video-embed-thumbnail-generator'
-											),
-											progress.complete
-										)}
-									</span>
-									{progress.failed > 0 && (
-										<span className="videopack-failed-count">
-											{sprintf(
-												/* translators: %d: number of failed items */
-												__(
-													'Failed: %d',
-													'video-embed-thumbnail-generator'
-												),
-												progress.failed
-											)}
-										</span>
-									)}
-								</div>
-								{progress.total > 0 && (
-									<div className="videopack-meter">
-										<div
-											className="videopack-meter-bar"
-											style={{
-												width: `${Math.round(
-													((progress.complete +
-														progress.failed) /
-														progress.total) *
-														100
-												)}%`,
-											}}
-										></div>
-									</div>
-								)}
-							</div>
-						</PanelBody>
-					);
-				})}
-
 				{message && (
 					<Notice
 						status={message.type}
@@ -1175,69 +1060,227 @@ const EncodeQueue = () => {
 					</Notice>
 				)}
 
-				<PanelBody>
-					<div className="videopack-queue-controls">
-						<Button
-							variant="primary"
-							onClick={handleToggleQueue}
-							isBusy={isTogglingQueue}
-						>
-							<Icon
-								icon={
-									isQueuePaused
-										? 'controls-play'
-										: 'controls-pause'
+				{hasTranscoder && (
+					<PanelBody
+						title={__('Encoding Queue', 'video-embed-thumbnail-generator')}
+						initialOpen={true}
+					>
+						<div className="videopack-queue-controls">
+							<Button
+								variant="primary"
+								onClick={handleToggleQueue}
+								isBusy={isTogglingQueue}
+							>
+								<Icon
+									icon={
+										isQueuePaused
+											? 'controls-play'
+											: 'controls-pause'
+									}
+								/>
+								{isQueuePaused
+									? __(
+											'Play Queue',
+											'video-embed-thumbnail-generator'
+										)
+									: __(
+											'Pause Queue',
+											'video-embed-thumbnail-generator'
+										)}
+							</Button>
+							<Button
+								variant="secondary"
+								onClick={() =>
+									openConfirmDialog('clear', {
+										type: 'completed',
+									})
 								}
+								isBusy={isClearing}
+							>
+								{__(
+									'Clear Completed',
+									'video-embed-thumbnail-generator'
+								)}
+							</Button>
+							<Button
+								variant="tertiary"
+								isDestructive
+								onClick={() =>
+									openConfirmDialog('clear', { type: 'all' })
+								}
+								isBusy={isClearing}
+							>
+								{__('Clear All', 'video-embed-thumbnail-generator')}
+							</Button>
+							{isLoading && <Spinner />}
+						</div>
+						<Divider />
+						<div className="videopack-dataviews-container">
+							<DataViews
+								data={processedData}
+								fields={fields}
+								view={view}
+								onChangeView={setView}
+								defaultLayouts={defaultLayouts}
+								actions={actions}
+								paginationInfo={paginationInfo}
 							/>
-							{isQueuePaused
-								? __(
-										'Play Queue',
-										'video-embed-thumbnail-generator'
-									)
-								: __(
-										'Pause Queue',
-										'video-embed-thumbnail-generator'
-									)}
-						</Button>
-						<Button
-							variant="secondary"
-							onClick={() =>
-								openConfirmDialog('clear', {
-									type: 'completed',
-								})
-							}
-							isBusy={isClearing}
-						>
-							{__(
-								'Clear Completed',
+						</div>
+					</PanelBody>
+				)}
+
+				{(() => {
+					// Merge thumbs and browser progress statistics into a single 'thumbs' block
+					// so that browser-side and server-side thumbnail generation share the same panel.
+					const active_encoder = window.videopack_config?.options?.active_encoder;
+					const fallback_encoder = window.videopack_config?.options?.cloud_fallback_encoder;
+					const isBrowserActive = active_encoder === 'browser' || fallback_encoder === 'browser';
+
+					const normalizedProgress = { ...batchProgress };
+					if (normalizedProgress.browser) {
+						const browserPending = normalizedProgress.browser.pending || 0;
+						const browserComplete = normalizedProgress.browser.complete || 0;
+						const browserFailed = normalizedProgress.browser.failed || 0;
+						const browserTotal = browserPending + browserComplete + browserFailed;
+
+						if (browserTotal > 0) {
+							normalizedProgress.thumbs = {
+								pending: (normalizedProgress.thumbs?.pending || 0) + browserPending,
+								'in-progress': normalizedProgress.thumbs?.['in-progress'] || 0,
+								complete: (normalizedProgress.thumbs?.complete || 0) + browserComplete,
+								failed: (normalizedProgress.thumbs?.failed || 0) + browserFailed,
+								total: (normalizedProgress.thumbs?.total || 0) + browserTotal,
+							};
+						}
+						delete normalizedProgress.browser;
+					}
+
+					return Object.entries(normalizedProgress).map(([type, progress]) => {
+						if (
+							!progress ||
+							(progress.pending === 0 &&
+								progress['in-progress'] === 0)
+						) {
+							return null;
+						}
+
+						const defaultLabels = {
+							featured: __(
+								'Setting Featured Images',
 								'video-embed-thumbnail-generator'
-							)}
-						</Button>
-						<Button
-							variant="tertiary"
-							isDestructive
-							onClick={() =>
-								openConfirmDialog('clear', { type: 'all' })
-							}
-							isBusy={isClearing}
-						>
-							{__('Clear All', 'video-embed-thumbnail-generator')}
-						</Button>
-						{isLoading && <Spinner />}
-					</div>
-					<Divider />
-					<div className="videopack-dataviews-container">
-						<DataViews
-							data={processedData}
-							fields={fields}
-							view={view}
-							onChangeView={setView}
-							defaultLayouts={defaultLayouts}
-							actions={actions}
-							paginationInfo={paginationInfo}
-						/>
-					</div>
-				</PanelBody>
+							),
+							parents: __(
+								'Updating Parents',
+								'video-embed-thumbnail-generator'
+							),
+							thumbs: __(
+								'Generating Thumbnails',
+								'video-embed-thumbnail-generator'
+							),
+							browser: __(
+								'Generating Thumbnails',
+								'video-embed-thumbnail-generator'
+							),
+							encoding: __(
+								'Bulk Encoding',
+								'video-embed-thumbnail-generator'
+							),
+						};
+
+						const filteredLabels = applyFilters(
+							/** This filter is documented in src/features/encode-queue/encode-queue.js */
+							'videopack.queue.batch_labels',
+							defaultLabels
+						);
+
+						const label = filteredLabels[type] || type;
+
+						return (
+							<PanelBody
+								key={type}
+								title={label}
+								initialOpen={true}
+								className="videopack-batch-progress-panel"
+							>
+								<div className="videopack-batch-progress-content">
+									{type === 'thumbs' && isBrowserActive && (
+										<div className="notice notice-info videopack-browser-queue-warning" style={{ margin: '0 0 15px 0' }}>
+											<p style={{ margin: '0.5em 0' }}>
+												{__(
+													'Browser-side thumbnail generation is active. You MUST keep this tab open and active to process the queue.',
+													'video-embed-thumbnail-generator'
+												)}
+											</p>
+										</div>
+									)}
+									<div className="videopack-batch-stats">
+										<span>
+											{sprintf(
+												/* translators: %d: number of pending items */
+												__(
+													'Pending: %d',
+													'video-embed-thumbnail-generator'
+												),
+												progress.pending
+											)}
+										</span>
+										{progress['in-progress'] !== undefined && progress['in-progress'] > 0 && (
+											<span>
+												{sprintf(
+													/* translators: %d: number of in-progress items */
+													__(
+														'In-Progress: %d',
+														'video-embed-thumbnail-generator'
+													),
+													progress['in-progress']
+												)}
+											</span>
+										)}
+										{progress.complete !== undefined && progress.complete > 0 && (
+											<span>
+												{sprintf(
+													/* translators: %d: number of completed items */
+													__(
+														'Completed: %d',
+														'video-embed-thumbnail-generator'
+													),
+													progress.complete
+												)}
+											</span>
+										)}
+										{progress.failed > 0 && (
+											<span className="videopack-failed-count">
+												{sprintf(
+													/* translators: %d: number of failed items */
+													__(
+														'Failed: %d',
+														'video-embed-thumbnail-generator'
+													),
+													progress.failed
+												)}
+											</span>
+										)}
+									</div>
+									{progress.total > 0 && (
+										<div className="videopack-meter">
+											<div
+												className="videopack-meter-bar"
+												style={{
+													width: `${Math.round(
+														(((progress.complete || 0) +
+															(progress.failed || 0)) /
+															progress.total) *
+															100
+													)}%`,
+												}}
+											></div>
+										</div>
+									)}
+								</div>
+							</PanelBody>
+						);
+					});
+				})()}
 
 				<PanelBody
 					title={__(
@@ -1300,7 +1343,7 @@ const EncodeQueue = () => {
 				</PanelBody>
 				<PanelBody
 					title={__(
-						'Queue Utilities',
+						'Batch Utilities',
 						'video-embed-thumbnail-generator'
 					)}
 					initialOpen={false}
@@ -1328,6 +1371,7 @@ const EncodeQueue = () => {
 												})
 											}
 											isBusy={isRunningBatch[process.id]}
+											disabled={process.disabled}
 										>
 											{__(
 												'Run Utility',
