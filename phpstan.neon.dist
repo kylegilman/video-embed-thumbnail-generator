@@ -1,0 +1,21 @@
+includes:
+    # Load the WordPress rules and stubs extension
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    # Start at level 5
+    level: 5
+
+    # Load constants definitions
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+
+    # Folders to analyze
+    paths:
+        - src/
+        - video-embed-thumbnail-generator.php
+
+    # Exclude vendor and external dependencies
+    excludePaths:
+        - vendor/
+        - tests/
