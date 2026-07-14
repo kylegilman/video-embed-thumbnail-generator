@@ -200,7 +200,10 @@ class Modular_Renderer {
 		}
 
 		// Add MEJS controls SVG for mask coloring.
-		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+		$embed_method = $options['embed_method'] ?? 'Video.js';
+		if ( 'WordPress Default' === $embed_method ) {
+			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+		}
 
 		$extra_attrs = array();
 		if ( ! empty( $atts['wrapper_class'] ) && strpos( $atts['wrapper_class'], 'collection' ) !== false ) {
@@ -321,6 +324,7 @@ class Modular_Renderer {
 		// Link Resolution.
 		$link_to = $atts['watermark_link_to'] ?? ( $options['watermark_link_to'] ?? 'false' );
 		$link    = '';
+		$source  = null;
 		$post_id = $atts['postId'] ?? ( $atts['id'] ?? 0 );
 
 		if ( 'home' === $link_to ) {
@@ -427,8 +431,8 @@ class Modular_Renderer {
 	 * Renders the Video Title HTML (with optional player overlay icons).
 	 *
 	 * @param array                          $atts   The block or shortcode attributes.
-	 * @param \Videopack\Video_Source\Source $source The video source object.
-	 * @param int|string                     $id     Unique ID for this player instance.
+	 * @param \Videopack\Video_Source\Source|null $source The video source object.
+	 * @param int|string                          $id     Unique ID for this player instance.
 	 * @return string The rendered HTML.
 	 */
 	public static function render_video_title( array $atts, $source, $id ) {
@@ -535,9 +539,7 @@ class Modular_Renderer {
 		}
 		$wrapper_style = ! empty( $wrapper_style_vars ) ? ' style="' . esc_attr( implode( ';', $wrapper_style_vars ) ) . '"' : '';
 		$wrapper_class = 'videopack-meta-wrapper videopack-video-title-visible';
-		if ( $is_overlay ) {
-			$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
-		}
+		$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
 		if ( ! empty( $atts['wrapper_class'] ) ) {
 			$wrapper_class .= ' ' . $atts['wrapper_class'];
 		}
@@ -682,7 +684,7 @@ class Modular_Renderer {
 	 * Renders the download link HTML for a video.
 	 *
 	 * @param array                                  $atts            Block attributes, including alignment and visibility settings.
-	 * @param \Videopack\Video_Source\Source         $source          The video source object.
+	 * @param \Videopack\Video_Source\Source|null    $source          The video source object.
 	 * @param array                                  $options         Optional. Plugin options.
 	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Format registry.
 	 * @return string The rendered HTML.
@@ -723,7 +725,7 @@ class Modular_Renderer {
 		$download_svg = Icons::get( 'download', 'download-icon' );
 
 		$trigger_inner = '';
-		if ( $show_icon || ( ! $show_icon && ! $show_text ) ) {
+		if ( $show_icon || ! $show_text ) {
 			$trigger_inner .= '<span class="videopack-icon-container">' . $download_svg . '</span>' . "\n";
 		}
 		if ( $show_text ) {
@@ -770,9 +772,9 @@ class Modular_Renderer {
 	 * Renders the Video Share block.
 	 *
 	 * @param array                          $atts    Block attributes.
-	 * @param \Videopack\Video_Source\Source $source  The video source.
-	 * @param string|int                     $id      The player/post instance ID.
-	 * @param array                          $options Plugin options.
+	 * @param \Videopack\Video_Source\Source|null $source  The video source.
+	 * @param string|int                          $id      The player/post instance ID.
+	 * @param array                               $options Plugin options.
 	 * @return string The rendered HTML.
 	 */
 	public static function render_share( array $atts, $source, $id, array $options = array() ) {
@@ -847,7 +849,7 @@ class Modular_Renderer {
 
 		$embedlink = $atts['embedlink'] ?? '';
 		if ( empty( $embedlink ) && $source->get_id() ) {
-			$embedlink = add_query_arg( 'videopack[enable]', 'true', get_permalink( $source->get_id() ) );
+			$embedlink = add_query_arg( 'videopack[enable]', 'true', get_permalink( (int) $source->get_id() ) );
 		}
 
 		$html  = '<div class="' . esc_attr( $wrapper_class ) . '"' . $style . '>' . "\n";
@@ -992,11 +994,13 @@ class Modular_Renderer {
 		}
 
 		// Inject MEJS controls SVG for mask coloring.
-		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+		if ( 'WordPress Default' === $embed_method ) {
+			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+		}
 
 		return sprintf(
 			'<div class="%s" style="%s" data-id="%s">%s%s</div>',
-			esc_attr( implode( ' ', array_unique( array_filter( $classes ) ) ) ),
+			esc_attr( implode( ' ', array_unique( $classes ) ) ),
 			esc_attr( implode( ';', $style_vars ) ),
 			esc_attr( $player->get_id() ),
 			$player->get_player_code( $atts ),
@@ -1009,8 +1013,8 @@ class Modular_Renderer {
 	/**
 	 * Renders the view count HTML.
 	 *
-	 * @param \Videopack\Video_Source\Source $source The video source object.
-	 * @param array                          $atts   The block or shortcode attributes.
+	 * @param \Videopack\Video_Source\Source|null $source The video source object.
+	 * @param array                               $atts   The block or shortcode attributes.
 	 * @return string The rendered HTML.
 	 */
 	public static function render_view_count( $source, $atts = array() ) {
@@ -1148,8 +1152,10 @@ class Modular_Renderer {
 		}
 
 		// Inject MEJS controls SVG for mask coloring.
-		$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
-
+		$embed_method = $options['embed_method'] ?? 'Video.js';
+		if ( 'WordPress Default' === $embed_method ) {
+			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
+		}
 		$wrapper_style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
 		$wrapper_data  = sprintf(
 			' class="%s"%s data-attachment-id="%d" data-videopack-id="%s" data-videopack-lightbox="%s"',
@@ -1210,7 +1216,7 @@ class Modular_Renderer {
 			$classes[]    = 'mejs-overlay mejs-layer mejs-overlay-play play-button-container';
 			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
 
-			$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
+			$style = ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"';
 
 			return sprintf(
 				'<div class="%s"%s><div class="mejs-overlay-button" style="width: 80px; height: 80px;"></div></div>',
@@ -1236,16 +1242,14 @@ class Modular_Renderer {
 	}
 
 	/**
-	 * Renders the fully assembled player HTML including overlays like the title and watermark.
-	/**
 	 * Renders the full player assembly.
 	 *
-	 * @param \Videopack\Video_Players\Player $player        The player instance.
-	 * @param array                           $atts          The video attributes.
-	 * @param \Videopack\Video_Source\Source  $source        The video source object.
-	 * @param array                           $options       The global plugin options.
-	 * @param bool                            $is_block      Optional. Whether this is a block context.
-	 * @param string                          $inner_content Optional. Pre-rendered inner block content.
+	 * @param \Videopack\Frontend\Video_Players\Player $player        The player instance.
+	 * @param array                                    $atts          The video attributes.
+	 * @param \Videopack\Video_Source\Source           $source        The video source object.
+	 * @param array                                    $options       The global plugin options.
+	 * @param bool                                     $is_block      Optional. Whether this is a block context.
+	 * @param string                                   $inner_content Optional. Pre-rendered inner block content.
 	 * @return string The rendered HTML.
 	 */
 	public static function render_player_assembly( $player, $atts, $source, $options, $is_block = false, $inner_content = '' ) {

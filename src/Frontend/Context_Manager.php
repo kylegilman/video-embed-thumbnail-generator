@@ -30,7 +30,7 @@ class Context_Manager {
 	 *     @type string $classes  CSS classes string.
 	 * }
 	 */
-	public static function resolve( $attributes, $context, $options ) {
+	public static function resolve( array $attributes, array $context, array $options ) {
 		$defaults = Defaults::get_all( $options );
 
 		$design_keys = array(
@@ -64,11 +64,9 @@ class Context_Manager {
 
 		// Normalize attributes to snake_case (Gutenberg often sends camelCase).
 		$normalized_attributes = array();
-		if ( is_array( $attributes ) ) {
-			foreach ( $attributes as $key => $val ) {
-				$snake_key                           = strtolower( preg_replace( '/(?<!^)[A-Z]/', '_$0', (string) $key ) );
-				$normalized_attributes[ $snake_key ] = $val;
-			}
+		foreach ( $attributes as $key => $val ) {
+			$snake_key                           = strtolower( preg_replace( '/(?<!^)[A-Z]/', '_$0', (string) $key ) );
+			$normalized_attributes[ $snake_key ] = $val;
 		}
 
 		// Handle Gutenberg Typography Classes (Presets).
@@ -154,8 +152,8 @@ class Context_Manager {
 
 		return array(
 			'resolved' => $resolved,
-			'style'    => implode( '; ', array_filter( $style_vars ) ),
-			'classes'  => implode( ' ', array_unique( array_filter( $classes ) ) ),
+			'style'    => implode( '; ', $style_vars ),
+			'classes'  => implode( ' ', array_unique( $classes ) ),
 		);
 	}
 }

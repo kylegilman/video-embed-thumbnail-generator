@@ -21,9 +21,9 @@ use Videopack\Video_Source\Video_Source_Finder;
 abstract class Source {
 
 	/**
-	 * Primary source of the video. This could be a URL, attachment ID, or other source.
+	 * Primary source of the video. This could be a URL, attachment ID, or array.
 	 *
-	 * @var string|int $source
+	 * @var string|int|array $source
 	 */
 	protected $source;
 
@@ -86,9 +86,9 @@ abstract class Source {
 	/**
 	 * Is the video source on the same server as the WordPress installation?
 	 *
-	 * @var boolean $local
+	 * @var boolean|null $local
 	 */
-	protected $local;
+	protected $local = null;
 
 	/**
 	 * Parent ID. Could be a post ID, attachment ID, or null.
@@ -122,23 +122,23 @@ abstract class Source {
 	/**
 	 * MIME type of the video.
 	 *
-	 * @var string $mime_type
+	 * @var string|null $mime_type
 	 */
-	protected $mime_type;
+	protected $mime_type = null;
 
 	/**
 	 * Video Codec.
 	 *
-	 * @var \Videopack\Admin\Formats\Codecs\Video_Codec $codec
+	 * @var \Videopack\Admin\Formats\Codecs\Video_Codec|null $codec
 	 */
-	protected $codec;
+	protected $codec = null;
 
 	/**
 	 * Video resolution.
 	 *
-	 * @var int $resolution
+	 * @var int|null $resolution
 	 */
-	protected $resolution;
+	protected $resolution = null;
 
 	/**
 	 * Video width.
@@ -164,9 +164,9 @@ abstract class Source {
 	/**
 	 * Video duration in seconds.
 	 *
-	 * @var int $duration
+	 * @var int|null $duration
 	 */
-	protected $duration;
+	protected $duration = null;
 
 	/**
 	 * Video metadata.
@@ -185,9 +185,9 @@ abstract class Source {
 	/**
 	 * Is the video source compatible with Videopack?
 	 *
-	 * @var bool $compatible
+	 * @var bool|null $compatible
 	 */
-	protected $compatible;
+	protected $compatible = null;
 
 	/**
 	 * Array of \Videopack\Admin\Formats\Video_Source objects.
@@ -472,9 +472,9 @@ abstract class Source {
 
 		$path_parts = array(
 			'dirname'      => $pathinfo['dirname'] ?? '.',
-			'basename'     => sanitize_file_name( $pathinfo['basename'] ?? '' ),
+			'basename'     => sanitize_file_name( $pathinfo['basename'] ),
 			'extension'    => $pathinfo['extension'] ?? '',
-			'filename'     => sanitize_file_name( $pathinfo['filename'] ?? '' ),
+			'filename'     => sanitize_file_name( $pathinfo['filename'] ),
 			'no_extension' => '',
 		);
 
@@ -637,7 +637,7 @@ abstract class Source {
 		if ( ! $this->mime_type ) {
 			$this->set_mime_type();
 		}
-		return $this->mime_type ?? '';
+		return $this->mime_type;
 	}
 
 	/**
@@ -661,7 +661,7 @@ abstract class Source {
 		if ( $codec && $this->resolution ) {
 			$formats = $this->format_registry->get_video_formats();
 			foreach ( $formats as $format ) {
-				if ( $format->get_codec() === $codec && $format->get_resolution() === $this->resolution ) {
+				if ( $format->get_codec() === $codec && $format->get_resolution()->get_height() === $this->resolution ) {
 					$this->format = $format->get_id();
 					break;
 				}
@@ -813,9 +813,7 @@ abstract class Source {
 			$formats = $this->format_registry->get_video_formats();
 			if ( array_key_exists( $this->format, $formats ) ) {
 				$resolution_object = $formats[ $this->format ]->get_resolution();
-				if ( $resolution_object ) {
-					$this->resolution = $resolution_object->get_height();
-				}
+				$this->resolution  = $resolution_object->get_height();
 			}
 		} elseif ( $this->get_height() ) {
 			$resolutions = $this->format_registry->get_video_resolutions();
@@ -1117,16 +1115,9 @@ abstract class Source {
 		return Video_Source_Finder::find_format_in_same_directory( $format, $this );
 	}
 
-	/**
-	 * Finds a format in the same URL directory as the source.
-	 *
-	 * @param \Videopack\Admin\Formats\Video_Format $format  The format to find.
-	 * @param int                                   $post_id The post ID.
-	 * @return bool|string The found URL or false.
-	 */
 	protected function find_format_in_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, $post_id ) {
 
-		return Video_Source_Finder::find_format_in_same_url_directory( $format, $this, $post_id );
+		return Video_Source_Finder::find_format_in_same_url_directory( $format, $this );
 	}
 
 	/**

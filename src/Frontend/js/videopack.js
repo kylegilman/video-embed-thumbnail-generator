@@ -1406,7 +1406,7 @@
 					(videoVars.count_views === 'start' && 'play' === event);
 
 				if (countCondition) {
-					fetch(`${videopack_l10n.rest_url}videopack/v1/count-play`, {
+					fetch(`${videopack_config.rest_url}videopack/v1/count-play`, {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
@@ -1996,10 +1996,10 @@
 					if (data && data.html) {
 						initInjectedPlayer(data.html);
 					} else {
-						playerContainer.innerHTML = '<p style="color:white;text-align:center;">' + (videopack_config.i18n ? videopack_config.i18n.errorLoadingPlayer : 'Error loading player.') + '</p>';
+						playerContainer.innerHTML = '<p style="color:white;text-align:center;">' + (typeof videopack_l10n !== 'undefined' && videopack_l10n.errorLoadingPlayer ? videopack_l10n.errorLoadingPlayer : 'Error loading player.') + '</p>';
 					}
 				}).catch(e => {
-					playerContainer.innerHTML = '<p style="color:white;text-align:center;">' + (videopack_config.i18n ? videopack_config.i18n.errorLoadingPlayer : 'Error loading player.') + '</p>';
+					playerContainer.innerHTML = '<p style="color:white;text-align:center;">' + (typeof videopack_l10n !== 'undefined' && videopack_l10n.errorLoadingPlayer ? videopack_l10n.errorLoadingPlayer : 'Error loading player.') + '</p>';
 				});
 			} else {
 				console.error('Videopack: Could not find player HTML and REST URL is missing', videoData);
@@ -2316,7 +2316,7 @@
 				grid.style.opacity = 0.5;
 			}
 
-			const restUrl = new URL(videopack_l10n.rest_url + 'videopack/v1/video_gallery');
+			const restUrl = new URL(videopack_config.rest_url + 'videopack/v1/video_gallery');
 
 			const postData = new URLSearchParams();
 			Object.keys(settings).forEach((key) => {

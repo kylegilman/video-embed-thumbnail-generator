@@ -181,7 +181,7 @@ class Schema implements Hook_Subscriber {
 
 		// 1. Rank Math.
 		if ( defined( 'RANK_MATH_VERSION' ) ) {
-			add_filter( 'rank_math/json_ld', array( $this, 'rank_math_integration' ), 10, 2 );
+			add_filter( 'rank_math/json_ld', array( $this, 'rank_math_integration' ) );
 			$integrated = true;
 		}
 

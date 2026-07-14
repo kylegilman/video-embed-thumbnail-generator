@@ -139,7 +139,7 @@ class Videopack {
 		$this->loader->add_subscriber( new Attachment( $options, $format_registry, $attachment_meta ) );
 		$this->loader->add_subscriber( new Attachment_Deleter( $options, $format_registry ) );
 		$this->loader->add_subscriber( new Attachment_Processor( $options, $format_registry ) );
-		$this->loader->add_subscriber( new Attachment_Media_Library( $options, $format_registry ) );
+		$this->loader->add_subscriber( new Attachment_Media_Library( $options ) );
 		$this->loader->add_subscriber( new Encode_Queue_Controller( $options, $format_registry ) );
 		$this->loader->add_subscriber( new Cleanup() );
 		$this->loader->add_subscriber( new Edit_Posts( $options, $format_registry ) );

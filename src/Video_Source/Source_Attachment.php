@@ -20,14 +20,14 @@ class Source_Attachment extends Source {
 	/**
 	 * Attachment metadata manager.
 	 *
-	 * @var \Videopack\Admin\Attachment_Meta $meta_manager
+	 * @var \Videopack\Admin\Attachment_Meta|null $meta_manager
 	 */
 	protected $meta_manager = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param string|int                             $source    The attachment ID or an array with ID and URL.
+	 * @param int|string|array                       $source          The attachment ID, or an array containing the 'id' (and optional 'url').
 	 * @param array                                  $options         Videopack options array.
 	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
 	 * @param string|null                            $format          Optional. Videopack video format ID.
@@ -91,7 +91,7 @@ class Source_Attachment extends Source {
 		}
 		$attachment_id = $this->get_id();
 		if ( ! $this->meta_manager ) {
-			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options, $attachment_id );
+			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
 		}
 		$this->metadata = $this->meta_manager->get();
 	}
@@ -194,7 +194,7 @@ class Source_Attachment extends Source {
 			$this->direct_path = (string) ( $external_url ? $external_url : $this->get_url() );
 			return;
 		}
-		$filepath = get_attached_file( $this->id );
+		$filepath = get_attached_file( (int) $this->id );
 		if ( $filepath && file_exists( $filepath ) ) {
 			$this->direct_path = $filepath;
 		} else {
@@ -214,7 +214,7 @@ class Source_Attachment extends Source {
 	 * Sets the parent ID.
 	 */
 	protected function set_parent_id(): void {
-		$parent_id = wp_get_post_parent_id( $this->get_id() );
+		$parent_id = wp_get_post_parent_id( (int) $this->get_id() );
 		if ( ! $parent_id ) {
 			$parent_id = $this->get_current_post_id();
 		}
@@ -225,14 +225,14 @@ class Source_Attachment extends Source {
 	 * Sets the descriptive title of the video.
 	 */
 	protected function set_title(): void {
-		$this->title = get_the_title( $this->get_id() );
+		$this->title = get_the_title( (int) $this->get_id() );
 	}
 
 	/**
 	 * Sets the MIME type of the video.
 	 */
 	protected function set_mime_type(): void {
-		$this->mime_type = get_post_mime_type( $this->get_id() );
+		$this->mime_type = get_post_mime_type( (int) $this->get_id() );
 
 		// For remote attachments, post_mime_type might be empty or generic.
 		// If we have an external URL, double check the file extension.
@@ -272,7 +272,7 @@ class Source_Attachment extends Source {
 		}
 
 		// 2. Check for featured image (_thumbnail_id) on the attachment itself.
-		$thumbnail_id = get_post_thumbnail_id( $this->id );
+		$thumbnail_id = get_post_thumbnail_id( (int) $this->id );
 		if ( ! empty( $thumbnail_id ) ) {
 			$poster_url = wp_get_attachment_url( (int) $thumbnail_id );
 			if ( $poster_url ) {
@@ -296,8 +296,8 @@ class Source_Attachment extends Source {
 		}
 
 		// 5. Fallback to original GIF itself if mime type is image/gif.
-		if ( 'image/gif' === get_post_mime_type( $this->id ) ) {
-			$poster_url = wp_get_attachment_url( $this->id );
+		if ( 'image/gif' === get_post_mime_type( (int) $this->id ) ) {
+			$poster_url = wp_get_attachment_url( (int) $this->id );
 			if ( $poster_url ) {
 				return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
 			}
@@ -339,7 +339,7 @@ class Source_Attachment extends Source {
 	 * @return string The download URL.
 	 */
 	public function get_download_url(): string {
-		$url = (string) add_query_arg( 'videopack[download]', 'true', get_permalink( $this->get_id() ) );
+		$url = (string) add_query_arg( 'videopack[download]', 'true', get_permalink( (int) $this->get_id() ) );
 		return (string) apply_filters( 'videopack_attachment_get_download_url', $url, $this );
 	}
 }
