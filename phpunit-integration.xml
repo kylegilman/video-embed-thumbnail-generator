@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheResult="false">
+    <testsuites>
+        <testsuite name="Videopack Integration Test Suite">
+            <directory>tests</directory>
+            <exclude>tests/ValidateTest.php</exclude>
+        </testsuite>
+    </testsuites>
+    <php>
+        <const name="WP_TESTS_MULTISITE" value="0" />
+        <env name="DB_NAME" value="local" />
+        <env name="DB_USER" value="root" />
+        <env name="DB_PASSWORD" value="root" />
+        <env name="DB_HOST" value="127.0.0.1:10055" />
+        <env name="WP_PHPUNIT__TESTS_CONFIG" value="c:\Users\kyleg\OneDrive\Documents\Videopack\GitHub\video-embed-thumbnail-generator\wp-tests-config.php" />
+    </php>
+</phpunit>
