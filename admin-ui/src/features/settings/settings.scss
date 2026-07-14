@@ -199,28 +199,7 @@
 		vertical-align: text-bottom;
 	}
 
-	.videopack-setting-reduced-width {
-		margin-bottom: 10px;
-		display: flex;
-		align-items: flex-end;
 
-		.components-base-control {
-			width: 30rem;
-			display: inline-block;
-			vertical-align: text-bottom;
-			margin-right: 10px;
-			margin-bottom: 0; // Remove bottom margin to ensure bottom alignment
-		}
-
-		.videopack-library-button-wrapper {
-			display: inline-flex;
-			align-items: flex-end;
-
-			.videopack-tooltip-trigger {
-				margin-left: 5px;
-			}
-		}
-	}
 
 	.videopack-select-from-library-preview {
 		display: flex;
@@ -527,18 +506,68 @@
 
 	.videopack-grid-row-align {
 		display: grid;
-		grid-template-columns: minmax(100px, 400px) auto;
+		grid-template-columns: minmax(100px, 30rem) auto;
 		grid-template-rows: auto auto auto auto;
 		gap: 6px 12px;
 		align-items: center;
 		margin-bottom: 24px;
+		max-width: 800px;
+		width: 100%;
+
+		&.videopack-narrow-input {
+			grid-template-columns: minmax(60px, 80px) auto;
+		}
 
 		.components-base-control,
-		.components-base-control__field {
+		.components-base-control__field,
+		.components-input-base,
+		.components-flex-item {
 			display: contents;
 		}
 
-		.components-base-control__label {
+		.components-range-control__root {
+			grid-column: 1;
+			grid-row: 2;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			width: 100%;
+
+			// Prevent greedy grid selectors from flattening slider elements
+			.components-range-control__wrapper,
+			.components-range-control__number,
+			.components-input-control__container,
+			.components-input-base,
+			input {
+				display: revert !important;
+				grid-column: revert !important;
+				grid-row: revert !important;
+				width: revert !important;
+				margin: revert !important;
+			}
+
+			.components-range-control__wrapper {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				margin-right: 0;
+			}
+
+			.components-range-control__number {
+				width: 4rem;
+				min-width: 4rem;
+				margin-left: 0;
+				margin-bottom: 0 !important;
+
+				input {
+					width: 100% !important;
+				}
+			}
+		}
+
+
+		.components-base-control__label,
+		.components-input-control__label {
 			grid-column: 1 / -1;
 			grid-row: 1;
 			margin-bottom: 0 !important;
@@ -546,6 +575,8 @@
 
 		.components-text-control__input,
 		.components-select-control__input,
+		.components-select-control__input-container,
+		.components-input-control__container,
 		.components-textarea-control__input,
 		input,
 		select {
@@ -554,12 +585,18 @@
 			margin-bottom: 0 !important;
 		}
 
+		.videopack-library-button-wrapper {
+			grid-column: 2;
+			grid-row: 2;
+			display: inline-flex;
+			align-items: center;
+		}
+
 		.videopack-input-suffix {
 			grid-column: 2;
 			grid-row: 2;
 			font-size: 13px;
 			color: colors.$gray-700;
-			font-weight: 500;
 		}
 
 		.components-base-control__help {
@@ -574,6 +611,50 @@
 			grid-row: 4;
 			margin-top: 0 !important;
 			margin-bottom: 0 !important;
+		}
+
+		@media (max-width: 600px) {
+			grid-template-columns: 1fr;
+			grid-template-rows: auto auto auto auto auto;
+			gap: 6px 0;
+
+			.components-base-control__label,
+			.components-input-control__label {
+				grid-column: 1;
+				grid-row: 1;
+			}
+
+			.components-text-control__input,
+			.components-select-control__input,
+			.components-select-control__input-container,
+			.components-input-control__container,
+			.components-textarea-control__input,
+			input,
+			select {
+				grid-column: 1;
+				grid-row: 2;
+			}
+
+			.videopack-library-button-wrapper,
+			.videopack-input-suffix {
+				grid-column: 1;
+				grid-row: 3;
+				justify-content: flex-start;
+				margin-left: 0;
+				margin-top: 4px;
+			}
+
+			.components-base-control__help {
+				grid-column: 1;
+				grid-row: 4;
+				margin-top: 4px !important;
+			}
+
+			.videopack-error-text {
+				grid-column: 1;
+				grid-row: 5;
+				margin-top: 4px !important;
+			}
 		}
 	}
 

@@ -473,61 +473,67 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 					}
 				/>
 			)}
-			{codec.id === 'h264' && (
-				<div className="videopack-setting-reduced-width">
-					<SelectControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'H.264 profile',
-							'video-embed-thumbnail-generator'
-						)}
-						value={h264_profile}
-						onChange={changeHandlerFactory.h264_profile}
-						options={h264ProfileOptions}
-						disabled={effectiveFfmpegExists !== true}
-					/>
-					<SelectControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'H.264 level',
-							'video-embed-thumbnail-generator'
-						)}
-						value={h264_level}
-						onChange={changeHandlerFactory.h264_level}
-						options={h264LevelOptions}
-						disabled={effectiveFfmpegExists !== true}
-					/>
-				</div>
-			)}
+				<>
+					<div className="videopack-grid-row-align">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'H.264 profile',
+								'video-embed-thumbnail-generator'
+							)}
+							value={h264_profile}
+							onChange={changeHandlerFactory.h264_profile}
+							options={h264ProfileOptions}
+							disabled={effectiveFfmpegExists !== true}
+						/>
+					</div>
+					<div className="videopack-grid-row-align">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'H.264 level',
+								'video-embed-thumbnail-generator'
+							)}
+							value={h264_level}
+							onChange={changeHandlerFactory.h264_level}
+							options={h264LevelOptions}
+							disabled={effectiveFfmpegExists !== true}
+						/>
+					</div>
+				</>
 			{codec.id === 'h265' && (
-				<div className="videopack-setting-reduced-width">
-					<SelectControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'H.265 profile',
-							'video-embed-thumbnail-generator'
-						)}
-						value={h265_profile}
-						onChange={changeHandlerFactory.h265_profile}
-						options={h265ProfileOptions}
-						disabled={effectiveFfmpegExists !== true}
-					/>
-					<SelectControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'H.265 level',
-							'video-embed-thumbnail-generator'
-						)}
-						value={h265_level}
-						onChange={changeHandlerFactory.h265_level}
-						options={h265LevelOptions}
-						disabled={effectiveFfmpegExists !== true}
-					/>
-				</div>
+				<>
+					<div className="videopack-grid-row-align">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'H.265 profile',
+								'video-embed-thumbnail-generator'
+							)}
+							value={h265_profile}
+							onChange={changeHandlerFactory.h265_profile}
+							options={h265ProfileOptions}
+							disabled={effectiveFfmpegExists !== true}
+						/>
+					</div>
+					<div className="videopack-grid-row-align">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'H.265 level',
+								'video-embed-thumbnail-generator'
+							)}
+							value={h265_level}
+							onChange={changeHandlerFactory.h265_level}
+							options={h265LevelOptions}
+							disabled={effectiveFfmpegExists !== true}
+						/>
+					</div>
+				</>
 			)}
 		</div>
 	);

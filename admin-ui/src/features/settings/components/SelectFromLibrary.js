@@ -24,7 +24,7 @@ const SelectFromLibrary = ({ value, onChange, label, children, ...props }) => {
 	};
 
 	return (
-		<div className="videopack-setting-reduced-width">
+		<div className="videopack-grid-row-align">
 			<TextControlOnBlur
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize

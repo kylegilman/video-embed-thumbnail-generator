@@ -412,7 +412,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	return (
 		<>
 			<PanelBody>
-				<div className="videopack-setting-reduced-width">
+				<div className="videopack-grid-row-align">
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
@@ -633,9 +633,9 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					</PanelRow>
 				</div>
 			</PanelBody>
-			<PanelBody title={__('Colors', 'video-embed-thumbnail-generator')}>
+			<PanelBody title={__('Design', 'video-embed-thumbnail-generator')}>
 				{embed_method.startsWith('Video.js') && (
-					<div className="videopack-setting-reduced-width">
+					<div className="videopack-grid-row-align">
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
@@ -948,7 +948,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				title={__('Dimensions', 'video-embed-thumbnail-generator')}
 				initialOpen={true}
 			>
-				<div className="videopack-setting-reduced-width">
+				<div className="videopack-grid-row-align">
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
@@ -1066,7 +1066,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						</Flex>
 					</>
 				)}
-				<div className="videopack-setting-reduced-width">
+				<div className="videopack-grid-row-align">
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
@@ -1186,7 +1186,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				initialOpen={true}
 			>
 				{watermark && (
-					<div className="videopack-setting-reduced-width">
+					<div className="videopack-grid-row-align">
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
