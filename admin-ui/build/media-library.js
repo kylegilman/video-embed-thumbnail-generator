@@ -1471,7 +1471,7 @@ const SelectFromLibrary = ({
     frame.open();
   };
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-    className: "videopack-setting-reduced-width",
+    className: "videopack-grid-row-align",
     children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_TextControlOnBlur, {
       __nextHasNoMarginBottom: true,
       __next40pxDefaultSize: true,
@@ -3214,353 +3214,10 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
     throw error;
   }
 };
-;// ./src/api/gallery.js
+;// ./src/api/jobs.js
 /* unused harmony import specifier */ var apiFetch;
 /* unused harmony import specifier */ var addQueryArgs;
 /* unused harmony import specifier */ var applyFilters;
-/**
- * API service for video gallery and general media data.
- */
-
-/* global videopack_config */
-
-
-
-
-/**
- * Fetches encoding presets.
- *
- * @param {AbortSignal} signal Optional. Abort signal.
- */
-const getPresets = async (signal = null) => {
-  try {
-    return await apiFetch({
-      path: '/videopack/v1/presets',
-      signal
-    });
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      throw error;
-    }
-    console.error('Error fetching presets:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches already grouped and labeled video sources for a player.
- *
- * @param {number|string} attachmentId Optional. The video attachment ID.
- * @param {string}        url          Optional. The video source URL.
- * @param {AbortSignal}   signal       Optional. Abort signal.
- */
-const getVideoSources = async (attachmentId = null, url = '', signal = null) => {
-  try {
-    const query = {
-      attachment_id: attachmentId,
-      url
-    };
-    return await apiFetch({
-      path: addQueryArgs('/videopack/v1/sources', query),
-      signal
-    });
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      throw error;
-    }
-    console.error('Error fetching video sources:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches available video formats and their encoding status for an attachment.
- *
- * @param {number|string} attachmentId   The video attachment ID.
- * @param {string}        url            Optional. The video source URL.
- * @param {Object}        probedMetadata Optional. Probed video dimensions/duration.
- * @param {AbortSignal}   signal         Optional. Abort signal.
- */
-const getVideoFormats = async (attachmentId, url = '', probedMetadata = null, signal = null) => {
-  try {
-    const query = {};
-    if (url) {
-      query.url = url;
-    }
-    if (probedMetadata) {
-      if (probedMetadata.width) {
-        query.width = probedMetadata.width;
-      }
-      if (probedMetadata.height) {
-        query.height = probedMetadata.height;
-      }
-      if (probedMetadata.duration) {
-        query.duration = probedMetadata.duration;
-      }
-    }
-    const presets = await external_wp_apiFetch_default()({
-      path: (0,external_wp_url_namespaceObject.addQueryArgs)(`/videopack/v1/attachment/${attachmentId}/formats`, query),
-      signal
-    });
-    const merged = {};
-    presets.forEach(preset => {
-      merged[preset.id] = {
-        ...preset,
-        format_id: preset.id,
-        status: preset.status ? preset.status.toLowerCase() : 'not_encoded',
-        id: preset.attachment_id || null
-      };
-    });
-    return merged;
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      throw error;
-    }
-    console.error('Error fetching video formats:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches the video gallery content based on provided arguments.
- *
- * @param {Object} args The query arguments for the gallery.
- */
-const getVideoGallery = async args => {
-  /**
-   * Filters the video gallery query. Returning a non-undefined value bypasses the REST API call.
-   *
-   * @since 5.0.0
-   *
-   * @param {undefined} pre  Defaults to undefined.
-   * @param {Object}    args Query parameters.
-   */
-  const pre = applyFilters('videopack.utils.pre_getVideoGallery', undefined, args);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
-  try {
-    const response = await apiFetch({
-      path: addQueryArgs('/videopack/v1/video_gallery', args),
-      method: 'GET'
-    });
-    /**
-     * Filters the list of media items returned for the video gallery.
-     *
-     * @since 5.0.0
-     *
-     * @param {Object} response REST API response containing video list.
-     * @param {Object} args     Query parameters used for fetching.
-     */
-    return applyFilters('videopack.utils.getVideoGallery', response, args);
-  } catch (error) {
-    console.error('Error fetching video gallery:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches users who have a specific capability.
- *
- * @param {string} capability The capability to check for.
- */
-const getUsersWithCapability = async capability => {
-  try {
-    return await apiFetch({
-      path: `/wp/v2/users?capability=${capability}`,
-      method: 'GET'
-    });
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches settings content for a specific Freemius page.
- *
- * @param {string} page The Freemius page identifier.
- */
-const getFreemiusPage = async page => {
-  try {
-    let path = `/videopack/v1/freemius/${page}`;
-    if (videopack_config.isNetworkAdmin || videopack_config.isNetworkActive) {
-      path += '?_fs_network_admin=true';
-    }
-    return await apiFetch({
-      path
-    });
-  } catch (error) {
-    console.error(`Error fetching Freemius page '${page}':`, error);
-    throw error;
-  }
-};
-
-/**
- * Tests an FFmpeg encoding command with specific parameters.
- *
- * @param {string} codec      The codec to test.
- * @param {string} resolution The resolution to test.
- */
-const testEncodeCommand = async (codec, resolution) => {
-  /**
-   * Filters the FFmpeg test command test response. Bypasses the REST API call if a non-undefined value is returned.
-   *
-   * @since 5.0.0
-   *
-   * @param {undefined} pre        Defaults to undefined.
-   * @param {string}    codec      The codec to test.
-   * @param {string}    resolution Resolution to test.
-   */
-  const pre = applyFilters('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
-  try {
-    return await apiFetch({
-      path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}`
-    });
-  } catch (error) {
-    console.error('Error testing encode command:', error);
-    throw error;
-  }
-};
-;// ./src/api/media.js
-/* unused harmony import specifier */ var media_apiFetch;
-/* unused harmony import specifier */ var media_addQueryArgs;
-/**
- * API service for media attachment management.
- */
-
-
-
-
-/**
- * Assigns an encoded file to a specific format on a parent video.
- *
- * @param {number|string} mediaId  The ID of the encoded media attachment.
- * @param {string}        formatId The format identifier.
- * @param {number|string} parentId The ID of the parent video attachment.
- */
-const assignFormat = async (mediaId, formatId, parentId) => {
-  try {
-    return await external_wp_apiFetch_default()({
-      path: `/wp/v2/media/${mediaId}`,
-      method: 'POST',
-      data: {
-        meta: {
-          '_kgflashmediaplayer-format': formatId,
-          '_kgflashmediaplayer-parent': parentId
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error assigning format:', error);
-    throw error;
-  }
-};
-
-/**
- * Unassigns a media attachment from its video format role.
- *
- * @param {number|string} mediaId The ID of the media attachment to unassign.
- */
-const unassignFormat = async mediaId => {
-  try {
-    return await media_apiFetch({
-      path: `/wp/v2/media/${mediaId}`,
-      method: 'POST',
-      data: {
-        meta: {
-          '_kgflashmediaplayer-format': '',
-          '_kgflashmediaplayer-parent': 0
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error unassigning format:', error);
-    throw error;
-  }
-};
-
-/**
- * Deletes a media attachment file permanently.
- *
- * @param {number|string} attachmentId The ID of the attachment to delete.
- */
-const deleteFile = async attachmentId => {
-  try {
-    return await external_wp_apiFetch_default()({
-      path: `/wp/v2/media/${attachmentId}?force=true`,
-      method: 'DELETE'
-    });
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    throw error;
-  }
-};
-
-/**
- * Deletes a specific video format by ID.
- *
- * @param {number|string} attachmentId The ID of the parent attachment.
- * @param {string}        formatId     The format identifier.
- */
-const deleteFormat = async (attachmentId, formatId) => {
-  try {
-    return await external_wp_apiFetch_default()({
-      path: `/videopack/v1/attachment/${attachmentId}/format/${formatId}`,
-      method: 'DELETE'
-    });
-  } catch (error) {
-    console.error('Error deleting format:', error);
-    throw error;
-  }
-};
-
-/**
- * Starts a batch process of a particular type.
- *
- * @param {string} type           The type of batch process to start.
- * @param {Object} additionalData Optional. Extra data for the process.
- */
-const startBatchProcess = async (type, additionalData = {}) => {
-  try {
-    return await media_apiFetch({
-      path: '/videopack/v1/batch/process',
-      method: 'POST',
-      data: {
-        type,
-        ...additionalData
-      }
-    });
-  } catch (error) {
-    console.error(`Error starting ${type} batch processing:`, error);
-    throw error;
-  }
-};
-
-/**
- * Fetches the progress of a batch process.
- *
- * @param {string} type The type of batch process to check.
- */
-const getBatchProgress = async type => {
-  try {
-    return await media_apiFetch({
-      path: media_addQueryArgs('/videopack/v1/batch/progress', {
-        type
-      })
-    });
-  } catch (error) {
-    console.error(`Error fetching ${type} batch progress:`, error);
-    throw error;
-  }
-};
-;// ./src/api/jobs.js
-/* unused harmony import specifier */ var jobs_apiFetch;
-/* unused harmony import specifier */ var jobs_addQueryArgs;
-/* unused harmony import specifier */ var jobs_applyFilters;
 /**
  * API service for managing video encoding jobs.
  */
@@ -3580,7 +3237,7 @@ const getQueue = async () => {
    *
    * @param {undefined} pre Defaults to undefined. If a non-undefined value is returned, fetching is bypassed.
    */
-  const pre = jobs_applyFilters('videopack.utils.pre_getQueue', undefined);
+  const pre = applyFilters('videopack.utils.pre_getQueue', undefined);
   if (typeof pre !== 'undefined') {
     return pre;
   }
@@ -3593,7 +3250,7 @@ const getQueue = async () => {
      *
      * @param {Array} response Array of job objects.
      */
-    return jobs_applyFilters('videopack.utils.getQueue', response || []);
+    return applyFilters('videopack.utils.getQueue', response || []);
   } catch (error) {
     console.error('Error fetching queue:', error);
     throw error;
@@ -3607,7 +3264,7 @@ const getQueue = async () => {
  */
 const toggleQueue = async action => {
   try {
-    return await jobs_apiFetch({
+    return await apiFetch({
       path: '/videopack/v1/jobs/control',
       method: 'POST',
       data: {
@@ -3627,7 +3284,7 @@ const toggleQueue = async action => {
  */
 const clearQueue = async type => {
   try {
-    return await jobs_apiFetch({
+    return await apiFetch({
       path: '/videopack/v1/jobs/clear',
       method: 'DELETE',
       data: {
@@ -3666,7 +3323,7 @@ const deleteJob = async jobId => {
  */
 const retryJob = async jobId => {
   try {
-    return await jobs_apiFetch({
+    return await apiFetch({
       path: `/videopack/v1/jobs/${jobId}`,
       method: 'POST'
     });
@@ -3683,8 +3340,8 @@ const retryJob = async jobId => {
  */
 const removeJob = async jobId => {
   try {
-    return await jobs_apiFetch({
-      path: jobs_addQueryArgs(`/videopack/v1/jobs/${jobId}`, {
+    return await apiFetch({
+      path: addQueryArgs(`/videopack/v1/jobs/${jobId}`, {
         force: false
       }),
       method: 'DELETE'
@@ -3726,7 +3383,7 @@ const createJob = async (input, outputs, parentId = 0) => {
  */
 const getJobStatus = async jobId => {
   try {
-    return await jobs_apiFetch({
+    return await apiFetch({
       path: `/videopack/v1/jobs/${jobId}`
     });
   } catch (error) {
@@ -3783,7 +3440,7 @@ const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
  */
 const resetJob = async jobId => {
   try {
-    return await jobs_apiFetch({
+    return await apiFetch({
       path: `/videopack/v1/browser-queue/job/${jobId}/reset`,
       method: 'POST'
     });
@@ -3930,8 +3587,6 @@ const VideoPlayerInner = ({
 
 
 
-
-
 const Thumbnails = ({
   setAttributes,
   attributes,
@@ -3959,36 +3614,8 @@ const Thumbnails = ({
   const [thumbChoices, setThumbChoices] = (0,external_wp_element_namespaceObject.useState)([]);
   const [isSaving, setIsSaving] = (0,external_wp_element_namespaceObject.useState)(false);
   const [isModalOpen, setIsModalOpen] = (0,external_wp_element_namespaceObject.useState)(false);
-  const [spriteMessage, setSpriteMessage] = (0,external_wp_element_namespaceObject.useState)(null);
   const [activeJobs, setActiveJobs] = (0,external_wp_element_namespaceObject.useState)([]);
-  const [existingSprite, setExistingSprite] = (0,external_wp_element_namespaceObject.useState)(null); // { id, url, status }
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = (0,external_wp_element_namespaceObject.useState)(false);
-  const [isDeleting, setIsDeleting] = (0,external_wp_element_namespaceObject.useState)(false);
   const [showFailedNotice, setShowFailedNotice] = (0,external_wp_element_namespaceObject.useState)(true);
-  const fetchSpriteStatus = (0,external_wp_element_namespaceObject.useCallback)(async () => {
-    if (!id || !src) {
-      return;
-    }
-    try {
-      const formats = await getVideoFormats(id, src, probedMetadata);
-      const spriteFormat = formats.thumbnail_sprite;
-      console.log('Sprite detection:', {
-        id,
-        spriteFormat
-      });
-      if (spriteFormat && spriteFormat.exists) {
-        setExistingSprite({
-          id: spriteFormat.id,
-          url: spriteFormat.url,
-          status: spriteFormat.status
-        });
-      } else {
-        setExistingSprite(null);
-      }
-    } catch (error) {
-      console.error('Error fetching sprite status:', error);
-    }
-  }, [id, src, probedMetadata]);
 
   // Poll for active thumbnail jobs if any exist
   (0,external_wp_element_namespaceObject.useEffect)(() => {
@@ -3996,15 +3623,8 @@ const Thumbnails = ({
     const checkJobs = async () => {
       try {
         const jobs = await listJobs(id);
-        const activeThumbnailJobs = jobs.filter(job => (job.format_id === 'thumbnail' || job.format_id === 'thumbnail_sprite') && ['queued', 'processing', 'encoding'].includes(job.status));
+        const activeThumbnailJobs = jobs.filter(job => job.format_id === 'thumbnail' && ['queued', 'processing', 'encoding'].includes(job.status));
         setActiveJobs(activeThumbnailJobs);
-        if (activeThumbnailJobs.length === 0 && activeJobs.length > 0) {
-          fetchSpriteStatus();
-          // Jobs just finished, maybe refresh the poster if it was just set
-          if (id) {
-            // Optionally trigger a refresh of videoData if needed
-          }
-        }
       } catch (error) {
         console.error('Error polling jobs:', error);
       }
@@ -4014,10 +3634,7 @@ const Thumbnails = ({
       pollInterval = setInterval(checkJobs, 10000); // Poll every 10 seconds
     }
     return () => clearInterval(pollInterval);
-  }, [id, activeJobs.length, fetchSpriteStatus]);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    fetchSpriteStatus();
-  }, [fetchSpriteStatus]);
+  }, [id]);
   const {
     active_encoder = 'ffmpeg'
   } = options;
@@ -4054,20 +3671,17 @@ const Thumbnails = ({
       }
     }
   }, [resolvedPoster]);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (spriteMessage && spriteMessage.type !== 'error') {
-      const timer = setTimeout(() => {
-        setSpriteMessage(null);
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [spriteMessage]);
   function onSelectPoster(image) {
     const cleanUrl = image.url ? image.url.replace(/&amp;/g, '&') : '';
+    const attachment = videoData?.record;
+    const attachmentPoster = attachment?.videopack?.poster || attachment?.meta?.['_videopack-meta']?.poster || '';
+    const attachmentPosterId = attachment?.meta?.['_videopack-meta']?.poster_id || attachment?.meta?.['_kgflashmediaplayer-poster-id'] || 0;
+    const finalPoster = cleanUrl && cleanUrl !== attachmentPoster ? cleanUrl : undefined;
+    const finalPosterId = image.id && Number(image.id) !== Number(attachmentPosterId) ? Number(image.id) : undefined;
     setAttributes({
       ...attributes,
-      poster: cleanUrl,
-      poster_id: Number(image.id)
+      poster: finalPoster,
+      poster_id: finalPosterId
     });
   }
   async function onRemovePoster() {
@@ -4079,7 +3693,7 @@ const Thumbnails = ({
   const handleGenerate = async (type = 'generate') => {
     setIsSaving(true);
     setThumbChoices([]);
-    const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
+    const browserThumbnailsEnabled = videopack_config.options.browser_thumbnails;
     if (!browserThumbnailsEnabled && !!ffmpegExists) {
       // Browser thumbnails explicitly disabled, use FFmpeg directly
       const newThumbImages = [];
@@ -4106,122 +3720,6 @@ const Thumbnails = ({
     } else {
       // Attempt browser-based generation
       generateThumbCanvases(type);
-    }
-  };
-  const [spriteTiles, setSpriteTiles] = (0,external_wp_element_namespaceObject.useState)([]);
-  const handleGenerateSprite = async () => {
-    setIsSaving(true);
-    setSpriteTiles([]);
-    const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
-    const rawFfmpegExists = !!videopack_config.ffmpeg_exists && videopack_config.ffmpeg_exists !== 'notinstalled';
-    const isExternalEncoder = active_encoder !== 'ffmpeg' && activeEncoderReady;
-    if (!browserThumbnailsEnabled && rawFfmpegExists && !isExternalEncoder) {
-      try {
-        const activeId = id || 0;
-        await enqueueJob(activeId, src, {
-          thumbnail_sprite: true
-        }, parentId);
-        let successMsg = (0,external_wp_i18n_namespaceObject.__)('Sprite generation enqueued. Check Additional Formats panel for progress.', 'video-embed-thumbnail-generator');
-        if (videopack_config.active_encoder === 'browser') {
-          successMsg = /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
-              children: successMsg
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("p", {
-              children: [(0,external_wp_i18n_namespaceObject.__)('Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator'), ' ', /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("a", {
-                href: videopack_config.queue_url,
-                children: (0,external_wp_i18n_namespaceObject.__)('Go to Queue Page', 'video-embed-thumbnail-generator')
-              })]
-            })]
-          });
-        }
-        setSpriteMessage({
-          type: 'success',
-          text: successMsg
-        });
-        // If we have an Additional Formats panel nearby, it will handle polling.
-        fetchSpriteStatus(); // Initial check after enqueue
-      } catch (error) {
-        console.error('Sprite enqueue failed', error);
-        setSpriteMessage({
-          type: 'error',
-          text: (0,external_wp_i18n_namespaceObject.__)('Error: Failed to enqueue sprite generation.', 'video-embed-thumbnail-generator')
-        });
-      } finally {
-        setIsSaving(false);
-      }
-      return;
-    }
-    const tileWidth = 160;
-    const columns = 10;
-    const targetCount = 100;
-    const duration = videoRef.current.duration;
-    const spriteInterval = Math.max(1.0, duration / targetCount);
-    const totalTiles = Math.ceil(duration / spriteInterval);
-    const timePoints = [];
-    for (let i = 0; i < totalTiles; i++) {
-      timePoints.push(i * spriteInterval);
-    }
-    const canvases = [];
-    try {
-      for (const time of timePoints) {
-        const canvas = await captureVideoFrame(src, time, options?.ffmpeg_thumb_watermark || {});
-        // Resize canvas to tileWidth
-        const tileCanvas = document.createElement('canvas');
-        tileCanvas.width = tileWidth;
-        tileCanvas.height = tileWidth * canvas.height / canvas.width;
-        const tctx = tileCanvas.getContext('2d');
-        tctx.drawImage(canvas, 0, 0, tileCanvas.width, tileCanvas.height);
-        canvases.push(tileCanvas);
-        setSpriteTiles(prev => [...prev, tileCanvas.toDataURL('image/jpeg', 0.6)]);
-      }
-      const rows = Math.ceil(canvases.length / columns);
-      const tileHeight = canvases[0].height;
-      const spriteCanvas = document.createElement('canvas');
-      spriteCanvas.width = tileWidth * columns;
-      spriteCanvas.height = tileHeight * rows;
-      const ctx = spriteCanvas.getContext('2d');
-      canvases.forEach((canvas, index) => {
-        const x = index % columns * tileWidth;
-        const y = Math.floor(index / columns) * tileHeight;
-        ctx.drawImage(canvas, x, y);
-      });
-      await createThumbnailFromCanvas(spriteCanvas, id, src, parentId, false, {
-        is_sprite: true,
-        interval: spriteInterval,
-        total_tiles: canvases.length,
-        width: tileWidth,
-        set_poster: false,
-        filename_suffix: '_thumbnail-sprite'
-      });
-      fetchSpriteStatus();
-    } catch (error) {
-      console.error('Sprite generation failed', error);
-    } finally {
-      setIsSaving(false);
-      setSpriteTiles([]);
-    }
-  };
-  const handleDeleteSprite = async () => {
-    if (!existingSprite || !existingSprite.id) {
-      return;
-    }
-    setIsConfirmDeleteOpen(false);
-    setIsDeleting(true);
-    try {
-      await deleteFile(existingSprite.id);
-      setExistingSprite(null);
-      setSpriteMessage({
-        type: 'success',
-        text: (0,external_wp_i18n_namespaceObject.__)('Sprite sheet deleted successfully.', 'video-embed-thumbnail-generator')
-      });
-    } catch (error) {
-      console.error('Failed to delete sprite:', error);
-      setSpriteMessage({
-        type: 'error',
-        text: (0,external_wp_i18n_namespaceObject.__)('Error: Failed to delete sprite sheet.', 'video-embed-thumbnail-generator')
-      });
-    } finally {
-      setIsDeleting(false);
     }
   };
   const srcIsExternal = (() => {
@@ -4452,8 +3950,8 @@ const Thumbnails = ({
       }
       const finalAttributes = {
         ...attributes,
-        poster: cleanPoster || undefined,
-        poster_id: new_poster_id || undefined
+        poster: undefined,
+        poster_id: undefined
       };
 
       // If we just created the attachment, ensure the ID is included
@@ -4548,7 +4046,7 @@ const Thumbnails = ({
         setIsSaving(false);
       }
     };
-    const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
+    const browserThumbnailsEnabled = videopack_config.options.browser_thumbnails;
     if (!browserThumbnailsEnabled || canvasTainted) {
       await runFfmpegFallback();
       return;
@@ -4671,37 +4169,19 @@ const Thumbnails = ({
             children: (0,external_wp_i18n_namespaceObject.__)('Random', 'video-embed-thumbnail-generator')
           }), (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.thumbnail.actions', null, {
             id,
+            src,
+            parentId,
             isSaving,
             isProbing,
             ffmpegExists,
-            existingSprite,
-            isDeleting,
-            handleGenerateSprite,
-            setIsConfirmDeleteOpen,
-            canvasTainted
+            canvasTainted,
+            probedMetadata,
+            options
           })]
         })]
-      }), spriteMessage && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Notice, {
-        status: spriteMessage.type,
-        onRemove: () => setSpriteMessage(null),
-        isDismissible: true,
-        className: "videopack-sprite-notice",
-        children: spriteMessage.text
       }), canvasTainted && !isProbing && !ffmpegExists && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
         className: "videopack-security-error-notice",
         children: (0,external_wp_i18n_namespaceObject.__)('Cross-origin resource sharing (CORS) policy on the external server is preventing thumbnail generation.', 'video-embed-thumbnail-generator')
-      }), spriteTiles.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-sprite-generation-preview",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
-          children: (0,external_wp_i18n_namespaceObject.sprintf)(/* translators: %d is the number of tiles captured */
-          (0,external_wp_i18n_namespaceObject.__)('Capturing sprite tiles… (%d)', 'video-embed-thumbnail-generator'), spriteTiles.length)
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-          className: "videopack-sprite-tiles-grid",
-          children: spriteTiles.map((tileSrc, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("img", {
-            src: tileSrc,
-            alt: ""
-          }, index))
-        })]
       }), thumbChoices.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
         variant: "primary",
         onClick: handleSaveAllThumbnails,
@@ -4780,13 +4260,6 @@ const Thumbnails = ({
           disabled: (canvasTainted || isProbing) && !ffmpegExists,
           isModal: true
         })
-      }), isConfirmDeleteOpen && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.__experimentalConfirmDialog, {
-        isOpen: isConfirmDeleteOpen,
-        title: (0,external_wp_i18n_namespaceObject.__)('Delete Sprite Sheet', 'video-embed-thumbnail-generator'),
-        confirmButtonText: (0,external_wp_i18n_namespaceObject.__)('Delete', 'video-embed-thumbnail-generator'),
-        onConfirm: handleDeleteSprite,
-        onCancel: () => setIsConfirmDeleteOpen(false),
-        children: (0,external_wp_i18n_namespaceObject.__)('Are you sure you want to permanently delete this sprite sheet? This action cannot be undone.', 'video-embed-thumbnail-generator')
       })]
     })
   });
@@ -5193,6 +4666,349 @@ const EncodeFormatStatus = ({
   }, formatId);
 };
 /* harmony default export */ const AdditionalFormats_EncodeFormatStatus = (EncodeFormatStatus);
+;// ./src/api/gallery.js
+/* unused harmony import specifier */ var gallery_apiFetch;
+/* unused harmony import specifier */ var gallery_addQueryArgs;
+/* unused harmony import specifier */ var gallery_applyFilters;
+/**
+ * API service for video gallery and general media data.
+ */
+
+/* global videopack_config */
+
+
+
+
+/**
+ * Fetches encoding presets.
+ *
+ * @param {AbortSignal} signal Optional. Abort signal.
+ */
+const getPresets = async (signal = null) => {
+  try {
+    return await gallery_apiFetch({
+      path: '/videopack/v1/presets',
+      signal
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw error;
+    }
+    console.error('Error fetching presets:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches already grouped and labeled video sources for a player.
+ *
+ * @param {number|string} attachmentId Optional. The video attachment ID.
+ * @param {string}        url          Optional. The video source URL.
+ * @param {AbortSignal}   signal       Optional. Abort signal.
+ */
+const getVideoSources = async (attachmentId = null, url = '', signal = null) => {
+  try {
+    const query = {
+      attachment_id: attachmentId,
+      url
+    };
+    return await gallery_apiFetch({
+      path: gallery_addQueryArgs('/videopack/v1/sources', query),
+      signal
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw error;
+    }
+    console.error('Error fetching video sources:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches available video formats and their encoding status for an attachment.
+ *
+ * @param {number|string} attachmentId   The video attachment ID.
+ * @param {string}        url            Optional. The video source URL.
+ * @param {Object}        probedMetadata Optional. Probed video dimensions/duration.
+ * @param {AbortSignal}   signal         Optional. Abort signal.
+ */
+const getVideoFormats = async (attachmentId, url = '', probedMetadata = null, signal = null) => {
+  try {
+    const query = {};
+    if (url) {
+      query.url = url;
+    }
+    if (probedMetadata) {
+      if (probedMetadata.width) {
+        query.width = probedMetadata.width;
+      }
+      if (probedMetadata.height) {
+        query.height = probedMetadata.height;
+      }
+      if (probedMetadata.duration) {
+        query.duration = probedMetadata.duration;
+      }
+    }
+    const presets = await external_wp_apiFetch_default()({
+      path: (0,external_wp_url_namespaceObject.addQueryArgs)(`/videopack/v1/attachment/${attachmentId}/formats`, query),
+      signal
+    });
+    const merged = {};
+    presets.forEach(preset => {
+      merged[preset.id] = {
+        ...preset,
+        format_id: preset.id,
+        status: preset.status ? preset.status.toLowerCase() : 'not_encoded',
+        id: preset.attachment_id || null
+      };
+    });
+    return merged;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw error;
+    }
+    console.error('Error fetching video formats:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches the video gallery content based on provided arguments.
+ *
+ * @param {Object} args The query arguments for the gallery.
+ */
+const getVideoGallery = async args => {
+  /**
+   * Filters the video gallery query. Returning a non-undefined value bypasses the REST API call.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre  Defaults to undefined.
+   * @param {Object}    args Query parameters.
+   */
+  const pre = gallery_applyFilters('videopack.utils.pre_getVideoGallery', undefined, args);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
+  try {
+    const response = await gallery_apiFetch({
+      path: gallery_addQueryArgs('/videopack/v1/video_gallery', args),
+      method: 'GET'
+    });
+    /**
+     * Filters the list of media items returned for the video gallery.
+     *
+     * @since 5.0.0
+     *
+     * @param {Object} response REST API response containing video list.
+     * @param {Object} args     Query parameters used for fetching.
+     */
+    return gallery_applyFilters('videopack.utils.getVideoGallery', response, args);
+  } catch (error) {
+    console.error('Error fetching video gallery:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches users who have a specific capability.
+ *
+ * @param {string} capability The capability to check for.
+ */
+const getUsersWithCapability = async capability => {
+  try {
+    return await gallery_apiFetch({
+      path: `/wp/v2/users?capability=${capability}`,
+      method: 'GET'
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches settings content for a specific Freemius page.
+ *
+ * @param {string} page The Freemius page identifier.
+ */
+const getFreemiusPage = async page => {
+  try {
+    let path = `/videopack/v1/freemius/${page}`;
+    if (videopack_config.isNetworkAdmin || videopack_config.isNetworkActive) {
+      path += '?_fs_network_admin=true';
+    }
+    return await gallery_apiFetch({
+      path
+    });
+  } catch (error) {
+    console.error(`Error fetching Freemius page '${page}':`, error);
+    throw error;
+  }
+};
+
+/**
+ * Tests an FFmpeg encoding command with specific parameters.
+ *
+ * @param {string} codec      The codec to test.
+ * @param {string} resolution The resolution to test.
+ */
+const testEncodeCommand = async (codec, resolution) => {
+  /**
+   * Filters the FFmpeg test command test response. Bypasses the REST API call if a non-undefined value is returned.
+   *
+   * @since 5.0.0
+   *
+   * @param {undefined} pre        Defaults to undefined.
+   * @param {string}    codec      The codec to test.
+   * @param {string}    resolution Resolution to test.
+   */
+  const pre = gallery_applyFilters('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
+  try {
+    return await gallery_apiFetch({
+      path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}`
+    });
+  } catch (error) {
+    console.error('Error testing encode command:', error);
+    throw error;
+  }
+};
+;// ./src/api/media.js
+/* unused harmony import specifier */ var media_apiFetch;
+/* unused harmony import specifier */ var media_addQueryArgs;
+/**
+ * API service for media attachment management.
+ */
+
+
+
+
+/**
+ * Assigns an encoded file to a specific format on a parent video.
+ *
+ * @param {number|string} mediaId  The ID of the encoded media attachment.
+ * @param {string}        formatId The format identifier.
+ * @param {number|string} parentId The ID of the parent video attachment.
+ */
+const assignFormat = async (mediaId, formatId, parentId) => {
+  try {
+    return await external_wp_apiFetch_default()({
+      path: `/wp/v2/media/${mediaId}`,
+      method: 'POST',
+      data: {
+        meta: {
+          '_kgflashmediaplayer-format': formatId,
+          '_kgflashmediaplayer-parent': parentId
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error assigning format:', error);
+    throw error;
+  }
+};
+
+/**
+ * Unassigns a media attachment from its video format role.
+ *
+ * @param {number|string} mediaId The ID of the media attachment to unassign.
+ */
+const unassignFormat = async mediaId => {
+  try {
+    return await media_apiFetch({
+      path: `/wp/v2/media/${mediaId}`,
+      method: 'POST',
+      data: {
+        meta: {
+          '_kgflashmediaplayer-format': '',
+          '_kgflashmediaplayer-parent': 0
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error unassigning format:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a media attachment file permanently.
+ *
+ * @param {number|string} attachmentId The ID of the attachment to delete.
+ */
+const deleteFile = async attachmentId => {
+  try {
+    return await external_wp_apiFetch_default()({
+      path: `/wp/v2/media/${attachmentId}?force=true`,
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a specific video format by ID.
+ *
+ * @param {number|string} attachmentId The ID of the parent attachment.
+ * @param {string}        formatId     The format identifier.
+ */
+const deleteFormat = async (attachmentId, formatId) => {
+  try {
+    return await external_wp_apiFetch_default()({
+      path: `/videopack/v1/attachment/${attachmentId}/format/${formatId}`,
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error('Error deleting format:', error);
+    throw error;
+  }
+};
+
+/**
+ * Starts a batch process of a particular type.
+ *
+ * @param {string} type           The type of batch process to start.
+ * @param {Object} additionalData Optional. Extra data for the process.
+ */
+const startBatchProcess = async (type, additionalData = {}) => {
+  try {
+    return await media_apiFetch({
+      path: '/videopack/v1/batch/process',
+      method: 'POST',
+      data: {
+        type,
+        ...additionalData
+      }
+    });
+  } catch (error) {
+    console.error(`Error starting ${type} batch processing:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches the progress of a batch process.
+ *
+ * @param {string} type The type of batch process to check.
+ */
+const getBatchProgress = async type => {
+  try {
+    return await media_apiFetch({
+      path: media_addQueryArgs('/videopack/v1/batch/progress', {
+        type
+      })
+    });
+  } catch (error) {
+    console.error(`Error fetching ${type} batch progress:`, error);
+    throw error;
+  }
+};
 ;// ./src/components/AdditionalFormats/AdditionalFormats.js
 /**
  * Component to manage additional video formats, including encoding and file management.
@@ -5559,9 +5375,9 @@ const AdditionalFormats = ({
             children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
               children: successMsg
             }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("p", {
-              children: [(0,external_wp_i18n_namespaceObject.__)('Browser encoding is active. Processing will only occur while the Videopack Queue page is open.', 'video-embed-thumbnail-generator'), ' ', /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("a", {
+              children: [(0,external_wp_i18n_namespaceObject.__)('Browser encoding is active. Processing will only occur while the Videopack Processing page is open.', 'video-embed-thumbnail-generator'), ' ', /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("a", {
                 href: videopack_config.queue_url,
-                children: (0,external_wp_i18n_namespaceObject.__)('Go to Queue Page', 'video-embed-thumbnail-generator')
+                children: (0,external_wp_i18n_namespaceObject.__)('Go to Processing Page', 'video-embed-thumbnail-generator')
               })]
             })]
           });
@@ -6555,7 +6371,7 @@ const normalizeSourceGroups = videoSources => {
 
 
 
-const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
+const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'views', 'duration', 'videopack', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
 const VIDEOPACK_CONTEXT_KEYS =
 /**
  * Filters the list of Gutenberg block context keys that the hook listens to.
@@ -8162,7 +7978,7 @@ const PreviewIframe = ({
 
       // Inject theme styles from WordPress global styles.
       if (!doc.getElementById('videopack-global-styles')) {
-        const globalStyles = window.videopack_config?.globalStyles || window.videopack_config?.global_styles;
+        const globalStyles = window.parent?.document?.getElementById('global-styles-inline-css')?.textContent || window.videopack_config?.globalStyles || window.videopack_config?.global_styles;
         if (globalStyles) {
           const themeStyle = doc.createElement('style');
           themeStyle.id = 'videopack-global-styles';
