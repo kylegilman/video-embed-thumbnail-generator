@@ -267,7 +267,7 @@ class Validate {
 	/**
 	 * Validates if a string is a valid URL, including multibyte characters.
 	 *
-	 * @param string $uri The URI to validate.
+	 * @param string|array $uri The URI to validate.
 	 * @return bool True if valid, false otherwise.
 	 */
 	public static function filter_validate_url( $uri ) {
