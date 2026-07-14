@@ -197,14 +197,14 @@ class Attachment implements Hook_Subscriber {
 			$post = get_post( (int) $post );
 		}
 
-		if ( ! $post instanceof \WP_Post || ! property_exists( $post, 'post_mime_type' ) ) {
+		if ( ! $post instanceof \WP_Post ) {
 			return false;
 		}
 
 		$is_animated = false;
 		if ( 'image/gif' === $post->post_mime_type ) {
 			$moviefile          = get_attached_file( $post->ID );
-			$videopack_postmeta = $this->attachment_meta->get( $post->ID );
+			$videopack_postmeta = $this->attachment_meta->set_post_id( $post->ID );
 			if ( isset( $videopack_postmeta['animated'] ) && 'notchecked' === $videopack_postmeta['animated'] ) {
 				$videopack_postmeta['animated'] = $this->is_animated_gif( (string) $moviefile );
 				$this->attachment_meta->save( $videopack_postmeta );
@@ -307,13 +307,13 @@ class Attachment implements Hook_Subscriber {
 			)
 		);
 
-		if ( is_wp_error( $attachment_id ) || ! $attachment_id ) {
+		if ( ! $attachment_id ) {
 			return new \WP_Error( 'create_failed', __( 'Could not create remote attachment.', 'video-embed-thumbnail-generator' ) );
 		}
 
 		update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-externalurl', $url );
 		update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-external-remote', 'true' );
-		$this->attachment_meta->get( (int) $attachment_id );
+		$this->attachment_meta->set_post_id( (int) $attachment_id );
 
 		return (int) $attachment_id;
 	}

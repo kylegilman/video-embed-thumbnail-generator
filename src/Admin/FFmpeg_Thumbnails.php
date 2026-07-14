@@ -102,7 +102,7 @@ class FFmpeg_Thumbnails {
 			'mjpeg',
 		);
 
-		if ( ! empty( $rotate_array ) && is_array( $rotate_array ) ) {
+		if ( ! empty( $rotate_array ) ) {
 			$thumb_options = array_merge( $thumb_options, $rotate_array );
 		}
 
@@ -302,9 +302,9 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Generates a complex filter string for FFmpeg (e.g., for watermarks).
 	 *
-	 * @param array $ffmpeg_watermark Watermark settings.
-	 * @param int   $movie_height     Video height.
-	 * @param bool  $thumb            Optional. Whether this is for a thumbnail (default false).
+	 * @param array|false|null $ffmpeg_watermark Watermark settings.
+	 * @param int              $movie_height     Video height.
+	 * @param bool             $thumb            Optional. Whether this is for a thumbnail (default false).
 	 * @return array Filter complex parameters.
 	 */
 	public function filter_complex( $ffmpeg_watermark, $movie_height, $thumb = false ) {
@@ -407,14 +407,14 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Saves a thumbnail image to the Media Library.
 	 *
-	 * @param int       $attachment_id    Video attachment ID.
-	 * @param string    $post_name        Video post name.
-	 * @param string    $thumb_url        Thumbnail URL (local temp or remote).
-	 * @param int|bool  $thumbnail_index  Optional. Index for the thumbnail filename.
-	 * @param int       $force_parent_id  Optional. Parent ID to set.
-	 * @param bool|null $force_featured   Optional. Flag to force featured status.
-	 * @param bool      $force_set_poster Optional. Whether to force setting the poster. Default true.
-	 * @param string    $filename_suffix  Optional. Suffix for the thumbnail filename. Default '_thumb'.
+	 * @param int|string      $attachment_id    Video attachment ID.
+	 * @param string          $post_name        Video post name.
+	 * @param string          $thumb_url        Thumbnail URL (local temp or remote).
+	 * @param int|bool        $thumbnail_index  Optional. Index for the thumbnail filename.
+	 * @param int             $force_parent_id  Optional. Parent ID to set.
+	 * @param bool|string|null $force_featured   Optional. Flag to force featured status.
+	 * @param bool|string     $force_set_poster Optional. Whether to force setting the poster. Default true.
+	 * @param string          $filename_suffix  Optional. Suffix for the thumbnail filename. Default '_thumb'.
 	 * @return array Result of the save operation.
 	 */
 	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false, $force_parent_id = 0, $force_featured = null, $force_set_poster = true, $filename_suffix = '_thumb' ) {
@@ -425,6 +425,7 @@ class FFmpeg_Thumbnails {
 			$force_set_poster = (bool) $force_set_poster;
 		}
 
+		$video   = get_post( (int) $attachment_id );
 		$user_ID = (int) get_current_user_id();
 		$uploads = wp_upload_dir();
 
@@ -502,12 +503,11 @@ class FFmpeg_Thumbnails {
 				$new_filename_base = "{$base_filename}{$filename_suffix}{$index}";
 				$final_posterpath  = (string) $uploads['path'] . '/' . $new_filename_base . '.' . $extension;
 
-				$video     = get_post( (int) $attachment_id );
 				$parent_id = (int) $attachment_id;
 				if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
 					if ( ! empty( $force_parent_id ) ) {
 						$parent_id = (int) $force_parent_id;
-					} elseif ( isset( $video ) && $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
+					} elseif ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
 						$parent_id = (int) $video->post_parent;
 					}
 				}
@@ -568,7 +568,6 @@ class FFmpeg_Thumbnails {
 					);
 				}
 
-				$video     = get_post( (int) $attachment_id );
 				$parent_id = (int) $attachment_id;
 				if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
 					if ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
@@ -590,7 +589,7 @@ class FFmpeg_Thumbnails {
 			}
 		}
 
-		if ( $thumb_id && ! is_wp_error( $thumb_id ) ) {
+		if ( $thumb_id ) {
 			if ( is_numeric( $attachment_id ) ) {
 				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
 				$current_meta             = $attachment_meta_instance->get();
@@ -604,8 +603,6 @@ class FFmpeg_Thumbnails {
 				}
 
 				if ( $force_set_poster ) {
-					error_log( 'Videopack debug: setting post thumbnail for attachment ' . $attachment_id . ' with thumb ' . $thumb_id );
-					error_log( 'Videopack debug: call stack: ' . wp_debug_backtrace_summary() );
 					set_post_thumbnail( (int) $attachment_id, (int) $thumb_id );
 				}
 
@@ -614,13 +611,12 @@ class FFmpeg_Thumbnails {
 				if ( $is_featured ) {
 					if ( ! empty( $force_parent_id ) ) {
 						set_post_thumbnail( (int) $force_parent_id, (int) $thumb_id );
-					} elseif ( isset( $video ) && $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
+					} elseif ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
 						set_post_thumbnail( (int) $video->post_parent, (int) $thumb_id );
 					}
 				}
 
 				if ( $force_set_poster ) {
-					error_log( 'Videopack debug: updating poster metadata for attachment ' . $attachment_id );
 					update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster', $final_poster_url );
 					update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id', (int) $thumb_id );
 

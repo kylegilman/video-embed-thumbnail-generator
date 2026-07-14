@@ -343,7 +343,7 @@ class Multisite implements Hook_Subscriber {
 		$input   = (array) \Videopack\Common\Sanitizer::sanitize_options_recursively( (array) $input, $schema );
 
 		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $options['app_path'] ?? '' ) ) {
-			$input = (array) ( new Options() )->validate_ffmpeg_settings( (array) $input, new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options, $this->format_registry ) );
+			$input = (array) ( new Options() )->validate_ffmpeg_settings( (array) $input );
 		} else {
 			$input['ffmpeg_exists'] = $options['ffmpeg_exists'] ?? 'notchecked';
 		}
@@ -540,7 +540,7 @@ class Multisite implements Hook_Subscriber {
 	/**
 	 * Overrides site-specific options with network settings.
 	 *
-	 * @param array $options Site-specific options.
+	 * @param mixed $options Site-specific options.
 	 * @return array Modified options.
 	 */
 	public function override_local_options( $options ) {

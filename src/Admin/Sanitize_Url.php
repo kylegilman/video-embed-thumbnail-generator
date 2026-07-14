@@ -93,7 +93,7 @@ class Sanitize_Url {
 
 		$clean_url          = (string) strtok( $decoded_url, '?#' );
 		$no_extension_url   = (string) preg_replace( '/\\.[^.\\s]{3,4}$/', '', $clean_url );
-		$sanitized_basename = (string) sanitize_file_name( (string) ( $path_info['basename'] ?? '' ) );
+		$sanitized_basename = (string) sanitize_file_name( (string) $path_info['basename'] );
 		$this->noextension  = (string) $no_extension_url;
 		$this->basename     = (string) str_replace( '.' . (string) $path_info['extension'], '', $sanitized_basename );
 	}

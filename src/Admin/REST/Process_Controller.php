@@ -136,19 +136,19 @@ class Process_Controller extends Controller {
 
 		switch ( $type ) {
 			case 'featured':
-				$attachment = new \Videopack\Admin\Attachment_Media_Library( $this->options, $this->format_registry, $attachment_meta );
+				$attachment = new \Videopack\Admin\Attachment_Media_Library( $this->options );
 				$result     = $attachment->process_batch_featured();
 				break;
 			case 'parents':
-				$attachment = new \Videopack\Admin\Attachment_Media_Library( $this->options, $this->format_registry, $attachment_meta );
+				$attachment = new \Videopack\Admin\Attachment_Media_Library( $this->options );
 				$result     = $attachment->process_batch_parents( (string) $request->get_param( 'target_parent' ) );
 				break;
 			case 'thumbs':
-				$attachment = new \Videopack\Admin\Attachment_Processor( $this->options, $this->format_registry, $attachment_meta );
+				$attachment = new \Videopack\Admin\Attachment_Processor( $this->options, $this->format_registry );
 				$result     = $attachment->process_batch_thumbs();
 				break;
 			case 'encoding':
-				$attachment = new \Videopack\Admin\Attachment_Processor( $this->options, $this->format_registry, $attachment_meta );
+				$attachment = new \Videopack\Admin\Attachment_Processor( $this->options, $this->format_registry );
 				$result     = $attachment->process_batch_encoding();
 				break;
 		}

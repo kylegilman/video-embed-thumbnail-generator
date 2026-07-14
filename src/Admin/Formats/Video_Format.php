@@ -8,6 +8,7 @@
 namespace Videopack\Admin\Formats;
 
 use Videopack\Admin\Formats\Codecs\Video_Codec;
+use Videopack\Admin\Formats\Video_Resolution;
 
 /**
  * Class Video_Format
@@ -39,14 +40,14 @@ class Video_Format {
 	/**
 	 * Video codec.
 	 *
-	 * @var \Videopack\Admin\Formats\Codecs\Video_Codec $codec
+	 * @var Video_Codec $codec
 	 */
 	protected $codec;
 
 	/**
 	 * Video resolution.
 	 *
-	 * @var \Videopack\Admin\Formats\Video_Resolution $resolution
+	 * @var Video_Resolution $resolution
 	 */
 	protected $resolution;
 
@@ -67,12 +68,12 @@ class Video_Format {
 	/**
 	 * Video_Format constructor.
 	 *
-	 * @param \Videopack\Admin\Formats\Codecs\Video_Codec $codec             Video codec object.
-	 * @param \Videopack\Admin\Formats\Video_Resolution   $resolution        Video resolution object.
-	 * @param bool                                        $enabled           Whether the format is enabled. Default true.
-	 * @param bool                                        $replaces_original Whether the format replaces the original. Default false.
+	 * @param Video_Codec      $codec             Video codec object.
+	 * @param Video_Resolution $resolution        Video resolution object.
+	 * @param bool             $enabled           Whether the format is enabled. Default true.
+	 * @param bool             $replaces_original Whether the format replaces the original. Default false.
 	 */
-	public function __construct( Codecs\Video_Codec $codec, Video_Resolution $resolution, $enabled = true, $replaces_original = false ) {
+	public function __construct( Video_Codec $codec, Video_Resolution $resolution, $enabled = true, $replaces_original = false ) {
 		$this->codec             = $codec;
 		$this->resolution        = $resolution;
 		$this->enabled           = $enabled;
@@ -137,7 +138,7 @@ class Video_Format {
 	/**
 	 * Get the old id used in Videopack version 4
 	 *
-	 * @return string
+	 * @return string|boolean
 	 */
 	public function get_legacy_id() {
 		if ( $this->codec->get_id() === 'h264' ) {
@@ -158,7 +159,7 @@ class Video_Format {
 	/**
 	 * Get the old filename suffix used in Videopack version 4
 	 *
-	 * @return string
+	 * @return string|boolean
 	 */
 	public function get_legacy_suffix() {
 		if ( $this->codec->get_id() === 'h264' ) {
@@ -184,21 +185,15 @@ class Video_Format {
 	public function get_suffix() {
 
 		$suffix = '-' . $this->get_id() . '.' . $this->codec->get_container();
+
 		/**
-		 * Filters video format file suffix. Used to determine the naming structure for video formats.
-		 *
-		 * @param string                                      $id         Video format id.
-		 * @param \Videopack\Admin\Formats\Codecs\Video_Codec $codec      Video codec object.
-		 * @param \Videopack\Admin\Formats\Video_Resolution   $resolution Video resolution object.
-		 */
-				/**
 		 * Filters the filename suffix for a generated video format file.
 		 *
 		 * @since 5.0.0
 		 *
-		 * @param string $suffix     The suffix string (e.g., '_h264_360p').
-		 * @param string $codec      The video codec identifier.
-		 * @param object $resolution The resolution configuration object.
+		 * @param string           $suffix     The suffix string (e.g., '_h264_360p').
+		 * @param Video_Codec      $codec      Video codec object.
+		 * @param Video_Resolution $resolution Video resolution object.
 		 */
 		return apply_filters( 'videopack_video_format_suffix', $suffix, $this->codec, $this->resolution );
 	}
@@ -206,7 +201,7 @@ class Video_Format {
 	/**
 	 * Get the video codec.
 	 *
-	 * @return \Videopack\Admin\Formats\Codecs\Video_Codec
+	 * @return Video_Codec
 	 */
 	public function get_codec() {
 		return $this->codec;
@@ -215,7 +210,7 @@ class Video_Format {
 	/**
 	 * Get the video resolution.
 	 *
-	 * @return \Videopack\Admin\Formats\Video_Resolution
+	 * @return Video_Resolution
 	 */
 	public function get_resolution() {
 		return $this->resolution;

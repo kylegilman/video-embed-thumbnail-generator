@@ -276,21 +276,14 @@ class Screens implements Hook_Subscriber {
 	 * @return void
 	 */
 	public function add_encode_queue_page() {
-		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
-		if ( apply_filters(
-			/** This filter is documented in src/Admin/Options.php */
-			'videopack_ffmpeg_exists',
-			$ffmpeg_exists
-		) ) {
-			add_submenu_page(
-				'tools.php',
-				(string) esc_html_x( 'Videopack Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
-				(string) esc_html_x( 'Videopack Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ),
-				'encode_videos',
-				'videopack_encode_queue',
-				array( $this, 'output_encode_queue_page' )
-			);
-		}
+		add_submenu_page(
+			'tools.php',
+			(string) esc_html_x( 'Videopack Processing', 'Tools page title', 'video-embed-thumbnail-generator' ),
+			(string) esc_html_x( 'Videopack Processing', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ),
+			'encode_videos',
+			'videopack_encode_queue',
+			array( $this, 'output_encode_queue_page' )
+		);
 	}
 
 	/**
@@ -377,11 +370,12 @@ class Screens implements Hook_Subscriber {
 		}
 
 		if ( isset( $_POST['videopack_meta_json'] ) ) {
-			$meta_json = wp_unslash( $_POST['videopack_meta_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON data handled by json_decode and Attachment_Meta.
-			$meta      = (array) json_decode( (string) $meta_json, true );
+			$meta_json       = wp_unslash( $_POST['videopack_meta_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Raw JSON unslashed first, then decoded and sanitized recursively below using the schema sanitizer.
+			$meta            = json_decode( (string) $meta_json, true );
 			if ( is_array( $meta ) ) {
 				$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $post_id );
-				$attachment_meta->save( (array) $meta );
+				$sanitized_meta  = $attachment_meta->sanitize_meta_value( $meta, null, '_videopack-meta' );
+				$attachment_meta->save( (array) $sanitized_meta );
 			}
 		}
 	}
@@ -431,7 +425,6 @@ class Screens implements Hook_Subscriber {
 	 */
 	public function hide_video_children( $wp_query_obj ) {
 		if ( ! is_admin()
-		|| ! is_array( $wp_query_obj->query_vars )
 		|| ! array_key_exists( 'post_type', $wp_query_obj->query_vars )
 		|| 'attachment' !== (string) $wp_query_obj->query_vars['post_type']
 		) {
@@ -499,7 +492,7 @@ class Screens implements Hook_Subscriber {
 		}
 
 		if ( 'show_children' === $filter || ! empty( $videopack_parent_id ) ) {
-			if ( empty( $videopack_parent_id ) && 'show_children' === $filter ) {
+			if ( empty( $videopack_parent_id ) ) {
 				return;
 			}
 
@@ -520,7 +513,7 @@ class Screens implements Hook_Subscriber {
 				'posts_where',
 				function ( $where ) use ( $videopack_parent_id ) {
 					global $wpdb;
-					if ( ! empty( $videopack_parent_id ) && strpos( (string) $where, "post_parent = $videopack_parent_id" ) === false ) {
+					if ( strpos( (string) $where, "post_parent = $videopack_parent_id" ) === false ) {
 						$where .= (string) $wpdb->prepare( " OR ({$wpdb->posts}.post_parent = %d AND {$wpdb->posts}.post_type = 'attachment')", (int) $videopack_parent_id );
 					}
 					return (string) $where;
@@ -768,16 +761,9 @@ class Screens implements Hook_Subscriber {
 		unset( $meta );
 		$external_url = (string) get_post_meta( (int) $attachment->ID, '_kgflashmediaplayer-externalurl', true );
 		if ( $external_url ) {
+			// translators: '[External URL]' is the text added to attachments in the Media Library that are hosted on other servers.
 			$response['filename'] = (string) __( '[External URL]', 'video-embed-thumbnail-generator' ) . ' ' . (string) basename( $external_url );
 			$response['url']      = $external_url;
-		}
-
-		$poster_id = (int) get_post_thumbnail_id( (int) $attachment->ID );
-		if ( $poster_id > 0 ) {
-			$poster_src = (array) wp_get_attachment_image_src( $poster_id, 'medium' );
-			if ( ! empty( $poster_src ) ) {
-				$response['videopack_poster_src'] = (string) $poster_src[0];
-			}
 		}
 		return (array) $response;
 	}

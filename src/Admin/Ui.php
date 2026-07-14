@@ -448,27 +448,23 @@ class Ui implements Hook_Subscriber {
 		$codec_objects = (array) $this->format_registry->get_video_codecs();
 		$codecs_data   = array();
 		foreach ( $codec_objects as $codec_class ) {
-			if ( $codec_class instanceof \Videopack\Admin\Formats\Codecs\Video_Codec ) {
-				$codecs_data[] = array_merge( (array) $codec_class->get_properties(), array( 'is_video' => (bool) $codec_class->is_video() ) );
-			}
+			$codecs_data[] = array_merge( (array) $codec_class->get_properties(), array( 'is_video' => (bool) $codec_class->is_video() ) );
 		}
 
 		$resolution_objects = (array) $this->format_registry->get_video_resolutions();
 		$resolutions_data   = array();
 		foreach ( $resolution_objects as $resolution ) {
-			if ( $resolution instanceof \Videopack\Admin\Formats\Video_Resolution ) {
-				$height             = (int) $resolution->get_height();
-				$resolutions_data[] = array(
-					'id'             => (string) $resolution->get_id(),
-					'name'           => (string) $this->format_registry->get_resolution_l10n( (string) $resolution->get_name() ),
-					'height'         => $height,
-					'width'          => $height ? (int) ceil( $height * 16 / 9 ) : null,
-					'is_custom'      => (bool) $resolution->is_custom(),
-					'is_video'       => (bool) $resolution->is_video(),
-					'is_standard'    => (bool) $resolution->is_standard(),
-					'allowed_codecs' => (array) $resolution->get_allowed_codecs(),
-				);
-			}
+			$height             = (int) $resolution->get_height();
+			$resolutions_data[] = array(
+				'id'             => (string) $resolution->get_id(),
+				'name'           => (string) $this->format_registry->get_resolution_l10n( (string) $resolution->get_name() ),
+				'height'         => $height,
+				'width'          => $height ? (int) ceil( $height * 16 / 9 ) : null,
+				'is_custom'      => (bool) $resolution->is_custom(),
+				'is_video'       => (bool) $resolution->is_video(),
+				'is_standard'    => (bool) $resolution->is_standard(),
+				'allowed_codecs' => (array) $resolution->get_allowed_codecs(),
+			);
 		}
 
 		$options         = $this->options;
@@ -498,35 +494,7 @@ class Ui implements Hook_Subscriber {
 			'color' => 'transparent',
 		);
 
-		$settings_tabs = array(
-			'general' => array(
-				'title' => (string) esc_html_x( 'General', 'Adjective, tab title', 'video-embed-thumbnail-generator' ),
-			),
-		);
 
-		/**
-		 * Filters the tabs for the Videopack settings page.
-		 *
-		 * @since 5.0.0
-		 * @param array $settings_tabs {
-		 *     An array of tabs.
-		 *
-		 *     @type string $key ID for the tab. Used to show or hide corresponding settings blocks.
-		 *     @type array  $value {
-		 *         @type string $title Localizable title for the tab.
-		 *     }
-		 * }
-		 */
-				/**
-		 * Filters the list of tabs displayed on the Videopack settings page in the admin panel.
-		 *
-		 * Add-ons should use this filter to add their own settings tabs.
-		 *
-		 * @since 5.0.0
-		 *
-		 * @param array $settings_tabs Associative array of tab definitions.
-		 */
-		$settings_tabs = (array) apply_filters( 'videopack_settings_tabs', $settings_tabs );
 
 		/**
 		 * Filters the central localization configuration data array passed to JavaScript.
@@ -541,7 +509,6 @@ class Ui implements Hook_Subscriber {
 		return (array) apply_filters(
 			'videopack_config_data',
 			array(
-				'settings_tabs'             => $settings_tabs,
 				'url'                       => (string) plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
 				'codecs'                    => $codecs_data,
 				'resolutions'               => $resolutions_data,
@@ -550,15 +517,6 @@ class Ui implements Hook_Subscriber {
 					'videopack_ffmpeg_exists',
 					is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) )
 				),
-				'raw_ffmpeg_exists'         => is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ),
-				'browser_thumbnails'        => (bool) ( $options['browser_thumbnails'] ?? true ),
-				'auto_thumb'                => (bool) ( $options['auto_thumb'] ?? false ),
-				'auto_thumb_number'         => (int) ( $options['auto_thumb_number'] ?? 1 ),
-				'auto_thumb_position'       => (int) ( $options['auto_thumb_position'] ?? 50 ),
-				'ffmpeg_thumb_watermark'    => (array) ( $options['ffmpeg_thumb_watermark'] ?? array() ),
-				'embed_method'              => (string) ( ! empty( $options['embed_method'] ) ? $options['embed_method'] : 'Video.js' ),
-				'watermark'                 => (string) ( ! empty( $options['watermark'] ) ? $options['watermark'] : '' ),
-				'skin'                      => (string) ( ! empty( $options['skin'] ) ? $options['skin'] : 'vjs-theme-videopack' ),
 				'contentSize'               => $global_settings['layout']['contentSize'] ?? false,
 				'wideSize'                  => $global_settings['layout']['wideSize'] ?? false,
 				'freemiusEnabled'           => $freemius_enabled,
@@ -573,19 +531,13 @@ class Ui implements Hook_Subscriber {
 					'videopack_transcoding_service_ready',
 					false
 				),
-				'isMultisite'               => (bool) is_multisite(),
 				'isNetworkAdmin'            => (bool) is_network_admin(),
 				'isNetworkActive'           => ( null !== $fs ) && (bool) $fs->is_network_active(),
 				'isFfmpegOverridden'        => is_multisite() && (bool) ( \Videopack\Admin\Multisite::get_network_options()['superadmin_only_ffmpeg_settings'] ?? false ),
 				'isSuperAdmin'              => (bool) is_super_admin(),
 				'rest_url'                  => (string) get_rest_url(),
-				'rest_url_render'           => (string) get_rest_url( null, 'videopack/v1/render-shortcode' ),
-				'replace_preview_video'     => (bool) ( $options['replace_preview_video'] ?? true ),
-				'align'                     => (string) ( $options['align'] ?? '' ),
-				'postId'                    => (int) ( is_admin() ? absint( wp_unslash( $_GET['post'] ?? ( get_queried_object_id() ? get_queried_object_id() : get_the_ID() ) ) ) : get_the_ID() ),
-				'videopack/postId'          => (int) ( is_admin() ? absint( wp_unslash( $_GET['post'] ?? ( get_queried_object_id() ? get_queried_object_id() : get_the_ID() ) ) ) : get_the_ID() ),
 				'themeColors'               => $theme_colors,
-				'globalStyles'              => function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
+				'globalStyles'              => is_admin() && function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
 				'mejs_controls_svg'         => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),
 				'options'                   => array_merge(
 					$options,
@@ -600,9 +552,6 @@ class Ui implements Hook_Subscriber {
 				'defaults'                  => \Videopack\Common\Defaults::get_all( $options ),
 				'classic_embed_nonce'       => wp_create_nonce( 'videopack_classic_embed' ),
 				'queue_url'                 => admin_url( 'tools.php?page=videopack_encode_queue' ),
-				'freemius_base_url'         => is_network_admin()
-					? network_admin_url( 'settings.php?page=video_embed_thumbnail_generator_settings-' )
-					: admin_url( 'options-general.php?page=video_embed_thumbnail_generator_settings-' ),
 			)
 		);
 	}

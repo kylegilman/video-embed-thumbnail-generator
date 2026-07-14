@@ -138,8 +138,12 @@ class Attachment_Media_Library implements Hook_Subscriber {
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'image',
 			'numberposts'    => -1,
-			'meta_key'       => '_kgflashmediaplayer-video-id',
-			'meta_value'     => (int) $post_id,
+			'meta_query'     => array(
+				array(
+					'key'   => '_kgflashmediaplayer-video-id',
+					'value' => (string) $post_id,
+				),
+			),
 		);
 		$thumbnails = get_posts( $args );
 

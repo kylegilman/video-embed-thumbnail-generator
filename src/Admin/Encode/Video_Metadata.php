@@ -162,6 +162,7 @@ class Video_Metadata {
 
 			// If videopack meta is missing or incomplete, try WP metadata first.
 			if ( empty( $videopack_postmeta['worked'] ) || empty( $videopack_postmeta['actualheight'] ) || empty( $videopack_postmeta['codec'] ) ) {
+				/** @var array<string, mixed>|false $wp_metadata */
 				$wp_metadata = wp_get_attachment_metadata( $this->id );
 				if ( is_array( $wp_metadata ) ) {
 					$this->actualwidth  = $wp_metadata['width'] ?? null;
@@ -220,8 +221,8 @@ class Video_Metadata {
 		if ( ! empty( $result ) ) {
 
 			$this->worked       = true;
-			$this->actualwidth  = $regs [1] ? $regs [1] : null;
-			$this->actualheight = $regs [2] ? $regs [2] : null;
+			$this->actualwidth  = (int) $regs[1];
+			$this->actualheight = (int) $regs[2];
 
 			// Attempt to parse video codec from FFmpeg output.
 			if ( preg_match( '/Stream #\d+:\d+[^:]*: Video: ([a-zA-Z0-9-]+)/', $output, $codec_matches ) ) {
@@ -236,9 +237,7 @@ class Video_Metadata {
 			$this->duration         = ( $movie_duration_hours * 60 * 60 ) + ( $movie_duration_minutes * 60 ) + $movie_duration_seconds;
 
 			preg_match( '/rotate          : (.*?)\n/', $output, $matches );
-			if ( is_array( $matches )
-			&& array_key_exists( 1, $matches ) === true
-			) {
+			if ( isset( $matches[1] ) ) {
 				$rotate = $matches[1];
 			} else {
 				$rotate = '0';
@@ -264,6 +263,7 @@ class Video_Metadata {
 		} else {
 			$this->worked = false;
 			if ( $this->is_attachment ) {
+				/** @var array<string, mixed>|false $wp_meta */
 				$wp_meta = wp_get_attachment_metadata( $this->id );
 				if ( is_array( $wp_meta ) && ! empty( $wp_meta['width'] ) && ! empty( $wp_meta['height'] ) ) {
 					$this->worked       = true;
@@ -286,9 +286,6 @@ class Video_Metadata {
 		}
 
 		if ( $this->is_attachment ) {
-			if ( ! $attachment_meta_instance ) {
-				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options, $this->id );
-			}
 			$existing_postmeta = $attachment_meta_instance->get();
 
 			$metadata_to_save = array(

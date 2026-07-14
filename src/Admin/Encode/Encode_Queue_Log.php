@@ -50,7 +50,7 @@ class Encode_Queue_Log {
 		if ( $format_id ) {
 			$video_formats_objects = $this->format_registry->get_video_formats();
 			// Ensure $video_formats_objects is an array and the key exists.
-			$name = ( is_array( $video_formats_objects ) && isset( $video_formats_objects[ $format_id ] ) )
+			$name = ( isset( $video_formats_objects[ $format_id ] ) )
 					? $video_formats_objects[ $format_id ]->get_name()
 					: $format_id;
 		} else {

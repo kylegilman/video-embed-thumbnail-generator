@@ -43,7 +43,7 @@ class Attachment_Meta implements Hook_Subscriber {
 	/**
 	 * Current attachment ID.
 	 *
-	 * @var int|bool $post_id
+	 * @var int|bool|null $post_id
 	 */
 	protected $post_id;
 
@@ -537,7 +537,7 @@ class Attachment_Meta implements Hook_Subscriber {
 	/**
 	 * Checks the mime type of a URL, optionally caching the result.
 	 *
-	 * @param string   $url     The URL to check.
+	 * @param mixed    $url     The URL to check.
 	 * @param int|bool $post_id Optional. Attachment ID for caching.
 	 * @return array Mime type and extension.
 	 */

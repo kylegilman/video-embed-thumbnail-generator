@@ -105,10 +105,16 @@ class Attachment_Processor implements Hook_Subscriber {
 			return;
 		}
 
+		// Do not process child transcoded formats.
+		$format_role = get_post_meta( (int) $post_id, '_kgflashmediaplayer-format', true );
+		if ( ! empty( $format_role ) ) {
+			return;
+		}
+
 		// Thumbnail generation logic.
 		if ( ! empty( $this->options['auto_thumb'] ) && $this->is_video( $post ) && 'image/gif' !== $post->post_mime_type ) {
 			if ( ! has_post_thumbnail( (int) $post_id ) ) {
-				$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+				$ffmpeg_exists = (bool) $this->options['ffmpeg_exists'] && 'notinstalled' !== $this->options['ffmpeg_exists'];
 				if ( apply_filters(
 					/** This filter is documented in src/Admin/Options.php */
 					'videopack_ffmpeg_exists',
@@ -181,7 +187,7 @@ class Attachment_Processor implements Hook_Subscriber {
 	 * @param int $post_id The ID of the video attachment.
 	 */
 	public function generate_thumbnails_with_ffmpeg( $post_id ) {
-		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+		$ffmpeg_exists = (bool) $this->options['ffmpeg_exists'] && 'notinstalled' !== $this->options['ffmpeg_exists'];
 
 		if ( ! apply_filters(
 			/** This filter is documented in src/Admin/Options.php */
@@ -213,7 +219,7 @@ class Attachment_Processor implements Hook_Subscriber {
 
 				$thumb_data = $ffmpeg_thumbnails->generate_thumbnail_at_timecode( (int) $post_id, (float) $timecode );
 
-				if ( ! is_wp_error( $thumb_data ) && is_array( $thumb_data ) ) {
+				if ( ! is_wp_error( $thumb_data ) ) {
 					$thumb_info = $ffmpeg_thumbnails->save( (int) $post_id, (string) $post->post_title, (string) $thumb_data['url'], false );
 					if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
 						$thumb_ids[1] = (int) $thumb_info['thumb_id'];
@@ -226,11 +232,9 @@ class Attachment_Processor implements Hook_Subscriber {
 				if ( is_wp_error( $thumb_data ) ) {
 					continue;
 				}
-				if ( is_array( $thumb_data ) ) {
-					$thumb_info = $ffmpeg_thumbnails->save( (int) $post_id, (string) $post->post_title, (string) $thumb_data['url'], $i );
-					if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
-						$thumb_ids[ $i ] = (int) $thumb_info['thumb_id'];
-					}
+				$thumb_info = $ffmpeg_thumbnails->save( (int) $post_id, (string) $post->post_title, (string) $thumb_data['url'], $i );
+				if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
+					$thumb_ids[ $i ] = (int) $thumb_info['thumb_id'];
 				}
 			}
 		}
@@ -261,7 +265,7 @@ class Attachment_Processor implements Hook_Subscriber {
 
 		if ( ! empty( $this->options['encode'] ) && is_array( $this->options['encode'] ) ) {
 			foreach ( $this->options['encode'] as $format_key => $settings ) {
-				if ( ! empty( $settings['enabled'] ) && $settings['enabled'] ) {
+				if ( ! empty( $settings['enabled'] ) ) {
 					$formats_to_encode[] = (string) $format_key;
 				}
 			}
@@ -308,7 +312,7 @@ class Attachment_Processor implements Hook_Subscriber {
 		$videos = get_posts( $args );
 		$count  = 0;
 
-		$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+		$ffmpeg_exists = (bool) $this->options['ffmpeg_exists'] && 'notinstalled' !== $this->options['ffmpeg_exists'];
 
 		if ( ! apply_filters(
 			/** This filter is documented in src/Admin/Options.php */
