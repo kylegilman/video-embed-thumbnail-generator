@@ -59,13 +59,13 @@ do_action( 'embed_head' );
 <style>
 	body:before, body:after { content: none; }
 	.videopack-wrapper { margin:0 !important; }
-	<?php if ( is_array( $videopack_query_var ) && array_key_exists( 'gallery', $videopack_query_var ) ) : ?>
+	<?php if ( array_key_exists( 'gallery', $videopack_query_var ) ) : ?>
 		.videopack-below-video { color:white; }
 		.videopack-below-video a { color:#aaa; }
 	<?php endif; ?>
 </style>
 </head>
-<body <?php body_class( 'content' ); ?> style="margin:0px; font-family: sans-serif; padding:0px; border:none; <?php echo ( is_array( $videopack_query_var ) && array_key_exists( 'gallery', $videopack_query_var ) ) ? 'background-color:black;' : 'background-color:transparent;'; ?>">
+<body <?php body_class( 'content' ); ?> style="margin:0px; font-family: sans-serif; padding:0px; border:none; <?php echo ( array_key_exists( 'gallery', $videopack_query_var ) ) ? 'background-color:black;' : 'background-color:transparent;'; ?>">
 <?php
 echo do_shortcode( $shortcode );
 wp_footer();

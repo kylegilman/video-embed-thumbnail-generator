@@ -517,7 +517,7 @@ class Shortcode implements Hook_Subscriber {
 			$meta_manager   = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
 			$videopack_meta = $meta_manager->get();
 
-			if ( is_array( $videopack_meta ) && ! empty( $videopack_meta ) ) {
+			if ( ! empty( $videopack_meta ) ) {
 				foreach ( (array) $videopack_meta as $key => $value ) {
 					// Only apply if the key exists in $query_atts and was NOT
 					// explicitly provided in the shortcode text.
@@ -554,7 +554,7 @@ class Shortcode implements Hook_Subscriber {
 				array(
 					'kind'    => (string) ( $query_atts['track_kind'] ?? 'subtitles' ),
 					'srclang' => (string) ( $query_atts['track_srclang'] ?? 'en' ),
-					'src'     => (string) ( $query_atts['track_src'] ?? '' ),
+					'src'     => (string) ( $query_atts['track_src'] ),
 					'label'   => (string) ( $query_atts['track_label'] ?? '' ),
 					'default' => (string) ( $query_atts['track_default'] ?? '' ),
 				),
@@ -618,13 +618,13 @@ class Shortcode implements Hook_Subscriber {
 		}
 
 		// Handle endofvideooverlaysame logic.
-		if ( ! empty( $query_atts['endofvideooverlaysame'] ) && true === (bool) $query_atts['endofvideooverlaysame'] ) {
+		if ( ! empty( $query_atts['endofvideooverlaysame'] ) ) {
 			$query_atts['endofvideooverlay'] = (string) ( $query_atts['poster'] ?? '' );
 		}
 
 		// Handle fixed_aspect logic.
 		if ( ( ! empty( $query_atts['fixed_aspect'] ) && 'vertical' === (string) $query_atts['fixed_aspect'] && (int) ( $query_atts['height'] ?? 0 ) > (int) ( $query_atts['width'] ?? 0 ) )
-		|| ( ! empty( $query_atts['fixed_aspect'] ) && true === (bool) $query_atts['fixed_aspect'] )
+		|| ( isset( $query_atts['fixed_aspect'] ) && true === $query_atts['fixed_aspect'] )
 		) {
 			$default_aspect_ratio = (float) ( (int) ( $this->options['height'] ?? 360 ) / (int) ( $this->options['width'] ?? 640 ) );
 			$query_atts['height'] = (int) round( (int) ( $query_atts['width'] ?? 640 ) * $default_aspect_ratio );
@@ -951,17 +951,15 @@ class Shortcode implements Hook_Subscriber {
 	/**
 	 * Generates a shortcode string for a video attachment.
 	 *
-	 * @param array|string $videopack_query_var The query variable data.
+	 * @param array $videopack_query_var The query variable data.
 	 * @return string The generated shortcode.
 	 */
-	public function generate_attachment_shortcode( $videopack_query_var ) {
+	public function generate_attachment_shortcode( array $videopack_query_var ) {
 
 		$current_post = get_post();
 		$shortcode    = '';
 
-		if ( is_array( $videopack_query_var )
-		&& array_key_exists( 'id', $videopack_query_var )
-		) {
+		if ( array_key_exists( 'id', $videopack_query_var ) ) {
 			$post_id = (int) $videopack_query_var['id'];
 		} elseif ( $current_post instanceof \WP_Post ) {
 			$post_id = (int) $current_post->ID;
@@ -969,22 +967,15 @@ class Shortcode implements Hook_Subscriber {
 			$post_id = 1;
 		}
 
-		$videopack_postmeta = ( new \Videopack\Admin\Attachment_Meta( $this->options ) )->get( $post_id );
+		$videopack_postmeta = ( new \Videopack\Admin\Attachment_Meta( $this->options, $post_id ) )->get();
 
-		if ( is_array( $videopack_query_var )
-		&& array_key_exists( 'sample', $videopack_query_var )
-		) {
-			$url = (string) plugins_url( '/images/Adobestock_469037984.mp4', VIDEOPACK_PLUGIN_FILE );
-		} else {
-			$url = (string) wp_get_attachment_url( $post_id );
-		}
+		$url = (string) wp_get_attachment_url( $post_id );
 
 		$shortcode = '[videopack';
 		if ( ! empty( $post_id ) ) {
 			$shortcode .= ' id="' . esc_attr( (string) $post_id ) . '"';
 		}
-		if ( is_array( $videopack_query_var )
-		&& array_key_exists( 'enable', $videopack_query_var )
+		if ( array_key_exists( 'enable', $videopack_query_var )
 		&& 'true' === $videopack_query_var['enable']
 		) {
 			$shortcode .= ' fullwidth="true"';
@@ -992,23 +983,11 @@ class Shortcode implements Hook_Subscriber {
 		if ( ! empty( $videopack_postmeta['downloadlink'] ) ) {
 			$shortcode .= ' downloadlink="true"';
 		}
-		if ( is_array( $videopack_query_var ) && array_key_exists( 'start', $videopack_query_var ) ) {
+		if ( array_key_exists( 'start', $videopack_query_var ) ) {
 			$shortcode .= ' start="' . esc_attr( (string) $videopack_query_var['start'] ) . '"';
 		}
-		if ( is_array( $videopack_query_var ) && array_key_exists( 'gallery', $videopack_query_var ) ) {
+		if ( array_key_exists( 'gallery', $videopack_query_var ) ) {
 			$shortcode .= ' autoplay="true"';
-		}
-		if ( is_array( $videopack_query_var ) && array_key_exists( 'sample', $videopack_query_var ) ) {
-			if ( ! empty( $this->options['overlay_title'] ) ) {
-				$shortcode .= ' title="' . esc_attr_x( 'Sample Video', 'example video', 'video-embed-thumbnail-generator' ) . '"';
-			}
-			if ( ! empty( $this->options['embedcode'] ) ) {
-				$shortcode .= ' embedcode="' . esc_attr__( 'Sample Embed Code', 'video-embed-thumbnail-generator' ) . '"';
-			}
-			$shortcode .= ' caption="' . esc_attr__( "If text is entered in the attachment's caption field it is displayed here automatically.", 'video-embed-thumbnail-generator' ) . '"';
-			if ( ! empty( $this->options['downloadlink'] ) ) {
-				$shortcode .= ' downloadlink="true"';
-			}
 		}
 
 		$shortcode .= ']' . esc_url( $url ) . '[/videopack]';

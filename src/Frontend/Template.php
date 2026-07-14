@@ -227,7 +227,6 @@ class Template implements Hook_Subscriber {
 		$post     = get_post();
 		$is_video = is_attachment()
 			&& $post instanceof \WP_Post
-			&& property_exists( $post, 'post_mime_type' )
 			&& strpos( (string) $post->post_mime_type, 'video' ) !== false;
 
 		if ( ( $is_video
@@ -292,7 +291,7 @@ class Template implements Hook_Subscriber {
 				return;
 			}
 			$filetype = wp_check_filetype( $filepath );
-			if ( ! isset( $filetype['type'] ) ) {
+			if ( ! $filetype['type'] ) {
 				$filetype['type'] = 'application/octet-stream';
 			}
 			if ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) {

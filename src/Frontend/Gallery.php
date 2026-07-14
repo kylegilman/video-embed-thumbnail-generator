@@ -196,14 +196,13 @@ class Gallery {
 
 					$preview_posts  = get_posts( $preview_post_args );
 					$attachment_ids = array();
-					if ( is_array( $preview_posts ) ) {
-						foreach ( $preview_posts as $q_post ) {
-							if ( 'attachment' !== $q_post->post_type ) {
-								$video_id = \Videopack\Common\Video_Discovery::get_first_video_child( $q_post->ID );
-								if ( $video_id ) {
-									$attachment_ids[]                               = (int) $video_id;
-									$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
-								}
+
+					foreach ( $preview_posts as $q_post ) {
+						if ( 'attachment' !== $q_post->post_type ) {
+							$video_id = \Videopack\Common\Video_Discovery::get_first_video_child( $q_post->ID );
+							if ( $video_id ) {
+								$attachment_ids[]                               = (int) $video_id;
+								$this->video_to_post_mapping[ (int) $video_id ] = (int) $q_post->ID;
 							}
 						}
 					}
@@ -279,7 +278,7 @@ class Gallery {
 					$args['post__in'] = (array) $include_arr;
 				}
 				unset( $args['paged'] );
-				if ( (string) ( $args['orderby'] ?? '' ) === 'menu_order ID' || (string) ( $args['orderby'] ?? '' ) === 'include' ) {
+				if ( (string) $args['orderby'] === 'menu_order ID' || (string) $args['orderby'] === 'include' ) {
 					$args['orderby'] = 'post__in'; // Sort by order of IDs in the gallery_include parameter.
 				}
 				unset( $args['post_parent'] );
@@ -308,9 +307,9 @@ class Gallery {
 	/**
 	 * Prepares video data for frontend JavaScript.
 	 *
-	 * @param array  $video      Video data array.
-	 * @param array  $final_atts Final shortcode attributes.
-	 * @param string $layout     Optional. The gallery layout. Default 'gallery'.
+	 * @param \WP_Post|array $video      Video post object or data array.
+	 * @param array          $final_atts Final shortcode attributes.
+	 * @param string         $layout     Optional. The gallery layout. Default 'gallery'.
 	 * @return array Prepared video data.
 	 */
 	public function prepare_video_data_for_js( $video, $final_atts, $layout = 'gallery' ) {
@@ -413,7 +412,7 @@ class Gallery {
 		$instance_id = (string) self::$player_instance_counter;
 		$player      = Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
 
-		$collection_id = $final_atts['collection_id'] ?? $query_atts['collectionId'] ?? 'vp_gallery_default';
+		$collection_id = $final_atts['collection_id'] ?? $final_atts['collectionId'] ?? 'vp_gallery_default';
 		$player->set_id( "gallery_{$data['id']}_{$collection_id}" );
 		$player->set_source( $source );
 		$player->set_atts(
@@ -562,7 +561,7 @@ class Gallery {
 		 */
 		$attachments   = $this->get_gallery_videos( $page_number, $query_atts );
 		$videos_data   = array();
-		$max_num_pages = (int) ( $attachments->max_num_pages ?? 1 );
+		$max_num_pages = (int) ( $attachments->max_num_pages );
 
 		if ( (bool) $attachments->have_posts() ) {
 			foreach ( (array) $attachments->posts as $attachment ) {

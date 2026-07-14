@@ -59,16 +59,16 @@ class Player {
 	/**
 	 * Full source object, including child sources.
 	 *
-	 * @var \Videopack\Video_Source\Source $source
+	 * @var \Videopack\Video_Source\Source|null $source
 	 */
-	protected $source;
+	protected $source = null;
 
 	/**
 	 * Array of sources for the video player.
 	 *
-	 * @var array $sources
+	 * @var array|null $sources
 	 */
-	protected $sources;
+	protected $sources = null;
 
 	/**
 	 * Default resolution value for initial load.
@@ -139,9 +139,6 @@ class Player {
 				'videopack-core',
 				'videopack_l10n',
 				array(
-					'rest_url'   => rest_url(),
-					'ajaxurl'    => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
-					'ajax_nonce' => wp_create_nonce( 'videopack_frontend_nonce' ),
 					'playstart'  => esc_html_x( 'Play Start', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
 					'pause'      => esc_html_x( 'Pause', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
 					'resume'     => esc_html_x( 'Resume', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
@@ -149,6 +146,7 @@ class Player {
 					'end'        => esc_html_x( 'Complete View', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
 					'next'       => esc_html_x( 'Next', 'button text to play next video', 'video-embed-thumbnail-generator' ),
 					'previous'   => esc_html_x( 'Previous', 'button text to play previous video', 'video-embed-thumbnail-generator' ),
+					'errorLoadingPlayer' => esc_html_x( 'Error loading player.', 'error message when AJAX loading of player fails', 'video-embed-thumbnail-generator' ),
 				)
 			);
 			self::$script_localized = true;
@@ -311,7 +309,7 @@ class Player {
 	/**
 	 * Returns the player ID.
 	 *
-	 * @return int|string The player ID.
+	 * @return string The player ID.
 	 */
 	public function get_id(): string {
 		return (string) $this->player_id;
@@ -349,16 +347,13 @@ class Player {
 		$main_source = $this->get_source();
 
 		if ( $main_source && $main_source->exists() && $main_source->is_compatible() ) {
-			$codec     = $main_source->get_codec();
-			$mime_type = $main_source->get_mime_type();
+			$codec = $main_source->get_codec();
 			if ( $codec ) {
-				$codec_id = $codec->get_id();
-				if ( ! isset( $grouped_sources[ $codec_id ] ) ) {
-					$grouped_sources[ $codec_id ] = array(
-						'label'   => $codec->get_label(),
-						'sources' => array(),
-					);
-				}
+				$codec_id                     = $codec->get_id();
+				$grouped_sources[ $codec_id ] = array(
+					'label'   => $codec->get_label(),
+					'sources' => array(),
+				);
 				$source_data                               = $main_source->get_video_player_source();
 				$grouped_sources[ $codec_id ]['sources'][] = $source_data;
 			}
@@ -507,7 +502,7 @@ class Player {
 	 */
 	public function get_poster(): string {
 		$poster = (string) ( $this->atts['poster'] ?? '' );
-		if ( empty( $poster ) && $this->get_source() && method_exists( $this->get_source(), 'get_poster' ) ) {
+		if ( empty( $poster ) && $this->get_source() ) {
 			$poster = $this->get_source()->get_poster();
 		}
 		return (string) $poster;

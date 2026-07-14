@@ -206,18 +206,12 @@ function videopack_deactivate_plugin( $network_wide ) {
 
 	if ( is_multisite() && $network_wide ) {
 
-		$sites = get_sites();
-
-		if ( is_array( $sites ) ) {
-
-			foreach ( $sites as $site ) {
-
-				switch_to_blog( $site->blog_id );
-				videopack_cleanup_plugin();
-				restore_current_blog();
-
-			} // end loop through sites.
-		} // end if there are sites.
+		$site_ids = get_sites( array( 'fields' => 'ids' ) );
+		foreach ( $site_ids as $blog_id ) {
+			switch_to_blog( $blog_id );
+			videopack_cleanup_plugin();
+			restore_current_blog();
+		} // end loop through sites.
 	} else { // if not network activated.
 		videopack_cleanup_plugin();
 	}
@@ -261,14 +255,11 @@ function videopack_uninstall_plugin() {
 		// Delete network-wide options.
 		delete_site_option( 'videopack_network_options' );
 
-		$sites = get_sites( array( 'fields' => 'ids' ) );
-
-		if ( is_array( $sites ) ) {
-			foreach ( $sites as $blog_id ) {
-				switch_to_blog( $blog_id );
-				delete_option( 'videopack_options' );
-				restore_current_blog();
-			}
+		$site_ids = get_sites( array( 'fields' => 'ids' ) );
+		foreach ( $site_ids as $blog_id ) {
+			switch_to_blog( $blog_id );
+			delete_option( 'videopack_options' );
+			restore_current_blog();
 		}
 
 		// Drop the central queue table from the main site.

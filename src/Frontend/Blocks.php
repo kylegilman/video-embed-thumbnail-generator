@@ -328,7 +328,7 @@ class Blocks implements Hook_Subscriber {
 
 		// Resolve any template overrides from inner blocks (e.g. thumbnail or player hover effects).
 		$shared_attrs_schema = (array) apply_filters( 'videopack_shared_attributes', array() );
-		if ( ! empty( $shared_attrs_schema ) && ! empty( $block->inner_blocks ) ) {
+		if ( ! empty( $shared_attrs_schema ) && count( $block->inner_blocks ) > 0 ) {
 			$template_overrides = $this->find_inner_block_attributes(
 				$block->inner_blocks,
 				array( 'videopack/thumbnail', 'videopack/player' ),
@@ -673,7 +673,7 @@ class Blocks implements Hook_Subscriber {
 			array(
 				'class'                   => implode( ' ', array_unique( array_filter( $classes ) ) ),
 				'style'                   => implode( ';', array_filter( $style_vars ) ),
-				'data-attachment-id'      => (int) $post_id,
+				'data-attachment-id'      => (string) $post_id,
 				'data-videopack-id'       => esc_attr( $videopack_id ),
 				'data-videopack-lightbox' => ( 'lightbox' === $link_to ? 'true' : 'false' ),
 			)
@@ -1063,16 +1063,15 @@ class Blocks implements Hook_Subscriber {
 		return sprintf( '%d:%02d', $m, $s );
 	}
 
-
 	/**
 	 * Recursively finds attributes inside inner blocks.
 	 *
-	 * @param array $inner_blocks   The inner blocks.
-	 * @param array $target_names   Block names to match.
-	 * @param array $attribute_keys Attribute keys to extract.
+	 * @param \WP_Block_List $inner_blocks   The inner blocks.
+	 * @param array          $target_names   Block names to match.
+	 * @param array          $attribute_keys Attribute keys to extract.
 	 * @return array The found attributes.
 	 */
-	private function find_inner_block_attributes( $inner_blocks, $target_names, $attribute_keys ) {
+	private function find_inner_block_attributes( \WP_Block_List $inner_blocks, array $target_names, array $attribute_keys ) {
 		$found = array();
 		foreach ( $inner_blocks as $inner_block ) {
 			if ( in_array( $inner_block->name, $target_names, true ) ) {
@@ -1082,7 +1081,7 @@ class Blocks implements Hook_Subscriber {
 					}
 				}
 			}
-			if ( ! empty( $inner_block->inner_blocks ) ) {
+			if ( count( $inner_block->inner_blocks ) > 0 ) {
 				$nested = $this->find_inner_block_attributes( $inner_block->inner_blocks, $target_names, $attribute_keys );
 				$found  = array_merge( $nested, $found );
 			}

@@ -95,7 +95,7 @@ class Video_Source_Finder {
 					'numberposts' => -1,
 					'post_type'   => 'attachment',
 					'meta_key'    => '_kgflashmediaplayer-parent',
-					'meta_value'  => $parent_id,
+					'meta_value'  => \strval( $parent_id ),
 					'fields'      => 'ids',
 				)
 			);

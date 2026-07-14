@@ -129,16 +129,12 @@ class Player_WordPress_Default extends Player {
 
 		// Add speed feature if enabled.
 		if ( ! empty( $atts['playback_rate'] ) ) {
-			if ( ! in_array( 'speed', $mejs_settings['features'], true ) ) {
-				$mejs_settings['features'][] = 'speed';
-			}
+			$mejs_settings['features'][] = 'speed';
 			$mejs_settings['speeds'] = array( '0.5', '1', '1.25', '1.5', '2' );
 		}
 
 		// Always add fullscreen for video.
-		if ( ! in_array( 'fullscreen', $mejs_settings['features'], true ) ) {
-			$mejs_settings['features'][] = 'fullscreen';
-		}
+		$mejs_settings['features'][] = 'fullscreen';
 
 		// Localize MediaElement.js settings.
 		wp_localize_script( 'wp-mediaelement', '_wpmejsSettings', $mejs_settings );
