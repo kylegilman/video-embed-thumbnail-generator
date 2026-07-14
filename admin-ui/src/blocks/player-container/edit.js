@@ -200,6 +200,20 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				attachment?.caption?.raw ||
 				attachment?.caption?.rendered ||
 				'',
+			views:
+				attachment.videopack?.views ||
+				attachment.meta?.videopack_views ||
+				attachment.meta?.['_videopack-meta']?.starts ||
+				attributes.views ||
+				0,
+			duration:
+				attachment.videopack?.duration ||
+				attachment.meta?.['_videopack-meta']?.duration ||
+				attributes.duration ||
+				'',
+			videopack:
+				attachment.videopack ||
+				null,
 			starts:
 				attachment.meta?.['_videopack-meta']?.starts ||
 				attributes.starts,
@@ -606,7 +620,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		return [
 			[
 				'videopack/player',
-				{ lock: { remove: true, move: false } },
+				{},
 				engine_inner_blocks,
 			],
 			['videopack/view-count', {}],
@@ -787,7 +801,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					videoData={videoData}
 					options={options}
 					parentId={
-						effectiveId ||
 						resolvedPostIdFromContext ||
 						editorPostId ||
 						0

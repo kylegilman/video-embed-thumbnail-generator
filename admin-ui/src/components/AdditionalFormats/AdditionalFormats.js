@@ -524,12 +524,12 @@ const AdditionalFormats = ({
 							<p>{successMsg}</p>
 							<p>
 								{__(
-									'Browser encoding is active. Processing will only occur while the Videopack Queue page is open.',
+									'Browser encoding is active. Processing will only occur while the Videopack Processing page is open.',
 									'video-embed-thumbnail-generator'
 								)}{' '}
 								<a href={videopack_config.queue_url}>
 									{__(
-										'Go to Queue Page',
+										'Go to Processing Page',
 										'video-embed-thumbnail-generator'
 									)}
 								</a>
