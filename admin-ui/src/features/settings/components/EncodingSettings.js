@@ -487,7 +487,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		};
 
 		return (
-			<div className="videopack-setting-reduced-width videopack-replacement-controls">
+			<div className="videopack-grid-row-align videopack-replacement-controls">
 				<SelectControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
@@ -658,17 +658,48 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 								}
 							/>
 						</PanelRow>
-						{effectiveFfmpegExists !== true && ffmpeg_error && (
-							<div className="notice notice-error videopack-ffmpeg-notice">
-								<p
-									dangerouslySetInnerHTML={{
-										__html: ffmpeg_error,
-									}}
-								/>
-							</div>
-						)}
 					</>
 				)}
+				{(() => {
+					const isCloud = ['mediaconvert', 'aws_mediaconvert', 'google_transcoder'].includes(active_encoder);
+					const isCloudWithFfmpegFallback = isCloud && settings?.cloud_fallback_encoder === 'ffmpeg';
+					if (isCloudWithFfmpegFallback) {
+						return (
+							<PanelRow>
+								<TextControlOnBlur
+									__nextHasNoMarginBottom
+									__next40pxDefaultSize
+									label={__(
+										'Path to FFmpeg folder on server (Fallback)',
+										'video-embed-thumbnail-generator'
+									)}
+									value={app_path}
+									onChange={changeHandlerFactory.app_path}
+									help={
+										isNetworkActive
+											? __(
+													'This setting is controlled at the network level.',
+													'video-embed-thumbnail-generator'
+												)
+											: __(
+													'Leave blank if FFmpeg is in your system path.'
+												)
+									}
+									disabled={isNetworkActive}
+									title={
+										isNetworkActive
+											? __(
+													'This setting is controlled by the network administrator.',
+													'video-embed-thumbnail-generator'
+												)
+											: null
+									}
+								/>
+							</PanelRow>
+						);
+					}
+					return null;
+				})()}
 			</PanelBody>
 			<PanelBody
 				title={__(
@@ -964,7 +995,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				title={__('Audio', 'video-embed-thumbnail-generator')}
 				initialOpen={!!effectiveFfmpegExists}
 			>
-				<div className="videopack-setting-reduced-width">
+				<div className="videopack-grid-row-align">
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
