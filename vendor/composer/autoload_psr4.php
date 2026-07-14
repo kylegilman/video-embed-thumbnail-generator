@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Videopack\\' => array($baseDir . '/src'),
+    'SzepeViktor\\PHPStan\\WordPress\\' => array($vendorDir . '/szepeviktor/phpstan-wordpress/src'),
     'Symfony\\Polyfill\\Php80\\' => array($vendorDir . '/symfony/polyfill-php80'),
     'Symfony\\Component\\Process\\' => array($vendorDir . '/symfony/process'),
     'PhpParser\\' => array($vendorDir . '/nikic/php-parser/lib/PhpParser'),

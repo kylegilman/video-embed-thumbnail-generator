@@ -8,6 +8,7 @@ class ComposerStaticInit505d887b30d62b986403249f6e18ec7f
 {
     public static $files = array (
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
+        '9b38cf48e83f5d8f60375221cd213eee' => __DIR__ . '/..' . '/phpstan/phpstan/bootstrap.php',
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '8d50dc88e56bace65e1e72f6017983ed' => __DIR__ . '/..' . '/freemius/wordpress-sdk/start.php',
@@ -22,6 +23,7 @@ class ComposerStaticInit505d887b30d62b986403249f6e18ec7f
         ),
         'S' => 
         array (
+            'SzepeViktor\\PHPStan\\WordPress\\' => 30,
             'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Component\\Process\\' => 26,
         ),
@@ -40,6 +42,10 @@ class ComposerStaticInit505d887b30d62b986403249f6e18ec7f
         'Videopack\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
+        ),
+        'SzepeViktor\\PHPStan\\WordPress\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/szepeviktor/phpstan-wordpress/src',
         ),
         'Symfony\\Polyfill\\Php80\\' => 
         array (
