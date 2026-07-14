@@ -376,9 +376,7 @@ class Encode_Attachment {
 			}
 		);
 
-		if ( ! empty( $db_data ) ) {
-			$wpdb->update( (string) $this->queue_table_name, (array) $db_data, array( 'id' => $job_id ) );
-		}
+		$wpdb->update( (string) $this->queue_table_name, (array) $db_data, array( 'id' => $job_id ) );
 	}
 
 	/**
@@ -414,7 +412,7 @@ class Encode_Attachment {
 	public function get_encode_format( string $format ) {
 		$encode_formats = (array) $this->get_formats();
 		foreach ( $encode_formats as $encode_format_obj ) {
-			if ( $encode_format_obj instanceof Encode_Format && (string) $encode_format_obj->get_format_id() === $format ) {
+			if ( (string) $encode_format_obj->get_format_id() === $format ) {
 				return $encode_format_obj;
 			}
 		}
@@ -430,7 +428,7 @@ class Encode_Attachment {
 	public function get_encode_format_by_job_id( int $job_id ) {
 		$encode_formats = (array) $this->get_formats();
 		foreach ( $encode_formats as $encode_format_obj ) {
-			if ( $encode_format_obj instanceof Encode_Format && (int) $encode_format_obj->get_job_id() === $job_id ) {
+			if ( (int) $encode_format_obj->get_job_id() === $job_id ) {
 				return $encode_format_obj;
 			}
 		}
@@ -486,9 +484,7 @@ class Encode_Attachment {
 		$formats_array       = array();
 		$encode_formats_objs = (array) $this->get_formats();
 		foreach ( $encode_formats_objs as $encode_format_obj ) {
-			if ( $encode_format_obj instanceof Encode_Format ) {
-				$formats_array[] = (array) $encode_format_obj->to_array();
-			}
+			$formats_array[] = (array) $encode_format_obj->to_array();
 		}
 		return (array) $formats_array;
 	}
@@ -509,18 +505,13 @@ class Encode_Attachment {
 
 		$encoded_jobs_map = array();
 		foreach ( $encoded_jobs as $job_obj ) {
-			if ( $job_obj instanceof Encode_Format ) {
-				$encoded_jobs_map[ (string) $job_obj->get_format_id() ] = $job_obj;
-			}
+			$encoded_jobs_map[ (string) $job_obj->get_format_id() ] = $job_obj;
 		}
 
 		$replace_format          = (string) ( $this->options['replace_format'] ?? 'none' );
 		$normalized_source_codec = (string) $this->get_normalized_source_codec();
 
 		foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
-			if ( ! $video_format_obj instanceof Video_Format ) {
-				continue;
-			}
 
 			$format_id            = (string) $format_id;
 			$target_codec_id      = (string) $video_format_obj->get_codec()->get_id();
@@ -690,7 +681,7 @@ class Encode_Attachment {
 	 */
 	protected function is_unnecessary_encode( Video_Format $video_format_obj ) {
 		$video_metadata = $this->get_video_metadata();
-		if ( ! $video_metadata || ! (bool) $video_metadata->worked || ! $video_format_obj->get_resolution() ) {
+		if ( ! (bool) $video_metadata->worked || ! $video_format_obj->get_resolution() ) {
 			return (bool) apply_filters( 'videopack_is_unnecessary_encode', false, $video_format_obj, $this );
 		}
 
@@ -699,7 +690,7 @@ class Encode_Attachment {
 		$source_height = (int) ( $video_metadata->actualheight ?? 0 );
 		$source_width  = (int) ( $video_metadata->actualwidth ?? 0 );
 
-		if ( (bool) $video_format_obj->get_replaces_original() || ! is_numeric( $target_height ) ) {
+		if ( (bool) $video_format_obj->get_replaces_original() ) {
 			return (bool) apply_filters( 'videopack_is_unnecessary_encode', false, $video_format_obj, $this );
 		}
 
@@ -1020,7 +1011,7 @@ class Encode_Attachment {
 
 		$source_for_pathinfo = (string) ( ! empty( $encode_format->get_path() ) ? $encode_format->get_path() : $this->url );
 		$path_parts          = pathinfo( $source_for_pathinfo );
-		$basename            = (string) ( $path_parts['filename'] ?? 'video' );
+		$basename            = (string) $path_parts['filename'];
 
 		$encode_format = $this->get_encode_dimensions( $encode_format );
 
@@ -1400,7 +1391,7 @@ class Encode_Attachment {
 		}
 
 		$acodec = (string) $codec_obj->get_acodec();
-		if ( 'none' !== $acodec && ( empty( $codecs ) || ! isset( $codecs[ $acodec ] ) || ! (bool) $codecs[ $acodec ] ) ) {
+		if ( 'none' !== $acodec && ( ! isset( $codecs[ $acodec ] ) || ! (bool) $codecs[ $acodec ] ) ) {
 			return 'acodec_unavailable';
 		}
 
@@ -1417,7 +1408,7 @@ class Encode_Attachment {
 		$encode_formats = (array) $this->encode_formats;
 		if ( ! empty( $encode_formats ) ) {
 			foreach ( $encode_formats as $encode_format_obj ) {
-				if ( $encode_format_obj instanceof Encode_Format && (string) $encode_format_obj->get_format_id() === $format_id ) {
+				if ( (string) $encode_format_obj->get_format_id() === $format_id ) {
 					return $encode_format_obj;
 				}
 			}
@@ -1626,7 +1617,7 @@ class Encode_Attachment {
 		if ( $this->is_attachment && is_numeric( $this->id ) ) {
 			$post_mime_type = (string) get_post_mime_type( (int) $this->id );
 		} elseif ( ! empty( $this->url ) ) {
-			$attachment_meta_util = new Attachment_Meta( $this->options, false );
+			$attachment_meta_util = new Attachment_Meta( $this->options, null );
 			$check_mime_type      = (array) $attachment_meta_util->url_mime_type( (string) $this->url, false );
 			$post_mime_type       = (string) ( $check_mime_type['type'] ?? '' );
 		}
@@ -1651,16 +1642,10 @@ class Encode_Attachment {
 			}
 			$format_key       = (string) $format_key;
 			$target_codec_obj = $video_format_obj->get_codec();
-			if ( ! $target_codec_obj ) {
-				continue;
-			}
 			$target_mime_type      = (string) $target_codec_obj->get_mime_type();
 			$target_codec_id       = (string) $target_codec_obj->get_id();
 			$target_resolution_obj = $video_format_obj->get_resolution();
-			if ( ! $target_resolution_obj ) {
-				continue;
-			}
-			$target_resolution_id = (string) $target_resolution_obj->get_id();
+			$target_resolution_id  = (string) $target_resolution_obj->get_id();
 
 			$replace_format = (string) ( $this->options['replace_format'] ?? 'none' );
 			$is_replacement = false;
@@ -1756,8 +1741,8 @@ class Encode_Attachment {
 						if ( null === $detected_format ) {
 							$detected_format = 'modern';
 						}
-						$is_encoder = ( (string) ( $matches[2] ?? '' ) === 'E' );
-						$codec_name = (string) ( $matches[7] ?? '' );
+						$is_encoder = ( $matches[2] === 'E' );
+						$codec_name = $matches[7];
 						$matched    = true;
 					}
 				}
@@ -1767,8 +1752,8 @@ class Encode_Attachment {
 						if ( null === $detected_format ) {
 							$detected_format = 'legacy';
 						}
-						$is_encoder = ( (string) ( $matches[2] ?? '' ) === 'E' );
-						$codec_name = (string) ( $matches[9] ?? '' );
+						$is_encoder = ( $matches[2] === 'E' );
+						$codec_name = $matches[9];
 						$matched    = true;
 					}
 				}
@@ -1786,7 +1771,7 @@ class Encode_Attachment {
 				}
 
 				if ( preg_match( '/\(encoders: ([^\)]+)\)/', $line, $encoder_matches ) ) {
-					$encoder_names = (array) preg_split( '/\s+/', (string) ( $encoder_matches[1] ?? '' ) );
+					$encoder_names = (array) preg_split( '/\s+/', $encoder_matches[1] );
 					foreach ( $encoder_names as $encoder_name ) {
 						$trimmed_name = (string) trim( (string) $encoder_name );
 						if ( ! empty( $trimmed_name ) ) {
@@ -1971,8 +1956,8 @@ class Encode_Attachment {
 		$new_url      = $original_url;
 
 		if ( (string) ( $path_parts['extension'] ?? '' ) !== $new_container ) {
-			$new_filename = (string) ( ( $path_parts['dirname'] ?? '' ) . '/' . ( $path_parts['filename'] ?? '' ) . '.' . $new_container );
-			$new_url      = (string) ( dirname( $original_url ) . '/' . ( $path_parts['filename'] ?? '' ) . '.' . $new_container );
+			$new_filename = (string) ( $path_parts['dirname'] . '/' . $path_parts['filename'] . '.' . $new_container );
+			$new_url      = (string) ( dirname( $original_url ) . '/' . $path_parts['filename'] . '.' . $new_container );
 		}
 
 		if ( $original_filepath !== $new_filename && is_file( $original_filepath ) ) {
@@ -2021,7 +2006,7 @@ class Encode_Attachment {
 		$new_mime    = (array) wp_check_filetype( $new_filename );
 		$post_update = array(
 			'ID'             => $video_id,
-			'post_mime_type' => (string) ( $new_mime['type'] ?? '' ),
+			'post_mime_type' => (string) $new_mime['type'],
 			'guid'           => $new_url,
 		);
 		wp_update_post( $post_update );
@@ -2164,7 +2149,7 @@ class Encode_Attachment {
 
 		$this->save_format( $encode_format );
 
-				do_action(
+		do_action(
 			/**
 			 * Fires when a generated video format is deleted from the filesystem and database.
 			 *
@@ -2174,11 +2159,11 @@ class Encode_Attachment {
 			 * @param object $encode_format The Video_Format being deleted.
 			 * @param object $attachment    The Encode_Attachment instance.
 			 */
-					'videopack_delete_format',
-					$job_id,
-					$encode_format,
-					$this
-				);
+			'videopack_delete_format',
+			$job_id,
+			$encode_format,
+			$this
+		);
 
 		return (bool) $overall_success;
 	}
@@ -2318,7 +2303,7 @@ class Encode_Attachment {
 
 			$attachment_data = array(
 				'guid'           => $url,
-				'post_mime_type' => (string) ( $wp_filetype['type'] ?? '' ),
+				'post_mime_type' => (string) $wp_filetype['type'],
 				'post_title'     => $title,
 				'post_content'   => '',
 				'post_status'    => 'inherit',
@@ -2331,12 +2316,10 @@ class Encode_Attachment {
 				'wp_insert_attachment result',
 				array(
 					'id'       => $new_attachment_id,
-					'is_error' => is_wp_error( $new_attachment_id ),
 				)
 			);
 
-			if ( ! is_wp_error( $new_attachment_id ) && (int) $new_attachment_id > 0 ) {
-				$new_attachment_id = (int) $new_attachment_id;
+			if ( $new_attachment_id > 0 ) {
 				if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
 					require_once ABSPATH . 'wp-admin/includes/image.php';
 				}
@@ -2346,12 +2329,10 @@ class Encode_Attachment {
 				$attach_meta = (array) wp_generate_attachment_metadata( $new_attachment_id, $path );
 				wp_update_attachment_metadata( $new_attachment_id, $attach_meta );
 
-				if ( $new_attachment_id ) {
-					$attachment_meta_instance             = new \Videopack\Admin\Attachment_Meta( $this->options, $new_attachment_id );
-					$current_meta                         = (array) $attachment_meta_instance->get();
-					$current_meta['ffmpeg_watermark_url'] = ! empty( $this->options['ffmpeg_watermark']['url'] ) ? (string) $this->options['ffmpeg_watermark']['url'] : null;
-					$attachment_meta_instance->save( $current_meta );
-				}
+				$attachment_meta_instance             = new \Videopack\Admin\Attachment_Meta( $this->options, $new_attachment_id );
+				$current_meta                         = (array) $attachment_meta_instance->get();
+				$current_meta['ffmpeg_watermark_url'] = ! empty( $this->options['ffmpeg_watermark']['url'] ) ? (string) $this->options['ffmpeg_watermark']['url'] : null;
+				$attachment_meta_instance->save( $current_meta );
 
 				update_post_meta( $new_attachment_id, '_kgflashmediaplayer-format', $format_id );
 				if ( ! (bool) $this->is_attachment && ! empty( $this->url ) ) {
@@ -2386,7 +2367,7 @@ class Encode_Attachment {
 				return true;
 			}
 
-			$msg_detail = is_wp_error( $new_attachment_id ) ? (string) $new_attachment_id->get_error_message() : (string) __( 'wp_insert_attachment returned 0 or invalid ID.', 'video-embed-thumbnail-generator' );
+			$msg_detail = (string) __( 'wp_insert_attachment returned 0 or invalid ID.', 'video-embed-thumbnail-generator' );
 			/* translators: %s is the error message. */
 			$msg = (string) sprintf( (string) __( 'Failed to insert new attachment: %s', 'video-embed-thumbnail-generator' ), $msg_detail );
 			$encode_format->set_error( $msg );

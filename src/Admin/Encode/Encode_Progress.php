@@ -75,6 +75,7 @@ class Encode_Progress {
 
 		$handle      = @fopen( $log_file, 'r' );
 		$parsed_data = array();
+		$lines       = array();
 		if ( $handle ) {
 			\Videopack\Common\Debug_Logger::log( 'Encode_Progress: Handle opened', array( 'job_id' => $job_id ) );
 			// Read enough to catch several FFmpeg progress blocks.

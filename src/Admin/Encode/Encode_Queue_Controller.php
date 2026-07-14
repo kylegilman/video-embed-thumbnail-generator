@@ -295,7 +295,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 			$results[ $format_id ] = $queue_result;
 			if ( isset( $queue_result['status'] ) && 'success' === $queue_result['status'] ) {
-				$name                        = ( is_array( $video_formats_objects ) && isset( $video_formats_objects[ $format_id ] ) )
+				$name                        = isset( $video_formats_objects[ $format_id ] )
 					? $video_formats_objects[ $format_id ]->get_name()
 					: $format_id;
 				$successfully_queued_items[] = array(
@@ -485,6 +485,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 							// Instead of rescheduling, just handle the insertion now.
 							$inserted = $encoder->insert_attachment( $encode_format_obj );
+							$status   = $encode_format_obj->get_status();
 
 							if ( $inserted ) {
 								$update_data = array( 'status' => Encode_Format::STATUS_COMPLETED );
@@ -511,7 +512,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 									$encode_format_obj
 								);
 								$this->maybe_auto_publish_post( $job['attachment_id'], $job['blog_id'] );
-							} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
+							} elseif ( $status === 'pending_replacement' ) {
 								// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 								$wpdb->update(
 									$this->queue_table_name,
@@ -1163,7 +1164,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			( $scope === 'network' && is_network_admin() ) ? null : $current_blog_id
 		);
 
-		if ( empty( $all_queue_items ) || ! is_array( $all_queue_items ) ) {
+		if ( empty( $all_queue_items ) ) {
 			return;
 		}
 
@@ -1193,12 +1194,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				// and are not subject to the 'scheduled' retention logic.
 				if ( in_array( $job_status, array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_FAILED, Encode_Format::STATUS_CANCELED ), true ) ) {
 					$keep_for_scheduled = false;
-					if ( $type === 'scheduled' ) { // This 'scheduled' type seems to be an internal cleanup.
-						$completed_at = strtotime( $job['completed_at'] ?? $job['updated_at'] );
-						if ( $completed_at && ( time() - $completed_at < WEEK_IN_SECONDS ) ) {
-							$keep_for_scheduled = true;
-						}
-					}
 
 					// If the job is from another blog in multisite and current user can't manage network, keep it.
 					if ( is_multisite() && $job_blog_id !== $current_blog_id && ! current_user_can( 'manage_network' ) ) {
@@ -1316,28 +1311,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		return true;
 	}
 
-	/**
-	 * Get a translated, human-readable status string.
-	 *
-	 * @param string $status The status slug.
-	 * @return string The translated status.
-	 */
-	private function get_l10n_status( $status ) {
-		$statuses = array(
-			'queued'              => __( 'Queued', 'video-embed-thumbnail-generator' ),
-			'processing'          => __( 'Processing', 'video-embed-thumbnail-generator' ),
-			'needs_insert'        => __( 'Finishing', 'video-embed-thumbnail-generator' ),
-			'pending_replacement' => __( 'Pending Replacement', 'video-embed-thumbnail-generator' ),
-			'completed'           => __( 'Completed', 'video-embed-thumbnail-generator' ),
-			'failed'              => __( 'Failed', 'video-embed-thumbnail-generator' ),
-			'canceled'            => __( 'Canceled', 'video-embed-thumbnail-generator' ),
-			'deleted'             => __( 'Deleted', 'video-embed-thumbnail-generator' ),
-		);
-		if ( array_key_exists( $status, $statuses ) ) {
-			return $statuses[ $status ];
-		}
-		return ucfirst( $status );
-	}
+
 
 	/**
 	 * Helper to prepare a job object for REST response.
@@ -1526,10 +1500,8 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			if ( ! $input || $item['attachment_id'] == $input || $item['input_url'] === $input ) {
 				$job_format = Encode_Format::from_array( $item );
 				$prepared   = $this->prepare_job_for_response( $job_format );
-				if ( ! is_wp_error( $prepared ) ) {
-					$prepared['queue_order'] = $order++;
-					$jobs[]                  = $prepared;
-				}
+				$prepared['queue_order'] = $order++;
+				$jobs[]                  = $prepared;
 			}
 		}
 

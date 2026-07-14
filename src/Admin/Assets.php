@@ -106,16 +106,14 @@ class Assets implements Hook_Subscriber {
 				$player_script_deps = array();
 				$player_style_deps  = array();
 
-				if ( in_array( (string) $handle, array( 'videopack-admin-screens', 'videopack-media-library', 'videopack-classic-editor', 'videopack-core' ), true ) ) {
-					$player_script_deps = array_diff( (array) $player->get_player_script_handles(), array( (string) $handle ) );
-					$player_style_deps  = array_diff( (array) $player->get_player_style_handles(), array( (string) $handle ) );
-				}
+				$player_script_deps = array_diff( (array) $player->get_player_script_handles(), array( (string) $handle ) );
+				$player_style_deps  = array_diff( (array) $player->get_player_style_handles(), array( (string) $handle ) );
 
 				if ( 'videopack-core' !== $handle ) {
 					wp_register_script(
 						(string) $handle,
 						(string) $build_url . (string) $filename . '.js',
-						array_unique( array_merge( (array) $asset['dependencies'], $handle === 'videopack-media-library' ? array( 'media-views', 'media-models', 'media-editor' ) : array(), $player_script_deps ) ),
+						array_unique( array_merge( array( 'videopack-core' ), (array) $asset['dependencies'], $handle === 'videopack-media-library' ? array( 'media-views', 'media-models', 'media-editor' ) : array(), $player_script_deps ) ),
 						(string) $asset['version'],
 						true
 					);
@@ -133,27 +131,29 @@ class Assets implements Hook_Subscriber {
 			}
 		}
 
-		// Shared config for all Videopack scripts.
-		$this->localize_videopack_config();
 	}
 
 	/**
 	 * Localizes the global videopack_config object.
 	 */
 	private function localize_videopack_config() {
-		// This logic was moved from Ui.php to centralize configuration.
+		static $localized = false;
+		if ( $localized ) {
+			return;
+		}
+		$localized = true;
+
 		$ui          = new Ui( $this->options, new Formats\Registry( $this->options ) );
 		$config_data = (array) $ui->get_videopack_config_data();
 
-		$handles = array(
-			'videopack-admin-screens',
-			'videopack-media-library',
-			'videopack-classic-editor',
-			'videopack-core',
-		);
-
-		foreach ( $handles as $handle ) {
-			wp_localize_script( (string) $handle, 'videopack_config', $config_data );
+		if ( is_admin() ) {
+			wp_localize_script( 'videopack-core', 'videopack_config', $config_data );
+		} else {
+			$frontend_config = array(
+				'rest_url'        => $config_data['rest_url'] ?? rest_url(),
+				'nonce'           => wp_create_nonce( 'wp_rest' ),
+			);
+			wp_localize_script( 'videopack-core', 'videopack_config', $frontend_config );
 		}
 	}
 
@@ -187,12 +187,10 @@ class Assets implements Hook_Subscriber {
 		}
 	}
 
-	/**
-	 * Registers player scripts on the frontend.
-	 */
 	public function register_player_scripts() {
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
 		$player->register_scripts();
+		$this->localize_videopack_config();
 	}
 
 	/**
@@ -243,6 +241,7 @@ class Assets implements Hook_Subscriber {
 				}
 			}
 		}
+		$this->localize_videopack_config();
 	}
 
 	/**
@@ -263,13 +262,11 @@ class Assets implements Hook_Subscriber {
 		}
 	}
 
-	/**
-	 * Enqueues assets for the media library.
-	 */
 	public function enqueue_media_library_assets() {
 		wp_enqueue_script( 'videopack-media-library' );
 		wp_enqueue_style( 'videopack-media-library' );
 		$this->enqueue_player_assets();
+		$this->localize_videopack_config();
 	}
 
 	/**

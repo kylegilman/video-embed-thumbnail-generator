@@ -338,6 +338,7 @@ class Encode_Format {
 	/**
 	 * Get current progress data.
 	 *
+	 * @phpstan-impure
 	 * @return array|string Returns progress array or 'recheck' if it should be checked again later.
 	 */
 	public function get_progress() {
@@ -391,6 +392,7 @@ class Encode_Format {
 	/**
 	 * Get the current status.
 	 *
+	 * @phpstan-impure
 	 * @return string
 	 */
 	public function get_status() {

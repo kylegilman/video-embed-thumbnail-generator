@@ -204,6 +204,7 @@ class Encode_Info {
 				continue;
 			}
 			$wp_attached_file = get_attached_file( $child->ID );
+			/** @var array<string, mixed>|false $video_meta */
 			$video_meta       = wp_get_attachment_metadata( $child->ID );
 			$meta_format      = get_post_meta( $child->ID, '_kgflashmediaplayer-format', true );
 			$legacy_id_exists = $this->format->get_legacy_id() !== false;
@@ -275,7 +276,7 @@ class Encode_Info {
 					$this->writable = true;
 				}
 				break;
-			} elseif ( ( $this->source instanceof \Videopack\Video_Source\Source_Url || ! $this->source->is_local() || ! empty( get_post_meta( $this->source->get_id(), '_kgflashmediaplayer-externalurl', true ) ) ) && $this->format->is_enabled() ) {
+			} elseif ( ( $this->source instanceof \Videopack\Video_Source\Source_Url || ! $this->source->is_local() || ! empty( get_post_meta( (int) $this->source->get_id(), '_kgflashmediaplayer-externalurl', true ) ) ) && $this->format->is_enabled() ) {
 				$this->check_url_exists( $location['url'] );
 			}
 		}

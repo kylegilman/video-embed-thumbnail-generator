@@ -73,7 +73,7 @@ class Options implements Hook_Subscriber {
 	/**
 	 * Video formats registry.
 	 *
-	 * @var \Videopack\Admin\Formats\Registry $formats_registry
+	 * @var \Videopack\Admin\Formats\Registry|null $formats_registry
 	 */
 	protected $formats_registry;
 
@@ -290,9 +290,6 @@ class Options implements Hook_Subscriber {
 		$video_codecs = (array) $registry->get_video_codecs();
 		$resolutions  = (array) $registry->get_video_resolutions();
 		foreach ( $video_codecs as $codec ) {
-			if ( ! $codec instanceof \Videopack\Admin\Formats\Codecs\Video_Codec ) {
-				continue;
-			}
 			$codec_id                                      = (string) $codec->get_id();
 			$default_options['encode'][ $codec_id ]['crf'] = (int) $codec->get_default_crf();
 			$supported_rate_controls                       = (array) $codec->get_supported_rate_controls();
@@ -301,15 +298,12 @@ class Options implements Hook_Subscriber {
 			$default_options['encode'][ $codec_id ]['enabled']      = (bool) $codec->is_default_encode();
 
 			foreach ( $resolutions as $resolution ) {
-				if ( ! $resolution instanceof \Videopack\Admin\Formats\Video_Resolution ) {
-					continue;
-				}
 				$res_id = (string) $resolution->get_id();
 				$default_options['encode'][ $codec_id ]['resolutions'][ $res_id ] = (bool) ( $codec->is_default_encode() && $resolution->is_default_encode() );
 			}
 		}
 
-				/**
+		/**
 		 * Filters the default settings for the Videopack plugin.
 		 *
 		 * This filter is used by the plugin and its add-ons to define initial values
@@ -485,19 +479,18 @@ class Options implements Hook_Subscriber {
 
 			// Clean up legacy capabilities from WordPress roles in the database.
 			$wp_roles = wp_roles();
-			if ( $wp_roles instanceof \WP_Roles ) {
-				$caps_to_clean = array(
-					'make_video_thumbnails',
-					'encode_videos',
-					'edit_others_video_encodes',
-					'view_full_length_video',
-				);
 
-				foreach ( (array) $wp_roles->roles as $role => $role_info ) {
-					foreach ( $caps_to_clean as $cap ) {
-						if ( isset( $role_info['capabilities'][ $cap ] ) ) {
-							$wp_roles->remove_cap( (string) $role, $cap );
-						}
+			$caps_to_clean = array(
+				'make_video_thumbnails',
+				'encode_videos',
+				'edit_others_video_encodes',
+				'view_full_length_video',
+			);
+
+			foreach ( (array) $wp_roles->roles as $role => $role_info ) {
+				foreach ( $caps_to_clean as $cap ) {
+					if ( isset( $role_info['capabilities'][ $cap ] ) ) {
+						$wp_roles->remove_cap( (string) $role, $cap );
 					}
 				}
 			}
@@ -930,10 +923,6 @@ class Options implements Hook_Subscriber {
 		$roles_with_capability = array();
 		$wp_roles_instance     = wp_roles();
 
-		if ( ! $wp_roles_instance instanceof \WP_Roles ) {
-			return $roles_with_capability;
-		}
-
 		foreach ( (array) $wp_roles_instance->get_names() as $role_slug => $role_name ) {
 			$role_object = $wp_roles_instance->get_role( (string) $role_slug );
 			if ( $role_object instanceof \WP_Role && $role_object->has_cap( (string) $capability ) ) {
@@ -953,10 +942,6 @@ class Options implements Hook_Subscriber {
 	protected function get_all_roles_with_capability( $enabled_roles ) {
 		$all_roles         = array();
 		$wp_roles_instance = wp_roles();
-
-		if ( ! $wp_roles_instance instanceof \WP_Roles ) {
-			return $all_roles;
-		}
 
 		foreach ( (array) $wp_roles_instance->get_names() as $role_slug => $role_name ) {
 			$all_roles[ (string) $role_slug ] = in_array( (string) $role_slug, (array) $enabled_roles, true );

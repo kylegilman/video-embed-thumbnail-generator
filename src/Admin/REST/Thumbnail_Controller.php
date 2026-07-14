@@ -58,7 +58,7 @@ class Thumbnail_Controller extends Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'thumb_generate' ),
 					'permission_callback' => function () {
-						$ffmpeg_exists = (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' );
+						$ffmpeg_exists = (bool) $this->options['ffmpeg_exists'] && 'notinstalled' !== $this->options['ffmpeg_exists'];
 						$is_cloud_ready = apply_filters(
 							/** This filter is documented in src/Admin/Ui.php */
 							'videopack_transcoding_service_ready',
@@ -313,8 +313,6 @@ class Thumbnail_Controller extends Controller {
 		}
 
 		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
-		error_log( 'Videopack debug: set_poster parameter is: ' . var_export( $request->get_param( 'set_poster' ), true ) );
-		error_log( 'Videopack debug: featured parameter is: ' . var_export( $request->get_param( 'featured' ), true ) );
 		$response = (array) $thumbnails->save_from_blob( (int) $attachment_id, $post_name, (array) $files['file'], (int) $request->get_param( 'parent_id' ), $request->get_param( 'featured' ), $request->get_param( 'set_poster' ), $request->get_param( 'filename_suffix' ) );
 
 		$response['attachment_id'] = (int) $attachment_id;
@@ -348,15 +346,11 @@ class Thumbnail_Controller extends Controller {
 		$params     = $request->get_params();
 		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 
-		if ( is_numeric( $attachment_id ) ) {
-			$attachment_url = (string) wp_get_attachment_url( (int) $attachment_id );
-			$post_name      = $attachment_url ? pathinfo( basename( $attachment_url ), PATHINFO_FILENAME ) : get_the_title( (int) $attachment_id );
-		} else {
-			$post_name = str_replace( 'singleurl_', '', (string) $attachment_id );
-		}
+		$attachment_url = (string) wp_get_attachment_url( (int) $attachment_id );
+		$post_name      = $attachment_url ? pathinfo( basename( $attachment_url ), PATHINFO_FILENAME ) : get_the_title( (int) $attachment_id );
 
 		$response = (array) $thumbnails->save(
-			$attachment_id,
+			(int) $attachment_id,
 			$post_name,
 			(string) ( $params['thumburl'] ?? '' ),
 			$params['thumbnail_index'] ?? false,
@@ -383,9 +377,9 @@ class Thumbnail_Controller extends Controller {
 	 */
 	public function get_thumbnail_candidates( \WP_REST_Request $request ) {
 		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options );
-		$attachment      = new \Videopack\Admin\Attachment_Processor( $this->options, $this->format_registry, $attachment_meta );
+		$attachment      = new \Videopack\Admin\Attachment_Processor( $this->options, $this->format_registry );
 		$results         = $attachment->get_thumbnail_candidates();
-				/**
+		/**
 		 * Filters the REST response containing the list of videos that need thumbnails.
 		 *
 		 * @since 5.0.0

@@ -167,8 +167,12 @@ class Attachment_Deleter implements Hook_Subscriber {
 			$args  = array(
 				'numberposts' => -1,
 				'post_type'   => 'attachment',
-				'meta_key'    => '_kgflashmediaplayer-poster-id',
-				'meta_value'  => (int) $video_id,
+				'meta_query'  => array(
+					array(
+						'key'   => '_kgflashmediaplayer-poster-id',
+						'value' => (string) $video_id,
+					),
+				),
 			);
 			$posts = get_posts( $args ); // Find all posts that have this thumbnail ID in their meta.
 			if ( $posts ) {

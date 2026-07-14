@@ -172,8 +172,8 @@ class Attachment_Controller extends Controller {
 		$encoder = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id );
 		$result  = $encoder->delete_format_by_id( $format_id );
 
-		if ( is_wp_error( $result ) ) {
-			return $result;
+		if ( ! $result ) {
+			return new \WP_Error( 'rest_delete_failed', 'Failed to delete the specified format or permission denied.', array( 'status' => 500 ) );
 		}
 
 				/**

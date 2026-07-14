@@ -62,6 +62,8 @@ class Public_Controller extends Controller {
 			)
 		);
 
+
+
 		register_rest_route(
 			$this->namespace,
 			'/sources',
@@ -222,7 +224,7 @@ class Public_Controller extends Controller {
 		}
 
 		// Ensure we start with a player-container at the root.
-		if ( empty( $blocks ) || 'videopack/player-container' !== $blocks[0]['blockName'] ) {
+		if ( 'videopack/player-container' !== $blocks[0]['blockName'] ) {
 			$blocks = array(
 				array(
 					'blockName'   => 'videopack/player-container',
@@ -464,7 +466,7 @@ class Public_Controller extends Controller {
 	 * Ensures the JSON is valid and only allows videopack blocks to prevent
 	 * arbitrary block execution vulnerabilities.
 	 *
-	 * @param string $value The JSON string to sanitize.
+	 * @param mixed $value The JSON string to sanitize.
 	 */
 	public function sanitize_inner_blocks_template( $value ) {
 		if ( empty( $value ) || ! is_string( $value ) ) {

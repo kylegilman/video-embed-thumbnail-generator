@@ -39,7 +39,7 @@ class Filesystem {
 		}
 
 		if ( 'direct' === get_filesystem_method( array(), $path, true ) ) {
-			$creds = (array) request_filesystem_credentials( (string) site_url() . '/wp-admin/', '', false, false, array() );
+			$creds = (array) request_filesystem_credentials( (string) site_url() . '/wp-admin/', '', false, $path, array() );
 			if ( ! WP_Filesystem( $creds ) ) {
 				return false;
 			}

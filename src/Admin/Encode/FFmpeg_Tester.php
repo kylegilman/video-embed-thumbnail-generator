@@ -42,7 +42,6 @@ class FFmpeg_Tester {
 	 * Runs a sample FFmpeg encoding test to verify setup.
 	 *
 	 * @param string $format_id The ID of the video format to test (e.g., 'h264_720p').
-	 * @param bool   $rotate    Whether to use a rotated sample video.
 	 * @return array An associative array containing 'command' (the FFmpeg command executed)
 	 *               and 'output' (the FFmpeg process output), or an error message if the format is invalid.
 	 */
