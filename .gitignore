@@ -11,3 +11,4 @@ node_modules
 /.agents
 wp-tests-config.php
 tests/wp-tests-config.php
+/dashboard
