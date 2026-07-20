@@ -34,32 +34,53 @@ import './editor.scss';
  * @param {Function} root0.setAttributes Attribute setter
  * @param {Object}   root0.context       Block context
  * @param {string}   root0.clientId      Block client ID
+ * @param {boolean}  root0.isSelected    Whether this block is currently selected
  * @return {Element} Thumbnail edit component
  */
-export default function Edit({ attributes, setAttributes, context, clientId }) {
+export default function Edit({
+	attributes,
+	setAttributes,
+	context,
+	clientId,
+	isSelected,
+}) {
 	const vpContext = useVideopackContext(attributes, context);
 	const attachmentId = vpContext.resolved.attachmentId;
 	const isDiscovering = vpContext.resolved.isDiscovering;
 	const { linkTo } = attributes;
 
 	const blockProps = useBlockProps();
-	const { latestVideoId } = useSelect(
+	const { latestVideoId, hasSelectedInnerBlock } = useSelect(
 		(select) => {
+			const { hasSelectedInnerBlock: hasSelectedInner } =
+				select('core/block-editor');
+			const result = {
+				latestVideoId: null,
+				hasSelectedInnerBlock: hasSelectedInner(clientId, true),
+			};
 			if (!vpContext.resolved.isPreview) {
-				return { latestVideoId: null };
+				return result;
 			}
-			const { getEntityRecords } = select('core');
 			const query = {
 				post_type: 'attachment',
 				mime_type: 'video',
 				per_page: 1,
 				_fields: 'id',
 			};
-			const media = getEntityRecords('postType', 'attachment', query);
-			return { latestVideoId: media?.[0]?.id };
+			const media = select('core').getEntityRecords(
+				'postType',
+				'attachment',
+				query
+			);
+			return { ...result, latestVideoId: media?.[0]?.id };
 		},
-		[vpContext.resolved.isPreview]
+		[vpContext.resolved.isPreview, clientId]
 	);
+
+	// Only show the thumbnail's own "Add block" appender while this block
+	// (or one of its children) is actively selected, so it doesn't clutter
+	// the editor whenever some unrelated block elsewhere is selected.
+	const showThumbnailAppender = isSelected || hasSelectedInnerBlock;
 
 	const effectiveAttachmentId = attachmentId || latestVideoId;
 
@@ -185,7 +206,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 								<InnerBlocks
 									templateLock={false}
 									renderAppender={
-										InnerBlocks.ButtonBlockAppender
+										showThumbnailAppender
+											? InnerBlocks.ButtonBlockAppender
+											: false
 									}
 								/>
 							</BlockContextProvider>

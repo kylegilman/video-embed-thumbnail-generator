@@ -4,6 +4,19 @@
 	&.is-overlay {
 		z-index: 110;
 		// Absolute centering is now handled via inline styles in useBlockProps
+
+		// This wrapper covers the entire parent (thumbnail/player) so the icon
+		// can be centered, but that leaves a large empty hit area that would
+		// otherwise block clicks on whatever sits behind it in the editor
+		// (e.g. the "Add block" appender). Let clicks pass through the empty
+		// space, restoring pointer events only on the actual visible button —
+		// same pattern used by the title/duration/view-count overlay blocks.
+		pointer-events: none;
+
+		.play-button-container,
+		.videopack-play-button {
+			pointer-events: auto;
+		}
 	}
 
 	&.is-selected {

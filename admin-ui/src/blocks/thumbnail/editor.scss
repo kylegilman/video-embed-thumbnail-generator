@@ -29,12 +29,15 @@
 			height: 100%;
 			z-index: 10;
 
-			// Ensure Gutenberg's inner blocks wrapper takes up full space
-			.block-editor-inner-blocks {
+			// Ensure Gutenberg's inner blocks wrapper takes up full space.
+			// Scoped to direct children only — a plain descendant selector
+			// here would also match a nested child block's own InnerBlocks
+			// (e.g. the Title block's meta-icons row).
+			> .block-editor-inner-blocks {
 				width: 100%;
 				height: 100%;
 
-				.block-editor-block-list__layout {
+				> .block-editor-block-list__layout {
 					width: 100%;
 					height: 100%;
 				}
@@ -50,19 +53,26 @@
 				// Restore pointer events for the actual visible elements so they can be selected
 				.videopack-thumbnail-title,
 				.videopack-video-duration,
-				.videopack-view-count,
-				.videopack-view-count-wrapper {
+				.videopack-view-count {
 					pointer-events: all;
 				}
 			}
 
-			// Make sure the appender is visible
-			.block-list-appender {
+			// Make sure Thumbnail's own appender (for adding a sibling overlay
+			// block directly to Thumbnail) is visible and clickable, above
+			// every overlay child (play-button sits at z-index 110/115).
+			// Scoped to a direct-child chain so this doesn't also catch a
+			// nested child block's own appender — e.g. the plain descendant
+			// version of this selector was leaking into the Title block's
+			// meta-icons "Add block" button, offsetting it via a stray
+			// bottom/left that Title's own CSS never resets.
+			> .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
 				position: absolute;
 				bottom: 10px;
 				left: 10px;
-				z-index: 20;
+				z-index: 150;
 				width: 40px;
+				pointer-events: auto;
 			}
 		}
 	}
