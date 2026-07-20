@@ -277,7 +277,12 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = []
+    excludeKeys = [],
+    // Restricts which resolved values become videopack-has-{key} classes /
+    // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+    // always computed — only the stamping is scoped). null means "stamp
+    // everything", matching prior behavior for any caller that doesn't pass it.
+    classKeys = null
   } = options;
   // The hover trigger exclusion should NOT be inherited from parents by default,
   // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
@@ -294,7 +299,7 @@ function useVideopackContext(attributes, context, options = {}) {
       }
       const value = getEffectiveValue(key, attributes, context);
       resolved[key] = value;
-      if (value) {
+      if (value && (classKeys === null || classKeys.includes(key))) {
         const cssKey = key.replace(/_/g, '-');
         if (typeof value === 'string' || typeof value === 'number') {
           const cssVar = `--videopack-${cssKey}`;
@@ -383,7 +388,7 @@ function useVideopackContext(attributes, context, options = {}) {
       style,
       classes
     };
-  }, [attributes, context, excludeHoverTrigger, excludeKeys]);
+  }, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
@@ -594,10 +599,19 @@ function useVideopackData(key, context = {}) {
 
 
 
+// Duration shares "badge" title/background colors with Title/View-count —
+// see Overlays.scss's $badge-selectors. Module-level so the reference stays
+// stable across renders (useVideopackContext depends on it for memoization).
+
+const CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * A internal component to display the video duration with correct formatting and data.
  *
  * @param {Object}  root0                   Component props.
+ * @param {Object}  [root0.blockProps]      Block props from the parent Edit component,
+ *                                          reused as-is when present so this component
+ *                                          doesn't stamp a second, redundant wrapper.
  * @param {boolean} root0.isOverlay         Whether it's an overlay.
  * @param {boolean} root0.isInsideThumbnail Whether it's inside a thumbnail.
  * @param {string}  root0.textAlign         Text alignment.
@@ -606,8 +620,8 @@ function useVideopackData(key, context = {}) {
  * @param {Object}  root0.context           Block context.
  * @return {Element}                        The rendered component.
  */
-
 function VideoDuration({
+  blockProps,
   isOverlay,
   isInsideThumbnail,
   textAlign,
@@ -615,7 +629,9 @@ function VideoDuration({
   attributes,
   context = {}
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: CLASS_KEYS
+  });
   const {
     data: duration,
     isResolving
@@ -652,13 +668,17 @@ function VideoDuration({
     }
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+  const finalBlockProps = blockProps || {
     className: `videopack-video-duration-block videopack-video-duration ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${position || 'top'} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`,
-    style: vpContext.style,
+    style: vpContext.style
+  };
+  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+    ...finalBlockProps,
     children: duration ? formatDuration(duration) : '0:00'
   });
 }
 ;// ./src/utils/colors.js
+
 const getColorFallbacks = settings => {
   const {
     embed_method = 'Video.js',
@@ -718,7 +738,18 @@ const getColorFallbacks = settings => {
         break;
     }
   }
-  return fallbacks;
+  return (0,external_wp_hooks_namespaceObject.applyFilters)(
+  /**
+   * Filters the resolved color fallback values used for the player preview
+   * and color picker placeholders when no explicit color has been chosen.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} fallbacks   Map of color fallback values.
+   * @param {string} embed_method The selected player embed method.
+   * @param {string} skin         The selected player skin.
+   */
+  'videopack.colorFallbacks', fallbacks, embed_method, skin);
 };
 ;// ./src/blocks/duration/edit.js
 /* global videopack_config */
@@ -732,6 +763,12 @@ const getColorFallbacks = settings => {
 
 
 
+// Duration shares "badge" title/background colors with Title/View-count —
+// see Overlays.scss's $badge-selectors. Module-level so the reference stays
+// stable across renders (useVideopackContext depends on it for memoization).
+
+const edit_CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * Edit component for the Videopack Video Duration block.
  *
@@ -741,13 +778,14 @@ const getColorFallbacks = settings => {
  * @param {Object}   root0.context       Block context.
  * @return {Element}                     The rendered component.
  */
-
 function Edit({
   attributes,
   setAttributes,
   context
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: edit_CLASS_KEYS
+  });
   const postId = vpContext.resolved.attachmentId;
   const {
     textAlign,
@@ -848,17 +886,15 @@ function Edit({
           })
         })
       })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      ...blockProps,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideoDuration, {
-        postId: effectiveAttachmentId,
-        isOverlay: isOverlay,
-        isInsideThumbnail: isInsideThumbnail,
-        textAlign: finalTextAlign,
-        position: position,
-        attributes: attributes,
-        context: context
-      })
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideoDuration, {
+      blockProps: blockProps,
+      postId: effectiveAttachmentId,
+      isOverlay: isOverlay,
+      isInsideThumbnail: isInsideThumbnail,
+      textAlign: finalTextAlign,
+      position: position,
+      attributes: attributes,
+      context: context
     })]
   });
 }

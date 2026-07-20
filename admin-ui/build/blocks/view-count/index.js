@@ -19,7 +19,7 @@ const external_ReactJSXRuntime_namespaceObject = window["ReactJSXRuntime"];
 // packages/icons/src/library/not-allowed.tsx
 
 
-var not_allowed_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M12 18.5A6.5 6.5 0 0 1 6.93 7.931l9.139 9.138A6.473 6.473 0 0 1 12 18.5Zm5.123-2.498a6.5 6.5 0 0 0-9.124-9.124l9.124 9.124ZM4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z" }) });
+var not_allowed_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M12 18.5A6.5 6.5 0 0 1 6.93 7.931l9.139 9.138A6.473 6.473 0 0 1 12 18.5Zm5.123-2.498a6.5 6.5 0 0 0-9.124-9.124l9.124 9.124ZM4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z" }) });
 
 //# sourceMappingURL=not-allowed.mjs.map
 
@@ -27,7 +27,7 @@ var not_allowed_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceO
 // packages/icons/src/library/seen.tsx
 
 
-var seen_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M3.99961 13C4.67043 13.3354 4.6703 13.3357 4.67017 13.3359L4.67298 13.3305C4.67621 13.3242 4.68184 13.3135 4.68988 13.2985C4.70595 13.2686 4.7316 13.2218 4.76695 13.1608C4.8377 13.0385 4.94692 12.8592 5.09541 12.6419C5.39312 12.2062 5.84436 11.624 6.45435 11.0431C7.67308 9.88241 9.49719 8.75 11.9996 8.75C14.502 8.75 16.3261 9.88241 17.5449 11.0431C18.1549 11.624 18.6061 12.2062 18.9038 12.6419C19.0523 12.8592 19.1615 13.0385 19.2323 13.1608C19.2676 13.2218 19.2933 13.2686 19.3093 13.2985C19.3174 13.3135 19.323 13.3242 19.3262 13.3305L19.3291 13.3359C19.3289 13.3357 19.3288 13.3354 19.9996 13C20.6704 12.6646 20.6703 12.6643 20.6701 12.664L20.6697 12.6632L20.6688 12.6614L20.6662 12.6563L20.6583 12.6408C20.6517 12.6282 20.6427 12.6108 20.631 12.5892C20.6078 12.5459 20.5744 12.4852 20.5306 12.4096C20.4432 12.2584 20.3141 12.0471 20.1423 11.7956C19.7994 11.2938 19.2819 10.626 18.5794 9.9569C17.1731 8.61759 14.9972 7.25 11.9996 7.25C9.00203 7.25 6.82614 8.61759 5.41987 9.9569C4.71736 10.626 4.19984 11.2938 3.85694 11.7956C3.68511 12.0471 3.55605 12.2584 3.4686 12.4096C3.42484 12.4852 3.39142 12.5459 3.36818 12.5892C3.35656 12.6108 3.34748 12.6282 3.34092 12.6408L3.33297 12.6563L3.33041 12.6614L3.32948 12.6632L3.32911 12.664C3.32894 12.6643 3.32879 12.6646 3.99961 13ZM11.9996 16C13.9326 16 15.4996 14.433 15.4996 12.5C15.4996 10.567 13.9326 9 11.9996 9C10.0666 9 8.49961 10.567 8.49961 12.5C8.49961 14.433 10.0666 16 11.9996 16Z" }) });
+var seen_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M3.99961 13C4.67043 13.3354 4.6703 13.3357 4.67017 13.3359L4.67298 13.3305C4.67621 13.3242 4.68184 13.3135 4.68988 13.2985C4.70595 13.2686 4.7316 13.2218 4.76695 13.1608C4.8377 13.0385 4.94692 12.8592 5.09541 12.6419C5.39312 12.2062 5.84436 11.624 6.45435 11.0431C7.67308 9.88241 9.49719 8.75 11.9996 8.75C14.502 8.75 16.3261 9.88241 17.5449 11.0431C18.1549 11.624 18.6061 12.2062 18.9038 12.6419C19.0523 12.8592 19.1615 13.0385 19.2323 13.1608C19.2676 13.2218 19.2933 13.2686 19.3093 13.2985C19.3174 13.3135 19.323 13.3242 19.3262 13.3305L19.3291 13.3359C19.3289 13.3357 19.3288 13.3354 19.9996 13C20.6704 12.6646 20.6703 12.6643 20.6701 12.664L20.6697 12.6632L20.6688 12.6614L20.6662 12.6563L20.6583 12.6408C20.6517 12.6282 20.6427 12.6108 20.631 12.5892C20.6078 12.5459 20.5744 12.4852 20.5306 12.4096C20.4432 12.2584 20.3141 12.0471 20.1423 11.7956C19.7994 11.2938 19.2819 10.626 18.5794 9.9569C17.1731 8.61759 14.9972 7.25 11.9996 7.25C9.00203 7.25 6.82614 8.61759 5.41987 9.9569C4.71736 10.626 4.19984 11.2938 3.85694 11.7956C3.68511 12.0471 3.55605 12.2584 3.4686 12.4096C3.42484 12.4852 3.39142 12.5459 3.36818 12.5892C3.35656 12.6108 3.34748 12.6282 3.34092 12.6408L3.33297 12.6563L3.33041 12.6614L3.32948 12.6632L3.32911 12.664C3.32894 12.6643 3.32879 12.6646 3.99961 13ZM11.9996 16C13.9326 16 15.4996 14.433 15.4996 12.5C15.4996 10.567 13.9326 9 11.9996 9C10.0666 9 8.49961 10.567 8.49961 12.5C8.49961 14.433 10.0666 16 11.9996 16Z" }) });
 
 //# sourceMappingURL=seen.mjs.map
 
@@ -35,7 +35,7 @@ var seen_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.j
 // packages/icons/src/library/media-and-text.tsx
 
 
-var media_and_text_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M3 6v11.5h8V6H3Zm11 3h7V7.5h-7V9Zm7 3.5h-7V11h7v1.5ZM14 16h7v-1.5h-7V16Z" }) });
+var media_and_text_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M3 6v11.5h8V6H3Zm11 3h7V7.5h-7V9Zm7 3.5h-7V11h7v1.5ZM14 16h7v-1.5h-7V16Z" }) });
 
 //# sourceMappingURL=media-and-text.mjs.map
 
@@ -1108,7 +1108,12 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = []
+    excludeKeys = [],
+    // Restricts which resolved values become videopack-has-{key} classes /
+    // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+    // always computed — only the stamping is scoped). null means "stamp
+    // everything", matching prior behavior for any caller that doesn't pass it.
+    classKeys = null
   } = options;
   // The hover trigger exclusion should NOT be inherited from parents by default,
   // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
@@ -1125,7 +1130,7 @@ function useVideopackContext(attributes, context, options = {}) {
       }
       const value = getEffectiveValue(key, attributes, context);
       resolved[key] = value;
-      if (value) {
+      if (value && (classKeys === null || classKeys.includes(key))) {
         const cssKey = key.replace(/_/g, '-');
         if (typeof value === 'string' || typeof value === 'number') {
           const cssVar = `--videopack-${cssKey}`;
@@ -1214,7 +1219,7 @@ function useVideopackContext(attributes, context, options = {}) {
       style,
       classes
     };
-  }, [attributes, context, excludeHoverTrigger, excludeKeys]);
+  }, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
@@ -1428,6 +1433,8 @@ function useVideopackData(key, context = {}) {
 
 
 
+const CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * A internal component to display the view count with correct styling and data.
  *
@@ -1444,7 +1451,6 @@ function useVideopackData(key, context = {}) {
  * @param {Object}  root0.context           Block context.
  * @return {Element}                        The rendered component.
  */
-
 function ViewCount({
   blockProps,
   iconType = 'none',
@@ -1457,7 +1463,9 @@ function ViewCount({
   attributes = {},
   context = {}
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: CLASS_KEYS
+  });
   const {
     data: views,
     isResolving
@@ -1466,7 +1474,7 @@ function ViewCount({
   const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'];
   const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
   const defaultAlign = isInsideThumbnail || actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
-  const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${actualIsOverlay ? `position-${position || 'top'}` : ''} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`;
+  const wrapperClass = `videopack-view-count videopack-view-count-block ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} position-${position || 'top'} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`;
   const finalBlockProps = blockProps || {
     className: wrapperClass,
     style: vpContext.style
@@ -1517,15 +1525,13 @@ function ViewCount({
         return null;
     }
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
     ...finalBlockProps,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-view-count",
-      children: [renderIcon(), displayValue]
-    })
+    children: [renderIcon(), displayValue]
   });
 }
 ;// ./src/utils/colors.js
+
 const getColorFallbacks = settings => {
   const {
     embed_method = 'Video.js',
@@ -1585,7 +1591,18 @@ const getColorFallbacks = settings => {
         break;
     }
   }
-  return fallbacks;
+  return (0,external_wp_hooks_namespaceObject.applyFilters)(
+  /**
+   * Filters the resolved color fallback values used for the player preview
+   * and color picker placeholders when no explicit color has been chosen.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} fallbacks   Map of color fallback values.
+   * @param {string} embed_method The selected player embed method.
+   * @param {string} skin         The selected player skin.
+   */
+  'videopack.colorFallbacks', fallbacks, embed_method, skin);
 };
 ;// ./src/blocks/view-count/edit.js
 /* global videopack_config */
@@ -1601,6 +1618,11 @@ const getColorFallbacks = settings => {
 
 
 
+// View-count shares "badge" title/background colors with Title/Duration —
+// see the $badge-selectors comment in VideoDuration.js.
+
+const edit_CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * Edit component for the Videopack View Count block.
  *
@@ -1610,13 +1632,14 @@ const getColorFallbacks = settings => {
  * @param {Object}   root0.context       Block context.
  * @return {Element}                     The rendered component.
  */
-
 function Edit({
   attributes,
   setAttributes,
   context
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: edit_CLASS_KEYS
+  });
   const postId = vpContext.resolved.attachmentId;
   const {
     iconType,
@@ -1665,7 +1688,7 @@ function Edit({
   const effectiveAttachmentId = postId || latestVideoId;
   const position = attributes.position || context['videopack/position'] || 'top';
   const blockProps = (0,external_wp_blockEditor_namespaceObject.useBlockProps)({
-    className: `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${isOverlay ? `is-overlay position-${position}` : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayerOverlay ? 'is-inside-player' : ''} ${!effectiveAttachmentId ? 'no-title' : ''} has-text-align-${finalTextAlign}`,
+    className: `videopack-view-count videopack-view-count-block ${vpContext.classes} ${isOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${isInsidePlayerOverlay ? 'is-inside-player' : ''} ${!effectiveAttachmentId ? 'no-title' : ''} position-${position} has-text-align-${finalTextAlign}`,
     style: vpContext.style
   });
   const THEME_COLORS = videopack_config?.themeColors;

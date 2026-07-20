@@ -19,7 +19,7 @@ const external_ReactJSXRuntime_namespaceObject = window["ReactJSXRuntime"];
 // packages/icons/src/library/title.tsx
 
 
-var title_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "m4 5.5h2v6.5h1.5v-6.5h2v-1.5h-5.5zm16 10.5h-16v-1.5h16zm-7 4h-9v-1.5h9z" }) });
+var title_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "m4 5.5h2v6.5h1.5v-6.5h2v-1.5h-5.5zm16 10.5h-16v-1.5h16zm-7 4h-9v-1.5h9z" }) });
 
 //# sourceMappingURL=title.mjs.map
 
@@ -27,7 +27,7 @@ var title_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.
 // packages/icons/src/library/background.tsx
 
 
-var background_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M11.53 4.47a.75.75 0 1 0-1.06 1.06l8 8a.75.75 0 1 0 1.06-1.06l-8-8Zm5 1a.75.75 0 1 0-1.06 1.06l2 2a.75.75 0 1 0 1.06-1.06l-2-2Zm-11.06 10a.75.75 0 0 1 1.06 0l2 2a.75.75 0 1 1-1.06 1.06l-2-2a.75.75 0 0 1 0-1.06Zm.06-5a.75.75 0 0 0-1.06 1.06l8 8a.75.75 0 1 0 1.06-1.06l-8-8Zm-.06-3a.75.75 0 0 1 1.06 0l10 10a.75.75 0 1 1-1.06 1.06l-10-10a.75.75 0 0 1 0-1.06Zm3.06-2a.75.75 0 0 0-1.06 1.06l10 10a.75.75 0 1 0 1.06-1.06l-10-10Z" }) });
+var background_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M11.53 4.47a.75.75 0 1 0-1.06 1.06l8 8a.75.75 0 1 0 1.06-1.06l-8-8Zm5 1a.75.75 0 1 0-1.06 1.06l2 2a.75.75 0 1 0 1.06-1.06l-2-2Zm-11.06 10a.75.75 0 0 1 1.06 0l2 2a.75.75 0 1 1-1.06 1.06l-2-2a.75.75 0 0 1 0-1.06Zm.06-5a.75.75 0 0 0-1.06 1.06l8 8a.75.75 0 1 0 1.06-1.06l-8-8Zm-.06-3a.75.75 0 0 1 1.06 0l10 10a.75.75 0 1 1-1.06 1.06l-10-10a.75.75 0 0 1 0-1.06Zm3.06-2a.75.75 0 0 0-1.06 1.06l10 10a.75.75 0 1 0 1.06-1.06l-10-10Z" }) });
 
 //# sourceMappingURL=background.mjs.map
 
@@ -297,7 +297,12 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = []
+    excludeKeys = [],
+    // Restricts which resolved values become videopack-has-{key} classes /
+    // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+    // always computed — only the stamping is scoped). null means "stamp
+    // everything", matching prior behavior for any caller that doesn't pass it.
+    classKeys = null
   } = options;
   // The hover trigger exclusion should NOT be inherited from parents by default,
   // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
@@ -314,7 +319,7 @@ function useVideopackContext(attributes, context, options = {}) {
       }
       const value = getEffectiveValue(key, attributes, context);
       resolved[key] = value;
-      if (value) {
+      if (value && (classKeys === null || classKeys.includes(key))) {
         const cssKey = key.replace(/_/g, '-');
         if (typeof value === 'string' || typeof value === 'number') {
           const cssVar = `--videopack-${cssKey}`;
@@ -403,7 +408,7 @@ function useVideopackContext(attributes, context, options = {}) {
       style,
       classes
     };
-  }, [attributes, context, excludeHoverTrigger, excludeKeys]);
+  }, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
@@ -657,6 +662,11 @@ function VideopackContextBridge({
 
 
 
+const TITLE_CONTEXT_OPTS = {
+  excludeKeys: ['downloadlink'],
+  classKeys: ['skin', 'title_color', 'title_background_color']
+};
+
 /**
  * An internal component to display the video title with correct styling and data.
  *
@@ -680,7 +690,6 @@ function VideopackContextBridge({
  * @param {boolean}  root0.linkToPost            Whether to link to parent post.
  * @return {Element}                             The rendered component.
  */
-
 function VideoTitle({
   blockProps,
   postId: propPostId,
@@ -700,9 +709,7 @@ function VideoTitle({
   linkToPost = false,
   children
 }) {
-  const vpContext = useVideopackContext(attributes, context, {
-    excludeKeys: ['downloadlink']
-  });
+  const vpContext = useVideopackContext(attributes, context, TITLE_CONTEXT_OPTS);
   const {
     postId: resolvedPostId,
     attachmentId: resolvedAttachmentId,
@@ -759,6 +766,14 @@ function VideoTitle({
         onChange: onTitleChange,
         placeholder: placeholder,
         allowedFormats: ['core/bold', 'core/italic', 'core/strikethrough']
+        // Only the real Edit component passes onTitleChange (it wires up
+        // setAttributes). Everywhere else this renders — Loop's templated
+        // preview items, the settings-page preview, the classic-editor
+        // preview — has nowhere to persist an edit, so RichText must not
+        // accept one; an editable field that silently discards changes
+        // just looks broken to a user.
+        ,
+        readOnly: !onTitleChange
       }), isOverlay && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
         className: iconsClass,
         children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideopackContextBridge, {
@@ -784,6 +799,7 @@ function VideoTitle({
   });
 }
 ;// ./src/utils/colors.js
+
 const getColorFallbacks = settings => {
   const {
     embed_method = 'Video.js',
@@ -843,7 +859,18 @@ const getColorFallbacks = settings => {
         break;
     }
   }
-  return fallbacks;
+  return (0,external_wp_hooks_namespaceObject.applyFilters)(
+  /**
+   * Filters the resolved color fallback values used for the player preview
+   * and color picker placeholders when no explicit color has been chosen.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} fallbacks   Map of color fallback values.
+   * @param {string} embed_method The selected player embed method.
+   * @param {string} skin         The selected player skin.
+   */
+  'videopack.colorFallbacks', fallbacks, embed_method, skin);
 };
 ;// ./src/blocks/title/edit.js
 /* global videopack_config */
@@ -858,8 +885,13 @@ const getColorFallbacks = settings => {
 
 
 
-const TITLE_CONTEXT_OPTS = {
-  excludeKeys: ['downloadlink']
+// Title is a valid theme-context root (Overlays.scss) and owns its own
+// title/background colors — see the $badge-selectors comment in
+// VideoDuration.js for why Duration/View-count also need these two.
+
+const edit_TITLE_CONTEXT_OPTS = {
+  excludeKeys: ['downloadlink'],
+  classKeys: ['skin', 'title_color', 'title_background_color']
 };
 
 /**
@@ -878,7 +910,7 @@ function Edit({
   setAttributes,
   context
 }) {
-  const vpContext = useVideopackContext(attributes, context, TITLE_CONTEXT_OPTS);
+  const vpContext = useVideopackContext(attributes, context, edit_TITLE_CONTEXT_OPTS);
   const {
     postId,
     postType

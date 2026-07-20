@@ -1,14 +1,14 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The require scope
-/******/ 	var __webpack_require__ = {};
+/******/ 	const __webpack_require__ = {};
 /******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
 /******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
+/******/ 			const getter = module && module.__esModule ?
 /******/ 				() => (module['default']) :
 /******/ 				() => (module);
 /******/ 			__webpack_require__.d(getter, { a: getter });
@@ -18,11 +18,26 @@
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
+/******/ 		// define getter/value functions for harmony exports
 /******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			if(Array.isArray(definition)) {
+/******/ 				var i = 0;
+/******/ 				while(i < definition.length) {
+/******/ 					var key = definition[i++];
+/******/ 					var binding = definition[i++];
+/******/ 					if(!__webpack_require__.o(exports, key)) {
+/******/ 						if(binding === 0) {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
+/******/ 						} else {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
+/******/ 						}
+/******/ 					} else if(binding === 0) { i++; }
+/******/ 				}
+/******/ 			} else {
+/******/ 				for(var key in definition) {
+/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 					}
 /******/ 				}
 /******/ 			}
 /******/ 		};
@@ -30,7 +45,7 @@
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.hasOwn(obj, prop))
 /******/ 	})();
 /******/ 	
 /************************************************************************/
@@ -225,7 +240,12 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = []
+    excludeKeys = [],
+    // Restricts which resolved values become videopack-has-{key} classes /
+    // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+    // always computed — only the stamping is scoped). null means "stamp
+    // everything", matching prior behavior for any caller that doesn't pass it.
+    classKeys = null
   } = options;
   // The hover trigger exclusion should NOT be inherited from parents by default,
   // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
@@ -242,7 +262,7 @@ function useVideopackContext(attributes, context, options = {}) {
       }
       const value = getEffectiveValue(key, attributes, context);
       resolved[key] = value;
-      if (value) {
+      if (value && (classKeys === null || classKeys.includes(key))) {
         const cssKey = key.replace(/_/g, '-');
         if (typeof value === 'string' || typeof value === 'number') {
           const cssVar = `--videopack-${cssKey}`;
@@ -331,7 +351,7 @@ function useVideopackContext(attributes, context, options = {}) {
       style,
       classes
     };
-  }, [attributes, context, excludeHoverTrigger, excludeKeys]);
+  }, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
@@ -1309,7 +1329,7 @@ const external_wp_primitives_namespaceObject = window["wp"]["primitives"];
 // packages/icons/src/library/undo.tsx
 
 
-var undo_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M18.3 11.7c-.6-.6-1.4-.9-2.3-.9H6.7l2.9-3.3-1.1-1-4.5 5L8.5 16l1-1-2.7-2.7H16c.5 0 .9.2 1.3.5 1 1 1 3.4 1 4.5v.3h1.5v-.2c0-1.5 0-4.3-1.5-5.7z" }) });
+var undo_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M18.3 11.7c-.6-.6-1.4-.9-2.3-.9H6.7l2.9-3.3-1.1-1-4.5 5L8.5 16l1-1-2.7-2.7H16c.5 0 .9.2 1.3.5 1 1 1 3.4 1 4.5v.3h1.5v-.2c0-1.5 0-4.3-1.5-5.7z" }) });
 
 //# sourceMappingURL=undo.mjs.map
 
@@ -2073,6 +2093,7 @@ const CustomDuotoneFilter = ({
 
 
 
+const PLAYER_CONTEXT_CLASS_KEYS = ['skin', 'control_bar_bg_color', 'control_bar_color', 'play_button_color', 'play_button_secondary_color'];
 const DEFAULT_PLAYERS = {
   'Video.js': VideoJs,
   'WordPress Default': VideoPlayer_WpMejsPlayer,
@@ -2115,7 +2136,9 @@ const VideoPlayer = ({
     resolved,
     style: contextStyles,
     classes: contextClasses
-  } = useVideopackContext(blockAttributes, context);
+  } = useVideopackContext(blockAttributes, context, {
+    classKeys: PLAYER_CONTEXT_CLASS_KEYS
+  });
   const wrapperRef = (0,external_wp_element_namespaceObject.useRef)(null);
   const [detectedDimensions, setDetectedDimensions] = (0,external_wp_element_namespaceObject.useState)({
     width: null,
@@ -4398,7 +4421,7 @@ const external_wp_mediaUtils_namespaceObject = window["wp"]["mediaUtils"];
 // packages/icons/src/library/close.tsx
 
 
-var close_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" }) });
+var close_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" }) });
 
 //# sourceMappingURL=close.mjs.map
 
@@ -4406,7 +4429,7 @@ var close_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.
 // packages/icons/src/library/plus.tsx
 
 
-var plus_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M11 12.5V17.5H12.5V12.5H17.5V11H12.5V6H11V11H6V12.5H11Z" }) });
+var plus_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M11 12.5V17.5H12.5V12.5H17.5V11H12.5V6H11V11H6V12.5H11Z" }) });
 
 //# sourceMappingURL=plus.mjs.map
 
@@ -4662,6 +4685,7 @@ const stripHtml = html => {
   return tempDiv.textContent || tempDiv.innerText || '';
 };
 ;// ./src/utils/colors.js
+
 const getColorFallbacks = settings => {
   const {
     embed_method = 'Video.js',
@@ -4721,7 +4745,18 @@ const getColorFallbacks = settings => {
         break;
     }
   }
-  return fallbacks;
+  return (0,external_wp_hooks_namespaceObject.applyFilters)(
+  /**
+   * Filters the resolved color fallback values used for the player preview
+   * and color picker placeholders when no explicit color has been chosen.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} fallbacks   Map of color fallback values.
+   * @param {string} embed_method The selected player embed method.
+   * @param {string} skin         The selected player skin.
+   */
+  'videopack.colorFallbacks', fallbacks, embed_method, skin);
 };
 ;// ./src/components/VideoSettings/VideoSettings.js
 /* global videopack_config */
@@ -4758,6 +4793,7 @@ const VideoSettings = ({
   }, [options, attributes]);
   const PLAYER_COLOR_FALLBACKS = (0,external_wp_element_namespaceObject.useMemo)(() => getColorFallbacks(displayAttributes), [displayAttributes]);
   const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
+  const showPlayButtonColors = (0,external_wp_hooks_namespaceObject.applyFilters)('videopack.videoSettings.showPlayButtonColors', true, displayAttributes);
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
     className: "videopack-video-settings",
     children: [!isBlockEditor && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
@@ -5009,24 +5045,26 @@ const VideoSettings = ({
           children: (0,external_wp_i18n_namespaceObject.__)('Player', 'video-embed-thumbnail-generator')
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
           className: "videopack-color-flex-row",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-            className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: displayAttributes.embed_method === 'WordPress Default' ? (0,external_wp_i18n_namespaceObject.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_namespaceObject.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
-              value: displayAttributes.play_button_color,
-              onChange: value => handleSettingChange('play_button_color', value),
-              colors: THEME_COLORS,
-              fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_color
-            })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-            className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: displayAttributes.embed_method === 'WordPress Default' ? (0,external_wp_i18n_namespaceObject.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_namespaceObject.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
-              value: displayAttributes.play_button_secondary_color,
-              onChange: value => handleSettingChange('play_button_secondary_color', value),
-              colors: THEME_COLORS,
-              fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_secondary_color
-            })
+          children: [showPlayButtonColors && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+              className: "videopack-color-flex-item",
+              children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: displayAttributes.embed_method === 'WordPress Default' ? (0,external_wp_i18n_namespaceObject.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_namespaceObject.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
+                value: displayAttributes.play_button_color,
+                onChange: value => handleSettingChange('play_button_color', value),
+                colors: THEME_COLORS,
+                fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_color
+              })
+            }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+              className: "videopack-color-flex-item",
+              children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: displayAttributes.embed_method === 'WordPress Default' ? (0,external_wp_i18n_namespaceObject.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_namespaceObject.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
+                value: displayAttributes.play_button_secondary_color,
+                onChange: value => handleSettingChange('play_button_secondary_color', value),
+                colors: THEME_COLORS,
+                fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_secondary_color
+              })
+            })]
           }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
             className: "videopack-color-flex-item",
             children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(CompactColorPicker_CompactColorPicker, {
@@ -5626,7 +5664,7 @@ const resetJob = async jobId => {
 // packages/icons/src/library/chevron-up.tsx
 
 
-var chevron_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z" }) });
+var chevron_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z" }) });
 
 //# sourceMappingURL=chevron-up.mjs.map
 
@@ -5634,7 +5672,7 @@ var chevron_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceOb
 // packages/icons/src/library/chevron-down.tsx
 
 
-var chevron_down_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z" }) });
+var chevron_down_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z" }) });
 
 //# sourceMappingURL=chevron-down.mjs.map
 
@@ -5642,7 +5680,7 @@ var chevron_down_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespace
 // packages/icons/src/library/external.tsx
 
 
-var external_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M19.5 4.5h-7V6h4.44l-5.97 5.97 1.06 1.06L18 7.06v4.44h1.5v-7Zm-13 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3H17v3a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h3V5.5h-3Z" }) });
+var external_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M19.5 4.5h-7V6h4.44l-5.97 5.97 1.06 1.06L18 7.06v4.44h1.5v-7Zm-13 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3H17v3a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h3V5.5h-3Z" }) });
 
 //# sourceMappingURL=external.mjs.map
 
@@ -6444,7 +6482,7 @@ const external_wp_coreData_namespaceObject = window["wp"]["coreData"];
 // packages/icons/src/library/cancel-circle-filled.tsx
 
 
-var cancel_circle_filled_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M12 4c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm3.8 10.7-1.1 1.1-2.7-2.7-2.7 2.7-1.1-1.1 2.7-2.7-2.7-2.7 1.1-1.1 2.7 2.7 2.7-2.7 1.1 1.1-2.7 2.7 2.7 2.7Z" }) });
+var cancel_circle_filled_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M12 4c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm3.8 10.7-1.1 1.1-2.7-2.7-2.7 2.7-1.1-1.1 2.7-2.7-2.7-2.7 1.1-1.1 2.7 2.7 2.7-2.7 1.1 1.1-2.7 2.7 2.7 2.7Z" }) });
 
 //# sourceMappingURL=cancel-circle-filled.mjs.map
 
@@ -6522,16 +6560,19 @@ const EncodeProgress = ({
       const {
         job_id,
         format_id,
-        percent
+        percent,
+        elapsed,
+        remaining
       } = event.detail;
-      if (formatData?.job_id === job_id || formatData?.format_id === format_id && formatData?.status === 'browser_pending') {
+      if (Number(formatData?.job_id) === Number(job_id) || formatData?.format_id === format_id && formatData?.status === 'browser_pending') {
         setInterpolatedProgress(prev => {
           if (percent < prev.percent) {
             return prev;
           }
           return {
-            ...prev,
-            percent
+            percent,
+            elapsed: elapsed !== undefined ? elapsed : prev.elapsed,
+            remaining: remaining !== undefined ? remaining : prev.remaining
           };
         });
       }
@@ -6591,7 +6632,7 @@ const EncodeProgress = ({
       hasTriggeredRefresh.current = false;
     }
   }, [interpolatedProgress.percent, onRefresh, formatData?.encoding_now]);
-  if (formatData?.encoding_now && formatData?.progress && typeof formatData.progress === 'object') {
+  if (formatData?.encoding_now) {
     const percent = Math.round(interpolatedProgress.percent);
     const percentText = (0,external_wp_i18n_namespaceObject.sprintf)('%d%%', percent);
     return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
@@ -6631,7 +6672,7 @@ const EncodeProgress = ({
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
           children: (0,external_wp_i18n_namespaceObject.__)('Remaining:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(interpolatedProgress.remaining)
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-          children: (0,external_wp_i18n_namespaceObject.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + (formatData.progress.fps || '--')
+          children: (0,external_wp_i18n_namespaceObject.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + (formatData.progress?.fps || '--')
         })]
       })]
     });
@@ -6795,7 +6836,7 @@ const EncodeFormatStatus = ({
       children: formatData.label
     })), formatData.status !== 'not_encoded' && (formatData.status_l10n !== formatData.label || !showLabel) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
       className: "videopack-format-status",
-      children: formatData.status_l10n
+      children: formatData.status === 'browser_encoding' ? window.videopack_current_browser_job_id && Number(window.videopack_current_browser_job_id) === Number(formatData.job_id || formatData.id) ? (0,external_wp_i18n_namespaceObject.__)('Encoding (This Browser Tab)', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_namespaceObject.__)('Encoding (Different Browser/Tab)', 'video-embed-thumbnail-generator') : formatData.status_l10n
     }), formatData.status === 'not_encoded' && !formatData.exists && !formatData.replaces_original && !hideButtons && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
       variant: "secondary",
       onClick: () => openMediaLibrary(),
@@ -7184,7 +7225,7 @@ const AdditionalFormats = ({
       return false;
     }
     // Poll only if at least one format is still in a state that requires updates.
-    return Object.values(formats).some(format => format.status === 'queued' || format.status === 'encoding' || format.status === 'processing' || format.status === 'needs_insert' || format.status === 'pending_replacement');
+    return Object.values(formats).some(format => format.status === 'queued' || format.status === 'browser_pending' || format.status === 'encoding' || format.status === 'processing' || format.status === 'needs_insert' || format.status === 'pending_replacement');
   };
   (0,external_wp_element_namespaceObject.useEffect)(() => {
     setIsEncoding(shouldPoll(videoFormats));
@@ -7198,7 +7239,11 @@ const AdditionalFormats = ({
       const {
         job_id,
         format_id,
-        percent
+        percent,
+        fps,
+        speed,
+        elapsed,
+        remaining
       } = event.detail;
       setVideoFormats(prevFormats => {
         if (!prevFormats) {
@@ -7208,14 +7253,19 @@ const AdditionalFormats = ({
           ...prevFormats
         };
         const format = updatedFormats[format_id];
-        if (format && (format.job_id === job_id || !format.job_id && format.status === 'browser_pending')) {
+        if (format && (Number(format.job_id) === Number(job_id) || !format.job_id && format.status === 'browser_pending')) {
           updatedFormats[format_id] = {
             ...format,
+            job_id,
             status: 'encoding',
             encoding_now: true,
             progress: {
               ...(typeof format.progress === 'object' ? format.progress : {}),
               percent,
+              fps,
+              speed,
+              elapsed,
+              remaining,
               status: 'encoding'
             }
           };
@@ -7346,6 +7396,7 @@ const AdditionalFormats = ({
         }
         setEncodeMessage(successMsg);
       }
+      window.dispatchEvent(new CustomEvent('videopack_check_jobs'));
       fetchVideoFormats(); // Re-fetch to update statuses
     } catch (error) {
       console.error(error);
@@ -7418,6 +7469,11 @@ const AdditionalFormats = ({
     setDeleteInProgress(jobId); // Mark this jobId as being deleted
     try {
       await deleteJob(jobId);
+      window.dispatchEvent(new CustomEvent('videopack_job_deleted', {
+        detail: {
+          job_id: jobId
+        }
+      }));
       setEncodeMessage((0,external_wp_i18n_namespaceObject.__)('Job canceled/deleted successfully.', 'video-embed-thumbnail-generator'));
       fetchVideoFormats(); // Re-fetch to get the latest status
     } catch (error) {
@@ -7665,6 +7721,7 @@ const AdditionalFormats = ({
 
 
 const ALLOWED_BLOCKS = ['videopack/watermark', 'videopack/title'];
+const edit_PLAYER_CONTEXT_CLASS_KEYS = ['skin', 'control_bar_bg_color', 'control_bar_color', 'play_button_color', 'play_button_secondary_color'];
 
 /**
  * Edit component for the video player block.
@@ -7750,7 +7807,9 @@ function Edit(props) {
   } = useVideopackContext({
     ...parentAttributes,
     restartCount
-  }, context);
+  }, context, {
+    classKeys: edit_PLAYER_CONTEXT_CLASS_KEYS
+  });
   const {
     src,
     skin,
@@ -7858,7 +7917,7 @@ function Edit(props) {
           children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.InnerBlocks, {
             allowedBlocks: filteredAllowedBlocks,
             templateLock: false,
-            renderAppender: isSelected ? external_wp_blockEditor_namespaceObject.InnerBlocks.ButtonBlockAppender : undefined
+            renderAppender: isAnySelected ? external_wp_blockEditor_namespaceObject.InnerBlocks.ButtonBlockAppender : false
           })
         }, resolvedPostId)
       }), !isAnySelected && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {

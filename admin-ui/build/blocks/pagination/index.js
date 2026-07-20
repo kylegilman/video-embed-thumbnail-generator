@@ -195,7 +195,12 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = []
+    excludeKeys = [],
+    // Restricts which resolved values become videopack-has-{key} classes /
+    // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+    // always computed — only the stamping is scoped). null means "stamp
+    // everything", matching prior behavior for any caller that doesn't pass it.
+    classKeys = null
   } = options;
   // The hover trigger exclusion should NOT be inherited from parents by default,
   // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
@@ -212,7 +217,7 @@ function useVideopackContext(attributes, context, options = {}) {
       }
       const value = getEffectiveValue(key, attributes, context);
       resolved[key] = value;
-      if (value) {
+      if (value && (classKeys === null || classKeys.includes(key))) {
         const cssKey = key.replace(/_/g, '-');
         if (typeof value === 'string' || typeof value === 'number') {
           const cssVar = `--videopack-${cssKey}`;
@@ -301,7 +306,7 @@ function useVideopackContext(attributes, context, options = {}) {
       style,
       classes
     };
-  }, [attributes, context, excludeHoverTrigger, excludeKeys]);
+  }, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
@@ -625,6 +630,7 @@ const CompactColorPicker = ({
 };
 /* harmony default export */ const CompactColorPicker_CompactColorPicker = (CompactColorPicker);
 ;// ./src/utils/colors.js
+
 const getColorFallbacks = settings => {
   const {
     embed_method = 'Video.js',
@@ -684,7 +690,18 @@ const getColorFallbacks = settings => {
         break;
     }
   }
-  return fallbacks;
+  return (0,external_wp_hooks_namespaceObject.applyFilters)(
+  /**
+   * Filters the resolved color fallback values used for the player preview
+   * and color picker placeholders when no explicit color has been chosen.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} fallbacks   Map of color fallback values.
+   * @param {string} embed_method The selected player embed method.
+   * @param {string} skin         The selected player skin.
+   */
+  'videopack.colorFallbacks', fallbacks, embed_method, skin);
 };
 ;// ./src/utils/VideopackContext.js
 
@@ -724,12 +741,12 @@ function Edit({
     pagination_active_bg_color,
     pagination_active_color
   } = attributes;
-  const vpContext = VideopackContext_useVideopackContext();
+  const vpData = VideopackContext_useVideopackContext();
   const {
     resolved
   } = useVideopackContext(attributes, context);
-  const currentPage = vpContext.currentPage || context['videopack/currentPage'] || 1;
-  const totalPages = vpContext.totalPages || context['videopack/totalPages'] || 1;
+  const currentPage = vpData.currentPage || context['videopack/currentPage'] || 1;
+  const totalPages = vpData.totalPages || context['videopack/totalPages'] || 1;
   const THEME_COLORS = videopack_config?.themeColors || [];
   const {
     updateBlockAttributes
