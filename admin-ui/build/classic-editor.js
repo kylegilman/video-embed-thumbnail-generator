@@ -5,10 +5,6 @@
 /***/ 533
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   EA: () => (/* binding */ getVideoFormats),
-/* harmony export */   M5: () => (/* binding */ getVideoGallery)
-/* harmony export */ });
 /* unused harmony exports getPresets, getVideoSources, getUsersWithCapability, getFreemiusPage, testEncodeCommand */
 /* unused harmony import specifier */ var apiFetch;
 /* unused harmony import specifier */ var addQueryArgs;
@@ -226,21 +222,17 @@ const testEncodeCommand = async (codec, resolution) => {
     throw error;
   }
 };
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "EA", 0, /* binding */ getVideoFormats,
+/* harmony export */   "M5", 0, /* binding */ getVideoGallery
+/* harmony export */ ]);
+
 
 /***/ },
 
 /***/ 427
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   pause: () => (/* binding */ pause),
-/* harmony export */   play: () => (/* binding */ play),
-/* harmony export */   playOutline: () => (/* binding */ playOutline),
-/* harmony export */   sortAscending: () => (/* binding */ sortAscending),
-/* harmony export */   sortDescending: () => (/* binding */ sortDescending),
-/* harmony export */   volumeDown: () => (/* binding */ volumeDown),
-/* harmony export */   volumeUp: () => (/* binding */ volumeUp)
-/* harmony export */ });
 /* unused harmony exports insertImage, save, shareAlt1, shareAlt2, shareAlt3, videopack, videopackCaption, videopackCollection, videopackDuration, videopackGallery, videopackList, videopackLoop, videopackPagination, videopackPlayButton, videopackPlayer, videopackThumbnail, videopackTitle, videopackVideo, videopackViewCount, videopackWatermark, download, share, close, embed, copyLink, bluesky, threads, facebook, reddit, email */
 /* unused harmony import specifier */ var _jsxs;
 /* unused harmony import specifier */ var _jsx;
@@ -1047,6 +1039,16 @@ const facebook = createIcon('facebook');
 const reddit = createIcon('reddit');
 const email = createIcon('email');
 
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "Kx", 0, /* binding */ volumeUp,
+/* harmony export */   "L8", 0, /* binding */ sortDescending,
+/* harmony export */   "V0", 0, /* binding */ sortAscending,
+/* harmony export */   "ZH", 0, /* binding */ play,
+/* harmony export */   "pZ", 0, /* binding */ volumeDown,
+/* harmony export */   "v7", 0, /* binding */ pause,
+/* harmony export */   "zs", 0, /* binding */ playOutline
+/* harmony export */ ]);
+
 
 /***/ },
 
@@ -1073,9 +1075,11 @@ const email = createIcon('email');
  *
  * @param {Object} inputAttributes Block attributes.
  * @param {number} previewPostId   The ID of the post being previewed.
+ * @param {number} refreshToken    Optional value to bump in order to force a refetch
+ *                                 (e.g. after uploading a new video attachment).
  * @return {Object} Query results including search results, categories, and tags.
  */
-function useVideoQuery(inputAttributes, previewPostId) {
+function useVideoQuery(inputAttributes, previewPostId, refreshToken) {
   const attributes = inputAttributes || {};
   const {
     gallery_id,
@@ -1218,7 +1222,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
     }).finally(() => {
       setIsResolvingVideos(false);
     });
-  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving, !!inputAttributes]);
+  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving, !!inputAttributes, refreshToken]);
   const categories = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.useSelect)(select => {
     const {
       getEntityRecords
@@ -1363,17 +1367,17 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	});
 /************************************************************************/
 /******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
+/******/ 	const __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		const cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
 /******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 		const module = __webpack_module_cache__[moduleId] = {
 /******/ 			// no module.id needed
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
@@ -1391,7 +1395,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
 /******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
+/******/ 			const getter = module && module.__esModule ?
 /******/ 				() => (module['default']) :
 /******/ 				() => (module);
 /******/ 			__webpack_require__.d(getter, { a: getter });
@@ -1401,8 +1405,8 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	
 /******/ 	/* webpack/runtime/create fake namespace object */
 /******/ 	(() => {
-/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
-/******/ 		var leafPrototypes;
+/******/ 		const getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		let leafPrototypes;
 /******/ 		// create a fake namespace object
 /******/ 		// mode & 1: value is a module id, require it
 /******/ 		// mode & 2: merge all properties of value into the ns
@@ -1416,9 +1420,9 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 				if((mode & 4) && value.__esModule) return value;
 /******/ 				if((mode & 16) && typeof value.then === 'function') return value;
 /******/ 			}
-/******/ 			var ns = Object.create(null);
+/******/ 			const ns = Object.create(null);
 /******/ 			__webpack_require__.r(ns);
-/******/ 			var def = {};
+/******/ 			const def = {};
 /******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
 /******/ 			for(var current = mode & 2 && value; (typeof current == 'object' || typeof current == 'function') && !~leafPrototypes.indexOf(current); current = getProto(current)) {
 /******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
@@ -1431,11 +1435,26 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
+/******/ 		// define getter/value functions for harmony exports
 /******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			if(Array.isArray(definition)) {
+/******/ 				var i = 0;
+/******/ 				while(i < definition.length) {
+/******/ 					var key = definition[i++];
+/******/ 					var binding = definition[i++];
+/******/ 					if(!__webpack_require__.o(exports, key)) {
+/******/ 						if(binding === 0) {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
+/******/ 						} else {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
+/******/ 						}
+/******/ 					} else if(binding === 0) { i++; }
+/******/ 				}
+/******/ 			} else {
+/******/ 				for(var key in definition) {
+/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 					}
 /******/ 				}
 /******/ 			}
 /******/ 		};
@@ -1443,14 +1462,14 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.hasOwn(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
 /******/ 		__webpack_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			if(Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
@@ -1458,9 +1477,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	})();
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry needs to be wrapped in an IIFE because it needs to be isolated against other entry modules.
-(() => {
+let __webpack_exports__ = {};
 
 // EXTERNAL MODULE: external ["wp","element"]
 var external_wp_element_ = __webpack_require__(87);
@@ -2845,7 +2862,7 @@ var external_wp_primitives_ = __webpack_require__(573);
 // packages/icons/src/library/close.tsx
 
 
-var close_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" }) });
+var close_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" }) });
 
 //# sourceMappingURL=close.mjs.map
 
@@ -2853,7 +2870,7 @@ var close_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_w
 // packages/icons/src/library/plus.tsx
 
 
-var plus_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M11 12.5V17.5H12.5V12.5H17.5V11H12.5V6H11V11H6V12.5H11Z" }) });
+var plus_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M11 12.5V17.5H12.5V12.5H17.5V11H12.5V6H11V11H6V12.5H11Z" }) });
 
 //# sourceMappingURL=plus.mjs.map
 
@@ -3109,6 +3126,7 @@ const stripHtml = html => {
   return tempDiv.textContent || tempDiv.innerText || '';
 };
 ;// ./src/utils/colors.js
+
 const getColorFallbacks = settings => {
   const {
     embed_method = 'Video.js',
@@ -3168,7 +3186,18 @@ const getColorFallbacks = settings => {
         break;
     }
   }
-  return fallbacks;
+  return (0,external_wp_hooks_.applyFilters)(
+  /**
+   * Filters the resolved color fallback values used for the player preview
+   * and color picker placeholders when no explicit color has been chosen.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} fallbacks   Map of color fallback values.
+   * @param {string} embed_method The selected player embed method.
+   * @param {string} skin         The selected player skin.
+   */
+  'videopack.colorFallbacks', fallbacks, embed_method, skin);
 };
 ;// ./src/components/VideoSettings/VideoSettings.js
 /* global videopack_config */
@@ -3205,6 +3234,7 @@ const VideoSettings = ({
   }, [options, attributes]);
   const PLAYER_COLOR_FALLBACKS = (0,external_wp_element_.useMemo)(() => getColorFallbacks(displayAttributes), [displayAttributes]);
   const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
+  const showPlayButtonColors = (0,external_wp_hooks_.applyFilters)('videopack.videoSettings.showPlayButtonColors', true, displayAttributes);
   return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
     className: "videopack-video-settings",
     children: [!isBlockEditor && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
@@ -3340,8 +3370,8 @@ const VideoSettings = ({
               __next40pxDefaultSize: true,
               label: (0,external_wp_i18n_.__)('Volume', 'video-embed-thumbnail-generator'),
               value: displayAttributes.volume,
-              beforeIcon: icon.volumeDown,
-              afterIcon: icon.volumeUp,
+              beforeIcon: icon/* volumeDown */.pZ,
+              afterIcon: icon/* volumeUp */.Kx,
               initialPosition: 1,
               withInputField: false,
               onChange: value => handleSettingChange('volume', value),
@@ -3456,24 +3486,26 @@ const VideoSettings = ({
           children: (0,external_wp_i18n_.__)('Player', 'video-embed-thumbnail-generator')
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-color-flex-row",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
-            className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: displayAttributes.embed_method === 'WordPress Default' ? (0,external_wp_i18n_.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
-              value: displayAttributes.play_button_color,
-              onChange: value => handleSettingChange('play_button_color', value),
-              colors: THEME_COLORS,
-              fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_color
-            })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
-            className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: displayAttributes.embed_method === 'WordPress Default' ? (0,external_wp_i18n_.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
-              value: displayAttributes.play_button_secondary_color,
-              onChange: value => handleSettingChange('play_button_secondary_color', value),
-              colors: THEME_COLORS,
-              fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_secondary_color
-            })
+          children: [showPlayButtonColors && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
+            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+              className: "videopack-color-flex-item",
+              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: displayAttributes.embed_method === 'WordPress Default' ? (0,external_wp_i18n_.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
+                value: displayAttributes.play_button_color,
+                onChange: value => handleSettingChange('play_button_color', value),
+                colors: THEME_COLORS,
+                fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_color
+              })
+            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+              className: "videopack-color-flex-item",
+              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: displayAttributes.embed_method === 'WordPress Default' ? (0,external_wp_i18n_.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
+                value: displayAttributes.play_button_secondary_color,
+                onChange: value => handleSettingChange('play_button_secondary_color', value),
+                colors: THEME_COLORS,
+                fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_secondary_color
+              })
+            })]
           }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
             className: "videopack-color-flex-item",
             children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
@@ -3677,6 +3709,10 @@ const VideoSettings = ({
   });
 };
 /* harmony default export */ const VideoSettings_VideoSettings = (VideoSettings);
+// EXTERNAL MODULE: external ["wp","data"]
+var external_wp_data_ = __webpack_require__(143);
+;// external ["wp","blocks"]
+const external_wp_blocks_namespaceObject = window["wp"]["blocks"];
 // EXTERNAL MODULE: external ["wp","htmlEntities"]
 var external_wp_htmlEntities_ = __webpack_require__(537);
 ;// ./src/components/InspectorControls/QuerySettings.js
@@ -3855,6 +3891,8 @@ function QuerySettings({
 
 
 
+
+
 function CollectionQuerySettings({
   attributes,
   setAttributes,
@@ -3862,8 +3900,12 @@ function CollectionQuerySettings({
   options = {},
   showManualSource = true,
   isSiteEditor = false,
-  hasPaginationBlock = true
+  hasPaginationBlock = true,
+  clientId
 }) {
+  const {
+    insertBlock
+  } = (0,external_wp_data_.useDispatch)('core/block-editor');
   const {
     gallery_source,
     gallery_include,
@@ -3929,7 +3971,7 @@ function CollectionQuerySettings({
         }),
         options: orderbyOptions
       }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
-        icon: gallery_order === 'asc' ? icon.sortAscending : icon.sortDescending,
+        icon: gallery_order === 'asc' ? icon/* sortAscending */.V0 : icon/* sortDescending */.L8,
         label: gallery_order === 'asc' ? (0,external_wp_i18n_.__)('Ascending', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Descending', 'video-embed-thumbnail-generator'),
         onClick: () => setAttributes({
           gallery_order: gallery_order === 'asc' ? 'desc' : 'asc'
@@ -3970,10 +4012,21 @@ function CollectionQuerySettings({
     }), !hasPaginationBlock && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
       __nextHasNoMarginBottom: true,
       label: (0,external_wp_i18n_.__)('Enable Pagination', 'video-embed-thumbnail-generator'),
+      help: clientId ? (0,external_wp_i18n_.__)('Adds a Pagination block to the collection.', 'video-embed-thumbnail-generator') : undefined,
       checked: !!gallery_pagination,
-      onChange: val => setAttributes({
-        gallery_pagination: val
-      })
+      onChange: val => {
+        setAttributes({
+          gallery_pagination: val
+        });
+        // In the block editor, pagination display is driven by
+        // an actual videopack/pagination child block, not just
+        // this attribute — insert one so the toggle produces
+        // visible controls. Classic Embed has no block tree
+        // (no clientId), so it keeps the attribute-only behavior.
+        if (val && clientId) {
+          insertBlock((0,external_wp_blocks_namespaceObject.createBlock)('videopack/pagination'), undefined, clientId);
+        }
+      }
     })]
   });
 }
@@ -4335,7 +4388,8 @@ function CollectionSettingsPanel({
   showTitleSettings = true,
   showPlayerSettings = true,
   showSkinSettings = true,
-  hasPaginationBlock = true
+  hasPaginationBlock = true,
+  clientId
 }) {
   const {
     excludedVideos
@@ -4350,7 +4404,8 @@ function CollectionSettingsPanel({
         options: options,
         showManualSource: showManualSource,
         isSiteEditor: isSiteEditor,
-        hasPaginationBlock: hasPaginationBlock
+        hasPaginationBlock: hasPaginationBlock,
+        clientId: clientId
       }), excludedVideos && excludedVideos.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CollectionFilterSettings, {
         attributes: attributes,
         setAttributes: setAttributes,
@@ -4380,8 +4435,6 @@ function CollectionSettingsPanel({
     })]
   });
 }
-// EXTERNAL MODULE: external ["wp","data"]
-var external_wp_data_ = __webpack_require__(143);
 // EXTERNAL MODULE: external ["wp","url"]
 var external_wp_url_ = __webpack_require__(832);
 ;// ./src/api/thumbnails.js
@@ -4780,7 +4833,7 @@ const resetJob = async jobId => {
 // packages/icons/src/library/chevron-up.tsx
 
 
-var chevron_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z" }) });
+var chevron_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z" }) });
 
 //# sourceMappingURL=chevron-up.mjs.map
 
@@ -4788,7 +4841,7 @@ var chevron_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(exter
 // packages/icons/src/library/chevron-down.tsx
 
 
-var chevron_down_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z" }) });
+var chevron_down_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z" }) });
 
 //# sourceMappingURL=chevron-down.mjs.map
 
@@ -4796,7 +4849,7 @@ var chevron_down_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(ext
 // packages/icons/src/library/external.tsx
 
 
-var external_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M19.5 4.5h-7V6h4.44l-5.97 5.97 1.06 1.06L18 7.06v4.44h1.5v-7Zm-13 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3H17v3a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h3V5.5h-3Z" }) });
+var external_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M19.5 4.5h-7V6h4.44l-5.97 5.97 1.06 1.06L18 7.06v4.44h1.5v-7Zm-13 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3H17v3a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h3V5.5h-3Z" }) });
 
 //# sourceMappingURL=external.mjs.map
 
@@ -4868,7 +4921,7 @@ const VideoPlayerInner = ({
         onClick: () => togglePlayback(videoRef),
         disabled: disabled,
         children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
-          icon: isPlaying ? icon.pause : icon.play
+          icon: isPlaying ? icon/* pause */.v7 : icon/* play */.ZH
         })
       }), duration > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
         __nextHasNoMarginBottom: true,
@@ -5598,7 +5651,7 @@ const external_wp_coreData_namespaceObject = window["wp"]["coreData"];
 // packages/icons/src/library/cancel-circle-filled.tsx
 
 
-var cancel_circle_filled_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 4c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm3.8 10.7-1.1 1.1-2.7-2.7-2.7 2.7-1.1-1.1 2.7-2.7-2.7-2.7 1.1-1.1 2.7 2.7 2.7-2.7 1.1 1.1-2.7 2.7 2.7 2.7Z" }) });
+var cancel_circle_filled_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 4c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm3.8 10.7-1.1 1.1-2.7-2.7-2.7 2.7-1.1-1.1 2.7-2.7-2.7-2.7 1.1-1.1 2.7 2.7 2.7-2.7 1.1 1.1-2.7 2.7 2.7 2.7Z" }) });
 
 //# sourceMappingURL=cancel-circle-filled.mjs.map
 
@@ -5676,16 +5729,19 @@ const EncodeProgress = ({
       const {
         job_id,
         format_id,
-        percent
+        percent,
+        elapsed,
+        remaining
       } = event.detail;
-      if (formatData?.job_id === job_id || formatData?.format_id === format_id && formatData?.status === 'browser_pending') {
+      if (Number(formatData?.job_id) === Number(job_id) || formatData?.format_id === format_id && formatData?.status === 'browser_pending') {
         setInterpolatedProgress(prev => {
           if (percent < prev.percent) {
             return prev;
           }
           return {
-            ...prev,
-            percent
+            percent,
+            elapsed: elapsed !== undefined ? elapsed : prev.elapsed,
+            remaining: remaining !== undefined ? remaining : prev.remaining
           };
         });
       }
@@ -5745,7 +5801,7 @@ const EncodeProgress = ({
       hasTriggeredRefresh.current = false;
     }
   }, [interpolatedProgress.percent, onRefresh, formatData?.encoding_now]);
-  if (formatData?.encoding_now && formatData?.progress && typeof formatData.progress === 'object') {
+  if (formatData?.encoding_now) {
     const percent = Math.round(interpolatedProgress.percent);
     const percentText = (0,external_wp_i18n_.sprintf)('%d%%', percent);
     return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
@@ -5785,7 +5841,7 @@ const EncodeProgress = ({
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
           children: (0,external_wp_i18n_.__)('Remaining:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(interpolatedProgress.remaining)
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
-          children: (0,external_wp_i18n_.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + (formatData.progress.fps || '--')
+          children: (0,external_wp_i18n_.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + (formatData.progress?.fps || '--')
         })]
       })]
     });
@@ -5949,7 +6005,7 @@ const EncodeFormatStatus = ({
       children: formatData.label
     })), formatData.status !== 'not_encoded' && (formatData.status_l10n !== formatData.label || !showLabel) && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
       className: "videopack-format-status",
-      children: formatData.status_l10n
+      children: formatData.status === 'browser_encoding' ? window.videopack_current_browser_job_id && Number(window.videopack_current_browser_job_id) === Number(formatData.job_id || formatData.id) ? (0,external_wp_i18n_.__)('Encoding (This Browser Tab)', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Encoding (Different Browser/Tab)', 'video-embed-thumbnail-generator') : formatData.status_l10n
     }), formatData.status === 'not_encoded' && !formatData.exists && !formatData.replaces_original && !hideButtons && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
       variant: "secondary",
       onClick: () => openMediaLibrary(),
@@ -6340,7 +6396,7 @@ const AdditionalFormats = ({
       return false;
     }
     // Poll only if at least one format is still in a state that requires updates.
-    return Object.values(formats).some(format => format.status === 'queued' || format.status === 'encoding' || format.status === 'processing' || format.status === 'needs_insert' || format.status === 'pending_replacement');
+    return Object.values(formats).some(format => format.status === 'queued' || format.status === 'browser_pending' || format.status === 'encoding' || format.status === 'processing' || format.status === 'needs_insert' || format.status === 'pending_replacement');
   };
   (0,external_wp_element_.useEffect)(() => {
     setIsEncoding(shouldPoll(videoFormats));
@@ -6354,7 +6410,11 @@ const AdditionalFormats = ({
       const {
         job_id,
         format_id,
-        percent
+        percent,
+        fps,
+        speed,
+        elapsed,
+        remaining
       } = event.detail;
       setVideoFormats(prevFormats => {
         if (!prevFormats) {
@@ -6364,14 +6424,19 @@ const AdditionalFormats = ({
           ...prevFormats
         };
         const format = updatedFormats[format_id];
-        if (format && (format.job_id === job_id || !format.job_id && format.status === 'browser_pending')) {
+        if (format && (Number(format.job_id) === Number(job_id) || !format.job_id && format.status === 'browser_pending')) {
           updatedFormats[format_id] = {
             ...format,
+            job_id,
             status: 'encoding',
             encoding_now: true,
             progress: {
               ...(typeof format.progress === 'object' ? format.progress : {}),
               percent,
+              fps,
+              speed,
+              elapsed,
+              remaining,
               status: 'encoding'
             }
           };
@@ -6502,6 +6567,7 @@ const AdditionalFormats = ({
         }
         setEncodeMessage(successMsg);
       }
+      window.dispatchEvent(new CustomEvent('videopack_check_jobs'));
       fetchVideoFormats(); // Re-fetch to update statuses
     } catch (error) {
       console.error(error);
@@ -6574,6 +6640,11 @@ const AdditionalFormats = ({
     setDeleteInProgress(jobId); // Mark this jobId as being deleted
     try {
       await deleteJob(jobId);
+      window.dispatchEvent(new CustomEvent('videopack_job_deleted', {
+        detail: {
+          job_id: jobId
+        }
+      }));
       setEncodeMessage((0,external_wp_i18n_.__)('Job canceled/deleted successfully.', 'video-embed-thumbnail-generator'));
       fetchVideoFormats(); // Re-fetch to get the latest status
     } catch (error) {
@@ -7442,23 +7513,19 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
   document.addEventListener('DOMContentLoaded', initClassicEmbed);
 }
-})();
-
-// This entry needs to be wrapped in an IIFE because it needs to be isolated against other entry modules.
-(() => {
 
 // EXTERNAL MODULE: external ["wp","element"]
-var external_wp_element_ = __webpack_require__(87);
+var tinymce_external_wp_element_ = __webpack_require__(87);
 // EXTERNAL MODULE: external ["wp","i18n"]
-var external_wp_i18n_ = __webpack_require__(723);
+var tinymce_external_wp_i18n_ = __webpack_require__(723);
 ;// external ["wp","blockEditor"]
 const external_wp_blockEditor_namespaceObject = window["wp"]["blockEditor"];
 // EXTERNAL MODULE: external ["wp","components"]
-var external_wp_components_ = __webpack_require__(808);
+var tinymce_external_wp_components_ = __webpack_require__(808);
 // EXTERNAL MODULE: external ["wp","htmlEntities"]
-var external_wp_htmlEntities_ = __webpack_require__(537);
+var tinymce_external_wp_htmlEntities_ = __webpack_require__(537);
 // EXTERNAL MODULE: external ["wp","data"]
-var external_wp_data_ = __webpack_require__(143);
+var tinymce_external_wp_data_ = __webpack_require__(143);
 ;// ./src/utils/context.js
 /* global videopack_config */
 
@@ -7612,7 +7679,7 @@ const normalizeSourceGroups = videoSources => {
   return videoSources;
 };
 // EXTERNAL MODULE: external ["wp","hooks"]
-var external_wp_hooks_ = __webpack_require__(619);
+var tinymce_external_wp_hooks_ = __webpack_require__(619);
 ;// ./src/hooks/useVideopackContext.js
 
 
@@ -7628,7 +7695,7 @@ const VIDEOPACK_CONTEXT_KEYS =
  *
  * @param {Array} contextKeys List of context key strings.
  */
-(0,external_wp_hooks_.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
+(0,tinymce_external_wp_hooks_.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -7641,14 +7708,19 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = []
+    excludeKeys = [],
+    // Restricts which resolved values become videopack-has-{key} classes /
+    // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+    // always computed — only the stamping is scoped). null means "stamp
+    // everything", matching prior behavior for any caller that doesn't pass it.
+    classKeys = null
   } = options;
   // The hover trigger exclusion should NOT be inherited from parents by default,
   // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
   const excludeHoverTrigger = optionsExclude || attributes.exclude_hover_trigger || false;
 
   // 1. Initial Synchronous Resolution
-  const initial = (0,external_wp_element_.useMemo)(() => {
+  const initial = (0,tinymce_external_wp_element_.useMemo)(() => {
     const resolved = {};
     const style = {};
     const classes = [];
@@ -7658,7 +7730,7 @@ function useVideopackContext(attributes, context, options = {}) {
       }
       const value = getEffectiveValue(key, attributes, context);
       resolved[key] = value;
-      if (value) {
+      if (value && (classKeys === null || classKeys.includes(key))) {
         const cssKey = key.replace(/_/g, '-');
         if (typeof value === 'string' || typeof value === 'number') {
           const cssVar = `--videopack-${cssKey}`;
@@ -7747,14 +7819,14 @@ function useVideopackContext(attributes, context, options = {}) {
       style,
       classes
     };
-  }, [attributes, context, excludeHoverTrigger, excludeKeys]);
+  }, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
   const {
     discoveredAttachmentId,
     isDiscovering
-  } = (0,external_wp_data_.useSelect)(select => {
+  } = (0,tinymce_external_wp_data_.useSelect)(select => {
     const {
       resolved
     } = initial;
@@ -7826,7 +7898,7 @@ function useVideopackContext(attributes, context, options = {}) {
       isDiscovering: isResolving || !foundId && attachments === undefined
     };
   }, [attributes.src, attributes.id, initial]);
-  return (0,external_wp_element_.useMemo)(() => {
+  return (0,tinymce_external_wp_element_.useMemo)(() => {
     const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 
     // Safety: If the resolved attachment ID is the same as the post ID,
@@ -7881,7 +7953,7 @@ function useVideopackData(key, context = {}) {
   const propPostId = context.postId;
   const propPostType = context.postType;
   const isStandalone = isTrue(context['videopack/isStandalone']);
-  const resolvedData = (0,external_wp_data_.useSelect)(select => {
+  const resolvedData = (0,tinymce_external_wp_data_.useSelect)(select => {
     // 1. If context already has the value, we're done.
     if (contextValue !== undefined && contextValue !== null) {
       return {
@@ -7954,7 +8026,7 @@ function useVideopackData(key, context = {}) {
   };
 }
 // EXTERNAL MODULE: external "ReactJSXRuntime"
-var external_ReactJSXRuntime_ = __webpack_require__(790);
+var tinymce_external_ReactJSXRuntime_ = __webpack_require__(790);
 ;// ./src/components/VideopackContextBridge.js
 
 
@@ -7980,14 +8052,14 @@ function VideopackContextBridge({
   const {
     sharedContext
   } = useVideopackContext(attributes, context);
-  const finalContext = (0,external_wp_element_.useMemo)(() => {
+  const finalContext = (0,tinymce_external_wp_element_.useMemo)(() => {
     const ctx = {
       ...sharedContext,
       ...overrides
     };
     return ctx;
   }, [sharedContext, overrides]);
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.BlockContextProvider, {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.BlockContextProvider, {
     value: finalContext,
     children: children
   });
@@ -8002,6 +8074,11 @@ function VideopackContextBridge({
 
 
 
+
+const TITLE_CONTEXT_OPTS = {
+  excludeKeys: ['downloadlink'],
+  classKeys: ['skin', 'title_color', 'title_background_color']
+};
 
 /**
  * An internal component to display the video title with correct styling and data.
@@ -8026,7 +8103,6 @@ function VideopackContextBridge({
  * @param {boolean}  root0.linkToPost            Whether to link to parent post.
  * @return {Element}                             The rendered component.
  */
-
 function VideoTitle({
   blockProps,
   postId: propPostId,
@@ -8046,9 +8122,7 @@ function VideoTitle({
   linkToPost = false,
   children
 }) {
-  const vpContext = useVideopackContext(attributes, context, {
-    excludeKeys: ['downloadlink']
-  });
+  const vpContext = useVideopackContext(attributes, context, TITLE_CONTEXT_OPTS);
   const {
     postId: resolvedPostId,
     attachmentId: resolvedAttachmentId,
@@ -8060,9 +8134,9 @@ function VideoTitle({
     data: resolvedTitle,
     isResolving
   } = useVideopackData(titleKey, context);
-  const displayTitle = (0,external_wp_htmlEntities_.decodeEntities)(manualTitle || resolvedTitle || '');
+  const displayTitle = (0,tinymce_external_wp_htmlEntities_.decodeEntities)(manualTitle || resolvedTitle || '');
   if (isResolving && !displayTitle && !vpContext.resolved.isPreview) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {});
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Spinner, {});
   }
   const position = attrPosition || (isInsideThumbnail ? 'bottom' : vpContext.resolved.title_position) || 'top';
   let defaultAlign = 'left';
@@ -8077,9 +8151,9 @@ function VideoTitle({
   } else if (globalOptions.overlay_title !== undefined) {
     finalOverlayTitle = !!globalOptions.overlay_title;
   }
-  let placeholder = (0,external_wp_i18n_.__)('Video Title', 'video-embed-thumbnail-generator');
+  let placeholder = (0,tinymce_external_wp_i18n_.__)('Video Title', 'video-embed-thumbnail-generator');
   if (postId) {
-    placeholder = resolvedTitle ? (0,external_wp_i18n_.__)('(Untitled Video)', 'video-embed-thumbnail-generator') : '';
+    placeholder = resolvedTitle ? (0,tinymce_external_wp_i18n_.__)('(Untitled Video)', 'video-embed-thumbnail-generator') : '';
   }
   let titleClass = 'videopack-video-title';
   if (isInsideThumbnail) {
@@ -8093,11 +8167,11 @@ function VideoTitle({
     style: vpContext.style
   };
   const barClass = `videopack-video-title videopack-video-title-visible ${isOverlay ? 'is-overlay' : ''} ${!showBackground && isOverlay ? 'has-no-background' : ''} ${isInsideThumbnail ? 'videopack-thumbnail-title' : ''} ${isInsidePlayerOverlay || isOverlay ? `position-${position}` : ''}`.trim();
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
     ...finalBlockProps,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("div", {
       className: `${barClass} has-text-align-${finalTextAlign}`,
-      children: [finalOverlayTitle && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.RichText, {
+      children: [finalOverlayTitle && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.RichText, {
         tagName: Tag,
         className: `${titleClass} ${vpContext.classes} ${linkToPost ? 'is-link' : ''}`,
         style: vpContext.style,
@@ -8105,9 +8179,17 @@ function VideoTitle({
         onChange: onTitleChange,
         placeholder: placeholder,
         allowedFormats: ['core/bold', 'core/italic', 'core/strikethrough']
-      }), isOverlay && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        // Only the real Edit component passes onTitleChange (it wires up
+        // setAttributes). Everywhere else this renders — Loop's templated
+        // preview items, the settings-page preview, the classic-editor
+        // preview — has nowhere to persist an edit, so RichText must not
+        // accept one; an editable field that silently discards changes
+        // just looks broken to a user.
+        ,
+        readOnly: !onTitleChange
+      }), isOverlay && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
         className: iconsClass,
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackContextBridge, {
+        children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(VideopackContextBridge, {
           attributes: attributes,
           context: context,
           overrides: {
@@ -8119,7 +8201,7 @@ function VideoTitle({
               'videopack/sources': context['videopack/sources']
             } : {})
           },
-          children: children || (vpContext.resolved.isPreview ? null : /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.InnerBlocks, {
+          children: children || (vpContext.resolved.isPreview ? null : /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.InnerBlocks, {
             allowedBlocks: ['videopack/download', 'videopack/share'],
             template: [],
             templateLock: false
@@ -8130,17 +8212,17 @@ function VideoTitle({
   });
 }
 // EXTERNAL MODULE: external ["wp","primitives"]
-var external_wp_primitives_ = __webpack_require__(573);
+var tinymce_external_wp_primitives_ = __webpack_require__(573);
 ;// ./node_modules/@wordpress/icons/build-module/library/seen.mjs
 // packages/icons/src/library/seen.tsx
 
 
-var seen_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M3.99961 13C4.67043 13.3354 4.6703 13.3357 4.67017 13.3359L4.67298 13.3305C4.67621 13.3242 4.68184 13.3135 4.68988 13.2985C4.70595 13.2686 4.7316 13.2218 4.76695 13.1608C4.8377 13.0385 4.94692 12.8592 5.09541 12.6419C5.39312 12.2062 5.84436 11.624 6.45435 11.0431C7.67308 9.88241 9.49719 8.75 11.9996 8.75C14.502 8.75 16.3261 9.88241 17.5449 11.0431C18.1549 11.624 18.6061 12.2062 18.9038 12.6419C19.0523 12.8592 19.1615 13.0385 19.2323 13.1608C19.2676 13.2218 19.2933 13.2686 19.3093 13.2985C19.3174 13.3135 19.323 13.3242 19.3262 13.3305L19.3291 13.3359C19.3289 13.3357 19.3288 13.3354 19.9996 13C20.6704 12.6646 20.6703 12.6643 20.6701 12.664L20.6697 12.6632L20.6688 12.6614L20.6662 12.6563L20.6583 12.6408C20.6517 12.6282 20.6427 12.6108 20.631 12.5892C20.6078 12.5459 20.5744 12.4852 20.5306 12.4096C20.4432 12.2584 20.3141 12.0471 20.1423 11.7956C19.7994 11.2938 19.2819 10.626 18.5794 9.9569C17.1731 8.61759 14.9972 7.25 11.9996 7.25C9.00203 7.25 6.82614 8.61759 5.41987 9.9569C4.71736 10.626 4.19984 11.2938 3.85694 11.7956C3.68511 12.0471 3.55605 12.2584 3.4686 12.4096C3.42484 12.4852 3.39142 12.5459 3.36818 12.5892C3.35656 12.6108 3.34748 12.6282 3.34092 12.6408L3.33297 12.6563L3.33041 12.6614L3.32948 12.6632L3.32911 12.664C3.32894 12.6643 3.32879 12.6646 3.99961 13ZM11.9996 16C13.9326 16 15.4996 14.433 15.4996 12.5C15.4996 10.567 13.9326 9 11.9996 9C10.0666 9 8.49961 10.567 8.49961 12.5C8.49961 14.433 10.0666 16 11.9996 16Z" }) });
+var seen_default = /* @__PURE__ */ (0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_primitives_.Path, { d: "M3.99961 13C4.67043 13.3354 4.6703 13.3357 4.67017 13.3359L4.67298 13.3305C4.67621 13.3242 4.68184 13.3135 4.68988 13.2985C4.70595 13.2686 4.7316 13.2218 4.76695 13.1608C4.8377 13.0385 4.94692 12.8592 5.09541 12.6419C5.39312 12.2062 5.84436 11.624 6.45435 11.0431C7.67308 9.88241 9.49719 8.75 11.9996 8.75C14.502 8.75 16.3261 9.88241 17.5449 11.0431C18.1549 11.624 18.6061 12.2062 18.9038 12.6419C19.0523 12.8592 19.1615 13.0385 19.2323 13.1608C19.2676 13.2218 19.2933 13.2686 19.3093 13.2985C19.3174 13.3135 19.323 13.3242 19.3262 13.3305L19.3291 13.3359C19.3289 13.3357 19.3288 13.3354 19.9996 13C20.6704 12.6646 20.6703 12.6643 20.6701 12.664L20.6697 12.6632L20.6688 12.6614L20.6662 12.6563L20.6583 12.6408C20.6517 12.6282 20.6427 12.6108 20.631 12.5892C20.6078 12.5459 20.5744 12.4852 20.5306 12.4096C20.4432 12.2584 20.3141 12.0471 20.1423 11.7956C19.7994 11.2938 19.2819 10.626 18.5794 9.9569C17.1731 8.61759 14.9972 7.25 11.9996 7.25C9.00203 7.25 6.82614 8.61759 5.41987 9.9569C4.71736 10.626 4.19984 11.2938 3.85694 11.7956C3.68511 12.0471 3.55605 12.2584 3.4686 12.4096C3.42484 12.4852 3.39142 12.5459 3.36818 12.5892C3.35656 12.6108 3.34748 12.6282 3.34092 12.6408L3.33297 12.6563L3.33041 12.6614L3.32948 12.6632L3.32911 12.664C3.32894 12.6643 3.32879 12.6646 3.99961 13ZM11.9996 16C13.9326 16 15.4996 14.433 15.4996 12.5C15.4996 10.567 13.9326 9 11.9996 9C10.0666 9 8.49961 10.567 8.49961 12.5C8.49961 14.433 10.0666 16 11.9996 16Z" }) });
 
 //# sourceMappingURL=seen.mjs.map
 
 // EXTERNAL MODULE: ./src/assets/icon.js
-var icon = __webpack_require__(427);
+var tinymce_icon = __webpack_require__(427);
 ;// ./src/components/ViewCount/ViewCount.js
 
 
@@ -8148,6 +8230,8 @@ var icon = __webpack_require__(427);
 
 
 
+
+const CLASS_KEYS = ['title_color', 'title_background_color'];
 
 /**
  * A internal component to display the view count with correct styling and data.
@@ -8165,7 +8249,6 @@ var icon = __webpack_require__(427);
  * @param {Object}  root0.context           Block context.
  * @return {Element}                        The rendered component.
  */
-
 function ViewCount({
   blockProps,
   iconType = 'none',
@@ -8178,7 +8261,9 @@ function ViewCount({
   attributes = {},
   context = {}
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: CLASS_KEYS
+  });
   const {
     data: views,
     isResolving
@@ -8187,24 +8272,24 @@ function ViewCount({
   const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'];
   const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
   const defaultAlign = isInsideThumbnail || actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
-  const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${actualIsOverlay ? `position-${position || 'top'}` : ''} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`;
+  const wrapperClass = `videopack-view-count videopack-view-count-block ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} position-${position || 'top'} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`;
   const finalBlockProps = blockProps || {
     className: wrapperClass,
     style: vpContext.style
   };
   if (vpContext.resolved.isDiscovering && !attachmentId) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
       ...finalBlockProps,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Spinner, {})
     });
   }
   if (!attachmentId && count === undefined && !vpContext.resolved.isPreview) {
     return null;
   }
   if (isResolving) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
       ...finalBlockProps,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Spinner, {})
     });
   }
   let safeViews = 0;
@@ -8213,24 +8298,24 @@ function ViewCount({
   } else if (views !== undefined && views !== null) {
     safeViews = Number(views);
   }
-  const displayValue = showText ? (0,external_wp_i18n_.sprintf)(/* translators: %s is the formatted number of views */
-  (0,external_wp_i18n_._n)('%s view', '%s views', safeViews, 'video-embed-thumbnail-generator'), safeViews.toLocaleString()) : safeViews.toLocaleString();
+  const displayValue = showText ? (0,tinymce_external_wp_i18n_.sprintf)(/* translators: %s is the formatted number of views */
+  (0,tinymce_external_wp_i18n_._n)('%s view', '%s views', safeViews, 'video-embed-thumbnail-generator'), safeViews.toLocaleString()) : safeViews.toLocaleString();
   const renderIcon = () => {
     switch (iconType) {
       case 'eye':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
+        return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Icon, {
           icon: seen_default,
           className: "videopack-icon-left-margin"
         });
       case 'play':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
-          icon: icon.play,
+        return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Icon, {
+          icon: tinymce_icon/* play */.ZH,
           size: 16,
           className: "videopack-icon-left-margin"
         });
       case 'playOutline':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
-          icon: icon.playOutline,
+        return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Icon, {
+          icon: tinymce_icon/* playOutline */.zs,
           size: 16,
           className: "videopack-icon-left-margin"
         });
@@ -8238,12 +8323,9 @@ function ViewCount({
         return null;
     }
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("div", {
     ...finalBlockProps,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
-      className: "videopack-view-count",
-      children: [renderIcon(), displayValue]
-    })
+    children: [renderIcon(), displayValue]
   });
 }
 ;// ./src/components/VideoWatermark/VideoWatermark.js
@@ -8325,12 +8407,12 @@ function VideoWatermark({
   if (!effectiveUrl) {
     return null;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
     className: `videopack-video-watermark ${skin}`,
     style: style,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("img", {
+    children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("img", {
       src: effectiveUrl,
-      alt: (0,external_wp_i18n_.__)('Watermark', 'video-embed-thumbnail-generator'),
+      alt: (0,tinymce_external_wp_i18n_.__)('Watermark', 'video-embed-thumbnail-generator'),
       style: {
         display: 'block',
         width: '100%',
@@ -8350,10 +8432,19 @@ function VideoWatermark({
 
 
 
+// Duration shares "badge" title/background colors with Title/View-count —
+// see Overlays.scss's $badge-selectors. Module-level so the reference stays
+// stable across renders (useVideopackContext depends on it for memoization).
+
+const VideoDuration_CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * A internal component to display the video duration with correct formatting and data.
  *
  * @param {Object}  root0                   Component props.
+ * @param {Object}  [root0.blockProps]      Block props from the parent Edit component,
+ *                                          reused as-is when present so this component
+ *                                          doesn't stamp a second, redundant wrapper.
  * @param {boolean} root0.isOverlay         Whether it's an overlay.
  * @param {boolean} root0.isInsideThumbnail Whether it's inside a thumbnail.
  * @param {string}  root0.textAlign         Text alignment.
@@ -8362,8 +8453,8 @@ function VideoWatermark({
  * @param {Object}  root0.context           Block context.
  * @return {Element}                        The rendered component.
  */
-
 function VideoDuration({
+  blockProps,
   isOverlay,
   isInsideThumbnail,
   textAlign,
@@ -8371,16 +8462,18 @@ function VideoDuration({
   attributes,
   context = {}
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: VideoDuration_CLASS_KEYS
+  });
   const {
     data: duration,
     isResolving
   } = useVideopackData('duration', context);
   const attachmentId = vpContext.resolved.attachmentId;
   if (vpContext.resolved.isDiscovering && !attachmentId) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
       className: `videopack-video-duration ${isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'] ? 'is-overlay' : ''}`,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Spinner, {})
     });
   }
   if (!attachmentId && !vpContext.resolved.isPreview) {
@@ -8390,9 +8483,9 @@ function VideoDuration({
   const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
   const defaultAlign = actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
   if (isResolving) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
       className: `videopack-video-duration ${actualIsOverlay ? 'is-overlay' : ''}`,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Spinner, {})
     });
   }
   const formatDuration = seconds => {
@@ -8408,9 +8501,12 @@ function VideoDuration({
     }
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  const finalBlockProps = blockProps || {
     className: `videopack-video-duration-block videopack-video-duration ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${position || 'top'} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`,
-    style: vpContext.style,
+    style: vpContext.style
+  };
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
+    ...finalBlockProps,
     children: duration ? formatDuration(duration) : '0:00'
   });
 }
@@ -8418,6 +8514,8 @@ function VideoDuration({
 
 
 
+
+const PlayButton_CLASS_KEYS = ['play_button_color', 'play_button_secondary_color'];
 
 /**
  * An internal component to display the play button with correct styling.
@@ -8427,14 +8525,15 @@ function VideoDuration({
  * @param {Object} root0.context    Block context.
  * @return {Element}                Rendered play button.
  */
-
 function PlayButton({
   attributes = {},
   context = {}
 }) {
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const embed_method = typeof config !== 'undefined' ? config.embed_method : 'Video.js';
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: PlayButton_CLASS_KEYS
+  });
 
   /**
    * Filters the React element used to render the player play button.
@@ -8446,7 +8545,7 @@ function PlayButton({
    * @param {Element|null} customButton Custom play button element, defaults to null.
    * @param {Object}       context      Context data including attributes, context, vpContext, and embed_method.
    */
-  const customButton = (0,external_wp_hooks_.applyFilters)('videopack.playButtonElement', null, {
+  const customButton = (0,tinymce_external_wp_hooks_.applyFilters)('videopack.playButtonElement', null, {
     attributes,
     context,
     vpContext,
@@ -8465,51 +8564,51 @@ function PlayButton({
     if (mejsSvgPath) {
       styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
     }
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
       className: `videopack-play-button mejs-overlay mejs-layer mejs-overlay-play play-button-container ${vpContext.classes}`,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
         className: "mejs-overlay-button",
         role: "button",
         tabIndex: "0",
-        "aria-label": (0,external_wp_i18n_.__)('Play', 'video-embed-thumbnail-generator'),
+        "aria-label": (0,tinymce_external_wp_i18n_.__)('Play', 'video-embed-thumbnail-generator'),
         "aria-pressed": "false",
         style: styles
       })
     });
   }
   if ('None' === embed_method) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
       className: "play-button-container videopack-none",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("svg", {
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("svg", {
         className: "videopack-none-play-button",
         viewBox: "0 0 100 100",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("circle", {
+        children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("circle", {
           className: "play-button-circle",
           cx: "50",
           cy: "50",
           r: "45"
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("polygon", {
+        }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("polygon", {
           className: "play-button-triangle",
           points: "40,30 70,50 40,70"
         })]
       })
     });
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
     className: `play-button-container video-js ${vpContext.classes} vjs-big-play-centered vjs-paused vjs-controls-enabled`,
     style: vpContext.style,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("button", {
+    children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("button", {
       className: "vjs-big-play-button",
       type: "button",
-      title: (0,external_wp_i18n_.__)('Play Video', 'video-embed-thumbnail-generator'),
+      title: (0,tinymce_external_wp_i18n_.__)('Play Video', 'video-embed-thumbnail-generator'),
       "aria-disabled": "false",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+      children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("span", {
         className: "vjs-icon-placeholder",
         "aria-hidden": "true"
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+      }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("span", {
         className: "vjs-control-text",
         "aria-live": "polite",
-        children: (0,external_wp_i18n_.__)('Play Video', 'video-embed-thumbnail-generator')
+        children: (0,tinymce_external_wp_i18n_.__)('Play Video', 'video-embed-thumbnail-generator')
       })]
     })
   });
@@ -8582,7 +8681,7 @@ const CustomDuotoneFilter = ({
   colors,
   id
 }) => {
-  const filterData = (0,external_wp_element_.useMemo)(() => {
+  const filterData = (0,tinymce_external_wp_element_.useMemo)(() => {
     if (!colors || colors.length < 2) {
       return null;
     }
@@ -8598,7 +8697,7 @@ const CustomDuotoneFilter = ({
   if (!filterData) {
     return null;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("svg", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("svg", {
     style: {
       position: 'absolute',
       width: 0,
@@ -8606,23 +8705,23 @@ const CustomDuotoneFilter = ({
       visibility: 'hidden'
     },
     "aria-hidden": "true",
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("filter", {
+    children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("filter", {
       id: id,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feColorMatrix", {
+      children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("feColorMatrix", {
         type: "matrix",
         values: ".299 .587 .114 0 0 .299 .587 .114 0 0 .299 .587 .114 0 0 .299 .587 .114 0 0"
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("feComponentTransfer", {
+      }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("feComponentTransfer", {
         colorInterpolationFilters: "sRGB",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feFuncR", {
+        children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("feFuncR", {
           type: "table",
           tableValues: filterData.rValues
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feFuncG", {
+        }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("feFuncG", {
           type: "table",
           tableValues: filterData.gValues
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feFuncB", {
+        }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("feFuncB", {
           type: "table",
           tableValues: filterData.bValues
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feFuncA", {
+        }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("feFuncA", {
           type: "table",
           tableValues: filterData.aValues
         })]
@@ -8695,7 +8794,7 @@ function VideoThumbnailPreview({
     thumbnailMedia,
     posterUrl,
     isResolving
-  } = (0,external_wp_data_.useSelect)(select => {
+  } = (0,tinymce_external_wp_data_.useSelect)(select => {
     if (!postId || postId < 1 || video.poster_url) {
       return {
         thumbnailMedia: null,
@@ -8723,10 +8822,10 @@ function VideoThumbnailPreview({
     };
   }, [postId, video.poster_url]);
   if (isResolving && !video.poster_url) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {});
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_components_.Spinner, {});
   }
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
-  const defaultNoThumb = config ? `${config.url}/src/images/Adobestock_469037984_thumb1.jpg` : '';
+  const defaultNoThumb = config ? `${config.url}/src/images/nothumbnail.jpg` : '';
 
   // Priority: 1. Manual video data (previews), 2. Direct poster URL from meta, 3. WordPress media object, 4. Default "no thumbnail"
   const thumbnailUrl = video.poster_url || posterUrl || thumbnailMedia?.source_url || defaultNoThumb;
@@ -8743,18 +8842,18 @@ function VideoThumbnailPreview({
     '--videopack-play-button-color': play_button_color,
     '--videopack-play-button-secondary-color': play_button_secondary_color
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("div", {
     className: containerClass,
     style: containerStyle,
-    children: [thumbnailUrl && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("img", {
+    children: [thumbnailUrl && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("img", {
       src: thumbnailUrl,
       alt: thumbnailMedia?.alt_text || '',
       className: "videopack-thumbnail",
       style: imgStyle
-    }), Array.isArray(duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
+    }), Array.isArray(duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
       colors: duotone,
       id: resolvedDuotoneClass
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
       className: "videopack-inner-blocks-container",
       children: children
     })]
@@ -8762,6 +8861,8 @@ function VideoThumbnailPreview({
 }
 ;// ./src/components/PlayerContainer/PlayerContainer.js
 
+
+const PLAYER_CONTEXT_CLASS_KEYS = ['skin', 'control_bar_bg_color', 'control_bar_color', 'play_button_color', 'play_button_secondary_color'];
 
 /**
  * Shared Player Container Component for Edit/Preview.
@@ -8777,7 +8878,6 @@ function VideoThumbnailPreview({
  * @param {boolean} root0.isPreview            Whether it's a preview.
  * @return {Element}                           The rendered container.
  */
-
 function PlayerContainer({
   children,
   className,
@@ -8788,7 +8888,9 @@ function PlayerContainer({
   style,
   isPreview
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: PLAYER_CONTEXT_CLASS_KEYS
+  });
   const {
     resolved: {
       duotone: contextDuotone
@@ -8814,7 +8916,7 @@ function PlayerContainer({
     ...contextStyle,
     ...style
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Tag, {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(Tag, {
     className: finalClasses,
     style: finalStyle,
     children: children
@@ -8846,7 +8948,7 @@ function PlayerContainer({
  * @return {Element} The rendered component.
  */
 
-const GenericPlayer = (0,external_wp_element_.forwardRef)(({
+const GenericPlayer = (0,tinymce_external_wp_element_.forwardRef)(({
   poster,
   loop,
   autoPlay,
@@ -8861,7 +8963,7 @@ const GenericPlayer = (0,external_wp_element_.forwardRef)(({
   onPlay,
   onPause,
   onEnded
-}, ref) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("video", {
+}, ref) => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("video", {
   onPlay: onPlay,
   onPause: onPause,
   onEnded: onEnded,
@@ -8876,16 +8978,16 @@ const GenericPlayer = (0,external_wp_element_.forwardRef)(({
   height: "100%",
   className: className,
   ref: ref,
-  children: [sources.map((source, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("source", {
+  children: [sources.map((source, index) => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("source", {
     src: source.src,
     type: source.type
-  }, index)), tracks.map((track, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("track", {
+  }, index)), tracks.map((track, index) => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("track", {
     src: track.src,
     kind: track.kind,
     srcLang: track.srclang,
     label: track.label,
     default: track.default
-  }, index)), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("a", {
+  }, index)), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("a", {
     href: src,
     children: src
   })]
@@ -8913,8 +9015,8 @@ const GenericPlayer = (0,external_wp_element_.forwardRef)(({
  */
 
 const VideoJS = props => {
-  const videoRef = (0,external_wp_element_.useRef)(null);
-  const playerRef = (0,external_wp_element_.useRef)(null);
+  const videoRef = (0,tinymce_external_wp_element_.useRef)(null);
+  const playerRef = (0,tinymce_external_wp_element_.useRef)(null);
   const {
     options,
     skin,
@@ -8924,9 +9026,9 @@ const VideoJS = props => {
     onMetadataLoaded,
     onEnded
   } = props;
-  const previousSkinRef = (0,external_wp_element_.useRef)(skin);
-  const previousPluginsRef = (0,external_wp_element_.useRef)(options?.plugins);
-  (0,external_wp_element_.useEffect)(() => {
+  const previousSkinRef = (0,tinymce_external_wp_element_.useRef)(skin);
+  const previousPluginsRef = (0,tinymce_external_wp_element_.useRef)(options?.plugins);
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     let initTimer;
     const player = playerRef.current;
     // When plugins change (e.g. resolution selector added after entity
@@ -9077,7 +9179,7 @@ const VideoJS = props => {
   }, [options, skin, onPlay, onPause, onReady, onMetadataLoaded, onEnded]);
 
   // Dispose the player when the component unmounts
-  (0,external_wp_element_.useEffect)(() => {
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     return () => {
       if (playerRef.current && !playerRef.current.isDisposed()) {
         playerRef.current.off('play', onPlay);
@@ -9089,7 +9191,7 @@ const VideoJS = props => {
   }, [onPause, onPlay]);
 
   // Trigger a resize event on the player when the container's dimensions change.
-  (0,external_wp_element_.useEffect)(() => {
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     const container = videoRef.current;
     if (!container || typeof ResizeObserver === 'undefined') {
       return;
@@ -9112,7 +9214,7 @@ const VideoJS = props => {
   } else if (options.width && options.height) {
     ratio = `${options.width} / ${options.height}`;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
     "data-vjs-player": true,
     ref: videoRef,
     style: {
@@ -9152,10 +9254,10 @@ const WpMejsPlayer = props => {
     aspectRatio,
     source_groups
   } = props;
-  const playerRef = (0,external_wp_element_.useRef)(null);
-  const containerRef = (0,external_wp_element_.useRef)(null);
-  const propsRef = (0,external_wp_element_.useRef)(props);
-  const reportedSrcRef = (0,external_wp_element_.useRef)(null);
+  const playerRef = (0,tinymce_external_wp_element_.useRef)(null);
+  const containerRef = (0,tinymce_external_wp_element_.useRef)(null);
+  const propsRef = (0,tinymce_external_wp_element_.useRef)(props);
+  const reportedSrcRef = (0,tinymce_external_wp_element_.useRef)(null);
   const uniqueKey = JSON.stringify({
     src: options.src,
     poster: options.poster,
@@ -9166,7 +9268,7 @@ const WpMejsPlayer = props => {
     source_groups,
     option_source_groups: options.source_groups
   });
-  (0,external_wp_element_.useEffect)(() => {
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     let isMounted = true;
     let timeoutId = null;
     const cleanupPlayer = () => {
@@ -9427,20 +9529,20 @@ const WpMejsPlayer = props => {
   }, [uniqueKey, options.src, options.source_groups, source_groups]);
 
   // Reactive updates for volume and muted without recreating the player.
-  (0,external_wp_element_.useEffect)(() => {
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     const media = playerRef.current;
     const shouldBeMuted = !!options.muted || !!actualAutoplay;
     if (media && typeof media.setMuted === 'function') {
       media.setMuted(shouldBeMuted);
     }
   }, [options.muted, actualAutoplay]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     const media = playerRef.current;
     if (media && typeof media.setVolume === 'function' && options.volume !== undefined && options.volume !== null) {
       media.setVolume(options.volume);
     }
   }, [options.volume]);
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
     className: `wp-video-container${!controls ? ' videopack-no-controls' : ''}`,
     ref: containerRef,
     style: {
@@ -9463,6 +9565,7 @@ const WpMejsPlayer = props => {
 
 
 
+const VideoPlayer_PLAYER_CONTEXT_CLASS_KEYS = ['skin', 'control_bar_bg_color', 'control_bar_color', 'play_button_color', 'play_button_secondary_color'];
 const DEFAULT_PLAYERS = {
   'Video.js': VideoJs,
   'WordPress Default': VideoPlayer_WpMejsPlayer,
@@ -9494,7 +9597,7 @@ const VideoPlayer = ({
   ...otherProps
 }) => {
   // Standardize attributes to ensure all block-level settings are here
-  const blockAttributes = (0,external_wp_element_.useMemo)(() => ({
+  const blockAttributes = (0,tinymce_external_wp_element_.useMemo)(() => ({
     ...attributes,
     // If props are passed directly (e.g. from BlockPreview spreading), prioritize them
     ...otherProps
@@ -9505,20 +9608,22 @@ const VideoPlayer = ({
     resolved,
     style: contextStyles,
     classes: contextClasses
-  } = useVideopackContext(blockAttributes, context);
-  const wrapperRef = (0,external_wp_element_.useRef)(null);
-  const [detectedDimensions, setDetectedDimensions] = (0,external_wp_element_.useState)({
+  } = useVideopackContext(blockAttributes, context, {
+    classKeys: VideoPlayer_PLAYER_CONTEXT_CLASS_KEYS
+  });
+  const wrapperRef = (0,tinymce_external_wp_element_.useRef)(null);
+  const [detectedDimensions, setDetectedDimensions] = (0,tinymce_external_wp_element_.useState)({
     width: null,
     height: null,
     src: null // Track which src these dimensions are for
   });
-  const [resetKey, setResetKey] = (0,external_wp_element_.useState)(0);
-  const resetPlayer = (0,external_wp_element_.useCallback)(() => {
+  const [resetKey, setResetKey] = (0,tinymce_external_wp_element_.useState)(0);
+  const resetPlayer = (0,tinymce_external_wp_element_.useCallback)(() => {
     setResetKey(prev => prev + 1);
   }, []);
 
   // Reset dimensions when src changes
-  (0,external_wp_element_.useEffect)(() => {
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     const {
       src
     } = blockAttributes || {};
@@ -9532,12 +9637,12 @@ const VideoPlayer = ({
   }, [blockAttributes, detectedDimensions.src]);
 
   // Handle external restart requests
-  (0,external_wp_element_.useEffect)(() => {
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     if (blockAttributes?.restartCount > 0) {
       resetPlayer();
     }
   }, [blockAttributes?.restartCount, resetPlayer]);
-  const onMetadataLoaded = (0,external_wp_element_.useCallback)(dimensions => {
+  const onMetadataLoaded = (0,tinymce_external_wp_element_.useCallback)(dimensions => {
     if (dimensions.width === detectedDimensions.width && dimensions.height === detectedDimensions.height && blockAttributes.src === detectedDimensions.src) {
       return;
     }
@@ -9571,7 +9676,7 @@ const VideoPlayer = ({
     loopDuotoneId,
     crossorigin
   } = resolved;
-  const source_groups = (0,external_wp_element_.useMemo)(() => {
+  const source_groups = (0,tinymce_external_wp_element_.useMemo)(() => {
     // If we have valid groups, use them (handle empty array vs object)
     if (incomingSourceGroups && !Array.isArray(incomingSourceGroups) && Object.keys(incomingSourceGroups).length > 0) {
       return incomingSourceGroups;
@@ -9599,7 +9704,7 @@ const VideoPlayer = ({
 
   // Duotone resolution
   const final_duotone = blockAttributes?.style?.color?.duotone || duotone;
-  const instanceId = (0,external_wp_element_.useMemo)(() => {
+  const instanceId = (0,tinymce_external_wp_element_.useMemo)(() => {
     return `vp-player-${Math.random().toString(36).substr(2, 9)}`;
   }, []);
   let resolvedDuotoneClass = '';
@@ -9610,7 +9715,7 @@ const VideoPlayer = ({
   } else if (Array.isArray(final_duotone)) {
     resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
   }
-  const players = (0,external_wp_element_.useMemo)(() => (0,external_wp_hooks_.applyFilters)(
+  const players = (0,tinymce_external_wp_element_.useMemo)(() => (0,tinymce_external_wp_hooks_.applyFilters)(
   /**
    * Filters the registered admin preview player engines.
    *
@@ -9619,7 +9724,7 @@ const VideoPlayer = ({
    * @param {Object} players Object mapping player type names to React components.
    */
   'videopack_admin_players', DEFAULT_PLAYERS), []);
-  const isVertical = (0,external_wp_element_.useMemo)(() => {
+  const isVertical = (0,tinymce_external_wp_element_.useMemo)(() => {
     let vertical = false;
     // Use browser-detected dimensions if available
     if (detectedDimensions.width && detectedDimensions.height) {
@@ -9630,12 +9735,12 @@ const VideoPlayer = ({
     }
     return vertical;
   }, [detectedDimensions.width, detectedDimensions.height, resolved.width, resolved.height, resolved.rotate]);
-  const isFixedAspect = (0,external_wp_element_.useMemo)(() => {
+  const isFixedAspect = (0,tinymce_external_wp_element_.useMemo)(() => {
     const verticalFixed = fixed_aspect === 'vertical' && isVertical;
     const alwaysFixed = fixed_aspect === 'always';
     return (alwaysFixed || verticalFixed) && (fullwidth !== true || verticalFixed);
   }, [fixed_aspect, fullwidth, isVertical]);
-  const aspectRatio = (0,external_wp_element_.useMemo)(() => {
+  const aspectRatio = (0,tinymce_external_wp_element_.useMemo)(() => {
     let ratio;
     if (isFixedAspect) {
       ratio = (default_ratio || '16 / 9').replace(/\s\/\s/g, ':');
@@ -9647,7 +9752,7 @@ const VideoPlayer = ({
     }
     return ratio;
   }, [isFixedAspect, default_ratio, detectedDimensions.width, detectedDimensions.height, resolved.width, resolved.height]);
-  const innerPlayerStyles = (0,external_wp_element_.useMemo)(() => {
+  const innerPlayerStyles = (0,tinymce_external_wp_element_.useMemo)(() => {
     const styles = {};
     // Apply aspect ratio to the inner player if we know it (fixed or native)
     if (isFixedAspect) {
@@ -9657,7 +9762,7 @@ const VideoPlayer = ({
     }
     return styles;
   }, [isFixedAspect, default_ratio, aspectRatio]);
-  const playerStyles = (0,external_wp_element_.useMemo)(() => {
+  const playerStyles = (0,tinymce_external_wp_element_.useMemo)(() => {
     const styles = {
       ...contextStyles
     };
@@ -9668,7 +9773,7 @@ const VideoPlayer = ({
     }
     return styles;
   }, [final_embed_method, contextStyles]);
-  const wrapperClasses = (0,external_wp_element_.useMemo)(() => {
+  const wrapperClasses = (0,tinymce_external_wp_element_.useMemo)(() => {
     const classes = [...(typeof contextClasses === 'string' ? contextClasses.split(' ').filter(Boolean) : contextClasses), 'videopack-video-block-container', 'videopack-wrapper'];
     if (isFixedAspect || aspectRatio) {
       classes.push('videopack-has-aspect-ratio');
@@ -9683,10 +9788,10 @@ const VideoPlayer = ({
     // Ensure unique classes and join
     return [...new Set(classes)].join(' ');
   }, [contextClasses, isFixedAspect, aspectRatio, resolvedDuotoneClass, loopDuotoneId]);
-  const actualAutoplay = (0,external_wp_element_.useMemo)(() => {
+  const actualAutoplay = (0,tinymce_external_wp_element_.useMemo)(() => {
     return autoplay;
   }, [autoplay]);
-  const finalizedSources = (0,external_wp_element_.useMemo)(() => {
+  const finalizedSources = (0,tinymce_external_wp_element_.useMemo)(() => {
     // Priority 1: Sources from groups
     if (Object.keys(source_groups).length > 0) {
       const groupedSources = Object.values(source_groups).flatMap(g => g.sources || []);
@@ -9709,13 +9814,13 @@ const VideoPlayer = ({
     }
     return [];
   }, [source_groups, incomingSources, src]);
-  const uniqueKey = (0,external_wp_element_.useMemo)(() => {
+  const uniqueKey = (0,tinymce_external_wp_element_.useMemo)(() => {
     if (blockAttributes.id) {
       return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
     }
     return Math.random().toString(36).substr(2, 9);
   }, [blockAttributes.id, source_groups]);
-  const genericPlayerOptions = (0,external_wp_element_.useMemo)(() => {
+  const genericPlayerOptions = (0,tinymce_external_wp_element_.useMemo)(() => {
     const config = window.videopack_config || {};
     const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
     return {
@@ -9734,8 +9839,8 @@ const VideoPlayer = ({
       autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
     };
   }, [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method, crossorigin]);
-  const videoJsOptions = (0,external_wp_element_.useMemo)(() => {
-    const isVjs = (0,external_wp_hooks_.applyFilters)(
+  const videoJsOptions = (0,tinymce_external_wp_element_.useMemo)(() => {
+    const isVjs = (0,tinymce_external_wp_hooks_.applyFilters)(
     /**
      * Filters whether a specific player method should be treated as a Video.js engine.
      *
@@ -9796,7 +9901,7 @@ const VideoPlayer = ({
     }
     return options;
   }, [final_embed_method, actualAutoplay, controls, muted, preload, poster, loop, playback_rate, playsinline, volume, auto_res, finalizedSources, source_groups, text_tracks, aspectRatio, crossorigin]);
-  const handlePlay = (0,external_wp_element_.useCallback)(() => {
+  const handlePlay = (0,tinymce_external_wp_element_.useCallback)(() => {
     console.log('VideoPlayer: handlePlay triggered');
     if (wrapperRef.current) {
       const elements = Array.from(wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'));
@@ -9811,7 +9916,7 @@ const VideoPlayer = ({
       elements.forEach(el => el.classList.remove('videopack-video-title-visible'));
     }
   }, []);
-  const handlePause = (0,external_wp_element_.useCallback)(() => {
+  const handlePause = (0,tinymce_external_wp_element_.useCallback)(() => {
     console.log('VideoPlayer: handlePause triggered');
     if (wrapperRef.current) {
       const elements = Array.from(wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'));
@@ -9826,14 +9931,14 @@ const VideoPlayer = ({
       elements.forEach(el => el.classList.add('videopack-video-title-visible'));
     }
   }, []);
-  const handleEnded = (0,external_wp_element_.useCallback)(() => {
+  const handleEnded = (0,tinymce_external_wp_element_.useCallback)(() => {
     handlePause();
   }, [handlePause]);
-  const onReadyRef = (0,external_wp_element_.useRef)(onReady);
-  (0,external_wp_element_.useEffect)(() => {
+  const onReadyRef = (0,tinymce_external_wp_element_.useRef)(onReady);
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     onReadyRef.current = onReady;
   }, [onReady]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,tinymce_external_wp_element_.useEffect)(() => {
     if (typeof window !== 'undefined' && blockAttributes.id) {
       window.videopack = window.videopack || {};
       window.videopack.player_data = window.videopack.player_data || {};
@@ -9842,7 +9947,7 @@ const VideoPlayer = ({
       };
     }
   }, [blockAttributes.id, source_groups]);
-  const handleVideoPlayerReady = (0,external_wp_element_.useCallback)(player => {
+  const handleVideoPlayerReady = (0,tinymce_external_wp_element_.useCallback)(player => {
     player.on('loadedmetadata', () => {
       if (onReadyRef.current) {
         if (final_embed_method === 'Video.js') {
@@ -9856,7 +9961,7 @@ const VideoPlayer = ({
       }
     });
   }, [final_embed_method, actualAutoplay, handlePlay]);
-  const handleMejsReady = (0,external_wp_element_.useCallback)(player => {
+  const handleMejsReady = (0,tinymce_external_wp_element_.useCallback)(player => {
     if (onReadyRef.current) {
       onReadyRef.current(player);
     }
@@ -9865,12 +9970,12 @@ const VideoPlayer = ({
   if (!renderReady) {
     return null; // Or a loading spinner
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
     className: wrapperClasses,
     ref: wrapperRef,
     style: playerStyles,
     id: instanceId,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("div", {
       className: `videopack-player ${final_embed_method === 'Video.js' ? final_skin || '' : ''} ${!loopDuotoneId && resolvedDuotoneClass ? resolvedDuotoneClass : ''}`,
       style: {
         ...innerPlayerStyles,
@@ -9880,7 +9985,7 @@ const VideoPlayer = ({
       children: [(() => {
         const PlayerComponent = players[final_embed_method] || players.None;
         if (final_embed_method === 'Video.js') {
-          return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(PlayerComponent, {
             options: videoJsOptions,
             skin: final_skin,
             onPlay: handlePlay,
@@ -9891,7 +9996,7 @@ const VideoPlayer = ({
           }, `videojs-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
         }
         if (final_embed_method === 'WordPress Default') {
-          return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(PlayerComponent, {
             options: genericPlayerOptions,
             controls: controls,
             actualAutoplay: actualAutoplay,
@@ -9905,7 +10010,7 @@ const VideoPlayer = ({
             source_groups: source_groups
           }, `wpvideo-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
         }
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayerComponent, {
+        return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(PlayerComponent, {
           options: videoJsOptions || genericPlayerOptions,
           ...(PlayerComponent === VideoPlayer_GenericPlayer ? genericPlayerOptions : {}),
           skin: final_skin,
@@ -9916,11 +10021,11 @@ const VideoPlayer = ({
           onMetadataLoaded: onMetadataLoaded,
           source_groups: source_groups
         }, `${final_embed_method}-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
-      })(), Array.isArray(final_duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
+      })(), Array.isArray(final_duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)(tinymce_external_ReactJSXRuntime_.Fragment, {
+        children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
           colors: final_duotone,
           id: resolvedDuotoneClass
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("style", {
+        }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("style", {
           children: `
 								.${resolvedDuotoneClass} .vjs-poster:not(.vjs-poster .vjs-poster),
 								.${resolvedDuotoneClass} .mejs-poster:not(.mejs-poster .mejs-poster),
@@ -9941,6 +10046,14 @@ const VideoPlayer = ({
 ;// ./src/components/Preview/parts/CollectionWrapper.js
 
 
+// Collection is a valid theme-context root (Overlays.scss) — nested blocks
+// inherit the skin class/CSS vars from here rather than each needing their own.
+
+const COLLECTION_CONTEXT_OPTS = {
+  excludeHoverTrigger: true,
+  classKeys: ['skin']
+};
+
 /**
  * Wrapper for Videopack Collection Previews.
  *
@@ -9949,7 +10062,6 @@ const VideoPlayer = ({
  * @param {Object} root0.attributes Block attributes.
  * @param {Object} root0.context    Block context.
  */
-
 function CollectionWrapper({
   children,
   attributes = {},
@@ -9959,15 +10071,13 @@ function CollectionWrapper({
     resolved,
     style,
     classes
-  } = useVideopackContext(attributes, context, {
-    excludeHoverTrigger: true
-  });
+  } = useVideopackContext(attributes, context, COLLECTION_CONTEXT_OPTS);
   const {
     layout = 'grid',
     columns = 3,
     align = ''
   } = resolved;
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
     className: `videopack-collection videopack-wrapper layout-${layout} columns-${columns}${align ? ` align${align}` : ''} ${classes}`,
     style: {
       ...style,
@@ -10023,7 +10133,7 @@ function TemplatePreview({
       'videopack/postId': video.attachment_id,
       'videopack/title': video.title
     };
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(BlockPreview, {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(BlockPreview, {
       name: name,
       attributes: attributes,
       postId: video.attachment_id,
@@ -10032,7 +10142,7 @@ function TemplatePreview({
       innerBlocks: innerBlocks,
       ...currentFlags,
       context: itemContext,
-      children: innerBlocks.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TemplatePreview, {
+      children: innerBlocks.length > 0 && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(TemplatePreview, {
         template: innerBlocks,
         video: video,
         context: itemContext,
@@ -10047,6 +10157,13 @@ function TemplatePreview({
 
 
 
+// Loop is a valid theme-context root (Overlays.scss: .videopack-video-loop).
+
+const LOOP_CONTEXT_OPTS = {
+  excludeHoverTrigger: true,
+  classKeys: ['skin']
+};
+
 /**
  * Loop component for rendering multiple Videopack items.
  *
@@ -10056,7 +10173,6 @@ function TemplatePreview({
  * @param {Object} root0.context     Block context.
  * @param {Array}  root0.innerBlocks Inner blocks data.
  */
-
 function VideoLoop({
   children,
   attributes = {},
@@ -10067,23 +10183,21 @@ function VideoLoop({
     resolved,
     style,
     classes
-  } = useVideopackContext(attributes, context, {
-    excludeHoverTrigger: true
-  });
+  } = useVideopackContext(attributes, context, LOOP_CONTEXT_OPTS);
   const {
     videos = [],
     layout = 'grid',
     columns = 3,
     duotone
   } = resolved;
-  const loopDuotoneId = (0,external_wp_element_.useMemo)(() => {
+  const loopDuotoneId = (0,tinymce_external_wp_element_.useMemo)(() => {
     if (!duotone || !Array.isArray(duotone)) {
       return null;
     }
     return `videopack-loop-duotone-${Math.random().toString(36).substr(2, 9)}`;
   }, [duotone]);
   const loopPresetClass = duotone && typeof duotone === 'string' && duotone.startsWith('var:preset|duotone|') ? `wp-duotone-${duotone.split('|').pop()}` : '';
-  const loopContext = (0,external_wp_element_.useMemo)(() => {
+  const loopContext = (0,tinymce_external_wp_element_.useMemo)(() => {
     if (!loopDuotoneId) {
       return context;
     }
@@ -10092,14 +10206,14 @@ function VideoLoop({
       'videopack/loopDuotoneId': loopDuotoneId
     };
   }, [context, loopDuotoneId]);
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("div", {
     className: `videopack-video-loop layout-${layout} columns-${columns} ${classes} ${loopDuotoneId || ''} ${loopPresetClass}`,
     style: style,
-    children: [loopDuotoneId && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
+    children: [loopDuotoneId && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)(tinymce_external_ReactJSXRuntime_.Fragment, {
+      children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
         colors: duotone,
         id: loopDuotoneId
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("style", {
+      }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("style", {
         children: `
 							.${loopDuotoneId} .vjs-poster,
 							.${loopDuotoneId} .mejs-poster,
@@ -10117,11 +10231,11 @@ function VideoLoop({
 							}
 						`
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
       className: "videopack-collection-grid",
-      children: videos.map((video, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: videos.map((video, index) => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-collection-item videopack-hover-trigger",
-        children: innerBlocks ? /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TemplatePreview, {
+        children: innerBlocks ? /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(TemplatePreview, {
           template: innerBlocks,
           video: video,
           context: loopContext
@@ -10214,41 +10328,41 @@ function Pagination({
     return pages;
   };
   const pages = getPageNumbers();
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("nav", {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("nav", {
     className: "videopack-pagination",
-    "aria-label": (0,external_wp_i18n_.__)('Pagination', 'video-embed-thumbnail-generator'),
+    "aria-label": (0,tinymce_external_wp_i18n_.__)('Pagination', 'video-embed-thumbnail-generator'),
     style: style,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("ul", {
+    children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("ul", {
       className: "videopack-pagination-list",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("li", {
+      children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("li", {
         className: "videopack-pagination-item",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("button", {
+        children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("button", {
           className: `videopack-pagination-button prev page-numbers ${current <= 1 ? 'is-hidden videopack-hidden' : ''}`,
           onClick: () => current > 1 && onChange(current - 1),
-          "aria-label": (0,external_wp_i18n_.__)('Previous Page', 'video-embed-thumbnail-generator'),
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+          "aria-label": (0,tinymce_external_wp_i18n_.__)('Previous Page', 'video-embed-thumbnail-generator'),
+          children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("span", {
             className: "videopack-pagination-arrow",
             children: "<"
           })
         })
-      }), pages.map((page, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("li", {
+      }), pages.map((page, index) => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("li", {
         className: "videopack-pagination-item",
-        children: page === '...' ? /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+        children: page === '...' ? /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("span", {
           className: "page-numbers dots",
           children: page
-        }) : /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("button", {
+        }) : /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("button", {
           className: `videopack-pagination-button page-numbers ${page === current ? 'is-active current' : ''}`,
           onClick: () => typeof page === 'number' && onChange(page),
           "aria-current": page === current ? 'page' : undefined,
           children: page
         })
-      }, index)), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("li", {
+      }, index)), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("li", {
         className: "videopack-pagination-item",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("button", {
+        children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("button", {
           className: `videopack-pagination-button next page-numbers ${current >= total ? 'is-hidden videopack-hidden' : ''}`,
           onClick: () => current < total && onChange(current + 1),
-          "aria-label": (0,external_wp_i18n_.__)('Next Page', 'video-embed-thumbnail-generator'),
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+          "aria-label": (0,tinymce_external_wp_i18n_.__)('Next Page', 'video-embed-thumbnail-generator'),
+          children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("span", {
             className: "videopack-pagination-arrow",
             children: ">"
           })
@@ -10260,9 +10374,9 @@ function Pagination({
 ;// ./node_modules/@wordpress/icons/build-module/icon/index.mjs
 // packages/icons/src/icon/index.ts
 
-var icon_default = (0,external_wp_element_.forwardRef)(
+var icon_default = (0,tinymce_external_wp_element_.forwardRef)(
   ({ icon, size = 24, ...props }, ref) => {
-    return (0,external_wp_element_.cloneElement)(icon, {
+    return (0,tinymce_external_wp_element_.cloneElement)(icon, {
       width: size,
       height: size,
       ...props,
@@ -10277,7 +10391,7 @@ var icon_default = (0,external_wp_element_.forwardRef)(
 // packages/icons/src/library/download.tsx
 
 
-var download_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" }) });
+var download_default = /* @__PURE__ */ (0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,tinymce_external_ReactJSXRuntime_.jsx)(tinymce_external_wp_primitives_.Path, { d: "M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" }) });
 
 //# sourceMappingURL=download.mjs.map
 
@@ -10327,7 +10441,7 @@ const getTitleInnerTemplate = (includeDownload, includeShare) => {
 ;// ./src/blocks/duration/block.json
 const duration_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/duration","title":"Videopack Duration","category":"media","icon":"clock","description":"Displays the video duration.","usesContext":["postId","postType"],"attributes":{"position":{"type":"string"},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"isPreview":true}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 ;// ./src/blocks/view-count/block.json
-const view_count_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/view-count","title":"Videopack View Count","category":"media","icon":"visibility","description":"Displays the view count of the video.","usesContext":["postId","postType"],"attributes":{"iconType":{"type":"string","default":"none"},"showText":{"type":"boolean","default":true},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"iconType":"playOutline","isPreview":true}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
+const view_count_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/view-count","title":"Videopack View Count","category":"media","icon":"visibility","description":"Displays the view count of the video.","usesContext":["postId","postType"],"attributes":{"position":{"type":"string"},"iconType":{"type":"string","default":"none"},"showText":{"type":"boolean","default":true},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"iconType":"playOutline","isPreview":true}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 ;// ./src/blocks/watermark/block.json
 const watermark_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/watermark","title":"Videopack Watermark","category":"media","icon":"art","description":"Displays a watermark overlay on the video.","parent":["videopack/player-container","videopack/player"],"attributes":{"watermark":{"type":"string"},"watermark_link_to":{"type":"string","default":"false"},"watermark_url":{"type":"string"},"watermark_align":{"type":"string"},"watermark_valign":{"type":"string"},"watermark_scale":{"type":"number"},"watermark_x":{"type":"number"},"watermark_y":{"type":"number"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"watermark":"https://s.w.org/style/images/about/WordPress-logotype-wmark.png","isPreview":true}},"supports":{"html":false,"reusable":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 ;// ./src/blocks/play-button/block.json
@@ -10473,18 +10587,18 @@ const getCleanDomProps = (props, name) => {
   return cleanDomProps;
 };
 const PREVIEW_COMPONENTS = {
-  'videopack/player-container': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayerContainer, {
+  'videopack/player-container': props => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(PlayerContainer, {
     ...props,
     ...getCleanDomProps(props, 'videopack/player-container')
   }),
   'videopack/collection': CollectionWrapper,
   'videopack/loop': VideoLoop,
   'videopack/pagination': Pagination,
-  'videopack/thumbnail': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoThumbnailPreview, {
+  'videopack/thumbnail': props => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(VideoThumbnailPreview, {
     ...props,
     ...getCleanDomProps(props, 'videopack/thumbnail')
   }),
-  'videopack/title': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoTitle, {
+  'videopack/title': props => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(VideoTitle, {
     ...props,
     ...getCleanDomProps(props, 'videopack/title')
   }),
@@ -10494,16 +10608,16 @@ const PREVIEW_COMPONENTS = {
       ...props.attributes
     };
     const styleType = attrs.styleType || 'text';
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("span", {
       className: `videopack-download-wrapper videopack-download-block is-inside-title-meta mode-${attrs.downloadMode || 'direct'}`,
       style: {
         display: 'inline-flex',
         alignItems: 'center'
       },
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("button", {
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("button", {
         type: "button",
         className: `videopack-download-link videopack-icons style-${styleType}`,
-        children: attrs.icon !== false && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(icon_default, {
+        children: attrs.icon !== false && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(icon_default, {
           icon: download_default,
           className: "videopack-icon-svg"
         })
@@ -10519,17 +10633,17 @@ const PREVIEW_COMPONENTS = {
     };
     const styleType = attrs.styleType || 'text';
     const iconType = attrs.iconType || 'share';
-    const shareIconSvg = /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("svg", {
+    const shareIconSvg = /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("svg", {
       className: "videopack-icon-svg share-icon",
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 24 24",
       "aria-hidden": "true",
       focusable: "false",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("path", {
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("path", {
         d: "M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z"
       })
     });
-    const externalIconSvg = /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("svg", {
+    const externalIconSvg = /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("svg", {
       className: "videopack-icon-svg external-icon",
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 24 24",
@@ -10540,11 +10654,11 @@ const PREVIEW_COMPONENTS = {
       strokeLinejoin: "round",
       "aria-hidden": "true",
       focusable: "false",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("path", {
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("path", {
         d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"
       })
     });
-    const iosShareIconSvg = /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("svg", {
+    const iosShareIconSvg = /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("svg", {
       className: "videopack-icon-svg ios-share-icon",
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 24 24",
@@ -10555,7 +10669,7 @@ const PREVIEW_COMPONENTS = {
       strokeLinejoin: "round",
       "aria-hidden": "true",
       focusable: "false",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("path", {
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("path", {
         d: "M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"
       })
     });
@@ -10567,38 +10681,38 @@ const PREVIEW_COMPONENTS = {
     } else if (iconType === 'iosShare') {
       activeIcon = iosShareIconSvg;
     }
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("span", {
       className: "videopack-share-wrapper videopack-share-block is-inside-title-meta",
       style: {
         display: 'inline-flex',
         alignItems: 'center'
       },
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("button", {
+      children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("button", {
         type: "button",
         className: `videopack-share-link videopack-share-toggle videopack-icons style-${styleType}`,
-        children: [iconType !== 'none' && activeIcon, (attrs.showText || iconType === 'none') && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+        children: [iconType !== 'none' && activeIcon, (attrs.showText || iconType === 'none') && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("span", {
           className: "videopack-share-text-label",
           style: iconType !== 'none' ? {
             marginLeft: '4px'
           } : undefined,
-          children: (0,external_wp_i18n_.__)('Share', 'video-embed-thumbnail-generator')
+          children: (0,tinymce_external_wp_i18n_.__)('Share', 'video-embed-thumbnail-generator')
         })]
       })
     });
   },
-  'videopack/duration': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoDuration, {
+  'videopack/duration': props => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(VideoDuration, {
     ...props,
     ...getCleanDomProps(props, 'videopack/duration')
   }),
-  'videopack/view-count': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(ViewCount, {
+  'videopack/view-count': props => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(ViewCount, {
     ...props,
     ...getCleanDomProps(props, 'videopack/view-count')
   }),
-  'videopack/play-button': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayButton, {
+  'videopack/play-button': props => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(PlayButton, {
     ...props,
     ...getCleanDomProps(props, 'videopack/play-button')
   }),
-  'videopack/watermark': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoWatermark, {
+  'videopack/watermark': props => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(VideoWatermark, {
     ...props,
     ...getCleanDomProps(props, 'videopack/watermark')
   }),
@@ -10607,9 +10721,9 @@ const PREVIEW_COMPONENTS = {
     attributes,
     context,
     video
-  }) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  }) => /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
     className: "videopack-video-preview",
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoPlayer_VideoPlayer, {
+    children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(VideoPlayer_VideoPlayer, {
       attributes: {
         ...attributes,
         id: video?.attachment_id,
@@ -10652,7 +10766,7 @@ function BlockPreview({
   if (!Component) {
     return children || null;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Component, {
+  return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(Component, {
     ...attributes,
     attributes: attributes,
     context: context,
@@ -10762,7 +10876,7 @@ const getFeedTemplate = options => {
   return template;
 };
 // EXTERNAL MODULE: ./src/hooks/useVideoQuery.js
-var useVideoQuery = __webpack_require__(877);
+var tinymce_useVideoQuery = __webpack_require__(877);
 ;// ./src/features/tinymce/tinymce.js
 /**
  * Features for integrating Videopack with the TinyMCE editor.
@@ -10832,13 +10946,13 @@ var useVideoQuery = __webpack_require__(877);
     attributes,
     mountNode
   }) => {
-    const activePostId = (0,external_wp_element_.useMemo)(() => detectPostId(), []);
+    const activePostId = (0,tinymce_external_wp_element_.useMemo)(() => detectPostId(), []);
     // Use unified context hook for all design and behavior resolution.
     // TinyMCE doesn't have block context, so we pass an empty object.
     const vpContext = useVideopackContext(attributes, {}, {
       excludeHoverTrigger: true
     });
-    const mergedAttributes = (0,external_wp_element_.useMemo)(() => {
+    const mergedAttributes = (0,tinymce_external_wp_element_.useMemo)(() => {
       const resolved = {
         ...vpContext.resolved
       };
@@ -10856,12 +10970,12 @@ var useVideoQuery = __webpack_require__(877);
       videoResults,
       isResolving,
       maxNumPages
-    } = (0,useVideoQuery/* default */.A)({
+    } = (0,tinymce_useVideoQuery/* default */.A)({
       ...mergedAttributes,
       page_number: 1
     }, activePostId);
-    const [isSelected, setIsSelected] = (0,external_wp_element_.useState)(false);
-    const themePresetsStyle = (0,external_wp_element_.useMemo)(() => {
+    const [isSelected, setIsSelected] = (0,tinymce_external_wp_element_.useState)(false);
+    const themePresetsStyle = (0,tinymce_external_wp_element_.useMemo)(() => {
       const colors = videopack_config?.themeColors || [];
       const styles = {};
       colors.forEach(c => {
@@ -10871,7 +10985,7 @@ var useVideoQuery = __webpack_require__(877);
     }, []);
 
     // Watch for selection changes on the wpview container
-    (0,external_wp_element_.useEffect)(() => {
+    (0,tinymce_external_wp_element_.useEffect)(() => {
       const wpView = mountNode.closest('.wpview');
       if (!wpView) {
         return;
@@ -10889,13 +11003,13 @@ var useVideoQuery = __webpack_require__(877);
       return () => observer.disconnect();
     }, [mountNode]);
     if (isResolving) {
-      return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("div", {
         className: "loading-placeholder",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
           className: "dashicons dashicons-admin-media"
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        }), /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
           className: "wpview-loading",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("ins", {})
+          children: /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("ins", {})
         })]
       });
     }
@@ -10929,16 +11043,16 @@ var useVideoQuery = __webpack_require__(877);
       'videopack/totalPages': maxNumPages,
       'videopack/currentPage': 1
     };
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    return /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsxs)("div", {
       className: "videopack-tinymce-wrapper",
       style: themePresetsStyle,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TemplatePreview, {
+      children: [/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(TemplatePreview, {
         attributes: mergedAttributes,
         template: template,
         context: contextValue,
         video: videoResults[0],
         postId: detectPostId()
-      }), !isSelected && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), !isSelected && /*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-block-overlay"
       })]
     });
@@ -10995,9 +11109,9 @@ var useVideoQuery = __webpack_require__(877);
     try {
       // Use createRoot for React 18+ compatibility
       if (!mountNode.__reactRoot) {
-        mountNode.__reactRoot = (0,external_wp_element_.createRoot)(mountNode);
+        mountNode.__reactRoot = (0,tinymce_external_wp_element_.createRoot)(mountNode);
       }
-      mountNode.__reactRoot.render(/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlaceHolderWrapper, {
+      mountNode.__reactRoot.render(/*#__PURE__*/(0,tinymce_external_ReactJSXRuntime_.jsx)(PlaceHolderWrapper, {
         type: type,
         attributes: attrs,
         mountNode: mountNode
@@ -11132,9 +11246,9 @@ var useVideoQuery = __webpack_require__(877);
         if (values && values.id && values.id.indexOf(',') === -1) {
           const mediaFrame = window.wp.media({
             frame: 'select',
-            title: (0,external_wp_i18n_.__)('Edit Videopack Shortcode', 'video-embed-thumbnail-generator'),
+            title: (0,tinymce_external_wp_i18n_.__)('Edit Videopack Shortcode', 'video-embed-thumbnail-generator'),
             button: {
-              text: (0,external_wp_i18n_.__)('Update', 'video-embed-thumbnail-generator')
+              text: (0,tinymce_external_wp_i18n_.__)('Update', 'video-embed-thumbnail-generator')
             },
             multiple: false,
             library: {
@@ -11206,7 +11320,7 @@ var useVideoQuery = __webpack_require__(877);
           if (urlValueToAppend) {
             params.append('videopack_url', urlValueToAppend);
           }
-          let thickboxTitle = (0,external_wp_i18n_.__)('Edit Video', 'video-embed-thumbnail-generator');
+          let thickboxTitle = (0,tinymce_external_wp_i18n_.__)('Edit Video', 'video-embed-thumbnail-generator');
           const isGallery = values.gallery === 'true';
           const urlValueToCheck = urlValue || '';
           let isListInEdit = false;
@@ -11219,10 +11333,10 @@ var useVideoQuery = __webpack_require__(877);
             isListInEdit = hasMultipleIds || hasMultipleContentElements || hasQuerySource || isEmptyAndNotUrl || hasGalleryIdOnly;
           }
           if (isGallery) {
-            thickboxTitle = (0,external_wp_i18n_.__)('Edit Gallery', 'video-embed-thumbnail-generator');
+            thickboxTitle = (0,tinymce_external_wp_i18n_.__)('Edit Gallery', 'video-embed-thumbnail-generator');
             params.set('tab', 'embedgallery');
           } else if (isListInEdit) {
-            thickboxTitle = (0,external_wp_i18n_.__)('Edit Video List', 'video-embed-thumbnail-generator');
+            thickboxTitle = (0,tinymce_external_wp_i18n_.__)('Edit Video List', 'video-embed-thumbnail-generator');
             params.set('tab', 'embedlist');
           } else {
             params.set('tab', 'embedurl');
@@ -11324,7 +11438,5 @@ var useVideoQuery = __webpack_require__(877);
     document.addEventListener('DOMContentLoaded', setupEditorObservers);
   }
 })();
-})();
-
 /******/ })()
 ;

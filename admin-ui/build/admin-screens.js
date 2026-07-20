@@ -5,12 +5,6 @@
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   M5: () => (/* binding */ getVideoGallery),
-/* harmony export */   UD: () => (/* binding */ testEncodeCommand),
-/* harmony export */   V7: () => (/* binding */ getUsersWithCapability),
-/* harmony export */   y4: () => (/* binding */ getFreemiusPage)
-/* harmony export */ });
 /* unused harmony exports getPresets, getVideoSources, getVideoFormats */
 /* unused harmony import specifier */ var apiFetch;
 /* unused harmony import specifier */ var addQueryArgs;
@@ -227,6 +221,13 @@ const testEncodeCommand = async (codec, resolution) => {
     throw error;
   }
 };
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "M5", 0, /* binding */ getVideoGallery,
+/* harmony export */   "UD", 0, /* binding */ testEncodeCommand,
+/* harmony export */   "V7", 0, /* binding */ getUsersWithCapability,
+/* harmony export */   "y4", 0, /* binding */ getFreemiusPage
+/* harmony export */ ]);
+
 
 /***/ },
 
@@ -234,15 +235,6 @@ const testEncodeCommand = async (codec, resolution) => {
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   F3: () => (/* binding */ resetJob),
-/* harmony export */   IS: () => (/* binding */ getQueue),
-/* harmony export */   IX: () => (/* binding */ toggleQueue),
-/* harmony export */   XX: () => (/* binding */ deleteJob),
-/* harmony export */   cD: () => (/* binding */ retryJob),
-/* harmony export */   ee: () => (/* binding */ removeJob),
-/* harmony export */   lg: () => (/* binding */ clearQueue)
-/* harmony export */ });
 /* unused harmony exports createJob, getJobStatus, listJobs, enqueueJob */
 /* unused harmony import specifier */ var apiFetch;
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(455);
@@ -482,6 +474,16 @@ const resetJob = async jobId => {
     throw error;
   }
 };
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "F3", 0, /* binding */ resetJob,
+/* harmony export */   "IS", 0, /* binding */ getQueue,
+/* harmony export */   "IX", 0, /* binding */ toggleQueue,
+/* harmony export */   "XX", 0, /* binding */ deleteJob,
+/* harmony export */   "cD", 0, /* binding */ retryJob,
+/* harmony export */   "ee", 0, /* binding */ removeJob,
+/* harmony export */   "lg", 0, /* binding */ clearQueue
+/* harmony export */ ]);
+
 
 /***/ },
 
@@ -489,10 +491,6 @@ const resetJob = async jobId => {
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   AO: () => (/* binding */ startBatchProcess),
-/* harmony export */   wW: () => (/* binding */ getBatchProgress)
-/* harmony export */ });
 /* unused harmony exports assignFormat, unassignFormat, deleteFile, deleteFormat */
 /* unused harmony import specifier */ var apiFetch;
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(455);
@@ -628,6 +626,11 @@ const getBatchProgress = async type => {
     throw error;
   }
 };
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "AO", 0, /* binding */ startBatchProcess,
+/* harmony export */   "wW", 0, /* binding */ getBatchProgress
+/* harmony export */ ]);
+
 
 /***/ },
 
@@ -635,15 +638,6 @@ const getBatchProgress = async type => {
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   $k: () => (/* binding */ saveNetworkSettings),
-/* harmony export */   CZ: () => (/* binding */ saveWPSettings),
-/* harmony export */   KB: () => (/* binding */ getNetworkSettings),
-/* harmony export */   XI: () => (/* binding */ clearUrlCache),
-/* harmony export */   mt: () => (/* binding */ getSettings),
-/* harmony export */   xd: () => (/* binding */ resetNetworkSettings),
-/* harmony export */   zS: () => (/* binding */ resetVideopackSettings)
-/* harmony export */ });
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(455);
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(619);
@@ -798,6 +792,16 @@ const clearUrlCache = async () => {
     throw error;
   }
 };
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "$k", 0, /* binding */ saveNetworkSettings,
+/* harmony export */   "CZ", 0, /* binding */ saveWPSettings,
+/* harmony export */   "KB", 0, /* binding */ getNetworkSettings,
+/* harmony export */   "XI", 0, /* binding */ clearUrlCache,
+/* harmony export */   "mt", 0, /* binding */ getSettings,
+/* harmony export */   "xd", 0, /* binding */ resetNetworkSettings,
+/* harmony export */   "zS", 0, /* binding */ resetVideopackSettings
+/* harmony export */ ]);
+
 
 /***/ },
 
@@ -805,15 +809,6 @@ const clearUrlCache = async () => {
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   play: () => (/* binding */ play),
-/* harmony export */   playOutline: () => (/* binding */ playOutline),
-/* harmony export */   sortAscending: () => (/* binding */ sortAscending),
-/* harmony export */   sortDescending: () => (/* binding */ sortDescending),
-/* harmony export */   videopack: () => (/* binding */ videopack),
-/* harmony export */   volumeDown: () => (/* binding */ volumeDown),
-/* harmony export */   volumeUp: () => (/* binding */ volumeUp)
-/* harmony export */ });
 /* unused harmony exports insertImage, pause, save, shareAlt1, shareAlt2, shareAlt3, videopackCaption, videopackCollection, videopackDuration, videopackGallery, videopackList, videopackLoop, videopackPagination, videopackPlayButton, videopackPlayer, videopackThumbnail, videopackTitle, videopackVideo, videopackViewCount, videopackWatermark, download, share, close, embed, copyLink, bluesky, threads, facebook, reddit, email */
 /* unused harmony import specifier */ var _jsxs;
 /* unused harmony import specifier */ var _jsx;
@@ -1620,6 +1615,16 @@ const facebook = createIcon('facebook');
 const reddit = createIcon('reddit');
 const email = createIcon('email');
 
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "Kx", 0, /* binding */ volumeUp,
+/* harmony export */   "L8", 0, /* binding */ sortDescending,
+/* harmony export */   "V0", 0, /* binding */ sortAscending,
+/* harmony export */   "ZH", 0, /* binding */ play,
+/* harmony export */   "pZ", 0, /* binding */ volumeDown,
+/* harmony export */   "zT", 0, /* binding */ videopack,
+/* harmony export */   "zs", 0, /* binding */ playOutline
+/* harmony export */ ]);
+
 
 /***/ },
 
@@ -1627,9 +1632,6 @@ const email = createIcon('email');
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   A: () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(808);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(87);
@@ -1666,6 +1668,10 @@ const TextControlOnBlur = ({
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (TextControlOnBlur);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "A", 0, /* export default binding */ __WEBPACK_DEFAULT_EXPORT__
+/* harmony export */ ]);
+
 
 /***/ },
 
@@ -1689,7 +1695,7 @@ var external_ReactJSXRuntime_ = __webpack_require__(790);
 // packages/icons/src/library/help.tsx
 
 
-var help_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 4a8 8 0 1 1 .001 16.001A8 8 0 0 1 12 4Zm0 1.5a6.5 6.5 0 1 0-.001 13.001A6.5 6.5 0 0 0 12 5.5Zm.75 11h-1.5V15h1.5v1.5Zm-.445-9.234a3 3 0 0 1 .445 5.89V14h-1.5v-1.25c0-.57.452-.958.917-1.01A1.5 1.5 0 0 0 12 8.75a1.5 1.5 0 0 0-1.5 1.5H9a3 3 0 0 1 3.305-2.984Z" }) });
+var help_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 4a8 8 0 1 1 .001 16.001A8 8 0 0 1 12 4Zm0 1.5a6.5 6.5 0 1 0-.001 13.001A6.5 6.5 0 0 0 12 5.5Zm.75 11h-1.5V15h1.5v1.5Zm-.445-9.234a3 3 0 0 1 .445 5.89V14h-1.5v-1.25c0-.57.452-.958.917-1.01A1.5 1.5 0 0 0 12 8.75a1.5 1.5 0 0 0-1.5 1.5H9a3 3 0 0 1 3.305-2.984Z" }) });
 
 //# sourceMappingURL=help.mjs.map
 
@@ -2586,7 +2592,7 @@ module.exports = window["wp"]["url"];
 // packages/icons/src/library/seen.tsx
 
 
-var seen_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.Path, { d: "M3.99961 13C4.67043 13.3354 4.6703 13.3357 4.67017 13.3359L4.67298 13.3305C4.67621 13.3242 4.68184 13.3135 4.68988 13.2985C4.70595 13.2686 4.7316 13.2218 4.76695 13.1608C4.8377 13.0385 4.94692 12.8592 5.09541 12.6419C5.39312 12.2062 5.84436 11.624 6.45435 11.0431C7.67308 9.88241 9.49719 8.75 11.9996 8.75C14.502 8.75 16.3261 9.88241 17.5449 11.0431C18.1549 11.624 18.6061 12.2062 18.9038 12.6419C19.0523 12.8592 19.1615 13.0385 19.2323 13.1608C19.2676 13.2218 19.2933 13.2686 19.3093 13.2985C19.3174 13.3135 19.323 13.3242 19.3262 13.3305L19.3291 13.3359C19.3289 13.3357 19.3288 13.3354 19.9996 13C20.6704 12.6646 20.6703 12.6643 20.6701 12.664L20.6697 12.6632L20.6688 12.6614L20.6662 12.6563L20.6583 12.6408C20.6517 12.6282 20.6427 12.6108 20.631 12.5892C20.6078 12.5459 20.5744 12.4852 20.5306 12.4096C20.4432 12.2584 20.3141 12.0471 20.1423 11.7956C19.7994 11.2938 19.2819 10.626 18.5794 9.9569C17.1731 8.61759 14.9972 7.25 11.9996 7.25C9.00203 7.25 6.82614 8.61759 5.41987 9.9569C4.71736 10.626 4.19984 11.2938 3.85694 11.7956C3.68511 12.0471 3.55605 12.2584 3.4686 12.4096C3.42484 12.4852 3.39142 12.5459 3.36818 12.5892C3.35656 12.6108 3.34748 12.6282 3.34092 12.6408L3.33297 12.6563L3.33041 12.6614L3.32948 12.6632L3.32911 12.664C3.32894 12.6643 3.32879 12.6646 3.99961 13ZM11.9996 16C13.9326 16 15.4996 14.433 15.4996 12.5C15.4996 10.567 13.9326 9 11.9996 9C10.0666 9 8.49961 10.567 8.49961 12.5C8.49961 14.433 10.0666 16 11.9996 16Z" }) });
+var seen_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.Path, { d: "M3.99961 13C4.67043 13.3354 4.6703 13.3357 4.67017 13.3359L4.67298 13.3305C4.67621 13.3242 4.68184 13.3135 4.68988 13.2985C4.70595 13.2686 4.7316 13.2218 4.76695 13.1608C4.8377 13.0385 4.94692 12.8592 5.09541 12.6419C5.39312 12.2062 5.84436 11.624 6.45435 11.0431C7.67308 9.88241 9.49719 8.75 11.9996 8.75C14.502 8.75 16.3261 9.88241 17.5449 11.0431C18.1549 11.624 18.6061 12.2062 18.9038 12.6419C19.0523 12.8592 19.1615 13.0385 19.2323 13.1608C19.2676 13.2218 19.2933 13.2686 19.3093 13.2985C19.3174 13.3135 19.323 13.3242 19.3262 13.3305L19.3291 13.3359C19.3289 13.3357 19.3288 13.3354 19.9996 13C20.6704 12.6646 20.6703 12.6643 20.6701 12.664L20.6697 12.6632L20.6688 12.6614L20.6662 12.6563L20.6583 12.6408C20.6517 12.6282 20.6427 12.6108 20.631 12.5892C20.6078 12.5459 20.5744 12.4852 20.5306 12.4096C20.4432 12.2584 20.3141 12.0471 20.1423 11.7956C19.7994 11.2938 19.2819 10.626 18.5794 9.9569C17.1731 8.61759 14.9972 7.25 11.9996 7.25C9.00203 7.25 6.82614 8.61759 5.41987 9.9569C4.71736 10.626 4.19984 11.2938 3.85694 11.7956C3.68511 12.0471 3.55605 12.2584 3.4686 12.4096C3.42484 12.4852 3.39142 12.5459 3.36818 12.5892C3.35656 12.6108 3.34748 12.6282 3.34092 12.6408L3.33297 12.6563L3.33041 12.6614L3.32948 12.6632L3.32911 12.664C3.32894 12.6643 3.32879 12.6646 3.99961 13ZM11.9996 16C13.9326 16 15.4996 14.433 15.4996 12.5C15.4996 10.567 13.9326 9 11.9996 9C10.0666 9 8.49961 10.567 8.49961 12.5C8.49961 14.433 10.0666 16 11.9996 16Z" }) });
 
 //# sourceMappingURL=seen.mjs.map
 
@@ -2604,17 +2610,17 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	});
 /************************************************************************/
 /******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
+/******/ 	const __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		const cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
 /******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 		const module = __webpack_module_cache__[moduleId] = {
 /******/ 			// no module.id needed
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
@@ -2632,7 +2638,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
 /******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
+/******/ 			const getter = module && module.__esModule ?
 /******/ 				() => (module['default']) :
 /******/ 				() => (module);
 /******/ 			__webpack_require__.d(getter, { a: getter });
@@ -2642,8 +2648,8 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	
 /******/ 	/* webpack/runtime/create fake namespace object */
 /******/ 	(() => {
-/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
-/******/ 		var leafPrototypes;
+/******/ 		const getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		let leafPrototypes;
 /******/ 		// create a fake namespace object
 /******/ 		// mode & 1: value is a module id, require it
 /******/ 		// mode & 2: merge all properties of value into the ns
@@ -2657,9 +2663,9 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 				if((mode & 4) && value.__esModule) return value;
 /******/ 				if((mode & 16) && typeof value.then === 'function') return value;
 /******/ 			}
-/******/ 			var ns = Object.create(null);
+/******/ 			const ns = Object.create(null);
 /******/ 			__webpack_require__.r(ns);
-/******/ 			var def = {};
+/******/ 			const def = {};
 /******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
 /******/ 			for(var current = mode & 2 && value; (typeof current == 'object' || typeof current == 'function') && !~leafPrototypes.indexOf(current); current = getProto(current)) {
 /******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
@@ -2672,11 +2678,26 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
+/******/ 		// define getter/value functions for harmony exports
 /******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			if(Array.isArray(definition)) {
+/******/ 				var i = 0;
+/******/ 				while(i < definition.length) {
+/******/ 					var key = definition[i++];
+/******/ 					var binding = definition[i++];
+/******/ 					if(!__webpack_require__.o(exports, key)) {
+/******/ 						if(binding === 0) {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
+/******/ 						} else {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
+/******/ 						}
+/******/ 					} else if(binding === 0) { i++; }
+/******/ 				}
+/******/ 			} else {
+/******/ 				for(var key in definition) {
+/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 					}
 /******/ 				}
 /******/ 			}
 /******/ 		};
@@ -2684,14 +2705,14 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.hasOwn(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
 /******/ 		__webpack_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			if(Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
@@ -2699,29 +2720,29 @@ module.exports = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","pa
 /******/ 	})();
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
+let __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
 (() => {
 "use strict";
 
 // EXTERNAL MODULE: external ["wp","i18n"]
-var external_wp_i18n_ = __webpack_require__(723);
+var settings_external_wp_i18n_ = __webpack_require__(723);
 // EXTERNAL MODULE: external ["wp","hooks"]
-var external_wp_hooks_ = __webpack_require__(619);
+var settings_external_wp_hooks_ = __webpack_require__(619);
 // EXTERNAL MODULE: ./src/api/settings.js
 var api_settings = __webpack_require__(602);
 // EXTERNAL MODULE: ./src/api/gallery.js
 var gallery = __webpack_require__(533);
 // EXTERNAL MODULE: external ["wp","components"]
-var external_wp_components_ = __webpack_require__(808);
+var settings_external_wp_components_ = __webpack_require__(808);
 // EXTERNAL MODULE: external ["wp","compose"]
-var external_wp_compose_ = __webpack_require__(491);
+var settings_external_wp_compose_ = __webpack_require__(491);
 // EXTERNAL MODULE: external ["wp","element"]
-var external_wp_element_ = __webpack_require__(87);
+var settings_external_wp_element_ = __webpack_require__(87);
 // EXTERNAL MODULE: ./src/assets/icon.js
-var icon = __webpack_require__(427);
+var settings_icon = __webpack_require__(427);
 // EXTERNAL MODULE: external ["wp","data"]
-var external_wp_data_ = __webpack_require__(143);
+var settings_external_wp_data_ = __webpack_require__(143);
 ;// ./src/hooks/useVideoQuery.js
 
 
@@ -2733,9 +2754,11 @@ var external_wp_data_ = __webpack_require__(143);
  *
  * @param {Object} inputAttributes Block attributes.
  * @param {number} previewPostId   The ID of the post being previewed.
+ * @param {number} refreshToken    Optional value to bump in order to force a refetch
+ *                                 (e.g. after uploading a new video attachment).
  * @return {Object} Query results including search results, categories, and tags.
  */
-function useVideoQuery(inputAttributes, previewPostId) {
+function useVideoQuery(inputAttributes, previewPostId, refreshToken) {
   const attributes = inputAttributes || {};
   const {
     gallery_id,
@@ -2752,9 +2775,9 @@ function useVideoQuery(inputAttributes, previewPostId) {
     enable_collection_video_limit = false,
     collection_video_limit = 6
   } = attributes;
-  const [searchString, setSearchString] = (0,external_wp_element_.useState)('');
-  const debouncedSetSearchString = (0,external_wp_compose_.useDebounce)(setSearchString, 500);
-  const postTypes = (0,external_wp_data_.useSelect)(select => {
+  const [searchString, setSearchString] = (0,settings_external_wp_element_.useState)('');
+  const debouncedSetSearchString = (0,settings_external_wp_compose_.useDebounce)(setSearchString, 500);
+  const postTypes = (0,settings_external_wp_data_.useSelect)(select => {
     const core = select('core');
     return core ? core.getPostTypes({
       per_page: -1
@@ -2763,7 +2786,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
   const {
     isSaving,
     isAutosaving
-  } = (0,external_wp_data_.useSelect)(select => {
+  } = (0,settings_external_wp_data_.useSelect)(select => {
     const editorStore = select('core/editor');
     if (!editorStore) {
       return {
@@ -2780,16 +2803,16 @@ function useVideoQuery(inputAttributes, previewPostId) {
       isAutosaving: isAutosavingPost ? isAutosavingPost() : false
     };
   }, []);
-  const [videoResults, setVideoResults] = (0,external_wp_element_.useState)([]);
-  const [totalResults, setTotalResults] = (0,external_wp_element_.useState)(0);
-  const [maxNumPages, setMaxNumPages] = (0,external_wp_element_.useState)(1);
-  const [isResolvingVideos, setIsResolvingVideos] = (0,external_wp_element_.useState)(false);
-  const [searchResults, setSearchResults] = (0,external_wp_element_.useState)([]);
-  const [isResolvingSearch, setIsResolvingSearch] = (0,external_wp_element_.useState)(false);
-  const viewablePostTypes = (0,external_wp_element_.useMemo)(() => {
+  const [videoResults, setVideoResults] = (0,settings_external_wp_element_.useState)([]);
+  const [totalResults, setTotalResults] = (0,settings_external_wp_element_.useState)(0);
+  const [maxNumPages, setMaxNumPages] = (0,settings_external_wp_element_.useState)(1);
+  const [isResolvingVideos, setIsResolvingVideos] = (0,settings_external_wp_element_.useState)(false);
+  const [searchResults, setSearchResults] = (0,settings_external_wp_element_.useState)([]);
+  const [isResolvingSearch, setIsResolvingSearch] = (0,settings_external_wp_element_.useState)(false);
+  const viewablePostTypes = (0,settings_external_wp_element_.useMemo)(() => {
     return (postTypes || []).filter(type => type.viewable && type.slug !== 'attachment').map(type => type.slug);
   }, [postTypes]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (!searchString) {
       setSearchResults([]);
       setIsResolvingSearch(false);
@@ -2821,7 +2844,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
     });
     return () => abortController.abort();
   }, [searchString, viewablePostTypes]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (isSaving || isAutosaving) {
       return;
     }
@@ -2878,8 +2901,8 @@ function useVideoQuery(inputAttributes, previewPostId) {
     }).finally(() => {
       setIsResolvingVideos(false);
     });
-  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving, !!inputAttributes]);
-  const categories = (0,external_wp_data_.useSelect)(select => {
+  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving, !!inputAttributes, refreshToken]);
+  const categories = (0,settings_external_wp_data_.useSelect)(select => {
     const {
       getEntityRecords
     } = select('core');
@@ -2887,7 +2910,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
       per_page: -1
     });
   }, []);
-  const tags = (0,external_wp_data_.useSelect)(select => {
+  const tags = (0,settings_external_wp_data_.useSelect)(select => {
     const {
       getEntityRecords
     } = select('core');
@@ -2895,7 +2918,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
       per_page: -1
     });
   }, []);
-  const manualVideos = (0,external_wp_data_.useSelect)(select => {
+  const manualVideos = (0,settings_external_wp_data_.useSelect)(select => {
     if (gallery_source !== 'manual' || !gallery_include) {
       return [];
     }
@@ -2909,7 +2932,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
   }, [gallery_source, gallery_include]);
   const {
     customGalleries
-  } = (0,external_wp_data_.useSelect)(select => {
+  } = (0,settings_external_wp_data_.useSelect)(select => {
     const {
       getEntityRecords
     } = select('core');
@@ -2936,7 +2959,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
 ;// external ["wp","blockEditor"]
 const external_wp_blockEditor_namespaceObject = window["wp"]["blockEditor"];
 // EXTERNAL MODULE: external ["wp","htmlEntities"]
-var external_wp_htmlEntities_ = __webpack_require__(537);
+var settings_external_wp_htmlEntities_ = __webpack_require__(537);
 ;// ./src/utils/context.js
 /* global videopack_config */
 
@@ -3104,7 +3127,7 @@ const VIDEOPACK_CONTEXT_KEYS =
  *
  * @param {Array} contextKeys List of context key strings.
  */
-(0,external_wp_hooks_.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
+(0,settings_external_wp_hooks_.applyFilters)('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -3117,14 +3140,19 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = []
+    excludeKeys = [],
+    // Restricts which resolved values become videopack-has-{key} classes /
+    // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+    // always computed — only the stamping is scoped). null means "stamp
+    // everything", matching prior behavior for any caller that doesn't pass it.
+    classKeys = null
   } = options;
   // The hover trigger exclusion should NOT be inherited from parents by default,
   // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
   const excludeHoverTrigger = optionsExclude || attributes.exclude_hover_trigger || false;
 
   // 1. Initial Synchronous Resolution
-  const initial = (0,external_wp_element_.useMemo)(() => {
+  const initial = (0,settings_external_wp_element_.useMemo)(() => {
     const resolved = {};
     const style = {};
     const classes = [];
@@ -3134,7 +3162,7 @@ function useVideopackContext(attributes, context, options = {}) {
       }
       const value = getEffectiveValue(key, attributes, context);
       resolved[key] = value;
-      if (value) {
+      if (value && (classKeys === null || classKeys.includes(key))) {
         const cssKey = key.replace(/_/g, '-');
         if (typeof value === 'string' || typeof value === 'number') {
           const cssVar = `--videopack-${cssKey}`;
@@ -3223,14 +3251,14 @@ function useVideopackContext(attributes, context, options = {}) {
       style,
       classes
     };
-  }, [attributes, context, excludeHoverTrigger, excludeKeys]);
+  }, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
   const {
     discoveredAttachmentId,
     isDiscovering
-  } = (0,external_wp_data_.useSelect)(select => {
+  } = (0,settings_external_wp_data_.useSelect)(select => {
     const {
       resolved
     } = initial;
@@ -3302,7 +3330,7 @@ function useVideopackContext(attributes, context, options = {}) {
       isDiscovering: isResolving || !foundId && attachments === undefined
     };
   }, [attributes.src, attributes.id, initial]);
-  return (0,external_wp_element_.useMemo)(() => {
+  return (0,settings_external_wp_element_.useMemo)(() => {
     const rawAttachmentId = initial.resolved.attachmentId || discoveredAttachmentId || attributes.id;
 
     // Safety: If the resolved attachment ID is the same as the post ID,
@@ -3357,7 +3385,7 @@ function useVideopackData(key, context = {}) {
   const propPostId = context.postId;
   const propPostType = context.postType;
   const isStandalone = isTrue(context['videopack/isStandalone']);
-  const resolvedData = (0,external_wp_data_.useSelect)(select => {
+  const resolvedData = (0,settings_external_wp_data_.useSelect)(select => {
     // 1. If context already has the value, we're done.
     if (contextValue !== undefined && contextValue !== null) {
       return {
@@ -3430,7 +3458,7 @@ function useVideopackData(key, context = {}) {
   };
 }
 // EXTERNAL MODULE: external "ReactJSXRuntime"
-var external_ReactJSXRuntime_ = __webpack_require__(790);
+var settings_external_ReactJSXRuntime_ = __webpack_require__(790);
 ;// ./src/components/VideopackContextBridge.js
 
 
@@ -3456,14 +3484,14 @@ function VideopackContextBridge({
   const {
     sharedContext
   } = useVideopackContext(attributes, context);
-  const finalContext = (0,external_wp_element_.useMemo)(() => {
+  const finalContext = (0,settings_external_wp_element_.useMemo)(() => {
     const ctx = {
       ...sharedContext,
       ...overrides
     };
     return ctx;
   }, [sharedContext, overrides]);
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.BlockContextProvider, {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.BlockContextProvider, {
     value: finalContext,
     children: children
   });
@@ -3478,6 +3506,11 @@ function VideopackContextBridge({
 
 
 
+
+const TITLE_CONTEXT_OPTS = {
+  excludeKeys: ['downloadlink'],
+  classKeys: ['skin', 'title_color', 'title_background_color']
+};
 
 /**
  * An internal component to display the video title with correct styling and data.
@@ -3502,7 +3535,6 @@ function VideopackContextBridge({
  * @param {boolean}  root0.linkToPost            Whether to link to parent post.
  * @return {Element}                             The rendered component.
  */
-
 function VideoTitle({
   blockProps,
   postId: propPostId,
@@ -3522,9 +3554,7 @@ function VideoTitle({
   linkToPost = false,
   children
 }) {
-  const vpContext = useVideopackContext(attributes, context, {
-    excludeKeys: ['downloadlink']
-  });
+  const vpContext = useVideopackContext(attributes, context, TITLE_CONTEXT_OPTS);
   const {
     postId: resolvedPostId,
     attachmentId: resolvedAttachmentId,
@@ -3536,9 +3566,9 @@ function VideoTitle({
     data: resolvedTitle,
     isResolving
   } = useVideopackData(titleKey, context);
-  const displayTitle = (0,external_wp_htmlEntities_.decodeEntities)(manualTitle || resolvedTitle || '');
+  const displayTitle = (0,settings_external_wp_htmlEntities_.decodeEntities)(manualTitle || resolvedTitle || '');
   if (isResolving && !displayTitle && !vpContext.resolved.isPreview) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {});
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {});
   }
   const position = attrPosition || (isInsideThumbnail ? 'bottom' : vpContext.resolved.title_position) || 'top';
   let defaultAlign = 'left';
@@ -3553,9 +3583,9 @@ function VideoTitle({
   } else if (globalOptions.overlay_title !== undefined) {
     finalOverlayTitle = !!globalOptions.overlay_title;
   }
-  let placeholder = (0,external_wp_i18n_.__)('Video Title', 'video-embed-thumbnail-generator');
+  let placeholder = (0,settings_external_wp_i18n_.__)('Video Title', 'video-embed-thumbnail-generator');
   if (postId) {
-    placeholder = resolvedTitle ? (0,external_wp_i18n_.__)('(Untitled Video)', 'video-embed-thumbnail-generator') : '';
+    placeholder = resolvedTitle ? (0,settings_external_wp_i18n_.__)('(Untitled Video)', 'video-embed-thumbnail-generator') : '';
   }
   let titleClass = 'videopack-video-title';
   if (isInsideThumbnail) {
@@ -3569,11 +3599,11 @@ function VideoTitle({
     style: vpContext.style
   };
   const barClass = `videopack-video-title videopack-video-title-visible ${isOverlay ? 'is-overlay' : ''} ${!showBackground && isOverlay ? 'has-no-background' : ''} ${isInsideThumbnail ? 'videopack-thumbnail-title' : ''} ${isInsidePlayerOverlay || isOverlay ? `position-${position}` : ''}`.trim();
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     ...finalBlockProps,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
       className: `${barClass} has-text-align-${finalTextAlign}`,
-      children: [finalOverlayTitle && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.RichText, {
+      children: [finalOverlayTitle && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.RichText, {
         tagName: Tag,
         className: `${titleClass} ${vpContext.classes} ${linkToPost ? 'is-link' : ''}`,
         style: vpContext.style,
@@ -3581,9 +3611,17 @@ function VideoTitle({
         onChange: onTitleChange,
         placeholder: placeholder,
         allowedFormats: ['core/bold', 'core/italic', 'core/strikethrough']
-      }), isOverlay && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        // Only the real Edit component passes onTitleChange (it wires up
+        // setAttributes). Everywhere else this renders — Loop's templated
+        // preview items, the settings-page preview, the classic-editor
+        // preview — has nowhere to persist an edit, so RichText must not
+        // accept one; an editable field that silently discards changes
+        // just looks broken to a user.
+        ,
+        readOnly: !onTitleChange
+      }), isOverlay && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: iconsClass,
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackContextBridge, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackContextBridge, {
           attributes: attributes,
           context: context,
           overrides: {
@@ -3595,7 +3633,7 @@ function VideoTitle({
               'videopack/sources': context['videopack/sources']
             } : {})
           },
-          children: children || (vpContext.resolved.isPreview ? null : /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.InnerBlocks, {
+          children: children || (vpContext.resolved.isPreview ? null : /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(external_wp_blockEditor_namespaceObject.InnerBlocks, {
             allowedBlocks: ['videopack/download', 'videopack/share'],
             template: [],
             templateLock: false
@@ -3606,7 +3644,7 @@ function VideoTitle({
   });
 }
 // EXTERNAL MODULE: ./node_modules/@wordpress/icons/build-module/library/seen.mjs
-var seen = __webpack_require__(824);
+var settings_seen = __webpack_require__(824);
 ;// ./src/components/ViewCount/ViewCount.js
 
 
@@ -3614,6 +3652,8 @@ var seen = __webpack_require__(824);
 
 
 
+
+const CLASS_KEYS = ['title_color', 'title_background_color'];
 
 /**
  * A internal component to display the view count with correct styling and data.
@@ -3631,7 +3671,6 @@ var seen = __webpack_require__(824);
  * @param {Object}  root0.context           Block context.
  * @return {Element}                        The rendered component.
  */
-
 function ViewCount({
   blockProps,
   iconType = 'none',
@@ -3644,7 +3683,9 @@ function ViewCount({
   attributes = {},
   context = {}
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: CLASS_KEYS
+  });
   const {
     data: views,
     isResolving
@@ -3653,24 +3694,24 @@ function ViewCount({
   const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'];
   const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
   const defaultAlign = isInsideThumbnail || actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
-  const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${actualIsOverlay ? `position-${position || 'top'}` : ''} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`;
+  const wrapperClass = `videopack-view-count videopack-view-count-block ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} position-${position || 'top'} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`;
   const finalBlockProps = blockProps || {
     className: wrapperClass,
     style: vpContext.style
   };
   if (vpContext.resolved.isDiscovering && !attachmentId) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       ...finalBlockProps,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {})
     });
   }
   if (!attachmentId && count === undefined && !vpContext.resolved.isPreview) {
     return null;
   }
   if (isResolving) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       ...finalBlockProps,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {})
     });
   }
   let safeViews = 0;
@@ -3679,24 +3720,24 @@ function ViewCount({
   } else if (views !== undefined && views !== null) {
     safeViews = Number(views);
   }
-  const displayValue = showText ? (0,external_wp_i18n_.sprintf)(/* translators: %s is the formatted number of views */
-  (0,external_wp_i18n_._n)('%s view', '%s views', safeViews, 'video-embed-thumbnail-generator'), safeViews.toLocaleString()) : safeViews.toLocaleString();
+  const displayValue = showText ? (0,settings_external_wp_i18n_.sprintf)(/* translators: %s is the formatted number of views */
+  (0,settings_external_wp_i18n_._n)('%s view', '%s views', safeViews, 'video-embed-thumbnail-generator'), safeViews.toLocaleString()) : safeViews.toLocaleString();
   const renderIcon = () => {
     switch (iconType) {
       case 'eye':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
-          icon: seen/* default */.A,
+        return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Icon, {
+          icon: settings_seen/* default */.A,
           className: "videopack-icon-left-margin"
         });
       case 'play':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
-          icon: icon.play,
+        return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Icon, {
+          icon: settings_icon/* play */.ZH,
           size: 16,
           className: "videopack-icon-left-margin"
         });
       case 'playOutline':
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
-          icon: icon.playOutline,
+        return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Icon, {
+          icon: settings_icon/* playOutline */.zs,
           size: 16,
           className: "videopack-icon-left-margin"
         });
@@ -3704,12 +3745,9 @@ function ViewCount({
         return null;
     }
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
     ...finalBlockProps,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
-      className: "videopack-view-count",
-      children: [renderIcon(), displayValue]
-    })
+    children: [renderIcon(), displayValue]
   });
 }
 ;// ./src/components/VideoWatermark/VideoWatermark.js
@@ -3791,12 +3829,12 @@ function VideoWatermark({
   if (!effectiveUrl) {
     return null;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     className: `videopack-video-watermark ${skin}`,
     style: style,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("img", {
+    children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("img", {
       src: effectiveUrl,
-      alt: (0,external_wp_i18n_.__)('Watermark', 'video-embed-thumbnail-generator'),
+      alt: (0,settings_external_wp_i18n_.__)('Watermark', 'video-embed-thumbnail-generator'),
       style: {
         display: 'block',
         width: '100%',
@@ -3816,10 +3854,19 @@ function VideoWatermark({
 
 
 
+// Duration shares "badge" title/background colors with Title/View-count —
+// see Overlays.scss's $badge-selectors. Module-level so the reference stays
+// stable across renders (useVideopackContext depends on it for memoization).
+
+const VideoDuration_CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * A internal component to display the video duration with correct formatting and data.
  *
  * @param {Object}  root0                   Component props.
+ * @param {Object}  [root0.blockProps]      Block props from the parent Edit component,
+ *                                          reused as-is when present so this component
+ *                                          doesn't stamp a second, redundant wrapper.
  * @param {boolean} root0.isOverlay         Whether it's an overlay.
  * @param {boolean} root0.isInsideThumbnail Whether it's inside a thumbnail.
  * @param {string}  root0.textAlign         Text alignment.
@@ -3828,8 +3875,8 @@ function VideoWatermark({
  * @param {Object}  root0.context           Block context.
  * @return {Element}                        The rendered component.
  */
-
 function VideoDuration({
+  blockProps,
   isOverlay,
   isInsideThumbnail,
   textAlign,
@@ -3837,16 +3884,18 @@ function VideoDuration({
   attributes,
   context = {}
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: VideoDuration_CLASS_KEYS
+  });
   const {
     data: duration,
     isResolving
   } = useVideopackData('duration', context);
   const attachmentId = vpContext.resolved.attachmentId;
   if (vpContext.resolved.isDiscovering && !attachmentId) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       className: `videopack-video-duration ${isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'] ? 'is-overlay' : ''}`,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {})
     });
   }
   if (!attachmentId && !vpContext.resolved.isPreview) {
@@ -3856,9 +3905,9 @@ function VideoDuration({
   const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
   const defaultAlign = actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
   if (isResolving) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       className: `videopack-video-duration ${actualIsOverlay ? 'is-overlay' : ''}`,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {})
     });
   }
   const formatDuration = seconds => {
@@ -3874,9 +3923,12 @@ function VideoDuration({
     }
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  const finalBlockProps = blockProps || {
     className: `videopack-video-duration-block videopack-video-duration ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${position || 'top'} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`,
-    style: vpContext.style,
+    style: vpContext.style
+  };
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
+    ...finalBlockProps,
     children: duration ? formatDuration(duration) : '0:00'
   });
 }
@@ -3884,6 +3936,8 @@ function VideoDuration({
 
 
 
+
+const PlayButton_CLASS_KEYS = ['play_button_color', 'play_button_secondary_color'];
 
 /**
  * An internal component to display the play button with correct styling.
@@ -3893,14 +3947,15 @@ function VideoDuration({
  * @param {Object} root0.context    Block context.
  * @return {Element}                Rendered play button.
  */
-
 function PlayButton({
   attributes = {},
   context = {}
 }) {
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
   const embed_method = typeof config !== 'undefined' ? config.embed_method : 'Video.js';
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: PlayButton_CLASS_KEYS
+  });
 
   /**
    * Filters the React element used to render the player play button.
@@ -3912,7 +3967,7 @@ function PlayButton({
    * @param {Element|null} customButton Custom play button element, defaults to null.
    * @param {Object}       context      Context data including attributes, context, vpContext, and embed_method.
    */
-  const customButton = (0,external_wp_hooks_.applyFilters)('videopack.playButtonElement', null, {
+  const customButton = (0,settings_external_wp_hooks_.applyFilters)('videopack.playButtonElement', null, {
     attributes,
     context,
     vpContext,
@@ -3931,51 +3986,51 @@ function PlayButton({
     if (mejsSvgPath) {
       styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
     }
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       className: `videopack-play-button mejs-overlay mejs-layer mejs-overlay-play play-button-container ${vpContext.classes}`,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "mejs-overlay-button",
         role: "button",
         tabIndex: "0",
-        "aria-label": (0,external_wp_i18n_.__)('Play', 'video-embed-thumbnail-generator'),
+        "aria-label": (0,settings_external_wp_i18n_.__)('Play', 'video-embed-thumbnail-generator'),
         "aria-pressed": "false",
         style: styles
       })
     });
   }
   if ('None' === embed_method) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       className: "play-button-container videopack-none",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("svg", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("svg", {
         className: "videopack-none-play-button",
         viewBox: "0 0 100 100",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("circle", {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("circle", {
           className: "play-button-circle",
           cx: "50",
           cy: "50",
           r: "45"
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("polygon", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("polygon", {
           className: "play-button-triangle",
           points: "40,30 70,50 40,70"
         })]
       })
     });
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     className: `play-button-container video-js ${vpContext.classes} vjs-big-play-centered vjs-paused vjs-controls-enabled`,
     style: vpContext.style,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("button", {
+    children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("button", {
       className: "vjs-big-play-button",
       type: "button",
-      title: (0,external_wp_i18n_.__)('Play Video', 'video-embed-thumbnail-generator'),
+      title: (0,settings_external_wp_i18n_.__)('Play Video', 'video-embed-thumbnail-generator'),
       "aria-disabled": "false",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
         className: "vjs-icon-placeholder",
         "aria-hidden": "true"
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
         className: "vjs-control-text",
         "aria-live": "polite",
-        children: (0,external_wp_i18n_.__)('Play Video', 'video-embed-thumbnail-generator')
+        children: (0,settings_external_wp_i18n_.__)('Play Video', 'video-embed-thumbnail-generator')
       })]
     })
   });
@@ -4048,7 +4103,7 @@ const CustomDuotoneFilter = ({
   colors,
   id
 }) => {
-  const filterData = (0,external_wp_element_.useMemo)(() => {
+  const filterData = (0,settings_external_wp_element_.useMemo)(() => {
     if (!colors || colors.length < 2) {
       return null;
     }
@@ -4064,7 +4119,7 @@ const CustomDuotoneFilter = ({
   if (!filterData) {
     return null;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("svg", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("svg", {
     style: {
       position: 'absolute',
       width: 0,
@@ -4072,23 +4127,23 @@ const CustomDuotoneFilter = ({
       visibility: 'hidden'
     },
     "aria-hidden": "true",
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("filter", {
+    children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("filter", {
       id: id,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feColorMatrix", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("feColorMatrix", {
         type: "matrix",
         values: ".299 .587 .114 0 0 .299 .587 .114 0 0 .299 .587 .114 0 0 .299 .587 .114 0 0"
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("feComponentTransfer", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("feComponentTransfer", {
         colorInterpolationFilters: "sRGB",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feFuncR", {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("feFuncR", {
           type: "table",
           tableValues: filterData.rValues
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feFuncG", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("feFuncG", {
           type: "table",
           tableValues: filterData.gValues
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feFuncB", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("feFuncB", {
           type: "table",
           tableValues: filterData.bValues
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("feFuncA", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("feFuncA", {
           type: "table",
           tableValues: filterData.aValues
         })]
@@ -4161,7 +4216,7 @@ function VideoThumbnailPreview({
     thumbnailMedia,
     posterUrl,
     isResolving
-  } = (0,external_wp_data_.useSelect)(select => {
+  } = (0,settings_external_wp_data_.useSelect)(select => {
     if (!postId || postId < 1 || video.poster_url) {
       return {
         thumbnailMedia: null,
@@ -4189,10 +4244,10 @@ function VideoThumbnailPreview({
     };
   }, [postId, video.poster_url]);
   if (isResolving && !video.poster_url) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {});
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {});
   }
   const config = typeof window !== 'undefined' ? window.videopack_config : undefined;
-  const defaultNoThumb = config ? `${config.url}/src/images/Adobestock_469037984_thumb1.jpg` : '';
+  const defaultNoThumb = config ? `${config.url}/src/images/nothumbnail.jpg` : '';
 
   // Priority: 1. Manual video data (previews), 2. Direct poster URL from meta, 3. WordPress media object, 4. Default "no thumbnail"
   const thumbnailUrl = video.poster_url || posterUrl || thumbnailMedia?.source_url || defaultNoThumb;
@@ -4209,18 +4264,18 @@ function VideoThumbnailPreview({
     '--videopack-play-button-color': play_button_color,
     '--videopack-play-button-secondary-color': play_button_secondary_color
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
     className: containerClass,
     style: containerStyle,
-    children: [thumbnailUrl && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("img", {
+    children: [thumbnailUrl && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("img", {
       src: thumbnailUrl,
       alt: thumbnailMedia?.alt_text || '',
       className: "videopack-thumbnail",
       style: imgStyle
-    }), Array.isArray(duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
+    }), Array.isArray(duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
       colors: duotone,
       id: resolvedDuotoneClass
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       className: "videopack-inner-blocks-container",
       children: children
     })]
@@ -4228,6 +4283,8 @@ function VideoThumbnailPreview({
 }
 ;// ./src/components/PlayerContainer/PlayerContainer.js
 
+
+const PLAYER_CONTEXT_CLASS_KEYS = ['skin', 'control_bar_bg_color', 'control_bar_color', 'play_button_color', 'play_button_secondary_color'];
 
 /**
  * Shared Player Container Component for Edit/Preview.
@@ -4243,7 +4300,6 @@ function VideoThumbnailPreview({
  * @param {boolean} root0.isPreview            Whether it's a preview.
  * @return {Element}                           The rendered container.
  */
-
 function PlayerContainer({
   children,
   className,
@@ -4254,7 +4310,9 @@ function PlayerContainer({
   style,
   isPreview
 }) {
-  const vpContext = useVideopackContext(attributes, context);
+  const vpContext = useVideopackContext(attributes, context, {
+    classKeys: PLAYER_CONTEXT_CLASS_KEYS
+  });
   const {
     resolved: {
       duotone: contextDuotone
@@ -4280,7 +4338,7 @@ function PlayerContainer({
     ...contextStyle,
     ...style
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Tag, {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(Tag, {
     className: finalClasses,
     style: finalStyle,
     children: children
@@ -4312,7 +4370,7 @@ function PlayerContainer({
  * @return {Element} The rendered component.
  */
 
-const GenericPlayer = (0,external_wp_element_.forwardRef)(({
+const GenericPlayer = (0,settings_external_wp_element_.forwardRef)(({
   poster,
   loop,
   autoPlay,
@@ -4327,7 +4385,7 @@ const GenericPlayer = (0,external_wp_element_.forwardRef)(({
   onPlay,
   onPause,
   onEnded
-}, ref) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("video", {
+}, ref) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("video", {
   onPlay: onPlay,
   onPause: onPause,
   onEnded: onEnded,
@@ -4342,16 +4400,16 @@ const GenericPlayer = (0,external_wp_element_.forwardRef)(({
   height: "100%",
   className: className,
   ref: ref,
-  children: [sources.map((source, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("source", {
+  children: [sources.map((source, index) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("source", {
     src: source.src,
     type: source.type
-  }, index)), tracks.map((track, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("track", {
+  }, index)), tracks.map((track, index) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("track", {
     src: track.src,
     kind: track.kind,
     srcLang: track.srclang,
     label: track.label,
     default: track.default
-  }, index)), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("a", {
+  }, index)), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("a", {
     href: src,
     children: src
   })]
@@ -4379,8 +4437,8 @@ const GenericPlayer = (0,external_wp_element_.forwardRef)(({
  */
 
 const VideoJS = props => {
-  const videoRef = (0,external_wp_element_.useRef)(null);
-  const playerRef = (0,external_wp_element_.useRef)(null);
+  const videoRef = (0,settings_external_wp_element_.useRef)(null);
+  const playerRef = (0,settings_external_wp_element_.useRef)(null);
   const {
     options,
     skin,
@@ -4390,9 +4448,9 @@ const VideoJS = props => {
     onMetadataLoaded,
     onEnded
   } = props;
-  const previousSkinRef = (0,external_wp_element_.useRef)(skin);
-  const previousPluginsRef = (0,external_wp_element_.useRef)(options?.plugins);
-  (0,external_wp_element_.useEffect)(() => {
+  const previousSkinRef = (0,settings_external_wp_element_.useRef)(skin);
+  const previousPluginsRef = (0,settings_external_wp_element_.useRef)(options?.plugins);
+  (0,settings_external_wp_element_.useEffect)(() => {
     let initTimer;
     const player = playerRef.current;
     // When plugins change (e.g. resolution selector added after entity
@@ -4543,7 +4601,7 @@ const VideoJS = props => {
   }, [options, skin, onPlay, onPause, onReady, onMetadataLoaded, onEnded]);
 
   // Dispose the player when the component unmounts
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     return () => {
       if (playerRef.current && !playerRef.current.isDisposed()) {
         playerRef.current.off('play', onPlay);
@@ -4555,7 +4613,7 @@ const VideoJS = props => {
   }, [onPause, onPlay]);
 
   // Trigger a resize event on the player when the container's dimensions change.
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     const container = videoRef.current;
     if (!container || typeof ResizeObserver === 'undefined') {
       return;
@@ -4578,7 +4636,7 @@ const VideoJS = props => {
   } else if (options.width && options.height) {
     ratio = `${options.width} / ${options.height}`;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     "data-vjs-player": true,
     ref: videoRef,
     style: {
@@ -4618,10 +4676,10 @@ const WpMejsPlayer = props => {
     aspectRatio,
     source_groups
   } = props;
-  const playerRef = (0,external_wp_element_.useRef)(null);
-  const containerRef = (0,external_wp_element_.useRef)(null);
-  const propsRef = (0,external_wp_element_.useRef)(props);
-  const reportedSrcRef = (0,external_wp_element_.useRef)(null);
+  const playerRef = (0,settings_external_wp_element_.useRef)(null);
+  const containerRef = (0,settings_external_wp_element_.useRef)(null);
+  const propsRef = (0,settings_external_wp_element_.useRef)(props);
+  const reportedSrcRef = (0,settings_external_wp_element_.useRef)(null);
   const uniqueKey = JSON.stringify({
     src: options.src,
     poster: options.poster,
@@ -4632,7 +4690,7 @@ const WpMejsPlayer = props => {
     source_groups,
     option_source_groups: options.source_groups
   });
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     let isMounted = true;
     let timeoutId = null;
     const cleanupPlayer = () => {
@@ -4893,20 +4951,20 @@ const WpMejsPlayer = props => {
   }, [uniqueKey, options.src, options.source_groups, source_groups]);
 
   // Reactive updates for volume and muted without recreating the player.
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     const media = playerRef.current;
     const shouldBeMuted = !!options.muted || !!actualAutoplay;
     if (media && typeof media.setMuted === 'function') {
       media.setMuted(shouldBeMuted);
     }
   }, [options.muted, actualAutoplay]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     const media = playerRef.current;
     if (media && typeof media.setVolume === 'function' && options.volume !== undefined && options.volume !== null) {
       media.setVolume(options.volume);
     }
   }, [options.volume]);
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     className: `wp-video-container${!controls ? ' videopack-no-controls' : ''}`,
     ref: containerRef,
     style: {
@@ -4929,6 +4987,7 @@ const WpMejsPlayer = props => {
 
 
 
+const VideoPlayer_PLAYER_CONTEXT_CLASS_KEYS = ['skin', 'control_bar_bg_color', 'control_bar_color', 'play_button_color', 'play_button_secondary_color'];
 const DEFAULT_PLAYERS = {
   'Video.js': VideoJs,
   'WordPress Default': VideoPlayer_WpMejsPlayer,
@@ -4936,7 +4995,7 @@ const DEFAULT_PLAYERS = {
 };
 
 // Make sure to pass isSelected from the block's edit component.
-const noop = () => {};
+const settings_noop = () => {};
 
 /**
  * VideoPlayer component.
@@ -4954,13 +5013,13 @@ const noop = () => {};
 const VideoPlayer = ({
   attributes = {},
   context = {},
-  onReady = noop,
+  onReady = settings_noop,
   children,
   // Catch-all for non-DOM attributes that might leak from settings/block spreading
   ...otherProps
 }) => {
   // Standardize attributes to ensure all block-level settings are here
-  const blockAttributes = (0,external_wp_element_.useMemo)(() => ({
+  const blockAttributes = (0,settings_external_wp_element_.useMemo)(() => ({
     ...attributes,
     // If props are passed directly (e.g. from BlockPreview spreading), prioritize them
     ...otherProps
@@ -4971,20 +5030,22 @@ const VideoPlayer = ({
     resolved,
     style: contextStyles,
     classes: contextClasses
-  } = useVideopackContext(blockAttributes, context);
-  const wrapperRef = (0,external_wp_element_.useRef)(null);
-  const [detectedDimensions, setDetectedDimensions] = (0,external_wp_element_.useState)({
+  } = useVideopackContext(blockAttributes, context, {
+    classKeys: VideoPlayer_PLAYER_CONTEXT_CLASS_KEYS
+  });
+  const wrapperRef = (0,settings_external_wp_element_.useRef)(null);
+  const [detectedDimensions, setDetectedDimensions] = (0,settings_external_wp_element_.useState)({
     width: null,
     height: null,
     src: null // Track which src these dimensions are for
   });
-  const [resetKey, setResetKey] = (0,external_wp_element_.useState)(0);
-  const resetPlayer = (0,external_wp_element_.useCallback)(() => {
+  const [resetKey, setResetKey] = (0,settings_external_wp_element_.useState)(0);
+  const resetPlayer = (0,settings_external_wp_element_.useCallback)(() => {
     setResetKey(prev => prev + 1);
   }, []);
 
   // Reset dimensions when src changes
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     const {
       src
     } = blockAttributes || {};
@@ -4998,12 +5059,12 @@ const VideoPlayer = ({
   }, [blockAttributes, detectedDimensions.src]);
 
   // Handle external restart requests
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (blockAttributes?.restartCount > 0) {
       resetPlayer();
     }
   }, [blockAttributes?.restartCount, resetPlayer]);
-  const onMetadataLoaded = (0,external_wp_element_.useCallback)(dimensions => {
+  const onMetadataLoaded = (0,settings_external_wp_element_.useCallback)(dimensions => {
     if (dimensions.width === detectedDimensions.width && dimensions.height === detectedDimensions.height && blockAttributes.src === detectedDimensions.src) {
       return;
     }
@@ -5037,7 +5098,7 @@ const VideoPlayer = ({
     loopDuotoneId,
     crossorigin
   } = resolved;
-  const source_groups = (0,external_wp_element_.useMemo)(() => {
+  const source_groups = (0,settings_external_wp_element_.useMemo)(() => {
     // If we have valid groups, use them (handle empty array vs object)
     if (incomingSourceGroups && !Array.isArray(incomingSourceGroups) && Object.keys(incomingSourceGroups).length > 0) {
       return incomingSourceGroups;
@@ -5065,7 +5126,7 @@ const VideoPlayer = ({
 
   // Duotone resolution
   const final_duotone = blockAttributes?.style?.color?.duotone || duotone;
-  const instanceId = (0,external_wp_element_.useMemo)(() => {
+  const instanceId = (0,settings_external_wp_element_.useMemo)(() => {
     return `vp-player-${Math.random().toString(36).substr(2, 9)}`;
   }, []);
   let resolvedDuotoneClass = '';
@@ -5076,7 +5137,7 @@ const VideoPlayer = ({
   } else if (Array.isArray(final_duotone)) {
     resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
   }
-  const players = (0,external_wp_element_.useMemo)(() => (0,external_wp_hooks_.applyFilters)(
+  const players = (0,settings_external_wp_element_.useMemo)(() => (0,settings_external_wp_hooks_.applyFilters)(
   /**
    * Filters the registered admin preview player engines.
    *
@@ -5085,7 +5146,7 @@ const VideoPlayer = ({
    * @param {Object} players Object mapping player type names to React components.
    */
   'videopack_admin_players', DEFAULT_PLAYERS), []);
-  const isVertical = (0,external_wp_element_.useMemo)(() => {
+  const isVertical = (0,settings_external_wp_element_.useMemo)(() => {
     let vertical = false;
     // Use browser-detected dimensions if available
     if (detectedDimensions.width && detectedDimensions.height) {
@@ -5096,12 +5157,12 @@ const VideoPlayer = ({
     }
     return vertical;
   }, [detectedDimensions.width, detectedDimensions.height, resolved.width, resolved.height, resolved.rotate]);
-  const isFixedAspect = (0,external_wp_element_.useMemo)(() => {
+  const isFixedAspect = (0,settings_external_wp_element_.useMemo)(() => {
     const verticalFixed = fixed_aspect === 'vertical' && isVertical;
     const alwaysFixed = fixed_aspect === 'always';
     return (alwaysFixed || verticalFixed) && (fullwidth !== true || verticalFixed);
   }, [fixed_aspect, fullwidth, isVertical]);
-  const aspectRatio = (0,external_wp_element_.useMemo)(() => {
+  const aspectRatio = (0,settings_external_wp_element_.useMemo)(() => {
     let ratio;
     if (isFixedAspect) {
       ratio = (default_ratio || '16 / 9').replace(/\s\/\s/g, ':');
@@ -5113,7 +5174,7 @@ const VideoPlayer = ({
     }
     return ratio;
   }, [isFixedAspect, default_ratio, detectedDimensions.width, detectedDimensions.height, resolved.width, resolved.height]);
-  const innerPlayerStyles = (0,external_wp_element_.useMemo)(() => {
+  const innerPlayerStyles = (0,settings_external_wp_element_.useMemo)(() => {
     const styles = {};
     // Apply aspect ratio to the inner player if we know it (fixed or native)
     if (isFixedAspect) {
@@ -5123,7 +5184,7 @@ const VideoPlayer = ({
     }
     return styles;
   }, [isFixedAspect, default_ratio, aspectRatio]);
-  const playerStyles = (0,external_wp_element_.useMemo)(() => {
+  const playerStyles = (0,settings_external_wp_element_.useMemo)(() => {
     const styles = {
       ...contextStyles
     };
@@ -5134,7 +5195,7 @@ const VideoPlayer = ({
     }
     return styles;
   }, [final_embed_method, contextStyles]);
-  const wrapperClasses = (0,external_wp_element_.useMemo)(() => {
+  const wrapperClasses = (0,settings_external_wp_element_.useMemo)(() => {
     const classes = [...(typeof contextClasses === 'string' ? contextClasses.split(' ').filter(Boolean) : contextClasses), 'videopack-video-block-container', 'videopack-wrapper'];
     if (isFixedAspect || aspectRatio) {
       classes.push('videopack-has-aspect-ratio');
@@ -5149,10 +5210,10 @@ const VideoPlayer = ({
     // Ensure unique classes and join
     return [...new Set(classes)].join(' ');
   }, [contextClasses, isFixedAspect, aspectRatio, resolvedDuotoneClass, loopDuotoneId]);
-  const actualAutoplay = (0,external_wp_element_.useMemo)(() => {
+  const actualAutoplay = (0,settings_external_wp_element_.useMemo)(() => {
     return autoplay;
   }, [autoplay]);
-  const finalizedSources = (0,external_wp_element_.useMemo)(() => {
+  const finalizedSources = (0,settings_external_wp_element_.useMemo)(() => {
     // Priority 1: Sources from groups
     if (Object.keys(source_groups).length > 0) {
       const groupedSources = Object.values(source_groups).flatMap(g => g.sources || []);
@@ -5175,13 +5236,13 @@ const VideoPlayer = ({
     }
     return [];
   }, [source_groups, incomingSources, src]);
-  const uniqueKey = (0,external_wp_element_.useMemo)(() => {
+  const uniqueKey = (0,settings_external_wp_element_.useMemo)(() => {
     if (blockAttributes.id) {
       return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
     }
     return Math.random().toString(36).substr(2, 9);
   }, [blockAttributes.id, source_groups]);
-  const genericPlayerOptions = (0,external_wp_element_.useMemo)(() => {
+  const genericPlayerOptions = (0,settings_external_wp_element_.useMemo)(() => {
     const config = window.videopack_config || {};
     const resolvedCrossorigin = config.with_credentials ? 'use-credentials' : crossorigin;
     return {
@@ -5200,8 +5261,8 @@ const VideoPlayer = ({
       autoPlay: final_embed_method === 'WordPress Default' ? false : actualAutoplay
     };
   }, [poster, loop, actualAutoplay, preload, controls, muted, volume, playsinline, src, finalizedSources, text_tracks, final_embed_method, crossorigin]);
-  const videoJsOptions = (0,external_wp_element_.useMemo)(() => {
-    const isVjs = (0,external_wp_hooks_.applyFilters)(
+  const videoJsOptions = (0,settings_external_wp_element_.useMemo)(() => {
+    const isVjs = (0,settings_external_wp_hooks_.applyFilters)(
     /**
      * Filters whether a specific player method should be treated as a Video.js engine.
      *
@@ -5262,7 +5323,7 @@ const VideoPlayer = ({
     }
     return options;
   }, [final_embed_method, actualAutoplay, controls, muted, preload, poster, loop, playback_rate, playsinline, volume, auto_res, finalizedSources, source_groups, text_tracks, aspectRatio, crossorigin]);
-  const handlePlay = (0,external_wp_element_.useCallback)(() => {
+  const handlePlay = (0,settings_external_wp_element_.useCallback)(() => {
     console.log('VideoPlayer: handlePlay triggered');
     if (wrapperRef.current) {
       const elements = Array.from(wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'));
@@ -5277,7 +5338,7 @@ const VideoPlayer = ({
       elements.forEach(el => el.classList.remove('videopack-video-title-visible'));
     }
   }, []);
-  const handlePause = (0,external_wp_element_.useCallback)(() => {
+  const handlePause = (0,settings_external_wp_element_.useCallback)(() => {
     console.log('VideoPlayer: handlePause triggered');
     if (wrapperRef.current) {
       const elements = Array.from(wrapperRef.current.querySelectorAll('.videopack-video-title, .videopack-meta-wrapper, .videopack-video-title-block, .videopack-video-title-wrapper'));
@@ -5292,14 +5353,14 @@ const VideoPlayer = ({
       elements.forEach(el => el.classList.add('videopack-video-title-visible'));
     }
   }, []);
-  const handleEnded = (0,external_wp_element_.useCallback)(() => {
+  const handleEnded = (0,settings_external_wp_element_.useCallback)(() => {
     handlePause();
   }, [handlePause]);
-  const onReadyRef = (0,external_wp_element_.useRef)(onReady);
-  (0,external_wp_element_.useEffect)(() => {
+  const onReadyRef = (0,settings_external_wp_element_.useRef)(onReady);
+  (0,settings_external_wp_element_.useEffect)(() => {
     onReadyRef.current = onReady;
   }, [onReady]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (typeof window !== 'undefined' && blockAttributes.id) {
       window.videopack = window.videopack || {};
       window.videopack.player_data = window.videopack.player_data || {};
@@ -5308,7 +5369,7 @@ const VideoPlayer = ({
       };
     }
   }, [blockAttributes.id, source_groups]);
-  const handleVideoPlayerReady = (0,external_wp_element_.useCallback)(player => {
+  const handleVideoPlayerReady = (0,settings_external_wp_element_.useCallback)(player => {
     player.on('loadedmetadata', () => {
       if (onReadyRef.current) {
         if (final_embed_method === 'Video.js') {
@@ -5322,7 +5383,7 @@ const VideoPlayer = ({
       }
     });
   }, [final_embed_method, actualAutoplay, handlePlay]);
-  const handleMejsReady = (0,external_wp_element_.useCallback)(player => {
+  const handleMejsReady = (0,settings_external_wp_element_.useCallback)(player => {
     if (onReadyRef.current) {
       onReadyRef.current(player);
     }
@@ -5331,12 +5392,12 @@ const VideoPlayer = ({
   if (!renderReady) {
     return null; // Or a loading spinner
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     className: wrapperClasses,
     ref: wrapperRef,
     style: playerStyles,
     id: instanceId,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
       className: `videopack-player ${final_embed_method === 'Video.js' ? final_skin || '' : ''} ${!loopDuotoneId && resolvedDuotoneClass ? resolvedDuotoneClass : ''}`,
       style: {
         ...innerPlayerStyles,
@@ -5346,7 +5407,7 @@ const VideoPlayer = ({
       children: [(() => {
         const PlayerComponent = players[final_embed_method] || players.None;
         if (final_embed_method === 'Video.js') {
-          return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(PlayerComponent, {
             options: videoJsOptions,
             skin: final_skin,
             onPlay: handlePlay,
@@ -5357,7 +5418,7 @@ const VideoPlayer = ({
           }, `videojs-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
         }
         if (final_embed_method === 'WordPress Default') {
-          return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayerComponent, {
+          return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(PlayerComponent, {
             options: genericPlayerOptions,
             controls: controls,
             actualAutoplay: actualAutoplay,
@@ -5371,7 +5432,7 @@ const VideoPlayer = ({
             source_groups: source_groups
           }, `wpvideo-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
         }
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayerComponent, {
+        return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(PlayerComponent, {
           options: videoJsOptions || genericPlayerOptions,
           ...(PlayerComponent === VideoPlayer_GenericPlayer ? genericPlayerOptions : {}),
           skin: final_skin,
@@ -5382,11 +5443,11 @@ const VideoPlayer = ({
           onMetadataLoaded: onMetadataLoaded,
           source_groups: source_groups
         }, `${final_embed_method}-${src}-${resetKey}-${uniqueKey}-${blockAttributes.restartCount || 0}`);
-      })(), Array.isArray(final_duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
+      })(), Array.isArray(final_duotone) && resolvedDuotoneClass && !loopDuotoneId && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
           colors: final_duotone,
           id: resolvedDuotoneClass
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("style", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("style", {
           children: `
 								.${resolvedDuotoneClass} .vjs-poster:not(.vjs-poster .vjs-poster),
 								.${resolvedDuotoneClass} .mejs-poster:not(.mejs-poster .mejs-poster),
@@ -5407,6 +5468,14 @@ const VideoPlayer = ({
 ;// ./src/components/Preview/parts/CollectionWrapper.js
 
 
+// Collection is a valid theme-context root (Overlays.scss) — nested blocks
+// inherit the skin class/CSS vars from here rather than each needing their own.
+
+const COLLECTION_CONTEXT_OPTS = {
+  excludeHoverTrigger: true,
+  classKeys: ['skin']
+};
+
 /**
  * Wrapper for Videopack Collection Previews.
  *
@@ -5415,7 +5484,6 @@ const VideoPlayer = ({
  * @param {Object} root0.attributes Block attributes.
  * @param {Object} root0.context    Block context.
  */
-
 function CollectionWrapper({
   children,
   attributes = {},
@@ -5425,15 +5493,13 @@ function CollectionWrapper({
     resolved,
     style,
     classes
-  } = useVideopackContext(attributes, context, {
-    excludeHoverTrigger: true
-  });
+  } = useVideopackContext(attributes, context, COLLECTION_CONTEXT_OPTS);
   const {
     layout = 'grid',
     columns = 3,
     align = ''
   } = resolved;
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     className: `videopack-collection videopack-wrapper layout-${layout} columns-${columns}${align ? ` align${align}` : ''} ${classes}`,
     style: {
       ...style,
@@ -5489,7 +5555,7 @@ function TemplatePreview({
       'videopack/postId': video.attachment_id,
       'videopack/title': video.title
     };
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(BlockPreview, {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(BlockPreview, {
       name: name,
       attributes: attributes,
       postId: video.attachment_id,
@@ -5498,7 +5564,7 @@ function TemplatePreview({
       innerBlocks: innerBlocks,
       ...currentFlags,
       context: itemContext,
-      children: innerBlocks.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TemplatePreview, {
+      children: innerBlocks.length > 0 && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(TemplatePreview, {
         template: innerBlocks,
         video: video,
         context: itemContext,
@@ -5513,6 +5579,13 @@ function TemplatePreview({
 
 
 
+// Loop is a valid theme-context root (Overlays.scss: .videopack-video-loop).
+
+const LOOP_CONTEXT_OPTS = {
+  excludeHoverTrigger: true,
+  classKeys: ['skin']
+};
+
 /**
  * Loop component for rendering multiple Videopack items.
  *
@@ -5522,7 +5595,6 @@ function TemplatePreview({
  * @param {Object} root0.context     Block context.
  * @param {Array}  root0.innerBlocks Inner blocks data.
  */
-
 function VideoLoop({
   children,
   attributes = {},
@@ -5533,23 +5605,21 @@ function VideoLoop({
     resolved,
     style,
     classes
-  } = useVideopackContext(attributes, context, {
-    excludeHoverTrigger: true
-  });
+  } = useVideopackContext(attributes, context, LOOP_CONTEXT_OPTS);
   const {
     videos = [],
     layout = 'grid',
     columns = 3,
     duotone
   } = resolved;
-  const loopDuotoneId = (0,external_wp_element_.useMemo)(() => {
+  const loopDuotoneId = (0,settings_external_wp_element_.useMemo)(() => {
     if (!duotone || !Array.isArray(duotone)) {
       return null;
     }
     return `videopack-loop-duotone-${Math.random().toString(36).substr(2, 9)}`;
   }, [duotone]);
   const loopPresetClass = duotone && typeof duotone === 'string' && duotone.startsWith('var:preset|duotone|') ? `wp-duotone-${duotone.split('|').pop()}` : '';
-  const loopContext = (0,external_wp_element_.useMemo)(() => {
+  const loopContext = (0,settings_external_wp_element_.useMemo)(() => {
     if (!loopDuotoneId) {
       return context;
     }
@@ -5558,14 +5628,14 @@ function VideoLoop({
       'videopack/loopDuotoneId': loopDuotoneId
     };
   }, [context, loopDuotoneId]);
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
     className: `videopack-video-loop layout-${layout} columns-${columns} ${classes} ${loopDuotoneId || ''} ${loopPresetClass}`,
     style: style,
-    children: [loopDuotoneId && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
+    children: [loopDuotoneId && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(Duotone_CustomDuotoneFilter, {
         colors: duotone,
         id: loopDuotoneId
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("style", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("style", {
         children: `
 							.${loopDuotoneId} .vjs-poster,
 							.${loopDuotoneId} .mejs-poster,
@@ -5583,11 +5653,11 @@ function VideoLoop({
 							}
 						`
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       className: "videopack-collection-grid",
-      children: videos.map((video, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: videos.map((video, index) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-collection-item videopack-hover-trigger",
-        children: innerBlocks ? /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TemplatePreview, {
+        children: innerBlocks ? /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(TemplatePreview, {
           template: innerBlocks,
           video: video,
           context: loopContext
@@ -5680,41 +5750,41 @@ function Pagination({
     return pages;
   };
   const pages = getPageNumbers();
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("nav", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("nav", {
     className: "videopack-pagination",
-    "aria-label": (0,external_wp_i18n_.__)('Pagination', 'video-embed-thumbnail-generator'),
+    "aria-label": (0,settings_external_wp_i18n_.__)('Pagination', 'video-embed-thumbnail-generator'),
     style: style,
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("ul", {
+    children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("ul", {
       className: "videopack-pagination-list",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("li", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("li", {
         className: "videopack-pagination-item",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("button", {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("button", {
           className: `videopack-pagination-button prev page-numbers ${current <= 1 ? 'is-hidden videopack-hidden' : ''}`,
           onClick: () => current > 1 && onChange(current - 1),
-          "aria-label": (0,external_wp_i18n_.__)('Previous Page', 'video-embed-thumbnail-generator'),
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+          "aria-label": (0,settings_external_wp_i18n_.__)('Previous Page', 'video-embed-thumbnail-generator'),
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
             className: "videopack-pagination-arrow",
             children: "<"
           })
         })
-      }), pages.map((page, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("li", {
+      }), pages.map((page, index) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("li", {
         className: "videopack-pagination-item",
-        children: page === '...' ? /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+        children: page === '...' ? /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
           className: "page-numbers dots",
           children: page
-        }) : /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("button", {
+        }) : /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("button", {
           className: `videopack-pagination-button page-numbers ${page === current ? 'is-active current' : ''}`,
           onClick: () => typeof page === 'number' && onChange(page),
           "aria-current": page === current ? 'page' : undefined,
           children: page
         })
-      }, index)), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("li", {
+      }, index)), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("li", {
         className: "videopack-pagination-item",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("button", {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("button", {
           className: `videopack-pagination-button next page-numbers ${current >= total ? 'is-hidden videopack-hidden' : ''}`,
           onClick: () => current < total && onChange(current + 1),
-          "aria-label": (0,external_wp_i18n_.__)('Next Page', 'video-embed-thumbnail-generator'),
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+          "aria-label": (0,settings_external_wp_i18n_.__)('Next Page', 'video-embed-thumbnail-generator'),
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
             className: "videopack-pagination-arrow",
             children: ">"
           })
@@ -5726,9 +5796,9 @@ function Pagination({
 ;// ./node_modules/@wordpress/icons/build-module/icon/index.mjs
 // packages/icons/src/icon/index.ts
 
-var icon_default = (0,external_wp_element_.forwardRef)(
+var icon_default = (0,settings_external_wp_element_.forwardRef)(
   ({ icon, size = 24, ...props }, ref) => {
-    return (0,external_wp_element_.cloneElement)(icon, {
+    return (0,settings_external_wp_element_.cloneElement)(icon, {
       width: size,
       height: size,
       ...props,
@@ -5740,12 +5810,12 @@ var icon_default = (0,external_wp_element_.forwardRef)(
 //# sourceMappingURL=index.mjs.map
 
 // EXTERNAL MODULE: external ["wp","primitives"]
-var external_wp_primitives_ = __webpack_require__(573);
+var settings_external_wp_primitives_ = __webpack_require__(573);
 ;// ./node_modules/@wordpress/icons/build-module/library/download.mjs
 // packages/icons/src/library/download.tsx
 
 
-var download_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" }) });
+var download_default = /* @__PURE__ */ (0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_primitives_.Path, { d: "M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" }) });
 
 //# sourceMappingURL=download.mjs.map
 
@@ -5795,7 +5865,7 @@ const getTitleInnerTemplate = (includeDownload, includeShare) => {
 ;// ./src/blocks/duration/block.json
 const duration_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/duration","title":"Videopack Duration","category":"media","icon":"clock","description":"Displays the video duration.","usesContext":["postId","postType"],"attributes":{"position":{"type":"string"},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"isPreview":true}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 ;// ./src/blocks/view-count/block.json
-const view_count_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/view-count","title":"Videopack View Count","category":"media","icon":"visibility","description":"Displays the view count of the video.","usesContext":["postId","postType"],"attributes":{"iconType":{"type":"string","default":"none"},"showText":{"type":"boolean","default":true},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"iconType":"playOutline","isPreview":true}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
+const view_count_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/view-count","title":"Videopack View Count","category":"media","icon":"visibility","description":"Displays the view count of the video.","usesContext":["postId","postType"],"attributes":{"position":{"type":"string"},"iconType":{"type":"string","default":"none"},"showText":{"type":"boolean","default":true},"textAlign":{"type":"string"},"title_color":{"type":"string"},"title_background_color":{"type":"string"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"iconType":"playOutline","isPreview":true}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true},"spacing":{"margin":true,"padding":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js"}');
 ;// ./src/blocks/watermark/block.json
 const watermark_block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/watermark","title":"Videopack Watermark","category":"media","icon":"art","description":"Displays a watermark overlay on the video.","parent":["videopack/player-container","videopack/player"],"attributes":{"watermark":{"type":"string"},"watermark_link_to":{"type":"string","default":"false"},"watermark_url":{"type":"string"},"watermark_align":{"type":"string"},"watermark_valign":{"type":"string"},"watermark_scale":{"type":"number"},"watermark_x":{"type":"number"},"watermark_y":{"type":"number"},"isPreview":{"type":"boolean","default":false}},"example":{"attributes":{"watermark":"https://s.w.org/style/images/about/WordPress-logotype-wmark.png","isPreview":true}},"supports":{"html":false,"reusable":false},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 ;// ./src/blocks/play-button/block.json
@@ -5941,18 +6011,18 @@ const getCleanDomProps = (props, name) => {
   return cleanDomProps;
 };
 const PREVIEW_COMPONENTS = {
-  'videopack/player-container': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayerContainer, {
+  'videopack/player-container': props => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(PlayerContainer, {
     ...props,
     ...getCleanDomProps(props, 'videopack/player-container')
   }),
   'videopack/collection': CollectionWrapper,
   'videopack/loop': VideoLoop,
   'videopack/pagination': Pagination,
-  'videopack/thumbnail': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoThumbnailPreview, {
+  'videopack/thumbnail': props => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideoThumbnailPreview, {
     ...props,
     ...getCleanDomProps(props, 'videopack/thumbnail')
   }),
-  'videopack/title': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoTitle, {
+  'videopack/title': props => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideoTitle, {
     ...props,
     ...getCleanDomProps(props, 'videopack/title')
   }),
@@ -5962,16 +6032,16 @@ const PREVIEW_COMPONENTS = {
       ...props.attributes
     };
     const styleType = attrs.styleType || 'text';
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
       className: `videopack-download-wrapper videopack-download-block is-inside-title-meta mode-${attrs.downloadMode || 'direct'}`,
       style: {
         display: 'inline-flex',
         alignItems: 'center'
       },
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("button", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("button", {
         type: "button",
         className: `videopack-download-link videopack-icons style-${styleType}`,
-        children: attrs.icon !== false && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(icon_default, {
+        children: attrs.icon !== false && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(icon_default, {
           icon: download_default,
           className: "videopack-icon-svg"
         })
@@ -5987,17 +6057,17 @@ const PREVIEW_COMPONENTS = {
     };
     const styleType = attrs.styleType || 'text';
     const iconType = attrs.iconType || 'share';
-    const shareIconSvg = /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("svg", {
+    const shareIconSvg = /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("svg", {
       className: "videopack-icon-svg share-icon",
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 24 24",
       "aria-hidden": "true",
       focusable: "false",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("path", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("path", {
         d: "M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z"
       })
     });
-    const externalIconSvg = /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("svg", {
+    const externalIconSvg = /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("svg", {
       className: "videopack-icon-svg external-icon",
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 24 24",
@@ -6008,11 +6078,11 @@ const PREVIEW_COMPONENTS = {
       strokeLinejoin: "round",
       "aria-hidden": "true",
       focusable: "false",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("path", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("path", {
         d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"
       })
     });
-    const iosShareIconSvg = /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("svg", {
+    const iosShareIconSvg = /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("svg", {
       className: "videopack-icon-svg ios-share-icon",
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 24 24",
@@ -6023,7 +6093,7 @@ const PREVIEW_COMPONENTS = {
       strokeLinejoin: "round",
       "aria-hidden": "true",
       focusable: "false",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("path", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("path", {
         d: "M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"
       })
     });
@@ -6035,38 +6105,38 @@ const PREVIEW_COMPONENTS = {
     } else if (iconType === 'iosShare') {
       activeIcon = iosShareIconSvg;
     }
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
       className: "videopack-share-wrapper videopack-share-block is-inside-title-meta",
       style: {
         display: 'inline-flex',
         alignItems: 'center'
       },
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("button", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("button", {
         type: "button",
         className: `videopack-share-link videopack-share-toggle videopack-icons style-${styleType}`,
-        children: [iconType !== 'none' && activeIcon, (attrs.showText || iconType === 'none') && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+        children: [iconType !== 'none' && activeIcon, (attrs.showText || iconType === 'none') && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
           className: "videopack-share-text-label",
           style: iconType !== 'none' ? {
             marginLeft: '4px'
           } : undefined,
-          children: (0,external_wp_i18n_.__)('Share', 'video-embed-thumbnail-generator')
+          children: (0,settings_external_wp_i18n_.__)('Share', 'video-embed-thumbnail-generator')
         })]
       })
     });
   },
-  'videopack/duration': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoDuration, {
+  'videopack/duration': props => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideoDuration, {
     ...props,
     ...getCleanDomProps(props, 'videopack/duration')
   }),
-  'videopack/view-count': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(ViewCount, {
+  'videopack/view-count': props => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(ViewCount, {
     ...props,
     ...getCleanDomProps(props, 'videopack/view-count')
   }),
-  'videopack/play-button': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PlayButton, {
+  'videopack/play-button': props => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(PlayButton, {
     ...props,
     ...getCleanDomProps(props, 'videopack/play-button')
   }),
-  'videopack/watermark': props => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoWatermark, {
+  'videopack/watermark': props => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideoWatermark, {
     ...props,
     ...getCleanDomProps(props, 'videopack/watermark')
   }),
@@ -6075,9 +6145,9 @@ const PREVIEW_COMPONENTS = {
     attributes,
     context,
     video
-  }) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  }) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     className: "videopack-video-preview",
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoPlayer_VideoPlayer, {
+    children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideoPlayer_VideoPlayer, {
       attributes: {
         ...attributes,
         id: video?.attachment_id,
@@ -6120,7 +6190,7 @@ function BlockPreview({
   if (!Component) {
     return children || null;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(Component, {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(Component, {
     ...attributes,
     attributes: attributes,
     context: context,
@@ -6161,14 +6231,14 @@ const PreviewIframe = ({
   resizeDependencies = [],
   fullScreen = false
 }) => {
-  const [contentRef, setContentRef] = (0,external_wp_element_.useState)(null);
+  const [contentRef, setContentRef] = (0,settings_external_wp_element_.useState)(null);
   const mountNode = contentRef?.contentWindow?.document?.body;
-  const observerRef = (0,external_wp_element_.useRef)(null);
+  const observerRef = (0,settings_external_wp_element_.useRef)(null);
 
   /**
    * Measure and apply the correct iframe height.
    */
-  const resizeIframe = (0,external_wp_element_.useCallback)(() => {
+  const resizeIframe = (0,settings_external_wp_element_.useCallback)(() => {
     if (!contentRef || !mountNode || fullScreen) {
       return;
     }
@@ -6192,10 +6262,10 @@ const PreviewIframe = ({
   }, [contentRef, mountNode, fullScreen]);
   const resizeDependenciesString = JSON.stringify(resizeDependencies);
   // Trigger resize when dependencies change (e.g. alignment).
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     resizeIframe();
   }, [resizeIframe, resizeDependenciesString]);
-  const handleIframeLoad = (0,external_wp_element_.useCallback)(() => {
+  const handleIframeLoad = (0,settings_external_wp_element_.useCallback)(() => {
     if (contentRef) {
       const doc = contentRef.contentWindow.document;
       const head = doc.head;
@@ -6280,7 +6350,7 @@ const PreviewIframe = ({
   }, [contentRef]);
 
   // Measure once on mount and whenever the content or width changes.
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (!contentRef || !mountNode || fullScreen) {
       return;
     }
@@ -6310,7 +6380,7 @@ const PreviewIframe = ({
       }
     };
   }, [contentRef, mountNode, handleIframeLoad, resizeIframe, fullScreen]);
-  const iframeStyle = (0,external_wp_element_.useMemo)(() => {
+  const iframeStyle = (0,settings_external_wp_element_.useMemo)(() => {
     if (fullScreen) {
       return {
         position: 'fixed',
@@ -6329,14 +6399,14 @@ const PreviewIframe = ({
       background: 'transparent'
     };
   }, [fullScreen]);
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("iframe", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("iframe", {
     ref: setContentRef,
     title: title,
     className: className,
     style: iframeStyle,
     onLoad: handleIframeLoad,
     scrolling: "no",
-    children: mountNode && (0,external_wp_element_.createPortal)(/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    children: mountNode && (0,settings_external_wp_element_.createPortal)(/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       className: "videopack-iframe-content-wrapper",
       children: children
     }), mountNode)
@@ -6389,29 +6459,29 @@ const CompactColorPicker = ({
       onChange(val);
     }
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
     className: "videopack-color-picker-container",
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
       className: "videopack-color-picker-label",
       children: label
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Dropdown, {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Dropdown, {
       className: "videopack-color-dropdown",
       contentClassName: "videopack-color-dropdown-content",
       renderToggle: ({
         isOpen,
         onToggle
-      }) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
+      }) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Button, {
         onClick: onToggle,
         "aria-expanded": isOpen,
         variant: "secondary",
         className: "videopack-color-picker-button",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ColorIndicator, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ColorIndicator, {
           colorValue: displayColor
         })
       }),
-      renderContent: () => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      renderContent: () => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-color-picker-palette-wrapper",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ColorPalette, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ColorPalette, {
           colors: colors,
           value: hexValue === '' ? undefined : hexValue,
           onChange: handleOnChange,
@@ -6424,6 +6494,7 @@ const CompactColorPicker = ({
 };
 /* harmony default export */ const CompactColorPicker_CompactColorPicker = (CompactColorPicker);
 ;// ./src/utils/colors.js
+
 const getColorFallbacks = settings => {
   const {
     embed_method = 'Video.js',
@@ -6483,7 +6554,18 @@ const getColorFallbacks = settings => {
         break;
     }
   }
-  return fallbacks;
+  return (0,settings_external_wp_hooks_.applyFilters)(
+  /**
+   * Filters the resolved color fallback values used for the player preview
+   * and color picker placeholders when no explicit color has been chosen.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} fallbacks   Map of color fallback values.
+   * @param {string} embed_method The selected player embed method.
+   * @param {string} skin         The selected player skin.
+   */
+  'videopack.colorFallbacks', fallbacks, embed_method, skin);
 };
 // EXTERNAL MODULE: ./src/features/settings/components/VideopackTooltip.js + 1 modules
 var VideopackTooltip = __webpack_require__(113);
@@ -6510,8 +6592,8 @@ const VideoCollectionSettings = ({
 }) => {
   const config = videopack_config;
   const embed_method = config?.embed_method || 'Video.js';
-  const colorFallbacks = (0,external_wp_element_.useMemo)(() => getColorFallbacks(settings), [settings]);
-  const [currentPage, setCurrentPage] = (0,external_wp_element_.useState)(1);
+  const colorFallbacks = (0,settings_external_wp_element_.useMemo)(() => getColorFallbacks(settings), [settings]);
+  const [currentPage, setCurrentPage] = (0,settings_external_wp_element_.useState)(1);
   const {
     enable_collection_video_limit,
     collection_video_limit,
@@ -6533,33 +6615,33 @@ const VideoCollectionSettings = ({
     pagination_active_color,
     skin
   } = settings;
-  const skinOptions = (0,external_wp_element_.useMemo)(() => {
+  const skinOptions = (0,settings_external_wp_element_.useMemo)(() => {
     const options = [{
       value: 'vjs-theme-videopack',
-      label: (0,external_wp_i18n_.__)('Videopack', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Videopack', 'video-embed-thumbnail-generator')
     }, {
       value: 'kg-video-js-skin',
-      label: (0,external_wp_i18n_.__)('Videopack Classic', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Videopack Classic', 'video-embed-thumbnail-generator')
     }, {
       value: 'default',
-      label: (0,external_wp_i18n_.__)('Video.js default', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Video.js default', 'video-embed-thumbnail-generator')
     }, {
       value: 'vjs-theme-city',
-      label: (0,external_wp_i18n_.__)('City', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('City', 'video-embed-thumbnail-generator')
     }, {
       value: 'vjs-theme-fantasy',
-      label: (0,external_wp_i18n_.__)('Fantasy', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Fantasy', 'video-embed-thumbnail-generator')
     }, {
       value: 'vjs-theme-forest',
-      label: (0,external_wp_i18n_.__)('Forest', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Forest', 'video-embed-thumbnail-generator')
     }, {
       value: 'vjs-theme-sea',
-      label: (0,external_wp_i18n_.__)('Sea', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Sea', 'video-embed-thumbnail-generator')
     }];
-    return (0,external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/PlayerSettings.js */
+    return (0,settings_external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/PlayerSettings.js */
     'videopack_player_skin_options', options, embed_method);
   }, [embed_method]);
-  const previewQueryAttributes = (0,external_wp_element_.useMemo)(() => {
+  const previewQueryAttributes = (0,settings_external_wp_element_.useMemo)(() => {
     const isPaginationEnabled = gallery_pagination === true || gallery_pagination === 1 || gallery_pagination === '1';
     const attrs = {
       ...settings,
@@ -6583,7 +6665,7 @@ const VideoCollectionSettings = ({
   } = useVideoQuery(previewQueryAttributes, 0);
 
   // Sync total pages from the query results
-  const handlers = (0,external_wp_element_.useMemo)(() => {
+  const handlers = (0,settings_external_wp_element_.useMemo)(() => {
     const h = {
       ...changeHandlerFactory
     };
@@ -6598,7 +6680,7 @@ const VideoCollectionSettings = ({
 
   // This is now derived directly in previewContext from maxNumPages
 
-  const galleryTemplate = (0,external_wp_element_.useMemo)(() => {
+  const galleryTemplate = (0,settings_external_wp_element_.useMemo)(() => {
     const template = [['videopack/loop', {}, [['videopack/thumbnail', {
       linkTo: 'none'
     }, [['videopack/play-button', {}], gallery_title ? ['videopack/title', {
@@ -6610,7 +6692,7 @@ const VideoCollectionSettings = ({
     }
     return template;
   }, [gallery_title, gallery_pagination]);
-  const previewContext = (0,external_wp_element_.useMemo)(() => {
+  const previewContext = (0,settings_external_wp_element_.useMemo)(() => {
     const ctx = {
       'videopack/layout': 'grid',
       'videopack/columns': gallery_columns,
@@ -6640,74 +6722,74 @@ const VideoCollectionSettings = ({
   }, [settings, gallery_columns, gallery_pagination, gallery_per_page, videoResults, maxNumPages, currentPage, colorFallbacks, play_button_color, play_button_secondary_color, title_color, title_background_color, pagination_color, pagination_background_color, pagination_active_bg_color, pagination_active_color]);
   const galleryEndOptions = [{
     value: '',
-    label: (0,external_wp_i18n_.__)('Stop and leave popup window open', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Stop and leave popup window open', 'video-embed-thumbnail-generator')
   }, {
     value: 'next',
-    label: (0,external_wp_i18n_.__)('Autoplay next video', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Autoplay next video', 'video-embed-thumbnail-generator')
   }, {
     value: 'close',
-    label: (0,external_wp_i18n_.__)('Close popup window', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Close popup window', 'video-embed-thumbnail-generator')
   }];
   const baseGalleryOrderbyOptions = [{
     value: 'menu_order',
-    label: (0,external_wp_i18n_.__)('Default', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Default', 'video-embed-thumbnail-generator')
   }, {
     value: 'title',
-    label: (0,external_wp_i18n_.__)('Title', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Title', 'video-embed-thumbnail-generator')
   }, {
     value: 'post_date',
-    label: (0,external_wp_i18n_.__)('Date', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Date', 'video-embed-thumbnail-generator')
   }, {
     value: 'rand',
-    label: (0,external_wp_i18n_.__)('Random', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Random', 'video-embed-thumbnail-generator')
   }, {
     value: 'ID',
-    label: (0,external_wp_i18n_.__)('Video ID', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Video ID', 'video-embed-thumbnail-generator')
   }];
   const alignOptions = [{
     value: '',
-    label: videopack_config.contentSize ? (0,external_wp_i18n_.sprintf)(/* translators: %s: Content size in pixels. */
-    (0,external_wp_i18n_.__)("None (use theme's default width: %s)", 'video-embed-thumbnail-generator'), videopack_config.contentSize) : (0,external_wp_i18n_.__)("None (use theme's default width)", 'video-embed-thumbnail-generator')
+    label: videopack_config.contentSize ? (0,settings_external_wp_i18n_.sprintf)(/* translators: %s: Content size in pixels. */
+    (0,settings_external_wp_i18n_.__)("None (use theme's default width: %s)", 'video-embed-thumbnail-generator'), videopack_config.contentSize) : (0,settings_external_wp_i18n_.__)("None (use theme's default width)", 'video-embed-thumbnail-generator')
   }, {
     value: 'wide',
-    label: videopack_config.wideSize ? (0,external_wp_i18n_.sprintf)(/* translators: %s: Wide size in pixels. */
-    (0,external_wp_i18n_.__)("Wide (use theme's wide width: %s)", 'video-embed-thumbnail-generator'), videopack_config.wideSize) : (0,external_wp_i18n_.__)("Wide (use theme's wide width)", 'video-embed-thumbnail-generator')
+    label: videopack_config.wideSize ? (0,settings_external_wp_i18n_.sprintf)(/* translators: %s: Wide size in pixels. */
+    (0,settings_external_wp_i18n_.__)("Wide (use theme's wide width: %s)", 'video-embed-thumbnail-generator'), videopack_config.wideSize) : (0,settings_external_wp_i18n_.__)("Wide (use theme's wide width)", 'video-embed-thumbnail-generator')
   }, {
     value: 'full',
-    label: (0,external_wp_i18n_.__)('Full width', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Full width', 'video-embed-thumbnail-generator')
   }, {
     value: 'left',
-    label: (0,external_wp_i18n_.__)('Left', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Left', 'video-embed-thumbnail-generator')
   }, {
     value: 'center',
-    label: (0,external_wp_i18n_.__)('Center', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Center', 'video-embed-thumbnail-generator')
   }, {
     value: 'right',
-    label: (0,external_wp_i18n_.__)('Right', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Right', 'video-embed-thumbnail-generator')
   }];
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Pagination & Sorting', 'video-embed-thumbnail-generator'),
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Pagination & Sorting', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Paginate', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Paginate', 'video-embed-thumbnail-generator'),
         onChange: handlers.gallery_pagination,
         checked: !!gallery_pagination
-      }), gallery_pagination && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), gallery_pagination && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-setting-auto-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Videos per page', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Videos per page', 'video-embed-thumbnail-generator'),
           type: "number",
           value: gallery_per_page,
           onChange: handlers.gallery_per_page
         })
-      }), !gallery_pagination && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      }), !gallery_pagination && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Limit number of videos', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Limit number of videos', 'video-embed-thumbnail-generator'),
           onChange: val => {
             handlers.enable_collection_video_limit(val);
             if (!val) {
@@ -6717,36 +6799,36 @@ const VideoCollectionSettings = ({
             }
           },
           checked: !!enable_collection_video_limit
-        }), !!enable_collection_video_limit && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        }), !!enable_collection_video_limit && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
           className: "videopack-setting-auto-width",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,external_wp_i18n_.__)('Video Limit', 'video-embed-thumbnail-generator'),
-            help: (0,external_wp_i18n_.__)('Maximum number of videos to show in a gallery or list when pagination is disabled.', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Video Limit', 'video-embed-thumbnail-generator'),
+            help: (0,settings_external_wp_i18n_.__)('Maximum number of videos to show in a gallery or list when pagination is disabled.', 'video-embed-thumbnail-generator'),
             type: "number",
             value: Number(collection_video_limit) === -1 ? 12 : collection_video_limit,
             onChange: handlers.collection_video_limit
           })
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-sort-settings",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.Flex, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.Flex, {
           align: "flex-end",
           className: "videopack-sort-controls",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexItem, {
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
-              label: (0,external_wp_i18n_.__)('Sort by', 'video-embed-thumbnail-generator'),
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexItem, {
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
+              label: (0,settings_external_wp_i18n_.__)('Sort by', 'video-embed-thumbnail-generator'),
               value: gallery_orderby,
               onChange: handlers.gallery_orderby,
               options: baseGalleryOrderbyOptions,
               __nextHasNoMarginBottom: true,
               __next40pxDefaultSize: true
             })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexItem, {
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
-              icon: gallery_order === 'asc' ? icon.sortAscending : icon.sortDescending,
-              label: gallery_order === 'asc' ? (0,external_wp_i18n_.__)('Ascending', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Descending', 'video-embed-thumbnail-generator'),
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexItem, {
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Button, {
+              icon: gallery_order === 'asc' ? settings_icon/* sortAscending */.V0 : settings_icon/* sortDescending */.L8,
+              label: gallery_order === 'asc' ? (0,settings_external_wp_i18n_.__)('Ascending', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('Descending', 'video-embed-thumbnail-generator'),
               onClick: () => handlers.gallery_order(gallery_order === 'asc' ? 'desc' : 'asc'),
               showTooltip: true,
               variant: "secondary",
@@ -6755,78 +6837,78 @@ const VideoCollectionSettings = ({
           })]
         })
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Galleries', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Galleries', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-grid-row-align",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Alignment / Width', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Alignment / Width', 'video-embed-thumbnail-generator'),
           value: gallery_align,
           onChange: handlers.gallery_align,
           options: alignOptions
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-grid-row-align videopack-narrow-input",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Max Columns', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Max Columns', 'video-embed-thumbnail-generator'),
           type: "number",
           value: gallery_columns,
           onChange: handlers.gallery_columns
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('The actual number of columns displayed may be lower than this value depending on the gallery Alignment / Width setting and the width of the container. Narrower widths will automatically collapse to fewer columns.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('The actual number of columns displayed may be lower than this value depending on the gallery Alignment / Width setting and the width of the container. Narrower widths will automatically collapse to fewer columns.', 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Overlay Title', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Overlay Title', 'video-embed-thumbnail-generator'),
         onChange: handlers.gallery_title,
         checked: !!gallery_title
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-setting-auto-width videopack-setting-extra-margin",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('When current video ends', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('When current video ends', 'video-embed-thumbnail-generator'),
           value: gallery_end,
           onChange: handlers.gallery_end,
           options: galleryEndOptions
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-        title: (0,external_wp_i18n_.__)('Design', 'video-embed-thumbnail-generator'),
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+        title: (0,settings_external_wp_i18n_.__)('Design', 'video-embed-thumbnail-generator'),
         initialOpen: true,
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
           className: "videopack-grid-row-align",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,external_wp_i18n_.__)('Skin', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Skin', 'video-embed-thumbnail-generator'),
             value: skin,
             onChange: handlers.skin,
             options: skinOptions
           })
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-color-section",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("p", {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("p", {
             className: "videopack-settings-section-title",
-            children: (0,external_wp_i18n_.__)('Title', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+            children: (0,settings_external_wp_i18n_.__)('Title', 'video-embed-thumbnail-generator')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
             className: "videopack-color-flex-row",
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-color-flex-item",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-                label: (0,external_wp_i18n_.__)('Text', 'video-embed-thumbnail-generator'),
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: (0,settings_external_wp_i18n_.__)('Text', 'video-embed-thumbnail-generator'),
                 value: title_color,
                 onChange: handlers.title_color,
                 colors: videopack_config.themeColors,
                 fallbackValue: colorFallbacks.title_color
               })
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-color-flex-item",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-                label: (0,external_wp_i18n_.__)('Background', 'video-embed-thumbnail-generator'),
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: (0,settings_external_wp_i18n_.__)('Background', 'video-embed-thumbnail-generator'),
                 value: title_background_color,
                 onChange: handlers.title_background_color,
                 colors: videopack_config.themeColors,
@@ -6834,26 +6916,26 @@ const VideoCollectionSettings = ({
               })
             })]
           })]
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-color-section",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("p", {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("p", {
             className: "videopack-settings-section-title",
-            children: (0,external_wp_i18n_.__)('Play button', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+            children: (0,settings_external_wp_i18n_.__)('Play button', 'video-embed-thumbnail-generator')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
             className: "videopack-color-flex-row",
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-color-flex-item",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-                label: embed_method === 'WordPress Default' ? (0,external_wp_i18n_.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: embed_method === 'WordPress Default' ? (0,settings_external_wp_i18n_.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
                 value: play_button_color,
                 onChange: handlers.play_button_color,
                 colors: videopack_config.themeColors,
                 fallbackValue: colorFallbacks.play_button_color
               })
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-color-flex-item",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-                label: embed_method === 'WordPress Default' ? (0,external_wp_i18n_.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: embed_method === 'WordPress Default' ? (0,settings_external_wp_i18n_.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
                 value: play_button_secondary_color,
                 onChange: handlers.play_button_secondary_color,
                 colors: videopack_config.themeColors,
@@ -6861,44 +6943,44 @@ const VideoCollectionSettings = ({
               })
             })]
           })]
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-color-section",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("p", {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("p", {
             className: "videopack-settings-section-title",
-            children: (0,external_wp_i18n_.__)('Pagination', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+            children: (0,settings_external_wp_i18n_.__)('Pagination', 'video-embed-thumbnail-generator')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
             className: "videopack-color-flex-row is-pagination",
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-color-flex-item",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-                label: (0,external_wp_i18n_.__)('Outline/Text', 'video-embed-thumbnail-generator'),
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: (0,settings_external_wp_i18n_.__)('Outline/Text', 'video-embed-thumbnail-generator'),
                 value: pagination_color,
                 onChange: handlers.pagination_color,
                 colors: videopack_config.themeColors,
                 fallbackValue: colorFallbacks.pagination_color
               })
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-color-flex-item",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-                label: (0,external_wp_i18n_.__)('Background', 'video-embed-thumbnail-generator'),
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: (0,settings_external_wp_i18n_.__)('Background', 'video-embed-thumbnail-generator'),
                 value: pagination_background_color,
                 onChange: handlers.pagination_background_color,
                 colors: videopack_config.themeColors,
                 fallbackValue: colorFallbacks.pagination_background_color
               })
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-color-flex-item",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-                label: (0,external_wp_i18n_.__)('Active Background', 'video-embed-thumbnail-generator'),
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: (0,settings_external_wp_i18n_.__)('Active Background', 'video-embed-thumbnail-generator'),
                 value: pagination_active_bg_color,
                 onChange: handlers.pagination_active_bg_color,
                 colors: videopack_config.themeColors,
                 fallbackValue: colorFallbacks.pagination_active_bg_color
               })
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-color-flex-item",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-                label: (0,external_wp_i18n_.__)('Active Text', 'video-embed-thumbnail-generator'),
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: (0,settings_external_wp_i18n_.__)('Active Text', 'video-embed-thumbnail-generator'),
                 value: pagination_active_color,
                 onChange: handlers.pagination_active_color,
                 colors: videopack_config.themeColors,
@@ -6907,31 +6989,31 @@ const VideoCollectionSettings = ({
             })]
           })]
         })]
-      }), previewContext && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), previewContext && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-sample-gallery",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: `videopack-sample-gallery-wrapper align${gallery_align || 'none'}`,
           style: {
             '--wp--style--global--content-size': videopack_config.contentSize || '800px',
             '--wp--style--global--wide-size': videopack_config.wideSize || '1000px'
           },
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
             className: "videopack-settings-label",
-            children: (0,external_wp_i18n_.__)('Sample Gallery', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PreviewIframe_PreviewIframe, {
-            title: (0,external_wp_i18n_.__)('Video Gallery Preview', 'video-embed-thumbnail-generator'),
+            children: (0,settings_external_wp_i18n_.__)('Sample Gallery', 'video-embed-thumbnail-generator')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(PreviewIframe_PreviewIframe, {
+            title: (0,settings_external_wp_i18n_.__)('Video Gallery Preview', 'video-embed-thumbnail-generator'),
             resizeDependencies: [gallery_align],
             fullScreen: false,
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
               className: "videopack-preview-content-container",
-              children: [isResolving && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+              children: [isResolving && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
                 className: "videopack-preview-loader",
-                children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
-              }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(BlockPreview, {
+                children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {})
+              }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(BlockPreview, {
                 name: "videopack/collection",
                 attributes: settings,
                 context: previewContext,
-                children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TemplatePreview, {
+                children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(TemplatePreview, {
                   template: galleryTemplate,
                   context: previewContext
                 })
@@ -7120,7 +7202,7 @@ const drawWatermark = (canvas, options) => {
       ctx.drawImage(img, xPos, yPos, watermarkWidth, watermarkHeight);
       resolve(canvas);
     };
-    img.onerror = () => reject(new Error((0,external_wp_i18n_.__)('Failed to load watermark image', 'video-embed-thumbnail-generator')));
+    img.onerror = () => reject(new Error((0,settings_external_wp_i18n_.__)('Failed to load watermark image', 'video-embed-thumbnail-generator')));
   });
 };
 
@@ -7281,9 +7363,9 @@ const SelectFromLibrary = ({
 }) => {
   const openMediaLibrary = () => {
     const frame = window.wp.media({
-      title: (0,external_wp_i18n_.__)('Select Image', 'videopack-player-pro'),
+      title: (0,settings_external_wp_i18n_.__)('Select Image', 'videopack-player-pro'),
       button: {
-        text: (0,external_wp_i18n_.__)('Use this image', 'videopack-player-pro')
+        text: (0,settings_external_wp_i18n_.__)('Use this image', 'videopack-player-pro')
       },
       multiple: false,
       library: {
@@ -7296,27 +7378,27 @@ const SelectFromLibrary = ({
     });
     frame.open();
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
     className: "videopack-grid-row-align",
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TextControlOnBlur/* default */.A, {
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(TextControlOnBlur/* default */.A, {
       __nextHasNoMarginBottom: true,
       __next40pxDefaultSize: true,
       label: label,
       value: value,
       onChange: onChange,
       ...props
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
       className: "videopack-library-button-wrapper",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Button, {
         __next40pxDefaultSize: true,
         className: "videopack-library-button",
         variant: "secondary",
         onClick: openMediaLibrary,
         disabled: props.disabled,
-        children: (0,external_wp_i18n_.__)('Select from library', 'video-embed-thumbnail-generator')
-      }), value && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        children: (0,settings_external_wp_i18n_.__)('Select from library', 'video-embed-thumbnail-generator')
+      }), value && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-select-from-library-preview",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("img", {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("img", {
           src: value,
           alt: ""
         })
@@ -7341,31 +7423,31 @@ const WatermarkPositioner = ({
   aspectRatio: propAspectRatio = null,
   children
 }) => {
-  const containerRef = (0,external_wp_element_.useRef)(null);
-  const watermarkRef = (0,external_wp_element_.useRef)(null);
-  const [watermarkImage, setWatermarkImage] = (0,external_wp_element_.useState)(null);
-  const [isDragging, setIsDragging] = (0,external_wp_element_.useState)(false);
-  const [isResizing, setIsResizing] = (0,external_wp_element_.useState)(false);
-  const [transientScale, setTransientScale] = (0,external_wp_element_.useState)(null);
-  const [transientPercentages, setTransientPercentages] = (0,external_wp_element_.useState)(null); // { x, y } in percentages
-  const [isFocused, setIsFocused] = (0,external_wp_element_.useState)(false);
-  const lastAspectRatioRef = (0,external_wp_element_.useRef)(propAspectRatio || 1);
-  (0,external_wp_element_.useEffect)(() => {
+  const containerRef = (0,settings_external_wp_element_.useRef)(null);
+  const watermarkRef = (0,settings_external_wp_element_.useRef)(null);
+  const [watermarkImage, setWatermarkImage] = (0,settings_external_wp_element_.useState)(null);
+  const [isDragging, setIsDragging] = (0,settings_external_wp_element_.useState)(false);
+  const [isResizing, setIsResizing] = (0,settings_external_wp_element_.useState)(false);
+  const [transientScale, setTransientScale] = (0,settings_external_wp_element_.useState)(null);
+  const [transientPercentages, setTransientPercentages] = (0,settings_external_wp_element_.useState)(null); // { x, y } in percentages
+  const [isFocused, setIsFocused] = (0,settings_external_wp_element_.useState)(false);
+  const lastAspectRatioRef = (0,settings_external_wp_element_.useRef)(propAspectRatio || 1);
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (watermarkImage) {
       lastAspectRatioRef.current = watermarkImage.width / watermarkImage.height;
     } else if (propAspectRatio) {
       lastAspectRatioRef.current = propAspectRatio;
     }
   }, [watermarkImage, propAspectRatio]);
-  const dragStartRef = (0,external_wp_element_.useRef)({
+  const dragStartRef = (0,settings_external_wp_element_.useRef)({
     x: 0,
     y: 0,
     initialLeft: 0,
     initialTop: 0
   });
-  const stateRef = (0,external_wp_element_.useRef)({});
+  const stateRef = (0,settings_external_wp_element_.useRef)({});
   const effectiveImageUrl = imageUrl || settings?.url || settings?.watermark;
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (effectiveImageUrl) {
       const img = new Image();
       img.onload = () => setWatermarkImage(img);
@@ -7379,7 +7461,7 @@ const WatermarkPositioner = ({
     wmWidth,
     wmHeight,
     aspectRatio
-  } = (0,external_wp_element_.useMemo)(() => {
+  } = (0,settings_external_wp_element_.useMemo)(() => {
     if (!containerDimensions) {
       return {
         wmStyle: {},
@@ -7430,7 +7512,7 @@ const WatermarkPositioner = ({
       aspectRatio: ratio
     };
   }, [containerDimensions, watermarkImage, settings, transientScale, transientPercentages]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     stateRef.current = {
       transientPercentages,
       transientScale,
@@ -7446,8 +7528,8 @@ const WatermarkPositioner = ({
       baseDeltaY: Number(settings.y || settings.watermark_y || 0)
     };
   }, [transientPercentages, transientScale, isDragging, isResizing, settings, containerDimensions, watermarkImage, wmWidth, wmHeight, aspectRatio]);
-  const onChangeRef = (0,external_wp_element_.useRef)(onChange);
-  (0,external_wp_element_.useEffect)(() => {
+  const onChangeRef = (0,settings_external_wp_element_.useRef)(onChange);
+  (0,settings_external_wp_element_.useEffect)(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
   const handleMouseDown = e => {
@@ -7498,7 +7580,7 @@ const WatermarkPositioner = ({
       aspectRatio: wmWidth / wmHeight
     };
   };
-  const handleMouseMove = (0,external_wp_element_.useCallback)(e => {
+  const handleMouseMove = (0,settings_external_wp_element_.useCallback)(e => {
     const s = stateRef.current;
     if (!s.isDragging && !s.isResizing) {
       return;
@@ -7591,7 +7673,7 @@ const WatermarkPositioner = ({
       });
     }
   }, []);
-  const finalizeInteraction = (0,external_wp_element_.useCallback)(() => {
+  const finalizeInteraction = (0,settings_external_wp_element_.useCallback)(() => {
     const s = stateRef.current;
     if (!s.isDragging && !s.isResizing) {
       return;
@@ -7688,14 +7770,14 @@ const WatermarkPositioner = ({
   }, [handleMouseMove]);
 
   // Finalize interaction when selection is lost while dragging/resizing
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (!isSelected && (isDragging || isResizing)) {
       finalizeInteraction();
     }
   }, [isSelected, isDragging, isResizing, finalizeInteraction]);
 
   // Finalize interaction on unmount if anything was pending
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     return () => {
       const s = stateRef.current;
       if (s.isDragging || s.isResizing) {
@@ -7706,10 +7788,10 @@ const WatermarkPositioner = ({
       }
     };
   }, []);
-  const handleFocus = (0,external_wp_element_.useCallback)(() => {
+  const handleFocus = (0,settings_external_wp_element_.useCallback)(() => {
     setIsFocused(true);
   }, []);
-  const handleBlur = (0,external_wp_element_.useCallback)(e => {
+  const handleBlur = (0,settings_external_wp_element_.useCallback)(e => {
     if (e.currentTarget.contains(e.relatedTarget)) {
       return;
     }
@@ -7763,7 +7845,7 @@ const WatermarkPositioner = ({
 
     // Keyboard resizing is temporarily disabled during percentage refactor for stability
   };
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     // Clean logs and ensure no leaking listeners
     return () => {};
   }, []);
@@ -7779,7 +7861,7 @@ const WatermarkPositioner = ({
   } else if (isSelected) {
     watermarkCursor = 'move';
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
     ref: containerRef,
     className: "videopack-watermark-positioner",
     style: {
@@ -7791,7 +7873,7 @@ const WatermarkPositioner = ({
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center'
     },
-    children: [(isDragging || isResizing) && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    children: [(isDragging || isResizing) && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
       className: "videopack-interaction-overlay",
       role: "presentation",
       style: {
@@ -7806,7 +7888,7 @@ const WatermarkPositioner = ({
       },
       onMouseMove: handleMouseMove,
       onMouseUp: finalizeInteraction
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
       ref: watermarkRef,
       style: {
         ...wmStyle,
@@ -7815,12 +7897,12 @@ const WatermarkPositioner = ({
       },
       role: "button",
       tabIndex: isSelected ? '0' : '-1',
-      "aria-label": (0,external_wp_i18n_.__)('Move watermark', 'video-embed-thumbnail-generator'),
+      "aria-label": (0,settings_external_wp_i18n_.__)('Move watermark', 'video-embed-thumbnail-generator'),
       onMouseDown: handleMouseDown,
       onKeyDown: handleDragKeyDown,
       onFocus: handleFocus,
       onBlur: handleBlur,
-      children: [children ? children : /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("img", {
+      children: [children ? children : /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("img", {
         src: effectiveImageUrl,
         alt: "Watermark",
         style: {
@@ -7830,32 +7912,32 @@ const WatermarkPositioner = ({
           display: 'block'
         },
         draggable: false
-      }), showHandles && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), showHandles && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
           role: "slider",
           tabIndex: "0",
-          "aria-label": (0,external_wp_i18n_.__)('Resize watermark from top left', 'video-embed-thumbnail-generator'),
+          "aria-label": (0,settings_external_wp_i18n_.__)('Resize watermark from top left', 'video-embed-thumbnail-generator'),
           className: "videopack-resize-handle nw",
           onMouseDown: e => handleResizeStart(e, 'nw'),
           onKeyDown: e => handleResizeKeyDown(e, 'nw')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
           role: "slider",
           tabIndex: "0",
-          "aria-label": (0,external_wp_i18n_.__)('Resize watermark from top right', 'video-embed-thumbnail-generator'),
+          "aria-label": (0,settings_external_wp_i18n_.__)('Resize watermark from top right', 'video-embed-thumbnail-generator'),
           className: "videopack-resize-handle ne",
           onMouseDown: e => handleResizeStart(e, 'ne'),
           onKeyDown: e => handleResizeKeyDown(e, 'ne')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
           role: "slider",
           tabIndex: "0",
-          "aria-label": (0,external_wp_i18n_.__)('Resize watermark from bottom left', 'video-embed-thumbnail-generator'),
+          "aria-label": (0,settings_external_wp_i18n_.__)('Resize watermark from bottom left', 'video-embed-thumbnail-generator'),
           className: "videopack-resize-handle sw",
           onMouseDown: e => handleResizeStart(e, 'sw'),
           onKeyDown: e => handleResizeKeyDown(e, 'sw')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
           role: "slider",
           tabIndex: "0",
-          "aria-label": (0,external_wp_i18n_.__)('Resize watermark from bottom right', 'video-embed-thumbnail-generator'),
+          "aria-label": (0,settings_external_wp_i18n_.__)('Resize watermark from bottom right', 'video-embed-thumbnail-generator'),
           className: "videopack-resize-handle se",
           onMouseDown: e => handleResizeStart(e, 'se'),
           onKeyDown: e => handleResizeKeyDown(e, 'se')
@@ -7883,16 +7965,16 @@ const WatermarkSettingsPanel = ({
   children,
   disabled = false
 }) => {
-  const [baseFrame, setBaseFrame] = (0,external_wp_element_.useState)(null);
-  const [settingsPanelOpen, setSettingsPanelOpen] = (0,external_wp_element_.useState)(false);
-  const prevWatermarkUrl = (0,external_wp_element_.useRef)(watermarkSettings?.url);
-  (0,external_wp_element_.useEffect)(() => {
+  const [baseFrame, setBaseFrame] = (0,settings_external_wp_element_.useState)(null);
+  const [settingsPanelOpen, setSettingsPanelOpen] = (0,settings_external_wp_element_.useState)(false);
+  const prevWatermarkUrl = (0,settings_external_wp_element_.useRef)(watermarkSettings?.url);
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (watermarkSettings?.url && watermarkSettings.url !== prevWatermarkUrl.current) {
       setSettingsPanelOpen(true);
     }
     prevWatermarkUrl.current = watermarkSettings?.url;
   }, [watermarkSettings?.url]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (watermarkSettings?.url && !baseFrame) {
       const videoUrl = videopack_config.url + '/src/images/Adobestock_469037984.mp4';
       const videoOffset = Math.random() * 1.9;
@@ -7916,10 +7998,10 @@ const WatermarkSettingsPanel = ({
   } else {
     panelProps.initialOpen = initialOpen;
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
     ...panelProps,
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(components_SelectFromLibrary, {
-      label: (0,external_wp_i18n_.__)('Watermark image URL', 'video-embed-thumbnail-generator'),
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(components_SelectFromLibrary, {
+      label: (0,settings_external_wp_i18n_.__)('Watermark image URL', 'video-embed-thumbnail-generator'),
       type: "url",
       value: watermarkSettings?.url,
       onChange: url => onChange(typeof watermarkSettings === 'object' && watermarkSettings !== null ? {
@@ -7929,13 +8011,13 @@ const WatermarkSettingsPanel = ({
         url
       }),
       disabled: disabled
-    }), children, watermarkSettings?.url && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Watermark Settings', 'video-embed-thumbnail-generator'),
+    }), children, watermarkSettings?.url && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Watermark Settings', 'video-embed-thumbnail-generator'),
       opened: settingsPanelOpen,
       onToggle: () => setSettingsPanelOpen(!settingsPanelOpen),
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-watermark-settings",
-        children: [baseFrame && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(WatermarkPositioner_WatermarkPositioner, {
+        children: [baseFrame && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(WatermarkPositioner_WatermarkPositioner, {
           containerDimensions: {
             width: baseFrame.width,
             height: baseFrame.height
@@ -7945,8 +8027,8 @@ const WatermarkSettingsPanel = ({
           isSelected: true,
           showBackground: true,
           backgroundDataUrl: baseFrame.toDataURL()
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
-          label: (0,external_wp_i18n_.__)('Scale (%)', 'video-embed-thumbnail-generator'),
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
+          label: (0,settings_external_wp_i18n_.__)('Scale (%)', 'video-embed-thumbnail-generator'),
           value: Number(watermarkSettings.scale || 50),
           onChange: value => updateSetting('scale', value),
           min: 1,
@@ -7954,7 +8036,7 @@ const WatermarkSettingsPanel = ({
           step: 0.01,
           __nextHasNoMarginBottom: true,
           disabled: disabled
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.Flex, {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.Flex, {
           gap: 4,
           align: "flex-end",
           justify: "flex-start",
@@ -7962,30 +8044,30 @@ const WatermarkSettingsPanel = ({
             marginBottom: '10px'
           },
           className: "videopack-watermark-row",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexItem, {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexItem, {
             className: "videopack-alignment-control",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
               __next40pxDefaultSize: true,
-              label: (0,external_wp_i18n_.__)('Horizontal Alignment', 'video-embed-thumbnail-generator'),
+              label: (0,settings_external_wp_i18n_.__)('Horizontal Alignment', 'video-embed-thumbnail-generator'),
               value: watermarkSettings.align || 'center',
               options: [{
-                label: (0,external_wp_i18n_.__)('Left', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Left', 'video-embed-thumbnail-generator'),
                 value: 'left'
               }, {
-                label: (0,external_wp_i18n_.__)('Center', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Center', 'video-embed-thumbnail-generator'),
                 value: 'center'
               }, {
-                label: (0,external_wp_i18n_.__)('Right', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Right', 'video-embed-thumbnail-generator'),
                 value: 'right'
               }],
               onChange: value => updateSetting('align', value),
               __nextHasNoMarginBottom: true,
               disabled: disabled
             })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexItem, {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexItem, {
             className: "videopack-offset-control",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
-              label: (0,external_wp_i18n_.__)('Horizontal Offset (%)', 'video-embed-thumbnail-generator'),
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
+              label: (0,settings_external_wp_i18n_.__)('Horizontal Offset (%)', 'video-embed-thumbnail-generator'),
               value: Number(watermarkSettings.x || 0),
               onChange: value => updateSetting('x', value),
               min: 0,
@@ -7995,35 +8077,35 @@ const WatermarkSettingsPanel = ({
               disabled: disabled
             })
           })]
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.Flex, {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.Flex, {
           gap: 4,
           align: "flex-end",
           justify: "flex-start",
           className: "videopack-watermark-row",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexItem, {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexItem, {
             className: "videopack-alignment-control",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
               __next40pxDefaultSize: true,
-              label: (0,external_wp_i18n_.__)('Vertical Alignment', 'video-embed-thumbnail-generator'),
+              label: (0,settings_external_wp_i18n_.__)('Vertical Alignment', 'video-embed-thumbnail-generator'),
               value: watermarkSettings.valign || 'center',
               options: [{
-                label: (0,external_wp_i18n_.__)('Top', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Top', 'video-embed-thumbnail-generator'),
                 value: 'top'
               }, {
-                label: (0,external_wp_i18n_.__)('Center', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Center', 'video-embed-thumbnail-generator'),
                 value: 'center'
               }, {
-                label: (0,external_wp_i18n_.__)('Bottom', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Bottom', 'video-embed-thumbnail-generator'),
                 value: 'bottom'
               }],
               onChange: value => updateSetting('valign', value),
               __nextHasNoMarginBottom: true,
               disabled: disabled
             })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexItem, {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexItem, {
             className: "videopack-offset-control",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
-              label: (0,external_wp_i18n_.__)('Vertical Offset (%)', 'video-embed-thumbnail-generator'),
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
+              label: (0,settings_external_wp_i18n_.__)('Vertical Offset (%)', 'video-embed-thumbnail-generator'),
               value: Number(watermarkSettings.y || 0),
               onChange: value => updateSetting('y', value),
               min: 0,
@@ -8057,15 +8139,15 @@ const WatermarkSettingsPanel = ({
  * @return {Array} List of resolution objects.
  */
 const useResolutions = (enable_custom_resolution, custom_resolution, onlyStandard = true) => {
-  return (0,external_wp_element_.useMemo)(() => {
+  return (0,settings_external_wp_element_.useMemo)(() => {
     // Filter based on whether we want only standard playback resolutions or all video resolutions.
     let resolutionsList = videopack_config.resolutions.filter(r => !r.is_custom && (onlyStandard ? r.is_standard !== false : r.is_video !== false));
     if (enable_custom_resolution) {
       const height = parseInt(custom_resolution, 10) || 900;
       const id = String(height);
       const width = Math.ceil(height * 16 / 9);
-      const name = (0,external_wp_i18n_.sprintf)(/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
-      (0,external_wp_i18n_.__)('Custom (%sp)', 'video-embed-thumbnail-generator'), height);
+      const name = (0,settings_external_wp_i18n_.sprintf)(/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
+      (0,settings_external_wp_i18n_.__)('Custom (%sp)', 'video-embed-thumbnail-generator'), height);
 
       // Remove any existing resolution with the same ID to avoid duplicates.
       resolutionsList = resolutionsList.filter(r => r.id !== id);
@@ -8221,77 +8303,77 @@ const PlayerSettings = ({
    *
    * @param {Array} options Array of embed options containing value and label.
    */
-  (0,external_wp_hooks_.applyFilters)('videopack_embed_method_options', [{
+  (0,settings_external_wp_hooks_.applyFilters)('videopack_embed_method_options', [{
     value: 'Video.js',
-    label: (0,external_wp_i18n_.__)('Video.js', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Video.js', 'video-embed-thumbnail-generator')
   }, {
     value: 'WordPress Default',
-    label: (0,external_wp_i18n_.__)('WordPress Default', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('WordPress Default', 'video-embed-thumbnail-generator')
   }, {
     value: 'None',
-    label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
   }]);
   const preloadOptions = [{
     value: 'auto',
-    label: (0,external_wp_i18n_.__)('Auto', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Auto', 'video-embed-thumbnail-generator')
   }, {
     value: 'metadata',
-    label: (0,external_wp_i18n_.__)('Metadata', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Metadata', 'video-embed-thumbnail-generator')
   }, {
     value: 'none',
-    label: (0,external_wp_i18n_._x)('None', 'Preload value')
+    label: (0,settings_external_wp_i18n_._x)('None', 'Preload value')
   }];
   const fixedAspectOptions = [{
     value: 'false',
-    label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
   }, {
     value: 'true',
-    label: (0,external_wp_i18n_.__)('All', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('All', 'video-embed-thumbnail-generator')
   }, {
     value: 'vertical',
-    label: (0,external_wp_i18n_.__)('Vertical Videos', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Vertical Videos', 'video-embed-thumbnail-generator')
   }];
   const watermarkLinkOptions = [{
     value: 'false',
-    label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
   }, {
     value: 'home',
-    label: (0,external_wp_i18n_.__)('Home page', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Home page', 'video-embed-thumbnail-generator')
   }, {
     value: 'parent',
-    label: (0,external_wp_i18n_.__)('Parent post', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Parent post', 'video-embed-thumbnail-generator')
   }, {
     value: 'download',
-    label: (0,external_wp_i18n_.__)('Download video', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Download video', 'video-embed-thumbnail-generator')
   }, {
     value: 'attachment',
-    label: (0,external_wp_i18n_.__)('Video attachment page', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Video attachment page', 'video-embed-thumbnail-generator')
   }, {
     value: 'custom',
-    label: (0,external_wp_i18n_.__)('Custom URL', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Custom URL', 'video-embed-thumbnail-generator')
   }];
-  const skinOptions = (0,external_wp_element_.useMemo)(() => {
+  const skinOptions = (0,settings_external_wp_element_.useMemo)(() => {
     const options = [{
       value: 'vjs-theme-videopack',
-      label: (0,external_wp_i18n_.__)('Videopack', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Videopack', 'video-embed-thumbnail-generator')
     }, {
       value: 'kg-video-js-skin',
-      label: (0,external_wp_i18n_.__)('Videopack Classic', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Videopack Classic', 'video-embed-thumbnail-generator')
     }, {
       value: 'default',
-      label: (0,external_wp_i18n_.__)('Video.js default', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Video.js default', 'video-embed-thumbnail-generator')
     }, {
       value: 'vjs-theme-city',
-      label: (0,external_wp_i18n_.__)('City', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('City', 'video-embed-thumbnail-generator')
     }, {
       value: 'vjs-theme-fantasy',
-      label: (0,external_wp_i18n_.__)('Fantasy', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Fantasy', 'video-embed-thumbnail-generator')
     }, {
       value: 'vjs-theme-forest',
-      label: (0,external_wp_i18n_.__)('Forest', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Forest', 'video-embed-thumbnail-generator')
     }, {
       value: 'vjs-theme-sea',
-      label: (0,external_wp_i18n_.__)('Sea', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Sea', 'video-embed-thumbnail-generator')
     }];
 
     /**
@@ -8302,39 +8384,39 @@ const PlayerSettings = ({
      * @param {Array}  options      List of skin option structures.
      * @param {string} embed_method The selected player embed method.
      */
-    return (0,external_wp_hooks_.applyFilters)('videopack_player_skin_options', options, embed_method);
+    return (0,settings_external_wp_hooks_.applyFilters)('videopack_player_skin_options', options, embed_method);
   }, [embed_method]);
   const alignOptions = [{
     value: '',
-    label: videopack_config.contentSize ? (0,external_wp_i18n_.sprintf)(/* translators: %s: Content size in pixels. */
-    (0,external_wp_i18n_.__)("None (use theme's default width: %s)", 'video-embed-thumbnail-generator'), videopack_config.contentSize) : (0,external_wp_i18n_.__)("None (use theme's default width)", 'video-embed-thumbnail-generator')
+    label: videopack_config.contentSize ? (0,settings_external_wp_i18n_.sprintf)(/* translators: %s: Content size in pixels. */
+    (0,settings_external_wp_i18n_.__)("None (use theme's default width: %s)", 'video-embed-thumbnail-generator'), videopack_config.contentSize) : (0,settings_external_wp_i18n_.__)("None (use theme's default width)", 'video-embed-thumbnail-generator')
   }, {
     value: 'wide',
-    label: videopack_config.wideSize ? (0,external_wp_i18n_.sprintf)(/* translators: %s: Wide size in pixels. */
-    (0,external_wp_i18n_.__)("Wide (use theme's wide width: %s)", 'video-embed-thumbnail-generator'), videopack_config.wideSize) : (0,external_wp_i18n_.__)("Wide (use theme's wide width)", 'video-embed-thumbnail-generator')
+    label: videopack_config.wideSize ? (0,settings_external_wp_i18n_.sprintf)(/* translators: %s: Wide size in pixels. */
+    (0,settings_external_wp_i18n_.__)("Wide (use theme's wide width: %s)", 'video-embed-thumbnail-generator'), videopack_config.wideSize) : (0,settings_external_wp_i18n_.__)("Wide (use theme's wide width)", 'video-embed-thumbnail-generator')
   }, {
     value: 'full',
-    label: (0,external_wp_i18n_.__)('Full width', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Full width', 'video-embed-thumbnail-generator')
   }, {
     value: 'left',
-    label: (0,external_wp_i18n_.__)('Left', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Left', 'video-embed-thumbnail-generator')
   }, {
     value: 'center',
-    label: (0,external_wp_i18n_.__)('Center', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Center', 'video-embed-thumbnail-generator')
   }, {
     value: 'right',
-    label: (0,external_wp_i18n_.__)('Right', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Right', 'video-embed-thumbnail-generator')
   }];
   const autoResOptions = () => {
     const items = [{
       value: 'automatic',
-      label: (0,external_wp_i18n_.__)('Automatic', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Automatic', 'video-embed-thumbnail-generator')
     }, {
       value: 'highest',
-      label: (0,external_wp_i18n_.__)('Highest', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Highest', 'video-embed-thumbnail-generator')
     }, {
       value: 'lowest',
-      label: (0,external_wp_i18n_.__)('Lowest', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Lowest', 'video-embed-thumbnail-generator')
     }];
     currentResolutions.forEach(resolution => {
       items.push({
@@ -8361,8 +8443,9 @@ const PlayerSettings = ({
       ...styles
     });
   };
-  const PLAYER_COLOR_FALLBACKS = (0,external_wp_element_.useMemo)(() => getColorFallbacks(settings), [settings]);
-  const previewContext = (0,external_wp_element_.useMemo)(() => {
+  const PLAYER_COLOR_FALLBACKS = (0,settings_external_wp_element_.useMemo)(() => getColorFallbacks(settings), [settings]);
+  const showPlayButtonColors = (0,settings_external_wp_hooks_.applyFilters)('videopack.videoSettings.showPlayButtonColors', true, settings);
+  const previewContext = (0,settings_external_wp_element_.useMemo)(() => {
     const ctx = {
       'videopack/isInsidePlayerContainer': true
     };
@@ -8386,14 +8469,14 @@ const PlayerSettings = ({
     }
     return ctx;
   }, [settings, PLAYER_COLOR_FALLBACKS]);
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelBody, {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-grid-row-align",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Video player', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Video player', 'video-embed-thumbnail-generator'),
           value: embed_method,
           onChange: value => {
             changeHandlerFactory.embed_method(value);
@@ -8405,45 +8488,45 @@ const PlayerSettings = ({
              * @param {string|undefined} default_skin Skin identifier.
              * @param {string}           value        The selected player method name.
              */
-            const defaultSkin = (0,external_wp_hooks_.applyFilters)('videopack_default_skin', value === 'WordPress Default' ? 'vjs-theme-videopack' : undefined, value);
+            const defaultSkin = (0,settings_external_wp_hooks_.applyFilters)('videopack_default_skin', value === 'WordPress Default' ? 'vjs-theme-videopack' : undefined, value);
             if (defaultSkin) {
               changeHandlerFactory.skin(defaultSkin);
             }
           },
           options: embedMethodOptions
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" outputs a plain, unenhanced video tag, but does not currently prevent the plugin\'s CSS or JS from loading on the front end.', 'video-embed-thumbnail-generator')
         })]
       })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelBody, {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: `videopack-sample-video-player align${align || 'none'}`,
         style: {
           '--wp--style--global--content-size': videopack_config.contentSize || '800px',
           '--wp--style--global--wide-size': videopack_config.wideSize || '1000px'
         },
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelRow, {
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.Flex, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelRow, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.Flex, {
             className: "videopack-flex-bottom",
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexBlock, {
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexBlock, {
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
                 __nextHasNoMarginBottom: true,
-                label: (0,external_wp_i18n_.__)('Title', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Title', 'video-embed-thumbnail-generator'),
                 onChange: changeHandlerFactory.overlay_title,
                 checked: !!overlay_title
               })
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexBlock, {
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexBlock, {
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
                 __nextHasNoMarginBottom: true,
-                label: (0,external_wp_i18n_.__)('Download link', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Download link', 'video-embed-thumbnail-generator'),
                 onChange: changeHandlerFactory.downloadlink,
                 checked: !!downloadlink
               })
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexBlock, {
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexItem, {
-                children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexBlock, {
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexItem, {
+                children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
                   __nextHasNoMarginBottom: true,
-                  label: (0,external_wp_i18n_.__)('Embed code', 'video-embed-thumbnail-generator'),
+                  label: (0,settings_external_wp_i18n_.__)('Embed code', 'video-embed-thumbnail-generator'),
                   onChange: changeHandlerFactory.embedcode,
                   checked: !!embedcode,
                   disabled: !embeddable
@@ -8451,10 +8534,10 @@ const PlayerSettings = ({
               })
             })]
           })
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(PreviewIframe_PreviewIframe, {
-          title: (0,external_wp_i18n_.__)('Video Player Preview', 'video-embed-thumbnail-generator'),
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(PreviewIframe_PreviewIframe, {
+          title: (0,settings_external_wp_i18n_.__)('Video Player Preview', 'video-embed-thumbnail-generator'),
           resizeDependencies: [align],
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(BlockPreview, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(BlockPreview, {
             name: "videopack/player-container",
             attributes: {
               id: 'sample-video',
@@ -8465,10 +8548,10 @@ const PlayerSettings = ({
               height: undefined,
               starts: 23,
               embedlink: 'https://www.website.com/embed/',
-              caption: (0,external_wp_i18n_.__)("If text is entered in the attachment's caption field it is displayed here automatically.")
+              caption: (0,settings_external_wp_i18n_.__)("If text is entered in the attachment's caption field it is displayed here automatically.")
             },
             context: previewContext,
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(BlockPreview, {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(BlockPreview, {
               name: "videopack/player",
               video: {
                 attachment_id: 'sample-video',
@@ -8482,7 +8565,7 @@ const PlayerSettings = ({
                 }
               },
               context: previewContext,
-              children: [(overlay_title || downloadlink || embeddable && embedcode) && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(BlockPreview, {
+              children: [(overlay_title || downloadlink || embeddable && embedcode) && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(BlockPreview, {
                 name: "videopack/title",
                 attributes: {
                   title: 'Sample Video',
@@ -8494,27 +8577,27 @@ const PlayerSettings = ({
                 isInsidePlayerContainer: true,
                 isOverlay: true,
                 context: previewContext,
-                children: [!!downloadlink && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(BlockPreview, {
+                children: [!!downloadlink && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(BlockPreview, {
                   name: "videopack/download",
                   attributes: TITLE_DOWNLOAD_BLOCK_ATTRS,
                   context: previewContext,
                   isInsidePlayerOverlay: true,
                   isInsidePlayerContainer: true
-                }), !!(embeddable && embedcode) && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(BlockPreview, {
+                }), !!(embeddable && embedcode) && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(BlockPreview, {
                   name: "videopack/share",
                   attributes: TITLE_SHARE_BLOCK_ATTRS,
                   context: previewContext,
                   isInsidePlayerOverlay: true,
                   isInsidePlayerContainer: true
                 })]
-              }), watermark && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(BlockPreview, {
+              }), watermark && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(BlockPreview, {
                 name: "videopack/watermark",
                 isInsidePlayerOverlay: true,
                 isInsidePlayerContainer: true,
                 isOverlay: true,
                 context: previewContext
               })]
-            }), views && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(BlockPreview, {
+            }), views && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(BlockPreview, {
               name: "videopack/view-count",
               attributes: {
                 count: 1234,
@@ -8524,48 +8607,48 @@ const PlayerSettings = ({
               context: previewContext
             })]
           }, embed_method)
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelRow, {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelRow, {
           className: "videopack-flex-right",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('View count', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('View count', 'video-embed-thumbnail-generator'),
             onChange: changeHandlerFactory.views,
             checked: !!views
           })
         })]
       })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Design', 'video-embed-thumbnail-generator'),
-      children: [embed_method.startsWith('Video.js') && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Design', 'video-embed-thumbnail-generator'),
+      children: [embed_method.startsWith('Video.js') && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-grid-row-align",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Skin', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Skin', 'video-embed-thumbnail-generator'),
           value: skin,
           onChange: changeHandlerFactory.skin,
           options: skinOptions
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-color-section",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("p", {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("p", {
           className: "videopack-settings-section-title",
-          children: (0,external_wp_i18n_.__)('Title overlay', 'video-embed-thumbnail-generator')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+          children: (0,settings_external_wp_i18n_.__)('Title overlay', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-color-flex-row",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
             className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: (0,external_wp_i18n_.__)('Text', 'video-embed-thumbnail-generator'),
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+              label: (0,settings_external_wp_i18n_.__)('Text', 'video-embed-thumbnail-generator'),
               value: title_color,
               onChange: changeHandlerFactory.title_color,
               colors: videopack_config.themeColors,
               fallbackValue: PLAYER_COLOR_FALLBACKS.title_color
             })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
             className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: (0,external_wp_i18n_.__)('Background', 'video-embed-thumbnail-generator'),
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+              label: (0,settings_external_wp_i18n_.__)('Background', 'video-embed-thumbnail-generator'),
               value: title_background_color,
               onChange: changeHandlerFactory.title_background_color,
               colors: videopack_config.themeColors,
@@ -8573,44 +8656,46 @@ const PlayerSettings = ({
             })
           })]
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-color-section",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("p", {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("p", {
           className: "videopack-settings-section-title",
-          children: (0,external_wp_i18n_.__)('Player', 'video-embed-thumbnail-generator')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+          children: (0,settings_external_wp_i18n_.__)('Player', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-color-flex-row",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+          children: [showPlayButtonColors && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
+              className: "videopack-color-flex-item",
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: embed_method === 'WordPress Default' ? (0,settings_external_wp_i18n_.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
+                value: play_button_color,
+                onChange: changeHandlerFactory.play_button_color,
+                colors: videopack_config.themeColors,
+                fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_color
+              })
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
+              className: "videopack-color-flex-item",
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+                label: embed_method === 'WordPress Default' ? (0,settings_external_wp_i18n_.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
+                value: play_button_secondary_color,
+                onChange: changeHandlerFactory.play_button_secondary_color,
+                colors: videopack_config.themeColors,
+                fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_secondary_color
+              })
+            })]
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
             className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: embed_method === 'WordPress Default' ? (0,external_wp_i18n_.__)('Play Button Color', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Play Button Icon', 'video-embed-thumbnail-generator'),
-              value: play_button_color,
-              onChange: changeHandlerFactory.play_button_color,
-              colors: videopack_config.themeColors,
-              fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_color
-            })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
-            className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: embed_method === 'WordPress Default' ? (0,external_wp_i18n_.__)('Play Button Hover', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Play Button Accent', 'video-embed-thumbnail-generator'),
-              value: play_button_secondary_color,
-              onChange: changeHandlerFactory.play_button_secondary_color,
-              colors: videopack_config.themeColors,
-              fallbackValue: PLAYER_COLOR_FALLBACKS.play_button_secondary_color
-            })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
-            className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: (0,external_wp_i18n_.__)('Control Bar Background', 'video-embed-thumbnail-generator'),
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+              label: (0,settings_external_wp_i18n_.__)('Control Bar Background', 'video-embed-thumbnail-generator'),
               value: control_bar_bg_color,
               onChange: changeHandlerFactory.control_bar_bg_color,
               colors: videopack_config.themeColors,
               fallbackValue: PLAYER_COLOR_FALLBACKS.control_bar_bg_color
             })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
             className: "videopack-color-flex-item",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
-              label: (0,external_wp_i18n_.__)('Control Bar Icons', 'video-embed-thumbnail-generator'),
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(CompactColorPicker_CompactColorPicker, {
+              label: (0,settings_external_wp_i18n_.__)('Control Bar Icons', 'video-embed-thumbnail-generator'),
               value: control_bar_color,
               onChange: changeHandlerFactory.control_bar_color,
               colors: videopack_config.themeColors,
@@ -8619,50 +8704,50 @@ const PlayerSettings = ({
           })]
         })]
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Default Playback', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Default Playback', 'video-embed-thumbnail-generator'),
       initialOpen: true,
       className: "videopack-setting-default-playback",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.Flex, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.Flex, {
         "align-items": "flex-start",
         expanded: false,
         gap: 20,
         justify: "flex-start",
         className: "videopack-player-settings-flex",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.FlexItem, {
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.FlexItem, {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('Autoplay', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Autoplay', 'video-embed-thumbnail-generator'),
             onChange: changeHandlerFactory.autoplay,
             checked: !!autoplay,
             disabled: gifmode,
-            help: (0,external_wp_i18n_.__)('Most browsers will only autoplay if the video starts muted.')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+            help: (0,settings_external_wp_i18n_.__)('Most browsers will only autoplay if the video starts muted.')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('Pause other videos on page when starting a new video', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Pause other videos on page when starting a new video', 'video-embed-thumbnail-generator'),
             onChange: changeHandlerFactory.pauseothervideos,
             checked: !!pauseothervideos,
             disabled: gifmode
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('Loop', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Loop', 'video-embed-thumbnail-generator'),
             onChange: changeHandlerFactory.loop,
             checked: !!loop,
             disabled: gifmode
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('Muted', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Muted', 'video-embed-thumbnail-generator'),
             onChange: changeHandlerFactory.muted,
             checked: !!muted,
             disabled: gifmode
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
             __next40pxDefaultSize: true,
             __nextHasNoMarginBottom: true,
             className: "videopack-volume-control",
-            label: (0,external_wp_i18n_.__)('Volume', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Volume', 'video-embed-thumbnail-generator'),
             value: volume,
-            beforeIcon: icon.volumeDown,
-            afterIcon: icon.volumeUp,
+            beforeIcon: settings_icon/* volumeDown */.pZ,
+            afterIcon: settings_icon/* volumeUp */.Kx,
             initialPosition: 1,
             withInputField: false,
             onChange: changeHandlerFactory.volume,
@@ -8671,31 +8756,31 @@ const PlayerSettings = ({
             step: 0.05,
             disabled: muted || gifmode
           })]
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.FlexItem, {
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.FlexItem, {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('Controls', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Controls', 'video-embed-thumbnail-generator'),
             onChange: changeHandlerFactory.controls,
             checked: !!controls,
             disabled: gifmode
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('Play inline', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Play inline', 'video-embed-thumbnail-generator'),
             onChange: changeHandlerFactory.playsinline,
             checked: !!playsinline,
             disabled: gifmode,
-            help: (0,external_wp_i18n_.__)('Plays inline instead of fullscreen on iPhones.')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+            help: (0,settings_external_wp_i18n_.__)('Plays inline instead of fullscreen on iPhones.')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('Variable speeds', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Variable speeds', 'video-embed-thumbnail-generator'),
             onChange: changeHandlerFactory.playback_rate,
             disabled: gifmode,
             checked: !!playback_rate
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RadioControl, {
-            label: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RadioControl, {
+            label: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
               className: "videopack-label-with-tooltip",
-              children: [(0,external_wp_i18n_.__)('Preload', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-                text: (0,external_wp_i18n_.__)('Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.', 'video-embed-thumbnail-generator')
+              children: [(0,settings_external_wp_i18n_.__)('Preload', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+                text: (0,settings_external_wp_i18n_.__)('Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.', 'video-embed-thumbnail-generator')
               })]
             }),
             selected: preload,
@@ -8704,20 +8789,20 @@ const PlayerSettings = ({
             disabled: gifmode
           })]
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('GIF mode', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('GIF mode', 'video-embed-thumbnail-generator'),
           onChange: value => {
             changeGifmode(value);
           },
           checked: !!gifmode
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.', 'video-embed-thumbnail-generator')
         })]
       })]
-    }), (0,external_wp_hooks_.applyFilters)(
+    }), (0,settings_external_wp_hooks_.applyFilters)(
     /**
      * Action filter hook to render custom settings components after playback options.
      *
@@ -8729,109 +8814,109 @@ const PlayerSettings = ({
     'videopack.settings.player.after_playback', null, {
       settings,
       changeHandlerFactory
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Dimensions', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Dimensions', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-grid-row-align",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Alignment / Width', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Alignment / Width', 'video-embed-thumbnail-generator'),
           value: align,
           onChange: changeHandlerFactory.align,
           options: alignOptions
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RadioControl, {
-        label: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RadioControl, {
+        label: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
           className: "videopack-label-with-tooltip",
-          children: [(0,external_wp_i18n_.__)('Constrain to default aspect ratio', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-            text: (0,external_wp_i18n_.__)('When set to "none," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.', 'video-embed-thumbnail-generator')
+          children: [(0,settings_external_wp_i18n_.__)('Constrain to default aspect ratio', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+            text: (0,settings_external_wp_i18n_.__)('When set to "none," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.', 'video-embed-thumbnail-generator')
           })]
         }),
         selected: fixed_aspect,
         onChange: changeHandlerFactory.fixed_aspect,
         options: fixedAspectOptions,
         className: "videopack-setting-radio-group"
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Use legacy dimension settings', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Use legacy dimension settings', 'video-embed-thumbnail-generator'),
         onChange: changeHandlerFactory.legacy_dimensions,
         checked: !!legacy_dimensions
-      }), legacy_dimensions && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+      }), legacy_dimensions && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
           className: "videopack-setting-auto-width",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,external_wp_i18n_.__)('Width', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Width', 'video-embed-thumbnail-generator'),
             type: "number",
             value: width,
             onChange: changeHandlerFactory.width
           })
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
           className: "videopack-setting-auto-width",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,external_wp_i18n_.__)('Height', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Height', 'video-embed-thumbnail-generator'),
             type: "number",
             value: height,
             onChange: changeHandlerFactory.height
           })
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Make video display inline', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Make video display inline', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.inline,
           checked: !!inline
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Flex, {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Flex, {
           direction: "column",
           expanded: false,
           align: "flex-start",
           justify: "flex-start",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.FlexItem, {
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.FlexItem, {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
               __nextHasNoMarginBottom: true,
-              label: (0,external_wp_i18n_.__)('Shrink player to fit container', 'video-embed-thumbnail-generator'),
+              label: (0,settings_external_wp_i18n_.__)('Shrink player to fit container', 'video-embed-thumbnail-generator'),
               onChange: changeHandlerFactory.resize,
               checked: !!resize
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
               className: "videopack-control-with-tooltip",
-              children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+              children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
                 __nextHasNoMarginBottom: true,
-                label: (0,external_wp_i18n_.__)('Expand player to full width of container', 'video-embed-thumbnail-generator'),
+                label: (0,settings_external_wp_i18n_.__)('Expand player to full width of container', 'video-embed-thumbnail-generator'),
                 onChange: changeHandlerFactory.fullwidth,
                 checked: !!fullwidth
-              }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-                text: (0,external_wp_i18n_.__)("Enabling this will ignore any other width settings and set the width of the video to the width of the container it's in.", 'video-embed-thumbnail-generator')
+              }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+                text: (0,settings_external_wp_i18n_.__)("Enabling this will ignore any other width settings and set the width of the video to the width of the container it's in.", 'video-embed-thumbnail-generator')
               })]
             })]
           })
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-grid-row-align",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Default resolution', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Default resolution', 'video-embed-thumbnail-generator'),
           value: auto_res,
           onChange: changeHandlerFactory.auto_res,
           options: autoResOptions()
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('If multiple resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('If multiple resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.', 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Use device pixel ratio for resolution calculation', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Use device pixel ratio for resolution calculation', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.pixel_ratio,
           checked: !!pixel_ratio
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.', 'video-embed-thumbnail-generator')
         })]
       })]
-    }), (0,external_wp_hooks_.applyFilters)(
+    }), (0,settings_external_wp_hooks_.applyFilters)(
     /**
      * Action filter hook to render custom settings components after dimensions options.
      *
@@ -8843,36 +8928,36 @@ const PlayerSettings = ({
     'videopack.settings.player.after_dimensions', null, {
       settings,
       changeHandlerFactory
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Sharing', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Sharing', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Allow users to embed your videos on other sites'),
+        label: (0,settings_external_wp_i18n_.__)('Allow users to embed your videos on other sites'),
         onChange: changeHandlerFactory.embeddable,
         checked: !!embeddable
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Allow right-clicking on videos', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Allow right-clicking on videos', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.right_click,
           checked: !!right_click
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)("We can't prevent a user from simply saving the downloaded video file from the browser's cache, but disabling right-clicking will make it more difficult for casual users to save your videos.", 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)("We can't prevent a user from simply saving the downloaded video file from the browser's cache, but disabling right-clicking will make it more difficult for casual users to save your videos.", 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Allow single-click download links', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Allow single-click download links', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.click_download,
           checked: !!click_download
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)("Videopack creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video's WordPress database ID could potentially use the method to download videos they might not otherwise have access to.", 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)("Videopack creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video's WordPress database ID could potentially use the method to download videos they might not otherwise have access to.", 'video-embed-thumbnail-generator')
         })]
       })]
-    }), (0,external_wp_hooks_.applyFilters)(
+    }), (0,settings_external_wp_hooks_.applyFilters)(
     /**
      * Action filter hook to render custom settings components after sharing options.
      *
@@ -8884,30 +8969,30 @@ const PlayerSettings = ({
     'videopack.settings.player.after_sharing', null, {
       settings,
       changeHandlerFactory
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(WatermarkSettingsPanel_WatermarkSettingsPanel, {
-      title: (0,external_wp_i18n_.__)('Watermark Overlay', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(WatermarkSettingsPanel_WatermarkSettingsPanel, {
+      title: (0,settings_external_wp_i18n_.__)('Watermark Overlay', 'video-embed-thumbnail-generator'),
       watermarkSettings: watermarkSettings,
       onChange: handleWatermarkChange,
       initialOpen: true,
-      children: watermark && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      children: watermark && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-grid-row-align",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Link to', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Link to', 'video-embed-thumbnail-generator'),
           value: watermark_link_to,
           onChange: changeHandlerFactory.watermark_link_to,
           options: watermarkLinkOptions
-        }), watermark_link_to === 'custom' && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+        }), watermark_link_to === 'custom' && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('URL', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('URL', 'video-embed-thumbnail-generator'),
           type: "url",
           value: watermark_url,
           onChange: changeHandlerFactory.watermark_url
         })]
       })
-    }), (0,external_wp_hooks_.applyFilters)(
+    }), (0,settings_external_wp_hooks_.applyFilters)(
     /**
      * Action filter hook to render custom settings components after watermark options.
      *
@@ -8919,39 +9004,39 @@ const PlayerSettings = ({
     'videopack.settings.player.after_watermark', null, {
       settings,
       changeHandlerFactory
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Video Sources', 'video-embed-thumbnail-generator'),
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Video Sources', 'video-embed-thumbnail-generator'),
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Enable custom resolution', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Enable custom resolution', 'video-embed-thumbnail-generator'),
         onChange: changeHandlerFactory.enable_custom_resolution,
         checked: !!enable_custom_resolution
-      }), enable_custom_resolution && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), enable_custom_resolution && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-setting-auto-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Custom Resolution Height', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Custom Resolution Height', 'video-embed-thumbnail-generator'),
           type: "number",
           value: custom_resolution || '',
           onChange: value => changeHandlerFactory.custom_resolution(value === '' ? 0 : parseInt(value, 10))
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Automatically search for other formats of original file.', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Automatically search for other formats of original file.', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.find_formats,
           checked: !!find_formats
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('Videos encoded by Videopack or manually assigned in the Media Library will always be found, but if this setting is enabled for a video named video.mp4, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('Videos encoded by Videopack or manually assigned in the Media Library will always be found, but if this setting is enabled for a video named video.mp4, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.', 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.BaseControl, {
-        label: (0,external_wp_i18n_.__)('Available Formats', 'video-embed-thumbnail-generator'),
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.BaseControl, {
+        label: (0,settings_external_wp_i18n_.__)('Available Formats', 'video-embed-thumbnail-generator'),
         id: "videopack-find-formats-codecs",
         className: "videopack-setting-checkbox-group videopack-setting-extra-margin",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
-          children: videopack_config.codecs.map(codec => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.CheckboxControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
+          children: videopack_config.codecs.map(codec => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.CheckboxControl, {
             __nextHasNoMarginBottom: true,
             label: codec.name,
             checked: !!encode?.[codec.id]?.enabled,
@@ -8959,7 +9044,7 @@ const PlayerSettings = ({
           }, codec.id))
         })
       })]
-    }), (0,external_wp_hooks_.applyFilters)(
+    }), (0,settings_external_wp_hooks_.applyFilters)(
     /**
      * Action filter hook to render custom settings components after sources options.
      *
@@ -8976,7 +9061,7 @@ const PlayerSettings = ({
 };
 /* harmony default export */ const components_PlayerSettings = (PlayerSettings);
 // EXTERNAL MODULE: ./src/api/media.js
-var media = __webpack_require__(263);
+var settings_media = __webpack_require__(263);
 ;// ./src/hooks/useBatchProcess.js
 /**
  * Custom React hook for managing batch processes.
@@ -8991,34 +9076,34 @@ var media = __webpack_require__(263);
  * @return {Object} Batch process state and controls.
  */
 const useBatchProcess = () => {
-  const [isProcessing, setIsProcessing] = (0,external_wp_element_.useState)(false);
-  const [progress, setProgress] = (0,external_wp_element_.useState)({
+  const [isProcessing, setIsProcessing] = (0,settings_external_wp_element_.useState)(false);
+  const [progress, setProgress] = (0,settings_external_wp_element_.useState)({
     current: 0,
     total: 0
   });
-  const [confirmDialog, setConfirmDialog] = (0,external_wp_element_.useState)({
+  const [confirmDialog, setConfirmDialog] = (0,settings_external_wp_element_.useState)({
     isOpen: false,
     message: '',
     onConfirm: null,
     isAlert: false
   });
-  const intervalRef = (0,external_wp_element_.useRef)(null);
+  const intervalRef = (0,settings_external_wp_element_.useRef)(null);
 
   // Cleanup interval on unmount
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
   }, []);
-  const closeConfirmDialog = (0,external_wp_element_.useCallback)(() => {
+  const closeConfirmDialog = (0,settings_external_wp_element_.useCallback)(() => {
     setConfirmDialog(prev => ({
       ...prev,
       isOpen: false
     }));
   }, []);
-  const showAlert = (0,external_wp_element_.useCallback)(message => {
+  const showAlert = (0,settings_external_wp_element_.useCallback)(message => {
     setConfirmDialog({
       isOpen: true,
       message,
@@ -9026,7 +9111,7 @@ const useBatchProcess = () => {
       isAlert: true
     });
   }, []);
-  const runPolling = (0,external_wp_element_.useCallback)(async (startFn, progressFn, noItemsMessage) => {
+  const runPolling = (0,settings_external_wp_element_.useCallback)(async (startFn, progressFn, noItemsMessage) => {
     setIsProcessing(true);
     setProgress({
       current: 0,
@@ -9066,11 +9151,11 @@ const useBatchProcess = () => {
       }, 2000);
     } catch (error) {
       console.error(error);
-      showAlert((0,external_wp_i18n_.__)('An error occurred while processing.', 'video-embed-thumbnail-generator'));
+      showAlert((0,settings_external_wp_i18n_.__)('An error occurred while processing.', 'video-embed-thumbnail-generator'));
       setIsProcessing(false);
     }
   }, [showAlert]);
-  const confirmAndRun = (0,external_wp_element_.useCallback)((confirmMessage, startFn, progressFn, noItemsMessage = (0,external_wp_i18n_.__)('No items found to process.', 'video-embed-thumbnail-generator')) => {
+  const confirmAndRun = (0,settings_external_wp_element_.useCallback)((confirmMessage, startFn, progressFn, noItemsMessage = (0,settings_external_wp_i18n_.__)('No items found to process.', 'video-embed-thumbnail-generator')) => {
     setConfirmDialog({
       isOpen: true,
       message: confirmMessage,
@@ -9123,29 +9208,29 @@ const ThumbnailSettings = ({
     auto_thumb_position,
     active_encoder = 'ffmpeg'
   } = settings;
-  const activeEncoderReady = (0,external_wp_hooks_.applyFilters)('videopack.encoder.is_ready', !!config.isTranscodingServiceReady, active_encoder, settings);
+  const activeEncoderReady = (0,settings_external_wp_hooks_.applyFilters)('videopack.encoder.is_ready', !!config.isTranscodingServiceReady, active_encoder, settings);
   const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && activeEncoderReady || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
-  const browserThumbnailsRequirement = (0,external_wp_hooks_.applyFilters)('videopack.settings.browserThumbnailsRequirement', {
+  const browserThumbnailsRequirement = (0,settings_external_wp_hooks_.applyFilters)('videopack.settings.browserThumbnailsRequirement', {
     force: false,
     help: null
   }, config);
   const featuredBatch = hooks_useBatchProcess();
   const parentsBatch = hooks_useBatchProcess();
   const handleSetAllFeatured = async () => {
-    featuredBatch.confirmAndRun((0,external_wp_i18n_.__)('Are you sure you want to set all video thumbnails as featured images for their parent posts? This may overwrite existing featured images.', 'video-embed-thumbnail-generator'), () => (0,media/* startBatchProcess */.AO)('featured'), () => (0,media/* getBatchProgress */.wW)('featured'), (0,external_wp_i18n_.__)('No videos found to process.', 'video-embed-thumbnail-generator'));
+    featuredBatch.confirmAndRun((0,settings_external_wp_i18n_.__)('Are you sure you want to set all video thumbnails as featured images for their parent posts? This may overwrite existing featured images.', 'video-embed-thumbnail-generator'), () => (0,settings_media/* startBatchProcess */.AO)('featured'), () => (0,settings_media/* getBatchProgress */.wW)('featured'), (0,settings_external_wp_i18n_.__)('No videos found to process.', 'video-embed-thumbnail-generator'));
   };
   const handleSetAllParents = async () => {
-    const confirmMessage = thumb_parent === 'video' ? (0,external_wp_i18n_.__)('Are you sure you want to attach all thumbnails to their parent videos?', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Are you sure you want to attach all thumbnails to the parent posts?', 'video-embed-thumbnail-generator');
-    parentsBatch.confirmAndRun(confirmMessage, () => (0,media/* startBatchProcess */.AO)('parents', {
+    const confirmMessage = thumb_parent === 'video' ? (0,settings_external_wp_i18n_.__)('Are you sure you want to attach all thumbnails to their parent videos?', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('Are you sure you want to attach all thumbnails to the parent posts?', 'video-embed-thumbnail-generator');
+    parentsBatch.confirmAndRun(confirmMessage, () => (0,settings_media/* startBatchProcess */.AO)('parents', {
       target_parent: thumb_parent
-    }), () => (0,media/* getBatchProgress */.wW)('parents'), (0,external_wp_i18n_.__)('No thumbnails found to process.', 'video-embed-thumbnail-generator'));
+    }), () => (0,settings_media/* getBatchProgress */.wW)('parents'), (0,settings_external_wp_i18n_.__)('No thumbnails found to process.', 'video-embed-thumbnail-generator'));
   };
   const thumbParentOptions = [{
     value: 'post',
-    label: (0,external_wp_i18n_.__)('Post', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Post', 'video-embed-thumbnail-generator')
   }, {
     value: 'video',
-    label: (0,external_wp_i18n_.__)('Video', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Video', 'video-embed-thumbnail-generator')
   }];
   const changeAutoThumbNumber = value => {
     const numVal = parseInt(value, 10) || 1;
@@ -9156,169 +9241,169 @@ const ThumbnailSettings = ({
       changeHandlerFactory.auto_thumb_position('1');
     }
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Manual Generation', 'video-embed-thumbnail-generator'),
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Manual Generation', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-grid-row-align videopack-narrow-input",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Default to generate', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Default to generate', 'video-embed-thumbnail-generator'),
           type: "number",
           value: total_thumbnails,
           onChange: changeHandlerFactory.total_thumbnails
         })
-      }), !!effectiveFfmpegExists && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      }), !!effectiveFfmpegExists && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)("When possible, use the browser's built-in video capabilities to generate thumbnails"),
+        label: (0,settings_external_wp_i18n_.__)("When possible, use the browser's built-in video capabilities to generate thumbnails"),
         value: browser_thumbnails,
         checked: !!browser_thumbnails || !!browserThumbnailsRequirement.force,
         onChange: changeHandlerFactory.browser_thumbnails,
         disabled: !!browserThumbnailsRequirement.force,
         help: browserThumbnailsRequirement.help
       })]
-    }), !!effectiveFfmpegExists && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Automatic Generation on Upload', 'video-embed-thumbnail-generator'),
+    }), !!effectiveFfmpegExists && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Automatic Generation on Upload', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Thumbnails', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Thumbnails', 'video-embed-thumbnail-generator'),
         onChange: changeHandlerFactory.auto_thumb,
         checked: !!auto_thumb
-      }), !!auto_thumb && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), !!auto_thumb && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
           className: "videopack-grid-row-align videopack-narrow-input",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,external_wp_i18n_.__)('Number of thumbnails', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Number of thumbnails', 'video-embed-thumbnail-generator'),
             type: "number",
             min: "1",
             max: "99",
             value: auto_thumb_number,
             onChange: changeAutoThumbNumber
           })
-        }), String(auto_thumb_number) === '1' ? /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+        }), String(auto_thumb_number) === '1' ? /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-grid-row-align",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,external_wp_i18n_.__)('Video position', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Video position', 'video-embed-thumbnail-generator'),
             value: Number(auto_thumb_position),
             onChange: changeHandlerFactory.auto_thumb_position,
             min: 0,
             max: 100,
             step: 1,
-            help: (0,external_wp_i18n_.sprintf)(/* translators: %s is a percent sign. */
-            (0,external_wp_i18n_.__)('Where in the video to capture the thumbnail (e.g., 50%s for the exact middle).', 'video-embed-thumbnail-generator'), '%')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+            help: (0,settings_external_wp_i18n_.sprintf)(/* translators: %s is a percent sign. */
+            (0,settings_external_wp_i18n_.__)('Where in the video to capture the thumbnail (e.g., 50%s for the exact middle).', 'video-embed-thumbnail-generator'), '%')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
             className: "videopack-input-suffix",
             children: "%"
           })]
-        }) : /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        }) : /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
           className: "videopack-grid-row-align",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,external_wp_i18n_.__)('Featured thumbnail number', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Featured thumbnail number', 'video-embed-thumbnail-generator'),
             value: Number(auto_thumb_position),
             onChange: changeHandlerFactory.auto_thumb_position,
             min: 1,
             max: Number(auto_thumb_number),
             step: 1,
-            help: (0,external_wp_i18n_.__)("Which of the generated thumbnails to set as the post's featured image.", 'video-embed-thumbnail-generator')
+            help: (0,settings_external_wp_i18n_.__)("Which of the generated thumbnails to set as the post's featured image.", 'video-embed-thumbnail-generator')
           })
         })]
-      }), (0,external_wp_hooks_.applyFilters)('videopack.settings.thumbnail.extra_controls', null, {
+      }), (0,settings_external_wp_hooks_.applyFilters)('videopack.settings.thumbnail.extra_controls', null, {
         settings,
         changeHandlerFactory,
         effectiveFfmpegExists
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Defaults', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Defaults', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(components_SelectFromLibrary, {
-        label: (0,external_wp_i18n_.__)('Default thumbnail', 'video-embed-thumbnail-generator'),
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(components_SelectFromLibrary, {
+        label: (0,settings_external_wp_i18n_.__)('Default thumbnail', 'video-embed-thumbnail-generator'),
         type: "url",
         value: poster,
         onChange: changeHandlerFactory.poster
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Display thumbnail image again when video ends', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Display thumbnail image again when video ends', 'video-embed-thumbnail-generator'),
         onChange: changeHandlerFactory.endofvideooverlaysame,
         checked: !!endofvideooverlaysame
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(components_SelectFromLibrary, {
-        label: (0,external_wp_i18n_.__)('End of video image', 'video-embed-thumbnail-generator'),
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(components_SelectFromLibrary, {
+        label: (0,settings_external_wp_i18n_.__)('End of video image', 'video-embed-thumbnail-generator'),
         type: "url",
         value: endofvideooverlay,
         onChange: changeHandlerFactory.endofvideooverlay,
         disabled: endofvideooverlaysame,
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('Display alternate image when video ends.', 'video-embed-thumbnail-generator')
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('Display alternate image when video ends.', 'video-embed-thumbnail-generator')
         })
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(WatermarkSettingsPanel_WatermarkSettingsPanel, {
-      title: (0,external_wp_i18n_.__)('Add watermark to generated thumbnails', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(WatermarkSettingsPanel_WatermarkSettingsPanel, {
+      title: (0,settings_external_wp_i18n_.__)('Add watermark to generated thumbnails', 'video-embed-thumbnail-generator'),
       watermarkSettings: ffmpeg_thumb_watermark,
       onChange: changeHandlerFactory.ffmpeg_thumb_watermark,
       initialOpen: true
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Media Library', 'video-embed-thumbnail-generator'),
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Media Library', 'video-embed-thumbnail-generator'),
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Hide generated thumnbails from the Media Library'),
+        label: (0,settings_external_wp_i18n_.__)('Hide generated thumnbails from the Media Library'),
         onChange: changeHandlerFactory.hide_thumbnails,
         checked: !!hide_thumbnails
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-setting-extra-margin",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Set generated thumbnails as featured images.', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Set generated thumbnails as featured images.', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.featured,
           checked: !!featured
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-control-with-tooltip",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Button, {
             __next40pxDefaultSize: true,
             variant: "secondary",
             onClick: handleSetAllFeatured,
             disabled: featuredBatch.isProcessing,
-            children: featuredBatch.isProcessing ? (0,external_wp_i18n_.sprintf)(/* translators: 1: current count, 2: total count */
-            (0,external_wp_i18n_.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), featuredBatch.progress.current, featuredBatch.progress.total) : (0,external_wp_i18n_.__)('Set all as featured', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-            text: (0,external_wp_i18n_.__)("If you've generated thumbnails before enabling this option, this will set all existing thumbnails as featured images.", 'video-embed-thumbnail-generator')
+            children: featuredBatch.isProcessing ? (0,settings_external_wp_i18n_.sprintf)(/* translators: 1: current count, 2: total count */
+            (0,settings_external_wp_i18n_.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), featuredBatch.progress.current, featuredBatch.progress.total) : (0,settings_external_wp_i18n_.__)('Set all as featured', 'video-embed-thumbnail-generator')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+            text: (0,settings_external_wp_i18n_.__)("If you've generated thumbnails before enabling this option, this will set all existing thumbnails as featured images.", 'video-embed-thumbnail-generator')
           })]
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-setting-extra-margin",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RadioControl, {
-          label: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RadioControl, {
+          label: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
             className: "videopack-label-with-tooltip",
-            children: [(0,external_wp_i18n_.__)('Attach thumbnails to', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-              text: (0,external_wp_i18n_.__)('This depends on your theme. Thumbnails generated by Videopack can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.', 'video-embed-thumbnail-generator')
+            children: [(0,settings_external_wp_i18n_.__)('Attach thumbnails to', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+              text: (0,settings_external_wp_i18n_.__)('This depends on your theme. Thumbnails generated by Videopack can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.', 'video-embed-thumbnail-generator')
             })]
           }),
           selected: thumb_parent,
           options: thumbParentOptions,
           onChange: changeHandlerFactory.thumb_parent,
           className: "videopack-setting-radio-group"
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-control-with-tooltip",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Button, {
             __next40pxDefaultSize: true,
             variant: "secondary",
             onClick: handleSetAllParents,
             disabled: parentsBatch.isProcessing,
-            children: parentsBatch.isProcessing ? (0,external_wp_i18n_.sprintf)(/* translators: 1: current count, 2: total count */
-            (0,external_wp_i18n_.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), parentsBatch.progress.current, parentsBatch.progress.total) : (0,external_wp_i18n_.__)('Set all parents', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-            text: (0,external_wp_i18n_.__)("If you've generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option.", 'video-embed-thumbnail-generator')
+            children: parentsBatch.isProcessing ? (0,settings_external_wp_i18n_.sprintf)(/* translators: 1: current count, 2: total count */
+            (0,settings_external_wp_i18n_.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), parentsBatch.progress.current, parentsBatch.progress.total) : (0,settings_external_wp_i18n_.__)('Set all parents', 'video-embed-thumbnail-generator')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+            text: (0,settings_external_wp_i18n_.__)("If you've generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option.", 'video-embed-thumbnail-generator')
           })]
         })]
       })]
-    }), featuredBatch.confirmDialog.isOpen && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.__experimentalConfirmDialog, {
+    }), featuredBatch.confirmDialog.isOpen && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.__experimentalConfirmDialog, {
       isOpen: true,
       onConfirm: () => {
         if (featuredBatch.confirmDialog.onConfirm) {
@@ -9327,9 +9412,9 @@ const ThumbnailSettings = ({
         featuredBatch.closeConfirmDialog();
       },
       onCancel: featuredBatch.closeConfirmDialog,
-      confirmButtonText: featuredBatch.confirmDialog.isAlert ? (0,external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator'),
+      confirmButtonText: featuredBatch.confirmDialog.isAlert ? (0,settings_external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator'),
       children: featuredBatch.confirmDialog.message
-    }), parentsBatch.confirmDialog.isOpen && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.__experimentalConfirmDialog, {
+    }), parentsBatch.confirmDialog.isOpen && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.__experimentalConfirmDialog, {
       isOpen: true,
       onConfirm: () => {
         if (parentsBatch.confirmDialog.onConfirm) {
@@ -9338,14 +9423,14 @@ const ThumbnailSettings = ({
         parentsBatch.closeConfirmDialog();
       },
       onCancel: parentsBatch.closeConfirmDialog,
-      confirmButtonText: parentsBatch.confirmDialog.isAlert ? (0,external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator'),
+      confirmButtonText: parentsBatch.confirmDialog.isAlert ? (0,settings_external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator'),
       children: parentsBatch.confirmDialog.message
     })]
   });
 };
 /* harmony default export */ const components_ThumbnailSettings = (ThumbnailSettings);
 // EXTERNAL MODULE: ./src/api/jobs.js
-var jobs = __webpack_require__(104);
+var settings_jobs = __webpack_require__(104);
 // EXTERNAL MODULE: external ["wp","apiFetch"]
 var external_wp_apiFetch_ = __webpack_require__(455);
 // EXTERNAL MODULE: external ["wp","url"]
@@ -9538,7 +9623,7 @@ const PerCodecQualitySettings = ({
   settings,
   changeHandlerFactory
 }) => {
-  const [bitrates, setBitrates] = (0,external_wp_element_.useState)([]);
+  const [bitrates, setBitrates] = (0,settings_external_wp_element_.useState)([]);
   const {
     resolutions
   } = videopack_config;
@@ -9550,9 +9635,9 @@ const PerCodecQualitySettings = ({
     h265_level,
     active_encoder = 'ffmpeg'
   } = settings;
-  const activeEncoderReady = (0,external_wp_hooks_.applyFilters)('videopack.encoder.is_ready', !!videopack_config.isTranscodingServiceReady, active_encoder, settings);
+  const activeEncoderReady = (0,settings_external_wp_hooks_.applyFilters)('videopack.encoder.is_ready', !!videopack_config.isTranscodingServiceReady, active_encoder, settings);
   const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && activeEncoderReady || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
-  const encodeKey = (0,external_wp_hooks_.applyFilters)(
+  const encodeKey = (0,settings_external_wp_hooks_.applyFilters)(
   /**
    * Filters the settings array key used for storing encoder settings.
    *
@@ -9569,11 +9654,11 @@ const PerCodecQualitySettings = ({
     crf: currentCrf = codec.rate_control.crf.default,
     vbr: currentVbr = codec.rate_control.vbr.default
   } = codecEncodeSettings;
-  const [localCrf, setLocalCrf] = (0,external_wp_element_.useState)(currentCrf);
-  const [localVbr, setLocalVbr] = (0,external_wp_element_.useState)(currentVbr);
-  const h264ProfileOptions = (0,external_wp_element_.useMemo)(() => [{
+  const [localCrf, setLocalCrf] = (0,settings_external_wp_element_.useState)(currentCrf);
+  const [localVbr, setLocalVbr] = (0,settings_external_wp_element_.useState)(currentVbr);
+  const h264ProfileOptions = (0,settings_external_wp_element_.useMemo)(() => [{
     value: 'none',
-    label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
   }, {
     value: 'baseline',
     label: 'baseline'
@@ -9593,9 +9678,9 @@ const PerCodecQualitySettings = ({
     value: 'high444',
     label: 'high444'
   }], []);
-  const h265ProfileOptions = (0,external_wp_element_.useMemo)(() => [{
+  const h265ProfileOptions = (0,settings_external_wp_element_.useMemo)(() => [{
     value: 'none',
-    label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
   }, {
     value: 'main',
     label: 'main'
@@ -9603,9 +9688,9 @@ const PerCodecQualitySettings = ({
     value: 'main10',
     label: 'main10'
   }], []);
-  const h265LevelOptions = (0,external_wp_element_.useMemo)(() => [{
+  const h265LevelOptions = (0,settings_external_wp_element_.useMemo)(() => [{
     value: 'none',
-    label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
   }, {
     value: '1',
     label: '1'
@@ -9646,9 +9731,9 @@ const PerCodecQualitySettings = ({
     value: '6.2',
     label: '6.2'
   }], []);
-  const h264LevelOptions = (0,external_wp_element_.useMemo)(() => [{
+  const h264LevelOptions = (0,settings_external_wp_element_.useMemo)(() => [{
     value: 'none',
-    label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
   }, {
     value: '1',
     label: '1'
@@ -9707,7 +9792,7 @@ const PerCodecQualitySettings = ({
     value: '6.2',
     label: '6.2'
   }], []);
-  const generateMarks = (0,external_wp_element_.useCallback)(type => {
+  const generateMarks = (0,settings_external_wp_element_.useCallback)(type => {
     const rateControl = codec.rate_control[type];
     if (!rateControl) {
       return [];
@@ -9715,15 +9800,15 @@ const PerCodecQualitySettings = ({
     if (type === 'vbr') {
       const marks = [{
         value: 0.1,
-        label: (0,external_wp_i18n_.__)('0.1: lower quality', 'video-embed-thumbnail-generator')
+        label: (0,settings_external_wp_i18n_.__)('0.1: lower quality', 'video-embed-thumbnail-generator')
       }, {
         value: 50,
-        label: (0,external_wp_i18n_.__)('50: higher quality', 'video-embed-thumbnail-generator')
+        label: (0,settings_external_wp_i18n_.__)('50: higher quality', 'video-embed-thumbnail-generator')
       }];
       if (rateControl.default) {
         const existingMark = marks.find(m => m.value === rateControl.default);
-        const defaultLabel = (0,external_wp_i18n_.sprintf)(/* translators: %s: VBR value. */
-        (0,external_wp_i18n_.__)('%s: default', 'video-embed-thumbnail-generator'), rateControl.default);
+        const defaultLabel = (0,settings_external_wp_i18n_.sprintf)(/* translators: %s: VBR value. */
+        (0,settings_external_wp_i18n_.__)('%s: default', 'video-embed-thumbnail-generator'), rateControl.default);
         if (existingMark) {
           existingMark.label = defaultLabel;
         } else {
@@ -9762,13 +9847,13 @@ const PerCodecQualitySettings = ({
 
     // Add the 'Default' label if there isn't already a label for the default value
     if (defaultValue !== undefined && !labels[defaultValue]) {
-      labels[defaultValue] = (0,external_wp_i18n_.sprintf)(/* translators: %d: CRF value. */
-      (0,external_wp_i18n_.__)('%d: default', 'video-embed-thumbnail-generator'), defaultValue);
+      labels[defaultValue] = (0,settings_external_wp_i18n_.sprintf)(/* translators: %d: CRF value. */
+      (0,settings_external_wp_i18n_.__)('%d: default', 'video-embed-thumbnail-generator'), defaultValue);
     }
-    labels[min] = (0,external_wp_i18n_.sprintf)(/* translators: %d: CRF value. */
-    (0,external_wp_i18n_.__)('%d: higher quality', 'video-embed-thumbnail-generator'), min);
-    labels[max] = (0,external_wp_i18n_.sprintf)(/* translators: %d: CRF value. */
-    (0,external_wp_i18n_.__)('%d: lower quality', 'video-embed-thumbnail-generator'), max);
+    labels[min] = (0,settings_external_wp_i18n_.sprintf)(/* translators: %d: CRF value. */
+    (0,settings_external_wp_i18n_.__)('%d: higher quality', 'video-embed-thumbnail-generator'), min);
+    labels[max] = (0,settings_external_wp_i18n_.sprintf)(/* translators: %d: CRF value. */
+    (0,settings_external_wp_i18n_.__)('%d: lower quality', 'video-embed-thumbnail-generator'), max);
     const marks = [];
     for (let i = min; i <= max; i++) {
       if (labels && labels[i]) {
@@ -9791,7 +9876,7 @@ const PerCodecQualitySettings = ({
     }
     return marks;
   }, [codec]);
-  const marks = (0,external_wp_hooks_.applyFilters)(
+  const marks = (0,settings_external_wp_hooks_.applyFilters)(
   /**
    * Filters the list of slider mark indicators for the quality/CRF slider.
    *
@@ -9806,7 +9891,7 @@ const PerCodecQualitySettings = ({
     rateControl: currentRateControl,
     generateMarks
   });
-  const qualityScale = (0,external_wp_hooks_.applyFilters)(
+  const qualityScale = (0,settings_external_wp_hooks_.applyFilters)(
   /**
    * Filters the quality scale limits (min, max, step, marks) for the codec quality slider.
    *
@@ -9825,15 +9910,15 @@ const PerCodecQualitySettings = ({
     active_encoder,
     rateControl: currentRateControl
   });
-  (0,external_wp_element_.useEffect)(() => setLocalCrf(currentCrf), [currentCrf]);
-  (0,external_wp_element_.useEffect)(() => setLocalVbr(currentVbr), [currentVbr]);
-  const settingsRef = (0,external_wp_element_.useRef)(settings);
-  const changeHandlerFactoryRef = (0,external_wp_element_.useRef)(changeHandlerFactory);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => setLocalCrf(currentCrf), [currentCrf]);
+  (0,settings_external_wp_element_.useEffect)(() => setLocalVbr(currentVbr), [currentVbr]);
+  const settingsRef = (0,settings_external_wp_element_.useRef)(settings);
+  const changeHandlerFactoryRef = (0,settings_external_wp_element_.useRef)(changeHandlerFactory);
+  (0,settings_external_wp_element_.useEffect)(() => {
     settingsRef.current = settings;
     changeHandlerFactoryRef.current = changeHandlerFactory;
   }, [settings, changeHandlerFactory]);
-  const performUpdate = (0,external_wp_element_.useCallback)((key, value) => {
+  const performUpdate = (0,settings_external_wp_element_.useCallback)((key, value) => {
     const encodeData = settingsRef.current[encodeKey] || {};
     changeHandlerFactoryRef.current[encodeKey]({
       ...encodeData,
@@ -9843,7 +9928,7 @@ const PerCodecQualitySettings = ({
       }
     });
   }, [codec.id, encodeKey]);
-  const debouncedUpdate = (0,external_wp_compose_.useDebounce)(performUpdate, 500);
+  const debouncedUpdate = (0,settings_external_wp_compose_.useDebounce)(performUpdate, 500);
   const handleSettingChange = (key, value) => {
     if (key === 'rate_control') {
       // Immediate update for radio buttons
@@ -9864,7 +9949,7 @@ const PerCodecQualitySettings = ({
     }
     debouncedUpdate(key, value);
   };
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     const newBitrates = [];
     const vbrSettings = codec.rate_control.vbr;
     resolutions.forEach(res => {
@@ -9887,7 +9972,7 @@ const PerCodecQualitySettings = ({
     });
     setBitrates(newBitrates);
   }, [localVbr, codec, resolutions]);
-  const rateControlOptions = (0,external_wp_hooks_.applyFilters)(
+  const rateControlOptions = (0,settings_external_wp_hooks_.applyFilters)(
   /**
    * Filters the choices list for rate control (CRF vs ABR) on a specific codec.
    *
@@ -9897,32 +9982,32 @@ const PerCodecQualitySettings = ({
    * @param {Object} context Context details: codec, active_encoder.
    */
   'videopack.settings.rateControlOptions', [{
-    label: (0,external_wp_i18n_.__)('Constant Rate Factor (CRF)', 'video-embed-thumbnail-generator'),
+    label: (0,settings_external_wp_i18n_.__)('Constant Rate Factor (CRF)', 'video-embed-thumbnail-generator'),
     value: 'crf'
   }, {
-    label: (0,external_wp_i18n_.__)('Average Bitrate (ABR)', 'video-embed-thumbnail-generator'),
+    label: (0,settings_external_wp_i18n_.__)('Average Bitrate (ABR)', 'video-embed-thumbnail-generator'),
     value: 'vbr'
   }], {
     codec,
     active_encoder
   });
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
     className: "videopack-per-codec-quality-settings",
-    children: [rateControlOptions.length > 1 && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RadioControl, {
-      label: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+    children: [rateControlOptions.length > 1 && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RadioControl, {
+      label: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
         className: "videopack-label-with-tooltip",
-        children: [(0,external_wp_i18n_.__)('Primary rate control:', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('CRF prioritizes a consistent level of quality over consistent file sizes. Lower numbers are better quality. ABR prioritizes consistent file sizes. If you choose ABR, Videopack will automatically calculate bitrates for different resolutions based on the relative quality you select.', 'video-embed-thumbnail-generator')
+        children: [(0,settings_external_wp_i18n_.__)('Primary rate control:', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('CRF prioritizes a consistent level of quality over consistent file sizes. Lower numbers are better quality. ABR prioritizes consistent file sizes. If you choose ABR, Videopack will automatically calculate bitrates for different resolutions based on the relative quality you select.', 'video-embed-thumbnail-generator')
         })]
       }),
       selected: currentRateControl,
       onChange: value => handleSettingChange('rate_control', value),
       options: rateControlOptions,
       disabled: effectiveFfmpegExists !== true
-    }), currentRateControl === 'crf' && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
+    }), currentRateControl === 'crf' && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
       __nextHasNoMarginBottom: true,
       __next40pxDefaultSize: true,
-      label: (0,external_wp_i18n_.__)('CRF:', 'video-embed-thumbnail-generator'),
+      label: (0,settings_external_wp_i18n_.__)('CRF:', 'video-embed-thumbnail-generator'),
       value: localCrf,
       className: "videopack-crf-slider",
       onChange: value => handleSettingChange('crf', value),
@@ -9931,10 +10016,10 @@ const PerCodecQualitySettings = ({
       step: qualityScale.step,
       marks: qualityScale.marks,
       disabled: effectiveFfmpegExists !== true
-    }), currentRateControl === 'vbr' && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
+    }), currentRateControl === 'vbr' && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
       __nextHasNoMarginBottom: true,
       __next40pxDefaultSize: true,
-      label: (0,external_wp_i18n_.__)('Quality:', 'video-embed-thumbnail-generator'),
+      label: (0,settings_external_wp_i18n_.__)('Quality:', 'video-embed-thumbnail-generator'),
       value: localVbr,
       className: "videopack-abr-slider",
       onChange: value => handleSettingChange('vbr', value),
@@ -9943,56 +10028,56 @@ const PerCodecQualitySettings = ({
       step: qualityScale.step,
       marks: qualityScale.marks,
       disabled: effectiveFfmpegExists !== true,
-      help: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
+      help: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("span", {
         className: "videopack-bitrate-grid",
-        children: bitrates.map((item, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
-          children: [item.label, "p =", ' ', /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("strong", {
+        children: bitrates.map((item, index) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
+          children: [item.label, "p =", ' ', /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("strong", {
             children: item.value
           }), " kbps"]
         }, index))
       })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-grid-row-align",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('H.264 profile', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('H.264 profile', 'video-embed-thumbnail-generator'),
           value: h264_profile,
           onChange: changeHandlerFactory.h264_profile,
           options: h264ProfileOptions,
           disabled: effectiveFfmpegExists !== true
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-grid-row-align",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('H.264 level', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('H.264 level', 'video-embed-thumbnail-generator'),
           value: h264_level,
           onChange: changeHandlerFactory.h264_level,
           options: h264LevelOptions,
           disabled: effectiveFfmpegExists !== true
         })
       })]
-    }), codec.id === 'h265' && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+    }), codec.id === 'h265' && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-grid-row-align",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('H.265 profile', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('H.265 profile', 'video-embed-thumbnail-generator'),
           value: h265_profile,
           onChange: changeHandlerFactory.h265_profile,
           options: h265ProfileOptions,
           disabled: effectiveFfmpegExists !== true
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-grid-row-align",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('H.265 level', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('H.265 level', 'video-embed-thumbnail-generator'),
           value: h265_level,
           onChange: changeHandlerFactory.h265_level,
           options: h265LevelOptions,
@@ -10057,7 +10142,7 @@ const EncodingSettings = ({
     auto_publish_post,
     active_encoder = 'ffmpeg'
   } = settings;
-  const activeEncoderReady = (0,external_wp_hooks_.applyFilters)('videopack.encoder.is_ready', !!videopack_config.isTranscodingServiceReady, active_encoder, settings);
+  const activeEncoderReady = (0,settings_external_wp_hooks_.applyFilters)('videopack.encoder.is_ready', !!videopack_config.isTranscodingServiceReady, active_encoder, settings);
   const effectiveFfmpegExists = active_encoder !== 'ffmpeg' && activeEncoderReady || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';
   const availableEncoders =
   /**
@@ -10067,22 +10152,22 @@ const EncodingSettings = ({
    *
    * @param {Array} encoders List of active encoder choices.
    */
-  (0,external_wp_hooks_.applyFilters)('videopack.settings.encoders', [{
+  (0,settings_external_wp_hooks_.applyFilters)('videopack.settings.encoders', [{
     value: 'ffmpeg',
-    label: (0,external_wp_i18n_.__)('Web Server FFmpeg', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Web Server FFmpeg', 'video-embed-thumbnail-generator')
   }], settings);
-  const [users, setUsers] = (0,external_wp_element_.useState)(null);
+  const [users, setUsers] = (0,settings_external_wp_element_.useState)(null);
   const encodingBatch = hooks_useBatchProcess();
   const handleEncodeAllVideos = () => {
-    encodingBatch.confirmAndRun((0,external_wp_i18n_.__)("Are you sure you want to add all videos to the encoding queue? This will check every video in your library and add it to the queue if it hasn't been encoded yet.", 'video-embed-thumbnail-generator'), () => (0,media/* startBatchProcess */.AO)('encoding'), () => (0,media/* getBatchProgress */.wW)('encoding'), (0,external_wp_i18n_.__)('No videos found to process.', 'video-embed-thumbnail-generator'));
+    encodingBatch.confirmAndRun((0,settings_external_wp_i18n_.__)("Are you sure you want to add all videos to the encoding queue? This will check every video in your library and add it to the queue if it hasn't been encoded yet.", 'video-embed-thumbnail-generator'), () => (0,settings_media/* startBatchProcess */.AO)('encoding'), () => (0,settings_media/* getBatchProgress */.wW)('encoding'), (0,settings_external_wp_i18n_.__)('No videos found to process.', 'video-embed-thumbnail-generator'));
   };
-  const filteredCodecs = (0,external_wp_element_.useMemo)(() => {
+  const filteredCodecs = (0,settings_external_wp_element_.useMemo)(() => {
     const {
       codecs
     } = videopack_config;
     return codecs.filter(codec => {
       const defaultSupported = true;
-      const isSupported = (0,external_wp_hooks_.applyFilters)(
+      const isSupported = (0,settings_external_wp_hooks_.applyFilters)(
       /**
        * Filters whether a specific video codec and resolution is supported by the active encoder.
        *
@@ -10104,7 +10189,7 @@ const EncodingSettings = ({
       return true;
     });
   }, [active_encoder, settings]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (!encode) {
       return;
     }
@@ -10117,7 +10202,7 @@ const EncodingSettings = ({
     Object.keys(encode).forEach(codecId => {
       if (encode[codecId]?.enabled) {
         const defaultSupported = true;
-        const isSupported = (0,external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
+        const isSupported = (0,settings_external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
         'videopack.settings.codec_supported', defaultSupported, codecId, active_encoder, settings);
         if (!isSupported) {
           newEncode[codecId] = {
@@ -10132,8 +10217,8 @@ const EncodingSettings = ({
       changeHandlerFactory.encode(newEncode);
     }
   }, [active_encoder, encode, changeHandlerFactory, settings]);
-  (0,external_wp_element_.useEffect)(() => {
-    const isDisabled = (0,external_wp_hooks_.applyFilters)(
+  (0,settings_external_wp_element_.useEffect)(() => {
+    const isDisabled = (0,settings_external_wp_hooks_.applyFilters)(
     /**
      * Filters whether the animated GIF auto-transcode setting toggle should be disabled.
      *
@@ -10149,7 +10234,7 @@ const EncodingSettings = ({
       changeHandlerFactory.auto_encode_gif(false);
     }
   }, [active_encoder, auto_encode_gif, changeHandlerFactory, effectiveFfmpegExists, settings]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     (0,gallery/* getUsersWithCapability */.V7)('edit_others_video_encodes').then(response => {
       setUsers(response);
     }).catch(error => {
@@ -10164,7 +10249,7 @@ const EncodingSettings = ({
     const {
       encode: currentEncode
     } = settings;
-    const [replacementWarning, setReplacementWarning] = (0,external_wp_element_.useState)(false);
+    const [replacementWarning, setReplacementWarning] = (0,settings_external_wp_element_.useState)(false);
     const handleCheckboxChange = (codecId, resolutionId, isChecked) => {
       const newEncode = JSON.parse(JSON.stringify(currentEncode || {}));
       if (!newEncode[codecId]) {
@@ -10214,20 +10299,20 @@ const EncodingSettings = ({
       changeHandlerFactory.encode(newEncode);
     };
     const filteredResolutions = currentResolutions;
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-      children: [replacementWarning && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Notice, {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+      children: [replacementWarning && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Notice, {
         status: "warning",
         isDismissible: true,
         onDismiss: () => setReplacementWarning(false),
         className: "videopack-notice-margin",
-        children: (0,external_wp_i18n_.__)('The replacement format cannot be disabled.', 'video-embed-thumbnail-generator')
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+        children: (0,settings_external_wp_i18n_.__)('The replacement format cannot be disabled.', 'video-embed-thumbnail-generator')
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-encode-grid",
-        children: filteredCodecs.map(codec => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+        children: filteredCodecs.map(codec => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
           className: "videopack-encode-column",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
             className: "videopack-encode-grid-header-cell",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
               __nextHasNoMarginBottom: true,
               label: codec.name,
               checked: !!currentEncode?.[codec.id]?.enabled,
@@ -10237,9 +10322,9 @@ const EncodingSettings = ({
           }), filteredResolutions.filter(resolution => !resolution.allowed_codecs || resolution.allowed_codecs.length === 0 || resolution.allowed_codecs.includes(codec.id)).filter(resolution => codec.id !== 'cmaf' || resolution.is_standard !== false).map(resolution => {
             const formatId = `${codec.id}_${resolution.id}`;
             const isReplacement = settings.replace_format === formatId;
-            return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+            return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
               className: "videopack-encode-grid-row",
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.CheckboxControl, {
+              children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.CheckboxControl, {
                 __nextHasNoMarginBottom: true,
                 label: resolution.name,
                 checked: isReplacement || !!currentEncode?.[codec.id]?.resolutions?.[resolution.id],
@@ -10255,10 +10340,10 @@ const EncodingSettings = ({
   const errorEmailOptions = () => {
     const authorizedUsers = [{
       value: 'nobody',
-      label: (0,external_wp_i18n_.__)('Nobody', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('Nobody', 'video-embed-thumbnail-generator')
     }, {
       value: 'encoder',
-      label: (0,external_wp_i18n_.__)('User who initiated encoding', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('User who initiated encoding', 'video-embed-thumbnail-generator')
     }];
     if (users) {
       users.forEach(user => {
@@ -10290,11 +10375,11 @@ const EncodingSettings = ({
     }
     const codecOptions = [{
       value: 'none',
-      label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+      label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
     }, {
       value: 'same',
-      label: (0,external_wp_i18n_.__)('Same format as original', 'video-embed-thumbnail-generator')
-    }, ...codecs.filter(c => c.is_video !== false && c.id !== 'cmaf' && (0,external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
+      label: (0,settings_external_wp_i18n_.__)('Same format as original', 'video-embed-thumbnail-generator')
+    }, ...codecs.filter(c => c.is_video !== false && c.id !== 'cmaf' && (0,settings_external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
     'videopack.settings.codec_supported', true, c.id, active_encoder, settings)).map(codec => ({
       value: codec.id,
       label: codec.name
@@ -10315,19 +10400,19 @@ const EncodingSettings = ({
         changeHandlerFactory.replace_format(`${currentCodecId}_${newResolutionId}`);
       }
     };
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
       className: "videopack-grid-row-align videopack-replacement-controls",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_.__)('Replace original video with', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Replace original video with', 'video-embed-thumbnail-generator'),
         value: currentCodecId,
         options: codecOptions,
         onChange: handleCodecChange
-      }), currentCodecId !== 'none' && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+      }), currentCodecId !== 'none' && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_.__)('Resolution', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Resolution', 'video-embed-thumbnail-generator'),
         value: currentResolutionId,
         options: resolutionOptions,
         onChange: handleResolutionChange
@@ -10347,25 +10432,25 @@ const EncodingSettings = ({
       value: resolution.id,
       label: resolution.name
     }));
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
       className: "videopack-flex-row-responsive",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-flex-col-responsive",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Codec', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Codec', 'video-embed-thumbnail-generator'),
           value: sample_codec,
           options: codecs,
           onChange: changeHandlerFactory.sample_codec,
           disabled: !effectiveFfmpegExists
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-flex-col-responsive",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Resolution', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Resolution', 'video-embed-thumbnail-generator'),
           value: sample_resolution,
           options: resolutions,
           onChange: changeHandlerFactory.sample_resolution,
@@ -10388,7 +10473,7 @@ const EncodingSettings = ({
       case 'threads':
         marks.push({
           value: 0,
-          label: (0,external_wp_i18n_.__)('Auto', 'video-embed-thumbnail-generator')
+          label: (0,settings_external_wp_i18n_.__)('Auto', 'video-embed-thumbnail-generator')
         });
         for (let i = 2; i <= 16; i += 2) {
           marks.push({
@@ -10428,101 +10513,101 @@ const EncodingSettings = ({
     value: '320',
     label: '320'
   }];
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      children: [availableEncoders.length > 1 && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelRow, {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      children: [availableEncoders.length > 1 && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelRow, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Encoding service', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Encoding service', 'video-embed-thumbnail-generator'),
           value: active_encoder,
           options: availableEncoders,
           onChange: changeHandlerFactory.active_encoder
         })
-      }), (0,external_wp_hooks_.applyFilters)('videopack.settings.encoder_panel', null, {
+      }), (0,settings_external_wp_hooks_.applyFilters)('videopack.settings.encoder_panel', null, {
         settings,
         changeHandlerFactory,
         active_encoder
-      }), active_encoder === 'ffmpeg' && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_ReactJSXRuntime_.Fragment, {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelRow, {
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TextControlOnBlur/* default */.A, {
+      }), active_encoder === 'ffmpeg' && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_ReactJSXRuntime_.Fragment, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelRow, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(TextControlOnBlur/* default */.A, {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,external_wp_i18n_.__)('Path to FFmpeg folder on server', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('Path to FFmpeg folder on server', 'video-embed-thumbnail-generator'),
             value: app_path,
             onChange: changeHandlerFactory.app_path,
-            help: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Leave blank if FFmpeg is in your system path.'),
+            help: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('Leave blank if FFmpeg is in your system path.'),
             disabled: isNetworkActive,
-            title: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null
+            title: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null
           })
         })
       }), (() => {
         const isCloud = ['mediaconvert', 'aws_mediaconvert', 'google_transcoder'].includes(active_encoder);
         const isCloudWithFfmpegFallback = isCloud && settings?.cloud_fallback_encoder === 'ffmpeg';
         if (isCloudWithFfmpegFallback) {
-          return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelRow, {
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TextControlOnBlur/* default */.A, {
+          return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelRow, {
+            children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(TextControlOnBlur/* default */.A, {
               __nextHasNoMarginBottom: true,
               __next40pxDefaultSize: true,
-              label: (0,external_wp_i18n_.__)('Path to FFmpeg folder on server (Fallback)', 'video-embed-thumbnail-generator'),
+              label: (0,settings_external_wp_i18n_.__)('Path to FFmpeg folder on server (Fallback)', 'video-embed-thumbnail-generator'),
               value: app_path,
               onChange: changeHandlerFactory.app_path,
-              help: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Leave blank if FFmpeg is in your system path.'),
+              help: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('Leave blank if FFmpeg is in your system path.'),
               disabled: isNetworkActive,
-              title: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null
+              title: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null
             })
           });
         }
         return null;
       })()]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Video encode formats', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Video encode formats', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
           className: "videopack-label-with-tooltip",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("strong", {
-            children: (0,external_wp_i18n_.__)('About formats', 'video-embed-thumbnail-generator')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-            text: (0,external_wp_i18n_.__)('If you have FFmpeg and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also encode into several additional formats depending on the resolution of your original source. Videopack will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. Different browsers have different playback capabilities. All browsers on all devices can play H.264. VP8 is an open-source codec supported by most devices, but not as effecient as the newer codecs H.265, VP9, and AV1, which are not as universally supported. AV1 can also be extremely CPU intensive to encode. If you must use AV1, make sure you have the libsvtav1 FFmpeg library installed. The reference libaom-av1 encoder is more commonly available in FFmpeg builds, but is much slower.', 'video-embed-thumbnail-generator')
+          children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("strong", {
+            children: (0,settings_external_wp_i18n_.__)('About formats', 'video-embed-thumbnail-generator')
+          }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+            text: (0,settings_external_wp_i18n_.__)('If you have FFmpeg and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also encode into several additional formats depending on the resolution of your original source. Videopack will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. Different browsers have different playback capabilities. All browsers on all devices can play H.264. VP8 is an open-source codec supported by most devices, but not as effecient as the newer codecs H.265, VP9, and AV1, which are not as universally supported. AV1 can also be extremely CPU intensive to encode. If you must use AV1, make sure you have the libsvtav1 FFmpeg library installed. The reference libaom-av1 encoder is more commonly available in FFmpeg builds, but is much slower.', 'video-embed-thumbnail-generator')
           })]
         })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(EncodeFormatGrid, {}), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideoReplacementSettings, {}), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(EncodeFormatGrid, {}), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideoReplacementSettings, {}), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Enable Custom Resolution', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Enable Custom Resolution', 'video-embed-thumbnail-generator'),
         onChange: changeHandlerFactory.enable_custom_resolution,
         checked: !!enable_custom_resolution
-      }), enable_custom_resolution && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      }), enable_custom_resolution && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-setting-auto-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Custom Resolution Height', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Custom Resolution Height', 'video-embed-thumbnail-generator'),
           type: "number",
           value: custom_resolution || '',
           onChange: value => changeHandlerFactory.custom_resolution(value === '' ? 0 : parseInt(value, 10))
         })
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Do automatically on upload', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Do automatically on upload', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.BaseControl, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.BaseControl, {
         __nextHasNoMarginBottom: true,
         id: "autoEncode",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Encode default formats', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Encode default formats', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.auto_encode,
           checked: auto_encode,
           disabled: effectiveFfmpegExists !== true
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Convert animated GIFs to H.264', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Convert animated GIFs to H.264', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.auto_encode_gif,
           checked: auto_encode_gif,
-          disabled: (0,external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
+          disabled: (0,settings_external_wp_hooks_.applyFilters)(/** This filter is documented in src/features/settings/components/EncodingSettings.js */
           'videopack.settings.auto_encode_gif.disabled', effectiveFfmpegExists !== true, active_encoder, settings),
-          help: (0,external_wp_hooks_.applyFilters)(
+          help: (0,settings_external_wp_hooks_.applyFilters)(
           /**
            * Filters custom descriptive help text for the Auto Encode GIFs option.
            *
@@ -10533,12 +10618,12 @@ const EncodingSettings = ({
            * @param {Object}      settings       The global settings object.
            */
           'videopack.settings.auto_encode_gif.help', null, active_encoder, settings)
-        }), auto_encode_gif && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        }), auto_encode_gif && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Keep original GIF file as source', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Keep original GIF file as source', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.keep_gif_source,
           checked: keep_gif_source,
-          disabled: (0,external_wp_hooks_.applyFilters)(
+          disabled: (0,settings_external_wp_hooks_.applyFilters)(
           /**
            * Filters whether the "Keep Original GIF" option toggle is disabled.
            *
@@ -10550,7 +10635,7 @@ const EncodingSettings = ({
            * @param {Object}  settings       The global settings object.
            */
           'videopack.settings.keep_gif_source.disabled', effectiveFfmpegExists !== true, active_encoder, settings),
-          help: (0,external_wp_hooks_.applyFilters)(
+          help: (0,settings_external_wp_hooks_.applyFilters)(
           /**
            * Filters custom descriptive help text for the Keep Original GIF option.
            *
@@ -10562,46 +10647,46 @@ const EncodingSettings = ({
            */
           'videopack.settings.keep_gif_source.help', null, active_encoder, settings)
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)("Automatically publish video's parent post when encoding finishes"),
+          label: (0,settings_external_wp_i18n_.__)("Automatically publish video's parent post when encoding finishes"),
           onChange: changeHandlerFactory.auto_publish_post,
           checked: auto_publish_post,
           disabled: effectiveFfmpegExists !== true
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('If all videos in the encode queue attached to a draft post are completed, the draft post will be automatically published.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('If all videos in the encode queue attached to a draft post are completed, the draft post will be automatically published.', 'video-embed-thumbnail-generator')
         })]
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('For previously uploaded videos', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('For previously uploaded videos', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Button, {
           __next40pxDefaultSize: true,
           variant: "secondary",
           disabled: !effectiveFfmpegExists || encodingBatch.isProcessing,
           onClick: handleEncodeAllVideos,
-          children: encodingBatch.isProcessing ? (0,external_wp_i18n_.sprintf)(/* translators: 1: current count, 2: total count */
-          (0,external_wp_i18n_.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), encodingBatch.progress.current, encodingBatch.progress.total) : (0,external_wp_i18n_.__)('Encode default formats', 'video-embed-thumbnail-generator')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)("Add every video in the Media Library to the encode queue if it hasn't already been encoded. Uses the default encode formats chosen above.", 'video-embed-thumbnail-generator')
+          children: encodingBatch.isProcessing ? (0,settings_external_wp_i18n_.sprintf)(/* translators: 1: current count, 2: total count */
+          (0,settings_external_wp_i18n_.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), encodingBatch.progress.current, encodingBatch.progress.total) : (0,settings_external_wp_i18n_.__)('Encode default formats', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)("Add every video in the Media Library to the encode queue if it hasn't already been encoded. Uses the default encode formats chosen above.", 'video-embed-thumbnail-generator')
         })]
       })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(WatermarkSettingsPanel_WatermarkSettingsPanel, {
-      title: (0,external_wp_i18n_.__)('Watermark Overlay', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(WatermarkSettingsPanel_WatermarkSettingsPanel, {
+      title: (0,settings_external_wp_i18n_.__)('Watermark Overlay', 'video-embed-thumbnail-generator'),
       watermarkSettings: ffmpeg_watermark,
       onChange: changeHandlerFactory.ffmpeg_watermark,
       initialOpen: !!effectiveFfmpegExists,
       disabled: !effectiveFfmpegExists
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Email encoding errors to', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Email encoding errors to', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
         className: "videopack-setting-auto-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           value: error_email,
@@ -10610,10 +10695,10 @@ const EncodingSettings = ({
           disabled: !effectiveFfmpegExists
         })
       })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Video quality', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Video quality', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists,
-      children: [(0,external_wp_hooks_.applyFilters)(
+      children: [(0,settings_external_wp_hooks_.applyFilters)(
       /**
        * Action filter hook to render custom settings components before codec quality panels.
        *
@@ -10630,7 +10715,7 @@ const EncodingSettings = ({
         if (!encode?.[codec.id]?.enabled) {
           return null;
         }
-        const content = (0,external_wp_hooks_.applyFilters)(
+        const content = (0,settings_external_wp_hooks_.applyFilters)(
         /**
          * Filters the rendered settings panel for a codec block.
          *
@@ -10641,7 +10726,7 @@ const EncodingSettings = ({
          * @param {Element} panel   React element representing codec settings.
          * @param {Object}  context Object containing codec details, settings, and changeHandlerFactory.
          */
-        'videopack.settings.encoding.codec_settings', /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(components_PerCodecQualitySettings, {
+        'videopack.settings.encoding.codec_settings', /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(components_PerCodecQualitySettings, {
           codec: codec,
           settings: settings,
           changeHandlerFactory: changeHandlerFactory
@@ -10653,46 +10738,46 @@ const EncodingSettings = ({
         if (!content) {
           return null;
         }
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
+        return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelBody, {
           title: codec.label || codec.name,
           initialOpen: false,
           children: content
         }, codec.id);
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Audio', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Audio', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-grid-row-align",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.SelectControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_.__)('Audio bitrate', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Audio bitrate', 'video-embed-thumbnail-generator'),
           value: audio_bitrate,
           onChange: changeHandlerFactory.audio_bitrate,
           options: audioBitrateOptions,
-          suffix: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.__experimentalInputControlSuffixWrapper, {
+          suffix: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.__experimentalInputControlSuffixWrapper, {
             children: "kbps"
           }),
           disabled: !effectiveFfmpegExists
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Always output stereo audio', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Always output stereo audio', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.audio_channels,
           checked: audio_channels,
           disabled: !effectiveFfmpegExists
         })]
       })
-    }), active_encoder === 'ffmpeg' && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Execution', 'video-embed-thumbnail-generator'),
+    }), active_encoder === 'ffmpeg' && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Execution', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists && !isNetworkActive,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
-        label: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+        label: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
           className: "videopack-label-with-tooltip",
-          children: [(0,external_wp_i18n_.__)('Simultaneous encodes', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-            text: (0,external_wp_i18n_.__)('Increasing the number will allow FFmpeg to encode more than one file at a time, but may lead to FFmpeg monopolizing system resources.', 'video-embed-thumbnail-generator')
+          children: [(0,settings_external_wp_i18n_.__)('Simultaneous encodes', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+            text: (0,settings_external_wp_i18n_.__)('Increasing the number will allow FFmpeg to encode more than one file at a time, but may lead to FFmpeg monopolizing system resources.', 'video-embed-thumbnail-generator')
           })]
         }),
         value: simultaneous_encodes,
@@ -10703,15 +10788,15 @@ const EncodingSettings = ({
         step: 1,
         marks: generateNonCrfMarks('simultaneous'),
         disabled: isNetworkActive || effectiveFfmpegExists !== true,
-        title: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null,
-        help: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : null
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RangeControl, {
+        title: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null,
+        help: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : null
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RangeControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
-        label: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+        label: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
           className: "videopack-label-with-tooltip",
-          children: [(0,external_wp_i18n_.__)('Threads', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-            text: (0,external_wp_i18n_.__)('Default is 1, which limits encoding speed but prevents encoding from using too many system resources. Selecting 0 will allow FFmpeg to optimize the number of threads or you can set the number manually. This may lead to FFmpeg monopolizing system resources.', 'video-embed-thumbnail-generator')
+          children: [(0,settings_external_wp_i18n_.__)('Threads', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+            text: (0,settings_external_wp_i18n_.__)('Default is 1, which limits encoding speed but prevents encoding from using too many system resources. Selecting 0 will allow FFmpeg to optimize the number of threads or you can set the number manually. This may lead to FFmpeg monopolizing system resources.', 'video-embed-thumbnail-generator')
           })]
         }),
         value: threads,
@@ -10722,43 +10807,43 @@ const EncodingSettings = ({
         step: 1,
         marks: generateNonCrfMarks('threads'),
         disabled: isNetworkActive || !effectiveFfmpegExists,
-        title: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null,
-        help: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : null
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        title: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null,
+        help: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : null
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
         __nextHasNoMarginBottom: true,
-        label: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+        label: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
           className: "videopack-label-with-tooltip",
-          children: [(0,external_wp_i18n_.__)('Run nice', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-            text: (0,external_wp_i18n_.__)('Tells FFmpeg to run at a lower priority on Linux/Unix systems to avoid monopolizing system resources.', 'video-embed-thumbnail-generator')
+          children: [(0,settings_external_wp_i18n_.__)('Run nice', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+            text: (0,settings_external_wp_i18n_.__)('Tells FFmpeg to run at a lower priority on Linux/Unix systems to avoid monopolizing system resources.', 'video-embed-thumbnail-generator')
           })]
         }),
         className: "videopack-flex-align-center",
         onChange: changeHandlerFactory.nice,
         checked: nice,
         disabled: isNetworkActive || !effectiveFfmpegExists,
-        title: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null,
-        help: isNetworkActive ? (0,external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : null
+        title: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled by the network administrator.', 'video-embed-thumbnail-generator') : null,
+        help: isNetworkActive ? (0,settings_external_wp_i18n_.__)('This setting is controlled at the network level.', 'video-embed-thumbnail-generator') : null
       })]
-    }), active_encoder === 'ffmpeg' && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Video Encoding Test', 'video-embed-thumbnail-generator'),
+    }), active_encoder === 'ffmpeg' && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Video Encoding Test', 'video-embed-thumbnail-generator'),
       initialOpen: !!effectiveFfmpegExists,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.BaseControl, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.BaseControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('Test encode command', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('Test encode command', 'video-embed-thumbnail-generator'),
         id: "sample-format-selects",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(SampleFormatSelects, {})
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextareaControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(SampleFormatSelects, {})
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextareaControl, {
         __nextHasNoMarginBottom: true,
         disabled: true,
         value: ffmpegTest?.command
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TextareaControl, {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TextareaControl, {
         __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_.__)('FFmpeg test output', 'video-embed-thumbnail-generator'),
+        label: (0,settings_external_wp_i18n_.__)('FFmpeg test output', 'video-embed-thumbnail-generator'),
         rows: 20,
         disabled: true,
         value: ffmpegTest?.output
       })]
-    }), encodingBatch.confirmDialog.isOpen && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.__experimentalConfirmDialog, {
+    }), encodingBatch.confirmDialog.isOpen && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.__experimentalConfirmDialog, {
       isOpen: true,
       onConfirm: () => {
         if (encodingBatch.confirmDialog.onConfirm) {
@@ -10767,9 +10852,9 @@ const EncodingSettings = ({
         encodingBatch.closeConfirmDialog();
       },
       onCancel: encodingBatch.closeConfirmDialog,
-      confirmButtonText: encodingBatch.confirmDialog.isAlert ? (0,external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator'),
+      confirmButtonText: encodingBatch.confirmDialog.isAlert ? (0,settings_external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator') : (0,settings_external_wp_i18n_.__)('OK', 'video-embed-thumbnail-generator'),
       children: encodingBatch.confirmDialog.message
-    }), (0,external_wp_hooks_.applyFilters)(
+    }), (0,settings_external_wp_hooks_.applyFilters)(
     /**
      * Action filter hook to render custom settings components after encoding settings panels.
      *
@@ -10822,7 +10907,7 @@ const AdminSettings = ({
     replace_preview_video,
     rewrite_attachment_url
   } = settings;
-  const [isClearingCache, setIsClearingCache] = (0,external_wp_element_.useState)(false);
+  const [isClearingCache, setIsClearingCache] = (0,settings_external_wp_element_.useState)(false);
   const handleClearCache = () => {
     setIsClearingCache(true);
     (0,api_settings/* clearUrlCache */.XI)().then(() => {
@@ -10834,16 +10919,16 @@ const AdminSettings = ({
   };
   const countViewsOptions = [{
     value: 'quarters',
-    label: (0,external_wp_i18n_.__)('Quarters (0%, 25%, 50%, 75%, and 100% of duration)', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Quarters (0%, 25%, 50%, 75%, and 100% of duration)', 'video-embed-thumbnail-generator')
   }, {
     value: 'start_complete',
-    label: (0,external_wp_i18n_.__)('Start and complete', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Start and complete', 'video-embed-thumbnail-generator')
   }, {
     value: 'start',
-    label: (0,external_wp_i18n_.__)('Start only', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('Start only', 'video-embed-thumbnail-generator')
   }, {
     value: 'false',
-    label: (0,external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
+    label: (0,settings_external_wp_i18n_.__)('None', 'video-embed-thumbnail-generator')
   }];
   const capitalizeFirstLetter = string => {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -10862,17 +10947,17 @@ const AdminSettings = ({
     };
     const getCapabilityLabel = capabilityKey => {
       const labels = {
-        make_video_thumbnails: (0,external_wp_i18n_.__)('Can make thumbnails', 'video-embed-thumbnail-generator'),
-        encode_videos: (0,external_wp_i18n_.__)('Can encode videos', 'video-embed-thumbnail-generator'),
-        edit_others_video_encodes: (0,external_wp_i18n_.__)("Can edit other users' encoded videos", 'video-embed-thumbnail-generator'),
-        view_full_length_video: (0,external_wp_i18n_.__)('Can view full length videos', 'videopack-pro')
+        make_video_thumbnails: (0,settings_external_wp_i18n_.__)('Can make thumbnails', 'video-embed-thumbnail-generator'),
+        encode_videos: (0,settings_external_wp_i18n_.__)('Can encode videos', 'video-embed-thumbnail-generator'),
+        edit_others_video_encodes: (0,settings_external_wp_i18n_.__)("Can edit other users' encoded videos", 'video-embed-thumbnail-generator'),
+        view_full_length_video: (0,settings_external_wp_i18n_.__)('Can view full length videos', 'videopack-pro')
       };
       return labels[capabilityKey] || capitalizeFirstLetter(capabilityKey.replace(/_/g, ' '));
     };
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('User capabilities', 'video-embed-thumbnail-generator'),
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('User capabilities', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Flex, {
+      children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Flex, {
         direction: "row",
         gap: 20,
         className: "videopack-setting-capabilities",
@@ -10880,10 +10965,10 @@ const AdminSettings = ({
           if (capabilityKey === 'view_full_length_video' && !settings.restrict_playback_by_capability) {
             return null;
           }
-          return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.FlexItem, {
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("p", {
+          return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.FlexItem, {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("p", {
               children: getCapabilityLabel(capabilityKey)
-            }), Object.entries(roles).map(([roleKey, isEnabled]) => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.CheckboxControl, {
+            }), Object.entries(roles).map(([roleKey, isEnabled]) => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.CheckboxControl, {
               __nextHasNoMarginBottom: true,
               label: capitalizeFirstLetter(roleKey),
               checked: isEnabled,
@@ -10894,145 +10979,145 @@ const AdminSettings = ({
       })
     });
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_ReactJSXRuntime_.Fragment, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Structured Data', 'video-embed-thumbnail-generator'),
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_ReactJSXRuntime_.Fragment, {
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Structured Data', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Generate Facebook Open Graph video tags', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Generate Facebook Open Graph video tags', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.open_graph,
           checked: !!open_graph,
           disabled: !embeddable
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('Facebook and some other social media sites will use these tags to embed the first video in your post. Your video must be served via https in order to be embedded directly in Facebook and playback is handled by the unstyled built-in browser player. No statistics will be recorded for videos embedded this way and Open Graph tags generated by Jetpack will be disabled on pages with videos.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('Facebook and some other social media sites will use these tags to embed the first video in your post. Your video must be served via https in order to be embedded directly in Facebook and playback is handled by the unstyled built-in browser player. No statistics will be recorded for videos embedded this way and Open Graph tags generated by Jetpack will be disabled on pages with videos.', 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Generate Schema.org metadata for search engines', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Generate Schema.org metadata for search engines', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.schema,
           checked: !!schema
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('Helps your videos appear in search results.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('Helps your videos appear in search results.', 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Change oEmbed to video instead of WordPress default photo/excerpt', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Change oEmbed to video instead of WordPress default photo/excerpt', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.oembed_provider,
           checked: !!oembed_provider
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites will not show videos through oEmbed unless your link is https.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites will not show videos through oEmbed unless your link is https.', 'video-embed-thumbnail-generator')
         })]
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
       title: "Performance",
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Always load plugin-related JavaScripts', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Always load plugin-related JavaScript and CSS', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.alwaysloadscripts,
           checked: !!alwaysloadscripts
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)("Usually Videopack's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.", 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)("Usually Videopack's JavaScript and CSS are only loaded if a video is present on the page. AJAX page loading can cause errors or unstyled players because those assets aren't loaded with the video content. Enabling this option will make sure the JavaScript and CSS are always loaded.", 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Button, {
           __next40pxDefaultSize: true,
           className: "videopack-clear-button",
           variant: "secondary",
           onClick: handleClearCache,
           isBusy: isClearingCache,
           disabled: isClearingCache,
-          children: (0,external_wp_i18n_.__)('Clear URL cache', 'video-embed-thumbnail-generator')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)("Recommended if your site's URL has changed.", 'video-embed-thumbnail-generator')
+          children: (0,settings_external_wp_i18n_.__)('Clear URL cache', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)("Recommended if your site's URL has changed.", 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.RadioControl, {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.RadioControl, {
         className: "videopack-setting-radio-group",
-        label: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+        label: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
           className: "videopack-label-with-tooltip",
-          children: [(0,external_wp_i18n_.__)('Record views in the WordPress database', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-            text: (0,external_wp_i18n_.__)('Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it.', 'video-embed-thumbnail-generator')
+          children: [(0,settings_external_wp_i18n_.__)('Record views in the WordPress database', 'video-embed-thumbnail-generator'), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+            text: (0,settings_external_wp_i18n_.__)('Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it.', 'video-embed-thumbnail-generator')
           })]
         }),
         selected: count_views,
         options: countViewsOptions,
         onChange: changeHandlerFactory.count_views
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.PanelBody, {
-      title: (0,external_wp_i18n_.__)('Misc', 'video-embed-thumbnail-generator'),
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.PanelBody, {
+      title: (0,settings_external_wp_i18n_.__)('Misc', 'video-embed-thumbnail-generator'),
       initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Override any existing "[video]" shortcodes', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Override any existing "[video]" shortcodes', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.replace_video_shortcode,
           checked: !!replace_video_shortcode
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)("If you have posts or theme files that make use of the built-in WordPress video shortcode, Videopack can override them with this plugin's embedded video player.", 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)("If you have posts or theme files that make use of the built-in WordPress video shortcode, Videopack can override them with this plugin's embedded video player.", 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Override any existing Video blocks', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Override any existing Video blocks', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.replace_video_block,
           checked: !!replace_video_block
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)("If you have posts that make use of the built-in WordPress Video block, Videopack can override them with this plugin's embedded video player on the frontend.", 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)("If you have posts that make use of the built-in WordPress Video block, Videopack can override them with this plugin's embedded video player on the frontend.", 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Replace media library video preview with Videopack player', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Replace media library video preview with Videopack player', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.replace_preview_video,
           checked: !!replace_preview_video
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)("Enhance the default WordPress video preview in the media library with Videopack's features and player settings.", 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)("Enhance the default WordPress video preview in the media library with Videopack's features and player settings.", 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
         className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.ToggleControl, {
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_.__)('Allow video attachment URL rewriting', 'video-embed-thumbnail-generator'),
+          label: (0,settings_external_wp_i18n_.__)('Allow video attachment URL rewriting', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.rewrite_attachment_url,
           checked: !!rewrite_attachment_url
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
-          text: (0,external_wp_i18n_.__)('If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if Videopack is changing your URLs to local files instead of the CDN.', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackTooltip/* default */.A, {
+          text: (0,settings_external_wp_i18n_.__)('If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if Videopack is changing your URLs to local files instead of the CDN.', 'video-embed-thumbnail-generator')
         })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Flex, {
+      }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Flex, {
         direction: "column",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.FlexItem, {
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.BaseControl, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.FlexItem, {
+          children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.BaseControl, {
             __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_.__)('When deleting videos, also delete associated', 'video-embed-thumbnail-generator'),
+            label: (0,settings_external_wp_i18n_.__)('When deleting videos, also delete associated', 'video-embed-thumbnail-generator'),
             id: 'videopack-delete-options',
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.CheckboxControl, {
+            children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.CheckboxControl, {
               __nextHasNoMarginBottom: true,
-              label: (0,external_wp_i18n_.__)('Thumbnails', 'video-embed-thumbnail-generator'),
+              label: (0,settings_external_wp_i18n_.__)('Thumbnails', 'video-embed-thumbnail-generator'),
               checked: delete_child_thumbnails,
               onChange: changeHandlerFactory.delete_child_thumbnails
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.CheckboxControl, {
+            }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.CheckboxControl, {
               __nextHasNoMarginBottom: true,
-              label: (0,external_wp_i18n_.__)('Encoded Videos', 'video-embed-thumbnail-generator'),
+              label: (0,settings_external_wp_i18n_.__)('Encoded Videos', 'video-embed-thumbnail-generator'),
               checked: delete_child_encoded,
               onChange: changeHandlerFactory.delete_child_encoded
             })]
           })
         })
       })]
-    }), capabilities && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(RolesCheckboxes, {}), (0,external_wp_hooks_.applyFilters)('videopack.settings.admin.after_capabilities', null, {
+    }), capabilities && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(RolesCheckboxes, {}), (0,settings_external_wp_hooks_.applyFilters)('videopack.settings.admin.after_capabilities', null, {
       settings,
       changeHandlerFactory
     })]
@@ -11056,10 +11141,10 @@ const AdminSettings = ({
 const FreemiusPage = ({
   page
 }) => {
-  const [content, setContent] = (0,external_wp_element_.useState)('');
-  const [isLoading, setIsLoading] = (0,external_wp_element_.useState)(true);
-  const containerRef = (0,external_wp_element_.useRef)(null);
-  (0,external_wp_element_.useEffect)(() => {
+  const [content, setContent] = (0,settings_external_wp_element_.useState)('');
+  const [isLoading, setIsLoading] = (0,settings_external_wp_element_.useState)(true);
+  const containerRef = (0,settings_external_wp_element_.useRef)(null);
+  (0,settings_external_wp_element_.useEffect)(() => {
     setIsLoading(true);
     (0,gallery/* getFreemiusPage */.y4)(page).then(response => {
       setContent(response.html);
@@ -11072,7 +11157,7 @@ const FreemiusPage = ({
   }, [page]);
 
   // Effect to execute scripts after the HTML content is rendered.
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (!content || !containerRef.current) {
       return;
     }
@@ -11088,9 +11173,9 @@ const FreemiusPage = ({
     });
   }, [content]);
   if (isLoading) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {});
+    return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {});
   }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)("div", {
     className: "freemius-page-container",
     ref: containerRef,
     dangerouslySetInnerHTML: {
@@ -11129,21 +11214,21 @@ const FreemiusPage = ({
  */
 
 const VideopackSettingsPage = () => {
-  const [settings, setSettings] = (0,external_wp_element_.useState)({});
-  const [ffmpegTest, setFfmpegTest] = (0,external_wp_element_.useState)({});
-  const [isSettingsChanged, setIsSettingsChanged] = (0,external_wp_element_.useState)(false);
+  const [settings, setSettings] = (0,settings_external_wp_element_.useState)({});
+  const [ffmpegTest, setFfmpegTest] = (0,settings_external_wp_element_.useState)({});
+  const [isSettingsChanged, setIsSettingsChanged] = (0,settings_external_wp_element_.useState)(false);
   const defaultTab = window.location.hash.substring(1) || 'player';
-  const [activeTab, setActiveTab] = (0,external_wp_element_.useState)(defaultTab);
-  const [isResetModalOpen, setIsResetModalOpen] = (0,external_wp_element_.useState)(false);
-  const settingsRef = (0,external_wp_element_.useRef)(settings);
-  (0,external_wp_element_.useEffect)(() => {
+  const [activeTab, setActiveTab] = (0,settings_external_wp_element_.useState)(defaultTab);
+  const [isResetModalOpen, setIsResetModalOpen] = (0,settings_external_wp_element_.useState)(false);
+  const settingsRef = (0,settings_external_wp_element_.useRef)(settings);
+  (0,settings_external_wp_element_.useEffect)(() => {
     settingsRef.current = settings;
   }, [settings]);
-  const testFfmpeg = (0,external_wp_element_.useCallback)((codec, resolution) => {
+  const testFfmpeg = (0,settings_external_wp_element_.useCallback)((codec, resolution) => {
     if (activeTab === 'encoding') {
       setFfmpegTest({
-        command: (0,external_wp_i18n_.__)('Running test…', 'video-embed-thumbnail-generator'),
-        output: (0,external_wp_i18n_.__)('Running test…', 'video-embed-thumbnail-generator')
+        command: (0,settings_external_wp_i18n_.__)('Running test…', 'video-embed-thumbnail-generator'),
+        output: (0,settings_external_wp_i18n_.__)('Running test…', 'video-embed-thumbnail-generator')
       });
       (0,gallery/* testEncodeCommand */.UD)(codec, resolution).then(response => {
         setFfmpegTest(response);
@@ -11152,12 +11237,12 @@ const VideopackSettingsPage = () => {
       });
     }
   }, [activeTab]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (!isSettingsChanged && activeTab === 'encoding' && settings.sample_codec && settings.sample_resolution && settings.ffmpeg_exists === true && (settings.active_encoder === 'ffmpeg' || !settings.active_encoder)) {
       testFfmpeg(settings.sample_codec, settings.sample_resolution);
     }
   }, [settings, activeTab, isSettingsChanged, testFfmpeg]);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     (0,api_settings/* getSettings */.mt)().then(response => {
       setSettings(response);
     }).catch(error => {
@@ -11171,7 +11256,7 @@ const VideopackSettingsPage = () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, []);
-  const debouncedSaveSettings = (0,external_wp_compose_.useDebounce)(newSettings => {
+  const debouncedSaveSettings = (0,settings_external_wp_compose_.useDebounce)(newSettings => {
     // Prepare settings for saving. Standalone options like videopack_cloud_secret_key
     // are stored alongside the main videopack_options object.
     (0,api_settings/* saveWPSettings */.CZ)(newSettings).then(response => {
@@ -11194,12 +11279,12 @@ const VideopackSettingsPage = () => {
       console.error('Error updating settings:', error);
     });
   }, 1000);
-  (0,external_wp_element_.useEffect)(() => {
+  (0,settings_external_wp_element_.useEffect)(() => {
     if (isSettingsChanged) {
       debouncedSaveSettings(settings);
     }
   }, [isSettingsChanged, debouncedSaveSettings, settings]);
-  const changeHandlerFactory = (0,external_wp_element_.useMemo)(() => {
+  const changeHandlerFactory = (0,settings_external_wp_element_.useMemo)(() => {
     if (!settings || typeof settings !== 'object') {
       return {};
     }
@@ -11215,45 +11300,45 @@ const VideopackSettingsPage = () => {
     }, {});
     return handlers;
   }, [settings]);
-  const tabs = (0,external_wp_element_.useMemo)(() => {
+  const tabs = (0,settings_external_wp_element_.useMemo)(() => {
     const defaultTabs = [{
       name: 'player',
-      title: (0,external_wp_i18n_.__)('Video Player', 'video-embed-thumbnail-generator'),
+      title: (0,settings_external_wp_i18n_.__)('Video Player', 'video-embed-thumbnail-generator'),
       component: components_PlayerSettings
     }, {
       name: 'thumbnails',
-      title: (0,external_wp_i18n_.__)('Thumbnails', 'video-embed-thumbnail-generator'),
+      title: (0,settings_external_wp_i18n_.__)('Thumbnails', 'video-embed-thumbnail-generator'),
       component: components_ThumbnailSettings
     }, {
       name: 'gallery',
-      title: (0,external_wp_i18n_.__)('Galleries & Lists', 'video-embed-thumbnail-generator'),
+      title: (0,settings_external_wp_i18n_.__)('Galleries & Lists', 'video-embed-thumbnail-generator'),
       component: components_VideoCollectionSettings
     }];
     if (!videopack_config.isFfmpegOverridden || videopack_config.isSuperAdmin) {
       defaultTabs.push({
         name: 'encoding',
-        title: (0,external_wp_i18n_.__)('Encoding', 'video-embed-thumbnail-generator'),
+        title: (0,settings_external_wp_i18n_.__)('Encoding', 'video-embed-thumbnail-generator'),
         component: components_EncodingSettings
       });
     }
     defaultTabs.push({
       name: 'admin',
-      title: (0,external_wp_i18n_.__)('Admin', 'video-embed-thumbnail-generator'),
+      title: (0,settings_external_wp_i18n_.__)('Admin', 'video-embed-thumbnail-generator'),
       component: components_AdminSettings
     });
     if (videopack_config.freemiusEnabled) {
       defaultTabs.push({
         name: 'account',
-        title: (0,external_wp_i18n_.__)('Freemius Account', 'video-embed-thumbnail-generator'),
+        title: (0,settings_external_wp_i18n_.__)('Freemius Account', 'video-embed-thumbnail-generator'),
         className: 'videopack-freemius-tab',
-        component: () => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(components_FreemiusPage, {
+        component: () => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(components_FreemiusPage, {
           page: "account"
         })
       }, {
         name: 'add-ons',
-        title: (0,external_wp_i18n_.__)('Add-ons', 'video-embed-thumbnail-generator'),
+        title: (0,settings_external_wp_i18n_.__)('Add-ons', 'video-embed-thumbnail-generator'),
         className: 'videopack-freemius-tab',
-        component: () => /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(components_FreemiusPage, {
+        component: () => /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(components_FreemiusPage, {
           page: "add-ons"
         })
       });
@@ -11266,7 +11351,7 @@ const VideopackSettingsPage = () => {
      *
      * @param {Array} defaultTabs Array of tab objects.
      */
-    return (0,external_wp_hooks_.applyFilters)('videopack.settings.tabs', defaultTabs);
+    return (0,settings_external_wp_hooks_.applyFilters)('videopack.settings.tabs', defaultTabs);
   }, []);
   const onTabSelect = tabName => {
     setActiveTab(tabName);
@@ -11276,7 +11361,7 @@ const VideopackSettingsPage = () => {
     if (settings && settings.hasOwnProperty('embed_method')) {
       if (tab.component) {
         const TabComponent = tab.component;
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(TabComponent, {
+        return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(TabComponent, {
           settings: settings,
           setSettings: setSettings,
           changeHandlerFactory: changeHandlerFactory,
@@ -11284,7 +11369,7 @@ const VideopackSettingsPage = () => {
         });
       }
     } else {
-      return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {});
+      return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {});
     }
   };
   const resetSettings = () => {
@@ -11300,49 +11385,49 @@ const VideopackSettingsPage = () => {
       setIsResetModalOpen(false);
     });
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
+  return /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("div", {
     className: "wrap videopack-settings",
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("h1", {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
+    children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("h1", {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Icon, {
         className: "videopack-settings-icon",
-        icon: icon.videopack,
+        icon: settings_icon/* videopack */.zT,
         size: 40
-      }), (0,external_wp_i18n_.__)('Videopack Settings', 'video-embed-thumbnail-generator'), isSettingsChanged && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("span", {
+      }), (0,settings_external_wp_i18n_.__)('Videopack Settings', 'video-embed-thumbnail-generator'), isSettingsChanged && /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)("span", {
         className: "videopack-settings-saving",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {}), (0,external_wp_i18n_.__)('Saving…', 'video-embed-thumbnail-generator')]
+        children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Spinner, {}), (0,settings_external_wp_i18n_.__)('Saving…', 'video-embed-thumbnail-generator')]
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.Panel, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.TabPanel, {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsxs)(settings_external_wp_components_.Panel, {
+      children: [/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.TabPanel, {
         tabs: tabs,
         initialTabName: activeTab,
         onSelect: onTabSelect,
         children: tab => {
           return renderTab(tab);
         }
-      }, activeTab), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.PanelRow, {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
+      }, activeTab), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.PanelRow, {
+        children: /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.Button, {
           __next40pxDefaultSize: true,
           variant: "primary",
           onClick: resetSettings,
           className: 'videopack-settings-reset',
-          children: (0,external_wp_i18n_.__)('Reset Settings', 'video-embed-thumbnail-generator')
+          children: (0,settings_external_wp_i18n_.__)('Reset Settings', 'video-embed-thumbnail-generator')
         })
       })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.__experimentalConfirmDialog, {
+    }), /*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(settings_external_wp_components_.__experimentalConfirmDialog, {
       isOpen: isResetModalOpen,
-      title: (0,external_wp_i18n_.__)('Reset Settings?', 'video-embed-thumbnail-generator'),
+      title: (0,settings_external_wp_i18n_.__)('Reset Settings?', 'video-embed-thumbnail-generator'),
       onConfirm: handleConfirmReset,
       onCancel: () => setIsResetModalOpen(false),
-      confirmButtonText: (0,external_wp_i18n_.__)('Reset Settings', 'video-embed-thumbnail-generator'),
-      cancelButtonText: (0,external_wp_i18n_.__)('Cancel', 'video-embed-thumbnail-generator'),
-      children: (0,external_wp_i18n_.__)('Are you sure you want to reset all settings to their defaults? This action cannot be undone.', 'video-embed-thumbnail-generator')
+      confirmButtonText: (0,settings_external_wp_i18n_.__)('Reset Settings', 'video-embed-thumbnail-generator'),
+      cancelButtonText: (0,settings_external_wp_i18n_.__)('Cancel', 'video-embed-thumbnail-generator'),
+      children: (0,settings_external_wp_i18n_.__)('Are you sure you want to reset all settings to their defaults? This action cannot be undone.', 'video-embed-thumbnail-generator')
     })]
   });
 };
-const el = document.getElementById('videopack-settings-root');
-if (el) {
-  const root = (0,external_wp_element_.createRoot)(el);
-  root.render(/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(VideopackSettingsPage, {}));
+const settings_el = document.getElementById('videopack-settings-root');
+if (settings_el) {
+  const root = (0,settings_external_wp_element_.createRoot)(settings_el);
+  root.render(/*#__PURE__*/(0,settings_external_ReactJSXRuntime_.jsx)(VideopackSettingsPage, {}));
 }
 })();
 
@@ -11558,7 +11643,7 @@ const NetworkSettingsPage = () => {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("h1", {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.Icon, {
         className: "videopack-settings-icon",
-        icon: _assets_icon__WEBPACK_IMPORTED_MODULE_7__.videopack,
+        icon: _assets_icon__WEBPACK_IMPORTED_MODULE_7__/* .videopack */ .zT,
         size: 40
       }), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Videopack Network Settings', 'video-embed-thumbnail-generator')]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__.Panel, {
@@ -11678,7 +11763,7 @@ var external_ReactJSXRuntime_ = __webpack_require__(790);
 // packages/icons/src/library/arrow-up.tsx
 
 
-var arrow_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 3.9 6.5 9.5l1 1 3.8-3.7V20h1.5V6.8l3.7 3.7 1-1z" }) });
+var arrow_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 3.9 6.5 9.5l1 1 3.8-3.7V20h1.5V6.8l3.7 3.7 1-1z" }) });
 
 //# sourceMappingURL=arrow-up.mjs.map
 
@@ -11686,7 +11771,7 @@ var arrow_up_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(externa
 // packages/icons/src/library/arrow-down.tsx
 
 
-var arrow_down_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "m16.5 13.5-3.7 3.7V4h-1.5v13.2l-3.8-3.7-1 1 5.5 5.6 5.5-5.6z" }) });
+var arrow_down_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "m16.5 13.5-3.7 3.7V4h-1.5v13.2l-3.8-3.7-1 1 5.5 5.6 5.5-5.6z" }) });
 
 //# sourceMappingURL=arrow-down.mjs.map
 
@@ -11717,7 +11802,7 @@ var OPERATOR_STARTS_WITH = "startsWith";
 var OPERATOR_ON = "on";
 var OPERATOR_NOT_ON = "notOn";
 var SORTING_DIRECTIONS = ["asc", "desc"];
-var sortArrows = { asc: "\u2191", desc: "\u2193" };
+var sortArrows = { asc: "↑", desc: "↓" };
 var sortValues = { asc: "ascending", desc: "descending" };
 var sortLabels = {
   asc: (0,external_wp_i18n_.__)("Sort ascending"),
@@ -11912,7 +11997,7 @@ function Combobox({
 
 ;// external ["wp","date"]
 const external_wp_date_namespaceObject = window["wp"]["date"];
-;// ./node_modules/@base-ui/utils/esm/formatErrorMessage.js
+;// ./node_modules/@base-ui/utils/formatErrorMessage.mjs
 /**
  * Creates a formatErrorMessage function with a custom URL and prefix.
  * @param baseUrl - The base URL for the error page (e.g., 'https://base-ui.com/production-error')
@@ -11938,11 +12023,11 @@ function createFormatErrorMessage(baseUrl, prefix) {
  *   ...
  */
 const formatErrorMessage = createFormatErrorMessage('https://base-ui.com/production-error', 'Base UI');
-/* harmony default export */ const esm_formatErrorMessage = (formatErrorMessage);
+/* harmony default export */ const utils_formatErrorMessage = (formatErrorMessage);
 // EXTERNAL MODULE: external "React"
 var external_React_ = __webpack_require__(609);
 var external_React_namespaceObject = /*#__PURE__*/__webpack_require__.t(external_React_, 2);
-;// ./node_modules/@base-ui/utils/esm/useRefWithInit.js
+;// ./node_modules/@base-ui/utils/useRefWithInit.mjs
 'use client';
 
 
@@ -11963,7 +12048,7 @@ function useRefWithInit(init, initArg) {
   }
   return ref;
 }
-;// ./node_modules/@base-ui/utils/esm/useMergedRefs.js
+;// ./node_modules/@base-ui/utils/useMergedRefs.mjs
 
 
 /**
@@ -12072,13 +12157,13 @@ function update(forkRef, refs) {
     }
   };
 }
-;// ./node_modules/@base-ui/utils/esm/reactVersion.js
+;// ./node_modules/@base-ui/utils/reactVersion.mjs
 
 const majorVersion = parseInt(external_React_.version, 10);
 function isReactVersionAtLeast(reactVersionToCheck) {
   return majorVersion >= reactVersionToCheck;
 }
-;// ./node_modules/@base-ui/utils/esm/getReactElementRef.js
+;// ./node_modules/@base-ui/utils/getReactElementRef.mjs
 
 
 
@@ -12093,7 +12178,7 @@ function getReactElementRef(element) {
   const propsWithRef = reactElement.props;
   return (isReactVersionAtLeast(19) ? propsWithRef?.ref : reactElement.ref) ?? null;
 }
-;// ./node_modules/@base-ui/utils/esm/mergeObjects.js
+;// ./node_modules/@base-ui/utils/mergeObjects.mjs
 function mergeObjects(a, b) {
   if (a && !b) {
     return a;
@@ -12109,11 +12194,11 @@ function mergeObjects(a, b) {
   }
   return undefined;
 }
-;// ./node_modules/@base-ui/utils/esm/empty.js
+;// ./node_modules/@base-ui/utils/empty.mjs
 function NOOP() {}
 const empty_EMPTY_ARRAY = Object.freeze([]);
 const EMPTY_OBJECT = Object.freeze({});
-;// ./node_modules/@base-ui/react/esm/internals/getStateAttributesProps.js
+;// ./node_modules/@base-ui/react/internals/getStateAttributesProps.mjs
 function getStateAttributesProps(state, customMapping) {
   const props = {};
 
@@ -12135,7 +12220,7 @@ function getStateAttributesProps(state, customMapping) {
   }
   return props;
 }
-;// ./node_modules/@base-ui/react/esm/utils/resolveClassName.js
+;// ./node_modules/@base-ui/react/utils/resolveClassName.mjs
 /**
  * If the provided className is a string, it will be returned as is.
  * Otherwise, the function will call the className function with the state as the first argument.
@@ -12146,7 +12231,7 @@ function getStateAttributesProps(state, customMapping) {
 function resolveClassName(className, state) {
   return typeof className === 'function' ? className(state) : className;
 }
-;// ./node_modules/@base-ui/react/esm/utils/resolveStyle.js
+;// ./node_modules/@base-ui/react/utils/resolveStyle.mjs
 /**
  * If the provided style is an object, it will be returned as is.
  * Otherwise, the function will call the style function with the state as the first argument.
@@ -12157,7 +12242,7 @@ function resolveClassName(className, state) {
 function resolveStyle(style, state) {
   return typeof style === 'function' ? style(state) : style;
 }
-;// ./node_modules/@base-ui/react/esm/merge-props/mergeProps.js
+;// ./node_modules/@base-ui/react/merge-props/mergeProps.mjs
 
 const EMPTY_PROPS = {};
 
@@ -12378,7 +12463,7 @@ function mergeClassNames(ourClassName, theirClassName) {
 function isSyntheticEvent(event) {
   return event != null && typeof event === 'object' && 'nativeEvent' in event;
 }
-;// ./node_modules/@base-ui/react/esm/internals/useRenderElement.js
+;// ./node_modules/@base-ui/react/internals/useRenderElement.mjs
 /* unused harmony import specifier */ var warn;
 
 
@@ -12511,7 +12596,7 @@ function evaluateRenderProp(element, render, props, state) {
   }
   // Unreachable, but the typings on `useRenderElement` need to be reworked
   // to annotate it correctly.
-  throw new Error( false ? 0 : esm_formatErrorMessage(8));
+  throw new Error( false ? 0 : utils_formatErrorMessage(8));
 }
 function warnIfRenderPropLooksLikeComponent(renderFn) {
   const functionName = renderFn.name;
@@ -12543,7 +12628,7 @@ function renderTag(Tag, props) {
   }
   return /*#__PURE__*/external_React_.createElement(Tag, props);
 }
-;// ./node_modules/@base-ui/react/esm/use-render/useRender.js
+;// ./node_modules/@base-ui/react/use-render/useRender.mjs
 
 /**
  * Renders a Base UI element.
@@ -12742,7 +12827,6 @@ function RelativeDateControl({
         /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
           external_wp_components_.__experimentalNumberControl,
           {
-            __next40pxDefaultSize: true,
             className: "dataviews-controls__relative-date-number",
             spinControls: "none",
             min: 1,
@@ -12756,7 +12840,6 @@ function RelativeDateControl({
           external_wp_components_.SelectControl,
           {
             className: "dataviews-controls__relative-date-unit",
-            __next40pxDefaultSize: true,
             label: (0,external_wp_i18n_.__)("Unit"),
             value: unit,
             options,
@@ -13025,7 +13108,7 @@ const secondsInDay = secondsInHour * 24;
  * @name secondsInWeek
  * @summary Seconds in 1 week.
  */
-const secondsInWeek = secondsInDay * 7;
+const secondsInWeek = (/* unused pure expression or super */ null && (secondsInDay * 7));
 
 /**
  * @constant
@@ -13344,7 +13427,6 @@ function CalendarDateTimeControl({
           ValidatedInputControl,
           {
             ref: inputControlRef,
-            __next40pxDefaultSize: true,
             required: !!isValid?.required,
             customValidity: getCustomValidity(isValid, validity),
             type: "datetime-local",
@@ -16474,16 +16556,19 @@ function cleanEscapedString(input) {
 // Fallback for modularized imports:
 /* harmony default export */ const date_fns_format = ((/* unused pure expression or super */ null && (format)));
 
+;// external ["wp","a11y"]
+const external_wp_a11y_namespaceObject = window["wp"]["a11y"];
 ;// ./node_modules/@wordpress/icons/build-module/library/error.mjs
 // packages/icons/src/library/error.tsx
 
 
-var error_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M12.218 5.377a.25.25 0 0 0-.436 0l-7.29 12.96a.25.25 0 0 0 .218.373h14.58a.25.25 0 0 0 .218-.372l-7.29-12.96Zm-1.743-.735c.669-1.19 2.381-1.19 3.05 0l7.29 12.96a1.75 1.75 0 0 1-1.525 2.608H4.71a1.75 1.75 0 0 1-1.525-2.608l7.29-12.96ZM12.75 17.46h-1.5v-1.5h1.5v1.5Zm-1.5-3h1.5v-5h-1.5v5Z" }) });
+var error_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M12.218 5.377a.25.25 0 0 0-.436 0l-7.29 12.96a.25.25 0 0 0 .218.373h14.58a.25.25 0 0 0 .218-.372l-7.29-12.96Zm-1.743-.735c.669-1.19 2.381-1.19 3.05 0l7.29 12.96a1.75 1.75 0 0 1-1.525 2.608H4.71a1.75 1.75 0 0 1-1.525-2.608l7.29-12.96ZM12.75 17.46h-1.5v-1.5h1.5v1.5Zm-1.5-3h1.5v-5h-1.5v5Z" }) });
 
 //# sourceMappingURL=error.mjs.map
 
 ;// ./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/date.mjs
 // packages/dataviews/src/components/dataform-controls/date.tsx
+
 
 
 
@@ -16647,6 +16732,11 @@ function ValidatedDateControl({
       validateRefs();
     }
   }, [isTouched, isValid, validity, validateRefs]);
+  (0,external_wp_element_.useEffect)(() => {
+    if (isTouched && customValidity?.message) {
+      (0,external_wp_a11y_namespaceObject.speak)(customValidity.message);
+    }
+  }, [isTouched, customValidity?.message]);
   const onBlur = (event) => {
     if (isTouched) {
       return;
@@ -16657,7 +16747,7 @@ function ValidatedDateControl({
   };
   return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)("div", { onBlur, children: [
     children,
-    /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)("div", { "aria-live": "polite", children: customValidity && /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)(
+    customValidity && /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)(
       "p",
       {
         className: dist_clsx(
@@ -16677,7 +16767,7 @@ function ValidatedDateControl({
           customValidity.message
         ]
       }
-    ) })
+    )
   ] });
 }
 function CalendarDateControl({
@@ -16818,7 +16908,6 @@ function CalendarDateControl({
             /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
               external_wp_components_.__experimentalInputControl,
               {
-                __next40pxDefaultSize: true,
                 ref: validityTargetRef,
                 type: "date",
                 label: (0,external_wp_i18n_.__)("Date"),
@@ -17032,7 +17121,6 @@ function CalendarDateRangeControl({
                   /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
                     external_wp_components_.__experimentalInputControl,
                     {
-                      __next40pxDefaultSize: true,
                       ref: fromInputRef,
                       type: "date",
                       label: (0,external_wp_i18n_.__)("From"),
@@ -17048,7 +17136,6 @@ function CalendarDateRangeControl({
                   /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
                     external_wp_components_.__experimentalInputControl,
                     {
-                      __next40pxDefaultSize: true,
                       ref: toInputRef,
                       type: "date",
                       label: (0,external_wp_i18n_.__)("To"),
@@ -17176,7 +17263,6 @@ function Select({
       help: description,
       options: elements,
       onChange: onChangeControl,
-      __next40pxDefaultSize: true,
       hideLabelFromVision,
       multiple: isMultiple,
       disabled
@@ -17211,7 +17297,7 @@ function AdaptiveSelect(props) {
 // packages/icons/src/library/envelope.tsx
 
 
-var envelope_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M3 7c0-1.1.9-2 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Zm2-.5h14c.3 0 .5.2.5.5v1L12 13.5 4.5 7.9V7c0-.3.2-.5.5-.5Zm-.5 3.3V17c0 .3.2.5.5.5h14c.3 0 .5-.2.5-.5V9.8L12 15.4 4.5 9.8Z" }) });
+var envelope_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M3 7c0-1.1.9-2 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Zm2-.5h14c.3 0 .5.2.5.5v1L12 13.5 4.5 7.9V7c0-.3.2-.5.5-.5Zm-.5 3.3V17c0 .3.2.5.5.5h14c.3 0 .5-.2.5-.5V9.8L12 15.4 4.5 9.8Z" }) });
 
 //# sourceMappingURL=envelope.mjs.map
 
@@ -17264,8 +17350,7 @@ function ValidatedText({
       disabled,
       pattern: isValid.pattern ? isValid.pattern.constraint : void 0,
       minLength: isValid.minLength ? isValid.minLength.constraint : void 0,
-      maxLength: isValid.maxLength ? isValid.maxLength.constraint : void 0,
-      __next40pxDefaultSize: true
+      maxLength: isValid.maxLength ? isValid.maxLength.constraint : void 0
     }
   );
 }
@@ -17309,7 +17394,7 @@ function Email({
 // packages/icons/src/library/mobile.tsx
 
 
-var mobile_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M15 4H9c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm.5 14c0 .3-.2.5-.5.5H9c-.3 0-.5-.2-.5-.5V6c0-.3.2-.5.5-.5h6c.3 0 .5.2.5.5v12zm-4.5-.5h2V16h-2v1.5z" }) });
+var mobile_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M15 4H9c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm.5 14c0 .3-.2.5-.5.5H9c-.3 0-.5-.2-.5-.5V6c0-.3.2-.5.5-.5h6c.3 0 .5.2.5.5v12zm-4.5-.5h2V16h-2v1.5z" }) });
 
 //# sourceMappingURL=mobile.mjs.map
 
@@ -17350,7 +17435,7 @@ function Telephone({
 // packages/icons/src/library/link.tsx
 
 
-var link_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M10 17.389H8.444A5.194 5.194 0 1 1 8.444 7H10v1.5H8.444a3.694 3.694 0 0 0 0 7.389H10v1.5ZM14 7h1.556a5.194 5.194 0 0 1 0 10.39H14v-1.5h1.556a3.694 3.694 0 0 0 0-7.39H14V7Zm-4.5 6h5v-1.5h-5V13Z" }) });
+var link_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M10 17.389H8.444A5.194 5.194 0 1 1 8.444 7H10v1.5H8.444a3.694 3.694 0 0 0 0 7.389H10v1.5ZM14 7h1.556a5.194 5.194 0 0 1 0 10.39H14v-1.5h1.556a3.694 3.694 0 0 0 0-7.39H14V7Zm-4.5 6h5v-1.5h-5V13Z" }) });
 
 //# sourceMappingURL=link.mjs.map
 
@@ -17431,7 +17516,6 @@ function BetweenControls({
             value: min,
             max: max ? Number(max) - step : void 0,
             onChange: onChangeMin,
-            __next40pxDefaultSize: true,
             hideLabelFromVision,
             step
           }
@@ -17443,7 +17527,6 @@ function BetweenControls({
             value: max,
             min: min ? Number(min) + step : void 0,
             onChange: onChangeMax,
-            __next40pxDefaultSize: true,
             hideLabelFromVision,
             step
           }
@@ -17518,7 +17601,6 @@ function ValidatedNumber({
       help: description,
       value,
       onChange: onChangeControl,
-      __next40pxDefaultSize: true,
       hideLabelFromVision,
       step,
       min: isValid.min ? isValid.min.constraint : void 0,
@@ -17723,6 +17805,455 @@ function Textarea({
 
 //# sourceMappingURL=textarea.mjs.map
 
+// EXTERNAL MODULE: external ["wp","compose"]
+var external_wp_compose_ = __webpack_require__(491);
+;// external ["wp","richText"]
+const external_wp_richText_namespaceObject = window["wp"]["richText"];
+;// ./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/richtext/utils.mjs
+// packages/dataviews/src/components/dataform-controls/richtext/utils.ts
+var utils_EMPTY_ARRAY = [];
+function getAllowedFormats({
+  allowedFormats,
+  disableFormats
+}) {
+  if (disableFormats) {
+    return utils_EMPTY_ARRAY;
+  }
+  return allowedFormats;
+}
+
+//# sourceMappingURL=utils.mjs.map
+
+;// ./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/richtext/format-edit.mjs
+// packages/dataviews/src/components/dataform-controls/richtext/format-edit.tsx
+
+
+
+var EMPTY_CONTEXT = {};
+function Edit({
+  onChange,
+  onFocus,
+  value,
+  forwardedRef,
+  settings,
+  isVisible
+}) {
+  const { name, edit: EditFunction } = settings;
+  if (!EditFunction) {
+    return null;
+  }
+  const activeFormat = (0,external_wp_richText_namespaceObject.getActiveFormat)(value, name);
+  const isActive = activeFormat !== void 0;
+  const activeObject = (0,external_wp_richText_namespaceObject.getActiveObject)(value);
+  const isObjectActive = activeObject !== void 0 && activeObject.type === name;
+  return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
+    EditFunction,
+    {
+      isActive,
+      isVisible,
+      activeAttributes: isActive ? activeFormat.attributes || {} : {},
+      isObjectActive,
+      activeObjectAttributes: isObjectActive ? activeObject.attributes || {} : {},
+      value,
+      onChange,
+      onFocus,
+      contentRef: forwardedRef,
+      context: EMPTY_CONTEXT
+    },
+    name
+  );
+}
+function FormatEdit({
+  formatTypes,
+  ...props
+}) {
+  return formatTypes.map((settings) => /* @__PURE__ */ (0,external_React_.createElement)(Edit, { settings, ...props, key: settings.name }));
+}
+
+//# sourceMappingURL=format-edit.mjs.map
+
+;// ./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/richtext/control.mjs
+// packages/dataviews/src/components/dataform-controls/richtext/control.tsx
+
+
+
+
+
+
+
+
+
+var {
+  ValidatedContentEditableControl: RichTextControlShell,
+  withIgnoreIMEEvents
+} = unlock(external_wp_components_.privateApis);
+var {
+  useRichText,
+  KeyboardShortcutContext,
+  InputEventContext,
+  shortcutsListener,
+  inputEventsListener
+} = unlock(external_wp_richText_namespaceObject.privateApis);
+var EMPTY_COMPLETERS = [];
+function RichTextControl({
+  label,
+  value: attrValue,
+  onChange,
+  placeholder,
+  id,
+  clientId,
+  className,
+  hideLabelFromVision,
+  help,
+  disabled,
+  required,
+  markWhenOptional,
+  customValidity,
+  allowedFormats,
+  disableFormats,
+  withoutInteractiveFormatting,
+  preserveWhiteSpace,
+  disableLineBreaks,
+  focusOnMount,
+  completers = EMPTY_COMPLETERS
+}) {
+  const [selection, setSelection] = (0,external_wp_element_.useState)({
+    start: void 0,
+    end: void 0
+  });
+  const [isSelected, setIsSelected] = (0,external_wp_element_.useState)(false);
+  const anchorRef = (0,external_wp_element_.useRef)(void 0);
+  const inputEvents = (0,external_wp_element_.useRef)(/* @__PURE__ */ new Set());
+  const keyboardShortcuts = (0,external_wp_element_.useRef)(
+    /* @__PURE__ */ new Set()
+  );
+  const popoverSlotRef = (0,external_wp_element_.useRef)(null);
+  const [popoverContainer, setPopoverContainer] = (0,external_wp_element_.useState)(null);
+  const popoverContainerRef = (0,external_wp_compose_.useRefEffect)((element) => {
+    setPopoverContainer(element.ownerDocument.body);
+  }, []);
+  const blurDeselectTimeoutRef = (0,external_wp_element_.useRef)();
+  const stopPopoverFocusTrackingRef = (0,external_wp_element_.useRef)(
+    void 0
+  );
+  (0,external_wp_element_.useEffect)(
+    () => () => {
+      clearTimeout(blurDeselectTimeoutRef.current);
+      stopPopoverFocusTrackingRef.current?.();
+    },
+    []
+  );
+  function isFocusInField(ownerDocument) {
+    const active = ownerDocument.activeElement;
+    return !!(active && (anchorRef.current?.contains(active) || popoverSlotRef.current?.contains(active)));
+  }
+  function trackPopoverFocusOut(ownerDocument) {
+    stopPopoverFocusTrackingRef.current?.();
+    function onDocumentFocusOut() {
+      clearTimeout(blurDeselectTimeoutRef.current);
+      blurDeselectTimeoutRef.current = setTimeout(() => {
+        if (isFocusInField(ownerDocument)) {
+          return;
+        }
+        stopPopoverFocusTrackingRef.current?.();
+        setIsSelected(false);
+      }, 0);
+    }
+    ownerDocument.addEventListener("focusout", onDocumentFocusOut);
+    stopPopoverFocusTrackingRef.current = () => {
+      ownerDocument.removeEventListener("focusout", onDocumentFocusOut);
+      stopPopoverFocusTrackingRef.current = void 0;
+    };
+  }
+  function onEditableFocus() {
+    clearTimeout(blurDeselectTimeoutRef.current);
+    stopPopoverFocusTrackingRef.current?.();
+    setIsSelected(true);
+  }
+  function onEditableBlur(event) {
+    clearTimeout(blurDeselectTimeoutRef.current);
+    const { ownerDocument } = event.currentTarget;
+    blurDeselectTimeoutRef.current = setTimeout(() => {
+      if (isFocusInField(ownerDocument)) {
+        trackPopoverFocusOut(ownerDocument);
+        return;
+      }
+      setIsSelected(false);
+    }, 0);
+  }
+  const adjustedAllowedFormats = getAllowedFormats({
+    allowedFormats,
+    disableFormats
+  });
+  const {
+    value,
+    onChange: onRichTextChange,
+    ref: richTextRef,
+    formatTypes,
+    getValue
+  } = useRichText({
+    value: attrValue,
+    onChange,
+    selectionStart: selection.start,
+    selectionEnd: selection.end,
+    onSelectionChange: (start, end) => setSelection({ start, end }),
+    __unstableIsSelected: isSelected,
+    preserveWhiteSpace: !!preserveWhiteSpace,
+    placeholder,
+    __unstableDisableFormats: disableFormats,
+    allowedFormats: adjustedAllowedFormats,
+    withoutInteractiveFormatting,
+    __unstableFormatTypeHandlerContext: (0,external_wp_element_.useMemo)(
+      () => ({
+        richTextIdentifier: id,
+        blockClientId: clientId
+      }),
+      [id, clientId]
+    )
+  });
+  function onFocus() {
+    anchorRef.current?.focus();
+  }
+  const eventListenersPropsRef = (0,external_wp_element_.useRef)({
+    keyboardShortcuts,
+    inputEvents
+  });
+  const inputRulePropsRef = (0,external_wp_element_.useRef)({
+    formatTypes,
+    getValue,
+    onChange: onRichTextChange
+  });
+  (0,external_wp_element_.useInsertionEffect)(() => {
+    inputRulePropsRef.current = {
+      formatTypes,
+      getValue,
+      onChange: onRichTextChange
+    };
+  });
+  const enterRef = (0,external_wp_compose_.useRefEffect)(
+    (element) => {
+      if (disabled) {
+        return;
+      }
+      const onKeyDown = withIgnoreIMEEvents((event) => {
+        if (event.key !== "Enter" || event.defaultPrevented || event.metaKey || event.ctrlKey) {
+          return;
+        }
+        event.preventDefault();
+        if (disableLineBreaks) {
+          return;
+        }
+        const { getValue: getCurrentValue, onChange: handleChange } = inputRulePropsRef.current;
+        const current = getCurrentValue();
+        handleChange(
+          (0,external_wp_richText_namespaceObject.insert)(
+            current,
+            "\n",
+            current.start ?? current.text.length,
+            current.end ?? current.text.length
+          )
+        );
+      });
+      element.addEventListener("keydown", onKeyDown);
+      return () => element.removeEventListener("keydown", onKeyDown);
+    },
+    [disableLineBreaks, disabled]
+  );
+  const eventListenersRef = (0,external_wp_compose_.useRefEffect)(
+    (element) => {
+      if (!isSelected) {
+        return;
+      }
+      const cleanupShortcuts = shortcutsListener(
+        eventListenersPropsRef
+      )(element);
+      const cleanupInputEvents = inputEventsListener(
+        eventListenersPropsRef
+      )(element);
+      function onFormatInput(event) {
+        if (event.inputType !== "insertText" && event.type !== "compositionend") {
+          return;
+        }
+        const {
+          formatTypes: types,
+          getValue: getCurrentValue,
+          onChange: handleChange
+        } = inputRulePropsRef.current;
+        const current = getCurrentValue();
+        const transformed = types.reduce(
+          (accumulator, {
+            __unstableInputRule
+          }) => __unstableInputRule ? __unstableInputRule(accumulator) : accumulator,
+          current
+        );
+        if (transformed !== current) {
+          handleChange({
+            ...transformed,
+            activeFormats: current.activeFormats
+          });
+        }
+      }
+      element.addEventListener("input", onFormatInput);
+      element.addEventListener("compositionend", onFormatInput);
+      return () => {
+        cleanupShortcuts();
+        cleanupInputEvents();
+        element.removeEventListener("input", onFormatInput);
+        element.removeEventListener("compositionend", onFormatInput);
+      };
+    },
+    [isSelected]
+  );
+  const unusedContentRef = (0,external_wp_element_.useRef)(null);
+  const {
+    ref: autocompleteRef,
+    "aria-activedescendant": autocompleteActiveDescendant,
+    "aria-autocomplete": autocompleteAriaAutocomplete,
+    ...autocompleteRest
+  } = (0,external_wp_components_.__unstableUseAutocompleteProps)({
+    completers,
+    record: value,
+    onChange: onRichTextChange,
+    // This control's completers insert their completion into the value;
+    // none replace the whole value, so the required `onReplace` is a
+    // no-op here.
+    onReplace: () => {
+    },
+    contentRef: unusedContentRef
+  });
+  const autocompleteProps = {
+    ...autocompleteRest,
+    "aria-activedescendant": autocompleteActiveDescendant ?? void 0,
+    "aria-autocomplete": autocompleteAriaAutocomplete
+  };
+  const focusOnMountRef = (0,external_wp_compose_.useRefEffect)(
+    (element) => {
+      if (focusOnMount && !disabled) {
+        element.focus();
+      }
+    },
+    [focusOnMount, disabled]
+  );
+  const editableRef = (0,external_wp_compose_.useMergeRefs)([
+    richTextRef,
+    anchorRef,
+    eventListenersRef,
+    enterRef,
+    focusOnMountRef,
+    popoverContainerRef,
+    autocompleteRef
+  ]);
+  return (
+    /*
+     * The provider scopes every slot/fill rendered by this field — most
+     * importantly the format popovers, which land in the `Popover.Slot`
+     * below. That containment is what the blur handling above checks to
+     * decide whether focus is still within the field's own UI. A format
+     * popover using a custom `__unstableSlotName` would portal to the
+     * body-level fallback container instead and deselect the field;
+     * `core/link` (and every other core format) uses the default slot.
+     */
+    /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)(external_wp_components_.SlotFillProvider, { children: [
+      /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
+        RichTextControlShell,
+        {
+          label,
+          id,
+          className: dist_clsx("dataviews-controls__richtext", className),
+          placeholder,
+          hideLabelFromVision,
+          help,
+          disabled,
+          required,
+          markWhenOptional,
+          customValidity,
+          value: value.text,
+          "aria-multiline": !disableLineBreaks,
+          ...autocompleteProps,
+          ref: editableRef,
+          onFocus: onEditableFocus,
+          onBlur: onEditableBlur
+        }
+      ),
+      isSelected && !disabled && /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(KeyboardShortcutContext.Provider, { value: keyboardShortcuts, children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(InputEventContext.Provider, { value: inputEvents, children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
+        FormatEdit,
+        {
+          value,
+          onChange: onRichTextChange,
+          onFocus,
+          formatTypes,
+          forwardedRef: anchorRef,
+          isVisible: true
+        }
+      ) }) }),
+      popoverContainer && (0,external_wp_element_.createPortal)(
+        /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Popover.Slot, { ref: popoverSlotRef }),
+        popoverContainer
+      )
+    ] })
+  );
+}
+
+//# sourceMappingURL=control.mjs.map
+
+;// ./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/richtext/index.mjs
+// packages/dataviews/src/components/dataform-controls/richtext/index.tsx
+
+
+
+
+function RichText({
+  data,
+  field,
+  onChange,
+  hideLabelFromVision,
+  markWhenOptional,
+  config,
+  validity
+}) {
+  const {
+    className,
+    clientId,
+    allowedFormats,
+    disableFormats,
+    withoutInteractiveFormatting,
+    preserveWhiteSpace,
+    disableLineBreaks
+  } = config || {};
+  const disabled = field.isDisabled({ item: data, field });
+  const { label, placeholder, description, id, setValue, isValid } = field;
+  const value = field.getValue({ item: data }) ?? "";
+  const onChangeControl = (0,external_wp_element_.useCallback)(
+    (newValue) => onChange(setValue({ item: data, value: newValue })),
+    [data, onChange, setValue]
+  );
+  return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
+    RichTextControl,
+    {
+      label,
+      value,
+      onChange: onChangeControl,
+      placeholder,
+      id,
+      hideLabelFromVision,
+      help: description,
+      disabled,
+      required: !!isValid.required,
+      markWhenOptional,
+      customValidity: getCustomValidity(isValid, validity),
+      className,
+      clientId,
+      allowedFormats,
+      disableFormats,
+      withoutInteractiveFormatting,
+      preserveWhiteSpace,
+      disableLineBreaks
+    }
+  );
+}
+
+//# sourceMappingURL=index.mjs.map
+
 ;// ./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/toggle-group.mjs
 // packages/dataviews/src/components/dataform-controls/toggle-group.tsx
 
@@ -17764,7 +18295,6 @@ function ToggleGroup({
       required: !!field.isValid?.required,
       markWhenOptional,
       customValidity: getCustomValidity(isValid, validity),
-      __next40pxDefaultSize: true,
       isBlock: true,
       label: field.label,
       help: selectedOption?.description || field.description,
@@ -17992,7 +18522,7 @@ function Color({
 // packages/icons/src/library/unseen.tsx
 
 
-var unseen_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M20.7 12.7s0-.1-.1-.2c0-.2-.2-.4-.4-.6-.3-.5-.9-1.2-1.6-1.8-.7-.6-1.5-1.3-2.6-1.8l-.6 1.4c.9.4 1.6 1 2.1 1.5.6.6 1.1 1.2 1.4 1.6.1.2.3.4.3.5v.1l.7-.3.7-.3Zm-5.2-9.3-1.8 4c-.5-.1-1.1-.2-1.7-.2-3 0-5.2 1.4-6.6 2.7-.7.7-1.2 1.3-1.6 1.8-.2.3-.3.5-.4.6 0 0 0 .1-.1.2s0 0 .7.3l.7.3V13c0-.1.2-.3.3-.5.3-.4.7-1 1.4-1.6 1.2-1.2 3-2.3 5.5-2.3H13v.3c-.4 0-.8-.1-1.1-.1-1.9 0-3.5 1.6-3.5 3.5s.6 2.3 1.6 2.9l-2 4.4.9.4 7.6-16.2-.9-.4Zm-3 12.6c1.7-.2 3-1.7 3-3.5s-.2-1.4-.6-1.9L12.4 16Z" }) });
+var unseen_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M20.7 12.7s0-.1-.1-.2c0-.2-.2-.4-.4-.6-.3-.5-.9-1.2-1.6-1.8-.7-.6-1.5-1.3-2.6-1.8l-.6 1.4c.9.4 1.6 1 2.1 1.5.6.6 1.1 1.2 1.4 1.6.1.2.3.4.3.5v.1l.7-.3.7-.3Zm-5.2-9.3-1.8 4c-.5-.1-1.1-.2-1.7-.2-3 0-5.2 1.4-6.6 2.7-.7.7-1.2 1.3-1.6 1.8-.2.3-.3.5-.4.6 0 0 0 .1-.1.2s0 0 .7.3l.7.3V13c0-.1.2-.3.3-.5.3-.4.7-1 1.4-1.6 1.2-1.2 3-2.3 5.5-2.3H13v.3c-.4 0-.8-.1-1.1-.1-1.9 0-3.5 1.6-3.5 3.5s.6 2.3 1.6 2.9l-2 4.4.9.4 7.6-16.2-.9-.4Zm-3 12.6c1.7-.2 3-1.7 3-3.5s-.2-1.4-.6-1.9L12.4 16Z" }) });
 
 //# sourceMappingURL=unseen.mjs.map
 
@@ -18079,6 +18609,7 @@ function hasElements(field) {
 
 
 
+
 var FORM_CONTROLS = {
   adaptiveSelect: AdaptiveSelect,
   array: ArrayControl,
@@ -18098,6 +18629,7 @@ var FORM_CONTROLS = {
   text: Text,
   toggle: Toggle,
   textarea: Textarea,
+  richtext: RichText,
   toggleGroup: ToggleGroup
 };
 function isEditConfig(value) {
@@ -19007,7 +19539,7 @@ function password_getValueFormatted({
   item,
   field
 }) {
-  return field.getValue({ item }) ? "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" : "";
+  return field.getValue({ item }) ? "••••••••" : "";
 }
 var password_default = {
   type: "password",
@@ -20155,8 +20687,6 @@ function filterSortAndPaginate(data, view, fields) {
 
 //# sourceMappingURL=filter-sort-and-paginate.mjs.map
 
-// EXTERNAL MODULE: external ["wp","compose"]
-var external_wp_compose_ = __webpack_require__(491);
 ;// ./node_modules/@wordpress/dataviews/build-module/components/dataviews-context/index.mjs
 // packages/dataviews/src/components/dataviews-context/index.ts
 
@@ -20204,7 +20734,7 @@ var dataviews_context_default = DataViewsContext;
 // packages/icons/src/library/block-table.tsx
 
 
-var block_table_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 4.5h14c.3 0 .5.2.5.5v3.5h-15V5c0-.3.2-.5.5-.5zm8 5.5h6.5v3.5H13V10zm-1.5 3.5h-7V10h7v3.5zm-7 5.5v-4h7v4.5H5c-.3 0-.5-.2-.5-.5zm14.5.5h-6V15h6.5v4c0 .3-.2.5-.5.5z" }) });
+var block_table_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 4.5h14c.3 0 .5.2.5.5v3.5h-15V5c0-.3.2-.5.5-.5zm8 5.5h6.5v3.5H13V10zm-1.5 3.5h-7V10h7v3.5zm-7 5.5v-4h7v4.5H5c-.3 0-.5-.2-.5-.5zm14.5.5h-6V15h6.5v4c0 .3-.2.5-.5.5z" }) });
 
 //# sourceMappingURL=block-table.mjs.map
 
@@ -20212,7 +20742,7 @@ var block_table_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(exte
 // packages/icons/src/library/category.tsx
 
 
-var category_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M6 5.5h3a.5.5 0 01.5.5v3a.5.5 0 01-.5.5H6a.5.5 0 01-.5-.5V6a.5.5 0 01.5-.5zM4 6a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm11-.5h3a.5.5 0 01.5.5v3a.5.5 0 01-.5.5h-3a.5.5 0 01-.5-.5V6a.5.5 0 01.5-.5zM13 6a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2h-3a2 2 0 01-2-2V6zm5 8.5h-3a.5.5 0 00-.5.5v3a.5.5 0 00.5.5h3a.5.5 0 00.5-.5v-3a.5.5 0 00-.5-.5zM15 13a2 2 0 00-2 2v3a2 2 0 002 2h3a2 2 0 002-2v-3a2 2 0 00-2-2h-3zm-9 1.5h3a.5.5 0 01.5.5v3a.5.5 0 01-.5.5H6a.5.5 0 01-.5-.5v-3a.5.5 0 01.5-.5zM4 15a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2H6a2 2 0 01-2-2v-3z" }) });
+var category_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M6 5.5h3a.5.5 0 01.5.5v3a.5.5 0 01-.5.5H6a.5.5 0 01-.5-.5V6a.5.5 0 01.5-.5zM4 6a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm11-.5h3a.5.5 0 01.5.5v3a.5.5 0 01-.5.5h-3a.5.5 0 01-.5-.5V6a.5.5 0 01.5-.5zM13 6a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2h-3a2 2 0 01-2-2V6zm5 8.5h-3a.5.5 0 00-.5.5v3a.5.5 0 00.5.5h3a.5.5 0 00.5-.5v-3a.5.5 0 00-.5-.5zM15 13a2 2 0 00-2 2v3a2 2 0 002 2h3a2 2 0 002-2v-3a2 2 0 00-2-2h-3zm-9 1.5h3a.5.5 0 01.5.5v3a.5.5 0 01-.5.5H6a.5.5 0 01-.5-.5v-3a.5.5 0 01.5-.5zM4 15a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2H6a2 2 0 01-2-2v-3z" }) });
 
 //# sourceMappingURL=category.mjs.map
 
@@ -20220,7 +20750,7 @@ var category_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(externa
 // packages/icons/src/library/format-list-bullets-rtl.tsx
 
 
-var format_list_bullets_rtl_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M4 8.8h8.9V7.2H4v1.6zm0 7h8.9v-1.5H4v1.5zM18 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z" }) });
+var format_list_bullets_rtl_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M4 8.8h8.9V7.2H4v1.6zm0 7h8.9v-1.5H4v1.5zM18 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z" }) });
 
 //# sourceMappingURL=format-list-bullets-rtl.mjs.map
 
@@ -20228,7 +20758,7 @@ var format_list_bullets_rtl_default = /* @__PURE__ */ (0,external_ReactJSXRuntim
 // packages/icons/src/library/format-list-bullets.tsx
 
 
-var format_list_bullets_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M11.1 15.8H20v-1.5h-8.9v1.5zm0-8.6v1.5H20V7.2h-8.9zM6 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-7c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" }) });
+var format_list_bullets_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M11.1 15.8H20v-1.5h-8.9v1.5zm0-8.6v1.5H20V7.2h-8.9zM6 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-7c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" }) });
 
 //# sourceMappingURL=format-list-bullets.mjs.map
 
@@ -20236,7 +20766,7 @@ var format_list_bullets_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.j
 // packages/icons/src/library/scheduled.tsx
 
 
-var scheduled_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M12 18.5a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13ZM4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Zm9 1V8h-1.5v3.5h-2V13H13Z" }) });
+var scheduled_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M12 18.5a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13ZM4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Zm9 1V8h-1.5v3.5h-2V13H13Z" }) });
 
 //# sourceMappingURL=scheduled.mjs.map
 
@@ -20286,7 +20816,7 @@ function DataViewsSelectionCheckbox({
 // packages/icons/src/library/more-vertical.tsx
 
 
-var more_vertical_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z" }) });
+var more_vertical_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z" }) });
 
 //# sourceMappingURL=more-vertical.mjs.map
 
@@ -20549,7 +21079,7 @@ function PrimaryActions({
 // packages/icons/src/library/close-small.tsx
 
 
-var close_small_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z" }) });
+var close_small_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z" }) });
 
 //# sourceMappingURL=close-small.mjs.map
 
@@ -20933,7 +21463,7 @@ function BulkActionsFooter() {
 // packages/icons/src/library/funnel.tsx
 
 
-var funnel_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M10 17.5H14V16H10V17.5ZM6 6V7.5H18V6H6ZM8 12.5H16V11H8V12.5Z" }) });
+var funnel_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M10 17.5H14V16H10V17.5ZM6 6V7.5H18V6H6ZM8 12.5H16V11H8V12.5Z" }) });
 
 //# sourceMappingURL=funnel.mjs.map
 
@@ -20941,7 +21471,7 @@ var funnel_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_
 // packages/icons/src/library/arrow-left.tsx
 
 
-var arrow_left_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M20 11.2H6.8l3.7-3.7-1-1L3.9 12l5.6 5.5 1-1-3.7-3.7H20z" }) });
+var arrow_left_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M20 11.2H6.8l3.7-3.7-1-1L3.9 12l5.6 5.5 1-1-3.7-3.7H20z" }) });
 
 //# sourceMappingURL=arrow-left.mjs.map
 
@@ -20949,7 +21479,7 @@ var arrow_left_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(exter
 // packages/icons/src/library/arrow-right.tsx
 
 
-var arrow_right_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "m14.5 6.5-1 1 3.7 3.7H4v1.6h13.2l-3.7 3.7 1 1 5.6-5.5z" }) });
+var arrow_right_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "m14.5 6.5-1 1 3.7 3.7H4v1.6h13.2l-3.7 3.7 1 1 5.6-5.5z" }) });
 
 //# sourceMappingURL=arrow-right.mjs.map
 
@@ -21349,8 +21879,8 @@ function ColumnPrimary({
               className: "dataviews-view-table__cell-content-wrapper dataviews-title-field",
               children: [
                 level !== void 0 && level > 0 && /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)("span", { className: "dataviews-view-table__level", children: [
-                  Array(level).fill("\u2014").join(" "),
-                  "\xA0"
+                  Array(level).fill("—").join(" "),
+                  " "
                 ] }),
                 /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(titleField.render, { item, field: titleField })
               ]
@@ -21437,7 +21967,7 @@ function getDataByGroup(data, groupByField) {
 // packages/icons/src/library/check.tsx
 
 
-var check_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M16.5 7.5 10 13.9l-2.5-2.4-1 1 3.5 3.6 7.5-7.6z" }) });
+var check_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M16.5 7.5 10 13.9l-2.5-2.4-1 1 3.5 3.6 7.5-7.6z" }) });
 
 //# sourceMappingURL=check.mjs.map
 
@@ -22071,7 +22601,7 @@ var table_default = ViewTable;
 
 //# sourceMappingURL=index.mjs.map
 
-;// ./node_modules/@base-ui/utils/esm/fastHooks.js
+;// ./node_modules/@base-ui/utils/fastHooks.mjs
 
 
 const hooks = [];
@@ -22115,24 +22645,13 @@ function createInstance() {
     didInitialize: false
   };
 }
-;// ./node_modules/@base-ui/utils/esm/useOnFirstRender.js
-'use client';
-
-
-function useOnFirstRender(fn) {
-  const ref = external_React_.useRef(true);
-  if (ref.current) {
-    ref.current = false;
-    fn();
-  }
-}
-;// ./node_modules/@base-ui/utils/esm/useIsoLayoutEffect.js
+;// ./node_modules/@base-ui/utils/useIsoLayoutEffect.mjs
 'use client';
 
 
 const noop = () => {};
 const useIsoLayoutEffect = typeof document !== 'undefined' ? external_React_.useLayoutEffect : noop;
-;// ./node_modules/@base-ui/react/esm/tooltip/root/TooltipRootContext.js
+;// ./node_modules/@base-ui/react/tooltip/root/TooltipRootContext.mjs
 'use client';
 
 
@@ -22143,11 +22662,11 @@ if (false) // removed by dead control flow
 function useTooltipRootContext(optional) {
   const context = external_React_.useContext(TooltipRootContext);
   if (context === undefined && !optional) {
-    throw new Error( false ? 0 : esm_formatErrorMessage(72));
+    throw new Error( false ? 0 : utils_formatErrorMessage(72));
   }
   return context;
 }
-;// ./node_modules/@base-ui/utils/esm/addEventListener.js
+;// ./node_modules/@base-ui/utils/addEventListener.mjs
 /**
  * Adds an event listener and returns a cleanup function to remove it.
  */
@@ -22158,7 +22677,7 @@ function addEventListener(target, type, listener, options) {
     target.removeEventListener(type, listener, options);
   };
 }
-;// ./node_modules/@base-ui/utils/esm/mergeCleanups.js
+;// ./node_modules/@base-ui/utils/mergeCleanups.mjs
 /**
  * Combines multiple cleanup functions into a single cleanup function.
  */
@@ -22172,12 +22691,12 @@ function mergeCleanups(...cleanups) {
     }
   };
 }
-;// ./node_modules/@base-ui/utils/esm/owner.js
+;// ./node_modules/@base-ui/utils/owner.mjs
 
 function ownerDocument(node) {
   return node?.ownerDocument || document;
 }
-;// ./node_modules/@base-ui/utils/esm/safeReact.js
+;// ./node_modules/@base-ui/utils/safeReact.mjs
 
 
 /**
@@ -22191,7 +22710,7 @@ function ownerDocument(node) {
 const SafeReact = {
   ...external_React_namespaceObject
 };
-;// ./node_modules/@base-ui/utils/esm/useStableCallback.js
+;// ./node_modules/@base-ui/utils/useStableCallback.mjs
 'use client';
 
 
@@ -22233,7 +22752,7 @@ function assertNotCalled() {
   if (false) // removed by dead control flow
 {}
 }
-;// ./node_modules/@base-ui/utils/esm/useOnMount.js
+;// ./node_modules/@base-ui/utils/useOnMount.mjs
 'use client';
 
 
@@ -22248,7 +22767,7 @@ function useOnMount(fn) {
   external_React_.useEffect(fn, EMPTY);
   /* eslint-enable react-hooks/exhaustive-deps */
 }
-;// ./node_modules/@base-ui/utils/esm/useTimeout.js
+;// ./node_modules/@base-ui/utils/useTimeout.mjs
 'use client';
 
 
@@ -22428,7 +22947,7 @@ function getParentNode(node) {
 function getNearestOverflowAncestor(node) {
   const parentNode = getParentNode(node);
   if (isLastTraversableNode(parentNode)) {
-    return node.ownerDocument ? node.ownerDocument.body : node.body;
+    return (node.ownerDocument || node).body;
   }
   if (isHTMLElement(parentNode) && isOverflowElement(parentNode)) {
     return parentNode;
@@ -22459,7 +22978,64 @@ function getFrameElement(win) {
 
 
 
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/components/FloatingTree.js
+;// ./node_modules/@base-ui/utils/platform/shared.mjs
+/**
+ * Reads `navigator.userAgent` / `navigator.platform` (legacy but universally
+ * supported) into a normalized shape. In development, prefers the modern
+ * `navigator.userAgentData` API on Chromium to avoid DevTools warnings about
+ * the deprecated reads; that branch is dead-code-eliminated in production
+ * builds to keep the bundle small.
+ *
+ * Returns empty/zero values when `navigator` is undefined (SSR), so every
+ * derived flag safely evaluates to `false`.
+ */
+function readRawData() {
+  if (typeof navigator === 'undefined') {
+    return {
+      userAgent: '',
+      platform: '',
+      maxTouchPoints: 0
+    };
+  }
+  if (false) // removed by dead control flow
+{}
+  return {
+    userAgent: navigator.userAgent,
+    platform: navigator.platform ?? '',
+    maxTouchPoints: navigator.maxTouchPoints ?? 0
+  };
+}
+const {
+  userAgent,
+  platform,
+  maxTouchPoints
+} = readRawData();
+const lowerUserAgent = userAgent.toLowerCase();
+const lowerPlatform = platform.toLowerCase();
+
+;// ./node_modules/@base-ui/utils/platform/engine.mjs
+
+
+// WebKit (Safari, all iOS browsers, GNOME Web). Distinguished from Blink by
+// the legacy `-webkit-backdrop-filter` name — Blink forked from WebKit in 2013
+// and only ships the unprefixed `backdrop-filter`.
+/** WebKit: Safari, all iOS browsers, GNOME Web. Excludes Blink. */
+const webkit = typeof CSS !== 'undefined' && !!CSS.supports?.('-webkit-backdrop-filter:none');
+
+// Anchored to `!webkit` so engines are mutually exclusive by construction.
+// Firefox-on-iOS uses WebKit (its UA marker is `FxiOS/`, not `Firefox/`); the
+// `!webkit` prefix also defends against future iOS-browser UA changes that
+// might inject `Firefox` into a WebKit-based UA.
+/** Gecko: Firefox. */
+const gecko = !webkit && lowerUserAgent.includes('firefox');
+
+// All Chromium-based browsers ship `Chrome/` or `Chromium/` in their UA — both
+// share the `chrom` prefix, so a single substring check covers Chrome, Edge,
+// Opera, Brave, etc. Chrome-on-iOS uses `CriOS/` and stays WebKit. The positive
+// UA check also makes this SSR-safe — an empty UA matches nothing.
+/** Blink: Chrome, Edge, Opera, Brave, and other Chromium-based browsers. */
+const blink = !webkit && lowerUserAgent.includes('chrom');
+;// ./node_modules/@base-ui/react/floating-ui-react/components/FloatingTree.mjs
 /* unused harmony import specifier */ var React;
 /* unused harmony import specifier */ var useId;
 /* unused harmony import specifier */ var FloatingTree_useIsoLayoutEffect;
@@ -22559,7 +23135,7 @@ function FloatingTree(props) {
     children: children
   });
 }
-;// ./node_modules/@base-ui/react/esm/internals/createBaseUIEventDetails.js
+;// ./node_modules/@base-ui/react/internals/createBaseUIEventDetails.mjs
 /* unused harmony import specifier */ var createBaseUIEventDetails_EMPTY_OBJECT;
 
 
@@ -22613,7 +23189,7 @@ function createGenericEventDetails(reason, event, customProperties) {
   };
   return details;
 }
-;// ./node_modules/@base-ui/react/esm/internals/reason-parts.js
+;// ./node_modules/@base-ui/react/internals/reason-parts.mjs
 const none = 'none';
 const triggerPress = 'trigger-press';
 const triggerHover = 'trigger-hover';
@@ -22649,70 +23225,16 @@ const initial = 'initial';
 const imperativeAction = 'imperative-action';
 const swipe = 'swipe';
 const windowResize = 'window-resize';
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/utils/createAttribute.js
+;// ./node_modules/@base-ui/react/floating-ui-react/utils/createAttribute.mjs
 function createAttribute(name) {
   return `data-base-ui-${name}`;
 }
-;// ./node_modules/@base-ui/utils/esm/detectBrowser.js
-const hasNavigator = typeof navigator !== 'undefined';
-const nav = getNavigatorData();
-const platform = getPlatform();
-const userAgent = getUserAgent();
-const detectBrowser_isWebKit = typeof CSS === 'undefined' || !CSS.supports ? false : CSS.supports('-webkit-backdrop-filter:none');
-const isIOS =
-// iPads can claim to be MacIntel
-nav.platform === 'MacIntel' && nav.maxTouchPoints > 1 ? true : /iP(hone|ad|od)|iOS/.test(nav.platform);
-const isFirefox = hasNavigator && /firefox/i.test(userAgent);
-const isSafari = hasNavigator && /apple/i.test(navigator.vendor);
-const isEdge = hasNavigator && /Edg/i.test(userAgent);
-const isAndroid = hasNavigator && /android/i.test(platform) || /android/i.test(userAgent);
-const isMac = hasNavigator && platform.toLowerCase().startsWith('mac') && !navigator.maxTouchPoints;
-const isJSDOM = userAgent.includes('jsdom/');
+;// ./node_modules/@base-ui/utils/platform/env.mjs
 
-// Avoid Chrome DevTools blue warning.
-function getNavigatorData() {
-  if (!hasNavigator) {
-    return {
-      platform: '',
-      maxTouchPoints: -1
-    };
-  }
-  const uaData = navigator.userAgentData;
-  if (uaData?.platform) {
-    return {
-      platform: uaData.platform,
-      maxTouchPoints: navigator.maxTouchPoints
-    };
-  }
-  return {
-    platform: navigator.platform ?? '',
-    maxTouchPoints: navigator.maxTouchPoints ?? -1
-  };
-}
-function getUserAgent() {
-  if (!hasNavigator) {
-    return '';
-  }
-  const uaData = navigator.userAgentData;
-  if (uaData && Array.isArray(uaData.brands)) {
-    return uaData.brands.map(({
-      brand,
-      version
-    }) => `${brand}/${version}`).join(' ');
-  }
-  return navigator.userAgent;
-}
-function getPlatform() {
-  if (!hasNavigator) {
-    return '';
-  }
-  const uaData = navigator.userAgentData;
-  if (uaData?.platform) {
-    return uaData.platform;
-  }
-  return navigator.platform ?? '';
-}
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/utils/constants.js
+
+/** Running in jsdom or HappyDOM (used by unit tests). */
+const jsdom = /jsdom|happydom/.test(lowerUserAgent);
+;// ./node_modules/@base-ui/react/floating-ui-react/utils/constants.mjs
 const FOCUSABLE_ATTRIBUTE = 'data-base-ui-focusable';
 const ACTIVE_KEY = 'active';
 const SELECTED_KEY = 'selected';
@@ -22721,7 +23243,7 @@ const ARROW_LEFT = 'ArrowLeft';
 const ARROW_RIGHT = 'ArrowRight';
 const ARROW_UP = 'ArrowUp';
 const ARROW_DOWN = 'ArrowDown';
-;// ./node_modules/@base-ui/react/esm/internals/shadowDom.js
+;// ./node_modules/@base-ui/react/internals/shadowDom.mjs
 
 function activeElement(doc) {
   let element = doc.activeElement;
@@ -22762,7 +23284,7 @@ function getTarget(event) {
   // shadow DOM support still fall back to `target`.
   return event.target;
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/utils/element.js
+;// ./node_modules/@base-ui/react/floating-ui-react/utils/element.mjs
 /* unused harmony import specifier */ var element_FOCUSABLE_ATTRIBUTE;
 
 
@@ -22814,7 +23336,7 @@ function isTypeableCombobox(element) {
 function matchesFocusVisible(element) {
   // We don't want to block focus from working with `visibleOnly`
   // (JSDOM doesn't match `:focus-visible` when the element has `:focus`)
-  if (!element || isJSDOM) {
+  if (!element || jsdom) {
     return true;
   }
   try {
@@ -22833,9 +23355,8 @@ function getFloatingFocusElement(floatingElement) {
   // aria props.
   return floatingElement.hasAttribute(element_FOCUSABLE_ATTRIBUTE) ? floatingElement : floatingElement.querySelector(`[${element_FOCUSABLE_ATTRIBUTE}]`) || floatingElement;
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/utils/event.js
-/* unused harmony import specifier */ var event_isAndroid;
-/* unused harmony import specifier */ var event_isJSDOM;
+;// ./node_modules/@base-ui/react/floating-ui-react/utils/event.mjs
+/* unused harmony import specifier */ var event_platform;
 
 function stopEvent(event) {
   event.preventDefault();
@@ -22850,16 +23371,16 @@ function isVirtualClick(event) {
   if (event.pointerType === '' && event.isTrusted) {
     return true;
   }
-  if (event_isAndroid && event.pointerType) {
+  if (event_platform.os.android && event.pointerType) {
     return event.type === 'click' && event.buttons === 1;
   }
   return event.detail === 0 && !event.pointerType;
 }
 function isVirtualPointerEvent(event) {
-  if (event_isJSDOM) {
+  if (event_platform.env.jsdom) {
     return false;
   }
-  return !event_isAndroid && event.width === 0 && event.height === 0 || event_isAndroid && event.width === 1 && event.height === 1 && event.pressure === 0 && event.detail === 0 && event.pointerType === 'mouse' ||
+  return !event_platform.os.android && event.width === 0 && event.height === 0 || event_platform.os.android && event.width === 1 && event.height === 1 && event.pressure === 0 && event.detail === 0 && event.pointerType === 'mouse' ||
   // iOS VoiceOver returns 0.333• for width/height.
   event.width < 1 && event.height < 1 && event.pressure === 0 && event.detail === 0 && event.pointerType === 'touch';
 }
@@ -22876,7 +23397,7 @@ function isClickLikeEvent(event) {
   const type = event.type;
   return type === 'click' || type === 'mousedown' || type === 'keydown' || type === 'keyup';
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/utils/nodes.js
+;// ./node_modules/@base-ui/react/floating-ui-react/utils/nodes.mjs
 /* eslint-disable @typescript-eslint/no-loop-func */
 
 function getNodeChildren(nodes, id, onlyOpenChildren = true) {
@@ -22911,7 +23432,7 @@ function getNodeAncestors(nodes, id) {
   }
   return allAncestors;
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useDismiss.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useDismiss.mjs
 'use client';
 
 /* eslint-disable no-underscore-dangle */
@@ -22929,10 +23450,7 @@ function getNodeAncestors(nodes, id) {
 
 
 
-const bubbleHandlerKeys = {
-  intentional: 'onClick',
-  sloppy: 'onPointerDown'
-};
+
 function alwaysFalse() {
   return false;
 }
@@ -22954,7 +23472,6 @@ function useDismiss(context, props = {}) {
     outsidePress: outsidePressProp = true,
     outsidePressEvent = 'sloppy',
     referencePress = alwaysFalse,
-    referencePressEvent = 'sloppy',
     bubbles,
     externalTree
   } = props;
@@ -23073,7 +23590,7 @@ function useDismiss(context, props = {}) {
       compositionTimeout.start(
       // 0ms or 1ms don't work in Safari. 5ms appears to consistently work.
       // Only apply to WebKit for the test to remain 0ms.
-      isWebKit() ? 5 : 0, () => {
+      webkit ? 5 : 0, () => {
         isComposingRef.current = false;
       });
     }
@@ -23339,11 +23856,9 @@ function useDismiss(context, props = {}) {
   external_React_.useEffect(clearInsideReactTree, [outsidePress, clearInsideReactTree]);
   const reference = external_React_.useMemo(() => ({
     onKeyDown: closeOnEscapeKeyDown,
-    [bubbleHandlerKeys[referencePressEvent]]: closeOnReferencePress,
-    ...(referencePressEvent !== 'intentional' && {
-      onClick: closeOnReferencePress
-    })
-  }), [closeOnEscapeKeyDown, closeOnReferencePress, referencePressEvent]);
+    onPointerDown: closeOnReferencePress,
+    onClick: closeOnReferencePress
+  }), [closeOnEscapeKeyDown, closeOnReferencePress]);
   const floating = external_React_.useMemo(() => ({
     onKeyDown: closeOnEscapeKeyDown,
     // `onMouseDown` may be blocked if `event.preventDefault()` is called in
@@ -23370,7 +23885,7 @@ function useDismiss(context, props = {}) {
     trigger: reference
   } : {}, [enabled, reference, floating]);
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useClientPoint.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useClientPoint.mjs
 'use client';
 
 
@@ -23552,7 +24067,9 @@ function useClientPoint(context, props = {}) {
     trigger: reference
   } : {}, [enabled, reference]);
 }
-;// ./node_modules/@base-ui/utils/esm/useId.js
+;// external "ReactDOM"
+const external_ReactDOM_namespaceObject = window["ReactDOM"];
+;// ./node_modules/@base-ui/utils/useId.mjs
 'use client';
 
 
@@ -23594,7 +24111,18 @@ function useId_useId(idOverride, prefix) {
   // eslint-disable-next-line react-hooks/rules-of-hooks -- `React.useId` is invariant at runtime.
   return useGlobalId(idOverride, prefix);
 }
-;// ./node_modules/@base-ui/utils/esm/store/createSelector.js
+;// ./node_modules/@base-ui/utils/useOnFirstRender.mjs
+'use client';
+
+
+function useOnFirstRender(fn) {
+  const ref = external_React_.useRef(true);
+  if (ref.current) {
+    ref.current = false;
+    fn();
+  }
+}
+;// ./node_modules/@base-ui/utils/store/createSelector.mjs
 
 /**
  * The NoOptionalParams type is a utility type that checks if a function has optional or default parameters.
@@ -23630,7 +24158,7 @@ function useId_useId(idOverride, prefix) {
 /* eslint-disable id-denylist */
 const createSelector = (a, b, c, d, e, f, ...other) => {
   if (other.length > 0) {
-    throw new Error( false ? 0 : esm_formatErrorMessage(1));
+    throw new Error( false ? 0 : utils_formatErrorMessage(1));
   }
   let selector;
   if (a && b && c && d && e && f) {
@@ -23680,7 +24208,7 @@ const createSelector = (a, b, c, d, e, f, ...other) => {
 var shim = __webpack_require__(888);
 // EXTERNAL MODULE: ./node_modules/use-sync-external-store/shim/with-selector.js
 var with_selector = __webpack_require__(242);
-;// ./node_modules/@base-ui/utils/esm/store/useStore.js
+;// ./node_modules/@base-ui/utils/store/useStore.mjs
 
 /* We need to import the shim because React 17 does not support the `useSyncExternalStore` API.
  * More info: https://github.com/mui/mui-x/issues/18303#issuecomment-2958392341 */
@@ -23711,10 +24239,9 @@ register({
         for (let i = 0; i < instance.syncHooks.length; i += 1) {
           const hook = instance.syncHooks[i];
           const value = hook.selector(hook.store.state, hook.a1, hook.a2, hook.a3);
-          if (hook.didChange || !Object.is(hook.value, value)) {
+          if (!Object.is(hook.value, value)) {
             didChange = true;
             hook.value = value;
-            hook.didChange = false;
           }
         }
         if (didChange) {
@@ -23765,8 +24292,7 @@ function useStoreFast(store, selector, a1, a2, a3) {
       a1,
       a2,
       a3,
-      value: selector(store.getSnapshot(), a1, a2, a3),
-      didChange: false
+      value: selector(store.getSnapshot(), a1, a2, a3)
     };
     instance.syncHooks.push(hook);
   } else {
@@ -23780,7 +24306,7 @@ function useStoreFast(store, selector, a1, a2, a3) {
       hook.a1 = a1;
       hook.a2 = a2;
       hook.a3 = a3;
-      hook.didChange = true;
+      hook.value = selector(store.getSnapshot(), a1, a2, a3);
     }
   }
   return hook.value;
@@ -23788,7 +24314,7 @@ function useStoreFast(store, selector, a1, a2, a3) {
 function useStoreLegacy(store, selector, a1, a2, a3) {
   return (0,with_selector.useSyncExternalStoreWithSelector)(store.subscribe, store.getSnapshot, store.getSnapshot, state => selector(state, a1, a2, a3));
 }
-;// ./node_modules/@base-ui/utils/esm/store/Store.js
+;// ./node_modules/@base-ui/utils/store/Store.mjs
 
 /**
  * A data store implementation that allows subscribing to state changes and updating the state.
@@ -23900,7 +24426,7 @@ class Store {
     return useStore(this, selector, a1, a2, a3);
   }
 }
-;// ./node_modules/@base-ui/utils/esm/store/ReactStore.js
+;// ./node_modules/@base-ui/utils/store/ReactStore.mjs
 /* False positives - ESLint thinks we're calling a hook from a class component. */
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client';
@@ -24088,7 +24614,7 @@ class ReactStore extends Store {
     });
   }
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/utils/createEventEmitter.js
+;// ./node_modules/@base-ui/react/floating-ui-react/utils/createEventEmitter.mjs
 function createEventEmitter() {
   const map = new Map();
   return {
@@ -24106,7 +24632,7 @@ function createEventEmitter() {
     }
   };
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/components/FloatingRootStore.js
+;// ./node_modules/@base-ui/react/floating-ui-react/components/FloatingRootStore.mjs
 
 
 
@@ -24185,7 +24711,7 @@ class FloatingRootStore extends ReactStore {
     this.context.onOpenChange?.(newOpen, eventDetails);
   };
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useSyncedFloatingRootContext.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useSyncedFloatingRootContext.mjs
 'use client';
 
 
@@ -24247,7 +24773,7 @@ function useSyncedFloatingRootContext(options) {
   store.context.nested = nested;
   return store;
 }
-;// ./node_modules/@base-ui/utils/esm/useAnimationFrame.js
+;// ./node_modules/@base-ui/utils/useAnimationFrame.mjs
 'use client';
 
 
@@ -24354,7 +24880,7 @@ function useAnimationFrame() {
   useOnMount(timeout.disposeEffect);
   return timeout;
 }
-;// ./node_modules/@base-ui/react/esm/internals/useTransitionStatus.js
+;// ./node_modules/@base-ui/react/internals/useTransitionStatus.mjs
 'use client';
 
 
@@ -24422,9 +24948,7 @@ function useTransitionStatus(open, enableIdleState = false, deferEndingState = f
     transitionStatus
   };
 }
-;// external "ReactDOM"
-const external_ReactDOM_namespaceObject = window["ReactDOM"];
-;// ./node_modules/@base-ui/react/esm/utils/resolveRef.js
+;// ./node_modules/@base-ui/react/utils/resolveRef.mjs
 /**
  * If the provided argument is a ref object, returns its `current` value.
  * Otherwise, returns the argument itself.
@@ -24435,7 +24959,7 @@ function resolveRef(maybeRef) {
   }
   return 'current' in maybeRef ? maybeRef.current : maybeRef;
 }
-;// ./node_modules/@base-ui/react/esm/internals/stateAttributesMapping.js
+;// ./node_modules/@base-ui/react/internals/stateAttributesMapping.mjs
 let TransitionStatusDataAttributes = /*#__PURE__*/function (TransitionStatusDataAttributes) {
   /**
    * Present when the component is animating in.
@@ -24464,7 +24988,7 @@ const transitionStatusMapping = {
     return null;
   }
 };
-;// ./node_modules/@base-ui/react/esm/internals/useAnimationsFinished.js
+;// ./node_modules/@base-ui/react/internals/useAnimationsFinished.mjs
 'use client';
 
 
@@ -24554,7 +25078,7 @@ function useAnimationsFinished(elementOrRef, waitForStartingStyleRemoved = false
     frame.request(exec);
   });
 }
-;// ./node_modules/@base-ui/react/esm/internals/useOpenChangeComplete.js
+;// ./node_modules/@base-ui/react/internals/useOpenChangeComplete.mjs
 'use client';
 
 
@@ -24584,9 +25108,13 @@ function useOpenChangeComplete(parameters) {
     };
   }, [enabled, open, onComplete, runOnceAnimationsFinish]);
 }
-;// ./node_modules/@base-ui/react/esm/utils/popups/popupStoreUtils.js
+;// ./node_modules/@base-ui/react/utils/popups/popupStoreUtils.mjs
 /* unused harmony import specifier */ var popupStoreUtils_useIsoLayoutEffect;
 'use client';
+
+
+
+
 
 
 
@@ -24602,6 +25130,15 @@ const FOCUSABLE_POPUP_PROPS = {
   tabIndex: -1,
   [FOCUSABLE_ATTRIBUTE]: ''
 };
+
+/**
+ * Returns the default `initialFocus` resolver for a popup. When opened by touch it focuses the
+ * popup element itself to prevent the virtual keyboard from opening (required for Android
+ * specifically; iOS handles this automatically). Otherwise it falls back to the default behavior.
+ */
+function createDefaultInitialFocus(popupRef) {
+  return interactionType => interactionType === 'touch' ? popupRef.current : true;
+}
 function usePopupStore(externalStore, createStore, treatPopupAsFloatingElement = false) {
   const floatingId = useId_useId();
   const nested = useFloatingParentNodeId() != null;
@@ -24663,7 +25200,13 @@ function useTriggerRegistration(id, store) {
     }
   }, [store, id]);
 }
-function setOpenTriggerState(state, open, trigger) {
+function setPopupOpenState(state, open, trigger, preventUnmountOnClose = false) {
+  if (open) {
+    // Opening starts a new close cycle, so clear any previous request to keep the popup mounted.
+    state.preventUnmountingOnClose = false;
+  } else if (preventUnmountOnClose) {
+    state.preventUnmountingOnClose = true;
+  }
   const triggerId = trigger?.id ?? null;
 
   // If a popup is closing, the `trigger` may be undefined.
@@ -24672,6 +25215,71 @@ function setOpenTriggerState(state, open, trigger) {
     state.activeTriggerId = triggerId;
     state.activeTriggerElement = trigger ?? null;
   }
+}
+function attachPreventUnmountOnClose(eventDetails) {
+  let preventUnmountOnClose = false;
+  eventDetails.preventUnmountOnClose = () => {
+    preventUnmountOnClose = true;
+  };
+  return () => preventUnmountOnClose;
+}
+
+/**
+ * Runs the shared open-change sequence for a popup store: notifies `onOpenChange`,
+ * honors cancellation, dispatches the floating root change, maps the reason to an
+ * `instantType`, and commits the state update (synchronously for hover so
+ * `getAnimations()` observes it). Stores supply their own differences via
+ * `extraState` (e.g. the last change reason) and `onBeforeDispatch` (e.g. updating
+ * inline-rect coordinates).
+ */
+function applyPopupOpenChange(store, nextOpen, eventDetails, options = {}) {
+  const reason = eventDetails.reason;
+  const isHover = reason === triggerHover;
+  const isFocusOpen = nextOpen && reason === triggerFocus;
+  const isDismissClose = !nextOpen && (reason === triggerPress || reason === reason_parts_escapeKey);
+  const shouldPreventUnmountOnClose = attachPreventUnmountOnClose(eventDetails);
+  store.context.onOpenChange?.(nextOpen, eventDetails);
+  if (eventDetails.isCanceled) {
+    return;
+  }
+  options.onBeforeDispatch?.();
+  store.state.floatingRootContext.dispatchOpenChange(nextOpen, eventDetails);
+  const changeState = () => {
+    // Spread `extraState` first so `open` always reflects `nextOpen`, keeping it in
+    // sync with the value already passed to `dispatchOpenChange`/`setPopupOpenState`.
+    const updatedState = {
+      ...options.extraState,
+      open: nextOpen
+    };
+    if (isFocusOpen) {
+      updatedState.instantType = 'focus';
+    } else if (isDismissClose) {
+      updatedState.instantType = 'dismiss';
+    } else if (isHover) {
+      updatedState.instantType = undefined;
+    }
+    setPopupOpenState(updatedState, nextOpen, eventDetails.trigger, shouldPreventUnmountOnClose());
+    store.update(updatedState);
+  };
+  if (isHover) {
+    // Flush synchronously for hover so `node.getAnimations()` sees the new state.
+    external_ReactDOM_namespaceObject.flushSync(changeState);
+  } else {
+    changeState();
+  }
+}
+function useInitialOpenSync(store, openProp, defaultOpen, defaultTriggerId) {
+  useOnFirstRender(() => {
+    if (openProp === undefined && store.state.open === false && defaultOpen) {
+      // Avoid notifying detached trigger subscribers while the Root is rendering.
+      store.state = {
+        ...store.state,
+        open: true,
+        activeTriggerId: defaultTriggerId,
+        preventUnmountingOnClose: false
+      };
+    }
+  });
 }
 
 /**
@@ -24725,15 +25333,26 @@ function useTriggerDataForwarding(triggerId, triggerElementRef, store, stateUpda
   };
 }
 /**
- * Ensures that when there's only one trigger element registered, it is set as the active trigger.
- * This keeps triggerCount reactive while open and allows controlled popups to work correctly without
- * an explicit triggerId, maintaining compatibility with contained triggers.
+ * Keeps trigger registration state synchronized while the popup is open.
+ *
+ * When a popup opens without an explicit trigger id and exactly one trigger is registered, that
+ * trigger is claimed as the active trigger. When the active trigger id is still registered but its
+ * element changed, the active element is refreshed. When the active trigger unregisters, the
+ * default path preserves existing ownership so non-closing popup families do not silently claim a
+ * different trigger while staying open.
+ *
+ * If `closeOnActiveTriggerUnmount` is enabled, unregistering the active trigger requests a close
+ * after a microtask so a same-tick replacement trigger with the same id can register first.
  *
  * This should be called on the Root part.
  *
  * @param store The Store instance managing the popup state.
+ * @param options Options for active trigger unmount behavior.
  */
-function useImplicitActiveTrigger(store) {
+function useImplicitActiveTrigger(store, options = {}) {
+  const {
+    closeOnActiveTriggerUnmount = false
+  } = options;
   const open = store.useState('open');
   const reactiveTriggerCount = store.useState('triggerCount');
   useIsoLayoutEffect(() => {
@@ -24748,7 +25367,17 @@ function useImplicitActiveTrigger(store) {
     if (store.state.triggerCount !== triggerCount) {
       stateUpdates.triggerCount = triggerCount;
     }
-    if (!store.select('activeTriggerId') && triggerCount === 1) {
+    const activeTriggerId = store.select('activeTriggerId');
+    let lostActiveTriggerId = null;
+    if (activeTriggerId) {
+      const activeTriggerElement = store.context.triggerElements.getById(activeTriggerId);
+      if (!activeTriggerElement) {
+        lostActiveTriggerId = activeTriggerId;
+      } else if (activeTriggerElement !== store.state.activeTriggerElement) {
+        stateUpdates.activeTriggerElement = activeTriggerElement;
+      }
+    }
+    if (!lostActiveTriggerId && !activeTriggerId && triggerCount === 1) {
       const iteratorResult = store.context.triggerElements.entries().next();
       if (!iteratorResult.done) {
         const [implicitTriggerId, implicitTriggerElement] = iteratorResult.value;
@@ -24756,16 +25385,35 @@ function useImplicitActiveTrigger(store) {
         stateUpdates.activeTriggerElement = implicitTriggerElement;
       }
     }
-    if (stateUpdates.triggerCount !== undefined || stateUpdates.activeTriggerId !== undefined) {
+    if (stateUpdates.triggerCount !== undefined || stateUpdates.activeTriggerId !== undefined || stateUpdates.activeTriggerElement !== undefined) {
       store.update(stateUpdates);
     }
-  }, [open, store, reactiveTriggerCount]);
+    if (lostActiveTriggerId) {
+      if (closeOnActiveTriggerUnmount) {
+        // Defer so a same-tick replacement trigger with the same id can register first.
+        queueMicrotask(() => {
+          if (store.select('open') && store.select('activeTriggerId') === lostActiveTriggerId && !store.context.triggerElements.getById(lostActiveTriggerId)) {
+            const eventDetails = createChangeEventDetails((/* inlined export .none */"none"));
+            store.setOpen(false, eventDetails);
+            // If closing is canceled, keep the previous active trigger ownership for the
+            // still-open popup instead of claiming another trigger implicitly.
+            if (!eventDetails.isCanceled) {
+              store.update({
+                activeTriggerId: null,
+                activeTriggerElement: null
+              });
+            }
+          }
+        });
+      }
+    }
+  }, [open, store, reactiveTriggerCount, closeOnActiveTriggerUnmount]);
 }
 
 /**
  * Manages the mounted state of the popup.
  * Sets up the transition status listeners and handles unmounting when needed.
- * Updates the `mounted` and `transitionStatus` states in the store.
+ * Updates the `mounted`, `transitionStatus`, and `preventUnmountingOnClose` states in the store.
  *
  * @param open Whether the popup is open.
  * @param store The Store instance managing the popup state.
@@ -24779,9 +25427,14 @@ function useOpenStateTransitions(open, store, onUnmount) {
     setMounted,
     transitionStatus
   } = useTransitionStatus(open);
+  const preventUnmountingOnClose = store.useState('preventUnmountingOnClose');
+  // Opening starts a new close cycle. Clear during render so the close-completion hook below
+  // reads the synchronized value on the same pass.
+  const syncedPreventUnmountingOnClose = open ? false : preventUnmountingOnClose;
   store.useSyncedValues({
     mounted,
-    transitionStatus
+    transitionStatus,
+    preventUnmountingOnClose: syncedPreventUnmountingOnClose
   });
   const forceUnmount = useStableCallback(() => {
     setMounted(false);
@@ -24794,9 +25447,8 @@ function useOpenStateTransitions(open, store, onUnmount) {
     onUnmount?.();
     store.context.onOpenChangeComplete?.(false);
   });
-  const preventUnmountingOnClose = store.useState('preventUnmountingOnClose');
   useOpenChangeComplete({
-    enabled: mounted && !open && !preventUnmountingOnClose,
+    enabled: mounted && !open && !syncedPreventUnmountingOnClose,
     open,
     ref: store.context.popupRef,
     onComplete() {
@@ -24832,7 +25484,7 @@ function usePopupRootSync(store, open) {
     }
   }, [store]);
 }
-;// ./node_modules/@base-ui/react/esm/utils/popups/popupTriggerMap.js
+;// ./node_modules/@base-ui/react/utils/popups/popupTriggerMap.mjs
 /**
  * Data structure to keep track of popup trigger elements by their IDs.
  * Uses both a set of Elements and a map of IDs to Elements for efficient lookups.
@@ -24922,7 +25574,7 @@ class PopupTriggerMap {
     return this.idMap.size;
   }
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/utils/getEmptyRootContext.js
+;// ./node_modules/@base-ui/react/floating-ui-react/utils/getEmptyRootContext.mjs
 
 
 function getEmptyRootContext() {
@@ -24938,7 +25590,7 @@ function getEmptyRootContext() {
     onOpenChange: undefined
   });
 }
-;// ./node_modules/@base-ui/react/esm/utils/popups/store.js
+;// ./node_modules/@base-ui/react/utils/popups/store.mjs
 
 
 
@@ -25029,8 +25681,7 @@ const popupStoreSelectors = {
   popupElement: createSelector(state => state.popupElement),
   positionerElement: createSelector(state => state.positionerElement)
 };
-;// ./node_modules/@base-ui/react/esm/tooltip/store/TooltipStore.js
-
+;// ./node_modules/@base-ui/react/tooltip/store/TooltipStore.mjs
 
 
 
@@ -25064,40 +25715,11 @@ class TooltipStore extends ReactStore {
     }, TooltipStore_selectors);
   }
   setOpen = (nextOpen, eventDetails) => {
-    const reason = eventDetails.reason;
-    const isHover = reason === triggerHover;
-    const isFocusOpen = nextOpen && reason === triggerFocus;
-    const isDismissClose = !nextOpen && (reason === triggerPress || reason === reason_parts_escapeKey);
-    eventDetails.preventUnmountOnClose = () => {
-      this.set('preventUnmountingOnClose', true);
-    };
-    this.context.onOpenChange?.(nextOpen, eventDetails);
-    if (eventDetails.isCanceled) {
-      return;
-    }
-    this.state.floatingRootContext.dispatchOpenChange(nextOpen, eventDetails);
-    const changeState = () => {
-      const updatedState = {
-        open: nextOpen,
-        openChangeReason: reason
-      };
-      if (isFocusOpen) {
-        updatedState.instantType = 'focus';
-      } else if (isDismissClose) {
-        updatedState.instantType = 'dismiss';
-      } else if (reason === triggerHover) {
-        updatedState.instantType = undefined;
+    applyPopupOpenChange(this, nextOpen, eventDetails, {
+      extraState: {
+        openChangeReason: eventDetails.reason
       }
-      setOpenTriggerState(updatedState, nextOpen, eventDetails.trigger);
-      this.update(updatedState);
-    };
-    if (isHover) {
-      // If a hover reason is provided, we need to flush the state synchronously. This ensures
-      // `node.getAnimations()` knows about the new state.
-      external_ReactDOM_namespaceObject.flushSync(changeState);
-    } else {
-      changeState();
-    }
+    });
   };
 
   // Used by trigger clicks to clear a delayed hover open without reporting a public open-state change.
@@ -25126,9 +25748,8 @@ function createInitialState() {
     hasViewport: false
   };
 }
-;// ./node_modules/@base-ui/react/esm/tooltip/root/TooltipRoot.js
+;// ./node_modules/@base-ui/react/tooltip/root/TooltipRoot.mjs
 'use client';
-
 
 
 
@@ -25169,16 +25790,7 @@ const TooltipRoot = fastComponent(function TooltipRoot(props) {
     activeTriggerId: defaultTriggerIdProp,
     triggerIdProp
   });
-
-  // Support initially open state when uncontrolled
-  useOnFirstRender(() => {
-    if (openProp === undefined && store.state.open === false && defaultOpen === true) {
-      store.update({
-        open: true,
-        activeTriggerId: defaultTriggerIdProp
-      });
-    }
-  });
+  useInitialOpenSync(store, openProp, defaultOpen, defaultTriggerIdProp);
   store.useControlledProp('openProp', openProp);
   store.useControlledProp('triggerIdProp', triggerIdProp);
   store.useContextCallback('onOpenChange', onOpenChange);
@@ -25193,7 +25805,9 @@ const TooltipRoot = fastComponent(function TooltipRoot(props) {
     disableHoverablePopup
   });
   store.useSyncedValue('disabled', disabled);
-  useImplicitActiveTrigger(store);
+  useImplicitActiveTrigger(store, {
+    closeOnActiveTriggerUnmount: true
+  });
   const {
     forceUnmount,
     transitionStatus
@@ -25214,7 +25828,7 @@ const TooltipRoot = fastComponent(function TooltipRoot(props) {
     }
   }, [openState, disabled, store]);
   useIsoLayoutEffect(() => {
-    if (transitionStatus === 'ending' && lastOpenChangeReason === none || transitionStatus !== 'ending' && isInstantPhase) {
+    if (transitionStatus === 'ending' && lastOpenChangeReason === (/* inlined export .none */"none") || transitionStatus !== 'ending' && isInstantPhase) {
       // Capture the current instant type so we can restore it later
       // and set to 'delay' to disable animations while moving from one trigger to another
       // within a delay group.
@@ -25289,7 +25903,7 @@ function Root(props) {
 
 //# sourceMappingURL=root.mjs.map
 
-;// ./node_modules/@base-ui/utils/esm/useValueAsRef.js
+;// ./node_modules/@base-ui/utils/useValueAsRef.mjs
 'use client';
 
 
@@ -25318,7 +25932,7 @@ function createLatestRef(value) {
   };
   return latest;
 }
-;// ./node_modules/@base-ui/react/esm/utils/popupStateMapping.js
+;// ./node_modules/@base-ui/react/utils/popupStateMapping.mjs
 
 let CommonPopupDataAttributes = function (CommonPopupDataAttributes) {
   /**
@@ -25410,7 +26024,7 @@ const popupStateMapping = {
     return null;
   }
 };
-;// ./node_modules/@base-ui/react/esm/internals/useBaseUiId.js
+;// ./node_modules/@base-ui/react/internals/useBaseUiId.mjs
 'use client';
 
 
@@ -25423,7 +26037,7 @@ const popupStateMapping = {
 function useBaseUiId(idOverride) {
   return useId_useId(idOverride, 'base-ui');
 }
-;// ./node_modules/@base-ui/react/esm/tooltip/provider/TooltipProviderContext.js
+;// ./node_modules/@base-ui/react/tooltip/provider/TooltipProviderContext.mjs
 'use client';
 
 
@@ -25433,7 +26047,7 @@ if (false) // removed by dead control flow
 function useTooltipProviderContext() {
   return external_React_.useContext(TooltipProviderContext);
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useHoverShared.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useHoverShared.mjs
 
 
 function resolveValue(value, pointerType) {
@@ -25464,9 +26078,11 @@ function useHoverShared_isClickLikeOpenEvent(openEventType, interactedInside) {
 function isHoverOpenEvent(openEventType) {
   return openEventType?.includes('mouse') && openEventType !== 'mousedown';
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/components/FloatingDelayGroup.js
+;// ./node_modules/@base-ui/react/floating-ui-react/components/FloatingDelayGroup.mjs
 /* unused harmony import specifier */ var FloatingDelayGroup_React;
 /* unused harmony import specifier */ var FloatingDelayGroup_useTimeout;
+/* unused harmony import specifier */ var FloatingDelayGroup_useIsoLayoutEffect;
+/* unused harmony import specifier */ var FloatingDelayGroup_getDelay;
 /* unused harmony import specifier */ var FloatingDelayGroup_jsx;
 'use client';
 
@@ -25496,6 +26112,9 @@ const FloatingDelayGroupContext = /*#__PURE__*/external_React_.createContext({
 });
 if (false) // removed by dead control flow
 {}
+function resetDelayRef(delayRef, initialDelayRef) {
+  delayRef.current = initialDelayRef.current;
+}
 /**
  * Experimental next version of `FloatingDelayGroup` to become the default
  * in the future. This component is not yet stable.
@@ -25517,6 +26136,17 @@ function FloatingDelayGroup(props) {
   const currentIdRef = FloatingDelayGroup_React.useRef(null);
   const currentContextRef = FloatingDelayGroup_React.useRef(null);
   const timeout = FloatingDelayGroup_useTimeout();
+  FloatingDelayGroup_useIsoLayoutEffect(() => {
+    initialDelayRef.current = delay;
+    if (!currentIdRef.current) {
+      delayRef.current = delay;
+      return;
+    }
+    delayRef.current = {
+      open: FloatingDelayGroup_getDelay(delayRef.current, 'open'),
+      close: FloatingDelayGroup_getDelay(delay, 'close')
+    };
+  }, [delay, currentIdRef, delayRef, initialDelayRef]);
   return /*#__PURE__*/FloatingDelayGroup_jsx(FloatingDelayGroupContext.Provider, {
     value: FloatingDelayGroup_React.useMemo(() => ({
       hasProvider: true,
@@ -25555,13 +26185,26 @@ function useDelayGroup(context, options = {
     timeout
   } = groupContext;
   const [isInstantPhase, setIsInstantPhase] = external_React_.useState(false);
+  const openRef = external_React_.useRef(open);
+  const isUnmountedRef = external_React_.useRef(false);
+  useIsoLayoutEffect(() => {
+    openRef.current = open;
+  }, [open]);
+  useIsoLayoutEffect(() => {
+    return () => {
+      isUnmountedRef.current = true;
+    };
+  }, []);
   useIsoLayoutEffect(() => {
     function unset() {
-      setIsInstantPhase(false);
+      if (!isUnmountedRef.current) {
+        setIsInstantPhase(false);
+      }
       currentContextRef.current?.setIsInstantPhase(false);
       currentIdRef.current = null;
       currentContextRef.current = null;
       delayRef.current = initialDelayRef.current;
+      timeout.clear();
     }
     if (!currentIdRef.current) {
       return undefined;
@@ -25578,7 +26221,9 @@ function useDelayGroup(context, options = {
           unset();
         });
         return () => {
-          timeout.clear();
+          if (openRef.current || currentIdRef.current !== closingId) {
+            timeout.clear();
+          }
         };
       }
       unset();
@@ -25607,7 +26252,7 @@ function useDelayGroup(context, options = {
     if (prevId !== null && prevId !== floatingId) {
       setIsInstantPhase(true);
       prevContext?.setIsInstantPhase(true);
-      prevContext?.onOpenChange(false, createChangeEventDetails(none));
+      prevContext?.onOpenChange(false, createChangeEventDetails((/* inlined export .none */"none")));
     } else {
       setIsInstantPhase(false);
       prevContext?.setIsInstantPhase(false);
@@ -25615,16 +26260,24 @@ function useDelayGroup(context, options = {
   }, [open, floatingId, store, currentIdRef, delayRef, initialDelayRef, currentContextRef, timeout]);
   useIsoLayoutEffect(() => {
     return () => {
-      currentContextRef.current = null;
+      if (currentIdRef.current === floatingId) {
+        currentContextRef.current = null;
+        if (!openRef.current) {
+          return;
+        }
+        currentIdRef.current = null;
+        resetDelayRef(delayRef, initialDelayRef);
+        timeout.clear();
+      }
     };
-  }, [currentContextRef]);
+  }, [currentContextRef, currentIdRef, delayRef, floatingId, initialDelayRef, timeout]);
   return external_React_.useMemo(() => ({
     hasProvider,
     delayRef,
     isInstantPhase
   }), [hasProvider, delayRef, isInstantPhase]);
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useHoverInteractionSharedState.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useHoverInteractionSharedState.mjs
 'use client';
 
 
@@ -25704,7 +26357,7 @@ function useHoverInteractionSharedState(store) {
   useOnMount(data.hoverInteractionState.disposeEffect);
   return data.hoverInteractionState;
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useHoverReferenceInteraction.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useHoverReferenceInteraction.mjs
 'use client';
 
 
@@ -26019,7 +26672,7 @@ function useHoverReferenceInteraction(context, props = {}) {
     };
   }, [enabled, instance, isClickLikeOpenEvent, isOverInactiveTrigger, mouseOnly, store, restMsRef, checkShouldOpen]);
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/safePolygon.js
+;// ./node_modules/@base-ui/react/floating-ui-react/safePolygon.mjs
 
 
 
@@ -26268,7 +26921,31 @@ function safePolygon(options = {}) {
   };
   return fn;
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useFocus.js
+;// ./node_modules/@base-ui/utils/platform/os.mjs
+
+
+// iPadOS 13+ reports `MacIntel` for `navigator.platform`; disambiguated via
+// `maxTouchPoints` so iPad is classified as iOS, not macOS.
+// https://github.com/mui/base-ui/issues/1309
+/** iPhone, iPad (including iPadOS 13+ reporting as macOS), iPod. */
+const ios = /^i(os$|p)/.test(lowerPlatform) || lowerPlatform === 'macintel' && maxTouchPoints > 1;
+
+/** Android phones, tablets, and embedded Android browsers. */
+const ANDROID_STRING = 'android';
+const android = lowerPlatform === ANDROID_STRING || lowerUserAgent.includes(ANDROID_STRING);
+
+/** macOS desktop. Excludes iPadOS, which reports as `MacIntel`. */
+const mac = !ios && lowerPlatform.startsWith('mac');
+
+/** Windows desktop. */
+const windows = lowerPlatform.startsWith('win');
+
+/** Linux desktop (including Chrome OS). */
+const linux = !android && /^(linux|chrome os)/.test(lowerPlatform);
+
+/** Any Apple OS (`mac || ios`). */
+const apple = (/* unused pure expression or super */ null && (mac || ios));
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useFocus.mjs
 'use client';
 
 
@@ -26282,7 +26959,7 @@ function safePolygon(options = {}) {
 
 
 
-const isMacSafari = isMac && isSafari;
+const isMacSafari = mac && webkit;
 /**
  * Opens the floating element while the reference element has focus, like CSS
  * `:focus`.
@@ -26438,7 +27115,7 @@ function useFocus(context, props = {}) {
     trigger: reference
   } : {}, [enabled, reference]);
 }
-;// ./node_modules/@base-ui/react/esm/tooltip/trigger/TooltipTriggerDataAttributes.js
+;// ./node_modules/@base-ui/react/tooltip/trigger/TooltipTriggerDataAttributes.mjs
 
 let TooltipTriggerDataAttributes = function (TooltipTriggerDataAttributes) {
   /**
@@ -26451,9 +27128,7 @@ let TooltipTriggerDataAttributes = function (TooltipTriggerDataAttributes) {
   TooltipTriggerDataAttributes["triggerDisabled"] = "data-trigger-disabled";
   return TooltipTriggerDataAttributes;
 }({});
-;// ./node_modules/@base-ui/react/esm/tooltip/utils/constants.js
-const OPEN_DELAY = 600;
-;// ./node_modules/@base-ui/react/esm/tooltip/trigger/TooltipTrigger.js
+;// ./node_modules/@base-ui/react/tooltip/trigger/TooltipTrigger.mjs
 'use client';
 
 
@@ -26533,14 +27208,14 @@ const TooltipTrigger_TooltipTrigger = fastComponentRef(function TooltipTrigger(c
   const rootContext = useTooltipRootContext(true);
   const store = handle?.store ?? rootContext;
   if (!store) {
-    throw new Error( false ? 0 : esm_formatErrorMessage(82));
+    throw new Error( false ? 0 : utils_formatErrorMessage(82));
   }
   const thisTriggerId = useBaseUiId(idProp);
   const isTriggerActive = store.useState('isTriggerActive', thisTriggerId);
   const isOpenedByThisTrigger = store.useState('isOpenedByTrigger', thisTriggerId);
   const floatingRootContext = store.useState('floatingRootContext');
   const triggerElementRef = external_React_.useRef(null);
-  const delayWithDefault = delay ?? OPEN_DELAY;
+  const delayWithDefault = delay ?? (/* inlined export .OPEN_DELAY */600);
   const closeDelayWithDefault = closeDelay ?? 0;
   const {
     registerTrigger,
@@ -26721,7 +27396,7 @@ var Trigger = (0,external_wp_element_.forwardRef)(
 
 //# sourceMappingURL=trigger.mjs.map
 
-;// ./node_modules/@base-ui/react/esm/tooltip/positioner/TooltipPositionerContext.js
+;// ./node_modules/@base-ui/react/tooltip/positioner/TooltipPositionerContext.mjs
 'use client';
 
 
@@ -26732,11 +27407,11 @@ if (false) // removed by dead control flow
 function useTooltipPositionerContext() {
   const context = external_React_.useContext(TooltipPositionerContext);
   if (context === undefined) {
-    throw new Error( false ? 0 : esm_formatErrorMessage(71));
+    throw new Error( false ? 0 : utils_formatErrorMessage(71));
   }
   return context;
 }
-;// ./node_modules/@base-ui/react/esm/internals/constants.js
+;// ./node_modules/@base-ui/react/internals/constants.mjs
 const TYPEAHEAD_RESET_MS = 500;
 const PATIENT_CLICK_THRESHOLD = 500;
 const DISABLED_TRANSITIONS_STYLE = {
@@ -26778,13 +27453,13 @@ const ownerVisuallyHidden = (/* unused pure expression or super */ null && ({
   top: 0,
   left: 0
 }));
-;// ./node_modules/@base-ui/react/esm/utils/getDisabledMountTransitionStyles.js
+;// ./node_modules/@base-ui/react/utils/getDisabledMountTransitionStyles.mjs
 
 
 function getDisabledMountTransitionStyles(transitionStatus) {
   return transitionStatus === 'starting' ? DISABLED_TRANSITIONS_STYLE : EMPTY_OBJECT;
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useHoverFloatingInteraction.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useHoverFloatingInteraction.mjs
 'use client';
 
 
@@ -26929,7 +27604,7 @@ function useHoverFloatingInteraction(context, parameters = {}) {
         return;
       }
       clearPointerEvents();
-      if (!isClickLikeOpenEvent()) {
+      if (isHoverOpen() && !isClickLikeOpenEvent()) {
         closeWithDelay(event);
       }
     }
@@ -26948,9 +27623,9 @@ function useHoverFloatingInteraction(context, parameters = {}) {
     return mergeCleanups(floating && addEventListener(floating, 'mouseenter', onFloatingMouseEnter), floating && addEventListener(floating, 'mouseleave', onFloatingMouseLeave), floating && addEventListener(floating, 'pointerdown', handleInteractInside, true), () => {
       tree?.events.off('floating.closed', onNodeClosed);
     });
-  }, [enabled, floatingElement, store, dataRef, closeDelayProp, nodeIdProp, isClickLikeOpenEvent, clearPointerEvents, instance, tree, parentId, childClosedTimeout]);
+  }, [enabled, floatingElement, store, dataRef, closeDelayProp, nodeIdProp, isHoverOpen, isClickLikeOpenEvent, clearPointerEvents, instance, tree, parentId, childClosedTimeout]);
 }
-;// ./node_modules/@base-ui/react/esm/tooltip/popup/TooltipPopup.js
+;// ./node_modules/@base-ui/react/tooltip/popup/TooltipPopup.mjs
 'use client';
 
 
@@ -27023,19 +27698,7 @@ const TooltipPopup_TooltipPopup = /*#__PURE__*/external_React_.forwardRef(functi
 });
 if (false) // removed by dead control flow
 {}
-;// external ["wp","theme"]
-const external_wp_theme_namespaceObject = window["wp"]["theme"];
-;// ./node_modules/@wordpress/ui/build-module/lock-unlock.mjs
-// packages/ui/src/lock-unlock.ts
-
-var { lock: lock_unlock_lock, unlock: lock_unlock_unlock } = (0,external_wp_privateApis_namespaceObject.__dangerousOptInToUnstableAPIsOnlyForCoreModules)(
-  "I acknowledge private features are not for use in themes or plugins and doing so will break in the next version of WordPress.",
-  "@wordpress/ui"
-);
-
-//# sourceMappingURL=lock-unlock.mjs.map
-
-;// ./node_modules/@base-ui/react/esm/tooltip/portal/TooltipPortalContext.js
+;// ./node_modules/@base-ui/react/tooltip/portal/TooltipPortalContext.mjs
 'use client';
 
 
@@ -27046,15 +27709,16 @@ if (false) // removed by dead control flow
 function useTooltipPortalContext() {
   const value = external_React_.useContext(TooltipPortalContext);
   if (value === undefined) {
-    throw new Error( false ? 0 : esm_formatErrorMessage(70));
+    throw new Error( false ? 0 : utils_formatErrorMessage(70));
   }
   return value;
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/components/FloatingPortal.js
+;// ./node_modules/@base-ui/react/floating-ui-react/components/FloatingPortal.mjs
 /* unused harmony import specifier */ var FloatingPortal_React;
 /* unused harmony import specifier */ var ReactDOM;
 /* unused harmony import specifier */ var FloatingPortal_addEventListener;
 /* unused harmony import specifier */ var FloatingPortal_mergeCleanups;
+/* unused harmony import specifier */ var FloatingPortal_useIsoLayoutEffect;
 /* unused harmony import specifier */ var FocusGuard;
 /* unused harmony import specifier */ var isOutsideEvent;
 /* unused harmony import specifier */ var enableFocusInside;
@@ -27223,10 +27887,12 @@ const FloatingPortal = /*#__PURE__*/(/* unused pure expression or super */ null 
     // trap elements onFocus prop is called.
     return FloatingPortal_mergeCleanups(FloatingPortal_addEventListener(portalNode, 'focusin', onFocus, true), FloatingPortal_addEventListener(portalNode, 'focusout', onFocus, true));
   }, [portalNode, modal]);
-  FloatingPortal_React.useEffect(() => {
-    if (!portalNode || open !== false) {
+  FloatingPortal_useIsoLayoutEffect(() => {
+    if (!portalNode || open !== true || !focusInsideDisabledRef.current) {
       return;
     }
+
+    // Restore tabbability before the focus manager's queued focus-on-open step runs.
     enableFocusInside(portalNode);
     focusInsideDisabledRef.current = false;
   }, [open, portalNode]);
@@ -27277,7 +27943,7 @@ const FloatingPortal = /*#__PURE__*/(/* unused pure expression or super */ null 
 })));
 if (false) // removed by dead control flow
 {}
-;// ./node_modules/@base-ui/react/esm/utils/FloatingPortalLite.js
+;// ./node_modules/@base-ui/react/utils/FloatingPortalLite.mjs
 'use client';
 
 
@@ -27317,7 +27983,7 @@ const FloatingPortalLite = /*#__PURE__*/external_React_.forwardRef(function Floa
 });
 if (false) // removed by dead control flow
 {}
-;// ./node_modules/@base-ui/react/esm/tooltip/portal/TooltipPortal.js
+;// ./node_modules/@base-ui/react/tooltip/portal/TooltipPortal.mjs
 'use client';
 
 
@@ -27622,12 +28288,12 @@ function getOppositePlacement(placement) {
   return oppositeSideMap[side] + placement.slice(side.length);
 }
 function expandPaddingObject(padding) {
+  var _padding$top, _padding$right, _padding$bottom, _padding$left;
   return {
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    ...padding
+    top: (_padding$top = padding.top) != null ? _padding$top : 0,
+    right: (_padding$right = padding.right) != null ? _padding$right : 0,
+    bottom: (_padding$bottom = padding.bottom) != null ? _padding$bottom : 0,
+    left: (_padding$left = padding.left) != null ? _padding$left : 0
   };
 }
 function getPaddingObject(padding) {
@@ -27722,13 +28388,9 @@ function computeCoordsFromPlacement(_ref, placement, rtl) {
         y: reference.y
       };
   }
-  switch (getAlignment(placement)) {
-    case 'start':
-      coords[alignmentAxis] -= commonAlign * (rtl && isVertical ? -1 : 1);
-      break;
-    case 'end':
-      coords[alignmentAxis] += commonAlign * (rtl && isVertical ? -1 : 1);
-      break;
+  const alignment = getAlignment(placement);
+  if (alignment) {
+    coords[alignmentAxis] += commonAlign * (alignment === 'end' ? 1 : -1) * (rtl && isVertical ? -1 : 1);
   }
   return coords;
 }
@@ -27777,10 +28439,7 @@ async function detectOverflow(state, options) {
     height: rects.floating.height
   } : rects.reference;
   const offsetParent = await (platform.getOffsetParent == null ? void 0 : platform.getOffsetParent(elements.floating));
-  const offsetScale = (await (platform.isElement == null ? void 0 : platform.isElement(offsetParent))) ? (await (platform.getScale == null ? void 0 : platform.getScale(offsetParent))) || {
-    x: 1,
-    y: 1
-  } : {
+  const offsetScale = (await (platform.isElement == null ? void 0 : platform.isElement(offsetParent))) && (await (platform.getScale == null ? void 0 : platform.getScale(offsetParent))) || {
     x: 1,
     y: 1
   };
@@ -27953,17 +28612,16 @@ const arrow = options => ({
 
     // Make sure the arrow doesn't overflow the floating element if the center
     // point is outside the floating element's bounds.
-    const min$1 = minPadding;
     const max = clientSize - arrowDimensions[length] - maxPadding;
     const center = clientSize / 2 - arrowDimensions[length] / 2 + centerToReference;
-    const offset = floating_ui_core_clamp(min$1, center, max);
+    const offset = floating_ui_core_clamp(minPadding, center, max);
 
     // If the reference is small enough that the arrow's padding causes it to
     // to point to nothing for an aligned placement, adjust the offset of the
     // floating element itself. To ensure `shift()` continues to take action,
     // a single reset is performed when this is true.
-    const shouldAddOffset = !middlewareData.arrow && floating_ui_core_getAlignment(placement) != null && center !== offset && rects.reference[length] / 2 - (center < min$1 ? minPadding : maxPadding) - arrowDimensions[length] / 2 < 0;
-    const alignmentOffset = shouldAddOffset ? center < min$1 ? center - min$1 : center - max : 0;
+    const shouldAddOffset = !middlewareData.arrow && floating_ui_core_getAlignment(placement) != null && center !== offset && rects.reference[length] / 2 - (center < minPadding ? minPadding : maxPadding) - arrowDimensions[length] / 2 < 0;
+    const alignmentOffset = shouldAddOffset ? center < minPadding ? center - minPadding : center - max : 0;
     return {
       [axis]: coords[axis] + alignmentOffset,
       data: {
@@ -28017,13 +28675,11 @@ const autoPlacement = function (options) {
         ...detectOverflowOptions
       } = floating_ui_core_evaluate(options, state);
       const placements$1 = alignment !== undefined || allowedPlacements === floating_ui_core_placements ? getPlacementList(alignment || null, autoAlignment, allowedPlacements) : allowedPlacements;
-      const overflow = await platform.detectOverflow(state, detectOverflowOptions);
       const currentIndex = ((_middlewareData$autoP = middlewareData.autoPlacement) == null ? void 0 : _middlewareData$autoP.index) || 0;
       const currentPlacement = placements$1[currentIndex];
       if (currentPlacement == null) {
         return {};
       }
-      const alignmentSides = floating_ui_core_getAlignmentSides(currentPlacement, rects, await (platform.isRTL == null ? void 0 : platform.isRTL(elements.floating)));
 
       // Make `computeCoords` start from the right place.
       if (placement !== currentPlacement) {
@@ -28033,6 +28689,8 @@ const autoPlacement = function (options) {
           }
         };
       }
+      const overflow = await platform.detectOverflow(state, detectOverflowOptions);
+      const alignmentSides = floating_ui_core_getAlignmentSides(currentPlacement, rects, await (platform.isRTL == null ? void 0 : platform.isRTL(elements.floating)));
       const currentOverflows = [overflow[floating_ui_core_getSide(currentPlacement)], overflow[alignmentSides[0]], overflow[alignmentSides[1]]];
       const allOverflows = [...(((_middlewareData$autoP2 = middlewareData.autoPlacement) == null ? void 0 : _middlewareData$autoP2.overflows) || []), {
         placement: currentPlacement,
@@ -28339,12 +28997,19 @@ const inline = function (options) {
         y
       } = floating_ui_core_evaluate(options, state);
       const nativeClientRects = Array.from((await (platform.getClientRects == null ? void 0 : platform.getClientRects(elements.reference))) || []);
+
+      // No rects (e.g. a hidden or detached reference, or a collapsed range) —
+      // keep the existing reference rect rather than resetting to an invalid
+      // one with non-finite values.
+      if (!nativeClientRects.length) {
+        return {};
+      }
       const clientRects = getRectsByLine(nativeClientRects);
       const fallback = floating_ui_core_rectToClientRect(getBoundingRect(nativeClientRects));
       const paddingObject = floating_ui_core_getPaddingObject(padding);
       function getBoundingClientRect() {
         // There are two rects and they are disjoined.
-        if (clientRects.length === 2 && clientRects[0].left > clientRects[1].right && x != null && y != null) {
+        if (clientRects.length === 2 && (clientRects[0].left > clientRects[1].right || clientRects[1].left > clientRects[0].right) && x != null && y != null) {
           // Find the first rect in which the point is fully inside.
           return clientRects.find(rect => x > rect.left - paddingObject.left && x < rect.right + paddingObject.right && y > rect.top - paddingObject.top && y < rect.bottom + paddingObject.bottom) || fallback;
         }
@@ -28359,18 +29024,12 @@ const inline = function (options) {
             const bottom = lastRect.bottom;
             const left = isTop ? firstRect.left : lastRect.left;
             const right = isTop ? firstRect.right : lastRect.right;
-            const width = right - left;
-            const height = bottom - top;
-            return {
-              top,
-              bottom,
-              left,
-              right,
-              width,
-              height,
+            return floating_ui_core_rectToClientRect({
               x: left,
-              y: top
-            };
+              y: top,
+              width: right - left,
+              height: bottom - top
+            });
           }
           const isLeftSide = floating_ui_core_getSide(placement) === 'left';
           const maxRight = floating_ui_core_max(...clientRects.map(rect => rect.right));
@@ -28378,20 +29037,12 @@ const inline = function (options) {
           const measureRects = clientRects.filter(rect => isLeftSide ? rect.left === minLeft : rect.right === maxRight);
           const top = measureRects[0].top;
           const bottom = measureRects[measureRects.length - 1].bottom;
-          const left = minLeft;
-          const right = maxRight;
-          const width = right - left;
-          const height = bottom - top;
-          return {
-            top,
-            bottom,
-            left,
-            right,
-            width,
-            height,
-            x: left,
-            y: top
-          };
+          return floating_ui_core_rectToClientRect({
+            x: minLeft,
+            y: top,
+            width: maxRight - minLeft,
+            height: bottom - top
+          });
         }
         return fallback;
       }
@@ -28541,23 +29192,16 @@ const shift = function (options) {
         y
       };
       const overflow = await platform.detectOverflow(state, detectOverflowOptions);
-      const crossAxis = getSideAxis(getSide(placement));
+      const crossAxis = getSideAxis(placement);
       const mainAxis = getOppositeAxis(crossAxis);
       let mainAxisCoord = coords[mainAxis];
       let crossAxisCoord = coords[crossAxis];
+      const clampCoord = (axis, coord) => clamp(coord + overflow[axis === 'y' ? 'top' : 'left'], coord, coord - overflow[axis === 'y' ? 'bottom' : 'right']);
       if (checkMainAxis) {
-        const minSide = mainAxis === 'y' ? 'top' : 'left';
-        const maxSide = mainAxis === 'y' ? 'bottom' : 'right';
-        const min = mainAxisCoord + overflow[minSide];
-        const max = mainAxisCoord - overflow[maxSide];
-        mainAxisCoord = clamp(min, mainAxisCoord, max);
+        mainAxisCoord = clampCoord(mainAxis, mainAxisCoord);
       }
       if (checkCrossAxis) {
-        const minSide = crossAxis === 'y' ? 'top' : 'left';
-        const maxSide = crossAxis === 'y' ? 'bottom' : 'right';
-        const min = crossAxisCoord + overflow[minSide];
-        const max = crossAxisCoord - overflow[maxSide];
-        crossAxisCoord = clamp(min, crossAxisCoord, max);
+        crossAxisCoord = clampCoord(crossAxis, crossAxisCoord);
       }
       const limitedCoords = limiter.fn({
         ...state,
@@ -28588,6 +29232,7 @@ const limitShift = function (options) {
   return {
     options,
     fn(state) {
+      var _rawOffset$mainAxis, _rawOffset$crossAxis;
       const {
         x,
         y,
@@ -28613,9 +29258,8 @@ const limitShift = function (options) {
         mainAxis: rawOffset,
         crossAxis: 0
       } : {
-        mainAxis: 0,
-        crossAxis: 0,
-        ...rawOffset
+        mainAxis: (_rawOffset$mainAxis = rawOffset.mainAxis) != null ? _rawOffset$mainAxis : 0,
+        crossAxis: (_rawOffset$crossAxis = rawOffset.crossAxis) != null ? _rawOffset$crossAxis : 0
       };
       if (checkMainAxis) {
         const len = mainAxis === 'y' ? 'height' : 'width';
@@ -28647,6 +29291,12 @@ const limitShift = function (options) {
   };
 };
 
+// Method syntax keeps callback parameters bivariant, but expressing the
+// explicit `| undefined` required by `exactOptionalPropertyTypes` needs
+// property syntax, which is contravariant under `strictFunctionTypes`.
+// Extracting the function from a method position restores that bivariance so
+// consumers can still assign callbacks with narrower parameter types.
+
 /**
  * Provides data that allows you to change the size of the floating element —
  * for instance, prevent it from overflowing the clipping boundary or match the
@@ -28661,7 +29311,6 @@ const size = function (options) {
     name: 'size',
     options,
     async fn(state) {
-      var _state$middlewareData, _state$middlewareData2;
       const {
         placement,
         rects,
@@ -28693,24 +29342,21 @@ const size = function (options) {
       const maximumClippingWidth = width - overflow.left - overflow.right;
       const overflowAvailableHeight = min(height - overflow[heightSide], maximumClippingHeight);
       const overflowAvailableWidth = min(width - overflow[widthSide], maximumClippingWidth);
-      const noShift = !state.middlewareData.shift;
+      const shiftData = state.middlewareData.shift;
+      const noShift = !shiftData;
       let availableHeight = overflowAvailableHeight;
       let availableWidth = overflowAvailableWidth;
-      if ((_state$middlewareData = state.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
+      if (shiftData != null && shiftData.enabled.x) {
         availableWidth = maximumClippingWidth;
       }
-      if ((_state$middlewareData2 = state.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
+      if (shiftData != null && shiftData.enabled.y) {
         availableHeight = maximumClippingHeight;
       }
       if (noShift && !alignment) {
-        const xMin = max(overflow.left, 0);
-        const xMax = max(overflow.right, 0);
-        const yMin = max(overflow.top, 0);
-        const yMax = max(overflow.bottom, 0);
         if (isYAxis) {
-          availableWidth = width - 2 * (xMin !== 0 || xMax !== 0 ? xMin + xMax : max(overflow.left, overflow.right));
+          availableWidth = width - 2 * max(overflow.left, overflow.right);
         } else {
-          availableHeight = height - 2 * (yMin !== 0 || yMax !== 0 ? yMin + yMax : max(overflow.top, overflow.bottom));
+          availableHeight = height - 2 * max(overflow.top, overflow.bottom);
         }
       }
       await apply({
@@ -28811,10 +29457,7 @@ function shouldAddVisualOffsets(element, isFixed, floatingOffsetParent) {
   if (isFixed === void 0) {
     isFixed = false;
   }
-  if (!floatingOffsetParent || isFixed && floatingOffsetParent !== getWindow(element)) {
-    return false;
-  }
-  return isFixed;
+  return !!floatingOffsetParent && isFixed && floatingOffsetParent === getWindow(element);
 }
 
 function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetParent) {
@@ -28841,12 +29484,12 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
   let y = (clientRect.top + visualOffsets.y) / scale.y;
   let width = clientRect.width / scale.x;
   let height = clientRect.height / scale.y;
-  if (domElement) {
+  if (domElement && offsetParent) {
     const win = getWindow(domElement);
-    const offsetWin = offsetParent && isElement(offsetParent) ? getWindow(offsetParent) : offsetParent;
+    const offsetWin = isElement(offsetParent) ? getWindow(offsetParent) : offsetParent;
     let currentWin = win;
     let currentIFrame = getFrameElement(currentWin);
-    while (currentIFrame && offsetParent && offsetWin !== currentWin) {
+    while (currentIFrame && offsetWin !== currentWin) {
       const iframeScale = getScale(currentIFrame);
       const iframeRect = currentIFrame.getBoundingClientRect();
       const css = floating_ui_utils_dom_getComputedStyle(currentIFrame);
@@ -28910,7 +29553,7 @@ function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
   let scale = createCoords(1);
   const offsets = createCoords(0);
   const isOffsetParentAnElement = isHTMLElement(offsetParent);
-  if (isOffsetParentAnElement || !isOffsetParentAnElement && !isFixed) {
+  if (isOffsetParentAnElement || !isFixed) {
     if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
       scroll = getNodeScroll(offsetParent);
     }
@@ -28931,18 +29574,17 @@ function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
 }
 
 function getClientRects(element) {
-  return Array.from(element.getClientRects());
+  return element.getClientRects ? Array.from(element.getClientRects()) : [];
 }
 
 // Gets the entire size of the scrollable document area, even extending outside
 // of the `<html>` and `<body>` rect bounds if horizontally scrollable.
-function getDocumentRect(element) {
-  const html = getDocumentElement(element);
-  const scroll = getNodeScroll(element);
-  const body = element.ownerDocument.body;
+function getDocumentRect(html) {
+  const scroll = getNodeScroll(html);
+  const body = html.ownerDocument.body;
   const width = max(html.scrollWidth, html.clientWidth, body.scrollWidth, body.clientWidth);
   const height = max(html.scrollHeight, html.clientHeight, body.scrollHeight, body.clientHeight);
-  let x = -scroll.scrollLeft + getWindowScrollBarX(element);
+  let x = -scroll.scrollLeft + getWindowScrollBarX(html);
   const y = -scroll.scrollTop;
   if (floating_ui_utils_dom_getComputedStyle(body).direction === 'rtl') {
     x += max(html.clientWidth, body.clientWidth) - width;
@@ -28959,7 +29601,11 @@ function getDocumentRect(element) {
 // calculation is affected by unusual styles.
 // Most scrollbars leave 15-18px of space.
 const SCROLLBAR_MAX = 25;
-function getViewportRect(element, strategy) {
+function getViewportRect(element, strategy, rootBoundary) {
+  if (rootBoundary === void 0) {
+    rootBoundary = 'viewport';
+  }
+  const isLayoutViewport = rootBoundary === 'layoutViewport';
   const win = getWindow(element);
   const html = getDocumentElement(element);
   const visualViewport = win.visualViewport;
@@ -28968,31 +29614,42 @@ function getViewportRect(element, strategy) {
   let x = 0;
   let y = 0;
   if (visualViewport) {
-    width = visualViewport.width;
-    height = visualViewport.height;
-    const visualViewportBased = isWebKit();
-    if (!visualViewportBased || visualViewportBased && strategy === 'fixed') {
-      x = visualViewport.offsetLeft;
-      y = visualViewport.offsetTop;
+    // Client coordinates are relative to the layout viewport, except in
+    // WebKit with an `absolute` strategy, where they are relative to the
+    // visual viewport.
+    const layoutRelativeClientCoords = !isWebKit() || strategy === 'fixed';
+    if (isLayoutViewport) {
+      if (!layoutRelativeClientCoords) {
+        x = -visualViewport.offsetLeft;
+        y = -visualViewport.offsetTop;
+      }
+    } else {
+      width = visualViewport.width;
+      height = visualViewport.height;
+      if (layoutRelativeClientCoords) {
+        x = visualViewport.offsetLeft;
+        y = visualViewport.offsetTop;
+      }
     }
   }
   const windowScrollbarX = getWindowScrollBarX(html);
-  // <html> `overflow: hidden` + `scrollbar-gutter: stable` reduces the
-  // visual width of the <html> but this is not considered in the size
-  // of `html.clientWidth`.
+  // `scrollbar-gutter: stable` on the <html> reserves gutter space that shrinks
+  // the visual width but isn't reflected in `html.clientWidth`, so subtract it.
+  // Only the inline-end (right) gutter can hold the scrollbar; `both-edges` also
+  // reserves an empty inline-start gutter that clips nothing, so exclude just
+  // the one scrollbar-side gutter — halve the measured (two-gutter) total. A
+  // left-side scrollbar (`windowScrollbarX > 0`) is already handled by
+  // `getHTMLOffset`/`visualViewport.width`; skip it here.
   if (windowScrollbarX <= 0) {
     const doc = html.ownerDocument;
     const body = doc.body;
     const bodyStyles = getComputedStyle(body);
     const bodyMarginInline = doc.compatMode === 'CSS1Compat' ? parseFloat(bodyStyles.marginLeft) + parseFloat(bodyStyles.marginRight) || 0 : 0;
-    const clippingStableScrollbarWidth = Math.abs(html.clientWidth - body.clientWidth - bodyMarginInline);
-    if (clippingStableScrollbarWidth <= SCROLLBAR_MAX) {
-      width -= clippingStableScrollbarWidth;
+    const reservedWidth = Math.abs(html.clientWidth - body.clientWidth - bodyMarginInline);
+    const gutter = getComputedStyle(html).scrollbarGutter === 'stable both-edges' ? reservedWidth / 2 : reservedWidth;
+    if (gutter <= SCROLLBAR_MAX) {
+      width -= gutter;
     }
-  } else if (windowScrollbarX <= SCROLLBAR_MAX) {
-    // If the <body> scrollbar is on the left, the width needs to be extended
-    // by the scrollbar amount so there isn't extra space on the right.
-    width += windowScrollbarX;
   }
   return {
     width,
@@ -29007,7 +29664,7 @@ function getInnerBoundingClientRect(element, strategy) {
   const clientRect = getBoundingClientRect(element, true, strategy === 'fixed');
   const top = clientRect.top + element.clientTop;
   const left = clientRect.left + element.clientLeft;
-  const scale = isHTMLElement(element) ? getScale(element) : createCoords(1);
+  const scale = getScale(element);
   const width = element.clientWidth * scale.x;
   const height = element.clientHeight * scale.y;
   const x = left * scale.x;
@@ -29021,8 +29678,8 @@ function getInnerBoundingClientRect(element, strategy) {
 }
 function getClientRectFromClippingAncestor(element, clippingAncestor, strategy) {
   let rect;
-  if (clippingAncestor === 'viewport') {
-    rect = getViewportRect(element, strategy);
+  if (clippingAncestor === 'viewport' || clippingAncestor === 'layoutViewport') {
+    rect = getViewportRect(element, strategy, clippingAncestor);
   } else if (clippingAncestor === 'document') {
     rect = getDocumentRect(getDocumentElement(element));
   } else if (isElement(clippingAncestor)) {
@@ -29038,13 +29695,6 @@ function getClientRectFromClippingAncestor(element, clippingAncestor, strategy) 
   }
   return rectToClientRect(rect);
 }
-function hasFixedPositionAncestor(element, stopNode) {
-  const parentNode = getParentNode(element);
-  if (parentNode === stopNode || !isElement(parentNode) || isLastTraversableNode(parentNode)) {
-    return false;
-  }
-  return floating_ui_utils_dom_getComputedStyle(parentNode).position === 'fixed' || hasFixedPositionAncestor(parentNode, stopNode);
-}
 
 // A "clipping ancestor" is an `overflow` element with the characteristic of
 // clipping (or hiding) child elements. This returns all clipping ancestors
@@ -29055,7 +29705,7 @@ function getClippingElementAncestors(element, cache) {
     return cachedResult;
   }
   let result = getOverflowAncestors(element, [], false).filter(el => isElement(el) && getNodeName(el) !== 'body');
-  let currentContainingBlockComputedStyle = null;
+  let lastKeptComputedStyle = null;
   const elementIsFixed = floating_ui_utils_dom_getComputedStyle(element).position === 'fixed';
   let currentNode = elementIsFixed ? getParentNode(element) : element;
 
@@ -29063,16 +29713,20 @@ function getClippingElementAncestors(element, cache) {
   while (isElement(currentNode) && !isLastTraversableNode(currentNode)) {
     const computedStyle = floating_ui_utils_dom_getComputedStyle(currentNode);
     const currentNodeIsContaining = isContainingBlock(currentNode);
-    if (!currentNodeIsContaining && computedStyle.position === 'fixed') {
-      currentContainingBlockComputedStyle = null;
-    }
-    const shouldDropCurrentNode = elementIsFixed ? !currentNodeIsContaining && !currentContainingBlockComputedStyle : !currentNodeIsContaining && computedStyle.position === 'static' && !!currentContainingBlockComputedStyle && (currentContainingBlockComputedStyle.position === 'absolute' || currentContainingBlockComputedStyle.position === 'fixed') || isOverflowElement(currentNode) && !currentNodeIsContaining && hasFixedPositionAncestor(element, currentNode);
+    // Position of the containing block chain below the current node. A fixed
+    // element whose containing block hasn't been found yet is a fixed chain.
+    const lastPosition = lastKeptComputedStyle ? lastKeptComputedStyle.position : elementIsFixed ? 'fixed' : '';
+
+    // A non-containing ancestor does not clip the element when the chain
+    // below it escapes it: a fixed chain escapes all ancestors up to the
+    // next containing block, an absolute chain escapes static ancestors.
+    const shouldDropCurrentNode = !currentNodeIsContaining && (lastPosition === 'fixed' || lastPosition === 'absolute' && computedStyle.position === 'static');
     if (shouldDropCurrentNode) {
       // Drop non-containing blocks.
       result = result.filter(ancestor => ancestor !== currentNode);
     } else {
-      // Record last containing block for next iteration.
-      currentContainingBlockComputedStyle = computedStyle;
+      // The kept node carries the chain position for the next iteration.
+      lastKeptComputedStyle = computedStyle;
     }
     currentNode = getParentNode(currentNode);
   }
@@ -29132,13 +29786,7 @@ function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
     scrollTop: 0
   };
   const offsets = createCoords(0);
-
-  // If the <body> scrollbar appears on the left (e.g. RTL systems). Use
-  // Firefox with layout.scrollbar.side = 3 in about:config to test this.
-  function setLeftRTLScrollbarOffset() {
-    offsets.x = getWindowScrollBarX(documentElement);
-  }
-  if (isOffsetParentAnElement || !isOffsetParentAnElement && !isFixed) {
+  if (isOffsetParentAnElement || !isFixed) {
     if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
       scroll = getNodeScroll(offsetParent);
     }
@@ -29146,12 +29794,13 @@ function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
       const offsetRect = getBoundingClientRect(offsetParent, true, isFixed, offsetParent);
       offsets.x = offsetRect.x + offsetParent.clientLeft;
       offsets.y = offsetRect.y + offsetParent.clientTop;
-    } else if (documentElement) {
-      setLeftRTLScrollbarOffset();
     }
   }
-  if (isFixed && !isOffsetParentAnElement && documentElement) {
-    setLeftRTLScrollbarOffset();
+
+  // If the <body> scrollbar appears on the left (e.g. RTL systems). Use
+  // Firefox with layout.scrollbar.side = 3 in about:config to test this.
+  if (!isOffsetParentAnElement && documentElement) {
+    offsets.x = getWindowScrollBarX(documentElement);
   }
   const htmlOffset = documentElement && !isOffsetParentAnElement && !isFixed ? getHTMLOffset(documentElement, scroll) : createCoords(0);
   const x = rect.left + scroll.scrollLeft - offsets.x - htmlOffset.x;
@@ -29251,7 +29900,7 @@ function rectsAreEqual(a, b) {
 }
 
 // https://samthor.au/2021/observing-dom/
-function observeMove(element, onMove) {
+function observeMove(element, onMove, ancestorResize) {
   let io = null;
   let timeoutId;
   const root = getDocumentElement(element);
@@ -29294,29 +29943,28 @@ function observeMove(element, onMove) {
     let isFirstUpdate = true;
     function handleObserve(entries) {
       const ratio = entries[0].intersectionRatio;
+
+      // The entry is a snapshot, so the reference may have moved since the
+      // intersection was computed (under performance constraints, or between
+      // consecutive frames of a multi-frame layout shift). The reported ratio
+      // and the observed area are stale in that case and cannot be trusted to
+      // detect subsequent movement, so refresh regardless of the ratio.
+      if (!rectsAreEqual(elementRectForRootMargin, element.getBoundingClientRect())) {
+        return refresh();
+      }
       if (ratio !== threshold) {
         if (!isFirstUpdate) {
           return refresh();
         }
         if (!ratio) {
-          // If the reference is clipped, the ratio is 0. Throttle the refresh
-          // to prevent an infinite loop of updates.
+          // If the reference is clipped in place, the ratio is 0. Throttle
+          // the refresh to prevent an infinite loop of updates.
           timeoutId = setTimeout(() => {
             refresh(false, 1e-7);
           }, 1000);
         } else {
           refresh(false, ratio);
         }
-      }
-      if (ratio === 1 && !rectsAreEqual(elementRectForRootMargin, element.getBoundingClientRect())) {
-        // It's possible that even though the ratio is reported as 1, the
-        // element is not actually fully within the IntersectionObserver's root
-        // area anymore. This can happen under performance constraints. This may
-        // be a bug in the browser's IntersectionObserver implementation. To
-        // work around this, we compare the element's bounding rect now with
-        // what it was at the time we created the IntersectionObserver. If they
-        // are not equal then the element moved, so we refresh.
-        refresh();
       }
       isFirstUpdate = false;
     }
@@ -29334,8 +29982,18 @@ function observeMove(element, onMove) {
     }
     io.observe(element);
   }
+  const win = getWindow(element);
+  // The window is a resize ancestor, so when `ancestorResize` is enabled its
+  // listener already runs the update on resize. Here we only need to rebuild
+  // the `IntersectionObserver` for the new root size, skipping a redundant
+  // update. When `ancestorResize` is disabled, this becomes the sole update.
+  const handleResize = () => refresh(ancestorResize);
+  win.addEventListener('resize', handleResize);
   refresh(true);
-  return cleanup;
+  return () => {
+    win.removeEventListener('resize', handleResize);
+    cleanup();
+  };
 }
 
 /**
@@ -29360,12 +30018,10 @@ function autoUpdate(reference, floating, update, options) {
   const referenceEl = unwrapElement(reference);
   const ancestors = ancestorScroll || ancestorResize ? [...(referenceEl ? getOverflowAncestors(referenceEl) : []), ...(floating ? getOverflowAncestors(floating) : [])] : [];
   ancestors.forEach(ancestor => {
-    ancestorScroll && ancestor.addEventListener('scroll', update, {
-      passive: true
-    });
+    ancestorScroll && ancestor.addEventListener('scroll', update);
     ancestorResize && ancestor.addEventListener('resize', update);
   });
-  const cleanupIo = referenceEl && layoutShift ? observeMove(referenceEl, update) : null;
+  const cleanupIo = referenceEl && layoutShift ? observeMove(referenceEl, update, ancestorResize) : null;
   let reobserveFrame = -1;
   let resizeObserver = null;
   if (elementResize) {
@@ -29504,11 +30160,9 @@ const floating_ui_dom_computePosition = (reference, floating, options) => {
   // multiple lifecycle resets re-use the same result. It only lives for a
   // single call. If other functions become expensive, we can add them as well.
   const cache = new Map();
-  const mergedOptions = {
-    platform: floating_ui_dom_platform,
-    ...options
-  };
+  const mergedOptions = options != null ? options : {};
   const platformWithCache = {
+    ...floating_ui_dom_platform,
     ...mergedOptions.platform,
     _c: cache
   };
@@ -29931,7 +30585,7 @@ const floating_ui_react_dom_arrow = (options, deps) => {
 
 
 
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useFloatingRootContext.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useFloatingRootContext.mjs
 'use client';
 
 
@@ -29982,7 +30636,7 @@ function useFloatingRootContext(options) {
   store.context.nested = nested;
   return store;
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/hooks/useFloating.js
+;// ./node_modules/@base-ui/react/floating-ui-react/hooks/useFloating.mjs
 'use client';
 
 
@@ -30106,7 +30760,7 @@ function useFloating_useFloating(options = {}) {
     rootStore: store
   }), [position, refs, elements, context, store]);
 }
-;// ./node_modules/@base-ui/react/esm/internals/direction-context/DirectionContext.js
+;// ./node_modules/@base-ui/react/internals/direction-context/DirectionContext.mjs
 'use client';
 
 
@@ -30120,7 +30774,7 @@ function useDirection() {
   const context = external_React_.useContext(DirectionContext);
   return context?.direction ?? 'ltr';
 }
-;// ./node_modules/@base-ui/react/esm/floating-ui-react/middleware/arrow.js
+;// ./node_modules/@base-ui/react/floating-ui-react/middleware/arrow.mjs
 
 /**
  * Fork of the original `arrow` middleware from Floating UI that allows
@@ -30215,8 +30869,9 @@ const arrow_arrow = (options, deps) => ({
   ...baseArrow(options),
   options: [options, deps]
 });
-;// ./node_modules/@base-ui/react/esm/utils/hideMiddleware.js
+;// ./node_modules/@base-ui/react/utils/hideMiddleware.mjs
 
+const nativeHideFn = floating_ui_react_dom_hide().fn;
 const hideMiddleware_hide = {
   name: 'hide',
   async fn(state) {
@@ -30227,7 +30882,7 @@ const hideMiddleware_hide = {
       y
     } = state.rects.reference;
     const anchorHidden = width === 0 && height === 0 && x === 0 && y === 0;
-    const nativeHideResult = await floating_ui_react_dom_hide().fn(state);
+    const nativeHideResult = await nativeHideFn(state);
     return {
       data: {
         referenceHidden: nativeHideResult.data?.referenceHidden || anchorHidden
@@ -30235,7 +30890,7 @@ const hideMiddleware_hide = {
     };
   }
 };
-;// ./node_modules/@base-ui/react/esm/utils/adaptiveOriginMiddleware.js
+;// ./node_modules/@base-ui/react/utils/adaptiveOriginMiddleware.mjs
 
 
 const DEFAULT_SIDES = {
@@ -30310,7 +30965,7 @@ const adaptiveOrigin = {
     };
   }
 };
-;// ./node_modules/@base-ui/react/esm/utils/useAnchorPositioning.js
+;// ./node_modules/@base-ui/react/utils/useAnchorPositioning.mjs
 'use client';
 
 
@@ -30675,8 +31330,8 @@ function useAnchorPositioning(params) {
     }
   }, [mounted, refs, anchorDep, anchorValueRef]);
   external_React_.useEffect(() => {
-    if (keepMounted && mounted && elements.domReference && elements.floating) {
-      return autoUpdate(elements.domReference, elements.floating, update, autoUpdateOptions);
+    if (keepMounted && mounted && elements.reference && elements.floating) {
+      return autoUpdate(elements.reference, elements.floating, update, autoUpdateOptions);
     }
     return undefined;
   }, [keepMounted, mounted, elements, update, autoUpdateOptions]);
@@ -30717,7 +31372,7 @@ function useAnchorPositioning(params) {
 function isRef(param) {
   return param != null && 'current' in param;
 }
-;// ./node_modules/@base-ui/react/esm/utils/usePositioner.js
+;// ./node_modules/@base-ui/react/utils/usePositioner.mjs
 'use client';
 
 
@@ -30752,7 +31407,7 @@ function usePositioner(componentProps, state, {
     stateAttributesMapping: popupStateMapping
   });
 }
-;// ./node_modules/@base-ui/react/esm/tooltip/positioner/TooltipPositioner.js
+;// ./node_modules/@base-ui/react/tooltip/positioner/TooltipPositioner.mjs
 'use client';
 
 
@@ -30936,7 +31591,7 @@ var resets_default = { "box-sizing": "_336cd3e4e743482f__box-sizing" };
 
 // packages/ui/src/tooltip/style.module.css
 if (typeof process === "undefined" || "production" !== "test") {
-  positioner_registerStyle("4811d023d1", '@layer wp-ui{@layer utilities, components, compositions, overrides;@layer components{._480b748dd3510e64__positioner{z-index:var(--wp-ui-tooltip-z-index,initial)}._50096b232db7709d__popup{background-color:var(--wpds-color-bg-surface-neutral-strong,#fff);border-radius:var(--wpds-border-radius-md,4px);box-shadow:var(--wpds-elevation-sm,0 1px 2px 0 #0000000d,0 2px 3px 0 #0000000a,0 6px 6px 0 #00000008,0 8px 8px 0 #00000005);color:var(--wpds-color-fg-content-neutral,#1e1e1e);font-family:var(--wpds-typography-font-family-body,-apple-system,system-ui,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif);font-size:var(--wpds-typography-font-size-sm,12px);line-height:1.4;padding:var(--wpds-dimension-padding-xs,4px) var(--wpds-dimension-padding-sm,8px);@media (forced-colors:active){border-bottom-color:CanvasText;border-bottom-style:solid;border-bottom-width:1px;border-left-color:CanvasText;border-left-style:solid;border-left-width:1px;border-right-color:CanvasText;border-right-style:solid;border-right-width:1px;border-top-color:CanvasText;border-top-style:solid;border-top-width:1px}}}}');
+  positioner_registerStyle("19fcc06039", '@layer wp-ui{@layer utilities, components, compositions, overrides;@layer components{._480b748dd3510e64__positioner{z-index:var(--wp-ui-tooltip-z-index,initial)}._50096b232db7709d__popup{--_wp-ui-elevation-sm:0 1px 2px rgba(0,0,0,.05),0 2px 3px rgba(0,0,0,.04),0 6px 6px rgba(0,0,0,.03),0 8px 8px rgba(0,0,0,.02);background-color:var(--wpds-color-background-surface-neutral-strong,#fff);border-radius:var(--wpds-border-radius-md,4px);box-shadow:var(--_wp-ui-elevation-sm);color:var(--wpds-color-foreground-content-neutral,#1e1e1e);font-family:var(--wpds-typography-font-family-body,-apple-system,system-ui,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif);font-size:var(--wpds-typography-font-size-sm,12px);line-height:1.4;padding:var(--wpds-dimension-padding-xs,4px) var(--wpds-dimension-padding-sm,8px);@media (forced-colors:active){border-bottom-color:CanvasText;border-bottom-style:solid;border-bottom-width:1px;border-left-color:CanvasText;border-left-style:solid;border-left-width:1px;border-right-color:CanvasText;border-right-style:solid;border-right-width:1px;border-top-color:CanvasText;border-top-style:solid;border-top-width:1px}}}}');
 }
 var positioner_style_default = { "positioner": "_480b748dd3510e64__positioner", "popup": "_50096b232db7709d__popup" };
 
@@ -30973,9 +31628,43 @@ function renderSlotWithChildren(slot, defaultSlot, children) {
 
 //# sourceMappingURL=render-slot-with-children.mjs.map
 
+;// external ["wp","theme"]
+const external_wp_theme_namespaceObject = window["wp"]["theme"];
+var external_wp_theme_namespaceObject_0 = /*#__PURE__*/__webpack_require__.t(external_wp_theme_namespaceObject, 2);
+;// ./node_modules/@wordpress/ui/build-module/lock-unlock.mjs
+// packages/ui/src/lock-unlock.ts
+
+var { lock: lock_unlock_lock, unlock: lock_unlock_unlock } = (0,external_wp_privateApis_namespaceObject.__dangerousOptInToUnstableAPIsOnlyForCoreModules)(
+  "I acknowledge private features are not for use in themes or plugins and doing so will break in the next version of WordPress.",
+  "@wordpress/ui"
+);
+
+//# sourceMappingURL=lock-unlock.mjs.map
+
+;// ./node_modules/@wordpress/ui/build-module/utils/theme-provider.mjs
+// packages/ui/src/utils/theme-provider.ts
+
+
+function getThemeProvider() {
+  const themePackage = external_wp_theme_namespaceObject_0;
+  if (themePackage.ThemeProvider) {
+    return themePackage.ThemeProvider;
+  }
+  if (!themePackage.privateApis) {
+    throw new Error(
+      "@wordpress/ui: @wordpress/theme must expose `ThemeProvider` or `privateApis.ThemeProvider`."
+    );
+  }
+  return lock_unlock_unlock(
+    themePackage.privateApis
+  ).ThemeProvider;
+}
+var ThemeProvider = getThemeProvider();
+
+//# sourceMappingURL=theme-provider.mjs.map
+
 ;// ./node_modules/@wordpress/ui/build-module/tooltip/popup.mjs
 // packages/ui/src/tooltip/popup.tsx
-
 
 
 
@@ -31068,13 +31757,12 @@ function popup_registerStyle(hash, css) {
 
 // packages/ui/src/tooltip/style.module.css
 if (typeof process === "undefined" || "production" !== "test") {
-  popup_registerStyle("4811d023d1", '@layer wp-ui{@layer utilities, components, compositions, overrides;@layer components{._480b748dd3510e64__positioner{z-index:var(--wp-ui-tooltip-z-index,initial)}._50096b232db7709d__popup{background-color:var(--wpds-color-bg-surface-neutral-strong,#fff);border-radius:var(--wpds-border-radius-md,4px);box-shadow:var(--wpds-elevation-sm,0 1px 2px 0 #0000000d,0 2px 3px 0 #0000000a,0 6px 6px 0 #00000008,0 8px 8px 0 #00000005);color:var(--wpds-color-fg-content-neutral,#1e1e1e);font-family:var(--wpds-typography-font-family-body,-apple-system,system-ui,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif);font-size:var(--wpds-typography-font-size-sm,12px);line-height:1.4;padding:var(--wpds-dimension-padding-xs,4px) var(--wpds-dimension-padding-sm,8px);@media (forced-colors:active){border-bottom-color:CanvasText;border-bottom-style:solid;border-bottom-width:1px;border-left-color:CanvasText;border-left-style:solid;border-left-width:1px;border-right-color:CanvasText;border-right-style:solid;border-right-width:1px;border-top-color:CanvasText;border-top-style:solid;border-top-width:1px}}}}');
+  popup_registerStyle("19fcc06039", '@layer wp-ui{@layer utilities, components, compositions, overrides;@layer components{._480b748dd3510e64__positioner{z-index:var(--wp-ui-tooltip-z-index,initial)}._50096b232db7709d__popup{--_wp-ui-elevation-sm:0 1px 2px rgba(0,0,0,.05),0 2px 3px rgba(0,0,0,.04),0 6px 6px rgba(0,0,0,.03),0 8px 8px rgba(0,0,0,.02);background-color:var(--wpds-color-background-surface-neutral-strong,#fff);border-radius:var(--wpds-border-radius-md,4px);box-shadow:var(--_wp-ui-elevation-sm);color:var(--wpds-color-foreground-content-neutral,#1e1e1e);font-family:var(--wpds-typography-font-family-body,-apple-system,system-ui,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif);font-size:var(--wpds-typography-font-size-sm,12px);line-height:1.4;padding:var(--wpds-dimension-padding-xs,4px) var(--wpds-dimension-padding-sm,8px);@media (forced-colors:active){border-bottom-color:CanvasText;border-bottom-style:solid;border-bottom-width:1px;border-left-color:CanvasText;border-left-style:solid;border-left-width:1px;border-right-color:CanvasText;border-right-style:solid;border-right-width:1px;border-top-color:CanvasText;border-top-style:solid;border-top-width:1px}}}}');
 }
 var popup_style_default = { "positioner": "_480b748dd3510e64__positioner", "popup": "_50096b232db7709d__popup" };
 
 // packages/ui/src/tooltip/popup.tsx
 
-var ThemeProvider = lock_unlock_unlock(external_wp_theme_namespaceObject.privateApis).ThemeProvider;
 var POPUP_COLOR = { background: "#1e1e1e" };
 var Popup = (0,external_wp_element_.forwardRef)(function TooltipPopup({ portal, positioner, children, className, ...props }, ref) {
   const popupContent = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(ThemeProvider, { color: POPUP_COLOR, children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
@@ -31167,7 +31855,6 @@ function PreviewSizePicker() {
   return /* @__PURE__ */ jsx(
     RangeControl,
     {
-      __next40pxDefaultSize: true,
       showTooltip: false,
       label: __("Preview size"),
       value: previewSizeToUse,
@@ -32280,6 +32967,7 @@ function ViewList(props) {
   } = props;
   const baseId = (0,external_wp_compose_.useInstanceId)(ViewList, "view-list");
   const isDelayedLoading = useDelayedLoading(!!isLoading);
+  const { paginationInfo } = (0,external_wp_element_.useContext)(dataviews_context_default);
   const selectedItem = data?.findLast(
     (item) => selection.includes(getItemId(item))
   );
@@ -32372,6 +33060,7 @@ function ViewList(props) {
   const groupField = view.groupBy?.field ? fields.find((field) => field.id === view.groupBy?.field) : null;
   const dataByGroup = hasData && groupField ? getDataByGroup(data, groupField) : null;
   const isInfiniteScroll = view.infiniteScrollEnabled && !dataByGroup;
+  const hasMoreItems = isInfiniteScroll && (view.startPosition ?? 1) + (view.perPage ?? 0) < paginationInfo.totalItems;
   if (!hasData) {
     return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
       "div",
@@ -32483,7 +33172,17 @@ function ViewList(props) {
         })
       }
     ),
-    isInfiniteScroll && isLoading && /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)("p", { className: "dataviews-loading-more", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {}) })
+    (hasMoreItems || isInfiniteScroll && isLoading) && // Keep the spinner's height reserved while loading more so the
+    // scroll position doesn't bounce. Hidden, and silent to a11y,
+    // while idle.
+    /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
+      "p",
+      {
+        className: "dataviews-loading-more",
+        "aria-hidden": !isLoading,
+        children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Spinner, {})
+      }
+    )
   ] });
 }
 
@@ -32850,7 +33549,7 @@ function ViewActivity(props) {
 var dataviews_picker_footer_EMPTY_ARRAY = (/* unused pure expression or super */ null && ([]));
 function useIsMultiselectPicker(actions) {
   return (0,external_wp_element_.useMemo)(() => {
-    return actions?.every((action) => action.supportsBulk);
+    return !!actions?.length && actions?.every((action) => action.supportsBulk);
   }, [actions]);
 }
 function dataviews_picker_footer_BulkSelectionCheckbox({
@@ -32943,7 +33642,7 @@ function ActionButtons({
     );
   }) });
 }
-function DataViewsPickerFooter() {
+function PickerBulkSelectionInfo() {
   const {
     data,
     selection,
@@ -32954,16 +33653,82 @@ function DataViewsPickerFooter() {
     view
   } = dataviews_picker_footer_useContext(dataviews_picker_footer_DataViewsContext);
   const isMultiselect = useIsMultiselectPicker(actions);
+  const selectedItems = useMemo(
+    () => data.filter((item) => selection.includes(getItemId(item))),
+    [selection, getItemId, data]
+  );
+  if (!actions.length) {
+    return null;
+  }
   const message = dataviews_picker_footer_getFooterMessage(
     selection.length,
     data.length,
     paginationInfo.totalItems,
     !!view.infiniteScrollEnabled
   );
+  return /* @__PURE__ */ jsxs(
+    dataviews_picker_footer_Stack,
+    {
+      direction: "row",
+      className: "dataviews-picker-footer__bulk-selection",
+      gap: "md",
+      align: "center",
+      children: [
+        isMultiselect && /* @__PURE__ */ dataviews_picker_footer_jsx(
+          dataviews_picker_footer_BulkSelectionCheckbox,
+          {
+            selection,
+            selectedItems,
+            onChangeSelection,
+            data,
+            getItemId,
+            disableSelectAll: !!view.infiniteScrollEnabled
+          }
+        ),
+        /* @__PURE__ */ dataviews_picker_footer_jsx("span", { className: "dataviews-bulk-actions-footer__item-count", children: message })
+      ]
+    }
+  );
+}
+function PickerActions() {
+  const {
+    data,
+    selection,
+    getItemId,
+    actions = dataviews_picker_footer_EMPTY_ARRAY
+  } = dataviews_picker_footer_useContext(dataviews_picker_footer_DataViewsContext);
   const selectedItems = useMemo(
     () => data.filter((item) => selection.includes(getItemId(item))),
     [selection, getItemId, data]
   );
+  if (!actions.length) {
+    return null;
+  }
+  return /* @__PURE__ */ dataviews_picker_footer_jsx("div", { className: "dataviews-picker-footer__actions", children: /* @__PURE__ */ dataviews_picker_footer_jsx(
+    ActionButtons,
+    {
+      actions,
+      items: selectedItems,
+      selection
+    }
+  ) });
+}
+function DataViewsPickerBulkActionToolbar() {
+  return /* @__PURE__ */ jsxs(dataviews_picker_footer_Stack, { direction: "row", gap: "md", align: "center", children: [
+    /* @__PURE__ */ dataviews_picker_footer_jsx(PickerBulkSelectionInfo, {}),
+    /* @__PURE__ */ dataviews_picker_footer_jsx(PickerActions, {})
+  ] });
+}
+function DataViewsPickerFooter() {
+  const {
+    actions = dataviews_picker_footer_EMPTY_ARRAY,
+    paginationInfo,
+    view
+  } = dataviews_picker_footer_useContext(dataviews_picker_footer_DataViewsContext);
+  const hasPagination = !view.infiniteScrollEnabled && !!paginationInfo.totalItems && paginationInfo.totalPages > 1;
+  if (!actions.length && !hasPagination) {
+    return null;
+  }
   return /* @__PURE__ */ jsxs(
     dataviews_picker_footer_Stack,
     {
@@ -32973,38 +33738,9 @@ function DataViewsPickerFooter() {
       className: "dataviews-footer",
       gap: "sm",
       children: [
-        /* @__PURE__ */ jsxs(
-          dataviews_picker_footer_Stack,
-          {
-            direction: "row",
-            className: "dataviews-picker-footer__bulk-selection",
-            gap: "md",
-            align: "center",
-            children: [
-              isMultiselect && /* @__PURE__ */ dataviews_picker_footer_jsx(
-                dataviews_picker_footer_BulkSelectionCheckbox,
-                {
-                  selection,
-                  selectedItems,
-                  onChangeSelection,
-                  data,
-                  getItemId,
-                  disableSelectAll: !!view.infiniteScrollEnabled
-                }
-              ),
-              /* @__PURE__ */ dataviews_picker_footer_jsx("span", { className: "dataviews-bulk-actions-footer__item-count", children: message })
-            ]
-          }
-        ),
+        /* @__PURE__ */ dataviews_picker_footer_jsx(PickerBulkSelectionInfo, {}),
         /* @__PURE__ */ dataviews_picker_footer_jsx(DataViewsPagination, {}),
-        Boolean(actions?.length) && /* @__PURE__ */ dataviews_picker_footer_jsx("div", { className: "dataviews-picker-footer__actions", children: /* @__PURE__ */ dataviews_picker_footer_jsx(
-          ActionButtons,
-          {
-            actions,
-            items: selectedItems,
-            selection
-          }
-        ) })
+        /* @__PURE__ */ dataviews_picker_footer_jsx(PickerActions, {})
       ]
     }
   );
@@ -34148,7 +34884,6 @@ function DensityPicker() {
   return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)(
     external_wp_components_.__experimentalToggleGroupControl,
     {
-      size: "__unstable-large",
       label: (0,external_wp_i18n_.__)("Density"),
       value: view.layout?.density || "balanced",
       onChange: (value) => {
@@ -34248,7 +34983,6 @@ function preview_size_picker_PreviewSizePicker() {
   return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
     external_wp_components_.RangeControl,
     {
-      __next40pxDefaultSize: true,
       showTooltip: false,
       label: (0,external_wp_i18n_.__)("Preview size"),
       value: previewSizeToUse,
@@ -34582,781 +35316,6 @@ function reverseArray(array) {
 	return array.slice().reverse();
 }
 //#endregion
-//#region src/dom.ts
-/**
-* It's `true` if it is running in a browser environment or `false` if it is not
-* (SSR).
-* @example
-* const title = canUseDOM ? document.title : "";
-*/
-const canUseDOM = checkIsBrowser();
-function checkIsBrowser() {
-	return typeof window !== "undefined" && !!window.document?.createElement;
-}
-/**
-* Returns `element.ownerDocument || document`.
-*/
-function getDocument(node) {
-	if (!node) return document;
-	if ("self" in node) return node.document;
-	return node.ownerDocument || document;
-}
-/**
-* Returns `element.ownerDocument.defaultView || window`.
-*/
-function dist_getWindow(node) {
-	if (!node) return self;
-	if ("self" in node) return node.self;
-	return getDocument(node).defaultView || window;
-}
-/**
-* Returns `element.ownerDocument.activeElement`.
-*/
-function getActiveElement(node, activeDescendant = false) {
-	const { activeElement } = getDocument(node);
-	if (!activeElement?.nodeName) return null;
-	if (isFrame(activeElement) && activeElement.contentDocument?.body) return getActiveElement(activeElement.contentDocument.body, activeDescendant);
-	if (activeDescendant) {
-		const id = activeElement.getAttribute("aria-activedescendant");
-		if (id) {
-			const element = getDocument(activeElement).getElementById(id);
-			if (element) return element;
-		}
-	}
-	return activeElement;
-}
-/**
-* Similar to `Element.prototype.contains`, but a little bit faster when
-* `element` is the same as `child`.
-* @example
-* contains(
-*   document.getElementById("parent"),
-*   document.getElementById("child")
-* );
-*/
-function dist_contains(parent, child) {
-	return parent === child || parent.contains(child);
-}
-/**
-* Checks whether the given event target is an element.
-*
-* `event.target` and `event.relatedTarget` are `EventTarget`s, which aren't
-* necessarily elements — for example `window` or an `XMLHttpRequest` when an
-* event is dispatched programmatically. Calling `Element`-only methods such as
-* `hasAttribute` on those throws, so guard with this before treating them as
-* elements. When you only need a `Node` — for example to call `contains` — use
-* `isNode` instead.
-*
-* It tests `nodeType` rather than `instanceof Element` so that elements coming
-* from same-origin child frames (which `addGlobalEventListener` also listens
-* on) aren't wrongly rejected for belonging to a different realm.
-* @example
-* if (isElement(event.target)) {
-*   event.target.hasAttribute("data-active");
-* }
-*/
-function dist_isElement(target) {
-	return target?.nodeType === 1;
-}
-/**
-* Checks whether the given event target is a node.
-*
-* Like `isElement`, but only requires the target to be a `Node` rather than an
-* element — useful before calling `contains`, which accepts any node. It still
-* rejects non-node `EventTarget`s (such as `window` or an `XMLHttpRequest`)
-* that would make `contains` throw.
-* @example
-* if (isNode(event.target)) {
-*   contains(element, event.target);
-* }
-*/
-function dist_isNode(target) {
-	return typeof target?.nodeType === "number";
-}
-/**
-* Checks whether `element` is a frame element.
-*/
-function isFrame(element) {
-	return element.tagName === "IFRAME";
-}
-/**
-* Checks whether `element` is a native HTML button element.
-* @example
-* isButton(document.querySelector("button")); // true
-* isButton(document.querySelector("input[type='button']")); // true
-* isButton(document.querySelector("div")); // false
-* isButton(document.querySelector("input[type='text']")); // false
-* isButton(document.querySelector("div[role='button']")); // false
-*/
-function isButton(element) {
-	const tagName = element.tagName.toLowerCase();
-	if (tagName === "button") return true;
-	if (tagName === "input" && element.type) return buttonInputTypes.indexOf(element.type) !== -1;
-	return false;
-}
-const buttonInputTypes = [
-	"button",
-	"color",
-	"file",
-	"image",
-	"reset",
-	"submit"
-];
-/**
-* Checks if the element is visible or not.
-*/
-function isVisible(element) {
-	if (typeof element.checkVisibility === "function") return element.checkVisibility();
-	const htmlElement = element;
-	return htmlElement.offsetWidth > 0 || htmlElement.offsetHeight > 0 || element.getClientRects().length > 0;
-}
-/**
-* Check whether the given element is a text field, where text field is defined
-* by the ability to select within the input.
-* @example
-* isTextField(document.querySelector("div")); // false
-* isTextField(document.querySelector("input")); // true
-* isTextField(document.querySelector("input[type='button']")); // false
-* isTextField(document.querySelector("textarea")); // true
-*/
-function isTextField(element) {
-	try {
-		const isTextInput = element instanceof HTMLInputElement && element.selectionStart !== null;
-		const isTextArea = element.tagName === "TEXTAREA";
-		return isTextInput || isTextArea || false;
-	} catch (_error) {
-		return false;
-	}
-}
-/**
-* Check whether the given element is a text field or a content editable
-* element.
-*/
-function isTextbox(element) {
-	return element.isContentEditable || isTextField(element);
-}
-/**
-* Returns the value of the text field or content editable element as a string.
-*/
-function getTextboxValue(element) {
-	if (isTextField(element)) return element.value;
-	if (element.isContentEditable) {
-		const range = getDocument(element).createRange();
-		range.selectNodeContents(element);
-		return range.toString();
-	}
-	return "";
-}
-/**
-* Returns the start and end offsets of the selection in the element.
-*/
-function getTextboxSelection(element) {
-	let start = 0;
-	let end = 0;
-	if (isTextField(element)) {
-		start = element.selectionStart || 0;
-		end = element.selectionEnd || 0;
-	} else if (element.isContentEditable) {
-		const selection = getDocument(element).getSelection();
-		if (selection?.rangeCount && selection.anchorNode && dist_contains(element, selection.anchorNode) && selection.focusNode && dist_contains(element, selection.focusNode)) {
-			const range = selection.getRangeAt(0);
-			const nextRange = range.cloneRange();
-			nextRange.selectNodeContents(element);
-			nextRange.setEnd(range.startContainer, range.startOffset);
-			start = nextRange.toString().length;
-			nextRange.setEnd(range.endContainer, range.endOffset);
-			end = nextRange.toString().length;
-		}
-	}
-	return {
-		start,
-		end
-	};
-}
-/**
-* Returns the popup role from the element's role attribute, if it has one.
-*/
-function getPopupRole(element, fallback) {
-	const allowedPopupRoles = [
-		"dialog",
-		"menu",
-		"listbox",
-		"tree",
-		"grid"
-	];
-	const role = element?.getAttribute("role");
-	if (role && allowedPopupRoles.indexOf(role) !== -1) return role;
-	return fallback;
-}
-/**
-* Returns the item role attribute based on the popup's role.
-*/
-function getPopupItemRole(element, fallback) {
-	const itemRoleByPopupRole = {
-		menu: "menuitem",
-		listbox: "option",
-		tree: "treeitem"
-	};
-	const popupRole = getPopupRole(element);
-	if (!popupRole) return fallback;
-	return itemRoleByPopupRole[popupRole] ?? fallback;
-}
-/**
-* Calls `element.scrollIntoView()` if the element is hidden or partly hidden in
-* the viewport.
-*/
-function scrollIntoViewIfNeeded(element, arg) {
-	if (isPartiallyHidden(element) && "scrollIntoView" in element) element.scrollIntoView(arg);
-}
-/**
-* Returns the scrolling container element of a given element.
-*/
-function getScrollingElement(element) {
-	if (!element) return null;
-	const isScrollableOverflow = (overflow) => {
-		if (overflow === "auto") return true;
-		if (overflow === "scroll") return true;
-		return false;
-	};
-	if (element.clientHeight && element.scrollHeight > element.clientHeight) {
-		const { overflowY } = getComputedStyle(element);
-		if (isScrollableOverflow(overflowY)) return element;
-	} else if (element.clientWidth && element.scrollWidth > element.clientWidth) {
-		const { overflowX } = getComputedStyle(element);
-		if (isScrollableOverflow(overflowX)) return element;
-	}
-	return getScrollingElement(element.parentElement) || document.scrollingElement || document.body;
-}
-/**
-* Determines whether an element is hidden or partially hidden in the viewport.
-*/
-function isPartiallyHidden(element) {
-	const elementRect = element.getBoundingClientRect();
-	const scroller = getScrollingElement(element);
-	if (!scroller) return false;
-	const scrollerRect = scroller.getBoundingClientRect();
-	const isHTML = scroller.tagName === "HTML";
-	const scrollerTop = isHTML ? scrollerRect.top + scroller.scrollTop : scrollerRect.top;
-	const scrollerBottom = isHTML ? scroller.clientHeight : scrollerRect.bottom;
-	const scrollerLeft = isHTML ? scrollerRect.left + scroller.scrollLeft : scrollerRect.left;
-	const scrollerRight = isHTML ? scroller.clientWidth : scrollerRect.right;
-	const top = elementRect.top < scrollerTop;
-	const left = elementRect.left < scrollerLeft;
-	const bottom = elementRect.bottom > scrollerBottom;
-	const right = elementRect.right > scrollerRight;
-	return top || left || bottom || right;
-}
-/**
-* SelectionRange only works on a few types of input. Calling
-* `setSelectionRange` on an unsupported input type may throw an error on
-* certain browsers. To avoid it, we check if its type supports SelectionRange
-* first. It will be a noop to non-supported types until we find a workaround.
-*
-* @see
-* https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/setSelectionRange
-*/
-function setSelectionRange(element, ...args) {
-	if (/text|search|password|tel|url/i.test(element.type)) element.setSelectionRange(...args);
-}
-/**
-* Sort the items based on their DOM position.
-*/
-function sortBasedOnDOMPosition(items, getElement) {
-	const pairs = items.map((item, index) => [index, item]);
-	let isOrderDifferent = false;
-	pairs.sort(([indexA, a], [indexB, b]) => {
-		const elementA = getElement(a);
-		const elementB = getElement(b);
-		if (elementA === elementB) return 0;
-		if (!elementA || !elementB) return 0;
-		if (isElementPreceding(elementA, elementB)) {
-			if (indexA > indexB) isOrderDifferent = true;
-			return -1;
-		}
-		if (indexA < indexB) isOrderDifferent = true;
-		return 1;
-	});
-	if (isOrderDifferent) return pairs.map(([_, item]) => item);
-	return items;
-}
-function isElementPreceding(a, b) {
-	return Boolean(b.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_PRECEDING);
-}
-//#endregion
-//#region src/platform.ts
-/**
-* Browser and platform detection helpers.
-* @module Platform utilities
-*/
-/**
-* Detects if the device has touch capabilities.
-*/
-function isTouchDevice() {
-	return canUseDOM && !!navigator.maxTouchPoints;
-}
-/**
-* Detects Apple device.
-*/
-function isApple() {
-	if (!canUseDOM) return false;
-	return /mac|iphone|ipad|ipod/i.test(navigator.platform);
-}
-/**
-* Detects Safari browser.
-*/
-function dist_isSafari() {
-	return canUseDOM && isApple() && /apple/i.test(navigator.vendor);
-}
-/**
-* Detects Firefox browser.
-*/
-function dist_isFirefox() {
-	return canUseDOM && /firefox\//i.test(navigator.userAgent);
-}
-/**
-* Detects Mac computer.
-*/
-function dist_isMac() {
-	return canUseDOM && navigator.platform.startsWith("Mac") && !isTouchDevice();
-}
-//#endregion
-//#region src/events.ts
-/**
-* Event helpers for dispatching and interpreting browser events.
-* @module Event utilities
-*/
-/**
-* Returns `true` if `event` has been fired within a React Portal element.
-*/
-function isPortalEvent(event) {
-	const { currentTarget, target } = event;
-	if (!currentTarget) return false;
-	if (!dist_isNode(target)) return true;
-	return !dist_contains(currentTarget, target);
-}
-/**
-* Returns `true` if `event.target` and `event.currentTarget` are the same.
-*/
-function isSelfTarget(event) {
-	return event.target === event.currentTarget;
-}
-/**
-* Checks whether the user event is triggering a page navigation in a new tab.
-*/
-function isOpeningInNewTab(event) {
-	const element = event.currentTarget;
-	if (!element) return false;
-	const isAppleDevice = isApple();
-	if (isAppleDevice && !event.metaKey) return false;
-	if (!isAppleDevice && !event.ctrlKey) return false;
-	const tagName = element.tagName.toLowerCase();
-	if (tagName === "a") return true;
-	if (tagName === "button" && element.type === "submit") return true;
-	if (tagName === "input" && element.type === "submit") return true;
-	return false;
-}
-/**
-* Checks whether the user event is triggering a download.
-*/
-function isDownloading(event) {
-	const element = event.currentTarget;
-	if (!element) return false;
-	const tagName = element.tagName.toLowerCase();
-	if (!event.altKey) return false;
-	if (tagName === "a") return true;
-	if (tagName === "button" && element.type === "submit") return true;
-	if (tagName === "input" && element.type === "submit") return true;
-	return false;
-}
-/**
-* Creates and dispatches an event.
-* @example
-* fireEvent(document.getElementById("id"), "blur", {
-*   bubbles: true,
-*   cancelable: true,
-* });
-*/
-function fireEvent(element, type, eventInit) {
-	const event = new Event(type, eventInit);
-	return element.dispatchEvent(event);
-}
-/**
-* Creates and dispatches a blur event.
-* @example
-* fireBlurEvent(document.getElementById("id"));
-*/
-function fireBlurEvent(element, eventInit) {
-	const event = new FocusEvent("blur", eventInit);
-	const defaultAllowed = element.dispatchEvent(event);
-	const bubbleInit = {
-		...eventInit,
-		bubbles: true
-	};
-	element.dispatchEvent(new FocusEvent("focusout", bubbleInit));
-	return defaultAllowed;
-}
-/**
-* Creates and dispatches a focus event.
-* @example
-* fireFocusEvent(document.getElementById("id"));
-*/
-function fireFocusEvent(element, eventInit) {
-	const event = new FocusEvent("focus", eventInit);
-	const defaultAllowed = element.dispatchEvent(event);
-	const bubbleInit = {
-		...eventInit,
-		bubbles: true
-	};
-	element.dispatchEvent(new FocusEvent("focusin", bubbleInit));
-	return defaultAllowed;
-}
-/**
-* Creates and dispatches a keyboard event.
-* @example
-* fireKeyboardEvent(document.getElementById("id"), "keydown", {
-*   key: "ArrowDown",
-*   shiftKey: true,
-* });
-*/
-function fireKeyboardEvent(element, type, eventInit) {
-	const event = new KeyboardEvent(type, eventInit);
-	return element.dispatchEvent(event);
-}
-/**
-* Creates and dispatches a click event.
-* @example
-* fireClickEvent(document.getElementById("id"));
-*/
-function fireClickEvent(element, eventInit) {
-	const event = new MouseEvent("click", eventInit);
-	return element.dispatchEvent(event);
-}
-/**
-* Checks whether the focus/blur event is happening from/to outside of the
-* container element.
-* @example
-* const element = document.getElementById("id");
-* element.addEventListener("blur", (event) => {
-*   if (isFocusEventOutside(event)) {
-*     // ...
-*   }
-* });
-*/
-function isFocusEventOutside(event, container) {
-	const containerElement = container || event.currentTarget;
-	const relatedTarget = event.relatedTarget;
-	return !dist_isNode(relatedTarget) || !dist_contains(containerElement, relatedTarget);
-}
-/**
-* Returns the `inputType` property of the event, if available.
-*/
-function getInputType(event) {
-	const nativeEvent = "nativeEvent" in event ? event.nativeEvent : event;
-	if (!nativeEvent) return;
-	if (!("inputType" in nativeEvent)) return;
-	if (typeof nativeEvent.inputType !== "string") return;
-	return nativeEvent.inputType;
-}
-/**
-* Runs a callback on the next animation frame, but before a certain event.
-*/
-function queueBeforeEvent(element, type, callback, timeout) {
-	const createTimer = (callback) => {
-		if (timeout) {
-			const timerId = setTimeout(callback, timeout);
-			return () => clearTimeout(timerId);
-		}
-		const timerId = requestAnimationFrame(callback);
-		return () => cancelAnimationFrame(timerId);
-	};
-	const cancelTimer = createTimer(() => {
-		element.removeEventListener(type, callSync, true);
-		callback();
-	});
-	const callSync = () => {
-		cancelTimer();
-		callback();
-	};
-	element.addEventListener(type, callSync, {
-		once: true,
-		capture: true
-	});
-	return cancelTimer;
-}
-/**
-* Adds a global event listener, including on child frames.
-*/
-function addGlobalEventListener(type, listener, options, scope = window) {
-	const children = [];
-	try {
-		scope.document.addEventListener(type, listener, options);
-		for (const frame of Array.from(scope.frames)) children.push(addGlobalEventListener(type, listener, options, frame));
-	} catch {}
-	const removeEventListener = () => {
-		try {
-			scope.document.removeEventListener(type, listener, options);
-		} catch {}
-		for (const remove of children) remove();
-	};
-	return removeEventListener;
-}
-//#endregion
-//#region src/focus.ts
-/**
-* Focus management helpers for focusable and tabbable elements.
-* @module Focus utilities
-*/
-const selector = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], summary, iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false'])";
-function hasNegativeTabIndex(element) {
-	return Number.parseInt(element.getAttribute("tabindex") || "0", 10) < 0;
-}
-/**
-* Checks whether `element` is focusable or not.
-* @example
-* isFocusable(document.querySelector("input")); // true
-* isFocusable(document.querySelector("input[tabindex='-1']")); // true
-* isFocusable(document.querySelector("input[hidden]")); // false
-* isFocusable(document.querySelector("input:disabled")); // false
-*/
-function isFocusable(element) {
-	if (!element.matches(selector)) return false;
-	if (!isVisible(element)) return false;
-	if (element.closest("[inert]")) return false;
-	return true;
-}
-/**
-* Checks whether `element` is tabbable or not.
-* @example
-* isTabbable(document.querySelector("input")); // true
-* isTabbable(document.querySelector("input[tabindex='-1']")); // false
-* isTabbable(document.querySelector("input[hidden]")); // false
-* isTabbable(document.querySelector("input:disabled")); // false
-*/
-function isTabbable(element) {
-	if (!isFocusable(element)) return false;
-	if (hasNegativeTabIndex(element)) return false;
-	if (!("form" in element)) return true;
-	if (!element.form) return true;
-	if (element.checked) return true;
-	if (element.type !== "radio") return true;
-	const radioGroup = element.form.elements.namedItem(element.name);
-	if (!radioGroup) return true;
-	if (!("length" in radioGroup)) return true;
-	const activeElement = getActiveElement(element);
-	if (!activeElement) return true;
-	if (activeElement === element) return true;
-	if (!("form" in activeElement)) return true;
-	if (activeElement.form !== element.form) return true;
-	if (activeElement.name !== element.name) return true;
-	return false;
-}
-/**
-* Returns all the focusable elements in `container`.
-*/
-function getAllFocusableIn(container, includeContainer) {
-	const elements = Array.from(container.querySelectorAll(selector));
-	if (includeContainer) elements.unshift(container);
-	const focusableElements = elements.filter(isFocusable);
-	focusableElements.forEach((element, i) => {
-		if (!isFrame(element)) return;
-		const frameBody = element.contentDocument?.body;
-		if (!frameBody) return;
-		focusableElements.splice(i, 1, ...getAllFocusableIn(frameBody));
-	});
-	return focusableElements;
-}
-/**
-* Returns all the focusable elements in the document.
-*/
-function getAllFocusable(includeBody) {
-	return getAllFocusableIn(document.body, includeBody);
-}
-/**
-* Returns the first focusable element in `container`.
-*/
-function getFirstFocusableIn(container, includeContainer) {
-	const [first] = getAllFocusableIn(container, includeContainer);
-	return first || null;
-}
-/**
-* Returns the first focusable element in the document.
-*/
-function getFirstFocusable(includeBody) {
-	return getFirstFocusableIn(document.body, includeBody);
-}
-/**
-* Returns all the tabbable elements in `container`, including the container
-* itself.
-*/
-function getAllTabbableIn(container, includeContainer, fallbackToFocusable) {
-	const elements = Array.from(container.querySelectorAll(selector));
-	const tabbableElements = elements.filter(isTabbable);
-	if (includeContainer && isTabbable(container)) tabbableElements.unshift(container);
-	tabbableElements.forEach((element, i) => {
-		if (!isFrame(element)) return;
-		const frameBody = element.contentDocument?.body;
-		if (!frameBody) return;
-		const allFrameTabbable = getAllTabbableIn(frameBody, false, fallbackToFocusable);
-		tabbableElements.splice(i, 1, ...allFrameTabbable);
-	});
-	if (!tabbableElements.length && fallbackToFocusable) return elements;
-	return tabbableElements;
-}
-/**
-* Returns all the tabbable elements in the document.
-*/
-function getAllTabbable(fallbackToFocusable) {
-	return getAllTabbableIn(document.body, false, fallbackToFocusable);
-}
-/**
-* Returns the first tabbable element in `container`, including the container
-* itself if it's tabbable.
-*/
-function getFirstTabbableIn(container, includeContainer, fallbackToFocusable) {
-	const [first] = getAllTabbableIn(container, includeContainer, fallbackToFocusable);
-	return first || null;
-}
-/**
-* Returns the first tabbable element in the document.
-*/
-function getFirstTabbable(fallbackToFocusable) {
-	return getFirstTabbableIn(document.body, false, fallbackToFocusable);
-}
-/**
-* Returns the last tabbable element in `container`, including the container
-* itself if it's tabbable.
-*/
-function getLastTabbableIn(container, includeContainer, fallbackToFocusable) {
-	const allTabbable = getAllTabbableIn(container, includeContainer, fallbackToFocusable);
-	return allTabbable[allTabbable.length - 1] || null;
-}
-/**
-* Returns the last tabbable element in the document.
-*/
-function getLastTabbable(fallbackToFocusable) {
-	return getLastTabbableIn(document.body, false, fallbackToFocusable);
-}
-/**
-* Returns the next tabbable element in `container`.
-*/
-function getNextTabbableIn(container, includeContainer, fallbackToFirst, fallbackToFocusable) {
-	const activeElement = getActiveElement(container);
-	const allFocusable = getAllFocusableIn(container, includeContainer);
-	const activeIndex = allFocusable.indexOf(activeElement);
-	const nextFocusableElements = allFocusable.slice(activeIndex + 1);
-	return nextFocusableElements.find(isTabbable) || (fallbackToFirst ? allFocusable.find(isTabbable) : null) || (fallbackToFocusable ? nextFocusableElements[0] : null) || null;
-}
-/**
-* Returns the next tabbable element in the document.
-*/
-function dist_getNextTabbable(fallbackToFirst, fallbackToFocusable) {
-	return getNextTabbableIn(document.body, false, fallbackToFirst, fallbackToFocusable);
-}
-/**
-* Returns the previous tabbable element in `container`.
-*
-*/
-function getPreviousTabbableIn(container, includeContainer, fallbackToLast, fallbackToFocusable) {
-	const activeElement = getActiveElement(container);
-	const allFocusable = getAllFocusableIn(container, includeContainer).reverse();
-	const activeIndex = allFocusable.indexOf(activeElement);
-	const previousFocusableElements = allFocusable.slice(activeIndex + 1);
-	return previousFocusableElements.find(isTabbable) || (fallbackToLast ? allFocusable.find(isTabbable) : null) || (fallbackToFocusable ? previousFocusableElements[0] : null) || null;
-}
-/**
-* Returns the previous tabbable element in the document.
-*/
-function dist_getPreviousTabbable(fallbackToFirst, fallbackToFocusable) {
-	return getPreviousTabbableIn(document.body, false, fallbackToFirst, fallbackToFocusable);
-}
-/**
-* Returns the closest focusable element.
-*/
-function getClosestFocusable(element) {
-	while (element && !isFocusable(element)) element = element.closest(selector);
-	return element || null;
-}
-/**
-* Checks if `element` has focus. Elements that are referenced by
-* `aria-activedescendant` are also considered.
-* @example
-* hasFocus(document.getElementById("id"));
-*/
-function hasFocus(element) {
-	const activeElement = getActiveElement(element);
-	if (!activeElement) return false;
-	if (activeElement === element) return true;
-	const activeDescendant = activeElement.getAttribute("aria-activedescendant");
-	if (!activeDescendant) return false;
-	return activeDescendant === element.id;
-}
-/**
-* Checks if `element` has focus within. Elements that are referenced by
-* `aria-activedescendant` are also considered.
-* @example
-* hasFocusWithin(document.getElementById("id"));
-*/
-function hasFocusWithin(element) {
-	const activeElement = getActiveElement(element);
-	if (!activeElement) return false;
-	if (dist_contains(element, activeElement)) return true;
-	const activeDescendant = activeElement.getAttribute("aria-activedescendant");
-	if (!activeDescendant) return false;
-	if (!("id" in element)) return false;
-	if (activeDescendant === element.id) return true;
-	return !!element.querySelector(`#${CSS.escape(activeDescendant)}`);
-}
-/**
-* Focus on an element only if it's not already focused.
-*/
-function focusIfNeeded(element) {
-	if (!hasFocusWithin(element) && isFocusable(element)) element.focus();
-}
-/**
-* Disable focus on `element`.
-*/
-function disableFocus(element) {
-	const currentTabindex = element.getAttribute("tabindex") ?? "";
-	element.setAttribute("data-tabindex", currentTabindex);
-	element.setAttribute("tabindex", "-1");
-}
-/**
-* Makes elements inside container not tabbable.
-*/
-function disableFocusIn(container, includeContainer) {
-	const tabbableElements = getAllTabbableIn(container, includeContainer);
-	for (const element of tabbableElements) disableFocus(element);
-}
-/**
-* Restores tabbable elements inside container that were affected by
-* disableFocusIn.
-*/
-function restoreFocusIn(container) {
-	const elements = container.querySelectorAll("[data-tabindex]");
-	const restoreTabIndex = (element) => {
-		const tabindex = element.getAttribute("data-tabindex");
-		element.removeAttribute("data-tabindex");
-		if (tabindex) element.setAttribute("tabindex", tabindex);
-		else element.removeAttribute("tabindex");
-	};
-	if (container.hasAttribute("data-tabindex")) restoreTabIndex(container);
-	for (const element of elements) restoreTabIndex(element);
-}
-/**
-* Focus on element and scroll into view.
-*/
-function focusIntoView(element, options) {
-	if (!("scrollIntoView" in element)) element.focus();
-	else {
-		element.focus({ preventScroll: true });
-		element.scrollIntoView({
-			block: "nearest",
-			inline: "nearest",
-			...options
-		});
-	}
-}
-//#endregion
 //#region src/misc.ts
 /**
 * Empty function.
@@ -35562,6 +35521,829 @@ function defaultValue(...values) {
 	for (const value of values) if (value !== void 0) return value;
 }
 //#endregion
+//#region src/dom.ts
+/**
+* DOM helpers for browser, iframe, text input, popup, and scrolling behavior.
+* @module DOM utilities
+*/
+/**
+* It's `true` if it is running in a browser environment or `false` if it is not
+* (SSR).
+* @example
+* const title = canUseDOM ? document.title : "";
+*/
+const canUseDOM = checkIsBrowser();
+function checkIsBrowser() {
+	return typeof window !== "undefined" && !!window.document?.createElement;
+}
+/**
+* Returns `element.ownerDocument || document`.
+*/
+function getDocument(node) {
+	if (!node) return document;
+	if ("self" in node) return node.document;
+	return node.ownerDocument || document;
+}
+/**
+* Returns `element.ownerDocument.defaultView || window`.
+*/
+function dist_getWindow(node) {
+	if (!node) return self;
+	if ("self" in node) return node.self;
+	return getDocument(node).defaultView || window;
+}
+/**
+* Returns `element.ownerDocument.activeElement`.
+*/
+function getActiveElement(node, activeDescendant = false) {
+	const { activeElement } = getDocument(node);
+	if (!activeElement?.nodeName) return null;
+	if (isFrame(activeElement) && activeElement.contentDocument?.body) return getActiveElement(activeElement.contentDocument.body, activeDescendant);
+	if (activeDescendant) {
+		const id = activeElement.getAttribute("aria-activedescendant");
+		if (id) {
+			const element = getDocument(activeElement).getElementById(id);
+			if (element) return element;
+		}
+	}
+	return activeElement;
+}
+/**
+* Similar to `Element.prototype.contains`, but a little bit faster when
+* `element` is the same as `child`.
+* @example
+* contains(
+*   document.getElementById("parent"),
+*   document.getElementById("child")
+* );
+*/
+function dist_contains(parent, child) {
+	return parent === child || parent.contains(child);
+}
+/**
+* Checks whether the given event target is an element.
+*
+* `event.target` and `event.relatedTarget` are `EventTarget`s, which aren't
+* necessarily elements — for example `window` or an `XMLHttpRequest` when an
+* event is dispatched programmatically. Calling `Element`-only methods such as
+* `hasAttribute` on those throws, so guard with this before treating them as
+* elements. When you only need a `Node` — for example to call `contains` — use
+* `isNode` instead.
+*
+* It tests `nodeType` rather than `instanceof Element` so that elements coming
+* from same-origin child frames (which `addGlobalEventListener` also listens
+* on) aren't wrongly rejected for belonging to a different realm.
+* @example
+* if (isElement(event.target)) {
+*   event.target.hasAttribute("data-active");
+* }
+*/
+function dist_isElement(target) {
+	return target?.nodeType === 1;
+}
+/**
+* Checks whether the given event target is a node.
+*
+* Like `isElement`, but only requires the target to be a `Node` rather than an
+* element — useful before calling `contains`, which accepts any node. It still
+* rejects non-node `EventTarget`s (such as `window` or an `XMLHttpRequest`)
+* that would make `contains` throw.
+* @example
+* if (isNode(event.target)) {
+*   contains(element, event.target);
+* }
+*/
+function dist_isNode(target) {
+	return typeof target?.nodeType === "number";
+}
+/**
+* Checks whether `element` is a frame element.
+*/
+function isFrame(element) {
+	return element.tagName === "IFRAME";
+}
+/**
+* Checks whether `element` is a native HTML button element.
+* @example
+* isButton(document.querySelector("button")); // true
+* isButton(document.querySelector("input[type='button']")); // true
+* isButton(document.querySelector("div")); // false
+* isButton(document.querySelector("input[type='text']")); // false
+* isButton(document.querySelector("div[role='button']")); // false
+*/
+function isButton(element) {
+	const tagName = element.tagName.toLowerCase();
+	if (tagName === "button") return true;
+	if (tagName === "input" && element.type) return buttonInputTypes.indexOf(element.type) !== -1;
+	return false;
+}
+const buttonInputTypes = [
+	"button",
+	"color",
+	"file",
+	"image",
+	"reset",
+	"submit"
+];
+/**
+* Checks if the element is visible or not.
+*/
+function isVisible(element) {
+	if (typeof element.checkVisibility === "function") return element.checkVisibility();
+	const htmlElement = element;
+	return htmlElement.offsetWidth > 0 || htmlElement.offsetHeight > 0 || element.getClientRects().length > 0;
+}
+/**
+* Check whether the given element is a text field, where text field is defined
+* by the ability to select within the input.
+* @example
+* isTextField(document.querySelector("div")); // false
+* isTextField(document.querySelector("input")); // true
+* isTextField(document.querySelector("input[type='button']")); // false
+* isTextField(document.querySelector("textarea")); // true
+*/
+function isTextField(element) {
+	try {
+		if (element.tagName === "TEXTAREA") return true;
+		if (element.tagName !== "INPUT") return false;
+		return element.selectionStart !== null;
+	} catch (_error) {
+		return false;
+	}
+}
+/**
+* Check whether the given element is a text field or a content editable
+* element.
+*/
+function isTextbox(element) {
+	return element.isContentEditable || isTextField(element);
+}
+/**
+* Returns the value of the text field or content editable element as a string.
+*/
+function getTextboxValue(element) {
+	if (isTextField(element)) return element.value;
+	if (element.isContentEditable) {
+		const range = getDocument(element).createRange();
+		range.selectNodeContents(element);
+		return range.toString();
+	}
+	return "";
+}
+/**
+* Returns the start and end offsets of the selection in the element.
+*/
+function getTextboxSelection(element) {
+	let start = 0;
+	let end = 0;
+	if (isTextField(element)) {
+		start = element.selectionStart || 0;
+		end = element.selectionEnd || 0;
+	} else if (element.isContentEditable) {
+		const selection = getDocument(element).getSelection();
+		if (selection?.rangeCount && selection.anchorNode && dist_contains(element, selection.anchorNode) && selection.focusNode && dist_contains(element, selection.focusNode)) {
+			const range = selection.getRangeAt(0);
+			const nextRange = range.cloneRange();
+			nextRange.selectNodeContents(element);
+			nextRange.setEnd(range.startContainer, range.startOffset);
+			start = nextRange.toString().length;
+			nextRange.setEnd(range.endContainer, range.endOffset);
+			end = nextRange.toString().length;
+		}
+	}
+	return {
+		start,
+		end
+	};
+}
+const allowedPopupRoles = [
+	"dialog",
+	"menu",
+	"listbox",
+	"tree",
+	"grid"
+];
+const itemRoleByPopupRole = {
+	menu: "menuitem",
+	listbox: "option",
+	tree: "treeitem"
+};
+/**
+* Returns the popup role from the element's role attribute, if it has one.
+*/
+function getPopupRole(element, fallback) {
+	const role = element?.getAttribute("role");
+	if (role && allowedPopupRoles.indexOf(role) !== -1) return role;
+	return fallback;
+}
+/**
+* Returns the item role based on the popup role.
+*/
+function getItemRoleByPopupRole(popupRole) {
+	if (popupRole == null) return;
+	if (!dist_hasOwnProperty(itemRoleByPopupRole, popupRole)) return;
+	return itemRoleByPopupRole[popupRole];
+}
+/**
+* Returns the item role attribute based on the popup's role.
+*/
+function getPopupItemRole(element, fallback) {
+	const popupRole = getPopupRole(element);
+	if (typeof popupRole !== "string") return fallback;
+	return getItemRoleByPopupRole(popupRole) ?? fallback;
+}
+/**
+* Calls `element.scrollIntoView()` if the element is hidden or partly hidden in
+* the viewport.
+*/
+function scrollIntoViewIfNeeded(element, arg) {
+	if (isPartiallyHidden(element) && "scrollIntoView" in element) element.scrollIntoView(arg);
+}
+/**
+* Returns the scrolling container element of a given element.
+*/
+function getScrollingElement(element) {
+	if (!element) return null;
+	const isScrollableOverflow = (overflow) => {
+		if (overflow === "auto") return true;
+		if (overflow === "scroll") return true;
+		return false;
+	};
+	if (element.clientHeight && element.scrollHeight > element.clientHeight) {
+		const { overflowY } = getComputedStyle(element);
+		if (isScrollableOverflow(overflowY)) return element;
+	} else if (element.clientWidth && element.scrollWidth > element.clientWidth) {
+		const { overflowX } = getComputedStyle(element);
+		if (isScrollableOverflow(overflowX)) return element;
+	}
+	const doc = getDocument(element);
+	return getScrollingElement(element.parentElement) || doc.scrollingElement || doc.body;
+}
+/**
+* Determines whether an element is hidden or partially hidden in the viewport.
+*/
+function isPartiallyHidden(element) {
+	const elementRect = element.getBoundingClientRect();
+	const scroller = getScrollingElement(element);
+	if (!scroller) return false;
+	const scrollerRect = scroller.getBoundingClientRect();
+	const isHTML = scroller.tagName === "HTML";
+	const scrollerTop = isHTML ? scrollerRect.top + scroller.scrollTop : scrollerRect.top;
+	const scrollerBottom = isHTML ? scroller.clientHeight : scrollerRect.bottom;
+	const scrollerLeft = isHTML ? scrollerRect.left + scroller.scrollLeft : scrollerRect.left;
+	const scrollerRight = isHTML ? scroller.clientWidth : scrollerRect.right;
+	const top = elementRect.top < scrollerTop;
+	const left = elementRect.left < scrollerLeft;
+	const bottom = elementRect.bottom > scrollerBottom;
+	const right = elementRect.right > scrollerRight;
+	return top || left || bottom || right;
+}
+/**
+* SelectionRange only works on a few types of input. Calling
+* `setSelectionRange` on an unsupported input type may throw an error on
+* certain browsers. To avoid it, we check if its type supports SelectionRange
+* first. It will be a noop to non-supported types until we find a workaround.
+*
+* @see
+* https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/setSelectionRange
+*/
+function setSelectionRange(element, ...args) {
+	if (/text|search|password|tel|url/i.test(element.type)) element.setSelectionRange(...args);
+}
+/**
+* Sort the items based on their DOM position.
+*/
+function sortBasedOnDOMPosition(items, getElement) {
+	const pairs = items.map((item, index) => [index, item]);
+	let isOrderDifferent = false;
+	pairs.sort(([indexA, a], [indexB, b]) => {
+		const elementA = getElement(a);
+		const elementB = getElement(b);
+		if (elementA === elementB) return 0;
+		if (!elementA || !elementB) return 0;
+		if (isElementPreceding(elementA, elementB)) {
+			if (indexA > indexB) isOrderDifferent = true;
+			return -1;
+		}
+		if (indexA < indexB) isOrderDifferent = true;
+		return 1;
+	});
+	if (isOrderDifferent) return pairs.map(([_, item]) => item);
+	return items;
+}
+function isElementPreceding(a, b) {
+	return Boolean(b.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_PRECEDING);
+}
+//#endregion
+//#region src/platform.ts
+/**
+* Browser and platform detection helpers.
+* @module Platform utilities
+*/
+/**
+* Detects if the device has touch capabilities.
+*/
+function isTouchDevice() {
+	return canUseDOM && !!navigator.maxTouchPoints;
+}
+/**
+* Detects Apple device.
+*/
+function isApple() {
+	if (!canUseDOM) return false;
+	return /mac|iphone|ipad|ipod/i.test(navigator.platform);
+}
+/**
+* Detects Safari browser.
+*/
+function isSafari() {
+	return canUseDOM && isApple() && /apple/i.test(navigator.vendor);
+}
+/**
+* Detects Firefox browser.
+*/
+function isFirefox() {
+	return canUseDOM && /firefox\//i.test(navigator.userAgent);
+}
+/**
+* Detects Mac computer.
+*/
+function isMac() {
+	return canUseDOM && navigator.platform.startsWith("Mac") && !isTouchDevice();
+}
+//#endregion
+//#region src/events.ts
+/**
+* Event helpers for dispatching and interpreting browser events.
+* @module Event utilities
+*/
+/**
+* Returns `true` if `event` has been fired within a React Portal element.
+*/
+function isPortalEvent(event) {
+	const { currentTarget, target } = event;
+	if (!currentTarget) return false;
+	if (!dist_isNode(target)) return true;
+	return !dist_contains(currentTarget, target);
+}
+/**
+* Returns `true` if `event.target` and `event.currentTarget` are the same.
+*/
+function isSelfTarget(event) {
+	return event.target === event.currentTarget;
+}
+function isActivatableNavigationTarget(element) {
+	if (!dist_isElement(element)) return false;
+	const target = element;
+	const tagName = target.tagName.toLowerCase();
+	if (tagName === "a") return true;
+	if (tagName === "button" && target.type === "submit") return true;
+	if (tagName === "input" && target.type === "submit") return true;
+	return false;
+}
+/**
+* Checks whether the user event is triggering a page navigation in a new tab.
+*/
+function isOpeningInNewTab(event) {
+	const isAppleDevice = isApple();
+	if (isAppleDevice && !event.metaKey) return false;
+	if (!isAppleDevice && !event.ctrlKey) return false;
+	return isActivatableNavigationTarget(event.currentTarget);
+}
+/**
+* Checks whether the user event is triggering a download.
+*/
+function isDownloading(event) {
+	if (!event.altKey) return false;
+	return isActivatableNavigationTarget(event.currentTarget);
+}
+/**
+* Creates and dispatches an event.
+* @example
+* fireEvent(document.getElementById("id"), "blur", {
+*   bubbles: true,
+*   cancelable: true,
+* });
+*/
+function fireEvent(element, type, eventInit) {
+	const event = new Event(type, eventInit);
+	return element.dispatchEvent(event);
+}
+/**
+* Creates and dispatches a blur event.
+* @example
+* fireBlurEvent(document.getElementById("id"));
+*/
+function fireBlurEvent(element, eventInit) {
+	const event = new FocusEvent("blur", eventInit);
+	const defaultAllowed = element.dispatchEvent(event);
+	const bubbleInit = {
+		...eventInit,
+		bubbles: true
+	};
+	element.dispatchEvent(new FocusEvent("focusout", bubbleInit));
+	return defaultAllowed;
+}
+/**
+* Creates and dispatches a focus event.
+* @example
+* fireFocusEvent(document.getElementById("id"));
+*/
+function fireFocusEvent(element, eventInit) {
+	const event = new FocusEvent("focus", eventInit);
+	const defaultAllowed = element.dispatchEvent(event);
+	const bubbleInit = {
+		...eventInit,
+		bubbles: true
+	};
+	element.dispatchEvent(new FocusEvent("focusin", bubbleInit));
+	return defaultAllowed;
+}
+/**
+* Creates and dispatches a keyboard event.
+* @example
+* fireKeyboardEvent(document.getElementById("id"), "keydown", {
+*   key: "ArrowDown",
+*   shiftKey: true,
+* });
+*/
+function fireKeyboardEvent(element, type, eventInit) {
+	const event = new KeyboardEvent(type, eventInit);
+	return element.dispatchEvent(event);
+}
+/**
+* Creates and dispatches a click event.
+* @example
+* fireClickEvent(document.getElementById("id"));
+*/
+function fireClickEvent(element, eventInit) {
+	const event = new MouseEvent("click", eventInit);
+	return element.dispatchEvent(event);
+}
+/**
+* Checks whether the focus/blur event is happening from/to outside of the
+* container element.
+* @example
+* const element = document.getElementById("id");
+* element.addEventListener("blur", (event) => {
+*   if (isFocusEventOutside(event)) {
+*     // ...
+*   }
+* });
+*/
+function isFocusEventOutside(event, container) {
+	const containerElement = container || event.currentTarget;
+	const relatedTarget = event.relatedTarget;
+	return !dist_isNode(relatedTarget) || !dist_contains(containerElement, relatedTarget);
+}
+/**
+* Returns the `inputType` property of the event, if available.
+*/
+function getInputType(event) {
+	const nativeEvent = "nativeEvent" in event ? event.nativeEvent : event;
+	if (!nativeEvent) return;
+	if (!("inputType" in nativeEvent)) return;
+	if (typeof nativeEvent.inputType !== "string") return;
+	return nativeEvent.inputType;
+}
+/**
+* Checks whether the event is an input event.
+*/
+function isInputEvent(event) {
+	return event.type === "input";
+}
+/**
+* Runs a callback on the next animation frame, but before a certain event.
+*/
+function queueBeforeEvent(element, type, callback, timeout) {
+	const createTimer = (callback) => {
+		if (timeout) {
+			const timerId = setTimeout(callback, timeout);
+			return () => clearTimeout(timerId);
+		}
+		const timerId = requestAnimationFrame(callback);
+		return () => cancelAnimationFrame(timerId);
+	};
+	const cancelTimer = createTimer(() => {
+		element.removeEventListener(type, callSync, true);
+		callback();
+	});
+	const callSync = () => {
+		cancelTimer();
+		callback();
+	};
+	element.addEventListener(type, callSync, {
+		once: true,
+		capture: true
+	});
+	return () => {
+		cancelTimer();
+		element.removeEventListener(type, callSync, true);
+	};
+}
+/**
+* Adds a global event listener, including on child frames.
+*/
+function addGlobalEventListener(type, listener, options, scope = window) {
+	const children = [];
+	try {
+		scope.document.addEventListener(type, listener, options);
+		for (const frame of Array.from(scope.frames)) children.push(addGlobalEventListener(type, listener, options, frame));
+	} catch {}
+	const removeEventListener = () => {
+		try {
+			scope.document.removeEventListener(type, listener, options);
+		} catch {}
+		for (const remove of children) remove();
+	};
+	return removeEventListener;
+}
+//#endregion
+//#region src/focus.ts
+/**
+* Focus management helpers for focusable and tabbable elements.
+* @module Focus utilities
+*/
+const selector = "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], button:not([disabled]), [tabindex], summary, iframe, object, embed, area[href], audio[controls], video[controls], [contenteditable]:not([contenteditable='false'])";
+function hasNegativeTabIndex(element) {
+	return Number.parseInt(element.getAttribute("tabindex") || "0", 10) < 0;
+}
+/**
+* Checks whether `element` is focusable or not.
+* @example
+* isFocusable(document.querySelector("input")); // true
+* isFocusable(document.querySelector("input[tabindex='-1']")); // true
+* isFocusable(document.querySelector("input[hidden]")); // false
+* isFocusable(document.querySelector("input:disabled")); // false
+*/
+function isFocusable(element) {
+	if (!element.matches(selector)) return false;
+	if (!isVisible(element)) return false;
+	if (element.closest("[inert]")) return false;
+	return true;
+}
+/**
+* Checks whether `element` is tabbable or not.
+* @example
+* isTabbable(document.querySelector("input")); // true
+* isTabbable(document.querySelector("input[tabindex='-1']")); // false
+* isTabbable(document.querySelector("input[hidden]")); // false
+* isTabbable(document.querySelector("input:disabled")); // false
+*/
+function isTabbable(element) {
+	if (!isFocusable(element)) return false;
+	if (hasNegativeTabIndex(element)) return false;
+	if (!("form" in element)) return true;
+	if (!element.form) return true;
+	if (element.checked) return true;
+	if (element.type !== "radio") return true;
+	const radioGroup = element.form.elements.namedItem(element.name);
+	if (!radioGroup) return true;
+	if (!("length" in radioGroup)) return true;
+	const activeElement = getActiveElement(element);
+	if (!activeElement) return true;
+	if (activeElement === element) return true;
+	if (!("form" in activeElement)) return true;
+	if (activeElement.form !== element.form) return true;
+	if (activeElement.name !== element.name) return true;
+	return false;
+}
+/**
+* Returns all the focusable elements in `container`.
+*/
+function getAllFocusableIn(container, includeContainer) {
+	const elements = Array.from(container.querySelectorAll(selector));
+	if (includeContainer) elements.unshift(container);
+	const focusableElements = elements.filter(isFocusable);
+	focusableElements.forEach((element, i) => {
+		if (!isFrame(element)) return;
+		const frameBody = element.contentDocument?.body;
+		if (!frameBody) return;
+		focusableElements.splice(i, 1, ...getAllFocusableIn(frameBody));
+	});
+	return focusableElements;
+}
+/**
+* Returns all the focusable elements in the document.
+*/
+function getAllFocusable(includeBody) {
+	return getAllFocusableIn(document.body, includeBody);
+}
+/**
+* Returns the first focusable element in `container`.
+*/
+function getFirstFocusableIn(container, includeContainer) {
+	const [first] = getAllFocusableIn(container, includeContainer);
+	return first || null;
+}
+/**
+* Returns the first focusable element in the document.
+*/
+function getFirstFocusable(includeBody) {
+	return getFirstFocusableIn(document.body, includeBody);
+}
+/**
+* Returns all the tabbable elements in `container`, including the container
+* itself.
+*/
+function getAllTabbableIn(container, includeContainer, fallbackToFocusable) {
+	const tabbableElements = Array.from(container.querySelectorAll(selector)).filter(isTabbable);
+	if (includeContainer && isTabbable(container)) tabbableElements.unshift(container);
+	tabbableElements.forEach((element, i) => {
+		if (!isFrame(element)) return;
+		const frameBody = element.contentDocument?.body;
+		if (!frameBody) return;
+		const allFrameTabbable = getAllTabbableIn(frameBody, false, fallbackToFocusable);
+		tabbableElements.splice(i, 1, ...allFrameTabbable);
+	});
+	if (!tabbableElements.length && fallbackToFocusable) return getAllFocusableIn(container);
+	return tabbableElements;
+}
+/**
+* Returns all the tabbable elements in the document.
+*/
+function getAllTabbable(fallbackToFocusable) {
+	return getAllTabbableIn(document.body, false, fallbackToFocusable);
+}
+/**
+* Returns the first tabbable element in `container`, including the container
+* itself if it's tabbable.
+*/
+function getFirstTabbableIn(container, includeContainer, fallbackToFocusable) {
+	if (includeContainer && isTabbable(container)) {
+		if (!isFrame(container)) return container;
+		const containerFrameBody = container.contentDocument?.body;
+		if (!containerFrameBody) return container;
+		const frameTabbable = getFirstTabbableIn(containerFrameBody, false, fallbackToFocusable);
+		if (frameTabbable) return frameTabbable;
+	}
+	const elements = container.querySelectorAll(selector);
+	for (const element of elements) {
+		if (!isTabbable(element)) continue;
+		if (isFrame(element)) {
+			const frameBody = element.contentDocument?.body;
+			if (!frameBody) return element;
+			const frameTabbable = getFirstTabbableIn(frameBody, false, fallbackToFocusable);
+			if (frameTabbable) return frameTabbable;
+			continue;
+		}
+		return element;
+	}
+	if (fallbackToFocusable) return getFirstFocusableIn(container);
+	return null;
+}
+/**
+* Returns the first tabbable element in the document.
+*/
+function getFirstTabbable(fallbackToFocusable) {
+	return getFirstTabbableIn(document.body, false, fallbackToFocusable);
+}
+/**
+* Returns the last tabbable element in `container`, including the container
+* itself if it's tabbable.
+*/
+function getLastTabbableIn(container, includeContainer, fallbackToFocusable) {
+	const allTabbable = getAllTabbableIn(container, includeContainer, fallbackToFocusable);
+	return allTabbable[allTabbable.length - 1] || null;
+}
+/**
+* Returns the last tabbable element in the document.
+*/
+function getLastTabbable(fallbackToFocusable) {
+	return getLastTabbableIn(document.body, false, fallbackToFocusable);
+}
+function getTabbableInDirection({ container, includeContainer, reverse, fallbackToEdge, fallbackToFocusable }) {
+	const activeElement = getActiveElement(container);
+	const allFocusable = getAllFocusableIn(container, includeContainer);
+	if (reverse) allFocusable.reverse();
+	const activeIndex = allFocusable.indexOf(activeElement);
+	const candidates = allFocusable.slice(activeIndex + 1);
+	return candidates.find(isTabbable) || (fallbackToEdge ? allFocusable.find(isTabbable) : null) || (fallbackToFocusable ? candidates[0] : null) || null;
+}
+/**
+* Returns the next tabbable element in `container`.
+*/
+function getNextTabbableIn(container, includeContainer, fallbackToFirst, fallbackToFocusable) {
+	return getTabbableInDirection({
+		container,
+		includeContainer,
+		fallbackToEdge: fallbackToFirst,
+		fallbackToFocusable
+	});
+}
+/**
+* Returns the next tabbable element in the document.
+*/
+function dist_getNextTabbable(fallbackToFirst, fallbackToFocusable) {
+	return getNextTabbableIn(document.body, false, fallbackToFirst, fallbackToFocusable);
+}
+/**
+* Returns the previous tabbable element in `container`.
+*
+*/
+function getPreviousTabbableIn(container, includeContainer, fallbackToLast, fallbackToFocusable) {
+	return getTabbableInDirection({
+		container,
+		includeContainer,
+		reverse: true,
+		fallbackToEdge: fallbackToLast,
+		fallbackToFocusable
+	});
+}
+/**
+* Returns the previous tabbable element in the document.
+*/
+function dist_getPreviousTabbable(fallbackToLast, fallbackToFocusable) {
+	return getPreviousTabbableIn(document.body, false, fallbackToLast, fallbackToFocusable);
+}
+/**
+* Returns the closest focusable element.
+*/
+function getClosestFocusable(element) {
+	while (element && !isFocusable(element)) element = element.parentElement?.closest(selector) ?? null;
+	return element || null;
+}
+/**
+* Checks if `element` has focus. Elements that are referenced by
+* `aria-activedescendant` are also considered.
+* @example
+* hasFocus(document.getElementById("id"));
+*/
+function hasFocus(element) {
+	const activeElement = getActiveElement(element);
+	if (!activeElement) return false;
+	if (activeElement === element) return true;
+	const activeDescendant = activeElement.getAttribute("aria-activedescendant");
+	if (!activeDescendant) return false;
+	return activeDescendant === element.id;
+}
+/**
+* Checks if `element` has focus within. Elements that are referenced by
+* `aria-activedescendant` are also considered.
+* @example
+* hasFocusWithin(document.getElementById("id"));
+*/
+function hasFocusWithin(element) {
+	const activeElement = getActiveElement(element);
+	if (!activeElement) return false;
+	if (dist_contains(element, activeElement)) return true;
+	const activeDescendant = activeElement.getAttribute("aria-activedescendant");
+	if (!activeDescendant) return false;
+	if (!("id" in element)) return false;
+	if (activeDescendant === element.id) return true;
+	return !!element.querySelector(`#${CSS.escape(activeDescendant)}`);
+}
+/**
+* Focus on an element only if it's not already focused.
+*/
+function focusIfNeeded(element) {
+	if (!hasFocusWithin(element) && isFocusable(element)) element.focus();
+}
+/**
+* Disable focus on `element`.
+*/
+function disableFocus(element) {
+	const currentTabindex = element.getAttribute("tabindex") ?? "";
+	element.setAttribute("data-tabindex", currentTabindex);
+	element.setAttribute("tabindex", "-1");
+}
+/**
+* Makes elements inside container not tabbable.
+*/
+function disableFocusIn(container, includeContainer) {
+	const tabbableElements = getAllTabbableIn(container, includeContainer);
+	for (const element of tabbableElements) disableFocus(element);
+}
+/**
+* Restores tabbable elements inside container that were affected by
+* disableFocusIn.
+*/
+function restoreFocusIn(container) {
+	const elements = container.querySelectorAll("[data-tabindex]");
+	const restoreTabIndex = (element) => {
+		const tabindex = element.getAttribute("data-tabindex");
+		element.removeAttribute("data-tabindex");
+		if (tabindex) element.setAttribute("tabindex", tabindex);
+		else element.removeAttribute("tabindex");
+	};
+	if (container.hasAttribute("data-tabindex")) restoreTabIndex(container);
+	for (const element of elements) restoreTabIndex(element);
+}
+/**
+* Focus on element and scroll into view.
+*/
+function focusIntoView(element, options) {
+	if (!("scrollIntoView" in element)) element.focus();
+	else {
+		element.focus({ preventScroll: true });
+		element.scrollIntoView({
+			block: "nearest",
+			inline: "nearest",
+			...options
+		});
+	}
+}
+//#endregion
 //#region src/undo.ts
 function createUndoCallback(callback) {
 	return async () => {
@@ -35597,7 +36379,6 @@ function createUndoManager({ limit = 100 } = {}) {
 	};
 	const execute = async (callback, group) => {
 		if (!callback) return;
-		while (undoStack.length > limit) undoStack.shift();
 		const sameGroup = group === currentGroup;
 		currentGroup = group ?? null;
 		const nextIndex = sameGroup ? Math.max(0, undoStack.length - 1) : undoStack.length;
@@ -35613,6 +36394,7 @@ function createUndoManager({ limit = 100 } = {}) {
 				await callback?.();
 			};
 		});
+		while (undoStack.length > limit) undoStack.shift();
 	};
 	return {
 		canUndo,
@@ -35627,7 +36409,6 @@ function createUndoManager({ limit = 100 } = {}) {
 
 //# sourceMappingURL=index.js.map
 ;// ./node_modules/@ariakit/react-utils/dist/index.js
-/* unused harmony import specifier */ var useRef;
 /* unused harmony import specifier */ var dist_useState;
 /* unused harmony import specifier */ var useEffect;
 "use client";
@@ -35642,10 +36423,14 @@ function createUndoManager({ limit = 100 } = {}) {
 */
 /**
 * Sets both a function and object React ref.
+*
+* Returns a callback ref cleanup function when one is provided.
 */
 function setRef(ref, value) {
-	if (typeof ref === "function") ref(value);
-	else if (ref) ref.current = value;
+	if (typeof ref === "function") {
+		const cleanup = ref(value);
+		if (typeof cleanup === "function") return cleanup;
+	} else if (ref) ref.current = value;
 }
 /**
 * Checks if an element is a valid React element with a ref.
@@ -35729,18 +36514,6 @@ function useInitialValue(value) {
 	return initialValue;
 }
 /**
-* Returns a value that is lazily initiated and never changes.
-* @example
-* function Component() {
-*   const set = useLazyValue(() => new Set());
-* }
-*/
-function useLazyValue(init) {
-	const ref = useRef(void 0);
-	if (ref.current === void 0) ref.current = init();
-	return ref.current;
-}
-/**
 * Creates a `React.RefObject` that is constantly updated with the incoming
 * value.
 * @example
@@ -35754,14 +36527,6 @@ function useLiveRef(value) {
 		ref.current = value;
 	});
 	return ref;
-}
-/**
-* Keeps the reference of the previous value to be used in the render phase.
-*/
-function usePreviousValue(value) {
-	const [previousValue, setPreviousValue] = dist_useState(value);
-	if (value !== previousValue) setPreviousValue(value);
-	return previousValue;
 }
 /**
 * Creates a stable callback function that has access to the latest state and
@@ -35816,7 +36581,20 @@ function useMergeRefs(...refs) {
 	return (0,external_React_.useMemo)(() => {
 		if (!refs.some(Boolean)) return;
 		return (value) => {
-			for (const ref of refs) setRef(ref, value);
+			const refEffects = [];
+			for (const ref of refs) {
+				if (!ref) continue;
+				const cleanup = setRef(ref, value);
+				refEffects.push({
+					ref,
+					cleanup: typeof cleanup === "function" ? cleanup : void 0
+				});
+			}
+			if (!refEffects.some((effect) => effect.cleanup)) return;
+			return () => {
+				for (const { ref, cleanup } of refEffects) if (cleanup) cleanup();
+				else setRef(ref, null);
+			};
 		};
 	}, refs);
 }
@@ -35832,7 +36610,8 @@ function dist_useId(defaultId) {
 	const [id, setId] = (0,external_React_.useState)(defaultId);
 	useSafeLayoutEffect(() => {
 		if (defaultId || id) return;
-		setId(`id-${Math.random().toString(36).slice(2, 8)}`);
+		const random = Math.random().toString(36).slice(2, 8);
+		setId(`id-${random}`);
 	}, [defaultId, id]);
 	return defaultId || id;
 }
@@ -35862,9 +36641,10 @@ function useTagName(refOrElement, type) {
 		if (typeof type !== "string") return;
 		return type;
 	};
-	const [tagName, setTagName] = (0,external_React_.useState)(() => stringOrUndefined(type));
+	const [tagName, setTagName] = dist_useState(() => stringOrUndefined(type));
 	useSafeLayoutEffect(() => {
-		setTagName((refOrElement && "current" in refOrElement ? refOrElement.current : refOrElement)?.tagName.toLowerCase() || stringOrUndefined(type));
+		const element = refOrElement && "current" in refOrElement ? refOrElement.current : refOrElement;
+		setTagName(element?.tagName.toLowerCase() || stringOrUndefined(type));
 	}, [refOrElement, type]);
 	return tagName;
 }
@@ -36296,9 +37076,23 @@ function hasUpdatedKey(keys, updatedKey) {
 	if (!keys) return true;
 	for (const currentKey of keys) if (updatedKey instanceof Set) {
 		if (updatedKey.has(currentKey)) return true;
-	} else if (currentKey === updatedKey) return true;
+	} else if (isSameValue(currentKey, updatedKey)) return true;
 	return false;
 }
+function isSameValue(value, other) {
+	return value === other || value !== value && other !== other;
+}
+function getCleanupPrevState(prevState, state, stateBeforeCleanup, updatedKey) {
+	let cleanupPrevState;
+	for (const key of getKeys(state)) {
+		if (isSameValue(state[key], stateBeforeCleanup[key])) continue;
+		if (updatedKey !== void 0 && hasUpdatedKey([key], updatedKey)) continue;
+		cleanupPrevState ??= { ...prevState };
+		cleanupPrevState[key] = state[key];
+	}
+	return cleanupPrevState;
+}
+const MAX_REPAIR_PASSES = 100;
 function addKeyedListener(map, keys, listener) {
 	if (!keys) return;
 	for (const key of keys) {
@@ -36318,6 +37112,133 @@ function deleteKeyedListener(map, keys, listener) {
 		if (!listeners) continue;
 		listeners.delete(listener);
 		if (!listeners.size) map.delete(key);
+	}
+}
+function getFastPathNotifiedListeners(frame) {
+	const notifiedListeners = /* @__PURE__ */ new Set();
+	const currentListener = frame.currentListener;
+	if (!currentListener) return notifiedListeners;
+	for (const listener of frame.keyedListeners) {
+		notifiedListeners.add(listener);
+		if (listener === currentListener) return notifiedListeners;
+	}
+	notifiedListeners.clear();
+	notifiedListeners.add(currentListener);
+	return notifiedListeners;
+}
+function preserveFastPathNotifiedListeners(frame) {
+	frame.notifiedListeners ??= getFastPathNotifiedListeners(frame);
+}
+function hasFastPathPassedListener(frame, listener) {
+	if (!frame.currentListener) return false;
+	let foundCurrentKeyedListener = false;
+	for (const currentListener of frame.keyedListeners) {
+		if (currentListener === frame.currentListener) {
+			foundCurrentKeyedListener = true;
+			continue;
+		}
+		if (!foundCurrentKeyedListener) continue;
+		if (currentListener === listener) return false;
+	}
+	let foundListener = false;
+	for (const currentListener of frame.group.listeners) {
+		if (currentListener === frame.currentListener) return foundListener;
+		if (currentListener === listener) foundListener = true;
+	}
+	return false;
+}
+function preserveFastPathFrames(fastPathFrames, group, listener) {
+	for (const frame of fastPathFrames) {
+		if (frame.group !== group) continue;
+		if (frame.recovering) continue;
+		if (listener && !frame.keyedListeners.has(listener)) continue;
+		preserveFastPathNotifiedListeners(frame);
+		for (const currentListener of frame.group.listeners) {
+			if (currentListener === frame.currentListener) break;
+			if (!hasFastPathPassedListener(frame, currentListener)) continue;
+			frame.notifiedListeners?.add(currentListener);
+		}
+	}
+}
+function preserveFastPathPassedListeners(fastPathFrames, group, listener) {
+	for (const frame of fastPathFrames) {
+		if (frame.group !== group) continue;
+		if (frame.recovering) continue;
+		if (!hasFastPathPassedListener(frame, listener)) continue;
+		preserveFastPathNotifiedListeners(frame);
+		frame.notifiedListeners?.add(listener);
+	}
+}
+function preserveFastPathPassedKeyedListeners({ fastPathFrames, group, keys, listener }) {
+	const wasRegistered = group.listeners.has(listener);
+	for (const frame of fastPathFrames) {
+		if (frame.group !== group) continue;
+		if (frame.recovering) continue;
+		if (!keys.includes(frame.updatedKey)) continue;
+		if (hasFastPathPassedListener(frame, listener)) {
+			preserveFastPathNotifiedListeners(frame);
+			frame.notifiedListeners?.add(listener);
+		} else if (wasRegistered) {
+			preserveFastPathNotifiedListeners(frame);
+			frame.recoverToLive = true;
+		}
+	}
+}
+function clearFastPathNotifiedListener(fastPathFrames, group, listener) {
+	for (const frame of fastPathFrames) {
+		if (frame.group !== group) continue;
+		frame.notifiedListeners?.delete(listener);
+	}
+}
+function addFastPathKeyedListener({ fastPathFrames, group, keys, listener }) {
+	for (const frame of fastPathFrames) {
+		if (frame.group !== group) continue;
+		if (frame.recovering) continue;
+		if (!keys.includes(frame.updatedKey)) continue;
+		frame.keyedListeners.add(listener);
+	}
+}
+function runPendingCleanup(group, listener) {
+	if (!group.disposables.size) return;
+	const cleanup = group.disposables.get(listener);
+	if (!cleanup) return;
+	group.disposables.delete(listener);
+	cleanup();
+}
+function setListenerCleanup(group, listener, cleanup) {
+	const currentCleanup = group.disposables.get(listener);
+	if (!currentCleanup) {
+		group.disposables.set(listener, cleanup);
+		return;
+	}
+	group.disposables.set(listener, () => {
+		currentCleanup();
+		cleanup();
+	});
+}
+function notifyStoreListener(group, listener, state, prevState, getState, updatedKey) {
+	if (group.suspendCounts?.has(listener)) return;
+	const { disposables } = group;
+	const cleanup = disposables.size ? disposables.get(listener) : void 0;
+	if (cleanup) {
+		disposables.delete(listener);
+		const stateBeforeCleanup = state;
+		cleanup();
+		state = getState?.() ?? state;
+		if (state !== stateBeforeCleanup) prevState = getCleanupPrevState(prevState, state, stateBeforeCleanup, updatedKey) ?? prevState;
+	}
+	const result = listener(state, prevState);
+	if (result) setListenerCleanup(group, listener, result);
+}
+function runLiveListeners({ group, getState, prevState, updatedKey, notifiedListeners }) {
+	const allKeysListeners = group.allKeysListeners;
+	for (const listener of group.listeners) {
+		if (notifiedListeners?.has(listener)) continue;
+		if (!allKeysListeners?.has(listener)) {
+			if (!hasUpdatedKey(group.listenerKeys.get(listener), updatedKey)) continue;
+		}
+		notifiedListeners?.add(listener);
+		notifyStoreListener(group, listener, getState(), prevState, getState, updatedKey);
 	}
 }
 /**
@@ -36353,7 +37274,7 @@ function createStore(initialState, ...stores) {
 		const instance = Symbol();
 		instances.add(instance);
 		const maybeDestroy = () => {
-			instances.delete(instance);
+			if (!instances.delete(instance)) return;
 			if (instances.size) return;
 			destroy();
 		};
@@ -36371,14 +37292,17 @@ function createStore(initialState, ...stores) {
 				}));
 				continue;
 			}
-			let didSyncInitialState = false;
-			desyncs.push(sync(store, keys, (state, prevState) => {
+			desyncs.push(subscribe(store, keys, (state, prevState) => {
 				for (const key of keys) {
-					if (didSyncInitialState && state[key] === prevState[key]) continue;
+					if (state[key] === prevState[key]) continue;
 					setState(key, state[key], true);
 				}
-				didSyncInitialState = true;
 			}));
+			for (const key of keys) {
+				const liveState = store?.getState?.();
+				if (!liveState) continue;
+				setState(key, liveState[key], true);
+			}
 		}
 		const teardowns = [];
 		for (const setup of setups) teardowns.push(setup());
@@ -36391,86 +37315,174 @@ function createStore(initialState, ...stores) {
 		if (keys) deleteKeyedListener(group.listenersByKey, keys, listener);
 		else group.allKeysListeners?.delete(listener);
 	};
+	const fastPathFrames = [];
 	const registerListener = (keys, listener, group = syncListenerGroup) => {
 		const listenerKeysValue = keys ? [...keys] : null;
-		if (group.listeners.has(listener)) deleteListenerIndexes(group, listener, group.listenerKeys.get(listener));
+		const wasRegistered = group.listeners.has(listener);
+		if (!wasRegistered) clearFastPathNotifiedListener(fastPathFrames, group, listener);
+		if (!listenerKeysValue) {
+			if (wasRegistered) preserveFastPathFrames(fastPathFrames, group);
+			preserveFastPathPassedListeners(fastPathFrames, group, listener);
+		} else preserveFastPathPassedKeyedListeners({
+			fastPathFrames,
+			group,
+			keys: listenerKeysValue,
+			listener
+		});
+		if (wasRegistered) {
+			preserveFastPathFrames(fastPathFrames, group, listener);
+			deleteListenerIndexes(group, listener, group.listenerKeys.get(listener));
+		}
 		group.listeners.add(listener);
 		if (listenerKeysValue) {
 			group.listenersByKey ??= /* @__PURE__ */ new Map();
 			addKeyedListener(group.listenersByKey, listenerKeysValue, listener);
+			addFastPathKeyedListener({
+				fastPathFrames,
+				group,
+				keys: listenerKeysValue,
+				listener
+			});
 		} else {
 			group.allKeysListeners ??= /* @__PURE__ */ new Set();
 			group.allKeysListeners.add(listener);
 		}
 		group.listenerKeys.set(listener, listenerKeysValue);
 		return () => {
-			group.disposables.get(listener)?.();
+			const cleanup = group.disposables.get(listener);
 			group.disposables.delete(listener);
+			preserveFastPathFrames(fastPathFrames, group, listener);
 			const currentKeys = group.listenerKeys.get(listener);
 			deleteListenerIndexes(group, listener, listenerKeysValue);
 			if (currentKeys !== listenerKeysValue) deleteListenerIndexes(group, listener, currentKeys);
 			group.listenerKeys.delete(listener);
 			group.listeners.delete(listener);
+			cleanup?.();
 		};
 	};
 	const storeSubscribe = (keys, listener) => registerListener(keys, listener);
-	const reconcileInitialCleanup = (group, listener, cleanup) => {
-		if (cleanup) group.disposables.set(listener, cleanup);
-		else group.disposables.delete(listener);
+	const runInitialListener = (group, listener, prevState) => {
+		const shouldSuspend = group.listeners.has(listener);
+		if (shouldSuspend) {
+			group.suspendCounts ??= /* @__PURE__ */ new Map();
+			const count = group.suspendCounts.get(listener) ?? 0;
+			group.suspendCounts.set(listener, count + 1);
+		}
+		let cleanupPrevState;
+		try {
+			const stateBeforeCleanups = state;
+			runPendingCleanup(group, listener);
+			if (state !== stateBeforeCleanups) cleanupPrevState = getCleanupPrevState(prevState, state, stateBeforeCleanups);
+			const cleanup = listener(state, cleanupPrevState ?? prevState);
+			if (cleanup) setListenerCleanup(group, listener, cleanup);
+		} finally {
+			if (shouldSuspend) {
+				const suspendCounts = group.suspendCounts;
+				const count = suspendCounts?.get(listener);
+				if (count && count > 1) suspendCounts?.set(listener, count - 1);
+				else suspendCounts?.delete(listener);
+				if (!suspendCounts?.size) delete group.suspendCounts;
+			}
+		}
 	};
 	const storeSync = (keys, listener) => {
-		reconcileInitialCleanup(syncListenerGroup, listener, listener(state, state));
+		runInitialListener(syncListenerGroup, listener, state);
 		return registerListener(keys, listener);
 	};
 	const storeBatch = (keys, listener) => {
 		if (!batchListenerGroup.listeners.size && !inDispatch) prevStateBatch = state;
-		reconcileInitialCleanup(batchListenerGroup, listener, listener(state, prevStateBatch));
+		runInitialListener(batchListenerGroup, listener, prevStateBatch);
 		return registerListener(keys, listener, batchListenerGroup);
 	};
 	const storePick = (keys) => createStore(pick(state, keys), finalStore);
 	const storeOmit = (keys) => createStore(omit(state, keys), finalStore);
 	const getState = () => state;
 	const runListeners = (group, prevState, updatedKey) => {
-		const { disposables } = group;
 		if (!(updatedKey instanceof Set) && !group.allKeysListeners?.size) {
 			const keyedListeners = group.listenersByKey?.get(updatedKey);
 			if (!keyedListeners) return;
-			for (const listener of keyedListeners) {
-				const cleanup = disposables.size ? disposables.get(listener) : void 0;
-				if (cleanup) cleanup();
-				const result = listener(state, prevState);
-				if (result) disposables.set(listener, result);
-				else if (cleanup) disposables.delete(listener);
+			const frame = {
+				group,
+				keyedListeners,
+				updatedKey,
+				currentListener: null
+			};
+			fastPathFrames.push(frame);
+			try {
+				for (const listener of keyedListeners) {
+					if (frame.notifiedListeners?.has(listener)) continue;
+					frame.currentListener = listener;
+					frame.notifiedListeners?.add(listener);
+					notifyStoreListener(group, listener, state, prevState, getState, updatedKey);
+					if (!group.allKeysListeners?.size && !frame.recoverToLive) continue;
+					const notifiedListeners = frame.notifiedListeners ?? getFastPathNotifiedListeners(frame);
+					frame.notifiedListeners = notifiedListeners;
+					frame.recovering = true;
+					runLiveListeners({
+						group,
+						getState,
+						prevState,
+						updatedKey,
+						notifiedListeners
+					});
+					return;
+				}
+			} finally {
+				fastPathFrames.pop();
 			}
 			return;
 		}
-		const allKeysListeners = group.allKeysListeners;
-		for (const listener of group.listeners) {
-			if (!allKeysListeners?.has(listener)) {
-				if (!hasUpdatedKey(group.listenerKeys.get(listener), updatedKey)) continue;
-			}
-			const cleanup = disposables.size ? disposables.get(listener) : void 0;
-			if (cleanup) cleanup();
-			const result = listener(state, prevState);
-			if (result) disposables.set(listener, result);
-			else if (cleanup) disposables.delete(listener);
-		}
+		runLiveListeners({
+			group,
+			getState,
+			prevState,
+			updatedKey
+		});
 	};
 	const setState = (key, value, fromStores = false) => {
 		if (!dist_hasOwnProperty(state, key)) return;
 		const currentValue = state[key];
-		const nextValue = typeof value === "function" ? value(currentValue) : value;
-		if (nextValue === currentValue) return;
-		if (!fromStores && stores.length) for (const store of stores) store?.setState?.(key, nextValue);
+		const nextValue = applyState(value, () => currentValue);
+		if (isSameValue(nextValue, currentValue)) return;
+		const wasInDispatch = inDispatch;
+		inDispatch = true;
 		const prevState = state;
-		state = {
+		const nextState = {
 			...state,
 			[key]: nextValue
 		};
-		const wasInDispatch = inDispatch;
-		inDispatch = true;
+		state = nextState;
+		let superseded = false;
 		try {
-			runListeners(syncListenerGroup, prevState, key);
+			if (!fromStores && stores.length) {
+				for (const store of stores) {
+					store?.setState?.(key, nextValue);
+					if (isSameValue(state[key], nextValue)) continue;
+					superseded = true;
+					break;
+				}
+				if (superseded) {
+					let pass = 0;
+					for (; pass < MAX_REPAIR_PASSES; pass += 1) {
+						let changed = false;
+						for (const store of stores) {
+							const previousValue = state[key];
+							store?.setState?.(key, previousValue);
+							if (!isSameValue(state[key], previousValue)) changed = true;
+						}
+						if (!changed) break;
+					}
+					if (false) // removed by dead control flow
+{}
+				}
+			}
+			if (!superseded) {
+				const listenerPrevState = state === nextState ? prevState : {
+					...state,
+					[key]: prevState[key]
+				};
+				runListeners(syncListenerGroup, listenerPrevState, key);
+			}
 		} finally {
 			inDispatch = wasInDispatch;
 		}
@@ -36602,50 +37614,101 @@ function throwOnConflictingProps(props, store) {
 
 //#region src/index.tsx
 const noopSubscribe = () => () => {};
-function useStoreState(store, keyOrSelector = identity) {
+function isStoreKeyArray(value) {
+	return Array.isArray(value);
+}
+function dist_isSameValue(value, other) {
+	return value === other || value !== value && other !== other;
+}
+function hasSameStoreKeys(keys, otherKeys) {
+	if (keys?.length !== otherKeys.length) return false;
+	for (let index = 0; index < keys.length; index += 1) {
+		const key = keys[index];
+		if (key === void 0) return false;
+		if (dist_isSameValue(key, otherKeys[index])) continue;
+		return false;
+	}
+	return true;
+}
+function useStableStoreKeys(keys) {
+	const keysRef = external_React_.useRef(null);
+	const currentKeys = keysRef.current;
+	if (keys === null) {
+		keysRef.current = null;
+		return null;
+	}
+	if (hasSameStoreKeys(currentKeys, keys)) return currentKeys;
+	const nextKeys = [...keys];
+	keysRef.current = nextKeys;
+	return nextKeys;
+}
+function useStoreState(store, keyOrKeysOrSelector = identity, selector) {
+	const subscriptionKeys = useStableStoreKeys(isStoreKeyArray(keyOrKeysOrSelector) ? keyOrKeysOrSelector : typeof keyOrKeysOrSelector === "function" ? null : [keyOrKeysOrSelector]);
 	const storeSubscribe = external_React_.useCallback((callback) => {
 		if (!store) return noopSubscribe();
-		return subscribe(store, null, callback);
-	}, [store]);
+		if (subscriptionKeys?.length === 0) return noopSubscribe();
+		return subscribe(store, subscriptionKeys, callback);
+	}, [store, subscriptionKeys]);
 	const getSnapshot = () => {
-		const key = typeof keyOrSelector === "string" ? keyOrSelector : null;
-		const selector = typeof keyOrSelector === "function" ? keyOrSelector : null;
 		const state = store?.getState();
-		if (selector) return selector(state);
+		if (isStoreKeyArray(keyOrKeysOrSelector)) return selector?.(state);
+		if (typeof keyOrKeysOrSelector === "function") return keyOrKeysOrSelector(state);
 		if (!state) return;
-		if (!key) return;
-		if (!dist_hasOwnProperty(state, key)) return;
-		return state[key];
+		if (!dist_hasOwnProperty(state, keyOrKeysOrSelector)) return;
+		return state[keyOrKeysOrSelector];
 	};
 	return (0,shim.useSyncExternalStore)(storeSubscribe, getSnapshot, getSnapshot);
 }
-function useStoreStateObject(store, object) {
+function getStoreStateObjectKeys(object, selectorKeys) {
+	const keys = [];
+	let hasSelector = false;
+	for (const prop in object) {
+		const keyOrSelector = object[prop];
+		if (keyOrSelector === void 0) continue;
+		if (typeof keyOrSelector === "function") {
+			hasSelector = true;
+			continue;
+		}
+		if (keys.includes(keyOrSelector)) continue;
+		keys.push(keyOrSelector);
+	}
+	if (!hasSelector) return keys;
+	if (!selectorKeys) return null;
+	for (const key of selectorKeys) {
+		if (keys.includes(key)) continue;
+		keys.push(key);
+	}
+	return keys;
+}
+function useStoreStateObject(store, objectOrKeys, object) {
+	const stateObject = isStoreKeyArray(objectOrKeys) ? object ?? {} : objectOrKeys;
+	const selectorKeys = isStoreKeyArray(objectOrKeys) ? objectOrKeys : void 0;
 	const objRef = external_React_.useRef({});
+	const subscriptionKeys = useStableStoreKeys(getStoreStateObjectKeys(stateObject, selectorKeys));
 	const storeSubscribe = external_React_.useCallback((callback) => {
 		if (!store) return noopSubscribe();
-		return subscribe(store, null, callback);
-	}, [store]);
+		if (subscriptionKeys?.length === 0) return noopSubscribe();
+		return subscribe(store, subscriptionKeys, callback);
+	}, [store, subscriptionKeys]);
 	const getSnapshot = () => {
 		const state = store?.getState();
 		let updated = false;
 		const obj = objRef.current;
-		for (const prop in object) {
-			const keyOrSelector = object[prop];
+		for (const prop in stateObject) {
+			const keyOrSelector = stateObject[prop];
+			if (keyOrSelector === void 0) continue;
 			if (typeof keyOrSelector === "function") {
 				const value = keyOrSelector(state);
-				if (value !== obj[prop]) {
+				if (!Object.is(value, obj[prop])) {
 					obj[prop] = value;
 					updated = true;
 				}
 			}
-			if (typeof keyOrSelector === "string") {
-				if (!state) continue;
-				if (!dist_hasOwnProperty(state, keyOrSelector)) continue;
-				const value = state[keyOrSelector];
-				if (value !== obj[prop]) {
-					obj[prop] = value;
-					updated = true;
-				}
+			if (typeof keyOrSelector === "function") continue;
+			const value = state && dist_hasOwnProperty(state, keyOrSelector) ? state[keyOrSelector] : void 0;
+			if (!Object.is(value, obj[prop])) {
+				obj[prop] = value;
+				updated = true;
 			}
 		}
 		if (updated) objRef.current = { ...obj };
@@ -36662,19 +37725,26 @@ function useStoreStateObject(store, object) {
 */
 function useStoreProps(store, props, key, setKey) {
 	const value = dist_hasOwnProperty(props, key) ? props[key] : void 0;
+	const setValue = setKey ? props[setKey] : void 0;
+	const hasSetValue = !!setValue;
 	const propsRef = useLiveRef({
 		value,
-		setValue: setKey ? props[setKey] : void 0
+		setValue
 	});
 	useSafeLayoutEffect(() => {
-		return sync(store, [key], (state, prev) => {
+		if (!hasSetValue) return;
+		return subscribe(store, [key], (state, prev) => {
 			const { value, setValue } = propsRef.current;
 			if (!setValue) return;
-			if (state[key] === prev[key]) return;
-			if (state[key] === value) return;
+			if (dist_isSameValue(state[key], prev[key])) return;
+			if (dist_isSameValue(state[key], value)) return;
 			setValue(state[key]);
 		});
-	}, [store, key]);
+	}, [
+		store,
+		key,
+		hasSetValue
+	]);
 	useSafeLayoutEffect(() => {
 		if (value === void 0) return;
 		store.setState(key, value);
@@ -36914,6 +37984,37 @@ function getCommonParent(items) {
 function getPrivateStore(store) {
 	return store?.__unstablePrivateStore;
 }
+const itemIdCacheThreshold = 64;
+function getCachedItemIds(items, cache) {
+	if (items.length < itemIdCacheThreshold) {
+		if (cache.ids) {
+			cache.items = void 0;
+			cache.ids = void 0;
+		}
+		return;
+	}
+	if (cache.items === items) return cache.ids;
+	const ids = /* @__PURE__ */ new Set();
+	for (const item of items) ids.add(item.id);
+	cache.items = items;
+	cache.ids = ids;
+	return ids;
+}
+function setCachedItemIds(items, cache, ids) {
+	if (items.length < itemIdCacheThreshold) {
+		if (cache.ids) {
+			cache.items = void 0;
+			cache.ids = void 0;
+		}
+		return;
+	}
+	if (!ids) {
+		ids = /* @__PURE__ */ new Set();
+		for (const item of items) ids.add(item.id);
+	}
+	cache.items = items;
+	cache.ids = ids;
+}
 /**
 * Creates a collection store.
 */
@@ -36922,6 +38023,8 @@ function createCollectionStore(props = {}) {
 	const syncState = props.store?.getState();
 	const items = defaultValue(props.items, syncState?.items, props.defaultItems, []);
 	const itemsMap = new Map(items.map((item) => [item.id, item]));
+	const itemIdCache = {};
+	const renderedItemIdCache = {};
 	const initialState = {
 		items,
 		renderedItems: defaultValue(syncState?.renderedItems, [])
@@ -36972,10 +38075,11 @@ function createCollectionStore(props = {}) {
 			};
 		});
 	});
-	const mergeItem = (item, setItems, canDeleteFromMap = false) => {
+	const mergeItem = (item, { cache, setItems, canDeleteFromMap = false }) => {
 		let prevItem;
 		setItems((items) => {
-			const index = items.findIndex(({ id }) => id === item.id);
+			const ids = !!cache.ids || items.length >= itemIdCacheThreshold && (!canDeleteFromMap || !itemsMap.has(item.id)) ? getCachedItemIds(items, cache) : void 0;
+			const index = ids && !ids.has(item.id) ? -1 : items.findIndex(({ id }) => id === item.id);
 			const nextItems = items.slice();
 			if (index !== -1) {
 				prevItem = items[index];
@@ -36988,30 +38092,48 @@ function createCollectionStore(props = {}) {
 			} else {
 				nextItems.push(item);
 				itemsMap.set(item.id, item);
+				ids?.add(item.id);
 			}
+			if (cache.ids || index === -1 && nextItems.length >= itemIdCacheThreshold) setCachedItemIds(nextItems, cache, ids);
 			return nextItems;
 		});
 		const unmergeItem = () => {
 			setItems((items) => {
+				const ids = cache.ids ? getCachedItemIds(items, cache) : void 0;
 				if (!prevItem) {
 					if (canDeleteFromMap) itemsMap.delete(item.id);
-					return items.filter(({ id }) => id !== item.id);
+					const nextItems = items.filter(({ id }) => id !== item.id);
+					ids?.delete(item.id);
+					if (cache.ids) setCachedItemIds(nextItems, cache, ids);
+					return nextItems;
 				}
 				const index = items.findIndex(({ id }) => id === item.id);
 				if (index === -1) return items;
 				const nextItems = items.slice();
 				nextItems[index] = prevItem;
 				itemsMap.set(item.id, prevItem);
+				if (cache.ids) setCachedItemIds(nextItems, cache, ids);
 				return nextItems;
 			});
 		};
 		return unmergeItem;
 	};
-	const registerItem = (item) => mergeItem(item, (getItems) => privateStore.setState("items", getItems), true);
+	const setItems = (getItems) => privateStore.setState("items", getItems);
+	const setRenderedItems = (getItems) => privateStore.setState("renderedItems", getItems);
+	const itemMergeOptions = {
+		cache: itemIdCache,
+		setItems,
+		canDeleteFromMap: true
+	};
+	const renderedItemMergeOptions = {
+		cache: renderedItemIdCache,
+		setItems: setRenderedItems
+	};
+	const registerItem = (item) => mergeItem(item, itemMergeOptions);
 	return {
 		...collection,
 		registerItem,
-		renderItem: (item) => chain(registerItem(item), mergeItem(item, (getItems) => privateStore.setState("renderedItems", getItems))),
+		renderItem: (item) => chain(registerItem(item), mergeItem(item, renderedItemMergeOptions)),
 		item: (id) => {
 			if (!id) return null;
 			let item = itemsMap.get(id);
@@ -37035,11 +38157,22 @@ function createCollectionStore(props = {}) {
 
 //#region src/composite/composite-store.ts
 const NULL_ITEM = { id: null };
+/**
+* Finds the first enabled item.
+*/
 function findFirstEnabledItem(items, excludeId) {
 	return items.find((item) => {
 		if (excludeId) return !item.disabled && item.id !== excludeId;
 		return !item.disabled;
 	});
+}
+function findLastEnabledItem(items) {
+	for (let i = items.length - 1; i >= 0; i -= 1) {
+		const item = items[i];
+		if (!item) continue;
+		if (item.disabled) continue;
+		return item;
+	}
 }
 function getEnabledItems(items, excludeId) {
 	return items.filter((item) => {
@@ -37050,6 +38183,26 @@ function getEnabledItems(items, excludeId) {
 function getItemsInRow(items, rowId) {
 	return items.filter((item) => item.rowId === rowId);
 }
+function findEnabledItemId({ items, fromIndex, step, rowId, excludeId }) {
+	for (let i = fromIndex; i >= 0 && i < items.length; i += step) {
+		const item = items[i];
+		if (!item) continue;
+		if (item.rowId !== rowId) continue;
+		if (item.disabled) continue;
+		const itemId = item.id;
+		if (excludeId != null && itemId === excludeId) continue;
+		return itemId;
+	}
+}
+/**
+* Moves all the items before the passed `id` to the end of the array. This is
+* useful when we want to loop through the items in the same row or column as
+* the first items will be placed after the last items.
+*
+* The null item that's inserted when `shouldInsertNullItem` is set to `true`
+* represents the composite container itself. When the active item is null, the
+* composite container has focus.
+*/
 function flipItems(items, activeId, shouldInsertNullItem = false) {
 	const index = items.findIndex((item) => item.id === activeId);
 	return [
@@ -37058,14 +38211,60 @@ function flipItems(items, activeId, shouldInsertNullItem = false) {
 		...items.slice(0, index)
 	];
 }
-function groupItemsByRows(items) {
+const rowMapItemThreshold = 48;
+const rowMapRowThreshold = 4;
+function groupSmallItemsByRows(items) {
 	const rows = [];
+	let previousRow;
+	let previousRowId;
 	for (const item of items) {
-		const row = rows.find((currentRow) => currentRow[0]?.rowId === item.rowId);
-		if (row) row.push(item);
-		else rows.push([item]);
+		const rowId = item.rowId;
+		if (previousRow && previousRowId === rowId) {
+			previousRow.push(item);
+			continue;
+		}
+		const row = rows.find((currentRow) => currentRow[0]?.rowId === rowId);
+		if (row) {
+			row.push(item);
+			previousRow = row;
+		} else {
+			previousRow = [item];
+			rows.push(previousRow);
+		}
+		previousRowId = rowId;
 	}
 	return rows;
+}
+function groupLargeItemsByRows(items) {
+	const firstItem = items[0];
+	if (!firstItem) return [];
+	let itemIndex = 1;
+	while (itemIndex < items.length && items[itemIndex]?.rowId === firstItem.rowId) itemIndex += 1;
+	const firstRow = items.slice(0, itemIndex);
+	if (itemIndex === items.length) return [firstRow];
+	const rows = [firstRow];
+	let rowsById;
+	for (; itemIndex < items.length; itemIndex += 1) {
+		const item = items[itemIndex];
+		if (!item) continue;
+		const row = rowsById ? rowsById.get(item.rowId) : rows.find((currentRow) => currentRow[0]?.rowId === item.rowId);
+		if (row) {
+			row.push(item);
+			continue;
+		}
+		const newRow = [item];
+		rows.push(newRow);
+		if (rowsById) rowsById.set(item.rowId, newRow);
+		else if (rows.length === rowMapRowThreshold) rowsById = new Map(rows.map((currentRow) => [currentRow[0]?.rowId, currentRow]));
+	}
+	return rows;
+}
+/**
+* Creates a two-dimensional array with items grouped by their rowId's.
+*/
+function groupItemsByRows(items) {
+	if (items.length >= rowMapItemThreshold) return groupLargeItemsByRows(items);
+	return groupSmallItemsByRows(items);
 }
 function getMaxRowLength(array) {
 	let maxLength = 0;
@@ -37137,6 +38336,39 @@ function createCompositeStore(props = {}) {
 		const isNextDirection = direction === "next" || direction === "down";
 		const canReverse = isNextDirection ? rtl && !isVerticalDirection : !rtl || isVerticalDirection;
 		const canShift = focusShift && !skip;
+		if (!skip && !focusWrap && !includesBaseElement && activeId != null) {
+			if (!isVerticalDirection ? true : !canShift && !renderedItems.some((item) => item.rowId != null)) {
+				let activeIndex = -1;
+				if (renderedItems === defaultState.renderedItems) {
+					const firstItem = renderedItems[0];
+					if (firstItem && collection.item(firstItem.id) === firstItem) {
+						const registeredItem = collection.item(activeId);
+						if (registeredItem?.id === activeId) activeIndex = renderedItems.indexOf(registeredItem);
+					}
+				}
+				if (activeIndex === -1) activeIndex = renderedItems.findIndex((item) => item.id === activeId);
+				const activeItem = renderedItems[activeIndex];
+				if (activeItem) {
+					const step = canReverse ? -1 : 1;
+					const nextId = findEnabledItemId({
+						items: renderedItems,
+						fromIndex: activeIndex + step,
+						step,
+						rowId: activeItem.rowId,
+						excludeId: activeId
+					});
+					if (nextId !== void 0) return nextId;
+					if (!(focusLoop && (isVerticalDirection ? focusLoop !== "horizontal" : focusLoop !== "vertical"))) return void 0;
+					return findEnabledItemId({
+						items: renderedItems,
+						fromIndex: step === 1 ? 0 : renderedItems.length - 1,
+						step,
+						rowId: activeItem.rowId,
+						excludeId: activeId
+					});
+				}
+			}
+		}
 		let items = !isVerticalDirection ? renderedItems : flatten2DArray(normalizeRows(groupItemsByRows(renderedItems), activeId, canShift));
 		items = canReverse ? reverseArray(items) : items;
 		items = isVerticalDirection ? verticalizeItems(items) : items;
@@ -37163,6 +38395,10 @@ function createCompositeStore(props = {}) {
 		if (!nextItem && hasNullItem) return null;
 		return nextItem?.id;
 	};
+	const getNextIdFromOptions = (direction, options) => {
+		if (typeof options === "number") return getNextId(direction, { skip: options });
+		return getNextId(direction, options);
+	};
 	return {
 		...collection,
 		...composite,
@@ -37174,23 +38410,11 @@ function createCompositeStore(props = {}) {
 			composite.setState("moves", (moves) => moves + 1);
 		},
 		first: () => findFirstEnabledItem(composite.getState().renderedItems)?.id,
-		last: () => findFirstEnabledItem(reverseArray(composite.getState().renderedItems))?.id,
-		next: (options) => {
-			if (options !== void 0 && typeof options === "number") options = { skip: options };
-			return getNextId("next", options);
-		},
-		previous: (options) => {
-			if (options !== void 0 && typeof options === "number") options = { skip: options };
-			return getNextId("previous", options);
-		},
-		down: (options) => {
-			if (options !== void 0 && typeof options === "number") options = { skip: options };
-			return getNextId("down", options);
-		},
-		up: (options) => {
-			if (options !== void 0 && typeof options === "number") options = { skip: options };
-			return getNextId("up", options);
-		}
+		last: () => findLastEnabledItem(composite.getState().renderedItems)?.id,
+		next: (options) => getNextIdFromOptions("next", options),
+		previous: (options) => getNextIdFromOptions("previous", options),
+		down: (options) => getNextIdFromOptions("down", options),
+		up: (options) => getNextIdFromOptions("up", options)
 	};
 }
 //#endregion
@@ -37205,19 +38429,20 @@ function createCompositeStore(props = {}) {
 * Creates a disclosure store.
 */
 function createDisclosureStore(props = {}) {
-	const store = mergeStore(props.store, dist_omit(props.disclosure, ["contentElement", "disclosureElement"]));
+	const store = props.store || props.disclosure ? mergeStore(props.store, dist_omit(props.disclosure, ["contentElement", "disclosureElement"])) : void 0;
 	throwOnConflictingProps(props, store);
 	const syncState = store?.getState();
 	const open = defaultValue(props.open, syncState?.open, props.defaultOpen, false);
 	const animated = defaultValue(props.animated, syncState?.animated, false);
-	const disclosure = createStore({
+	const initialState = {
 		open,
 		animated,
 		animating: !!animated && open,
 		mounted: open,
 		contentElement: defaultValue(syncState?.contentElement, null),
 		disclosureElement: defaultValue(syncState?.disclosureElement, null)
-	}, store);
+	};
+	const disclosure = store ? createStore(initialState, store) : createStore(initialState);
 	setup(disclosure, () => sync(disclosure, ["animated", "animating"], (state) => {
 		if (state.animated) return;
 		disclosure.setState("animating", false);
@@ -37309,7 +38534,7 @@ function createPopoverStore({ popover: otherPopover, ...props } = {}) {
 
 
 //#region src/combobox/combobox-store.ts
-const isTouchSafari = dist_isSafari() && isTouchDevice();
+const isTouchSafari = isSafari() && isTouchDevice();
 function createComboboxStore({ tag, ...props } = {}) {
 	const store = mergeStore(props.store, dist_pick(tag, ["value", "rtl"]));
 	throwOnConflictingProps(props, store);
@@ -37460,8 +38685,10 @@ const useComboboxLabel = createHook(function useComboboxLabel({ store, ...props 
 	const context = useComboboxProviderContext();
 	store = store || context;
 	invariant(store,  false && 0);
+	const baseElement = useStoreState(store, "baseElement");
+	useAttribute(baseElement, "id");
 	props = {
-		htmlFor: useStoreState(store, (state) => state.baseElement?.id),
+		htmlFor: baseElement?.id,
 		...props
 	};
 	return removeUndefinedValues(props);
@@ -37483,7 +38710,8 @@ const useComboboxLabel = createHook(function useComboboxLabel({ store, ...props 
 * ```
 */
 const ComboboxLabel = memo(forwardRef(function ComboboxLabel(props) {
-	return createElement(TagName, useComboboxLabel(props));
+	const htmlProps = useComboboxLabel(props);
+	return createElement(TagName, htmlProps);
 }));
 //#endregion
 
@@ -37507,7 +38735,10 @@ const FocusableContext = (0,external_React_.createContext)(true);
 //#region src/focusable/focusable.tsx
 const focusable_TagName = "div";
 const accessibleWhenDisabledSymbol = Symbol("accessibleWhenDisabled");
-const isSafariBrowser = dist_isSafari();
+const isSafariBrowser = isSafari();
+const nativeTabbableMask = 1;
+const supportsDisabledMask = 2;
+const defaultElementCapabilities = 3;
 const alwaysFocusVisibleInputTypes = [
 	"text",
 	"search",
@@ -37540,21 +38771,11 @@ function supportsDisabledAttribute(tagName) {
 	if (!tagName) return true;
 	return tagName === "button" || tagName === "input" || tagName === "select" || tagName === "textarea";
 }
-const focusable_buttonInputTypes = [
-	"button",
-	"color",
-	"file",
-	"image",
-	"reset",
-	"submit"
-];
-function needsSafariTabIndex(tagName, inputType) {
-	if (tagName === "button") return true;
-	if (tagName === "input" && inputType) {
-		if (inputType === "checkbox" || inputType === "radio") return true;
-		return focusable_buttonInputTypes.includes(inputType);
-	}
-	return false;
+function getElementCapabilities(tagName) {
+	let capabilities = 0;
+	if (isNativeTabbable(tagName)) capabilities |= nativeTabbableMask;
+	if (supportsDisabledAttribute(tagName)) capabilities |= supportsDisabledMask;
+	return capabilities;
 }
 function isNativeSubmitControl(element) {
 	if (element.tagName === "BUTTON") {
@@ -37633,8 +38854,7 @@ const useFocusable = createHook(function useFocusable({ focusable = true, access
 		element?.removeAttribute("data-focus-visible");
 	});
 	(0,external_React_.useEffect)(() => {
-		if (!focusable) return;
-		if (!trulyDisabled) return;
+		if (focusable && !trulyDisabled) return;
 		cleanupFocusVisible(ref.current);
 		if (focusVisible) setFocusVisible(false);
 	}, [
@@ -37738,17 +38958,24 @@ const useFocusable = createHook(function useFocusable({ focusable = true, access
 			element.focus();
 		});
 	});
-	const tagName = useTagName(ref);
-	const nativeTabbable = focusable && isNativeTabbable(tagName);
-	const supportsDisabled = focusable && supportsDisabledAttribute(tagName);
+	const [elementCapabilities, setElementCapabilities] = (0,external_React_.useState)(defaultElementCapabilities);
+	useSafeLayoutEffect(() => {
+		const element = ref.current;
+		if (!element) return;
+		const nextCapabilities = getElementCapabilities(element.tagName.toLowerCase());
+		if (nextCapabilities === defaultElementCapabilities) return;
+		setElementCapabilities(nextCapabilities);
+	}, []);
+	const nativeTabbable = focusable && !!(elementCapabilities & nativeTabbableMask);
+	const supportsDisabled = focusable && !!(elementCapabilities & supportsDisabledMask);
 	const [safariTabIndex, setSafariTabIndex] = (0,external_React_.useState)(false);
 	if (isSafariBrowser) (0,external_React_.useEffect)(() => {
 		if (!focusable) return;
 		const element = ref.current;
 		if (!element) return;
-		const tag = element.tagName.toLowerCase();
-		const type = element.type;
-		setSafariTabIndex(needsSafariTabIndex(tag, type));
+		const { type } = element;
+		const isNativeCheckboxOrRadio = element.tagName === "INPUT" && (type === "checkbox" || type === "radio");
+		setSafariTabIndex(isButton(element) || isNativeCheckboxOrRadio);
 	}, [focusable]);
 	const styleProp = props.style;
 	const style = (0,external_React_.useMemo)(() => {
@@ -37807,7 +39034,8 @@ const useFocusable = createHook(function useFocusable({ focusable = true, access
 * ```
 */
 const Focusable = forwardRef(function Focusable(props) {
-	return createElement(focusable_TagName, useFocusable(props));
+	const htmlProps = useFocusable(props);
+	return createElement(focusable_TagName, htmlProps);
 });
 //#endregion
 
@@ -37816,52 +39044,17 @@ const Focusable = forwardRef(function Focusable(props) {
 ;// ./node_modules/@ariakit/react-components/dist/composite/utils.js
 "use client";
 
+
 //#region src/composite/utils.ts
-const utils_NULL_ITEM = (/* unused pure expression or super */ null && ({ id: null }));
+const utils_flipItems = flipItems;
+const utils_findFirstEnabledItem = findFirstEnabledItem;
+const utils_groupItemsByRows = groupItemsByRows;
 /**
-* Moves all the items before the passed `id` to the end of the array. This is
-* useful when we want to loop through the items in the same row or column as
-* the first items will be placed after the last items.
-*
-* The null item that's inserted when `shouldInsertNullItem` is set to `true`
-* represents the composite container itself. When the active item is null, the
-* composite container has focus.
-*/
-function utils_flipItems(items, activeId, shouldInsertNullItem = false) {
-	const index = items.findIndex((item) => item.id === activeId);
-	return [
-		...items.slice(index + 1),
-		...shouldInsertNullItem ? [utils_NULL_ITEM] : [],
-		...items.slice(0, index)
-	];
-}
-/**
-* Finds the first enabled item.
-*/
-function utils_findFirstEnabledItem(items, excludeId) {
-	return items.find((item) => {
-		if (excludeId) return !item.disabled && item.id !== excludeId;
-		return !item.disabled;
-	});
-}
-/**
-* Finds the first enabled item by its id.
+* Returns the store item with the given id (enabled or not), or `null`.
 */
 function getEnabledItem(store, id) {
 	if (!id) return null;
 	return store.item(id) || null;
-}
-/**
-* Creates a two-dimensional array with items grouped by their rowId's.
-*/
-function utils_groupItemsByRows(items) {
-	const rows = [];
-	for (const item of items) {
-		const row = rows.find((currentRow) => currentRow[0]?.rowId === item.rowId);
-		if (row) row.push(item);
-		else rows.push([item]);
-	}
-	return rows;
 }
 /**
 * Selects text field contents even if it's a content editable element.
@@ -37964,7 +39157,7 @@ function withBaseScrollPreserved(store, callback) {
 function useScheduleFocus(store) {
 	const [scheduled, setScheduled] = (0,external_React_.useState)(false);
 	const schedule = (0,external_React_.useCallback)(() => setScheduled(true), []);
-	const activeItem = useStoreState(store, (state) => getEnabledItem(store, state.activeId));
+	const activeItem = useStoreState(store, scheduled ? ["activeId", "items"] : [], (state) => scheduled ? getEnabledItem(store, state.activeId) : null);
 	(0,external_React_.useEffect)(() => {
 		const activeElement = activeItem?.element;
 		if (!scheduled) return;
@@ -37980,6 +39173,45 @@ function useScheduleFocus(store) {
 	]);
 	return schedule;
 }
+/**
+* Renders nothing and reacts to the `moves` state by focusing on the active
+* item. This lives in a separate memoized component so moving through items
+* doesn't re-render the whole composite component, and composite re-renders
+* don't re-render this component. It's only rendered when the `composite` prop
+* is enabled, so the `moves` subscription doesn't run for non-composite
+* widgets.
+*/
+const CompositeFocusOnMove = memo(function CompositeFocusOnMove({ store, focusOnMove, previousElementRef }) {
+	const moves = useStoreState(store, "moves");
+	const baseElement = useStoreState(store, "baseElement");
+	(0,external_React_.useEffect)(() => {
+		if (!moves) return;
+		if (!focusOnMove) return;
+		const { activeId } = store.getState();
+		const itemElement = getEnabledItem(store, activeId)?.element;
+		if (!itemElement) return;
+		withBaseScrollPreserved(store, () => focusIntoView(itemElement));
+	}, [
+		store,
+		moves,
+		focusOnMove
+	]);
+	useSafeLayoutEffect(() => {
+		if (!moves) return;
+		if (!baseElement) return;
+		const { activeId } = store.getState();
+		if (!(activeId === null)) return;
+		const previousElement = previousElementRef.current;
+		previousElementRef.current = null;
+		if (previousElement) fireBlurEvent(previousElement, { relatedTarget: baseElement });
+		if (!hasFocus(baseElement)) baseElement.focus();
+	}, [
+		store,
+		moves,
+		baseElement
+	]);
+	return null;
+});
 /**
 * Returns props to create a `Composite` component.
 * @see https://ariakit.com/components/composite
@@ -38000,41 +39232,9 @@ const useComposite = createHook(function useComposite({ store, composite = true,
 	const ref = (0,external_React_.useRef)(null);
 	const previousElementRef = (0,external_React_.useRef)(null);
 	const scheduleFocus = useScheduleFocus(store);
-	const moves = useStoreState(store, "moves");
 	const [, setBaseElement] = useTransactionState(composite ? store.setBaseElement : null);
-	(0,external_React_.useEffect)(() => {
-		if (!store) return;
-		if (!moves) return;
-		if (!composite) return;
-		if (!focusOnMove) return;
-		const { activeId } = store.getState();
-		const itemElement = getEnabledItem(store, activeId)?.element;
-		if (!itemElement) return;
-		withBaseScrollPreserved(store, () => focusIntoView(itemElement));
-	}, [
-		store,
-		moves,
-		composite,
-		focusOnMove
-	]);
-	useSafeLayoutEffect(() => {
-		if (!store) return;
-		if (!moves) return;
-		if (!composite) return;
-		const { baseElement, activeId } = store.getState();
-		if (!(activeId === null)) return;
-		if (!baseElement) return;
-		const previousElement = previousElementRef.current;
-		previousElementRef.current = null;
-		if (previousElement) fireBlurEvent(previousElement, { relatedTarget: baseElement });
-		if (!hasFocus(baseElement)) baseElement.focus();
-	}, [
-		store,
-		moves,
-		composite
-	]);
-	const activeId = useStoreState(store, "activeId");
 	const virtualFocus = useStoreState(store, "virtualFocus");
+	const activeId = useStoreState(store, composite && virtualFocus ? ["activeId"] : [], (state) => composite && virtualFocus ? state.activeId : null);
 	useSafeLayoutEffect(() => {
 		if (!store) return;
 		if (!composite) return;
@@ -38107,7 +39307,7 @@ const useComposite = createHook(function useComposite({ store, composite = true,
 		if (event.defaultPrevented) return;
 		if (!store) return;
 		if (!isSelfTarget(event)) return;
-		const { orientation, renderedItems, activeId } = store.getState();
+		const { orientation, renderedItems, activeId, rtl } = store.getState();
 		if (getEnabledItem(store, activeId)?.element?.isConnected) return;
 		const isVertical = orientation !== "horizontal";
 		const isHorizontal = orientation !== "vertical";
@@ -38119,9 +39319,9 @@ const useComposite = createHook(function useComposite({ store, composite = true,
 		};
 		const action = {
 			ArrowUp: (grid || isVertical) && up,
-			ArrowRight: (grid || isHorizontal) && store.first,
+			ArrowRight: (grid || isHorizontal) && (rtl ? store.last : store.first),
 			ArrowDown: (grid || isVertical) && store.first,
-			ArrowLeft: (grid || isHorizontal) && store.last,
+			ArrowLeft: (grid || isHorizontal) && (rtl ? store.first : store.last),
 			Home: store.first,
 			End: store.last,
 			PageUp: store.first,
@@ -38136,16 +39336,24 @@ const useComposite = createHook(function useComposite({ store, composite = true,
 			}
 		}
 	});
-	props = useWrapElement(props, (element) => /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(CompositeScopedContextProvider, {
+	props = useWrapElement(props, (element) => /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)(CompositeScopedContextProvider, {
 		value: store,
-		children: element
-	}), [store]);
+		children: [element, composite && /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(CompositeFocusOnMove, {
+			store,
+			focusOnMove,
+			previousElementRef
+		})]
+	}), [
+		store,
+		composite,
+		focusOnMove
+	]);
 	props = {
-		"aria-activedescendant": useStoreState(store, (state) => {
+		"aria-activedescendant": useStoreState(store, composite && virtualFocus ? ["items"] : [], () => {
 			if (!store) return;
 			if (!composite) return;
-			if (!state.virtualFocus) return;
-			return getEnabledItem(store, state.activeId)?.id;
+			if (!virtualFocus) return;
+			return getEnabledItem(store, activeId)?.id;
 		}),
 		...props,
 		ref: useMergeRefs(ref, setBaseElement, props.ref),
@@ -38157,7 +39365,7 @@ const useComposite = createHook(function useComposite({ store, composite = true,
 		onKeyDown
 	};
 	props = useFocusable({
-		focusable: useStoreState(store, (state) => composite && (state.virtualFocus || state.activeId === null)),
+		focusable: useStoreState(store, composite && !virtualFocus ? ["activeId"] : [], (state) => composite && (virtualFocus || state.activeId === null)),
 		...props
 	});
 	return props;
@@ -38175,7 +39383,8 @@ const useComposite = createHook(function useComposite({ store, composite = true,
 * ```
 */
 const Composite = forwardRef(function Composite(props) {
-	return createElement(composite_TagName, useComposite(props));
+	const htmlProps = useComposite(props);
+	return createElement(composite_TagName, htmlProps);
 });
 //#endregion
 
@@ -38221,7 +39430,8 @@ const usePopoverAnchor = createHook(function usePopoverAnchor({ store, ...props 
 * ```
 */
 const PopoverAnchor = forwardRef(function PopoverAnchor(props) {
-	return createElement(popover_anchor_TagName, usePopoverAnchor(props));
+	const htmlProps = usePopoverAnchor(props);
+	return createElement(popover_anchor_TagName, htmlProps);
 });
 //#endregion
 
@@ -38246,11 +39456,11 @@ function isFirstItemAutoSelected(items, activeValue, autoSelect) {
 function hasCompletionString(value, activeValue) {
 	if (!activeValue) return false;
 	if (value == null) return false;
-	value = normalizeString(value);
-	return activeValue.length > value.length && activeValue.toLowerCase().indexOf(value.toLowerCase()) === 0;
-}
-function isInputEvent(event) {
-	return event.type === "input";
+	const normalizedValue = normalizeString(value);
+	const normalizedActiveValue = normalizeString(activeValue);
+	if (normalizedValue.length !== value.length) return false;
+	if (normalizedActiveValue.length !== activeValue.length) return false;
+	return normalizedActiveValue.length > normalizedValue.length && normalizedActiveValue.toLowerCase().startsWith(normalizedValue.toLowerCase());
 }
 function isAriaAutoCompleteValue(value) {
 	return value === "inline" || value === "list" || value === "both" || value === "none";
@@ -38284,7 +39494,14 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 	const [valueUpdated, forceValueUpdate] = useForceUpdate();
 	const canAutoSelectRef = (0,external_React_.useRef)(false);
 	const composingRef = (0,external_React_.useRef)(false);
-	const autoSelect = useStoreState(store, (state) => state.virtualFocus && autoSelectProp);
+	const compositionEndFrameRef = (0,external_React_.useRef)(null);
+	const cancelCompositionEndFrame = () => {
+		const frame = compositionEndFrameRef.current;
+		if (frame == null) return;
+		cancelAnimationFrame(frame);
+		compositionEndFrameRef.current = null;
+	};
+	const autoSelect = useStoreState(store, ["virtualFocus"], (state) => state.virtualFocus && autoSelectProp);
 	const inline = autoComplete === "inline" || autoComplete === "both";
 	const [canInline, setCanInline] = (0,external_React_.useState)(inline);
 	useUpdateLayoutEffect(() => {
@@ -38298,7 +39515,11 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 			prevSelectedValueRef.current = prev.selectedValue;
 		});
 	}, [store]);
-	const inlineActiveValue = useStoreState(store, (state) => {
+	const inlineActiveValue = useStoreState(store, [
+		"activeValue",
+		"selectedValue",
+		"activeId"
+	], (state) => {
 		if (!inline) return;
 		if (!canInline) return;
 		if (state.activeValue && Array.isArray(state.selectedValue)) {
@@ -38314,7 +39535,10 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 		if (!inline) return storeValue;
 		if (!canInline) return storeValue;
 		if (isFirstItemAutoSelected(items, inlineActiveValue, autoSelect)) {
-			if (hasCompletionString(storeValue, inlineActiveValue)) return storeValue + (inlineActiveValue?.slice(storeValue.length) || "");
+			if (hasCompletionString(storeValue, inlineActiveValue)) {
+				const slice = inlineActiveValue?.slice(storeValue.length) || "";
+				return storeValue + slice;
+			}
 			return storeValue;
 		}
 		return inlineActiveValue || storeValue;
@@ -38367,7 +39591,6 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 		autoSelect,
 		storeValue
 	]);
-	const scrollingElementRef = (0,external_React_.useRef)(null);
 	const getAutoSelectIdProp = useEvent(getAutoSelectId);
 	const autoSelectIdRef = (0,external_React_.useRef)(null);
 	const autoSelectMovedRef = (0,external_React_.useRef)(void 0);
@@ -38378,7 +39601,6 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 		if (!contentElement) return;
 		const scrollingElement = getScrollingElement(contentElement);
 		if (!scrollingElement) return;
-		scrollingElementRef.current = scrollingElement;
 		const onUserScroll = () => {
 			canAutoSelectRef.current = false;
 			userScrolledRef.current = true;
@@ -38428,6 +39650,7 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 		const canAutoSelect = canAutoSelectRef.current;
 		if (!store) return;
 		if (!open) return;
+		if (composingRef.current) return;
 		if (!canAutoSelect && (!resetValueOnSelect || userScrolledRef.current)) return;
 		const { baseElement, contentElement, activeId } = store.getState();
 		if (baseElement && !hasFocus(baseElement)) return;
@@ -38527,6 +39750,14 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 		if (showOnChangeProp(event)) store.show();
 		if (!autoSelect || !canAutoSelectRef.current) store.setActiveId(null);
 	});
+	(0,external_React_.useEffect)(() => cancelCompositionEndFrame, []);
+	const onCompositionStartProp = props.onCompositionStart;
+	const onCompositionStart = useEvent((event) => {
+		cancelCompositionEndFrame();
+		canAutoSelectRef.current = false;
+		composingRef.current = true;
+		onCompositionStartProp?.(event);
+	});
 	const onCompositionEndProp = props.onCompositionEnd;
 	const onCompositionEnd = useEvent((event) => {
 		canAutoSelectRef.current = true;
@@ -38534,7 +39765,12 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 		onCompositionEndProp?.(event);
 		if (event.defaultPrevented) return;
 		if (!autoSelect) return;
-		forceValueUpdate();
+		cancelCompositionEndFrame();
+		compositionEndFrameRef.current = requestAnimationFrame(() => {
+			compositionEndFrameRef.current = null;
+			if (composingRef.current) return;
+			forceValueUpdate();
+		});
 	});
 	const onMouseDownProp = props.onMouseDown;
 	const blurActiveItemOnClickProp = useBooleanEvent(blurActiveItemOnClick ?? (() => store.getState().includesBaseElement));
@@ -38578,11 +39814,10 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 	const onBlur = useEvent((event) => {
 		canAutoSelectRef.current = false;
 		onBlurProp?.(event);
-		if (event.defaultPrevented) return;
 	});
 	const id = dist_useId(props.id);
 	const ariaAutoComplete = isAriaAutoCompleteValue(autoComplete) ? autoComplete : void 0;
-	const isActiveItem = useStoreState(store, (state) => state.activeId === null);
+	const isActiveItem = useStoreState(store, ["activeId"], (state) => state.activeId === null);
 	props = {
 		role: "combobox",
 		"aria-autocomplete": ariaAutoComplete,
@@ -38595,6 +39830,7 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 		id,
 		ref: useMergeRefs(ref, props.ref),
 		onChange,
+		onCompositionStart,
 		onCompositionEnd,
 		onMouseDown,
 		onKeyDown,
@@ -38635,7 +39871,8 @@ const useCombobox = createHook(function useCombobox({ store, focusable = true, a
 * ```
 */
 const combobox_Combobox = forwardRef(function Combobox(props) {
-	return createElement(combobox_TagName, useCombobox(props));
+	const htmlProps = useCombobox(props);
+	return createElement(combobox_TagName, htmlProps);
 });
 //#endregion
 
@@ -38657,19 +39894,28 @@ function afterTimeout(timeoutMs, cb) {
 	const timeoutId = setTimeout(cb, timeoutMs);
 	return () => clearTimeout(timeoutId);
 }
-function disclosure_content_afterPaint(cb) {
-	let raf = requestAnimationFrame(() => {
-		raf = requestAnimationFrame(cb);
-	});
-	return () => cancelAnimationFrame(raf);
+function parseCSSTime(time) {
+	const value = time?.trim() || "0s";
+	const multiplier = value.endsWith("ms") ? 1 : 1e3;
+	const parsed = Number.parseFloat(value) * multiplier;
+	return Number.isNaN(parsed) ? 0 : parsed;
 }
-function parseCSSTime(...times) {
-	return times.join(", ").split(", ").reduce((longestTime, currentTimeString) => {
-		const multiplier = currentTimeString.endsWith("ms") ? 1 : 1e3;
-		const currentTime = Number.parseFloat(currentTimeString || "0s") * multiplier;
-		if (currentTime > longestTime) return currentTime;
-		return longestTime;
-	}, 0);
+function getEndTime(names, delays, durations) {
+	const nameList = names.split(",");
+	const delayList = delays.split(",");
+	const durationList = durations.split(",");
+	let endTime = 0;
+	for (const [index, name] of nameList.entries()) {
+		if (name.trim() === "none") continue;
+		const delay = parseCSSTime(delayList[index % delayList.length]);
+		const duration = parseCSSTime(durationList[index % durationList.length]);
+		endTime = Math.max(endTime, delay + duration);
+	}
+	return endTime;
+}
+function getElementEndTime(element) {
+	const { transitionProperty, transitionDuration, transitionDelay, animationName, animationDuration, animationDelay } = getComputedStyle(element);
+	return Math.max(getEndTime(transitionProperty, transitionDelay, transitionDuration), getEndTime(animationName, animationDelay, animationDuration));
 }
 function isHidden(mounted, hidden, alwaysVisible) {
 	return !alwaysVisible && hidden !== false && (!mounted || !!hidden);
@@ -38685,17 +39931,19 @@ function isHidden(mounted, hidden, alwaysVisible) {
 * <Role {...props}>Content</Role>
 * ```
 */
-const useDisclosureContent = createHook(function useDisclosureContent({ store, alwaysVisible, ...props }) {
+const useDisclosureContent = createHook(function useDisclosureContent({ store, alwaysVisible, unstable_otherElementRef: otherElementRef, ...props }) {
 	const context = useDisclosureProviderContext();
 	store = store || context;
 	invariant(store,  false && 0);
 	const ref = (0,external_React_.useRef)(null);
 	const id = dist_useId(props.id);
 	const [transition, setTransition] = (0,external_React_.useState)(null);
-	const open = useStoreState(store, "open");
-	const mounted = useStoreState(store, "mounted");
-	const animated = useStoreState(store, "animated");
-	const contentElement = useStoreState(store, "contentElement");
+	const { open, mounted, animated, contentElement } = useStoreStateObject(store, {
+		open: "open",
+		mounted: "mounted",
+		animated: "animated",
+		contentElement: "contentElement"
+	});
 	const otherElement = useStoreState(store.disclosure, "contentElement");
 	const hasClosedRef = (0,external_React_.useRef)(false);
 	useSafeLayoutEffect(() => {
@@ -38728,7 +39976,7 @@ const useDisclosureContent = createHook(function useDisclosureContent({ store, a
 			setTransition(null);
 			return;
 		}
-		return disclosure_content_afterPaint(() => {
+		return afterPaint(() => {
 			setTransition(open ? "enter" : mounted ? "leave" : null);
 		});
 	}, [
@@ -38747,9 +39995,11 @@ const useDisclosureContent = createHook(function useDisclosureContent({ store, a
 		if (transition === "leave" && open) return;
 		if (transition === "enter" && !open) return;
 		if (typeof animated === "number") return afterTimeout(animated, stopAnimationSync);
-		const { transitionDuration, animationDuration, transitionDelay, animationDelay } = getComputedStyle(contentElement);
-		const { transitionDuration: transitionDuration2 = "0", animationDuration: animationDuration2 = "0", transitionDelay: transitionDelay2 = "0", animationDelay: animationDelay2 = "0" } = otherElement ? getComputedStyle(otherElement) : {};
-		const timeout = parseCSSTime(transitionDelay, animationDelay, transitionDelay2, animationDelay2) + parseCSSTime(transitionDuration, animationDuration, transitionDuration2, animationDuration2);
+		const elements = [contentElement];
+		if (otherElement) elements.push(otherElement);
+		const relatedElement = otherElementRef?.current;
+		if (relatedElement) elements.push(relatedElement);
+		const timeout = Math.max(...elements.map(getElementEndTime));
 		if (!timeout) {
 			if (transition === "enter") store.setState("animated", false);
 			stopAnimation();
@@ -38761,6 +40011,7 @@ const useDisclosureContent = createHook(function useDisclosureContent({ store, a
 		animated,
 		contentElement,
 		otherElement,
+		otherElementRef,
 		open,
 		transition
 	]);
@@ -38790,7 +40041,8 @@ const useDisclosureContent = createHook(function useDisclosureContent({ store, a
 	return removeUndefinedValues(props);
 });
 const DisclosureContentImpl = forwardRef(function DisclosureContentImpl(props) {
-	return createElement(disclosure_content_TagName, useDisclosureContent(props));
+	const htmlProps = useDisclosureContent(props);
+	return createElement(disclosure_content_TagName, htmlProps);
 });
 /**
 * Renders an element that can be shown or hidden by a
@@ -38806,7 +40058,7 @@ const DisclosureContentImpl = forwardRef(function DisclosureContentImpl(props) {
 */
 const DisclosureContent = forwardRef(function DisclosureContent({ unmountOnHide, ...props }) {
 	const context = useDisclosureProviderContext();
-	if (useStoreState(props.store || context, (state) => !unmountOnHide || state?.mounted) === false) return null;
+	if (useStoreState(props.store || context, ["mounted"], (state) => !unmountOnHide || state?.mounted) === false) return null;
 	return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(DisclosureContentImpl, { ...props });
 });
 //#endregion
@@ -38852,7 +40104,7 @@ const useComboboxList = createHook(function useComboboxList({ store, alwaysVisib
 		...props.style,
 		display: "none"
 	} : props.style;
-	const multiSelectable = useStoreState(store, (state) => Array.isArray(state.selectedValue));
+	const multiSelectable = useStoreState(store, ["selectedValue"], (state) => Array.isArray(state.selectedValue));
 	const role = useAttribute(ref, "role", props.role);
 	const ariaMultiSelectable = role === "listbox" || role === "tree" || role === "grid" ? multiSelectable || void 0 : void 0;
 	const [hasListboxInside, setHasListboxInside] = (0,external_React_.useState)(false);
@@ -38914,14 +40166,31 @@ const useComboboxList = createHook(function useComboboxList({ store, alwaysVisib
 * ```
 */
 const ComboboxList = forwardRef(function ComboboxList(props) {
-	return createElement(combobox_list_TagName, useComboboxList(props));
+	const htmlProps = useComboboxList(props);
+	return createElement(combobox_list_TagName, htmlProps);
 });
 //#endregion
 
 
 //# sourceMappingURL=combobox-list.js.map
+;// ./node_modules/@ariakit/react-components/dist/button/utils.js
+"use client";
+//#region src/button/utils.ts
+function withDefaultButtonType(props) {
+	const { render, type } = props;
+	if (render || type !== void 0) return props;
+	return {
+		...props,
+		type: "button"
+	};
+}
+//#endregion
+
+
+//# sourceMappingURL=utils.js.map
 ;// ./node_modules/@ariakit/react-components/dist/command/command.js
 "use client";
+
 
 
 
@@ -38951,14 +40220,23 @@ const symbol = Symbol("command");
 const useCommand = createHook(function useCommand({ clickOnEnter = true, clickOnSpace = true, ...props }) {
 	const ref = (0,external_React_.useRef)(null);
 	const [isNativeButton, setIsNativeButton] = (0,external_React_.useState)(false);
+	const type = props.type;
 	(0,external_React_.useEffect)(() => {
-		if (!ref.current) return;
-		setIsNativeButton(isButton(ref.current));
-	}, []);
+		const element = ref.current;
+		if (!element) return;
+		const nativeButton = isButton(element);
+		if (type !== void 0 && nativeButton && element.type === "button") return;
+		setIsNativeButton(nativeButton);
+	}, [type]);
 	const [active, setActive] = (0,external_React_.useState)(false);
 	const activeRef = (0,external_React_.useRef)(false);
 	const disabled = disabledFromProps(props);
 	const [isDuplicate, metadataProps] = useMetadataProps(props, symbol, true);
+	useSafeLayoutEffect(() => {
+		if (!disabled) return;
+		activeRef.current = false;
+		setActive(false);
+	}, [disabled]);
 	const onKeyDownProp = props.onKeyDown;
 	const onKeyDown = useEvent((event) => {
 		onKeyDownProp?.(event);
@@ -38984,7 +40262,7 @@ const useCommand = createHook(function useCommand({ clickOnEnter = true, clickOn
 					event.preventDefault();
 					const { view, ...eventInit } = event;
 					const click = () => fireClickEvent(element, eventInit);
-					if (dist_isFirefox()) queueBeforeEvent(element, "keyup", click);
+					if (isFirefox()) queueBeforeEvent(element, "keyup", click);
 					else queueMicrotask(click);
 				}
 			} else if (isSpace) {
@@ -38999,21 +40277,28 @@ const useCommand = createHook(function useCommand({ clickOnEnter = true, clickOn
 	const onKeyUpProp = props.onKeyUp;
 	const onKeyUp = useEvent((event) => {
 		onKeyUpProp?.(event);
-		if (event.defaultPrevented) return;
 		if (isDuplicate) return;
+		const isSpace = clickOnSpace && event.key === " ";
+		if (!activeRef.current || !isSpace) return;
+		const nativeClick = isNativeClick(event);
+		activeRef.current = false;
+		if (!nativeClick) setActive(false);
+		if (event.defaultPrevented) return;
+		if (!isSelfTarget(event)) return;
 		if (disabled) return;
 		if (event.metaKey) return;
-		const isSpace = clickOnSpace && event.key === " ";
-		if (activeRef.current && isSpace) {
-			activeRef.current = false;
-			if (!isNativeClick(event)) {
-				event.preventDefault();
-				setActive(false);
-				const element = event.currentTarget;
-				const { view, ...eventInit } = event;
-				queueMicrotask(() => fireClickEvent(element, eventInit));
-			}
-		}
+		if (nativeClick) return;
+		event.preventDefault();
+		const element = event.currentTarget;
+		const { view, ...eventInit } = event;
+		queueMicrotask(() => fireClickEvent(element, eventInit));
+	});
+	const onBlurProp = props.onBlur;
+	const onBlur = useEvent((event) => {
+		onBlurProp?.(event);
+		if (!activeRef.current) return;
+		activeRef.current = false;
+		setActive(false);
 	});
 	props = {
 		"data-active": active || void 0,
@@ -39022,7 +40307,8 @@ const useCommand = createHook(function useCommand({ clickOnEnter = true, clickOn
 		...props,
 		ref: useMergeRefs(ref, props.ref),
 		onKeyDown,
-		onKeyUp
+		onKeyUp,
+		onBlur
 	};
 	props = useFocusable(props);
 	return props;
@@ -39045,7 +40331,8 @@ const useCommand = createHook(function useCommand({ clickOnEnter = true, clickOn
 * ```
 */
 const Command = forwardRef(function Command(props) {
-	return createElement(command_TagName, useCommand(props));
+	const htmlProps = useCommand(withDefaultButtonType(props));
+	return createElement(command_TagName, htmlProps);
 });
 //#endregion
 
@@ -39115,7 +40402,8 @@ const useCollectionItem = createHook(function useCollectionItem({ store, shouldR
 * ```
 */
 const CollectionItem = forwardRef(function CollectionItem(props) {
-	return createElement(collection_item_TagName, useCollectionItem(props));
+	const htmlProps = useCollectionItem(props);
+	return createElement(collection_item_TagName, htmlProps);
 });
 //#endregion
 
@@ -39123,6 +40411,8 @@ const CollectionItem = forwardRef(function CollectionItem(props) {
 //# sourceMappingURL=collection-item.js.map
 ;// ./node_modules/@ariakit/react-components/dist/composite/composite-item.js
 "use client";
+
+
 
 
 
@@ -39198,19 +40488,18 @@ const useCompositeItem = createHook(function useCompositeItem({ store, rowId: ro
 	const ref = (0,external_React_.useRef)(null);
 	const row = (0,external_React_.useContext)(CompositeRowContext);
 	const trulyDisabled = disabledFromProps(props) && !props.accessibleWhenDisabled;
-	const { rowId, baseElement, isActiveItem, ariaSetSize, ariaPosInSet, isTabbable } = useStoreStateObject(store, {
-		rowId(state) {
-			if (rowIdProp) return rowIdProp;
-			if (!state) return;
-			if (!row?.baseElement) return;
-			if (row.baseElement !== state.baseElement) return;
-			return row.id;
-		},
+	const shouldRegisterItem = props.shouldRegisterItem;
+	const getRowId = (state) => {
+		if (rowIdProp) return rowIdProp;
+		if (!state) return;
+		if (!row?.baseElement) return;
+		if (row.baseElement !== state.baseElement) return;
+		return row.id;
+	};
+	const { rowId, baseElement, ariaSetSize, ariaPosInSet } = useStoreStateObject(store, ["baseElement", "renderedItems"], {
+		rowId: getRowId,
 		baseElement(state) {
 			return state?.baseElement || void 0;
-		},
-		isActiveItem(state) {
-			return !!state && state.activeId === id;
 		},
 		ariaSetSize(state) {
 			if (ariaSetSizeProp != null) return ariaSetSizeProp;
@@ -39224,8 +40513,19 @@ const useCompositeItem = createHook(function useCompositeItem({ store, rowId: ro
 			if (!state) return;
 			if (!row?.ariaPosInSet) return;
 			if (row.baseElement !== state.baseElement) return;
+			const rowId = getRowId(state);
 			const itemsInRow = state.renderedItems.filter((item) => item.rowId === rowId);
 			return row.ariaPosInSet + itemsInRow.findIndex((item) => item.id === id);
+		}
+	});
+	const { isActiveItem, isTabbable } = useStoreStateObject(store, [
+		"activeId",
+		"renderedItems",
+		"virtualFocus",
+		"items"
+	], {
+		isActiveItem(state) {
+			return !!state && state.activeId === id;
 		},
 		isTabbable(state) {
 			if (!state?.renderedItems.length) return true;
@@ -39256,6 +40556,7 @@ const useCompositeItem = createHook(function useCompositeItem({ store, rowId: ro
 	]);
 	const onFocusProp = props.onFocus;
 	const hasFocusedComposite = (0,external_React_.useRef)(false);
+	const cancelScheduledFocusRedirectRef = (0,external_React_.useRef)(null);
 	const onFocus = useEvent((event) => {
 		onFocusProp?.(event);
 		if (event.defaultPrevented) return;
@@ -39269,14 +40570,38 @@ const useCompositeItem = createHook(function useCompositeItem({ store, rowId: ro
 		if (!virtualFocus) return;
 		if (!isSelfTarget(event)) return;
 		if (isEditableElement(event.currentTarget)) return;
-		if (!baseElement?.isConnected) return;
-		if (dist_isSafari() && event.currentTarget.hasAttribute("data-autofocus")) event.currentTarget.scrollIntoView({
-			block: "nearest",
-			inline: "nearest"
+		const redirectFocusToBaseElement = (currentTarget, relatedTarget, baseElement) => {
+			if (isSafari() && currentTarget.hasAttribute("data-autofocus")) currentTarget.scrollIntoView({
+				block: "nearest",
+				inline: "nearest"
+			});
+			hasFocusedComposite.current = true;
+			if (relatedTarget === baseElement || isItem(store, relatedTarget)) focusSilently(baseElement);
+			else baseElement.focus();
+		};
+		if (baseElement?.isConnected) {
+			redirectFocusToBaseElement(event.currentTarget, event.relatedTarget, baseElement);
+			return;
+		}
+		if (shouldRegisterItem === false) return;
+		const { currentTarget, relatedTarget } = event;
+		const cancelScheduledFocusRedirect = () => {
+			cancelScheduledFocusRedirectRef.current?.();
+			cancelScheduledFocusRedirectRef.current = null;
+		};
+		cancelScheduledFocusRedirect();
+		cancelScheduledFocusRedirectRef.current = subscribe(store, null, () => {
+			if (getActiveElement(currentTarget) !== currentTarget) {
+				cancelScheduledFocusRedirect();
+				return;
+			}
+			const state = store.getState();
+			const nextBaseElement = state.baseElement;
+			if (!nextBaseElement?.isConnected) return;
+			cancelScheduledFocusRedirect();
+			if (!state.virtualFocus) return;
+			redirectFocusToBaseElement(currentTarget, relatedTarget, nextBaseElement);
 		});
-		hasFocusedComposite.current = true;
-		if (event.relatedTarget === baseElement || isItem(store, event.relatedTarget)) focusSilently(baseElement);
-		else baseElement.focus();
 	});
 	const onBlurCaptureProp = props.onBlurCapture;
 	const onBlurCapture = useEvent((event) => {
@@ -39373,7 +40698,7 @@ const useCompositeItem = createHook(function useCompositeItem({ store, rowId: ro
 		store,
 		...props,
 		getItem,
-		shouldRegisterItem: id ? props.shouldRegisterItem : false
+		shouldRegisterItem: id ? shouldRegisterItem : false
 	});
 	return removeUndefinedValues({
 		...props,
@@ -39406,7 +40731,8 @@ const useCompositeItem = createHook(function useCompositeItem({ store, rowId: ro
 * ```
 */
 const CompositeItem = memo(forwardRef(function CompositeItem(props) {
-	return createElement(composite_item_TagName, useCompositeItem(props));
+	const htmlProps = useCompositeItem(withDefaultButtonType(props));
+	return createElement(composite_item_TagName, htmlProps);
 }));
 //#endregion
 
@@ -39517,7 +40843,8 @@ const useCompositeHover = createHook(function useCompositeHover({ store, focusOn
 * ```
 */
 const CompositeHover = memo(forwardRef(function CompositeHover(props) {
-	return createElement(composite_hover_TagName, useCompositeHover(props));
+	const htmlProps = useCompositeHover(props);
+	return createElement(composite_hover_TagName, htmlProps);
 }));
 //#endregion
 
@@ -39541,12 +40868,11 @@ function isSelected(storeValue, itemValue) {
 	if (Array.isArray(storeValue)) return storeValue.includes(itemValue);
 	return storeValue === itemValue;
 }
+/**
+* Returns the role for a combobox item based on the popup role.
+*/
 function getItemRole(popupRole) {
-	return {
-		menu: "menuitem",
-		listbox: "option",
-		tree: "treeitem"
-	}[popupRole] ?? "option";
+	return getItemRoleByPopupRole(popupRole) ?? "option";
 }
 /**
 * Returns props to create a `ComboboxItem` component.
@@ -39562,7 +40888,7 @@ const useComboboxItem = createHook(function useComboboxItem({ store, value, hide
 	const context = useComboboxScopedContext();
 	store = store || context;
 	invariant(store,  false && 0);
-	const { resetValueOnSelectState, multiSelectable, selected } = useStoreStateObject(store, {
+	const { resetValueOnSelectState, multiSelectable, selected } = useStoreStateObject(store, ["selectedValue"], {
 		resetValueOnSelectState: "resetValueOnSelect",
 		multiSelectable(state) {
 			return Array.isArray(state.selectedValue);
@@ -39611,7 +40937,10 @@ const useComboboxItem = createHook(function useComboboxItem({ store, value, hide
 		const baseElement = store?.getState().baseElement;
 		if (!baseElement) return;
 		if (hasFocus(baseElement)) return;
-		if (event.key.length === 1 || event.key === "Backspace" || event.key === "Delete") {
+		const printable = event.key.length === 1 && !event.ctrlKey && !event.metaKey;
+		const paste = (!isApple() ? event.ctrlKey : event.metaKey) && event.key.toLowerCase() === "v";
+		const deleteKey = event.key === "Backspace" || event.key === "Delete";
+		if (printable || paste || deleteKey) {
 			queueMicrotask(() => baseElement.focus());
 			if (isTextField(baseElement)) store?.setValue(baseElement.value);
 		}
@@ -39675,7 +41004,8 @@ const useComboboxItem = createHook(function useComboboxItem({ store, value, hide
 * ```
 */
 const ComboboxItem = memo(forwardRef(function ComboboxItem(props) {
-	return createElement(combobox_item_TagName, useComboboxItem(props));
+	const htmlProps = useComboboxItem(props);
+	return createElement(combobox_item_TagName, htmlProps);
 }));
 //#endregion
 
@@ -39697,35 +41027,78 @@ function normalizeValue(value) {
 function getOffsets(string, values) {
 	const offsets = [];
 	for (const value of values) {
+		if (!value) continue;
 		let pos = 0;
 		const length = value.length;
-		while (string.indexOf(value, pos) !== -1) {
-			const index = string.indexOf(value, pos);
-			if (index !== -1) offsets.push([index, length]);
+		let index = string.indexOf(value, pos);
+		while (index !== -1) {
+			offsets.push([index, length]);
 			pos = index + 1;
+			index = string.indexOf(value, pos);
 		}
 	}
 	return offsets;
 }
-function filterOverlappingOffsets(offsets) {
-	return offsets.filter(([offset, length], i, arr) => {
-		return !arr.some(([o, l], j) => j !== i && o <= offset && o + l >= offset + length);
-	});
+function mergeOverlappingOffsets(offsets) {
+	offsets.sort(([a], [b]) => a - b);
+	const merged = [];
+	for (const [offset, length] of offsets) {
+		const last = merged[merged.length - 1];
+		if (last && offset < last[0] + last[1]) last[1] = Math.max(last[1], offset + length - last[0]);
+		else merged.push([offset, length]);
+	}
+	return merged;
 }
-function sortOffsets(offsets) {
-	return offsets.sort(([a], [b]) => a - b);
+function getNormalizedIndexes(itemValue) {
+	const starts = [];
+	const ends = [];
+	let index = 0;
+	for (const char of itemValue) {
+		const normalizedLength = normalizeValue(char).length;
+		for (let i = 0; i < normalizedLength; i += 1) {
+			starts.push(i === 0 ? index : -1);
+			ends.push(index);
+		}
+		index += char.length;
+	}
+	starts.push(itemValue.length);
+	ends.push(itemValue.length);
+	let nextBoundary = itemValue.length;
+	for (let i = starts.length - 1; i >= 0; i -= 1) {
+		const start = starts[i];
+		if (start == null) continue;
+		if (start === -1) starts[i] = nextBoundary;
+		else nextBoundary = start;
+	}
+	return {
+		starts,
+		ends
+	};
+}
+function toOriginalOffsets(itemValue, normalizedOffsets) {
+	if (!normalizedOffsets.length) return normalizedOffsets;
+	const { starts, ends } = getNormalizedIndexes(itemValue);
+	const offsets = [];
+	for (const [normalizedOffset, normalizedLength] of normalizedOffsets) {
+		const start = starts[normalizedOffset];
+		const end = ends[normalizedOffset + normalizedLength];
+		if (start == null || end == null) continue;
+		if (end <= start) continue;
+		offsets.push([start, end - start]);
+	}
+	return offsets;
 }
 function splitValue(itemValue, userValue) {
 	if (!itemValue) return itemValue;
 	if (!userValue) return itemValue;
-	const userValues = toArray(userValue).filter(Boolean).map(normalizeValue);
+	const userValues = toArray(userValue).map(normalizeValue);
 	const parts = [];
 	const span = (value, autocomplete = false) => /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)("span", {
 		"data-autocomplete-value": autocomplete ? "" : void 0,
 		"data-user-value": autocomplete ? void 0 : "",
 		children: value
 	}, parts.length);
-	const offsets = sortOffsets(filterOverlappingOffsets(getOffsets(normalizeValue(itemValue), new Set(userValues))));
+	const offsets = toOriginalOffsets(itemValue, mergeOverlappingOffsets(getOffsets(normalizeValue(itemValue), new Set(userValues))));
 	const firstEntry = offsets[0];
 	if (!firstEntry) {
 		parts.push(span(itemValue, true));
@@ -39768,7 +41141,7 @@ const useComboboxItemValue = createHook(function useComboboxItemValue({ store, v
 	store = store || context;
 	const itemContext = (0,external_React_.useContext)(ComboboxItemValueContext);
 	const itemValue = value ?? itemContext;
-	const inputValue = useStoreState(store, (state) => userValue ?? state?.value);
+	const inputValue = useStoreState(store, ["value"], (state) => userValue ?? state?.value);
 	props = {
 		children: (0,external_React_.useMemo)(() => {
 			if (!itemValue) return;
@@ -39819,7 +41192,8 @@ const useComboboxItemValue = createHook(function useComboboxItemValue({ store, v
 * ```
 */
 const ComboboxItemValue = forwardRef(function ComboboxItemValue(props) {
-	return createElement(combobox_item_value_TagName, useComboboxItemValue(props));
+	const htmlProps = useComboboxItemValue(props);
+	return createElement(combobox_item_value_TagName, htmlProps);
 });
 //#endregion
 
@@ -39829,13 +41203,13 @@ const ComboboxItemValue = forwardRef(function ComboboxItemValue(props) {
 // packages/icons/src/library/search.tsx
 
 
-var search_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z" }) });
+var search_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z" }) });
 
 //# sourceMappingURL=search.mjs.map
 
 ;// ./node_modules/@wordpress/dataviews/build-module/components/dataviews-filters/utils.mjs
 // packages/dataviews/src/components/dataviews-filters/utils.ts
-var utils_EMPTY_ARRAY = [];
+var dataviews_filters_utils_EMPTY_ARRAY = [];
 var getCurrentValue = (filterDefinition, currentFilter) => {
   if (filterDefinition.singleSelection) {
     return currentFilter?.value;
@@ -39846,7 +41220,7 @@ var getCurrentValue = (filterDefinition, currentFilter) => {
   if (!Array.isArray(currentFilter?.value) && !!currentFilter?.value) {
     return [currentFilter.value];
   }
-  return utils_EMPTY_ARRAY;
+  return dataviews_filters_utils_EMPTY_ARRAY;
 };
 
 //# sourceMappingURL=utils.mjs.map
@@ -40817,7 +42191,7 @@ function DataViewsLayout({ className }) {
 // packages/icons/src/library/next.tsx
 
 
-var next_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M6.6 6L5.4 7l4.5 5-4.5 5 1.1 1 5.5-6-5.4-6zm6 0l-1.1 1 4.5 5-4.5 5 1.1 1 5.5-6-5.5-6z" }) });
+var next_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M6.6 6L5.4 7l4.5 5-4.5 5 1.1 1 5.5-6-5.4-6zm6 0l-1.1 1 4.5 5-4.5 5 1.1 1 5.5-6-5.5-6z" }) });
 
 //# sourceMappingURL=next.mjs.map
 
@@ -40825,7 +42199,7 @@ var next_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp
 // packages/icons/src/library/previous.tsx
 
 
-var previous_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M11.6 7l-1.1-1L5 12l5.5 6 1.1-1L7 12l4.6-5zm6 0l-1.1-1-5.5 6 5.5 6 1.1-1-4.6-5 4.6-5z" }) });
+var previous_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M11.6 7l-1.1-1L5 12l5.5 6 1.1-1L7 12l4.6-5zm6 0l-1.1-1-5.5 6 5.5 6 1.1-1-4.6-5 4.6-5z" }) });
 
 //# sourceMappingURL=previous.mjs.map
 
@@ -40838,15 +42212,15 @@ var previous_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(externa
 
 
 
+function hasPaginationControls(view, paginationInfo) {
+  return !view.infiniteScrollEnabled && paginationInfo.totalItems > 0 && paginationInfo.totalPages > 1;
+}
 function dataviews_pagination_DataViewsPagination() {
-  const {
-    view,
-    onChangeView,
-    paginationInfo: { totalItems = 0, totalPages }
-  } = (0,external_wp_element_.useContext)(dataviews_context_default);
-  if (!totalItems || !totalPages || view.infiniteScrollEnabled) {
+  const { view, onChangeView, paginationInfo } = (0,external_wp_element_.useContext)(dataviews_context_default);
+  if (!hasPaginationControls(view, paginationInfo)) {
     return null;
   }
+  const { totalPages } = paginationInfo;
   const currentPage = view.page ?? 1;
   const pageSelectOptions = Array.from(Array(totalPages)).map(
     (_, i) => {
@@ -40863,7 +42237,7 @@ function dataviews_pagination_DataViewsPagination() {
       };
     }
   );
-  return !!totalItems && totalPages !== 1 && /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)(
+  return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsxs)(
     Stack,
     {
       direction: "row",
@@ -40883,10 +42257,7 @@ function dataviews_pagination_DataViewsPagination() {
             children: (0,external_wp_element_.createInterpolateElement)(
               (0,external_wp_i18n_.sprintf)(
                 // translators: 1: Current page number, 2: Total number of pages.
-                (0,external_wp_i18n_._x)(
-                  "<div>Page</div>%1$s<div>of %2$d</div>",
-                  "paging"
-                ),
+                (0,external_wp_i18n_._x)("<div>Page</div>%1$s<div>of %2$d</div>", "paging"),
                 "<CurrentPage />",
                 totalPages
               ),
@@ -40976,10 +42347,14 @@ function DataViewsFooter() {
   const isRefreshing = !!isLoading && hasInitiallyLoaded && !!data?.length;
   const isDelayedRefreshing = useDelayedLoading(!!isRefreshing);
   const hasBulkActions = useSomeItemHasAPossibleBulkAction(actions, data) && [LAYOUT_TABLE, LAYOUT_GRID].includes(view.type);
-  if (!isRefreshing && (!totalItems || !totalPages || totalPages <= 1 && !hasBulkActions)) {
+  const hasPagination = hasPaginationControls(view, {
+    totalItems,
+    totalPages
+  });
+  if (!totalItems || !hasBulkActions && !hasPagination) {
     return null;
   }
-  return (!!totalItems || isRefreshing) && /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
+  return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
     "div",
     {
       className: "dataviews-footer",
@@ -41061,7 +42436,7 @@ var dataviews_search_default = DataViewsSearch;
 // packages/icons/src/library/cog.tsx
 
 
-var cog_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M10.289 4.836A1 1 0 0111.275 4h1.306a1 1 0 01.987.836l.244 1.466c.787.26 1.503.679 2.108 1.218l1.393-.522a1 1 0 011.216.437l.653 1.13a1 1 0 01-.23 1.273l-1.148.944a6.025 6.025 0 010 2.435l1.149.946a1 1 0 01.23 1.272l-.653 1.13a1 1 0 01-1.216.437l-1.394-.522c-.605.54-1.32.958-2.108 1.218l-.244 1.466a1 1 0 01-.987.836h-1.306a1 1 0 01-.986-.836l-.244-1.466a5.995 5.995 0 01-2.108-1.218l-1.394.522a1 1 0 01-1.217-.436l-.653-1.131a1 1 0 01.23-1.272l1.149-.946a6.026 6.026 0 010-2.435l-1.148-.944a1 1 0 01-.23-1.272l.653-1.131a1 1 0 011.217-.437l1.393.522a5.994 5.994 0 012.108-1.218l.244-1.466zM14.929 12a3 3 0 11-6 0 3 3 0 016 0z" }) });
+var cog_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { fillRule: "evenodd", clipRule: "evenodd", d: "M10.289 4.836A1 1 0 0111.275 4h1.306a1 1 0 01.987.836l.244 1.466c.787.26 1.503.679 2.108 1.218l1.393-.522a1 1 0 011.216.437l.653 1.13a1 1 0 01-.23 1.273l-1.148.944a6.025 6.025 0 010 2.435l1.149.946a1 1 0 01.23 1.272l-.653 1.13a1 1 0 01-1.216.437l-1.394-.522c-.605.54-1.32.958-2.108 1.218l-.244 1.466a1 1 0 01-.987.836h-1.306a1 1 0 01-.986-.836l-.244-1.466a5.995 5.995 0 01-2.108-1.218l-1.394.522a1 1 0 01-1.217-.436l-.653-1.131a1 1 0 01.23-1.272l1.149-.946a6.026 6.026 0 010-2.435l-1.148-.944a1 1 0 01-.23-1.272l.653-1.131a1 1 0 011.217-.437l1.393.522a5.994 5.994 0 012.108-1.218l.244-1.466zM14.929 12a3 3 0 11-6 0 3 3 0 016 0z" }) });
 
 //# sourceMappingURL=cog.mjs.map
 
@@ -41167,7 +42542,6 @@ function SortFieldControl() {
   return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
     external_wp_components_.SelectControl,
     {
-      __next40pxDefaultSize: true,
       label: (0,external_wp_i18n_.__)("Sort by"),
       value: view.sort?.field,
       options: orderOptions,
@@ -41200,7 +42574,6 @@ function SortDirectionControl() {
     external_wp_components_.__experimentalToggleGroupControl,
     {
       className: "dataviews-view-config__sort-direction",
-      __next40pxDefaultSize: true,
       isBlock: true,
       label: (0,external_wp_i18n_.__)("Order"),
       value,
@@ -41244,7 +42617,6 @@ function ItemsPerPageControl() {
   return /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(
     external_wp_components_.__experimentalToggleGroupControl,
     {
-      __next40pxDefaultSize: true,
       isBlock: true,
       label: (0,external_wp_i18n_.__)("Items per page"),
       value: view.perPage || 10,
@@ -41585,6 +42957,7 @@ function captureAnchorElement(container, anchorElementRef, direction) {
   anchorElementRef.current = {
     posinset,
     viewportOffset: anchorRect.top - containerRect.top,
+    scrollTop: container.scrollTop,
     direction
   };
   return true;
@@ -41653,7 +43026,7 @@ function useInfiniteScroll({
       const containerRect = container.getBoundingClientRect();
       const anchorRect = anchorElement.getBoundingClientRect();
       const currentOffset = anchorRect.top - containerRect.top;
-      const scrollAdjustment = currentOffset - anchor.viewportOffset;
+      const scrollAdjustment = currentOffset - anchor.viewportOffset + (container.scrollTop - anchor.scrollTop);
       if (Math.abs(scrollAdjustment) > 1) {
         container.scrollTop += scrollAdjustment;
       }
@@ -41988,7 +43361,7 @@ var external_wp_hooks_ = __webpack_require__(619);
 // packages/icons/src/library/cancel-circle-filled.tsx
 
 
-var cancel_circle_filled_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 4c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm3.8 10.7-1.1 1.1-2.7-2.7-2.7 2.7-1.1-1.1 2.7-2.7-2.7-2.7 1.1-1.1 2.7 2.7 2.7-2.7 1.1 1.1-2.7 2.7 2.7 2.7Z" }) });
+var cancel_circle_filled_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_.jsx)(external_wp_primitives_.Path, { d: "M12 4c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm3.8 10.7-1.1 1.1-2.7-2.7-2.7 2.7-1.1-1.1 2.7-2.7-2.7-2.7 1.1-1.1 2.7 2.7 2.7-2.7 1.1 1.1-2.7 2.7 2.7 2.7Z" }) });
 
 //# sourceMappingURL=cancel-circle-filled.mjs.map
 
@@ -42066,16 +43439,19 @@ const EncodeProgress = ({
       const {
         job_id,
         format_id,
-        percent
+        percent,
+        elapsed,
+        remaining
       } = event.detail;
-      if (formatData?.job_id === job_id || formatData?.format_id === format_id && formatData?.status === 'browser_pending') {
+      if (Number(formatData?.job_id) === Number(job_id) || formatData?.format_id === format_id && formatData?.status === 'browser_pending') {
         setInterpolatedProgress(prev => {
           if (percent < prev.percent) {
             return prev;
           }
           return {
-            ...prev,
-            percent
+            percent,
+            elapsed: elapsed !== undefined ? elapsed : prev.elapsed,
+            remaining: remaining !== undefined ? remaining : prev.remaining
           };
         });
       }
@@ -42135,7 +43511,7 @@ const EncodeProgress = ({
       hasTriggeredRefresh.current = false;
     }
   }, [interpolatedProgress.percent, onRefresh, formatData?.encoding_now]);
-  if (formatData?.encoding_now && formatData?.progress && typeof formatData.progress === 'object') {
+  if (formatData?.encoding_now) {
     const percent = Math.round(interpolatedProgress.percent);
     const percentText = (0,external_wp_i18n_.sprintf)('%d%%', percent);
     return /*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("div", {
@@ -42175,7 +43551,7 @@ const EncodeProgress = ({
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
           children: (0,external_wp_i18n_.__)('Remaining:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(interpolatedProgress.remaining)
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
-          children: (0,external_wp_i18n_.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + (formatData.progress.fps || '--')
+          children: (0,external_wp_i18n_.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + (formatData.progress?.fps || '--')
         })]
       })]
     });
@@ -42339,7 +43715,7 @@ const EncodeFormatStatus = ({
       children: formatData.label
     })), formatData.status !== 'not_encoded' && (formatData.status_l10n !== formatData.label || !showLabel) && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)("span", {
       className: "videopack-format-status",
-      children: formatData.status_l10n
+      children: formatData.status === 'browser_encoding' ? window.videopack_current_browser_job_id && Number(window.videopack_current_browser_job_id) === Number(formatData.job_id || formatData.id) ? (0,external_wp_i18n_.__)('Encoding (This Browser Tab)', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.__)('Encoding (Different Browser/Tab)', 'video-embed-thumbnail-generator') : formatData.status_l10n
     }), formatData.status === 'not_encoded' && !formatData.exists && !formatData.replaces_original && !hideButtons && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Button, {
       variant: "secondary",
       onClick: () => openMediaLibrary(),
@@ -42515,6 +43891,7 @@ const defaultLayouts = {
 const EncodeQueue = () => {
   const [queueData, setQueueData] = (0,external_wp_element_.useState)([]);
   const [isLoading, setIsLoading] = (0,external_wp_element_.useState)(true);
+  const initialLoadSucceeded = (0,external_wp_element_.useRef)(false);
   const [isQueuePaused, setIsQueuePaused] = (0,external_wp_element_.useState)(window.videopack?.encodeQueueData?.initialQueueState === 'pause');
   const [message, setMessage] = (0,external_wp_element_.useState)(null);
   const [isClearing, setIsClearing] = (0,external_wp_element_.useState)(false);
@@ -42662,6 +44039,48 @@ const EncodeQueue = () => {
     layout: defaultLayouts.table.layout
   });
 
+  // Handle real-time progress updates from browser encoder via CustomEvents
+  (0,external_wp_element_.useEffect)(() => {
+    const handleBrowserProgress = event => {
+      const {
+        job_id,
+        percent,
+        fps,
+        speed,
+        elapsed,
+        remaining
+      } = event.detail;
+      setQueueData(prevData => {
+        if (!prevData || !Array.isArray(prevData)) {
+          return prevData;
+        }
+        return prevData.map(item => {
+          if (Number(item.id) === Number(job_id)) {
+            return {
+              ...item,
+              status: 'browser_encoding',
+              status_l10n: (0,external_wp_i18n_.__)('Encoding (Browser)', 'video-embed-thumbnail-generator'),
+              progress: {
+                ...(typeof item.progress === 'object' ? item.progress : {}),
+                percent,
+                fps,
+                speed,
+                elapsed,
+                remaining,
+                status: 'browser_encoding'
+              }
+            };
+          }
+          return item;
+        });
+      });
+    };
+    window.addEventListener('videopack_browser_progress', handleBrowserProgress);
+    return () => {
+      window.removeEventListener('videopack_browser_progress', handleBrowserProgress);
+    };
+  }, []);
+
   // Auto-clear success messages after 30 seconds.
   (0,external_wp_element_.useEffect)(() => {
     if (message && message.type === 'success') {
@@ -42682,16 +44101,19 @@ const EncodeQueue = () => {
       });
       const progressData = await (0,media/* getBatchProgress */.wW)('all');
       setBatchProgress(progressData);
+      initialLoadSucceeded.current = true;
       // Clear any previous FETCHING error messages if we successfully fetched data.
       setMessage(prev => prev && prev.isFetchingError ? null : prev);
     } catch (error) {
       console.error('Error fetching queue:', error);
-      setMessage({
-        type: 'error',
-        isFetchingError: true,
-        text: (0,external_wp_i18n_.sprintf)(/* translators: %s is an error message */
-        (0,external_wp_i18n_.__)('Failed to load queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
-      });
+      if (!initialLoadSucceeded.current) {
+        setMessage({
+          type: 'error',
+          isFetchingError: true,
+          text: (0,external_wp_i18n_.sprintf)(/* translators: %s is an error message */
+          (0,external_wp_i18n_.__)('Failed to load queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -42738,11 +44160,11 @@ const EncodeQueue = () => {
     if (itemToActOn.action === 'clear') {
       handleClearQueue(itemToActOn.type);
     } else if (itemToActOn.action === 'delete') {
-      handleDeleteJobs(itemToActOn.jobIds);
+      handleDeleteJobs(itemToActOn.jobIds, 'delete');
     } else if (itemToActOn.action === 'remove') {
       handleRemoveJobs(itemToActOn.jobIds);
     } else if (itemToActOn.action === 'delete_permanently') {
-      handleDeleteJobs(itemToActOn.jobIds);
+      handleDeleteJobs(itemToActOn.jobIds, 'delete_permanently');
     } else if (itemToActOn.action === 'run_batch') {
       handleRunBatch(itemToActOn.batchId);
     }
@@ -42770,17 +44192,36 @@ const EncodeQueue = () => {
       setIsClearing(false);
     }
   };
-  const handleDeleteJobs = async jobIds => {
+  const handleDeleteJobs = async (jobIds, action = 'delete') => {
     const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
     setActingJobIds(prev => [...prev, ...ids]);
     try {
       for (const jobId of ids) {
         await (0,jobs/* deleteJob */.XX)(jobId);
+        window.dispatchEvent(new CustomEvent('videopack_job_deleted', {
+          detail: {
+            job_id: jobId
+          }
+        }));
+      }
+      const isDeletePermanently = action === 'delete_permanently';
+      let text = '';
+      if (ids.length === 1) {
+        if (isDeletePermanently) {
+          text = (0,external_wp_i18n_.__)('Attachment deleted.', 'video-embed-thumbnail-generator');
+        } else {
+          text = (0,external_wp_i18n_.__)('Job deleted.', 'video-embed-thumbnail-generator');
+        }
+      } else if (isDeletePermanently) {
+        text = (0,external_wp_i18n_.sprintf)(/* translators: %d: number of attachments deleted */
+        (0,external_wp_i18n_.__)('%d attachments deleted.', 'video-embed-thumbnail-generator'), ids.length);
+      } else {
+        text = (0,external_wp_i18n_.sprintf)(/* translators: %d: number of jobs deleted */
+        (0,external_wp_i18n_.__)('%d jobs deleted.', 'video-embed-thumbnail-generator'), ids.length);
       }
       setMessage({
         type: 'success',
-        text: ids.length === 1 ? (0,external_wp_i18n_.__)('Job deleted.', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.sprintf)(/* translators: %d: number of jobs deleted */
-        (0,external_wp_i18n_.__)('%d jobs deleted.', 'video-embed-thumbnail-generator'), ids.length)
+        text
       });
       fetchQueue();
     } catch (error) {
@@ -42854,6 +44295,7 @@ const EncodeQueue = () => {
         text: ids.length === 1 ? (0,external_wp_i18n_.__)('Job re-queued.', 'video-embed-thumbnail-generator') : (0,external_wp_i18n_.sprintf)(/* translators: %d: number of jobs re-queued */
         (0,external_wp_i18n_.__)('%d jobs re-queued.', 'video-embed-thumbnail-generator'), ids.length)
       });
+      window.dispatchEvent(new CustomEvent('videopack_check_jobs'));
       fetchQueue();
     } catch (error) {
       console.error('Error retrying job(s):', error);
@@ -43089,10 +44531,10 @@ const EncodeQueue = () => {
     children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsxs)("h1", {
       children: [/*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.Icon, {
         className: "videopack-settings-icon",
-        icon: icon.videopack,
+        icon: icon/* videopack */.zT,
         size: 40
       }), (0,external_wp_i18n_.__)('Videopack Processing', 'video-embed-thumbnail-generator')]
-    }), isConfirmOpen && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.__experimentalConfirmDialog, {
+    }), (0,external_wp_hooks_.applyFilters)('videopack.queue.after_title', null), isConfirmOpen && /*#__PURE__*/(0,external_ReactJSXRuntime_.jsx)(external_wp_components_.__experimentalConfirmDialog, {
       isOpen: isConfirmOpen,
       title: (() => {
         if (itemToActOn?.action === 'delete_permanently') {

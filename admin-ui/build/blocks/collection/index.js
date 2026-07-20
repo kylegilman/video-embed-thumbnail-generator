@@ -12,17 +12,17 @@ module.exports = window["wp"]["apiFetch"];
 /******/ 	});
 /************************************************************************/
 /******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
+/******/ 	const __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		const cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
 /******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 		const module = __webpack_module_cache__[moduleId] = {
 /******/ 			// no module.id needed
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
@@ -40,7 +40,7 @@ module.exports = window["wp"]["apiFetch"];
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
 /******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
+/******/ 			const getter = module && module.__esModule ?
 /******/ 				() => (module['default']) :
 /******/ 				() => (module);
 /******/ 			__webpack_require__.d(getter, { a: getter });
@@ -50,8 +50,8 @@ module.exports = window["wp"]["apiFetch"];
 /******/ 	
 /******/ 	/* webpack/runtime/create fake namespace object */
 /******/ 	(() => {
-/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
-/******/ 		var leafPrototypes;
+/******/ 		const getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		let leafPrototypes;
 /******/ 		// create a fake namespace object
 /******/ 		// mode & 1: value is a module id, require it
 /******/ 		// mode & 2: merge all properties of value into the ns
@@ -65,9 +65,9 @@ module.exports = window["wp"]["apiFetch"];
 /******/ 				if((mode & 4) && value.__esModule) return value;
 /******/ 				if((mode & 16) && typeof value.then === 'function') return value;
 /******/ 			}
-/******/ 			var ns = Object.create(null);
+/******/ 			const ns = Object.create(null);
 /******/ 			__webpack_require__.r(ns);
-/******/ 			var def = {};
+/******/ 			const def = {};
 /******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
 /******/ 			for(var current = mode & 2 && value; (typeof current == 'object' || typeof current == 'function') && !~leafPrototypes.indexOf(current); current = getProto(current)) {
 /******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
@@ -80,11 +80,26 @@ module.exports = window["wp"]["apiFetch"];
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
+/******/ 		// define getter/value functions for harmony exports
 /******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			if(Array.isArray(definition)) {
+/******/ 				var i = 0;
+/******/ 				while(i < definition.length) {
+/******/ 					var key = definition[i++];
+/******/ 					var binding = definition[i++];
+/******/ 					if(!__webpack_require__.o(exports, key)) {
+/******/ 						if(binding === 0) {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
+/******/ 						} else {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
+/******/ 						}
+/******/ 					} else if(binding === 0) { i++; }
+/******/ 				}
+/******/ 			} else {
+/******/ 				for(var key in definition) {
+/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 					}
 /******/ 				}
 /******/ 			}
 /******/ 		};
@@ -92,14 +107,14 @@ module.exports = window["wp"]["apiFetch"];
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.hasOwn(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
 /******/ 		__webpack_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			if(Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
@@ -298,7 +313,12 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = []
+    excludeKeys = [],
+    // Restricts which resolved values become videopack-has-{key} classes /
+    // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+    // always computed — only the stamping is scoped). null means "stamp
+    // everything", matching prior behavior for any caller that doesn't pass it.
+    classKeys = null
   } = options;
   // The hover trigger exclusion should NOT be inherited from parents by default,
   // as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
@@ -315,7 +335,7 @@ function useVideopackContext(attributes, context, options = {}) {
       }
       const value = getEffectiveValue(key, attributes, context);
       resolved[key] = value;
-      if (value) {
+      if (value && (classKeys === null || classKeys.includes(key))) {
         const cssKey = key.replace(/_/g, '-');
         if (typeof value === 'string' || typeof value === 'number') {
           const cssVar = `--videopack-${cssKey}`;
@@ -404,7 +424,7 @@ function useVideopackContext(attributes, context, options = {}) {
       style,
       classes
     };
-  }, [attributes, context, excludeHoverTrigger, excludeKeys]);
+  }, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
   // 2. Automatic Video Discovery
   // If we have a postId but no attachmentId, try to find the first video attachment.
@@ -559,6 +579,18 @@ function VideopackContextBridge({
 }
 ;// external ["wp","components"]
 const external_wp_components_namespaceObject = window["wp"]["components"];
+;// external ["wp","primitives"]
+const external_wp_primitives_namespaceObject = window["wp"]["primitives"];
+;// ./node_modules/@wordpress/icons/build-module/library/plus.mjs
+// packages/icons/src/library/plus.tsx
+
+
+var plus_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "M11 12.5V17.5H12.5V12.5H17.5V11H12.5V6H11V11H6V12.5H11Z" }) });
+
+//# sourceMappingURL=plus.mjs.map
+
+;// external ["wp","i18n"]
+const external_wp_i18n_namespaceObject = window["wp"]["i18n"];
 // EXTERNAL MODULE: external ["wp","apiFetch"]
 var external_wp_apiFetch_ = __webpack_require__(455);
 var external_wp_apiFetch_default = /*#__PURE__*/__webpack_require__.n(external_wp_apiFetch_);
@@ -940,9 +972,11 @@ const testEncodeCommand = async (codec, resolution) => {
  *
  * @param {Object} inputAttributes Block attributes.
  * @param {number} previewPostId   The ID of the post being previewed.
+ * @param {number} refreshToken    Optional value to bump in order to force a refetch
+ *                                 (e.g. after uploading a new video attachment).
  * @return {Object} Query results including search results, categories, and tags.
  */
-function useVideoQuery(inputAttributes, previewPostId) {
+function useVideoQuery(inputAttributes, previewPostId, refreshToken) {
   const attributes = inputAttributes || {};
   const {
     gallery_id,
@@ -1085,7 +1119,7 @@ function useVideoQuery(inputAttributes, previewPostId) {
     }).finally(() => {
       setIsResolvingVideos(false);
     });
-  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving, !!inputAttributes]);
+  }, [gallery_id, gallery_source, gallery_category, gallery_tag, gallery_orderby, gallery_order, gallery_include, gallery_exclude, gallery_pagination, gallery_per_page, page_number, enable_collection_video_limit, collection_video_limit, previewPostId, attributes.prioritizePostData, isSaving, isAutosaving, !!inputAttributes, refreshToken]);
   const categories = (0,external_wp_data_namespaceObject.useSelect)(select => {
     const {
       getEntityRecords
@@ -1140,8 +1174,6 @@ function useVideoQuery(inputAttributes, previewPostId) {
     debouncedSetSearchString
   };
 }
-;// external ["wp","i18n"]
-const external_wp_i18n_namespaceObject = window["wp"]["i18n"];
 ;// ../src/icons.json
 const icons_namespaceObject = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","paths":[{"d":"M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z"}]},"share":{"viewBox":"0 0 24 24","paths":[{"d":"M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z"}]},"close":{"viewBox":"0 0 24 24","paths":[{"d":"m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"}]},"external":{"viewBox":"0 0 1080 1080","paths":[{"d":"M994.56 986.8H68.33V169.45h463.11v70H138.33V916.8h786.23V623.33h70z"},{"d":"M549.07 598.54h-70v-3.49c-.02-63.64-.04-142.85 49.5-207.82 56.32-73.87 162.4-109.79 324.25-109.79h.24c111.9.02 128.37-.04 135.4-.06 1.82 0 3-.01 5-.01v70c-1.89 0-3.01 0-4.74.01-7.07.03-23.63.09-135.67.06h-.22c-75.54 0-137.44 8.45-183.99 25.11-37.98 13.59-65.66 32.28-84.6 57.13-35.2 46.17-35.18 109.49-35.17 165.36v3.51Z"},{"d":"m873.68 499.79-52.2-46.63L946.4 313.31 823.14 183.75l50.72-48.25 167.74 176.32z"}]},"iosShare":{"viewBox":"0 0 1080 1080","paths":[{"d":"M760.96 270.67h170.07V979H126.25V270.67H312.3m226.28 367.29V89.31m-149.87 152 149.87-152 153.17 152","fill":"none","stroke":"currentColor","stroke-miterlimit":"10","stroke-width":"70"}]},"curveShare":{"viewBox":"0 0 512 512","paths":[{"d":"M512 241.7 273.643 3.343v156.152c-71.41 3.744-138.015 33.337-188.958 84.28C30.075 298.384 0 370.991 0 448.222v60.436l29.069-52.985c45.354-82.671 132.173-134.027 226.573-134.027 5.986 0 12.004.212 18.001.632v157.779zm-256.358 48.966c-84.543 0-163.661 36.792-217.939 98.885 26.634-114.177 129.256-199.483 251.429-199.483h15.489V78.131l163.568 163.568-163.568 163.568V294.531l-13.585-1.683a289 289 0 0 0-35.394-2.182"}]},"embed":{"viewBox":"0 0 24 24","paths":[{"d":"M20.8 10.7l-4.3-4.3-1.1 1.1 4.3 4.3c.1.1.1.3 0 .4l-4.3 4.3 1.1 1.1 4.3-4.3c.7-.8.7-1.9 0-2.6zM4.2 11.8l4.3-4.3-1-1-4.3 4.3c-.7.7-.7 1.8 0 2.5l4.3 4.3 1.1-1.1-4.3-4.3c-.2-.1-.2-.3-.1-.4z"}]},"eye":{"viewBox":"0 0 24 24","paths":[{"d":"M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"}]},"play":{"viewBox":"0 0 24 24","paths":[{"d":"M8 5v14l11-7z"}]},"playOutline":{"viewBox":"0 0 24 24","paths":[{"d":"M8 5v14l11-7z","fill":"none","stroke":"currentColor","stroke-width":"2","stroke-linecap":"round","stroke-linejoin":"round"}]},"copyLink":{"viewBox":"0 0 16 16","paths":[{"d":"M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"},{"d":"M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"}]},"bluesky":{"viewBox":"0 0 16 16","paths":[{"d":"M3.468 1.948C5.303 3.325 7.276 6.118 8 7.616c.725-1.498 2.698-4.29 4.532-5.668C13.855.955 16 .186 16 2.632c0 .489-.28 4.105-.444 4.692-.572 2.04-2.653 2.561-4.504 2.246 3.236.551 4.06 2.375 2.281 4.2-3.376 3.464-4.852-.87-5.23-1.98-.07-.204-.103-.3-.103-.218 0-.081-.033.014-.102.218-.379 1.11-1.855 5.444-5.231 1.98-1.778-1.825-.955-3.65 2.28-4.2-1.85.315-3.932-.205-4.503-2.246C.28 6.737 0 3.12 0 2.632 0 .186 2.145.955 3.468 1.948"}]},"threads":{"viewBox":"0 0 16 16","paths":[{"d":"M6.321 6.016c-.27-.18-1.166-.802-1.166-.802.756-1.081 1.753-1.502 3.132-1.502.975 0 1.803.327 2.394.948s.928 1.509 1.005 2.644q.492.207.905.484c1.109.745 1.719 1.86 1.719 3.137 0 2.716-2.226 5.075-6.256 5.075C4.594 16 1 13.987 1 7.994 1 2.034 4.482 0 8.044 0 9.69 0 13.55.243 15 5.036l-1.36.353C12.516 1.974 10.163 1.43 8.006 1.43c-3.565 0-5.582 2.171-5.582 6.79 0 4.143 2.254 6.343 5.63 6.343 2.777 0 4.847-1.443 4.847-3.556 0-1.438-1.208-2.127-1.27-2.127-.236 1.234-.868 3.31-3.644 3.31-1.618 0-3.013-1.118-3.013-2.582 0-2.09 1.984-2.847 3.55-2.847.586 0 1.294.04 1.663.114 0-.637-.54-1.728-1.9-1.728-1.25 0-1.566.405-1.967.868ZM8.716 8.19c-2.04 0-2.304.87-2.304 1.416 0 .878 1.043 1.168 1.6 1.168 1.02 0 2.067-.282 2.232-2.423a6.2 6.2 0 0 0-1.528-.161"}]},"facebook":{"viewBox":"0 0 16 16","paths":[{"d":"M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.8V16c3.824-.604 6.75-3.934 6.75-7.951z"}]},"reddit":{"viewBox":"0 0 16 16","paths":[{"d":"M6.167 8a.83.83 0 0 0-.83.83c0 .459.372.84.83.831a.831.831 0 0 0 0-1.661m1.843 3.647c.315 0 1.403-.038 1.976-.611a.23.23 0 0 0 0-.306.213.213 0 0 0-.306 0c-.353.363-1.126.487-1.67.487-.545 0-1.308-.124-1.671-.487a.213.213 0 0 0-.306 0 .213.213 0 0 0 0 .306c.564.563 1.652.61 1.977.61zm.992-2.807c0 .458.373.83.831.83s.83-.381.83-.83a.831.831 0 0 0-1.66 0z"},{"d":"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.828-1.165c-.315 0-.602.124-.812.325-.801-.573-1.9-.945-3.121-.993l.534-2.501 1.738.372a.83.83 0 1 0 .83-.869.83.83 0 0 0-.744.468l-1.938-.41a.2.2 0 0 0-.153.028.2.2 0 0 0-.086.134l-.592 2.788c-1.24.038-2.358.41-3.17.992-.21-.2-.496-.324-.81-.324a1.163 1.163 0 0 0-.478 2.224q-.03.17-.029.353c0 1.795 2.091 3.256 4.669 3.256s4.668-1.451 4.668-3.256c0-.114-.01-.238-.029-.353.401-.181.688-.592.688-1.069 0-.65-.525-1.165-1.165-1.165"}]},"email":{"viewBox":"0 0 16 16","paths":[{"d":"M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.976-5.64-3.384L8 9.83l-1.326-.795-5.64 3.384A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.641ZM1 11.105l4.708-2.897L1 5.383v5.722Z"}]}}');
 ;// ./src/assets/icon.js
@@ -2125,6 +2157,8 @@ function QuerySettings({
 
 
 
+
+
 function CollectionQuerySettings({
   attributes,
   setAttributes,
@@ -2132,8 +2166,12 @@ function CollectionQuerySettings({
   options = {},
   showManualSource = true,
   isSiteEditor = false,
-  hasPaginationBlock = true
+  hasPaginationBlock = true,
+  clientId
 }) {
+  const {
+    insertBlock
+  } = (0,external_wp_data_namespaceObject.useDispatch)('core/block-editor');
   const {
     gallery_source,
     gallery_include,
@@ -2240,20 +2278,29 @@ function CollectionQuerySettings({
     }), !hasPaginationBlock && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
       __nextHasNoMarginBottom: true,
       label: (0,external_wp_i18n_namespaceObject.__)('Enable Pagination', 'video-embed-thumbnail-generator'),
+      help: clientId ? (0,external_wp_i18n_namespaceObject.__)('Adds a Pagination block to the collection.', 'video-embed-thumbnail-generator') : undefined,
       checked: !!gallery_pagination,
-      onChange: val => setAttributes({
-        gallery_pagination: val
-      })
+      onChange: val => {
+        setAttributes({
+          gallery_pagination: val
+        });
+        // In the block editor, pagination display is driven by
+        // an actual videopack/pagination child block, not just
+        // this attribute — insert one so the toggle produces
+        // visible controls. Classic Embed has no block tree
+        // (no clientId), so it keeps the attribute-only behavior.
+        if (val && clientId) {
+          insertBlock((0,external_wp_blocks_namespaceObject.createBlock)('videopack/pagination'), undefined, clientId);
+        }
+      }
     })]
   });
 }
-;// external ["wp","primitives"]
-const external_wp_primitives_namespaceObject = window["wp"]["primitives"];
 ;// ./node_modules/@wordpress/icons/build-module/library/close.mjs
 // packages/icons/src/library/close.tsx
 
 
-var close_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" }) });
+var close_default = /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", children: /* @__PURE__ */ (0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, { d: "m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" }) });
 
 //# sourceMappingURL=close.mjs.map
 
@@ -2459,6 +2506,7 @@ const CompactColorPicker = ({
 };
 /* harmony default export */ const CompactColorPicker_CompactColorPicker = (CompactColorPicker);
 ;// ./src/utils/colors.js
+
 const getColorFallbacks = settings => {
   const {
     embed_method = 'Video.js',
@@ -2518,7 +2566,18 @@ const getColorFallbacks = settings => {
         break;
     }
   }
-  return fallbacks;
+  return (0,external_wp_hooks_namespaceObject.applyFilters)(
+  /**
+   * Filters the resolved color fallback values used for the player preview
+   * and color picker placeholders when no explicit color has been chosen.
+   *
+   * @since 5.0.0
+   *
+   * @param {Object} fallbacks   Map of color fallback values.
+   * @param {string} embed_method The selected player embed method.
+   * @param {string} skin         The selected player skin.
+   */
+  'videopack.colorFallbacks', fallbacks, embed_method, skin);
 };
 ;// ./src/components/InspectorControls/CollectionColorSettings.js
 
@@ -2757,7 +2816,8 @@ function CollectionSettingsPanel({
   showTitleSettings = true,
   showPlayerSettings = true,
   showSkinSettings = true,
-  hasPaginationBlock = true
+  hasPaginationBlock = true,
+  clientId
 }) {
   const {
     excludedVideos
@@ -2772,7 +2832,8 @@ function CollectionSettingsPanel({
         options: options,
         showManualSource: showManualSource,
         isSiteEditor: isSiteEditor,
-        hasPaginationBlock: hasPaginationBlock
+        hasPaginationBlock: hasPaginationBlock,
+        clientId: clientId
       }), excludedVideos && excludedVideos.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(CollectionFilterSettings, {
         attributes: attributes,
         setAttributes: setAttributes,
@@ -2922,7 +2983,8 @@ function CollectionInspectorControls({
       showTitleSettings: showTitleSettings,
       showPlayerSettings: showPlayerSettings,
       showSkinSettings: showSkinSettings,
-      hasPaginationBlock: hasPaginationBlock
+      hasPaginationBlock: hasPaginationBlock,
+      clientId: clientId
     })]
   });
 }
@@ -2938,6 +3000,76 @@ const VideopackContext = (0,external_wp_element_namespaceObject.createContext)({
 const VideopackProvider = VideopackContext.Provider;
 const VideopackContext_useVideopackContext = () => useContext(VideopackContext);
 /* harmony default export */ const utils_VideopackContext = ((/* unused pure expression or super */ null && (VideopackContext)));
+;// ./src/utils/galleryVideoSelection.js
+/**
+ * Shared decision logic for handling media selected/uploaded via the
+ * Collection/Loop "Add Video" controls (toolbar button or empty-state
+ * placeholder). Both blocks read/write the same gallery_source/gallery_include
+ * attributes, just via different props (Collection owns them directly, Loop
+ * receives them through block context and updates its parent) — this keeps
+ * the actual selection/attach logic in one place.
+ *
+ * If the gallery is already in Manual mode, selected/uploaded videos are
+ * simply added to the manual list (post_parent is irrelevant there).
+ *
+ * Otherwise (gallery_source is "current" or another dynamic source): a
+ * freshly uploaded file is already attached to this post by the editor's own
+ * upload handler, so no attribute change is needed — the query already picks
+ * it up. But an item picked from the existing Media Library may belong to a
+ * different post entirely — rather than silently reparenting someone else's
+ * attachment, the gallery is switched to Manual mode with the selected
+ * video(s) instead.
+ *
+ * @param {Object}       params
+ * @param {Object|Array} params.media          Selected attachment object(s).
+ * @param {string}       params.gallerySource  Current gallery_source value.
+ * @param {string}       params.galleryInclude Current gallery_include value.
+ * @param {number}       params.previewPostId  The current post's ID.
+ * @return {{type: 'none'}|{type: 'no-change'}|{type: 'update', updates: Object}} Result.
+ */
+function resolveGalleryVideoSelection({
+  media,
+  gallerySource,
+  galleryInclude,
+  previewPostId
+}) {
+  const mediaArray = (Array.isArray(media) ? media : [media]).filter(item => item?.id);
+  if (!mediaArray.length) {
+    return {
+      type: 'none'
+    };
+  }
+  const newIds = mediaArray.map(item => item.id.toString());
+  if (gallerySource === 'manual') {
+    const currentInclude = galleryInclude ? galleryInclude.split(',').map(id => id.trim()) : [];
+    return {
+      type: 'update',
+      updates: {
+        gallery_include: [...new Set([...currentInclude, ...newIds])].join(','),
+        gallery_orderby: 'include'
+      }
+    };
+  }
+
+  // The React <MediaUpload>/<MediaPlaceholder> components normalize the
+  // uploaded-to-post field as `.parent`, but a raw wp.media() Backbone
+  // frame's attachment.toJSON() exposes the same value as `.uploadedTo` —
+  // check both since this function is used by both selection paths.
+  const alreadyAttachedHere = mediaArray.every(item => (item.parent ?? item.uploadedTo) === previewPostId);
+  if (alreadyAttachedHere) {
+    return {
+      type: 'no-change'
+    };
+  }
+  return {
+    type: 'update',
+    updates: {
+      gallery_include: newIds.join(','),
+      gallery_source: 'manual',
+      gallery_orderby: 'include'
+    }
+  };
+}
 ;// ./src/utils/titleDownloadBlock.js
 /**
  * Default inner download block for the title meta bar (matches legacy shortcode output).
@@ -3077,12 +3209,23 @@ const getFeedTemplate = options => {
 
 
 
+
+
+
 const ALLOWED_BLOCKS = ['videopack/loop', 'videopack/pagination'];
+
+// Collection is a valid theme-context root (Overlays.scss) — nested blocks
+// inherit the skin class/CSS vars from here rather than each needing their own.
+const COLLECTION_CONTEXT_OPTS = {
+  excludeHoverTrigger: true,
+  classKeys: ['skin']
+};
 function Edit({
   attributes,
   setAttributes,
   clientId,
-  context
+  context,
+  isSelected
 }) {
   const [options, setOptions] = (0,external_wp_element_namespaceObject.useState)();
   const {
@@ -3095,9 +3238,7 @@ function Edit({
   } = attributes;
 
   // Resolve Effective Values for design and pagination (these follow global settings)
-  const vpContext = useVideopackContext(attributes, context, {
-    excludeHoverTrigger: true
-  });
+  const vpContext = useVideopackContext(attributes, context, COLLECTION_CONTEXT_OPTS);
   const {
     resolved: effectiveValues,
     style: contextStyle,
@@ -3105,20 +3246,93 @@ function Edit({
   } = vpContext;
   const {
     hasPaginationBlock,
-    isNewlyInserted
+    isNewlyInserted,
+    hasSelectedInnerBlock
   } = (0,external_wp_data_namespaceObject.useSelect)(select => {
     const {
       getBlocks,
-      getBlock
+      getBlock,
+      hasSelectedInnerBlock: hasSelectedInner
     } = select('core/block-editor');
     const blocks = getBlocks(clientId) || [];
     const block = getBlock(clientId);
     return {
       hasPaginationBlock: blocks.some(b => b.name === 'videopack/pagination'),
-      isNewlyInserted: block && !block.attributes.gallery_id && !block.attributes.gallery_category && !block.attributes.gallery_tag && !block.attributes.gallery_include
+      isNewlyInserted: block && !block.attributes.gallery_id && !block.attributes.gallery_category && !block.attributes.gallery_tag && !block.attributes.gallery_include,
+      // Shallow (direct children only) — Collection's own appender
+      // adds a sibling to Loop/Pagination at the top level, so it
+      // should only show while working with that top-level
+      // structure, not e.g. while deep inside editing a
+      // thumbnail's title text. A deep check (like Thumbnail/Loop
+      // use for their own, much narrower trees) would leave it
+      // visible almost continuously, since nearly all editing
+      // happens somewhere inside the collection's tree.
+      hasSelectedInnerBlock: hasSelectedInner(clientId)
     };
   }, [clientId]);
+
+  // Only show Collection's own "Add block" appender while this block (or
+  // a direct child, Loop/Pagination) is actively selected.
+  const showCollectionAppender = isSelected || hasSelectedInnerBlock;
   const previewPostId = (0,external_wp_data_namespaceObject.useSelect)(select => select('core/editor').getCurrentPostId(), []);
+
+  // Signals the Loop child (which renders the visible grid via its own
+  // useVideoQuery call) to refetch when a video is added but no attribute
+  // actually changes — see handleSelectVideos below. Passed down through
+  // the context bridge as videopack/refreshToken; a plain attribute touch
+  // doesn't work here since useVideoQuery's fetch effect depends on
+  // individual primitive fields, not object identity, so re-setting a
+  // value to itself is a no-op as far as its dependency array is concerned.
+  const [refreshToken, setRefreshToken] = (0,external_wp_element_namespaceObject.useState)(0);
+
+  /**
+   * Handles video(s) selected/uploaded via the "Add Video" toolbar button.
+   * Mirrors the Loop block's own control (same shared decision logic) so
+   * it doesn't matter which of the two a user reaches for.
+   *
+   * @param {Object|Array} media Selected attachment object(s).
+   */
+  const handleSelectVideos = (0,external_wp_element_namespaceObject.useCallback)(media => {
+    const result = resolveGalleryVideoSelection({
+      media,
+      gallerySource: attributes.gallery_source,
+      galleryInclude: attributes.gallery_include,
+      previewPostId
+    });
+    if (result.type === 'update') {
+      setAttributes(result.updates);
+    } else if (result.type === 'no-change') {
+      // A freshly uploaded file is already attached to this post,
+      // so no attribute changes — just force the Loop child to refetch.
+      setRefreshToken(prev => prev + 1);
+    }
+  }, [attributes.gallery_source, attributes.gallery_include, previewPostId, setAttributes]);
+
+  /**
+   * Opens the media frame for the "Add Video" toolbar button. Uses the raw
+   * wp.media() API directly rather than the <MediaUpload> React component
+   * — that component's componentWillUnmount calls frame.remove() whenever
+   * it unmounts (e.g. when this block is deselected right after the modal
+   * closes), which can race with an in-progress React render and crash
+   * with "Attempted to synchronously unmount a root while React was
+   * already rendering."
+   */
+  const openAddVideoFrame = (0,external_wp_element_namespaceObject.useCallback)(() => {
+    const frame = window.wp.media({
+      title: (0,external_wp_i18n_namespaceObject.__)('Add Video', 'video-embed-thumbnail-generator'),
+      button: {
+        text: (0,external_wp_i18n_namespaceObject.__)('Add', 'video-embed-thumbnail-generator')
+      },
+      multiple: true,
+      library: {
+        type: 'video'
+      }
+    });
+    frame.on('select', () => {
+      handleSelectVideos(frame.state().get('selection').toJSON());
+    });
+    frame.open();
+  }, [handleSelectVideos]);
   const queryParams = (0,external_wp_element_namespaceObject.useMemo)(() => {
     let galleryPerPage = -1;
     if (effectiveValues.isPreview) {
@@ -3136,7 +3350,7 @@ function Edit({
     };
   }, [attributes, hasPaginationBlock, effectiveValues.isPreview, effectiveValues.gallery_per_page, effectiveValues.enable_collection_video_limit, effectiveValues.collection_video_limit, gallery_per_page, currentPage]);
   // We fetch query data to power the live preview template and pagination info
-  const queryData = useVideoQuery(queryParams, previewPostId);
+  const queryData = useVideoQuery(queryParams, previewPostId, refreshToken);
   (0,external_wp_element_namespaceObject.useEffect)(() => {
     getSettings().then(response => {
       setOptions(response);
@@ -3243,11 +3457,19 @@ function Edit({
     currentPage,
     videos
   };
+
+  // Lets the Loop child's own "Add Video" button (when the upload is already
+  // attached to this post and no attribute changes) trigger a refetch here
+  // too — Collection's own query is what actually supplies `videos` above
+  // in the common nested case, and context can't flow child-to-parent, so
+  // this callback is how Loop reaches back up to it.
+  const refreshVideos = (0,external_wp_element_namespaceObject.useCallback)(() => setRefreshToken(prev => prev + 1), []);
   const bridgeOverrides = (0,external_wp_element_namespaceObject.useMemo)(() => ({
     'videopack/gallery_pagination': hasPaginationBlock,
     'videopack/totalPages': queryData.maxNumPages,
-    'videopack/videos': videos
-  }), [hasPaginationBlock, queryData.maxNumPages, videos]);
+    'videopack/videos': videos,
+    'videopack/refreshVideos': refreshVideos
+  }), [hasPaginationBlock, queryData.maxNumPages, videos, refreshVideos]);
 
   // If options haven't loaded yet for a newly inserted block, don't render InnerBlocks
   // to prevent the wrong template from being applied.
@@ -3273,6 +3495,14 @@ function Edit({
         hasPaginationBlock: hasPaginationBlock,
         isEditingAllPages: isEditingAllPages
       })
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.BlockControls, {
+      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarGroup, {
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToolbarButton, {
+          icon: plus_default,
+          label: (0,external_wp_i18n_namespaceObject.__)('Add Video', 'video-embed-thumbnail-generator'),
+          onClick: openAddVideoFrame
+        })
+      })
     }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
       ...blockProps,
       children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideopackContextBridge, {
@@ -3283,7 +3513,8 @@ function Edit({
           value: videopackContextValue,
           children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.InnerBlocks, {
             allowedBlocks: ALLOWED_BLOCKS,
-            template: dynamicTemplate
+            template: dynamicTemplate,
+            renderAppender: showCollectionAppender ? external_wp_blockEditor_namespaceObject.InnerBlocks.ButtonBlockAppender : false
           })
         })
       })
@@ -3297,7 +3528,7 @@ function save_save() {
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.InnerBlocks.Content, {});
 }
 ;// ./src/blocks/collection/block.json
-const block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/collection","title":"Videopack Collection","category":"media","icon":"grid-view","description":"A composable grid or list layout for displaying videos.","supports":{"html":false,"align":["left","right","center","wide","full"],"color":{"background":true,"text":true,"link":true},"spacing":{"margin":true,"padding":true,"blockGap":true},"filter":{"duotone":true}},"selectors":{"filter":{"duotone":".wp-block-videopack-collection .videopack-thumbnail, .wp-block-videopack-collection .vjs-poster img, .wp-block-videopack-collection .vjs-poster, .wp-block-videopack-collection .mejs-poster img, .wp-block-videopack-collection .mejs-poster"}},"attributes":{"skin":{"type":"string"},"layout":{"type":"string","default":"grid"},"columns":{"type":"number","default":3},"gallery_source":{"type":"string","default":"current"},"gallery_id":{"type":"number","default":0},"gallery_category":{"type":"string","default":""},"gallery_tag":{"type":"string","default":""},"gallery_orderby":{"type":"string","default":"post_date"},"gallery_order":{"type":"string","default":"DESC"},"gallery_include":{"type":"string","default":""},"gallery_exclude":{"type":"string","default":""},"gallery_per_page":{"type":"number","default":0},"currentPage":{"type":"number","default":1},"views":{"type":"boolean"},"overlay_title":{"type":"boolean"},"gallery_align":{"type":"string"},"enable_collection_video_limit":{"type":"boolean"},"collection_video_limit":{"type":"number"},"collectionId":{"type":"string"},"isEditingAllPages":{"type":"boolean","default":false},"prioritizePostData":{"type":"boolean","default":false},"variation":{"type":"string"},"isPreview":{"type":"boolean","default":false},"videos":{"type":"array"}},"example":{"attributes":{"gallery_source":"recent","gallery_per_page":2,"columns":2,"isPreview":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
+const block_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"videopack/collection","title":"Videopack Collection","category":"media","icon":"grid-view","description":"A composable grid or list layout for displaying videos.","supports":{"html":false,"align":["left","right","center","wide","full"],"color":{"background":true,"text":true,"link":true},"spacing":{"margin":true,"padding":true,"blockGap":true},"filter":{"duotone":true}},"selectors":{"filter":{"duotone":".wp-block-videopack-collection .videopack-thumbnail, .wp-block-videopack-collection .vjs-poster img, .wp-block-videopack-collection .vjs-poster, .wp-block-videopack-collection .mejs-poster img, .wp-block-videopack-collection .mejs-poster"}},"attributes":{"skin":{"type":"string"},"layout":{"type":"string","default":"grid"},"columns":{"type":"number","default":3},"gallery_source":{"type":"string","default":"current"},"gallery_id":{"type":"number","default":0},"gallery_category":{"type":"string","default":""},"gallery_tag":{"type":"string","default":""},"gallery_orderby":{"type":"string","default":"post_date"},"gallery_order":{"type":"string","default":"DESC"},"gallery_include":{"type":"string","default":""},"gallery_exclude":{"type":"string","default":""},"gallery_per_page":{"type":"number"},"currentPage":{"type":"number","default":1},"views":{"type":"boolean"},"overlay_title":{"type":"boolean"},"gallery_align":{"type":"string"},"enable_collection_video_limit":{"type":"boolean"},"collection_video_limit":{"type":"number"},"collectionId":{"type":"string"},"isEditingAllPages":{"type":"boolean","default":false},"prioritizePostData":{"type":"boolean","default":false},"variation":{"type":"string"},"isPreview":{"type":"boolean","default":false},"videos":{"type":"array"}},"example":{"attributes":{"gallery_source":"recent","gallery_per_page":2,"columns":2,"isPreview":true}},"textdomain":"video-embed-thumbnail-generator","editorScript":"file:./index.js","editorStyle":"file:./index.css"}');
 ;// ./src/blocks/shared/design-context.js
 /**
  * Shared design attributes and context definitions for Videopack blocks.

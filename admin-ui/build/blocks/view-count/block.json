@@ -11,6 +11,9 @@
     "postType"
   ],
   "attributes": {
+    "position": {
+      "type": "string"
+    },
     "iconType": {
       "type": "string",
       "default": "none"
