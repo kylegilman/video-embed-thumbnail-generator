@@ -292,8 +292,17 @@ class Screens implements Hook_Subscriber {
 	 * @return void
 	 */
 	public function output_encode_queue_page() {
+		/**
+		 * Fires before rendering the transcode queue management page in the admin tools panel.
+		 *
+		 * Use this action to inject custom admin widgets, scripts, or warnings above
+		 * the transcode job list tables.
+		 *
+		 * @since 5.0.0
+		 */
+		do_action( 'videopack_admin_queue_page_before' );
 		echo '<div id="videopack-queue-root"></div>';
-				/**
+		/**
 		 * Fires after rendering the transcode queue management page in the admin tools panel.
 		 *
 		 * Use this action to inject custom admin widgets, scripts, or debug info below

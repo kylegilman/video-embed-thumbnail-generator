@@ -1,3 +1,5 @@
+import { applyFilters } from '@wordpress/hooks';
+
 export const getColorFallbacks = (settings) => {
 	const { embed_method = 'Video.js', skin = 'vjs-theme-videopack' } =
 		settings || {};
@@ -58,5 +60,20 @@ export const getColorFallbacks = (settings) => {
 		}
 	}
 
-	return fallbacks;
+	return applyFilters(
+		/**
+		 * Filters the resolved color fallback values used for the player preview
+		 * and color picker placeholders when no explicit color has been chosen.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param {Object} fallbacks   Map of color fallback values.
+		 * @param {string} embed_method The selected player embed method.
+		 * @param {string} skin         The selected player skin.
+		 */
+		'videopack.colorFallbacks',
+		fallbacks,
+		embed_method,
+		skin
+	);
 };
