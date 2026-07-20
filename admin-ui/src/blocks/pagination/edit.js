@@ -6,8 +6,8 @@ import { __ } from '@wordpress/i18n';
 import Pagination from '../../components/Pagination/Pagination';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../utils/colors';
-import { useVideopackContext } from '../../utils/VideopackContext';
-import useVideopackResolution from '../../hooks/useVideopackContext';
+import { useVideopackContext as useVideopackData } from '../../utils/VideopackContext';
+import useVideopackContext from '../../hooks/useVideopackContext';
 
 /* global videopack_config */
 
@@ -25,12 +25,12 @@ export default function Edit({
 		pagination_active_color,
 	} = attributes;
 
-	const vpContext = useVideopackContext();
-	const { resolved } = useVideopackResolution(attributes, context);
+	const vpData = useVideopackData();
+	const { resolved } = useVideopackContext(attributes, context);
 	const currentPage =
-		vpContext.currentPage || context['videopack/currentPage'] || 1;
+		vpData.currentPage || context['videopack/currentPage'] || 1;
 	const totalPages =
-		vpContext.totalPages || context['videopack/totalPages'] || 1;
+		vpData.totalPages || context['videopack/totalPages'] || 1;
 
 	const THEME_COLORS = videopack_config?.themeColors || [];
 

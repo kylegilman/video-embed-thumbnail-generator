@@ -6,12 +6,13 @@ This document explains how video metadata and design settings are propagated thr
 
 Videopack uses a hybrid context system to ensure that child blocks (like Title, View Count, or Watermark) can access video metadata regardless of their nesting depth or whether they are rendered inside a specialized player engine.
 
-The system consists of four layers:
+The system consists of five layers:
 
 1. **The PHP Registry (`src/Admin/Ui.php`)**: Dynamically injects global attributes and context mappings into all Videopack blocks.
 2. **The React Bridge (`useVideopackContext` hook)**: Resolves design tokens and generates a "shared context" object for manual propagation in the editor.
 3. **The PHP Context Manager (`src/Frontend/Context_Manager.php`)**: Mirrors the React resolution logic on the PHP side for frontend rendering.
-4. **The Shadow Provider (`Engine/edit.js`)**: Manually relays context through internal overlays in the editor.
+4. **The Shadow Provider (`VideopackContextBridge`)**: Manually relays context through internal overlays in the editor.
+5. **The Sibling Bridge (`utils/VideopackContext.js`)**: A plain React Context, for the one case none of the above can handle — passing live state *sideways*, between sibling blocks.
 
 ---
 
@@ -82,9 +83,35 @@ Because `block.json` no longer statically defines `providesContext` for `videopa
 
 ---
 
+## Layer 5: The Sibling Bridge (`utils/VideopackContext.js`)
+
+Layers 1-4 all propagate context **down** a block tree — from a block to its own descendants. That covers most cases, but `Collection` renders `Loop` and `Pagination` as **siblings**, not ancestor/descendant: Pagination needs to know the `currentPage`/`totalPages` that Loop's own query resolved, and there is no WP block context path from one sibling to another, no matter how it's registered in `Ui.php` or bridged with `<VideopackContextBridge>`.
+
+`utils/VideopackContext.js` solves exactly this one problem: it's a plain `createContext`/`useContext` pair (`VideopackProvider` / the hook it exports), wrapped around Collection's entire `<InnerBlocks>` tree so both Loop and Pagination — as well as anything else nested under Collection — can read the same `{ currentPage, totalPages, gallery_pagination, gallery_per_page, videos }` object regardless of where they sit in the tree.
+
+```javascript
+// blocks/collection/edit.js — Provider wraps Loop and Pagination as siblings
+<VideopackProvider value={{ currentPage, totalPages: queryData.maxNumPages, videos, ... }}>
+    <InnerBlocks allowedBlocks={ALLOWED_BLOCKS} template={dynamicTemplate} />
+</VideopackProvider>
+```
+
+> [!IMPORTANT]
+> **Naming collision**: the hook this module exports is also, confusingly, named `useVideopackContext` — the same name as the Layer 2 hook every other block imports. **Always alias the import** rather than the hook's own name. The established convention (see `loop/edit.js`, `pagination/edit.js`) is:
+> ```javascript
+> import { useVideopackContext as useVideopackData } from '../../utils/VideopackContext';
+> import useVideopackContext from '../../hooks/useVideopackContext';
+> ```
+> Keep the plain `useVideopackContext` name attached to the Layer 2 hook (the one nearly every block uses) and give *this* one the alias — not the other way around. A block that imports both and gets the aliasing backwards reads as if it's calling the common design-resolution hook with no arguments, which is a confusing trap for the next person who has to debug it.
+
+Use this mechanism only when a block genuinely needs state from a sibling, not a descendant — for anything flowing from parent to child, Layers 1-4 already cover it, and adding a second parallel channel for the same data is how the two channels quietly drift out of sync with each other.
+
+---
+
 ## Debugging Context Issues
 
 If a child block is missing data:
 1. **Check the Registry**: Does `src/Admin/Ui.php` include the key in the `uses_context` array?
 2. **Check the Parent**: Is the parent block using `<VideopackContextBridge>` to pass the context down?
 3. **Verify Attributes**: If a block should be providing context automatically (e.g., a standalone `Title` block), ensure it actually has the attribute (like `id`) that `Ui.php` is looking for.
+4. **Check for a sibling relationship**: If the block needing data is a *sibling* of the block that has it (not a descendant), Layers 1-4 cannot help — that's what Layer 5 (`utils/VideopackContext.js`) is for. Confirm the data is actually in the `VideopackProvider`'s `value` object, and that the alias convention above wasn't accidentally inverted.
