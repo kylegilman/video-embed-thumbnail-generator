@@ -6,6 +6,8 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
+import { useDispatch } from '@wordpress/data';
+import { createBlock } from '@wordpress/blocks';
 import { sortAscending, sortDescending } from '../../assets/icon';
 import QuerySettingsPanel from './QuerySettings';
 
@@ -17,7 +19,9 @@ export default function CollectionQuerySettings({
 	showManualSource = true,
 	isSiteEditor = false,
 	hasPaginationBlock = true,
+	clientId,
 }) {
+	const { insertBlock } = useDispatch('core/block-editor');
 	const {
 		gallery_source,
 		gallery_include,
@@ -202,10 +206,30 @@ export default function CollectionQuerySettings({
 						'Enable Pagination',
 						'video-embed-thumbnail-generator'
 					)}
-					checked={!!gallery_pagination}
-					onChange={(val) =>
-						setAttributes({ gallery_pagination: val })
+					help={
+						clientId
+							? __(
+									'Adds a Pagination block to the collection.',
+									'video-embed-thumbnail-generator'
+								)
+							: undefined
 					}
+					checked={!!gallery_pagination}
+					onChange={(val) => {
+						setAttributes({ gallery_pagination: val });
+						// In the block editor, pagination display is driven by
+						// an actual videopack/pagination child block, not just
+						// this attribute — insert one so the toggle produces
+						// visible controls. Classic Embed has no block tree
+						// (no clientId), so it keeps the attribute-only behavior.
+						if (val && clientId) {
+							insertBlock(
+								createBlock('videopack/pagination'),
+								undefined,
+								clientId
+							);
+						}
+					}}
 				/>
 			)}
 		</>

@@ -162,6 +162,7 @@ export default function CollectionInspectorControls({
 				showPlayerSettings={showPlayerSettings}
 				showSkinSettings={showSkinSettings}
 				hasPaginationBlock={hasPaginationBlock}
+				clientId={clientId}
 			/>
 		</div>
 	);
