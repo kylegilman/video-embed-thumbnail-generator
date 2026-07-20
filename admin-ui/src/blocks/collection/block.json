@@ -73,8 +73,7 @@
 			"default": ""
 		},
 		"gallery_per_page": {
-			"type": "number",
-			"default": 0
+			"type": "number"
 		},
 		"currentPage": {
 			"type": "number",
