@@ -32,15 +32,16 @@
 		z-index: 125;
 	}
 
-	// Fix for Gutenberg appender being absolute/0-height (user suggested)
-	// Standard Gutenberg appender positioned at the top for overlays
+	// Keep the appender in normal document flow (so it naturally lands at the
+	// top, as the first/only item) rather than position: absolute — core's
+	// own :only-child empty-state styling fights an absolute top/right offset
+	// and re-centers it. width: fit-content + margin-left: auto right-aligns
+	// it without stretching to the full width of the player.
 	> .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
-		position: absolute;
-		top: 20px;
-		right: 20px;
-		width: auto;
+		position: relative;
+		width: fit-content;
 		height: auto;
-		margin: 0;
+		margin: 20px 20px 0 auto;
 		z-index: 130;
 		pointer-events: auto;
 	}
@@ -49,7 +50,7 @@
 		> .block-editor-inner-blocks
 		> .block-editor-block-list__layout
 		> .block-list-appender {
-		top: 50px;
+		margin-top: 50px;
 	}
 }
 
