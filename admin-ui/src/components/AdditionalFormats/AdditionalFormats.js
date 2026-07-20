@@ -292,6 +292,7 @@ const AdditionalFormats = ({
 		return Object.values(formats).some(
 			(format) =>
 				format.status === 'queued' ||
+				format.status === 'browser_pending' ||
 				format.status === 'encoding' ||
 				format.status === 'processing' ||
 				format.status === 'needs_insert' ||
@@ -309,7 +310,7 @@ const AdditionalFormats = ({
 
 		// Handle real-time progress updates from browser encoder via CustomEvents
 		const handleBrowserProgress = (event) => {
-			const { job_id, format_id, percent } = event.detail;
+			const { job_id, format_id, percent, fps, speed, elapsed, remaining } = event.detail;
 			setVideoFormats((prevFormats) => {
 				if (!prevFormats) {
 					return prevFormats;
@@ -318,11 +319,12 @@ const AdditionalFormats = ({
 				const format = updatedFormats[format_id];
 				if (
 					format &&
-					(format.job_id === job_id ||
+					(Number(format.job_id) === Number(job_id) ||
 						(!format.job_id && format.status === 'browser_pending'))
 				) {
 					updatedFormats[format_id] = {
 						...format,
+						job_id,
 						status: 'encoding',
 						encoding_now: true,
 						progress: {
@@ -330,6 +332,10 @@ const AdditionalFormats = ({
 								? format.progress
 								: {}),
 							percent,
+							fps,
+							speed,
+							elapsed,
+							remaining,
 							status: 'encoding',
 						},
 					};
@@ -540,6 +546,7 @@ const AdditionalFormats = ({
 
 				setEncodeMessage(successMsg);
 			}
+			window.dispatchEvent( new CustomEvent( 'videopack_check_jobs' ) );
 			fetchVideoFormats(); // Re-fetch to update statuses
 		} catch (error) {
 			console.error(error);
@@ -650,6 +657,11 @@ const AdditionalFormats = ({
 		setDeleteInProgress(jobId); // Mark this jobId as being deleted
 		try {
 			await deleteJob(jobId);
+			window.dispatchEvent(
+				new CustomEvent( 'videopack_job_deleted', {
+					detail: { job_id: jobId }
+				} )
+			);
 			setEncodeMessage(
 				__(
 					'Job canceled/deleted successfully.',

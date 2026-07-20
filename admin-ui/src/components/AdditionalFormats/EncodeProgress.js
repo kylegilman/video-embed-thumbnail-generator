@@ -75,9 +75,9 @@ const EncodeProgress = ({
 	// Real-time updates from browser encoder
 	useEffect(() => {
 		const handleBrowserProgress = (event) => {
-			const { job_id, format_id, percent } = event.detail;
+			const { job_id, format_id, percent, elapsed, remaining } = event.detail;
 			if (
-				formatData?.job_id === job_id ||
+				Number(formatData?.job_id) === Number(job_id) ||
 				(formatData?.format_id === format_id &&
 					formatData?.status === 'browser_pending')
 			) {
@@ -86,8 +86,9 @@ const EncodeProgress = ({
 						return prev;
 					}
 					return {
-						...prev,
 						percent,
+						elapsed: elapsed !== undefined ? elapsed : prev.elapsed,
+						remaining: remaining !== undefined ? remaining : prev.remaining,
 					};
 				});
 			}
@@ -200,9 +201,7 @@ const EncodeProgress = ({
 	}, [interpolatedProgress.percent, onRefresh, formatData?.encoding_now]);
 
 	if (
-		formatData?.encoding_now &&
-		formatData?.progress &&
-		typeof formatData.progress === 'object'
+		formatData?.encoding_now
 	) {
 		const percent = Math.round(interpolatedProgress.percent);
 		const percentText = sprintf('%d%%', percent);
@@ -267,7 +266,7 @@ const EncodeProgress = ({
 					<span>
 						{__('fps:', 'video-embed-thumbnail-generator') +
 							' ' +
-							(formatData.progress.fps || '--')}
+							(formatData.progress?.fps || '--')}
 					</span>
 				</div>
 			</div>

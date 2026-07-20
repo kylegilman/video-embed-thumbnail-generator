@@ -347,7 +347,7 @@ class Encode_Format {
 			return $progress;
 		}
 
-		if ( $this->status === self::STATUS_ENCODING ) {
+		if ( in_array( $this->status, array( self::STATUS_ENCODING, self::STATUS_BROWSER_ENCODING ), true ) ) {
 			// 1. Try to get progress from the local log file first.
 			if ( $this->logfile && file_exists( $this->logfile ) ) {
 				$this->set_progress();
@@ -701,6 +701,7 @@ class Encode_Format {
 				'pending_replacement',
 				'failed',
 				'browser_pending',
+				'browser_encoding',
 			)
 		);
 		if ( in_array( $status, $allowed ) ) {
@@ -974,6 +975,7 @@ class Encode_Format {
 	 */
 	public function get_status_label() {
 		$label = self::get_status_label_static( $this->status );
+		$label = is_string( $label ) ? $label : '';
 		/**
 		 * Filters the localized status label for the current format transcode job instance.
 		 *
@@ -991,12 +993,13 @@ class Encode_Format {
 	/**
 	 * Get the localized label for a given status.
 	 *
-	 * @param string $status The internal status string.
+	 * @param string|null $status The internal status string.
 	 * @return string The localized status label.
 	 */
 	public static function get_status_label_static( $status ) {
-		$label = $status;
-		switch ( $status ) {
+		$status_str = is_string( $status ) ? $status : '';
+		$label      = $status_str;
+		switch ( $status_str ) {
 			case self::STATUS_NOT_ENCODED:
 				$label = __( 'Not Encoded', 'video-embed-thumbnail-generator' );
 				break;
@@ -1037,7 +1040,7 @@ class Encode_Format {
 				$label = __( 'On external server', 'video-embed-thumbnail-generator' );
 				break;
 		}
-		return apply_filters( 'videopack_status_label', $label, $status );
+		return apply_filters( 'videopack_status_label', $label, $status_str );
 	}
 
 	/**

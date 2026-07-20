@@ -1267,11 +1267,14 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		}
 
 		$update_data = array(
-			'status'        => 'queued',
-			'error_message' => null,
-			'failed_at'     => null,
-			'pid'           => null,
-			'retry_count'   => (int) $job['retry_count'] + 1,
+			'status'               => 'queued',
+			'error_message'        => null,
+			'failed_at'            => null,
+			'pid'                  => null,
+			'progress'             => 0,
+			'started_at'           => null,
+			'output_attachment_id' => null,
+			'retry_count'          => (int) $job['retry_count'] + 1,
 		);
 
 		// If the job was deleted, paths were cleared. We need to restore them.
@@ -1412,11 +1415,11 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			'extra_meta'       => $job->get_extra_meta(),
 			'updated_at'       => $job->get_updated_at(),
 			'exists'           => in_array( $status, array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_REMOTE_EXISTS ), true ),
-			'encoding_now'     => in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING ), true ),
+			'encoding_now'     => in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_BROWSER_ENCODING ), true ),
 			'deletable'        => ! empty( $job->get_job_id() ),
 		);
 
-		if ( in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
+		if ( in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_BROWSER_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
 			$progress = $job->get_progress();
 			if ( is_array( $progress ) ) {
 				$response['progress'] = $progress;

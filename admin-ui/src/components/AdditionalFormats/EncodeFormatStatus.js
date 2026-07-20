@@ -145,7 +145,11 @@ const EncodeFormatStatus = ({
 			{formatData.status !== 'not_encoded' &&
 				(formatData.status_l10n !== formatData.label || !showLabel) && (
 					<span className="videopack-format-status">
-						{formatData.status_l10n}
+						{formatData.status === 'browser_encoding'
+							? (window.videopack_current_browser_job_id && Number(window.videopack_current_browser_job_id) === Number(formatData.job_id || formatData.id)
+								? __('Encoding (This Browser Tab)', 'video-embed-thumbnail-generator')
+								: __('Encoding (Different Browser/Tab)', 'video-embed-thumbnail-generator'))
+							: formatData.status_l10n}
 					</span>
 				)}
 
