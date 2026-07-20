@@ -58,6 +58,10 @@ class Assets implements Hook_Subscriber {
 				'callback' => 'register_player_scripts',
 			),
 			array(
+				'hook'     => 'wp_footer',
+				'callback' => 'print_late_enqueued_player_styles',
+			),
+			array(
 				'hook'     => 'admin_enqueue_scripts',
 				'callback' => 'enqueue_admin_assets',
 			),
@@ -78,7 +82,24 @@ class Assets implements Hook_Subscriber {
 	 * @return array
 	 */
 	public function get_filters(): array {
-		return array();
+		return array(
+			array(
+				'hook'     => 'videopack_page_needs_video_assets',
+				'callback' => 'filter_page_needs_video_assets',
+			),
+		);
+	}
+
+	/**
+	 * Exposes page_needs_video_assets() as a filter so add-ons (e.g. player-pro)
+	 * can gate their own frontend asset enqueuing on the same page-content scan
+	 * instead of loading unconditionally.
+	 *
+	 * @param bool $needs_assets Value passed in by the caller (or an earlier filter).
+	 * @return bool
+	 */
+	public function filter_page_needs_video_assets( $needs_assets ): bool {
+		return (bool) $needs_assets || $this->page_needs_video_assets();
 	}
 
 	/**
@@ -189,8 +210,110 @@ class Assets implements Hook_Subscriber {
 
 	public function register_player_scripts() {
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
+		// Handles the alwaysloadscripts case internally (enqueues scripts + styles).
 		$player->register_scripts();
+
+		// Independently, if this page's content actually contains a Videopack
+		// block or shortcode, enqueue now so styles land in <head> without FOUC.
+		// Harmless/idempotent if alwaysloadscripts already triggered this above.
+		if ( $this->page_needs_video_assets() ) {
+			$player->enqueue_scripts();
+		}
+
 		$this->localize_videopack_config();
+	}
+
+	/**
+	 * Determines whether the current frontend request needs Videopack's player
+	 * assets, by scanning the raw content of the post(s) about to be displayed
+	 * (available before wp_head fires) for a Videopack block or shortcode,
+	 * without waiting for that content to actually render.
+	 *
+	 * This only catches content stored directly in a post's post_content. Videos
+	 * injected via widgets, template parts, page builders, or another plugin's
+	 * do_shortcode() call are not detected here; those rely on the
+	 * alwaysloadscripts setting, or are still caught late (with a brief flash of
+	 * unstyled content) by print_late_enqueued_player_styles() at wp_footer.
+	 *
+	 * @return bool
+	 */
+	protected function page_needs_video_assets(): bool {
+		static $needs_assets = null;
+
+		if ( null !== $needs_assets ) {
+			return $needs_assets;
+		}
+
+		$needs_assets = false;
+
+		if ( is_embed() ) {
+			$needs_assets = true;
+			return $needs_assets;
+		}
+
+		if ( is_attachment() ) {
+			$attachment = get_queried_object();
+			if ( $attachment instanceof \WP_Post && wp_attachment_is( 'video', $attachment ) ) {
+				$needs_assets = true;
+				return $needs_assets;
+			}
+		}
+
+		$shortcode_tags = array( 'videopack', 'VIDEOPACK', 'FMP', 'KGVID' );
+		if ( ! empty( $this->options['replace_video_shortcode'] ) ) {
+			$shortcode_tags[] = 'video';
+		}
+
+		global $wp_query;
+		$posts = ( $wp_query instanceof \WP_Query ) ? (array) $wp_query->posts : array();
+
+		foreach ( $posts as $post ) {
+			if ( ! ( $post instanceof \WP_Post ) || empty( $post->post_content ) ) {
+				continue;
+			}
+
+			if ( false !== strpos( $post->post_content, '<!-- wp:videopack/' ) ) {
+				$needs_assets = true;
+				break;
+			}
+
+			foreach ( $shortcode_tags as $tag ) {
+				if ( has_shortcode( $post->post_content, $tag ) ) {
+					$needs_assets = true;
+					break 2;
+				}
+			}
+		}
+
+		return $needs_assets;
+	}
+
+	/**
+	 * Safety net for content the early page-content scan couldn't detect
+	 * (widgets, template parts, page builders). If a player actually rendered
+	 * (via Player::get_player_code()) and enqueued its styles too late for
+	 * wp_head to print them, print them now.
+	 *
+	 * wp_print_styles() does not itself check whether a handle was enqueued
+	 * when given an explicit handle list — it will print any registered
+	 * handle you pass it. So we must filter down to handles that are actually
+	 * enqueued-but-not-yet-printed ourselves, or this would force these styles
+	 * to load on every page regardless of content.
+	 */
+	public function print_late_enqueued_player_styles() {
+		$player  = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
+		$handles = array_merge( array( 'videopack-core' ), (array) $player->get_player_style_handles() );
+
+		$pending = array_filter(
+			$handles,
+			function ( $handle ) {
+				return wp_style_is( $handle, 'enqueued' ) && ! wp_style_is( $handle, 'done' );
+			}
+		);
+
+		if ( $pending ) {
+			wp_print_styles( $pending );
+		}
 	}
 
 	/**

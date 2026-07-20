@@ -235,7 +235,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Always load plugin-related JavaScripts',
+							'Always load plugin-related JavaScript and CSS',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.alwaysloadscripts}
@@ -243,7 +243,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					/>
 					<VideopackTooltip
 						text={__(
-							"Usually Videopack's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.",
+							"Usually Videopack's JavaScript and CSS are only loaded if a video is present on the page. AJAX page loading can cause errors or unstyled players because those assets aren't loaded with the video content. Enabling this option will make sure the JavaScript and CSS are always loaded.",
 							'video-embed-thumbnail-generator'
 						)}
 					/>
