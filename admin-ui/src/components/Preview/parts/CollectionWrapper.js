@@ -1,5 +1,12 @@
 import useVideopackContext from '../../../hooks/useVideopackContext';
 
+// Collection is a valid theme-context root (Overlays.scss) — nested blocks
+// inherit the skin class/CSS vars from here rather than each needing their own.
+const COLLECTION_CONTEXT_OPTS = {
+	excludeHoverTrigger: true,
+	classKeys: ['skin'],
+};
+
 /**
  * Wrapper for Videopack Collection Previews.
  *
@@ -16,7 +23,7 @@ export default function CollectionWrapper({
 	const { resolved, style, classes } = useVideopackContext(
 		attributes,
 		context,
-		{ excludeHoverTrigger: true }
+		COLLECTION_CONTEXT_OPTS
 	);
 	const { layout = 'grid', columns = 3, align = '' } = resolved;
 

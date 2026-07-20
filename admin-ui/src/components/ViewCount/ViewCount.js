@@ -8,6 +8,8 @@ import {
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideopackData from '../../hooks/useVideopackData';
 
+const CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * A internal component to display the view count with correct styling and data.
  *
@@ -36,7 +38,9 @@ export default function ViewCount({
 	attributes = {},
 	context = {},
 }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: CLASS_KEYS,
+	});
 	const { data: views, isResolving } = useVideopackData('views', context);
 	const attachmentId = vpContext.resolved.attachmentId;
 
@@ -51,10 +55,10 @@ export default function ViewCount({
 			? 'right'
 			: 'left';
 
-	const wrapperClass = `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${
+	const wrapperClass = `videopack-view-count videopack-view-count-block ${vpContext.classes} ${
 		actualIsOverlay ? 'is-overlay is-badge' : ''
-	} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
-		actualIsOverlay ? `position-${position || 'top'}` : ''
+	} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} position-${
+		position || 'top'
 	} has-text-align-${textAlign || defaultAlign} ${
 		vpContext.resolved.isPreview ? 'is-preview' : ''
 	}`;
@@ -133,10 +137,8 @@ export default function ViewCount({
 
 	return (
 		<div {...finalBlockProps}>
-			<div className="videopack-view-count">
-				{renderIcon()}
-				{displayValue}
-			</div>
+			{renderIcon()}
+			{displayValue}
 		</div>
 	);
 }

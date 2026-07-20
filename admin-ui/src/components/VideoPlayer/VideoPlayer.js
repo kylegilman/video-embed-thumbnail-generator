@@ -16,6 +16,14 @@ import VideoJS from './VideoJs.js';
 import WpMejsPlayer from './WpMejsPlayer.js';
 import CustomDuotoneFilter from '../Duotone/CustomDuotoneFilter';
 
+const PLAYER_CONTEXT_CLASS_KEYS = [
+	'skin',
+	'control_bar_bg_color',
+	'control_bar_color',
+	'play_button_color',
+	'play_button_secondary_color',
+];
+
 const DEFAULT_PLAYERS = {
 	'Video.js': VideoJS,
 	'WordPress Default': WpMejsPlayer,
@@ -61,7 +69,9 @@ const VideoPlayer = ({
 		resolved,
 		style: contextStyles,
 		classes: contextClasses,
-	} = useVideopackContext(blockAttributes, context);
+	} = useVideopackContext(blockAttributes, context, {
+		classKeys: PLAYER_CONTEXT_CLASS_KEYS,
+	});
 
 	const wrapperRef = useRef(null);
 	const [detectedDimensions, setDetectedDimensions] = useState({

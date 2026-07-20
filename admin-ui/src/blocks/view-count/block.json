@@ -8,6 +8,9 @@
 	"description": "Displays the view count of the video.",
 	"usesContext": ["postId", "postType"],
 	"attributes": {
+		"position": {
+			"type": "string"
+		},
 		"iconType": {
 			"type": "string",
 			"default": "none"

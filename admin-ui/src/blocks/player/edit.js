@@ -24,6 +24,14 @@ import './editor.scss';
 
 const ALLOWED_BLOCKS = ['videopack/watermark', 'videopack/title'];
 
+const PLAYER_CONTEXT_CLASS_KEYS = [
+	'skin',
+	'control_bar_bg_color',
+	'control_bar_color',
+	'play_button_color',
+	'play_button_secondary_color',
+];
+
 /**
  * Edit component for the video player block.
  *
@@ -119,7 +127,9 @@ export default function Edit(props) {
 		resolved,
 		style: contextStyles,
 		classes: contextClasses,
-	} = useVideopackContext({ ...parentAttributes, restartCount }, context);
+	} = useVideopackContext({ ...parentAttributes, restartCount }, context, {
+		classKeys: PLAYER_CONTEXT_CLASS_KEYS,
+	});
 
 	const { src, skin, isDiscovering } = resolved;
 	useVideoProbe(src);
@@ -283,9 +293,9 @@ export default function Edit(props) {
 							allowedBlocks={filteredAllowedBlocks}
 							templateLock={false}
 							renderAppender={
-								isSelected
+								isAnySelected
 									? InnerBlocks.ButtonBlockAppender
-									: undefined
+									: false
 							}
 						/>
 					</VideopackContextBridge>

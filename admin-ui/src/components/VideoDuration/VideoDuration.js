@@ -2,10 +2,18 @@ import { Spinner } from '@wordpress/components';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideopackData from '../../hooks/useVideopackData';
 
+// Duration shares "badge" title/background colors with Title/View-count —
+// see Overlays.scss's $badge-selectors. Module-level so the reference stays
+// stable across renders (useVideopackContext depends on it for memoization).
+const CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * A internal component to display the video duration with correct formatting and data.
  *
  * @param {Object}  root0                   Component props.
+ * @param {Object}  [root0.blockProps]      Block props from the parent Edit component,
+ *                                          reused as-is when present so this component
+ *                                          doesn't stamp a second, redundant wrapper.
  * @param {boolean} root0.isOverlay         Whether it's an overlay.
  * @param {boolean} root0.isInsideThumbnail Whether it's inside a thumbnail.
  * @param {string}  root0.textAlign         Text alignment.
@@ -15,6 +23,7 @@ import useVideopackData from '../../hooks/useVideopackData';
  * @return {Element}                        The rendered component.
  */
 export default function VideoDuration({
+	blockProps,
 	isOverlay,
 	isInsideThumbnail,
 	textAlign,
@@ -22,7 +31,9 @@ export default function VideoDuration({
 	attributes,
 	context = {},
 }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: CLASS_KEYS,
+	});
 	const { data: duration, isResolving } = useVideopackData(
 		'duration',
 		context
@@ -85,17 +96,19 @@ export default function VideoDuration({
 		return `${m}:${sec.toString().padStart(2, '0')}`;
 	};
 
+	const finalBlockProps = blockProps || {
+		className: `videopack-video-duration-block videopack-video-duration ${
+			vpContext.classes
+		} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${
+			position || 'top'
+		} has-text-align-${textAlign || defaultAlign} ${
+			vpContext.resolved.isPreview ? 'is-preview' : ''
+		}`,
+		style: vpContext.style,
+	};
+
 	return (
-		<div
-			className={`videopack-video-duration-block videopack-video-duration ${
-				vpContext.classes
-			} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${
-				position || 'top'
-			} has-text-align-${textAlign || defaultAlign} ${
-				vpContext.resolved.isPreview ? 'is-preview' : ''
-			}`}
-			style={vpContext.style}
-		>
+		<div {...finalBlockProps}>
 			{duration ? formatDuration(duration) : '0:00'}
 		</div>
 	);

@@ -20,6 +20,10 @@ import ViewCount from '../../components/ViewCount/ViewCount';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 
+// View-count shares "badge" title/background colors with Title/Duration —
+// see the $badge-selectors comment in VideoDuration.js.
+const CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * Edit component for the Videopack View Count block.
  *
@@ -30,7 +34,9 @@ import useVideopackContext from '../../hooks/useVideopackContext';
  * @return {Element}                     The rendered component.
  */
 export default function Edit({ attributes, setAttributes, context }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: CLASS_KEYS,
+	});
 	const postId = vpContext.resolved.attachmentId;
 	const {
 		iconType,
@@ -94,11 +100,11 @@ export default function Edit({ attributes, setAttributes, context }) {
 		attributes.position || context['videopack/position'] || 'top';
 
 	const blockProps = useBlockProps({
-		className: `videopack-view-count-block videopack-view-count-wrapper ${vpContext.classes} ${
-			isOverlay ? `is-overlay position-${position}` : ''
+		className: `videopack-view-count videopack-view-count-block ${vpContext.classes} ${
+			isOverlay ? 'is-overlay is-badge' : ''
 		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${!effectiveAttachmentId ? 'no-title' : ''} has-text-align-${finalTextAlign}`,
+		} ${!effectiveAttachmentId ? 'no-title' : ''} position-${position} has-text-align-${finalTextAlign}`,
 		style: vpContext.style,
 	});
 

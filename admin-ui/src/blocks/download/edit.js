@@ -20,6 +20,9 @@ import {
 	buildDownloadMenuFromSourceGroups,
 	getMockDownloadMenuItems,
 } from '../../utils/downloadMenu';
+
+const CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * Edit component for the Videopack Video Download block.
  *
@@ -36,7 +39,9 @@ export default function Edit({
 	context,
 	isSelected,
 }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: CLASS_KEYS,
+	});
 
 	const {
 		icon = true,

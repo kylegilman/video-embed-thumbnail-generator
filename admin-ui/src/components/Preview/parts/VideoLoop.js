@@ -3,6 +3,12 @@ import TemplatePreview from '../TemplatePreview';
 import CustomDuotoneFilter from '../../Duotone/CustomDuotoneFilter';
 import useVideopackContext from '../../../hooks/useVideopackContext';
 
+// Loop is a valid theme-context root (Overlays.scss: .videopack-video-loop).
+const LOOP_CONTEXT_OPTS = {
+	excludeHoverTrigger: true,
+	classKeys: ['skin'],
+};
+
 /**
  * Loop component for rendering multiple Videopack items.
  *
@@ -21,7 +27,7 @@ export default function VideoLoop({
 	const { resolved, style, classes } = useVideopackContext(
 		attributes,
 		context,
-		{ excludeHoverTrigger: true }
+		LOOP_CONTEXT_OPTS
 	);
 	const { videos = [], layout = 'grid', columns = 3, duotone } = resolved;
 

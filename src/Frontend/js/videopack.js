@@ -2310,7 +2310,9 @@
 
 
 			const grid = collectionWrapper.querySelector('.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
-			const pagination = collectionWrapper.querySelector('.videopack-pagination');
+			// A collection can have more than one pagination block (e.g. one
+			// above the loop, one below) — all of them need to stay in sync.
+			const paginations = collectionWrapper.querySelectorAll('.videopack-pagination');
 
 			if (grid) {
 				grid.style.opacity = 0.5;
@@ -2374,21 +2376,18 @@
 							}
 
 							const newGrid = newCollectionWrapper.querySelector('.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
-							const newPagination = newCollectionWrapper.querySelector('.videopack-pagination');
+							const newPaginations = newCollectionWrapper.querySelectorAll('.videopack-pagination');
 
 							if (grid && newGrid) {
 								grid.innerHTML = newGrid.innerHTML;
 							}
-							if (pagination && newPagination) {
-								pagination.innerHTML = newPagination.innerHTML;
-							} else if (pagination) {
-								// Fallback: look for pagination in the returned HTML if not in the wrapper
-								const altNewPagination = tempDiv.querySelector('.videopack-pagination');
-								if (altNewPagination) {
-									pagination.innerHTML = altNewPagination.innerHTML;
-								} else {
-									pagination.innerHTML = '';
-								}
+							if (paginations.length) {
+								// Fallback: look for pagination in the returned HTML if none were found in the wrapper.
+								const sourcePaginations = newPaginations.length ? newPaginations : tempDiv.querySelectorAll('.videopack-pagination');
+								paginations.forEach((paginationEl, index) => {
+									const newPaginationEl = sourcePaginations[index];
+									paginationEl.innerHTML = newPaginationEl ? newPaginationEl.innerHTML : '';
+								});
 							}
 
 							collectionWrapper.dataset.currentPage = page;

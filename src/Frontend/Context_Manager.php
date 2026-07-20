@@ -24,13 +24,19 @@ class Context_Manager {
 	 * @param array $attributes Block attributes.
 	 * @param array $context    Block context.
 	 * @param array $options    Global plugin options.
+	 * @param array $class_keys Subset of $design_keys whose resolved values should
+	 *                          become videopack-has-{key} classes / --videopack-{key}
+	 *                          CSS vars in the returned classes/style strings. $resolved
+	 *                          always contains the full $design_keys set regardless —
+	 *                          other code reads $resolved[...] directly for logic, not
+	 *                          just markup, so only the stamping is scoped per block type.
 	 * @return array {
 	 *     @type array  $resolved Resolved attribute values.
 	 *     @type string $style    CSS style string.
 	 *     @type string $classes  CSS classes string.
 	 * }
 	 */
-	public static function resolve( array $attributes, array $context, array $options ) {
+	public static function resolve( array $attributes, array $context, array $options, array $class_keys ) {
 		$defaults = Defaults::get_all( $options );
 
 		$design_keys = array(
@@ -93,7 +99,7 @@ class Context_Manager {
 
 			$resolved[ $key ] = $value;
 
-			if ( ! empty( $value ) ) {
+			if ( ! empty( $value ) && in_array( $key, $class_keys, true ) ) {
 				if ( 'skin' === $key ) {
 					if ( 'default' !== $value ) {
 						$classes[] = $value;

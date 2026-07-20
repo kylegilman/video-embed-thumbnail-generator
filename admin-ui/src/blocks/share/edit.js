@@ -39,6 +39,8 @@ import CompactColorPicker from '../../components/CompactColorPicker/CompactColor
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 
+const CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * Edit component for the Videopack Video Share block.
  *
@@ -55,7 +57,9 @@ export default function Edit({
 	context,
 	isSelected,
 }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: CLASS_KEYS,
+	});
 
 	const {
 		iconType = 'share',

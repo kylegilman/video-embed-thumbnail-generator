@@ -2,6 +2,8 @@ import { __ } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 import useVideopackContext from '../../hooks/useVideopackContext';
 
+const CLASS_KEYS = ['play_button_color', 'play_button_secondary_color'];
+
 /**
  * An internal component to display the play button with correct styling.
  *
@@ -15,7 +17,9 @@ export default function PlayButton({ attributes = {}, context = {} }) {
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const embed_method =
 		typeof config !== 'undefined' ? config.embed_method : 'Video.js';
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: CLASS_KEYS,
+	});
 
 	/**
 	 * Filters the React element used to render the player play button.

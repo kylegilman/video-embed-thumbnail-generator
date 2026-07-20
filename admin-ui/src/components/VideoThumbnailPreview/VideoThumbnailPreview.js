@@ -108,7 +108,7 @@ export default function VideoThumbnailPreview({
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const defaultNoThumb = config
-		? `${config.url}/src/images/Adobestock_469037984_thumb1.jpg`
+		? `${config.url}/src/images/nothumbnail.jpg`
 		: '';
 
 	// Priority: 1. Manual video data (previews), 2. Direct poster URL from meta, 3. WordPress media object, 4. Default "no thumbnail"

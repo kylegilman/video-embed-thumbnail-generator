@@ -482,7 +482,13 @@ class Gallery {
 	 * }
 	 */
 	public function collection_page( $page_number, array $query_atts, $layout = 'gallery', $skip_html = false ) {
-		$page_number               = (int) $page_number;
+		$page_number = (int) $page_number;
+		// page_number (unlike currentPage) is never a persisted block attribute,
+		// so Blocks::render_collection() relies on it exclusively to decide what
+		// page to render — that keeps a stale currentPage saved into post content
+		// (e.g. from previewing page 2 in the editor) from becoming the page
+		// every visitor sees by default.
+		$query_atts['page_number'] = $page_number;
 		$query_atts['currentPage'] = $page_number;
 		if ( empty( $query_atts['collectionId'] ) ) {
 			$query_atts['collectionId'] = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
