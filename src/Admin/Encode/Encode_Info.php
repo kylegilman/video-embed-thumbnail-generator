@@ -204,6 +204,15 @@ class Encode_Info {
 				continue;
 			}
 			$wp_attached_file = get_attached_file( $child->ID );
+			if ( $wp_attached_file && preg_match( '#^https?:#', $wp_attached_file ) ) {
+				$upload_dir             = wp_upload_dir();
+				$base_url_clean         = preg_replace( '#^https?:#', '', $upload_dir['baseurl'] );
+				$wp_attached_file_clean = preg_replace( '#^https?:#', '', $wp_attached_file );
+				if ( 0 === strpos( $wp_attached_file_clean, $base_url_clean ) ) {
+					$wp_attached_file = str_replace( $base_url_clean, $upload_dir['basedir'], $wp_attached_file_clean );
+					$wp_attached_file = str_replace( array( '\\', '/' ), DIRECTORY_SEPARATOR, $wp_attached_file );
+				}
+			}
 			/** @var array<string, mixed>|false $video_meta */
 			$video_meta       = wp_get_attachment_metadata( $child->ID );
 			$meta_format      = get_post_meta( $child->ID, '_kgflashmediaplayer-format', true );
@@ -307,6 +316,15 @@ class Encode_Info {
 	protected function set_default_url_and_path() {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		$local_file = get_attached_file( $this->id );
+		if ( $local_file && preg_match( '#^https?:#', $local_file ) ) {
+			$upload_dir       = wp_upload_dir();
+			$base_url_clean   = preg_replace( '#^https?:#', '', $upload_dir['baseurl'] );
+			$local_file_clean = preg_replace( '#^https?:#', '', $local_file );
+			if ( 0 === strpos( $local_file_clean, $base_url_clean ) ) {
+				$local_file = str_replace( $base_url_clean, $upload_dir['basedir'], $local_file_clean );
+				$local_file = str_replace( array( '\\', '/' ), DIRECTORY_SEPARATOR, $local_file );
+			}
+		}
 
 		$moviefilename = $this->basename . $this->format->get_suffix();
 
