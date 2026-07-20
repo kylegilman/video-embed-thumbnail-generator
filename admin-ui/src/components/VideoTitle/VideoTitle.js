@@ -9,6 +9,11 @@ import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideopackData from '../../hooks/useVideopackData';
 import VideopackContextBridge from '../VideopackContextBridge';
 
+const TITLE_CONTEXT_OPTS = {
+	excludeKeys: ['downloadlink'],
+	classKeys: ['skin', 'title_color', 'title_background_color'],
+};
+
 /**
  * An internal component to display the video title with correct styling and data.
  *
@@ -51,9 +56,7 @@ export default function VideoTitle({
 	linkToPost = false,
 	children,
 }) {
-	const vpContext = useVideopackContext(attributes, context, {
-		excludeKeys: ['downloadlink'],
-	});
+	const vpContext = useVideopackContext(attributes, context, TITLE_CONTEXT_OPTS);
 	const {
 		postId: resolvedPostId,
 		attachmentId: resolvedAttachmentId,
@@ -142,6 +145,13 @@ export default function VideoTitle({
 							'core/italic',
 							'core/strikethrough',
 						]}
+						// Only the real Edit component passes onTitleChange (it wires up
+						// setAttributes). Everywhere else this renders — Loop's templated
+						// preview items, the settings-page preview, the classic-editor
+						// preview — has nowhere to persist an edit, so RichText must not
+						// accept one; an editable field that silently discards changes
+						// just looks broken to a user.
+						readOnly={!onTitleChange}
 					/>
 				)}
 				{isOverlay && (

@@ -14,8 +14,7 @@ $badge-selectors: (
 	".videopack-video-duration-block.is-badge",
 	".videopack-view-count.is-overlay",
 	".videopack-view-count-block.is-inside-thumbnail",
-	".videopack-view-count-block.is-badge",
-	".videopack-view-count-wrapper.is-inside-thumbnail"
+	".videopack-view-count-block.is-badge"
 );
 
 // ---------------------------------------------------------------------------
@@ -392,7 +391,6 @@ $badge-selectors: (
 
 .videopack-view-count,
 .videopack-view-count-block,
-.videopack-view-count-wrapper,
 .videopack-video-duration,
 .videopack-video-duration-block {
 	display: flex;
@@ -417,17 +415,16 @@ $badge-selectors: (
 
 	&:not(.is-overlay) {
 		margin-bottom: 0.5em;
+		// Matches the Title block's non-overlay behavior — just inherit the
+		// page's normal text color rather than forcing a fallback.
 		color: var(--wp--preset--color--foreground, inherit);
-
-		// Ensure visibility in dark players when not an overlay
-		.videopack-video-player &,
-		.vjs-theme-videopack &,
-		.video-js & {
-			color: var(--wp--preset--color--foreground, #333);
-		}
 	}
 
-	&.is-preview {
+	// Generic block-inserter "example" preview look — a standalone, non-overlay
+	// placeholder badge. Excluded when this element is also a badge overlay
+	// (nested in a Thumbnail/Player preview) so it doesn't fight the badge
+	// rule above for color/font-size/padding.
+	&.is-preview:not(.is-overlay):not(.is-badge) {
 		color: #333 !important;
 		background: rgba(255, 255, 255, 0.8);
 		padding: 2px 6px;

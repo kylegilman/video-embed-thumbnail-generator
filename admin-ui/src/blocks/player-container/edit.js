@@ -47,9 +47,18 @@ const ALLOWED_MEDIA_TYPES = ['video', 'image/gif'];
 const ALLOWED_BLOCKS = [
 	'videopack/player',
 	'videopack/view-count',
+	'videopack/duration',
 	'videopack/caption',
 	'videopack/download',
 	'videopack/share',
+];
+
+const PLAYER_CONTEXT_CLASS_KEYS = [
+	'skin',
+	'control_bar_bg_color',
+	'control_bar_color',
+	'play_button_color',
+	'play_button_secondary_color',
 ];
 
 /**
@@ -62,7 +71,13 @@ const ALLOWED_BLOCKS = [
  * @param {Object}   root0.context       Block context.
  * @return {Element}                     The rendered component.
  */
-export default function Edit({ attributes, setAttributes, context, clientId }) {
+export default function Edit({
+	attributes,
+	setAttributes,
+	context,
+	clientId,
+	isSelected,
+}) {
 	const { id, src } = attributes;
 	const [temporarySrc, setTemporarySrc] = useState(
 		isBlobURL(src) ? src : null
@@ -91,7 +106,9 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 	const hasAttemptedInitialUpload = useRef(false);
 	const { createErrorNotice } = useDispatch(noticesStore);
 	const { insertBlock } = useDispatch(blockEditorStore);
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: PLAYER_CONTEXT_CLASS_KEYS,
+	});
 	const {
 		resolved: effectiveDesign,
 		style: contextStyle,
@@ -112,6 +129,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		innerBlocks,
 		attachmentFromStore,
 		attachmentError,
+		hasSelectedInnerBlock,
 	} = useSelect(
 		(select) => {
 			const editorStore = select(blockEditorStore);
@@ -143,10 +161,17 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							effectiveId,
 						])
 					: null,
+				hasSelectedInnerBlock:
+					editorStore.hasSelectedInnerBlock(clientId),
 			};
 		},
 		[clientId, id, contextAttachmentId, resolvedAttachmentId]
 	);
+
+	// Only show this block's own "Add block" appender while it (or a child)
+	// is actively selected — matches Thumbnail/Loop/Collection, so it doesn't
+	// stay visible while an unrelated block elsewhere is selected.
+	const showPlayerContainerAppender = isSelected || hasSelectedInnerBlock;
 
 	const isDynamic =
 		(context['videopack/postId'] || context.postId) &&
@@ -785,6 +810,11 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 							template={template}
 							templateLock={false}
 							allowedBlocks={ALLOWED_BLOCKS}
+							renderAppender={
+								showPlayerContainerAppender
+									? InnerBlocks.ButtonBlockAppender
+									: false
+							}
 						/>
 					</VideopackContextBridge>
 				</figure>

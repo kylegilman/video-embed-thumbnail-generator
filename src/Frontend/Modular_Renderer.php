@@ -34,11 +34,12 @@ class Modular_Renderer {
 	/**
 	 * Renders the video duration badge.
 	 *
-	 * @param array $atts    Attributes (seconds, position, textAlign).
-	 * @param array $context Context (skin, colors).
+	 * @param array $atts Resolved attributes: seconds, position, textAlign,
+	 *                    isInsideThumbnail, isInsidePlayerOverlay,
+	 *                    isInsidePlayerContainer, wrapper_class, style_vars.
 	 * @return string The rendered HTML.
 	 */
-	public static function render_video_duration( array $atts, array $context = array() ) {
+	public static function render_video_duration( array $atts ) {
 		$seconds = (int) ( $atts['seconds'] ?? 0 );
 		if ( ! $seconds ) {
 			return '';
@@ -46,26 +47,22 @@ class Modular_Renderer {
 
 		$duration_text = self::format_duration( $seconds );
 
-		$is_inside_thumb = ! empty( $context['isInsideThumbnail'] );
-		$is_overlay      = $is_inside_thumb || ! empty( $context['skin'] );
-		$position        = $atts['position'] ?? ( $context['position'] ?? ( $is_inside_thumb ? 'top' : 'bottom' ) );
-		$text_align      = $atts['textAlign'] ?? ( $is_inside_thumb ? 'right' : 'left' );
+		$is_inside_thumb            = ! empty( $atts['isInsideThumbnail'] );
+		$is_inside_player_overlay   = ! empty( $atts['isInsidePlayerOverlay'] );
+		$is_inside_player_container = ! empty( $atts['isInsidePlayerContainer'] );
+		$is_overlay                 = $is_inside_thumb || $is_inside_player_overlay;
 
-		$class  = 'videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
+		$position   = $atts['position'] ?? ( $is_inside_thumb ? 'top' : 'bottom' );
+		$text_align = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_inside_thumb ? 'right' : ( $is_inside_player_container ? 'right' : 'left' ) );
+
+		$class  = 'videopack-video-duration-block videopack-video-duration' . ( $is_overlay ? ' is-overlay is-badge' : '' );
+		if ( ! empty( $atts['wrapper_class'] ) ) {
+			$class .= ' ' . $atts['wrapper_class'];
+		}
 		$class .= ' position-' . esc_attr( $position );
 		$class .= ' has-text-align-' . esc_attr( $text_align );
 
-		$style_vars = array();
-		if ( $is_overlay ) {
-			if ( ! empty( $context['title_background_color'] ) ) {
-				$style_vars[] = '--videopack-title-background-color: ' . $context['title_background_color'];
-			}
-			if ( ! empty( $context['title_color'] ) ) {
-				$style_vars[] = '--videopack-title-color: ' . $context['title_color'];
-			}
-		}
-
-		$style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
+		$style = ! empty( $atts['style_vars'] ) ? ' style="' . esc_attr( $atts['style_vars'] ) . '"' : '';
 
 		return sprintf( '<div class="%s"%s>%s</div>', esc_attr( $class ), $style, esc_html( $duration_text ) );
 	}
@@ -103,6 +100,14 @@ class Modular_Renderer {
 		wp_enqueue_script( 'videopack-core' );
 		$is_modular_engine = ! empty( $atts['is_modular_engine'] );
 		$classes           = array( 'videopack-wrapper' );
+
+		// Lets PlayButton.scss/Overlays.scss reveal the big-play-button on hover.
+		// Containers like Collection opt out (exclude_hover_trigger) since hovering
+		// the whole grid shouldn't reveal every child's play button at once —
+		// each Player/Thumbnail inside still gets its own trigger.
+		if ( empty( $atts['exclude_hover_trigger'] ) ) {
+			$classes[] = 'videopack-hover-trigger';
+		}
 
 		if ( $is_block ) {
 			$classes[] = 'videopack-video-block-container';
@@ -210,6 +215,7 @@ class Modular_Renderer {
 			// Ensure we pass back the settings for AJAX pagination.
 			// We only include attributes that are relevant to the video query to keep it clean.
 			$query_keys     = array(
+				'id',
 				'gallery_id',
 				'gallery_source',
 				'gallery_pagination',
@@ -455,13 +461,24 @@ class Modular_Renderer {
 			$show_background = self::is_true( $atts['showBackground'] );
 		}
 
+		// When called via Blocks::render_video_title(), title_color has already been
+		// resolved by Context_Manager into style_vars, and the base (non-overlay)
+		// ".videopack-video-title" rule in Overlays.scss reads it via
+		// var(--videopack-title-color) — so rebuilding a direct `color:` here would
+		// just duplicate it. title_background_color has no such CSS rule for the
+		// non-overlay case (only the .is-overlay bar reads the background var), so
+		// that one stays unconditional regardless of caller. The other caller
+		// (render_player_assembly, for standalone/legacy shortcode players) doesn't
+		// go through Context_Manager, so it still needs the color fallback too.
+		$context_colors_resolved = ! empty( $atts['context_colors_resolved'] );
+
 		if ( ! $is_overlay ) {
 			if ( ! $show_title ) {
 				return '';
 			}
 			$style_attrs = array();
 			$text_align  = $atts['textAlign'] ?? 'left';
-			if ( ! empty( $atts['title_color'] ) ) {
+			if ( ! $context_colors_resolved && ! empty( $atts['title_color'] ) ) {
 				$style_attrs[] = 'color:' . $atts['title_color'];
 			}
 			if ( $show_background && ! empty( $atts['title_background_color'] ) ) {
@@ -490,12 +507,20 @@ class Modular_Renderer {
 		// Overlay Mode (Info Bar).
 		$text_align        = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_inside_thumbnail ? 'center' : 'left' );
 		$title_style_attrs = array();
-		if ( ! empty( $atts['title_color'] ) ) {
+		// The bar (`$bar_class`, below) already resolves `color` from the
+		// --videopack-title-color var on the wrapper, and `color` inherits down to
+		// this inner title text — a direct property here would just duplicate that
+		// once Context_Manager has resolved it. Legacy (non-block) callers still
+		// need it since they never populate `--videopack-title-color`.
+		if ( ! $context_colors_resolved && ! empty( $atts['title_color'] ) ) {
 			$title_style_attrs[] = 'color:' . $atts['title_color'];
 		}
 
-		// Merge in styles resolved from context/Gutenberg attributes.
-		if ( ! empty( $atts['style_vars'] ) ) {
+		// The wrapper (below) already carries these as CSS custom properties, which
+		// inherit down to this inner element — merging style_vars here too would
+		// just declare the same --videopack-title-* pair twice. The legacy caller
+		// has no wrapper var to inherit from, so it still needs its own copy.
+		if ( ! $context_colors_resolved && ! empty( $atts['style_vars'] ) ) {
 			if ( is_array( $atts['style_vars'] ) ) {
 				$title_style_attrs = array_merge( $title_style_attrs, $atts['style_vars'] );
 			} else {
@@ -530,14 +555,28 @@ class Modular_Renderer {
 			$bar_class .= ' videopack-has-title-color';
 		}
 
+		// When Context_Manager has already resolved these vars, use its output
+		// directly instead of rebuilding the same --videopack-title-* strings by
+		// hand — the legacy (non-block) caller has no style_vars, so it still
+		// builds them here.
 		$wrapper_style_vars = array();
-		if ( $has_custom_color ) {
-			$wrapper_style_vars[] = '--videopack-title-color: ' . $atts['title_color'];
+		if ( $context_colors_resolved ) {
+			if ( ! empty( $atts['style_vars'] ) ) {
+				if ( is_array( $atts['style_vars'] ) ) {
+					$wrapper_style_vars = array_merge( $wrapper_style_vars, $atts['style_vars'] );
+				} else {
+					$wrapper_style_vars[] = $atts['style_vars'];
+				}
+			}
+		} else {
+			if ( $has_custom_color ) {
+				$wrapper_style_vars[] = '--videopack-title-color: ' . $atts['title_color'];
+			}
+			if ( $has_custom_bg ) {
+				$wrapper_style_vars[] = '--videopack-title-background-color: ' . $atts['title_background_color'];
+			}
 		}
-		if ( $has_custom_bg ) {
-			$wrapper_style_vars[] = '--videopack-title-background-color: ' . $atts['title_background_color'];
-		}
-		$wrapper_style = ! empty( $wrapper_style_vars ) ? ' style="' . esc_attr( implode( ';', $wrapper_style_vars ) ) . '"' : '';
+		$wrapper_style = ! empty( $wrapper_style_vars ) ? ' style="' . esc_attr( implode( ';', array_filter( $wrapper_style_vars ) ) ) . '"' : '';
 		$wrapper_class = 'videopack-meta-wrapper videopack-video-title-visible';
 		$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
 		if ( ! empty( $atts['wrapper_class'] ) ) {
@@ -1045,10 +1084,19 @@ class Modular_Renderer {
 		$is_player   = ! empty( $atts['isInsidePlayerContainer'] ) || ! empty( $atts['isInsidePlayerOverlay'] );
 		$icon_html   = self::get_svg_icon( $icon_type );
 		$text_align  = ! empty( $atts['textAlign'] ) ? $atts['textAlign'] : ( $is_thumb ? 'right' : ( $is_player ? 'right' : 'left' ) );
+		// Matches render_video_duration()'s default exactly — View-count and
+		// Duration should behave identically as thumbnail-overlay badges.
+		$position    = $atts['position'] ?? ( $is_thumb ? 'top' : 'bottom' );
 		$style_attrs = array();
 
-		$has_custom_bg    = ! empty( $atts['title_background_color'] );
-		$has_custom_color = ! empty( $atts['title_color'] );
+		// When called via Blocks::render_view_count(), title_color/title_background_color
+		// have already been resolved by Context_Manager into wrapper_class/style_vars —
+		// building them again here from the raw attributes would duplicate them in the
+		// output. The other caller (the lightbox/full-player assembly below) doesn't go
+		// through Context_Manager, so it still needs this fallback.
+		$context_colors_resolved = ! empty( $atts['context_colors_resolved'] );
+		$has_custom_bg           = ! $context_colors_resolved && ! empty( $atts['title_background_color'] );
+		$has_custom_color        = ! $context_colors_resolved && ! empty( $atts['title_color'] );
 
 		if ( $has_custom_color ) {
 			$style_attrs[] = '--videopack-title-color:' . $atts['title_color'];
@@ -1074,7 +1122,7 @@ class Modular_Renderer {
 		}
 
 		$style   = ! empty( $style_attrs ) ? ' style="' . esc_attr( implode( ';', array_filter( $style_attrs ) ) ) . '"' : '';
-		$classes = 'videopack-view-count has-text-align-' . esc_attr( $text_align );
+		$classes = 'videopack-view-count position-' . esc_attr( $position ) . ' has-text-align-' . esc_attr( $text_align );
 
 		if ( ! empty( $atts['wrapper_class'] ) ) {
 			$classes .= ' ' . $atts['wrapper_class'];
@@ -1105,72 +1153,45 @@ class Modular_Renderer {
 	/**
 	 * Renders a video thumbnail card with an image, link, and inner content.
 	 *
-	 * @param array  $atts          Thumbnail attributes.
+	 * The wrapper element's class/style/data attributes are resolved by the
+	 * caller (Blocks::render_thumbnail() uses get_block_wrapper_attributes(),
+	 * which is block-context-aware and doesn't belong in this stateless class)
+	 * and passed in pre-built via $atts['wrapper_attributes'].
+	 *
+	 * @param array  $atts          Resolved attributes: poster, linkTo,
+	 *                              wrapper_attributes (pre-built attribute string).
 	 * @param string $inner_content Content to render inside the thumbnail overlay.
-	 * @param array  $options       Global plugin options.
-	 * @param array  $context       Context variables (skin, id, etc.).
+	 * @param int    $post_id       The video attachment ID, used to resolve link targets.
 	 * @return string The rendered HTML.
 	 */
-	public static function render_thumbnail( array $atts, $inner_content, $options, $context = array() ) {
+	public static function render_thumbnail( array $atts, $inner_content, $post_id ) {
 		wp_enqueue_style( 'videopack-core' );
-		$thumbnail_url = $atts['poster'] ?? ( $context['poster'] ?? '' );
+
+		$thumbnail_url = $atts['poster'] ?? '';
 		if ( ! $thumbnail_url ) {
-			return '';
+			$thumbnail_url = plugins_url( '/src/images/nothumbnail.jpg', VIDEOPACK_PLUGIN_FILE );
 		}
 
-		$link_to     = $atts['linkTo'] ?? ( $atts['link_to'] ?? 'none' );
-		$skin        = $context['skin'] ?? ( $atts['skin'] ?? ( $options['skin'] ?? 'vjs-theme-videopack' ) );
-		$post_id     = $context['postId'] ?? ( $atts['id'] ?? 0 );
-		$instance_id = $context['videopackId'] ?? ( $atts['instance_id'] ?? ( $atts['id'] ?? uniqid() ) );
+		$link_to = $atts['linkTo'] ?? ( $atts['link_to'] ?? 'none' );
 
-		$style_vars    = array();
-		$exclude_hover = ! empty( $atts['exclude_hover_trigger'] ) || ! empty( $context['exclude_hover_trigger'] );
-		$classes       = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
-		if ( ! $exclude_hover ) {
-			$classes[] = 'videopack-hover-trigger';
-		}
-
-		if ( 'Video.js' === ( $options['embed_method'] ?? 'Video.js' ) ) {
-			$classes[] = $skin;
-		}
-
-		$colors = array(
-			'title-color'                 => 'title_color',
-			'title-background-color'      => 'title_background_color',
-			'play-button-color'           => 'play_button_color',
-			'play-button-secondary-color' => 'play_button_secondary_color',
-			'control-bar-bg-color'        => 'control_bar_bg_color',
-			'control-bar-color'           => 'control_bar_color',
-		);
-
-		foreach ( $colors as $variable => $attribute ) {
-			$val = $atts[ $attribute ] ?? ( $context[ $attribute ] ?? '' );
-			if ( ! empty( $val ) ) {
-				$style_vars[] = "--videopack-{$variable}: " . $val;
-				$classes[]    = "videopack-has-{$variable}";
-			}
-		}
-
-		// Inject MEJS controls SVG for mask coloring.
-		$embed_method = $options['embed_method'] ?? 'Video.js';
-		if ( 'WordPress Default' === $embed_method ) {
-			$style_vars[] = '--videopack-mejs-controls-svg: url("' . esc_url( includes_url( 'js/mediaelement/mejs-controls.svg' ) ) . '")';
-		}
-		$wrapper_style = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) ) . '"' : '';
-		$wrapper_data  = sprintf(
-			' class="%s"%s data-attachment-id="%d" data-videopack-id="%s" data-videopack-lightbox="%s"',
-			esc_attr( implode( ' ', array_unique( array_filter( $classes ) ) ) ),
-			$wrapper_style,
-			(int) $post_id,
-			esc_attr( (string) $instance_id ),
-			( 'lightbox' === $link_to ? 'true' : 'false' )
-		);
-
-		$html = sprintf( '<div%s>', $wrapper_data );
+		$html = sprintf( '<div %s>', $atts['wrapper_attributes'] ?? '' );
 
 		if ( 'none' !== $link_to ) {
-			$url   = ( 'lightbox' === $link_to ) ? '#' : get_permalink( $post_id );
-			$html .= sprintf( '<a href="%s" class="videopack-thumbnail-link %s" data-videopack-link-to="%s">', esc_url( $url ), ( 'lightbox' === $link_to ? 'videopack-lightbox' : '' ), esc_attr( $link_to ) );
+			if ( 'lightbox' === $link_to ) {
+				$url = '#';
+			} elseif ( 'parent' === $link_to ) {
+				$parent_id = wp_get_post_parent_id( $post_id );
+				$url       = $parent_id ? get_permalink( $parent_id ) : get_permalink( $post_id );
+			} else {
+				$url = get_permalink( $post_id );
+			}
+
+			$html .= sprintf(
+				'<a href="%s" class="videopack-thumbnail-link %s" data-videopack-link-to="%s">',
+				esc_url( $url ),
+				( 'lightbox' === $link_to ? 'videopack-lightbox' : '' ),
+				esc_attr( $link_to )
+			);
 		}
 
 		$html .= sprintf( '<img src="%s" alt="" class="videopack-thumbnail" />', esc_url( $thumbnail_url ) );

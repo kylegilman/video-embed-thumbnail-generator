@@ -25,7 +25,13 @@ import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import './editor.scss';
 
-const TITLE_CONTEXT_OPTS = { excludeKeys: ['downloadlink'] };
+// Title is a valid theme-context root (Overlays.scss) and owns its own
+// title/background colors — see the $badge-selectors comment in
+// VideoDuration.js for why Duration/View-count also need these two.
+const TITLE_CONTEXT_OPTS = {
+	excludeKeys: ['downloadlink'],
+	classKeys: ['skin', 'title_color', 'title_background_color'],
+};
 
 /**
  * Edit component for the Videopack Video Title block.

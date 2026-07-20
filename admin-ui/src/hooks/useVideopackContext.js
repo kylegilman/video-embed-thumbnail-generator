@@ -109,8 +109,15 @@ export const VIDEOPACK_CONTEXT_KEYS =
  * @return {Object} Resolved values, styles, and classes.
  */
 export default function useVideopackContext(attributes, context, options = {}) {
-	const { excludeHoverTrigger: optionsExclude = false, excludeKeys = [] } =
-		options;
+	const {
+		excludeHoverTrigger: optionsExclude = false,
+		excludeKeys = [],
+		// Restricts which resolved values become videopack-has-{key} classes /
+		// --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
+		// always computed — only the stamping is scoped). null means "stamp
+		// everything", matching prior behavior for any caller that doesn't pass it.
+		classKeys = null,
+	} = options;
 	// The hover trigger exclusion should NOT be inherited from parents by default,
 	// as containers (Collections/Loops) might opt-out while their children (Players) should still hover.
 	const excludeHoverTrigger =
@@ -129,7 +136,7 @@ export default function useVideopackContext(attributes, context, options = {}) {
 			const value = getEffectiveValue(key, attributes, context);
 			resolved[key] = value;
 
-			if (value) {
+			if (value && (classKeys === null || classKeys.includes(key))) {
 				const cssKey = key.replace(/_/g, '-');
 				if (typeof value === 'string' || typeof value === 'number') {
 					const cssVar = `--videopack-${cssKey}`;
@@ -233,7 +240,7 @@ export default function useVideopackContext(attributes, context, options = {}) {
 		}
 
 		return { resolved, style, classes };
-	}, [attributes, context, excludeHoverTrigger, excludeKeys]);
+	}, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
 
 	// 2. Automatic Video Discovery
 	// If we have a postId but no attachmentId, try to find the first video attachment.

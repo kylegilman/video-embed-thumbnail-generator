@@ -1,5 +1,13 @@
 import useVideopackContext from '../../hooks/useVideopackContext';
 
+const PLAYER_CONTEXT_CLASS_KEYS = [
+	'skin',
+	'control_bar_bg_color',
+	'control_bar_color',
+	'play_button_color',
+	'play_button_secondary_color',
+];
+
 /**
  * Shared Player Container Component for Edit/Preview.
  *
@@ -24,7 +32,9 @@ export default function PlayerContainer({
 	style,
 	isPreview,
 }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: PLAYER_CONTEXT_CLASS_KEYS,
+	});
 	const {
 		resolved: { duotone: contextDuotone },
 		classes: contextClasses,

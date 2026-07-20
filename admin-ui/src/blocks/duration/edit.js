@@ -15,6 +15,11 @@ import VideoDuration from '../../components/VideoDuration/VideoDuration';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 
+// Duration shares "badge" title/background colors with Title/View-count —
+// see Overlays.scss's $badge-selectors. Module-level so the reference stays
+// stable across renders (useVideopackContext depends on it for memoization).
+const CLASS_KEYS = ['title_color', 'title_background_color'];
+
 /**
  * Edit component for the Videopack Video Duration block.
  *
@@ -25,7 +30,9 @@ import useVideopackContext from '../../hooks/useVideopackContext';
  * @return {Element}                     The rendered component.
  */
 export default function Edit({ attributes, setAttributes, context }) {
-	const vpContext = useVideopackContext(attributes, context);
+	const vpContext = useVideopackContext(attributes, context, {
+		classKeys: CLASS_KEYS,
+	});
 	const postId = vpContext.resolved.attachmentId;
 	const {
 		textAlign,
@@ -153,17 +160,16 @@ export default function Edit({ attributes, setAttributes, context }) {
 					</div>
 				</PanelBody>
 			</InspectorControls>
-			<div {...blockProps}>
-				<VideoDuration
-					postId={effectiveAttachmentId}
-					isOverlay={isOverlay}
-					isInsideThumbnail={isInsideThumbnail}
-					textAlign={finalTextAlign}
-					position={position}
-					attributes={attributes}
-					context={context}
-				/>
-			</div>
+			<VideoDuration
+				blockProps={blockProps}
+				postId={effectiveAttachmentId}
+				isOverlay={isOverlay}
+				isInsideThumbnail={isInsideThumbnail}
+				textAlign={finalTextAlign}
+				position={position}
+				attributes={attributes}
+				context={context}
+			/>
 		</>
 	);
 }

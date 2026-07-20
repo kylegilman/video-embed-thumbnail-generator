@@ -7,44 +7,47 @@ class ModularRendererTest extends WP_UnitTestCase {
 	/**
 	 * Data provider for testing video duration rendering and formatting.
 	 *
-	 * Returns arrays of: [attributes, context, expected_html_contains_substrings]
+	 * Returns arrays of: [attributes, expected_html_contains_substring]
+	 *
+	 * Note: Modular_Renderer::render_video_duration() takes a single, already
+	 * resolved $atts array — resolving design context (colors, wrapper classes)
+	 * from block/shortcode context is Blocks.php's responsibility, so
+	 * style_vars/wrapper_class here are passed pre-built, not derived.
 	 */
 	public function duration_data_provider() {
 		return array(
 			// Test 1: Zero seconds should return empty string
 			array(
 				array( 'seconds' => 0 ),
-				array(),
 				''
 			),
 			// Test 2: Standard seconds formatting (MM:SS)
 			array(
 				array( 'seconds' => 75 ),
-				array(),
 				'1:15'
 			),
 			// Test 3: Hour-based formatting (H:MM:SS)
 			array(
 				array( 'seconds' => 3665 ),
-				array(),
 				'1:01:05'
 			),
 			// Test 4: Default class, position, and alignment
 			array(
 				array( 'seconds' => 90, 'position' => 'top', 'textAlign' => 'right' ),
-				array(),
-				'class="videopack-video-duration position-top has-text-align-right"'
+				'class="videopack-video-duration-block videopack-video-duration position-top has-text-align-right"'
 			),
 			// Test 5: Inside thumbnail context (adds badge styles)
 			array(
-				array( 'seconds' => 90 ),
-				array( 'isInsideThumbnail' => true ),
-				'class="videopack-video-duration is-overlay is-badge position-top has-text-align-right"'
+				array( 'seconds' => 90, 'isInsideThumbnail' => true ),
+				'class="videopack-video-duration-block videopack-video-duration is-overlay is-badge position-top has-text-align-right"'
 			),
-			// Test 6: Custom theme colors mapping to CSS variables
+			// Test 6: Pre-resolved style_vars are passed through as-is
 			array(
-				array( 'seconds' => 90 ),
-				array( 'isInsideThumbnail' => true, 'title_background_color' => '#ff0000', 'title_color' => '#ffffff' ),
+				array(
+					'seconds'    => 90,
+					'isInsideThumbnail' => true,
+					'style_vars' => '--videopack-title-background-color: #ff0000;--videopack-title-color: #ffffff',
+				),
 				'style="--videopack-title-background-color: #ff0000;--videopack-title-color: #ffffff"'
 			),
 		);
@@ -53,8 +56,8 @@ class ModularRendererTest extends WP_UnitTestCase {
 	/**
 	 * @dataProvider duration_data_provider
 	 */
-	public function test_render_video_duration( $atts, $context, $expected ) {
-		$output = Modular_Renderer::render_video_duration( $atts, $context );
+	public function test_render_video_duration( $atts, $expected ) {
+		$output = Modular_Renderer::render_video_duration( $atts );
 
 		if ( empty( $expected ) ) {
 			$this->assertEmpty( $output );
