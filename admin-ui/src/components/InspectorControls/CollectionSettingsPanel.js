@@ -21,6 +21,7 @@ export default function CollectionSettingsPanel({
 	showPlayerSettings = true,
 	showSkinSettings = true,
 	hasPaginationBlock = true,
+	clientId,
 }) {
 	const { excludedVideos } = queryData;
 
@@ -44,6 +45,7 @@ export default function CollectionSettingsPanel({
 					showManualSource={showManualSource}
 					isSiteEditor={isSiteEditor}
 					hasPaginationBlock={hasPaginationBlock}
+					clientId={clientId}
 				/>
 
 				{excludedVideos && excludedVideos.length > 0 && (
