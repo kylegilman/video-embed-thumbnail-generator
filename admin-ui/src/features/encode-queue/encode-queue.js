@@ -10,6 +10,7 @@ import {
 	useEffect,
 	useCallback,
 	useMemo,
+	useRef,
 } from '@wordpress/element';
 import {
 	Panel,
@@ -54,6 +55,7 @@ const defaultLayouts = {
 const EncodeQueue = () => {
 	const [queueData, setQueueData] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const initialLoadSucceeded = useRef(false);
 	const [isQueuePaused, setIsQueuePaused] = useState(
 		window.videopack?.encodeQueueData?.initialQueueState === 'pause'
 	);
@@ -279,6 +281,54 @@ const EncodeQueue = () => {
 		layout: defaultLayouts.table.layout,
 	});
 
+	// Handle real-time progress updates from browser encoder via CustomEvents
+	useEffect(() => {
+		const handleBrowserProgress = (event) => {
+			const { job_id, percent, fps, speed, elapsed, remaining } =
+				event.detail;
+			setQueueData((prevData) => {
+				if (!prevData || !Array.isArray(prevData)) {
+					return prevData;
+				}
+				return prevData.map((item) => {
+					if (Number(item.id) === Number(job_id)) {
+						return {
+							...item,
+							status: 'browser_encoding',
+							status_l10n: __(
+								'Encoding (Browser)',
+								'video-embed-thumbnail-generator'
+							),
+							progress: {
+								...(typeof item.progress === 'object'
+									? item.progress
+									: {}),
+								percent,
+								fps,
+								speed,
+								elapsed,
+								remaining,
+								status: 'browser_encoding',
+							},
+						};
+					}
+					return item;
+				});
+			});
+		};
+
+		window.addEventListener(
+			'videopack_browser_progress',
+			handleBrowserProgress
+		);
+		return () => {
+			window.removeEventListener(
+				'videopack_browser_progress',
+				handleBrowserProgress
+			);
+		};
+	}, []);
+
 	// Auto-clear success messages after 30 seconds.
 	useEffect(() => {
 		if (message && message.type === 'success') {
@@ -300,22 +350,25 @@ const EncodeQueue = () => {
 
 			const progressData = await getBatchProgress('all');
 			setBatchProgress(progressData);
+			initialLoadSucceeded.current = true;
 			// Clear any previous FETCHING error messages if we successfully fetched data.
 			setMessage((prev) => (prev && prev.isFetchingError ? null : prev));
 		} catch (error) {
 			console.error('Error fetching queue:', error);
-			setMessage({
-				type: 'error',
-				isFetchingError: true,
-				text: sprintf(
-					/* translators: %s is an error message */
-					__(
-						'Failed to load queue: %s',
-						'video-embed-thumbnail-generator'
+			if (!initialLoadSucceeded.current) {
+				setMessage({
+					type: 'error',
+					isFetchingError: true,
+					text: sprintf(
+						/* translators: %s is an error message */
+						__(
+							'Failed to load queue: %s',
+							'video-embed-thumbnail-generator'
+						),
+						error.message || error.code
 					),
-					error.message || error.code
-				),
-			});
+				});
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -379,11 +432,11 @@ const EncodeQueue = () => {
 		if (itemToActOn.action === 'clear') {
 			handleClearQueue(itemToActOn.type);
 		} else if (itemToActOn.action === 'delete') {
-			handleDeleteJobs(itemToActOn.jobIds);
+			handleDeleteJobs(itemToActOn.jobIds, 'delete');
 		} else if (itemToActOn.action === 'remove') {
 			handleRemoveJobs(itemToActOn.jobIds);
 		} else if (itemToActOn.action === 'delete_permanently') {
-			handleDeleteJobs(itemToActOn.jobIds);
+			handleDeleteJobs(itemToActOn.jobIds, 'delete_permanently');
 		} else if (itemToActOn.action === 'run_batch') {
 			handleRunBatch(itemToActOn.batchId);
 		}
@@ -425,26 +478,52 @@ const EncodeQueue = () => {
 		}
 	};
 
-	const handleDeleteJobs = async (jobIds) => {
+	const handleDeleteJobs = async (jobIds, action = 'delete') => {
 		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
 		setActingJobIds((prev) => [...prev, ...ids]);
 		try {
 			for (const jobId of ids) {
 				await deleteJob(jobId);
+				window.dispatchEvent(
+					new CustomEvent('videopack_job_deleted', {
+						detail: { job_id: jobId },
+					})
+				);
 			}
+			const isDeletePermanently = action === 'delete_permanently';
+			let text = '';
+			if (ids.length === 1) {
+				if (isDeletePermanently) {
+					text = __(
+						'Attachment deleted.',
+						'video-embed-thumbnail-generator'
+					);
+				} else {
+					text = __(
+						'Job deleted.',
+						'video-embed-thumbnail-generator'
+					);
+				}
+			} else if (isDeletePermanently) {
+				text = sprintf(
+					/* translators: %d: number of attachments deleted */
+					__(
+						'%d attachments deleted.',
+						'video-embed-thumbnail-generator'
+					),
+					ids.length
+				);
+			} else {
+				text = sprintf(
+					/* translators: %d: number of jobs deleted */
+					__('%d jobs deleted.', 'video-embed-thumbnail-generator'),
+					ids.length
+				);
+			}
+
 			setMessage({
 				type: 'success',
-				text:
-					ids.length === 1
-						? __('Job deleted.', 'video-embed-thumbnail-generator')
-						: sprintf(
-								/* translators: %d: number of jobs deleted */
-								__(
-									'%d jobs deleted.',
-									'video-embed-thumbnail-generator'
-								),
-								ids.length
-							),
+				text,
 			});
 			fetchQueue();
 		} catch (error) {
@@ -575,6 +654,7 @@ const EncodeQueue = () => {
 								ids.length
 							),
 			});
+			window.dispatchEvent(new CustomEvent('videopack_check_jobs'));
 			fetchQueue();
 		} catch (error) {
 			console.error('Error retrying job(s):', error);
@@ -936,6 +1016,8 @@ const EncodeQueue = () => {
 				{__('Videopack Processing', 'video-embed-thumbnail-generator')}
 			</h1>
 
+			{applyFilters('videopack.queue.after_title', null)}
+
 			{isConfirmOpen && (
 				<ConfirmDialog
 					isOpen={isConfirmOpen}
@@ -1062,7 +1144,10 @@ const EncodeQueue = () => {
 
 				{hasTranscoder && (
 					<PanelBody
-						title={__('Encoding Queue', 'video-embed-thumbnail-generator')}
+						title={__(
+							'Encoding Queue',
+							'video-embed-thumbnail-generator'
+						)}
 						initialOpen={true}
 					>
 						<div className="videopack-queue-controls">
@@ -1110,7 +1195,10 @@ const EncodeQueue = () => {
 								}
 								isBusy={isClearing}
 							>
-								{__('Clear All', 'video-embed-thumbnail-generator')}
+								{__(
+									'Clear All',
+									'video-embed-thumbnail-generator'
+								)}
 							</Button>
 							{isLoading && <Spinner />}
 						</div>
@@ -1132,154 +1220,193 @@ const EncodeQueue = () => {
 				{(() => {
 					// Merge thumbs and browser progress statistics into a single 'thumbs' block
 					// so that browser-side and server-side thumbnail generation share the same panel.
-					const active_encoder = window.videopack_config?.options?.active_encoder;
-					const fallback_encoder = window.videopack_config?.options?.cloud_fallback_encoder;
-					const isBrowserActive = active_encoder === 'browser' || fallback_encoder === 'browser';
+					const active_encoder =
+						window.videopack_config?.options?.active_encoder;
+					const fallback_encoder =
+						window.videopack_config?.options
+							?.cloud_fallback_encoder;
+					const isBrowserActive =
+						active_encoder === 'browser' ||
+						fallback_encoder === 'browser';
 
 					const normalizedProgress = { ...batchProgress };
 					if (normalizedProgress.browser) {
-						const browserPending = normalizedProgress.browser.pending || 0;
-						const browserComplete = normalizedProgress.browser.complete || 0;
-						const browserFailed = normalizedProgress.browser.failed || 0;
-						const browserTotal = browserPending + browserComplete + browserFailed;
+						const browserPending =
+							normalizedProgress.browser.pending || 0;
+						const browserComplete =
+							normalizedProgress.browser.complete || 0;
+						const browserFailed =
+							normalizedProgress.browser.failed || 0;
+						const browserTotal =
+							browserPending + browserComplete + browserFailed;
 
 						if (browserTotal > 0) {
 							normalizedProgress.thumbs = {
-								pending: (normalizedProgress.thumbs?.pending || 0) + browserPending,
-								'in-progress': normalizedProgress.thumbs?.['in-progress'] || 0,
-								complete: (normalizedProgress.thumbs?.complete || 0) + browserComplete,
-								failed: (normalizedProgress.thumbs?.failed || 0) + browserFailed,
-								total: (normalizedProgress.thumbs?.total || 0) + browserTotal,
+								pending:
+									(normalizedProgress.thumbs?.pending || 0) +
+									browserPending,
+								'in-progress':
+									normalizedProgress.thumbs?.[
+										'in-progress'
+									] || 0,
+								complete:
+									(normalizedProgress.thumbs?.complete || 0) +
+									browserComplete,
+								failed:
+									(normalizedProgress.thumbs?.failed || 0) +
+									browserFailed,
+								total:
+									(normalizedProgress.thumbs?.total || 0) +
+									browserTotal,
 							};
 						}
 						delete normalizedProgress.browser;
 					}
 
-					return Object.entries(normalizedProgress).map(([type, progress]) => {
-						if (
-							!progress ||
-							(progress.pending === 0 &&
-								progress['in-progress'] === 0)
-						) {
-							return null;
-						}
+					return Object.entries(normalizedProgress).map(
+						([type, progress]) => {
+							if (
+								!progress ||
+								(progress.pending === 0 &&
+									progress['in-progress'] === 0)
+							) {
+								return null;
+							}
 
-						const defaultLabels = {
-							featured: __(
-								'Setting Featured Images',
-								'video-embed-thumbnail-generator'
-							),
-							parents: __(
-								'Updating Parents',
-								'video-embed-thumbnail-generator'
-							),
-							thumbs: __(
-								'Generating Thumbnails',
-								'video-embed-thumbnail-generator'
-							),
-							browser: __(
-								'Generating Thumbnails',
-								'video-embed-thumbnail-generator'
-							),
-							encoding: __(
-								'Bulk Encoding',
-								'video-embed-thumbnail-generator'
-							),
-						};
+							const defaultLabels = {
+								featured: __(
+									'Setting Featured Images',
+									'video-embed-thumbnail-generator'
+								),
+								parents: __(
+									'Updating Parents',
+									'video-embed-thumbnail-generator'
+								),
+								thumbs: __(
+									'Generating Thumbnails',
+									'video-embed-thumbnail-generator'
+								),
+								browser: __(
+									'Generating Thumbnails',
+									'video-embed-thumbnail-generator'
+								),
+								encoding: __(
+									'Bulk Encoding',
+									'video-embed-thumbnail-generator'
+								),
+							};
 
-						const filteredLabels = applyFilters(
-							/** This filter is documented in src/features/encode-queue/encode-queue.js */
-							'videopack.queue.batch_labels',
-							defaultLabels
-						);
+							const filteredLabels = applyFilters(
+								/** This filter is documented in src/features/encode-queue/encode-queue.js */
+								'videopack.queue.batch_labels',
+								defaultLabels
+							);
 
-						const label = filteredLabels[type] || type;
+							const label = filteredLabels[type] || type;
 
-						return (
-							<PanelBody
-								key={type}
-								title={label}
-								initialOpen={true}
-								className="videopack-batch-progress-panel"
-							>
-								<div className="videopack-batch-progress-content">
-									{type === 'thumbs' && isBrowserActive && (
-										<div className="notice notice-info videopack-browser-queue-warning" style={{ margin: '0 0 15px 0' }}>
-											<p style={{ margin: '0.5em 0' }}>
-												{__(
-													'Browser-side thumbnail generation is active. You MUST keep this tab open and active to process the queue.',
-													'video-embed-thumbnail-generator'
-												)}
-											</p>
-										</div>
-									)}
-									<div className="videopack-batch-stats">
-										<span>
-											{sprintf(
-												/* translators: %d: number of pending items */
-												__(
-													'Pending: %d',
-													'video-embed-thumbnail-generator'
-												),
-												progress.pending
+							return (
+								<PanelBody
+									key={type}
+									title={label}
+									initialOpen={true}
+									className="videopack-batch-progress-panel"
+								>
+									<div className="videopack-batch-progress-content">
+										{type === 'thumbs' &&
+											isBrowserActive && (
+												<div
+													className="notice notice-info videopack-browser-queue-warning"
+													style={{
+														margin: '0 0 15px 0',
+													}}
+												>
+													<p
+														style={{
+															margin: '0.5em 0',
+														}}
+													>
+														{__(
+															'Browser-side thumbnail generation is active. You MUST keep this tab open and active to process the queue.',
+															'video-embed-thumbnail-generator'
+														)}
+													</p>
+												</div>
 											)}
-										</span>
-										{progress['in-progress'] !== undefined && progress['in-progress'] > 0 && (
+										<div className="videopack-batch-stats">
 											<span>
 												{sprintf(
-													/* translators: %d: number of in-progress items */
+													/* translators: %d: number of pending items */
 													__(
-														'In-Progress: %d',
+														'Pending: %d',
 														'video-embed-thumbnail-generator'
 													),
-													progress['in-progress']
+													progress.pending
 												)}
 											</span>
-										)}
-										{progress.complete !== undefined && progress.complete > 0 && (
-											<span>
-												{sprintf(
-													/* translators: %d: number of completed items */
-													__(
-														'Completed: %d',
-														'video-embed-thumbnail-generator'
-													),
-													progress.complete
+											{progress['in-progress'] !==
+												undefined &&
+												progress['in-progress'] > 0 && (
+													<span>
+														{sprintf(
+															/* translators: %d: number of in-progress items */
+															__(
+																'In-Progress: %d',
+																'video-embed-thumbnail-generator'
+															),
+															progress[
+																'in-progress'
+															]
+														)}
+													</span>
 												)}
-											</span>
-										)}
-										{progress.failed > 0 && (
-											<span className="videopack-failed-count">
-												{sprintf(
-													/* translators: %d: number of failed items */
-													__(
-														'Failed: %d',
-														'video-embed-thumbnail-generator'
-													),
-													progress.failed
+											{progress.complete !== undefined &&
+												progress.complete > 0 && (
+													<span>
+														{sprintf(
+															/* translators: %d: number of completed items */
+															__(
+																'Completed: %d',
+																'video-embed-thumbnail-generator'
+															),
+															progress.complete
+														)}
+													</span>
 												)}
-											</span>
+											{progress.failed > 0 && (
+												<span className="videopack-failed-count">
+													{sprintf(
+														/* translators: %d: number of failed items */
+														__(
+															'Failed: %d',
+															'video-embed-thumbnail-generator'
+														),
+														progress.failed
+													)}
+												</span>
+											)}
+										</div>
+										{progress.total > 0 && (
+											<div className="videopack-meter">
+												<div
+													className="videopack-meter-bar"
+													style={{
+														width: `${Math.round(
+															(((progress.complete ||
+																0) +
+																(progress.failed ||
+																	0)) /
+																progress.total) *
+																100
+														)}%`,
+													}}
+												></div>
+											</div>
 										)}
 									</div>
-									{progress.total > 0 && (
-										<div className="videopack-meter">
-											<div
-												className="videopack-meter-bar"
-												style={{
-													width: `${Math.round(
-														(((progress.complete || 0) +
-															(progress.failed || 0)) /
-															progress.total) *
-															100
-													)}%`,
-												}}
-											></div>
-										</div>
-									)}
-								</div>
-							</PanelBody>
-						);
-					});
+								</PanelBody>
+							);
+						}
+					);
 				})()}
 
 				<PanelBody
