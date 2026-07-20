@@ -115,11 +115,13 @@ class Player {
 
 	/**
 	 * Registers WordPress hooks.
+	 *
+	 * Subclasses override this to register their own filters (via
+	 * parent::register_hooks()), but script/style enqueuing is handled
+	 * explicitly by Admin\Assets and by get_player_code() at render time,
+	 * rather than unconditionally for every Player instance ever constructed.
 	 */
-	public function register_hooks() {
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
-	}
+	public function register_hooks() {}
 
 	/**
 	 * Registers frontend scripts and localizes data.
@@ -232,11 +234,12 @@ class Player {
 	}
 
 	/**
-	 * Enqueues frontend scripts.
+	 * Enqueues frontend scripts and styles.
 	 */
 	public function enqueue_scripts(): void {
 		$this->enqueue_player_scripts();
 		wp_enqueue_script( 'videopack-core' );
+		$this->enqueue_styles();
 	}
 
 	/**
@@ -577,6 +580,13 @@ class Player {
 		if ( ! $this->get_source() ) {
 			// Return an empty string or an error message if no valid source was found.
 			return '';
+		}
+
+		// A player is actually about to render: ensure its scripts and styles are
+		// enqueued, regardless of whether Admin\Assets' early page-content scan
+		// already caught this. This makes correctness independent of that scan.
+		if ( ! is_admin() ) {
+			$this->enqueue_scripts();
 		}
 
 		$video_vars = $this->prepare_video_vars();
