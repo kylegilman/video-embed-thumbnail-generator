@@ -369,12 +369,6 @@ class Encode_Attachment {
 			}
 		}
 
-		$db_data = array_filter(
-			$db_data,
-			function ( $value ) {
-				return ! is_null( $value );
-			}
-		);
 
 		$wpdb->update( (string) $this->queue_table_name, (array) $db_data, array( 'id' => $job_id ) );
 	}
@@ -586,7 +580,7 @@ class Encode_Attachment {
 
 				$job_status = (string) $matching_encode_format->get_status();
 
-				if ( in_array( $job_status, array( Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
+				if ( in_array( $job_status, array( Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_BROWSER_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
 					$progress                 = $matching_encode_format->get_progress();
 					$format_array['progress'] = is_array( $progress ) ? $progress : (int) $progress;
 				}
