@@ -48,6 +48,12 @@ const VideoSettings = ({
 
 	const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
 
+	const showPlayButtonColors = applyFilters(
+		'videopack.videoSettings.showPlayButtonColors',
+		true,
+		displayAttributes
+	);
+
 	return (
 		<div className="videopack-video-settings">
 			{!isBlockEditor && (
@@ -505,62 +511,66 @@ const VideoSettings = ({
 						{__('Player', 'video-embed-thumbnail-generator')}
 					</p>
 					<div className="videopack-color-flex-row">
-						<div className="videopack-color-flex-item">
-							<CompactColorPicker
-								label={
-									displayAttributes.embed_method ===
-									'WordPress Default'
-										? __(
-												'Play Button Color',
-												'video-embed-thumbnail-generator'
+						{showPlayButtonColors && (
+							<>
+								<div className="videopack-color-flex-item">
+									<CompactColorPicker
+										label={
+											displayAttributes.embed_method ===
+											'WordPress Default'
+												? __(
+														'Play Button Color',
+														'video-embed-thumbnail-generator'
+													)
+												: __(
+														'Play Button Icon',
+														'video-embed-thumbnail-generator'
+													)
+										}
+										value={displayAttributes.play_button_color}
+										onChange={(value) =>
+											handleSettingChange(
+												'play_button_color',
+												value
 											)
-										: __(
-												'Play Button Icon',
-												'video-embed-thumbnail-generator'
+										}
+										colors={THEME_COLORS}
+										fallbackValue={
+											PLAYER_COLOR_FALLBACKS.play_button_color
+										}
+									/>
+								</div>
+								<div className="videopack-color-flex-item">
+									<CompactColorPicker
+										label={
+											displayAttributes.embed_method ===
+											'WordPress Default'
+												? __(
+														'Play Button Hover',
+														'video-embed-thumbnail-generator'
+													)
+												: __(
+														'Play Button Accent',
+														'video-embed-thumbnail-generator'
+													)
+										}
+										value={
+											displayAttributes.play_button_secondary_color
+										}
+										onChange={(value) =>
+											handleSettingChange(
+												'play_button_secondary_color',
+												value
 											)
-								}
-								value={displayAttributes.play_button_color}
-								onChange={(value) =>
-									handleSettingChange(
-										'play_button_color',
-										value
-									)
-								}
-								colors={THEME_COLORS}
-								fallbackValue={
-									PLAYER_COLOR_FALLBACKS.play_button_color
-								}
-							/>
-						</div>
-						<div className="videopack-color-flex-item">
-							<CompactColorPicker
-								label={
-									displayAttributes.embed_method ===
-									'WordPress Default'
-										? __(
-												'Play Button Hover',
-												'video-embed-thumbnail-generator'
-											)
-										: __(
-												'Play Button Accent',
-												'video-embed-thumbnail-generator'
-											)
-								}
-								value={
-									displayAttributes.play_button_secondary_color
-								}
-								onChange={(value) =>
-									handleSettingChange(
-										'play_button_secondary_color',
-										value
-									)
-								}
-								colors={THEME_COLORS}
-								fallbackValue={
-									PLAYER_COLOR_FALLBACKS.play_button_secondary_color
-								}
-							/>
-						</div>
+										}
+										colors={THEME_COLORS}
+										fallbackValue={
+											PLAYER_COLOR_FALLBACKS.play_button_secondary_color
+										}
+									/>
+								</div>
+							</>
+						)}
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
 								label={__(

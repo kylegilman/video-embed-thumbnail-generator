@@ -799,6 +799,9 @@ class Options implements Hook_Subscriber {
 		$schema = (array) apply_filters( 'videopack_settings_schema', $this->settings_schema( (array) $this->get_default() ), (array) $this->get_default() );
 		$input  = (array) \Videopack\Common\Sanitizer::sanitize_options_recursively( (array) $input, $schema );
 
+		// Allow add-ons to validate/modify setting options dynamically.
+		$input = apply_filters( 'videopack_validate_options', $input, $this->options );
+
 		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $this->options['app_path'] ?? '' ) || ( $input['ffmpeg_exists'] ?? '' ) === 'notchecked' ) {
 			$input = (array) $this->validate_ffmpeg_settings( $input );
 		} else {

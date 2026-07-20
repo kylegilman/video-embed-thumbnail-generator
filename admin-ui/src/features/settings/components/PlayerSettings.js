@@ -377,6 +377,12 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		[settings]
 	);
 
+	const showPlayButtonColors = applyFilters(
+		'videopack.videoSettings.showPlayButtonColors',
+		true,
+		settings
+	);
+
 	const previewContext = useMemo(() => {
 		const ctx = {
 			'videopack/isInsidePlayerContainer': true,
@@ -446,7 +452,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 					<VideopackTooltip
 						text={__(
-							'Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.',
+							'Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" outputs a plain, unenhanced video tag, but does not currently prevent the plugin\'s CSS or JS from loading on the front end.',
 							'video-embed-thumbnail-generator'
 						)}
 					/>
@@ -693,52 +699,56 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						{__('Player', 'video-embed-thumbnail-generator')}
 					</p>
 					<div className="videopack-color-flex-row">
-						<div className="videopack-color-flex-item">
-							<CompactColorPicker
-								label={
-									embed_method === 'WordPress Default'
-										? __(
-												'Play Button Color',
-												'video-embed-thumbnail-generator'
-											)
-										: __(
-												'Play Button Icon',
-												'video-embed-thumbnail-generator'
-											)
-								}
-								value={play_button_color}
-								onChange={
-									changeHandlerFactory.play_button_color
-								}
-								colors={videopack_config.themeColors}
-								fallbackValue={
-									PLAYER_COLOR_FALLBACKS.play_button_color
-								}
-							/>
-						</div>
-						<div className="videopack-color-flex-item">
-							<CompactColorPicker
-								label={
-									embed_method === 'WordPress Default'
-										? __(
-												'Play Button Hover',
-												'video-embed-thumbnail-generator'
-											)
-										: __(
-												'Play Button Accent',
-												'video-embed-thumbnail-generator'
-											)
-								}
-								value={play_button_secondary_color}
-								onChange={
-									changeHandlerFactory.play_button_secondary_color
-								}
-								colors={videopack_config.themeColors}
-								fallbackValue={
-									PLAYER_COLOR_FALLBACKS.play_button_secondary_color
-								}
-							/>
-						</div>
+						{showPlayButtonColors && (
+							<>
+								<div className="videopack-color-flex-item">
+									<CompactColorPicker
+										label={
+											embed_method === 'WordPress Default'
+												? __(
+														'Play Button Color',
+														'video-embed-thumbnail-generator'
+													)
+												: __(
+														'Play Button Icon',
+														'video-embed-thumbnail-generator'
+													)
+										}
+										value={play_button_color}
+										onChange={
+											changeHandlerFactory.play_button_color
+										}
+										colors={videopack_config.themeColors}
+										fallbackValue={
+											PLAYER_COLOR_FALLBACKS.play_button_color
+										}
+									/>
+								</div>
+								<div className="videopack-color-flex-item">
+									<CompactColorPicker
+										label={
+											embed_method === 'WordPress Default'
+												? __(
+														'Play Button Hover',
+														'video-embed-thumbnail-generator'
+													)
+												: __(
+														'Play Button Accent',
+														'video-embed-thumbnail-generator'
+													)
+										}
+										value={play_button_secondary_color}
+										onChange={
+											changeHandlerFactory.play_button_secondary_color
+										}
+										colors={videopack_config.themeColors}
+										fallbackValue={
+											PLAYER_COLOR_FALLBACKS.play_button_secondary_color
+										}
+									/>
+								</div>
+							</>
+						)}
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
 								label={__(
