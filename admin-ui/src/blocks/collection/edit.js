@@ -1,18 +1,22 @@
 /* global videopack_config */
 import {
 	InspectorControls,
+	BlockControls,
 	useBlockProps,
 	InnerBlocks,
 } from '@wordpress/block-editor';
 import VideopackContextBridge from '../../components/VideopackContextBridge';
 import { useSelect } from '@wordpress/data';
-import { useEffect, useState, useMemo } from '@wordpress/element';
-import { Spinner } from '@wordpress/components';
+import { useEffect, useState, useMemo, useCallback } from '@wordpress/element';
+import { Spinner, ToolbarGroup, ToolbarButton } from '@wordpress/components';
+import { plus } from '@wordpress/icons';
+import { __ } from '@wordpress/i18n';
 import { getSettings } from '../../api/settings';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import CollectionInspectorControls from '../../components/InspectorControls/CollectionInspectorControls';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import { VideopackProvider } from '../../utils/VideopackContext';
+import { resolveGalleryVideoSelection } from '../../utils/galleryVideoSelection';
 import {
 	getGridTemplate,
 	getListTemplate,
@@ -22,7 +26,20 @@ import './editor.scss';
 
 const ALLOWED_BLOCKS = ['videopack/loop', 'videopack/pagination'];
 
-export default function Edit({ attributes, setAttributes, clientId, context }) {
+// Collection is a valid theme-context root (Overlays.scss) — nested blocks
+// inherit the skin class/CSS vars from here rather than each needing their own.
+const COLLECTION_CONTEXT_OPTS = {
+	excludeHoverTrigger: true,
+	classKeys: ['skin'],
+};
+
+export default function Edit({
+	attributes,
+	setAttributes,
+	clientId,
+	context,
+	isSelected,
+}) {
 	const [options, setOptions] = useState();
 	const {
 		layout = 'grid',
@@ -34,39 +51,121 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 	} = attributes;
 
 	// Resolve Effective Values for design and pagination (these follow global settings)
-	const vpContext = useVideopackContext(attributes, context, {
-		excludeHoverTrigger: true,
-	});
+	const vpContext = useVideopackContext(
+		attributes,
+		context,
+		COLLECTION_CONTEXT_OPTS
+	);
 	const {
 		resolved: effectiveValues,
 		style: contextStyle,
 		classes: collectionClasses,
 	} = vpContext;
 
-	const { hasPaginationBlock, isNewlyInserted } = useSelect(
-		(select) => {
-			const { getBlocks, getBlock } = select('core/block-editor');
-			const blocks = getBlocks(clientId) || [];
-			const block = getBlock(clientId);
-			return {
-				hasPaginationBlock: blocks.some(
-					(b) => b.name === 'videopack/pagination'
-				),
-				isNewlyInserted:
-					block &&
-					!block.attributes.gallery_id &&
-					!block.attributes.gallery_category &&
-					!block.attributes.gallery_tag &&
-					!block.attributes.gallery_include,
-			};
-		},
-		[clientId]
-	);
+	const { hasPaginationBlock, isNewlyInserted, hasSelectedInnerBlock } =
+		useSelect(
+			(select) => {
+				const {
+					getBlocks,
+					getBlock,
+					hasSelectedInnerBlock: hasSelectedInner,
+				} = select('core/block-editor');
+				const blocks = getBlocks(clientId) || [];
+				const block = getBlock(clientId);
+				return {
+					hasPaginationBlock: blocks.some(
+						(b) => b.name === 'videopack/pagination'
+					),
+					isNewlyInserted:
+						block &&
+						!block.attributes.gallery_id &&
+						!block.attributes.gallery_category &&
+						!block.attributes.gallery_tag &&
+						!block.attributes.gallery_include,
+					// Shallow (direct children only) — Collection's own appender
+					// adds a sibling to Loop/Pagination at the top level, so it
+					// should only show while working with that top-level
+					// structure, not e.g. while deep inside editing a
+					// thumbnail's title text. A deep check (like Thumbnail/Loop
+					// use for their own, much narrower trees) would leave it
+					// visible almost continuously, since nearly all editing
+					// happens somewhere inside the collection's tree.
+					hasSelectedInnerBlock: hasSelectedInner(clientId),
+				};
+			},
+			[clientId]
+		);
+
+	// Only show Collection's own "Add block" appender while this block (or
+	// a direct child, Loop/Pagination) is actively selected.
+	const showCollectionAppender = isSelected || hasSelectedInnerBlock;
 
 	const previewPostId = useSelect(
 		(select) => select('core/editor').getCurrentPostId(),
 		[]
 	);
+
+	// Signals the Loop child (which renders the visible grid via its own
+	// useVideoQuery call) to refetch when a video is added but no attribute
+	// actually changes — see handleSelectVideos below. Passed down through
+	// the context bridge as videopack/refreshToken; a plain attribute touch
+	// doesn't work here since useVideoQuery's fetch effect depends on
+	// individual primitive fields, not object identity, so re-setting a
+	// value to itself is a no-op as far as its dependency array is concerned.
+	const [refreshToken, setRefreshToken] = useState(0);
+
+	/**
+	 * Handles video(s) selected/uploaded via the "Add Video" toolbar button.
+	 * Mirrors the Loop block's own control (same shared decision logic) so
+	 * it doesn't matter which of the two a user reaches for.
+	 *
+	 * @param {Object|Array} media Selected attachment object(s).
+	 */
+	const handleSelectVideos = useCallback(
+		(media) => {
+			const result = resolveGalleryVideoSelection({
+				media,
+				gallerySource: attributes.gallery_source,
+				galleryInclude: attributes.gallery_include,
+				previewPostId,
+			});
+
+			if (result.type === 'update') {
+				setAttributes(result.updates);
+			} else if (result.type === 'no-change') {
+				// A freshly uploaded file is already attached to this post,
+				// so no attribute changes — just force the Loop child to refetch.
+				setRefreshToken((prev) => prev + 1);
+			}
+		},
+		[attributes.gallery_source, attributes.gallery_include, previewPostId, setAttributes]
+	);
+
+	/**
+	 * Opens the media frame for the "Add Video" toolbar button. Uses the raw
+	 * wp.media() API directly rather than the <MediaUpload> React component
+	 * — that component's componentWillUnmount calls frame.remove() whenever
+	 * it unmounts (e.g. when this block is deselected right after the modal
+	 * closes), which can race with an in-progress React render and crash
+	 * with "Attempted to synchronously unmount a root while React was
+	 * already rendering."
+	 */
+	const openAddVideoFrame = useCallback(() => {
+		const frame = window.wp.media({
+			title: __('Add Video', 'video-embed-thumbnail-generator'),
+			button: {
+				text: __('Add', 'video-embed-thumbnail-generator'),
+			},
+			multiple: true,
+			library: { type: 'video' },
+		});
+
+		frame.on('select', () => {
+			handleSelectVideos(frame.state().get('selection').toJSON());
+		});
+
+		frame.open();
+	}, [handleSelectVideos]);
 
 	const queryParams = useMemo(() => {
 		let galleryPerPage = -1;
@@ -98,7 +197,7 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 		currentPage,
 	]);
 	// We fetch query data to power the live preview template and pagination info
-	const queryData = useVideoQuery(queryParams, previewPostId);
+	const queryData = useVideoQuery(queryParams, previewPostId, refreshToken);
 
 	useEffect(() => {
 		getSettings().then((response) => {
@@ -267,13 +366,24 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 		videos,
 	};
 
+	// Lets the Loop child's own "Add Video" button (when the upload is already
+	// attached to this post and no attribute changes) trigger a refetch here
+	// too — Collection's own query is what actually supplies `videos` above
+	// in the common nested case, and context can't flow child-to-parent, so
+	// this callback is how Loop reaches back up to it.
+	const refreshVideos = useCallback(
+		() => setRefreshToken((prev) => prev + 1),
+		[]
+	);
+
 	const bridgeOverrides = useMemo(
 		() => ({
 			'videopack/gallery_pagination': hasPaginationBlock,
 			'videopack/totalPages': queryData.maxNumPages,
 			'videopack/videos': videos,
+			'videopack/refreshVideos': refreshVideos,
 		}),
-		[hasPaginationBlock, queryData.maxNumPages, videos]
+		[hasPaginationBlock, queryData.maxNumPages, videos, refreshVideos]
 	);
 
 	// If options haven't loaded yet for a newly inserted block, don't render InnerBlocks
@@ -308,6 +418,19 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 				/>
 			</InspectorControls>
 
+			<BlockControls>
+				<ToolbarGroup>
+					<ToolbarButton
+						icon={plus}
+						label={__(
+							'Add Video',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={openAddVideoFrame}
+					/>
+				</ToolbarGroup>
+			</BlockControls>
+
 			<div {...blockProps}>
 				<VideopackContextBridge
 					attributes={attributes}
@@ -318,6 +441,11 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 						<InnerBlocks
 							allowedBlocks={ALLOWED_BLOCKS}
 							template={dynamicTemplate}
+							renderAppender={
+								showCollectionAppender
+									? InnerBlocks.ButtonBlockAppender
+									: false
+							}
 						/>
 					</VideopackProvider>
 				</VideopackContextBridge>

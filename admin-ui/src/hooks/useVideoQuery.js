@@ -8,9 +8,15 @@ import { getVideoGallery } from '../api/gallery';
  *
  * @param {Object} inputAttributes Block attributes.
  * @param {number} previewPostId   The ID of the post being previewed.
+ * @param {number} refreshToken    Optional value to bump in order to force a refetch
+ *                                 (e.g. after uploading a new video attachment).
  * @return {Object} Query results including search results, categories, and tags.
  */
-export default function useVideoQuery(inputAttributes, previewPostId) {
+export default function useVideoQuery(
+	inputAttributes,
+	previewPostId,
+	refreshToken
+) {
 	const attributes = inputAttributes || {};
 	const {
 		gallery_id,
@@ -201,6 +207,7 @@ export default function useVideoQuery(inputAttributes, previewPostId) {
 		isSaving,
 		isAutosaving,
 		!!inputAttributes,
+		refreshToken,
 	]);
 
 	const categories = useSelect((select) => {

@@ -4,12 +4,14 @@ import {
 	InnerBlocks,
 	BlockContextProvider,
 	InspectorControls,
+	BlockControls,
 	BlockPreview,
 	__experimentalBlockPreview,
+	MediaPlaceholder,
 } from '@wordpress/block-editor';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { Spinner, Icon } from '@wordpress/components';
+import { Spinner, Icon, ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import {
 	useMemo,
 	useState,
@@ -17,7 +19,7 @@ import {
 	useCallback,
 	useRef,
 } from '@wordpress/element';
-import { pencil, close, dragHandle, create } from '@wordpress/icons';
+import { pencil, close, dragHandle, create, plus } from '@wordpress/icons';
 import {
 	DndContext,
 	closestCenter,
@@ -40,6 +42,7 @@ import { useVideopackContext as useVideopackData } from '../../utils/VideopackCo
 import { isTrue } from '../../utils/context';
 import { getSettings } from '../../api/settings';
 import { getVideoGallery } from '../../api/gallery';
+import { resolveGalleryVideoSelection } from '../../utils/galleryVideoSelection';
 import CollectionInspectorControls from '../../components/InspectorControls/CollectionInspectorControls';
 import { BlockPreview as VideopackPreview } from '../../components/Preview';
 import './editor.scss';
@@ -246,7 +249,13 @@ const PreviewItem = ({
  * @param {Function} props.setAttributes Block attributes setter.
  * @return {Element}              The rendered component.
  */
-export default function Edit({ attributes, setAttributes, context, clientId }) {
+export default function Edit({
+	attributes,
+	setAttributes,
+	context,
+	clientId,
+	isSelected,
+}) {
 	const vpContext = useVideopackContext(attributes, context, {
 		excludeHoverTrigger: true,
 	});
@@ -266,10 +275,15 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		hasPaginationBlock,
 		isEditingAllPages,
 		parentClientId,
+		hasSelectedInnerBlock,
 	} = useSelect(
 		(select) => {
-			const { getBlocks, getBlockAttributes, getBlockRootClientId } =
-				select('core/block-editor');
+			const {
+				getBlocks,
+				getBlockAttributes,
+				getBlockRootClientId,
+				hasSelectedInnerBlock: hasSelectedInner,
+			} = select('core/block-editor');
 			const { isSavingPost, isAutosavingPost, getCurrentPostId } =
 				select('core/editor');
 
@@ -332,10 +346,16 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				hasPaginationBlock: hasPagination,
 				isEditingAllPages: isEditingAll,
 				parentClientId: parentId,
+				hasSelectedInnerBlock: hasSelectedInner(clientId, true),
 			};
 		},
 		[clientId, attributes?.duotone, attributes?.style?.color?.duotone]
 	);
+
+	// Only show Loop's own "Add block" appender while this block (or one of
+	// its children) is actively selected, so it doesn't clutter the editor
+	// whenever some unrelated block elsewhere on the page is selected.
+	const showLoopAppender = isSelected || hasSelectedInnerBlock;
 
 	useEffect(() => {
 		getSettings().then((response) => {
@@ -373,9 +393,17 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		[context, isEditingAllPages, vpContext.resolved, vpContext.currentPage]
 	);
 
+	// Only used as a fallback when this Loop instance runs its own query
+	// below (i.e. vpData.videos is empty) — in the common case, Collection's
+	// own query is what actually supplies the rendered videos, so refreshing
+	// after an upload goes through context['videopack/refreshVideos'] instead
+	// (see handleSelectVideos).
+	const [refreshToken, setRefreshToken] = useState(0);
+
 	const queryData = useVideoQuery(
 		vpData.videos && vpData.videos.length > 0 ? null : queryAttributes,
-		previewPostId
+		previewPostId,
+		refreshToken
 	);
 	const {
 		videoResults: queryVideos,
@@ -691,6 +719,64 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 		previewPostId,
 	]);
 
+	/**
+	 * Handles video(s) selected/uploaded via the "Add Video" toolbar button
+	 * or the empty-state placeholder. See resolveGalleryVideoSelection for
+	 * the shared decision logic (also used by the Collection block's own
+	 * matching control).
+	 *
+	 * @param {Object|Array} media Selected attachment object(s).
+	 */
+	const handleSelectVideos = useCallback(
+		(media) => {
+			const result = resolveGalleryVideoSelection({
+				media,
+				gallerySource: queryAttributes.gallery_source,
+				galleryInclude: queryAttributes.gallery_include,
+				previewPostId,
+			});
+
+			if (result.type === 'update') {
+				updateBlockAttributes(parentClientId, result.updates);
+			} else if (result.type === 'no-change') {
+				// A freshly uploaded file is already attached to this post,
+				// so no attribute changes. Refresh this instance's own query
+				// (used when it's actually running one) and, since Collection's
+				// query is what supplies the rendered videos in the common
+				// case, ask it to refetch too.
+				setRefreshToken((prev) => prev + 1);
+				context['videopack/refreshVideos']?.();
+			}
+		},
+		[queryAttributes, previewPostId, parentClientId, updateBlockAttributes, context]
+	);
+
+	/**
+	 * Opens the media frame for the "Add Video" toolbar button. Uses the raw
+	 * wp.media() API directly (like handleAddVideo/handleEditItem above)
+	 * rather than the <MediaUpload> React component — that component's
+	 * componentWillUnmount calls frame.remove() whenever it unmounts (e.g.
+	 * when this block is deselected right after the modal closes), which can
+	 * race with an in-progress React render and crash with "Attempted to
+	 * synchronously unmount a root while React was already rendering."
+	 */
+	const openAddVideoFrame = useCallback(() => {
+		const frame = window.wp.media({
+			title: __('Add Video', 'video-embed-thumbnail-generator'),
+			button: {
+				text: __('Add', 'video-embed-thumbnail-generator'),
+			},
+			multiple: true,
+			library: { type: 'video' },
+		});
+
+		frame.on('select', () => {
+			handleSelectVideos(frame.state().get('selection').toJSON());
+		});
+
+		frame.open();
+	}, [handleSelectVideos]);
+
 	const handleDragEnd = useCallback(
 		async (event) => {
 			const { active, over } = event;
@@ -786,13 +872,6 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 			const itemKey = `${video.attachment_id || video.id}-${
 				blockClientId || name
 			}-${index}`;
-
-			console.log(
-				'[Videopack Debug] renderBlockPreview:',
-				name,
-				'itemKey:',
-				itemKey
-			);
 
 			// If it's a Videopack block we have in our registry, use the high-perf visual component.
 			if (name.startsWith('videopack/')) {
@@ -963,6 +1042,19 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 				/>
 			</InspectorControls>
 
+			<BlockControls>
+				<ToolbarGroup>
+					<ToolbarButton
+						icon={plus}
+						label={__(
+							'Add Video',
+							'video-embed-thumbnail-generator'
+						)}
+						onClick={openAddVideoFrame}
+					/>
+				</ToolbarGroup>
+			</BlockControls>
+
 			<figure {...blockProps} style={computedStyle}>
 				{presetDuotoneClass && (
 					<style>
@@ -999,6 +1091,39 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 					}
 
 					if (videos.length === 0) {
+						const isEditable =
+							!vpContext.resolved.isPreview &&
+							!isTrue(context['videopack/isPreview']);
+
+						const showUploadPlaceholder =
+							isEditable &&
+							(queryAttributes.gallery_source === 'current' ||
+								(queryAttributes.gallery_source ===
+									'manual' &&
+									!queryAttributes.gallery_include));
+
+						if (showUploadPlaceholder) {
+							return (
+								<MediaPlaceholder
+									icon="video-alt3"
+									labels={{
+										title: __(
+											'Videopack Gallery',
+											'video-embed-thumbnail-generator'
+										),
+										instructions: __(
+											'Upload or select videos to attach to this post.',
+											'video-embed-thumbnail-generator'
+										),
+									}}
+									onSelect={handleSelectVideos}
+									accept="video/*"
+									allowedTypes={['video']}
+									multiple
+								/>
+							);
+						}
+
 						return (
 							<div className="videopack-collection-preview-placeholder">
 								{__(
@@ -1038,6 +1163,49 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 												? 'post'
 												: 'attachment';
 
+										// Includes this Loop's own resolved design context (title_color,
+										// skin, etc via sharedContext) so templated preview items inherit
+										// it the same way the real InnerBlocks item does via WP context.
+										const itemContext = {
+											...context,
+											...vpContext.sharedContext,
+											postId: targetPostId,
+											postType: targetPostType,
+											'videopack/postId': targetPostId,
+											'videopack/postType':
+												targetPostType,
+											'videopack/attachmentId':
+												video.attachment_id ||
+												video.id,
+											'videopack/title': video.title,
+											'videopack/caption':
+												video.caption,
+											'videopack/views':
+												video.views ||
+												video.starts ||
+												video.meta?.[
+													'_videopack-meta'
+												]?.starts,
+											'videopack/duration':
+												video.duration ||
+												video.meta?.[
+													'_videopack-meta'
+												]?.duration,
+											'videopack/embedlink':
+												video.embed_url ||
+												video.player_vars
+													?.full_player_html ||
+												'',
+											'videopack/parentPostId':
+												video.parent_id,
+											'videopack/totalPages':
+												totalPagesCount,
+											'videopack/totalResults':
+												totalResultsCount,
+											'videopack/loopDuotoneId':
+												resolvedDuotoneClass,
+										};
+
 										return (
 											<SortableItem
 												key={
@@ -1066,48 +1234,7 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 												isHoveringGallery={false}
 											>
 												<BlockContextProvider
-													value={{
-														...context,
-														...vpContext.sharedContext,
-														postId: targetPostId,
-														postType:
-															targetPostType,
-														'videopack/postId':
-															targetPostId,
-														'videopack/postType':
-															targetPostType,
-														'videopack/attachmentId':
-															video.attachment_id ||
-															video.id,
-														'videopack/title':
-															video.title,
-														'videopack/caption':
-															video.caption,
-														'videopack/views':
-															video.views ||
-															video.starts ||
-															video.meta?.[
-																'_videopack-meta'
-															]?.starts,
-														'videopack/duration':
-															video.duration ||
-															video.meta?.[
-																'_videopack-meta'
-															]?.duration,
-														'videopack/embedlink':
-															video.embed_url ||
-															video.player_vars
-																?.full_player_html ||
-															'',
-														'videopack/parentPostId':
-															video.parent_id,
-														'videopack/totalPages':
-															totalPagesCount,
-														'videopack/totalResults':
-															totalResultsCount,
-														'videopack/loopDuotoneId':
-															resolvedDuotoneClass,
-													}}
+													value={itemContext}
 												>
 													<div
 														className={
@@ -1127,16 +1254,17 @@ export default function Edit({ attributes, setAttributes, context, clientId }) {
 																	false
 																}
 																renderAppender={
-																	InnerBlocks.ButtonBlockAppender
+																	showLoopAppender
+																		? InnerBlocks.ButtonBlockAppender
+																		: false
 																}
 															/>
 														) : (
 															renderBlockPreview(
 																templateBlocks,
 																video,
-																context,
-																{},
-																vpContext
+																itemContext,
+																{}
 															)
 														)}
 													</div>
