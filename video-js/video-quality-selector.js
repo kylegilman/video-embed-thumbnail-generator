@@ -38,18 +38,53 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				if (res === 'Auto') { return res; }
 				return (/^\d+$/.test(res)) ? res + 'p' : res;
 			},
+			/**
+			 * Picks one source per distinct resolution from a flat sources
+			 * array (which may span multiple codec/format groups). When a
+			 * resolution is offered by more than one codec, the browser's
+			 * own playback support decides which file backs it (preferring
+			 * "probably" over "maybe" over unsupported, falling back to the
+			 * first-configured one on a tie) — codec compatibility is
+			 * resolved automatically rather than exposed as a user choice.
+			 *
+			 * @param {Array}              sources All sources across every codec group.
+			 * @param {HTMLVideoElement}   videoEl Element used to test codec support.
+			 * @return {Object} Map of resolution -> best source for that resolution.
+			 */
+			pick_best_by_resolution: function (sources, videoEl) {
+				const byRes = {};
+				sources.forEach((s) => {
+					const res = s.resolution || s['data-res'];
+					if (!res) { return; }
+					if (!byRes[res]) { byRes[res] = []; }
+					byRes[res].push(s);
+				});
+
+				const rank = (type) => {
+					if (!type || !videoEl || typeof videoEl.canPlayType !== 'function') { return 0; }
+					const support = videoEl.canPlayType(type);
+					if (support === 'probably') { return 2; }
+					if (support === 'maybe') { return 1; }
+					return 0;
+				};
+
+				const best = {};
+				for (const res in byRes) {
+					const candidates = byRes[res];
+					best[res] = candidates.length === 1 ? candidates[0] : [...candidates].sort((a, b) => rank(b.type) - rank(a.type))[0];
+				}
+				return best;
+			},
 		};
 
 		// Add default english translations
 		videojs.addLanguage('en', {
 			'Quality': 'Quality',
 			'Full': 'Full',
-			'Codecs': 'Codecs',
 			'Auto': 'Auto',
 		});
 
 		const MenuItem = videojs.getComponent('MenuItem');
-		const Menu = videojs.getComponent('Menu');
 
 		class ResolutionMenuItem extends MenuItem {
 			call_count = 0;
@@ -65,7 +100,6 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				super(player, options);
 
 				this.resolution = options.res;
-				this.codec = options.codec;
 
 				this.on(['click', 'tap'], this.onClick);
 
@@ -88,13 +122,7 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 							}
 						}
 					} else {
-						const is_current_res = this.resolution.toString() === player.getCurrentRes().toString();
-						is_selected_now = is_current_res;
-						const has_multiple_codecs = player.source_groups && Object.keys(player.source_groups).length > 1;
-
-						if (has_multiple_codecs) {
-							is_selected_now = is_current_res && (this.codec === player.getCurrentCodec());
-						}
+						is_selected_now = this.resolution.toString() === player.getCurrentRes().toString();
 					}
 
 					this.selected(is_selected_now);
@@ -114,89 +142,8 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 			onClick() {
 				if (this.call_count > 0) { return; }
 				this.player().manualResolutionSelected = true;
-				this.player().changeRes(this.resolution, this.codec);
+				this.player().changeRes(this.resolution);
 				this.call_count++;
-			}
-		}
-
-		class CodecMenuItem extends MenuItem {
-			constructor(player, options) {
-				super(player, options);
-				this.on('mouseenter', this.handleMouseEnter);
-			}
-
-			handleMouseEnter() {
-				this.closeOtherSubmenus();
-
-				const subMenu = this.children()[0];
-				if (subMenu) {
-					const subMenuEl = subMenu.el();
-					const parentRect = this.el().getBoundingClientRect();
-
-					subMenuEl.style.visibility = 'hidden';
-					subMenuEl.style.display = 'block';
-					const subMenuWidth = subMenuEl.offsetWidth;
-					subMenuEl.style.display = '';
-					subMenuEl.style.visibility = '';
-
-					const playerRect = this.player().el().getBoundingClientRect();
-					const spaceRight = playerRect.right - parentRect.right;
-					const spaceLeft = parentRect.left - playerRect.left;
-
-					// All themes except City default to opening left.
-					const isCity = this.player().hasClass('vjs-theme-city');
-					let openLeft = !isCity;
-
-					// Boundary check: If opening in preferred direction would overflow, flip it.
-					if (openLeft && spaceLeft < subMenuWidth && spaceRight > spaceLeft) {
-						openLeft = false;
-					} else if (!openLeft && spaceRight < subMenuWidth && spaceLeft > spaceRight) {
-						openLeft = true;
-					}
-
-					if (openLeft) {
-						subMenuEl.classList.add('vjs-submenu-left');
-						subMenuEl.classList.remove('vjs-submenu-right');
-					} else {
-						subMenuEl.classList.add('vjs-submenu-right');
-						subMenuEl.classList.remove('vjs-submenu-left');
-					}
-				}
-			}
-
-			closeOtherSubmenus() {
-				const parent = this.parentComponent_;
-				if (parent && parent.children) {
-					parent.children().forEach(child => {
-						if (child !== this && child.hasClass && child.hasClass('vjs-has-submenu')) {
-							child.removeClass('vjs-submenu-open');
-						}
-					});
-				}
-			}
-
-			handleClick(event) {
-				// Handle double-fire from tap+click
-				if (event.type === 'click' && this.tapHandled_) {
-					this.tapHandled_ = false;
-					event.preventDefault();
-					event.stopImmediatePropagation();
-					return;
-				}
-				if (event.type === 'tap') {
-					this.tapHandled_ = true;
-					setTimeout(() => this.tapHandled_ = false, 500);
-				}
-
-				// Prevent the menu from closing when clicking a codec
-				event.preventDefault();
-				event.stopImmediatePropagation();
-
-				const wasOpen = this.hasClass('vjs-submenu-open');
-
-				// Close all other submenus
-				this.closeOtherSubmenus();
-				this.toggleClass('vjs-submenu-open', !wasOpen);
 			}
 		}
 
@@ -212,7 +159,6 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 		class ResolutionSelector extends MenuButton {
 			constructor(player, options) {
 				player.availableRes = options.available_res;
-				player.source_groups = options.source_groups;
 				options.name = 'resolutionSelector';
 				super(player, options);
 				this.on('mouseenter', this.updateMenuAlignment);
@@ -250,7 +196,6 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 			createItems() {
 				const player = this.player();
 				const items = [];
-				const source_groups = player.source_groups;
 
 				// 1. Native HLS/DASH Support via qualityLevels
 				if (player.qualityLevels && player.qualityLevels().length > 0) {
@@ -281,66 +226,33 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 					return items;
 				}
 
-				// 2. Static Source Swapping Fallback
-				if (source_groups && Object.keys(source_groups).length > 1) {
-					// Create a menu with codecs
-					for (const groupId in source_groups) {
-						const group = source_groups[groupId];
-						const resolutionItems = [];
-						for (const source of group.sources) {
-							const resolution = source.resolution || source['data-res'];
-							if (resolution) {
-								resolutionItems.push(new ResolutionMenuItem(player, { res: resolution, codec: groupId, selectable: true }));
-							}
-						}
-
-						if (resolutionItems.length > 0) {
-							const menuItem = new CodecMenuItem(player, {
-								label: group.label,
-								selectable: false,
-							});
-							menuItem.el().classList.add('vjs-has-submenu');
-
-							const subMenu = new Menu(player);
-							menuItem.addChild(subMenu);
-							resolutionItems.forEach(item => subMenu.addChild(item));
-							items.push(menuItem);
-						}
+				// 2. Static Source Swapping — flat list of resolutions.
+				// Codec compatibility for a given resolution is already
+				// resolved automatically when player.availableRes was built.
+				for (const current_res in player.availableRes) {
+					if ('length' === current_res) {
+						continue;
 					}
-					items.unshift(new ResolutionTitleMenuItem(player, {
-						el: videojs.dom.createEl('li', {
-							className: 'vjs-menu-title vjs-res-menu-title',
-							innerHTML: player.localize('Codecs'),
-						}),
-					}));
-
-				} else {
-					// Original behavior: create a menu with resolutions
-					for (const current_res in player.availableRes) {
-						if ('length' === current_res) {
-							continue;
-						}
-						items.push(new ResolutionMenuItem(player, { res: current_res, selectable: true }));
-					}
-
-					items.sort((a, b) => {
-						if ('undefined' === typeof a.resolution) {
-							return -1;
-						} else if (a.resolution === player.localize('Full')) {
-							return -1;
-						} else if (b.resolution === player.localize('Full')) {
-							return 1;
-						}
-						return parseInt(b.resolution, 10) - parseInt(a.resolution, 10);
-					});
-
-					items.unshift(new ResolutionTitleMenuItem(player, {
-						el: videojs.dom.createEl('li', {
-							className: 'vjs-menu-title vjs-res-menu-title',
-							innerHTML: player.localize('Quality'),
-						}),
-					}));
+					items.push(new ResolutionMenuItem(player, { res: current_res, selectable: true }));
 				}
+
+				items.sort((a, b) => {
+					if ('undefined' === typeof a.resolution) {
+						return -1;
+					} else if (a.resolution === player.localize('Full')) {
+						return -1;
+					} else if (b.resolution === player.localize('Full')) {
+						return 1;
+					}
+					return parseInt(b.resolution, 10) - parseInt(a.resolution, 10);
+				});
+
+				items.unshift(new ResolutionTitleMenuItem(player, {
+					el: videojs.dom.createEl('li', {
+						className: 'vjs-menu-title vjs-res-menu-title',
+						innerHTML: player.localize('Quality'),
+					}),
+				}));
 
 				return items;
 			}
@@ -361,7 +273,6 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 
 			// Reset player data
 			player.currentRes = '';
-			player.currentCodec = '';
 
 			const sources = this.options_.sources || [];
 
@@ -369,151 +280,108 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				return player.currentRes || (sources[0] ? (sources[0].resolution || sources[0]['data-res']) : '') || '';
 			};
 
-			player.getCurrentCodec = function () {
-				return player.currentCodec || '';
-			};
-
 			if (!this.el().firstChild || !this.el().firstChild.canPlayType) {
 				return;
 			}
 
-			const available_res = { length: 0 };
+			const video = this.el().firstChild;
 			const source_groups = options.source_groups || {};
-			const has_multiple_codecs = source_groups && Object.keys(source_groups).length > 1;
+			const has_source_groups = source_groups && Object.keys(source_groups).length > 0;
 
-			if (!has_multiple_codecs) {
-				const sources_for_res_map = (source_groups && Object.keys(source_groups).length === 1) ?
-					Object.values(source_groups)[0].sources :
-					sources;
+			// Flatten every source across every codec group into one list,
+			// then auto-pick the best-supported codec for each resolution —
+			// quality selection stays resolution-only; codec compatibility
+			// is resolved automatically, the same way a plain <source>
+			// fallback list would.
+			const flat_sources = has_source_groups
+				? Object.keys(source_groups).flatMap((groupId) => source_groups[groupId].sources || [])
+				: sources;
 
-				for (let i = sources_for_res_map.length - 1; i >= 0; i--) {
-					const source = sources_for_res_map[i];
-					const current_res = source.resolution || source['data-res'];
-					if (!current_res) {
-						continue;
-					}
+			const available_res = { length: 0 };
+			const best_by_res = methods.pick_best_by_resolution(flat_sources, video);
 
-					if (!(current_res in available_res)) {
-						available_res.length++;
-					}
-					available_res[current_res] = source;
+			for (const current_res in best_by_res) {
+				available_res.length++;
+				available_res[current_res] = best_by_res[current_res];
 
-					if (current_res === player.localize('Full')) {
-						player.off('loadedmetadata', player.updateFullResLabel);
-						player.updateFullResLabel = function () {
-							if (!Number.isNaN(player.videoHeight())) {
-								const resMenu = player.controlBar && player.controlBar.getChild('resolutionSelector');
-								if (resMenu) {
-									const fullResEl = resMenu.$('li.vjs-menu-item').find((el) => el.textContent.includes(player.localize('Full')));
-									if (fullResEl) {
-										fullResEl.innerHTML = `${player.videoHeight()}p`;
-									}
+				if (current_res === player.localize('Full')) {
+					player.off('loadedmetadata', player.updateFullResLabel);
+					player.updateFullResLabel = function () {
+						if (!Number.isNaN(player.videoHeight())) {
+							const resMenu = player.controlBar && player.controlBar.getChild('resolutionSelector');
+							if (resMenu) {
+								const fullResEl = resMenu.$('li.vjs-menu-item').find((el) => el.textContent.includes(player.localize('Full')));
+								if (fullResEl) {
+									fullResEl.innerHTML = `${player.videoHeight()}p`;
 								}
 							}
-						};
-						player.on('loadedmetadata', player.updateFullResLabel);
-					}
+						}
+					};
+					player.on('loadedmetadata', player.updateFullResLabel);
 				}
 			}
 
-			// Initialize currentCodec based on the initial source
-			if (has_multiple_codecs) {
-				const initialSrc = player.currentSrc();
-				for (const groupId in source_groups) {
-					if (source_groups[groupId].sources.some(s => s.src === initialSrc)) {
-						player.currentCodec = groupId;
-						break;
-					}
-				}
-			}
-
-			player.changeRes = function (target_resolution, target_codec_id) {
+			player.changeRes = function (target_resolution) {
 				const current_res = player.getCurrentRes();
-				const current_codec_id = player.getCurrentCodec();
-				if (current_res === target_resolution && (!target_codec_id || current_codec_id === target_codec_id)) {
+				if (current_res === target_resolution) {
 					return;
 				}
 
 				const has_hls_levels = player.qualityLevels && player.qualityLevels().length > 0;
 				if (has_hls_levels) {
 					const qLevels = player.qualityLevels();
-					
+
 					// 1. Enable matching tracks first to prevent any transition state with 0 enabled tracks (stalls ABR)
 					for (let i = 0; i < qLevels.length; i++) {
 						const level = qLevels[i];
 						let match = true;
-						
+
 						if (target_resolution !== 'Auto') {
 							const level_res = level.height || level.width;
 							if (level_res && String(level_res) !== String(target_resolution)) {
 								match = false;
 							}
 						}
-						
-						if (target_codec_id) {
-							if (level.codec && !level.codec.startsWith(target_codec_id)) {
-								match = false;
-							}
-						}
-						
+
 						if (match) {
 							level.enabled = true;
 						}
 					}
-					
+
 					// 2. Disable non-matching tracks only after target tracks are enabled
 					for (let i = 0; i < qLevels.length; i++) {
 						const level = qLevels[i];
 						let match = true;
-						
+
 						if (target_resolution !== 'Auto') {
 							const level_res = level.height || level.width;
 							if (level_res && String(level_res) !== String(target_resolution)) {
 								match = false;
 							}
 						}
-						
-						if (target_codec_id) {
-							if (level.codec && !level.codec.startsWith(target_codec_id)) {
-								match = false;
-							}
-						}
-						
+
 						if (!match) {
 							level.enabled = false;
 						}
 					}
-					
+
 					player.currentRes = target_resolution;
-					player.currentCodec = target_codec_id || '';
 					player.trigger('changeRes');
 					return;
 				}
 
-				let target_source = null;
-
-				if (has_multiple_codecs && target_codec_id) {
-					if (player.source_groups[target_codec_id]) {
-						target_source = player.source_groups[target_codec_id].sources.find((s) => {
-							const res = s.resolution || s['data-res'];
-							return res && res.toString() === target_resolution.toString();
-						});
-					}
-				} else {
-					target_source = player.availableRes[target_resolution] || player.availableRes[target_resolution.toString()];
-				}
-
+				const target_source = player.availableRes[target_resolution] || player.availableRes[target_resolution.toString()];
 
 				if (!target_source) {
 					return;
 				}
-				const video = player.el().firstChild;
+				const targetVideo = player.el().firstChild;
 				const is_paused = player.paused();
 				const current_time = player.currentTime();
 				let canvas;
 
-				if ('none' === video.preload) {
-					video.preload = 'metadata';
+				if ('none' === targetVideo.preload) {
+					targetVideo.preload = 'metadata';
 				}
 
 				if (current_time > 0 && !is_paused) {
@@ -523,15 +391,23 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				if (current_time !== 0) {
 					canvas = document.createElement('canvas');
 					canvas.className = 'videopack_temp_thumb';
-					canvas.width = (video.videoWidth > video.videoHeight) ? video.offsetWidth : (video.videoWidth / video.videoHeight) * video.offsetHeight;
-					canvas.height = (video.videoWidth > video.videoHeight) ? (video.videoHeight / video.videoWidth) * video.offsetWidth : video.offsetHeight;
-					const topOffset = Math.round((video.offsetHeight - canvas.height) / 2);
+					canvas.width = (targetVideo.videoWidth > targetVideo.videoHeight) ? targetVideo.offsetWidth : (targetVideo.videoWidth / targetVideo.videoHeight) * targetVideo.offsetHeight;
+					canvas.height = (targetVideo.videoWidth > targetVideo.videoHeight) ? (targetVideo.videoHeight / targetVideo.videoWidth) * targetVideo.offsetWidth : targetVideo.offsetHeight;
+					// Positioned absolutely over the video so it actually masks
+					// the black/poster flash during the source swap, instead of
+					// just flowing into the DOM after it.
+					canvas.style.position = 'absolute';
+					canvas.style.top = '0';
+					canvas.style.left = '0';
+					canvas.style.pointerEvents = 'none';
+					canvas.style.zIndex = '5';
+					const topOffset = Math.round((targetVideo.offsetHeight - canvas.height) / 2);
 					if (topOffset > 2) { canvas.style.top = `${topOffset}px`; }
-					const leftOffset = Math.round((video.offsetWidth - canvas.width) / 2);
+					const leftOffset = Math.round((targetVideo.offsetWidth - canvas.width) / 2);
 					if (leftOffset > 2) { canvas.style.left = `${leftOffset}px`; }
 					const context = canvas.getContext('2d');
-					context.drawImage(video, 0, 0, canvas.width, canvas.height);
-					video.parentNode.appendChild(canvas);
+					context.drawImage(targetVideo, 0, 0, canvas.width, canvas.height);
+					targetVideo.parentNode.appendChild(canvas);
 
 					player.one('loadstart', function () {
 						player.hasStarted(true);
@@ -554,18 +430,15 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				});
 
 				player.currentRes = target_resolution;
-				if (target_codec_id) {
-					player.currentCodec = target_codec_id;
-				}
 				player.trigger('changeRes');
 			};
 
-			const resolutionSelector = new ResolutionSelector(player, { available_res, source_groups });
+			const resolutionSelector = new ResolutionSelector(player, { available_res });
 
 			let hls_rebuild_timer = null;
 			const onQualityLevelsChanged = function(event) {
 				const qLevels = player.qualityLevels();
-				
+
 				if (qLevels.length > 0) {
 					// Debounce rebuild so we capture all discovered levels before updating the menu
 					if (hls_rebuild_timer) {
@@ -573,20 +446,20 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 					}
 					hls_rebuild_timer = setTimeout(() => {
 						player.currentRes = player.currentRes || 'Auto'; // Default to auto
-						
+
 						// Robustly rebuild the MenuButton's child menu
 						if (resolutionSelector.menu) {
 							resolutionSelector.removeChild(resolutionSelector.menu);
 						}
 						resolutionSelector.menu = resolutionSelector.createMenu();
 						resolutionSelector.addChild(resolutionSelector.menu);
-						
+
 						// Force display the button now that we have multiple levels
 						resolutionSelector.removeClass('vjs-hidden');
 						resolutionSelector.el().classList.remove('vjs-hidden');
 					}, 50);
 				}
-				
+
 				// Update active resolution display
 				if (qLevels.selectedIndex >= 0) {
 					const activeLevel = qLevels[qLevels.selectedIndex];
@@ -603,7 +476,7 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 						const ql = player.qualityLevels();
 						ql.on('addqualitylevel', onQualityLevelsChanged);
 						ql.on('change', onQualityLevelsChanged);
-						
+
 						// If the levels are already populated (e.g. from cache or fast load), initialize the menu immediately.
 						if (ql.length > 0) {
 							onQualityLevelsChanged({ type: 'init' });
@@ -616,20 +489,19 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				const controlBar = player.getChild('controlBar');
 				if (controlBar) {
 					controlBar.addChild(resolutionSelector, {}, 11);
-					
-					const has_static = (available_res && available_res.length > 1) || (source_groups && Object.keys(source_groups).length > 1);
+
+					const has_static = available_res && available_res.length > 1;
 					const has_hls_init = player.qualityLevels && player.qualityLevels().length > 0;
 
 					if (!has_static && !has_hls_init) {
 						resolutionSelector.addClass('vjs-hidden');
 					}
-					
+
 					const default_res = options.default_res;
-					const default_codec = player.currentCodec || options.default_codec;
-					
+
 					// Don't auto-set resolution if HLS levels are populated (let VHS handle it)
 					if (default_res && (!player.qualityLevels || player.qualityLevels().length === 0)) {
-						player.changeRes(default_res, default_codec);
+						player.changeRes(default_res);
 					}
 				}
 			});
