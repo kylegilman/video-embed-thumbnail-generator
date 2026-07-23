@@ -6,6 +6,19 @@
 /* Container resets and defaults */
 .videopack-collection-inner,
 .videopack-collection-grid,
+.videopack-gallery-wrapper,
+.videopack-video-loop {
+	// These render as <figure> in the editor (Loop's own block wrapper), which
+	// carries the user-agent stylesheet's default figure margin (1em block,
+	// 40px inline) — harmless in the real block editor, where Gutenberg's own
+	// canvas reset already zeroes it, but visible and asymmetric (pushes the
+	// whole grid right) in contexts that don't load that reset, like our
+	// custom preview iframes.
+	margin: 0;
+}
+
+.videopack-collection-inner,
+.videopack-collection-grid,
 .videopack-gallery-wrapper {
 	width: 100%;
 	max-width: 100%;
@@ -50,6 +63,9 @@
 /* Base item containment */
 .videopack-collection-item,
 .videopack-gallery-item {
+	// Also renders as a <figure> (see SortableItem in loop/edit.js) — same
+	// user-agent margin reset rationale as .videopack-video-loop above.
+	margin: 0;
 	position: relative;
 	width: 100%;
 	transition: all 0.2s ease;

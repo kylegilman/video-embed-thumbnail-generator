@@ -147,16 +147,18 @@
 		}
 
 		// Position the Video Loop's own template appender at the bottom
-		// center, below the templated content, so it never overlaps a child
+		// right, below the templated content, so it never overlaps a child
 		// block's own appender/controls. Whether this renders at all is now
 		// controlled in JS (Edit's renderAppender), gated on isSelected /
 		// hasSelectedInnerBlock, so no CSS-side show/hide toggle is needed
 		// here — the element simply isn't in the DOM unless it's relevant.
+		// Offset an extra 10px below its previous -15px position — the same
+		// margin player-container/editor.scss gives its own appender — so
+		// the two never sit at the same vertical position.
 		& > div > .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender {
 			position: absolute;
-			bottom: -15px; // Positioned outside the box as requested
-			left: 50%;
-			transform: translateX(-50%);
+			bottom: -25px;
+			right: 0;
 			z-index: 110;
 			display: flex;
 			justify-content: center;
@@ -168,45 +170,16 @@
 		.wp-block-videopack-thumbnail {
 			margin-bottom: 5px;
 		}
+	}
 
-		// Non-Videopack block preview containers
-		.videopack-block-preview-external {
-			width: 100%;
-			min-height: 20px;
-			margin: 5px 0;
-			position: relative;
-
-			// We use a CSS trick to neutralize the core BlockPreview scaling logic
-			// since we are forcing viewportWidth = currentWidth in JS.
-			.block-editor-block-preview__container {
-				transform: none !important;
-				width: 100% !important;
-				height: auto !important;
-			}
-
-			.block-editor-block-preview__content {
-				transform: none !important;
-				width: 100% !important;
-				height: auto !important;
-				opacity: 1 !important;
-				visibility: visible !important;
-
-				iframe {
-					width: 100% !important;
-					height: auto !important;
-					position: static !important;
-					pointer-events: none;
-					transform: none !important;
-				}
-			}
-		}
-
-		.videopack-block-preview-fallback {
-			font-size: 10px;
-			color: #999;
-			padding: 5px;
-			border: 1px dashed #eee;
-			text-align: center;
-		}
+	// A non-active item's real-block preview (see LoopItemPreview in edit.js).
+	// collection/editor.scss sets pointer-events: none on the generic wrapper
+	// div this sits inside (deliberately, to keep the old preview content inert
+	// while letting the card handle hover) — pointer-events inherits, so this
+	// needs to explicitly opt back in or the activation click is silently
+	// swallowed with no event ever firing.
+	.wp-block-videopack-loop__item-preview {
+		cursor: pointer;
+		pointer-events: auto;
 	}
 }
