@@ -104,6 +104,29 @@
 		},
 
 		/**
+		 * Reads a player's own video variables directly off its `.videopack-player`
+		 * element (embedded server-side as data-player-vars — see Player::
+		 * get_player_start_html()), rather than looking them up in a separate,
+		 * ID-keyed global object. The element passed in doesn't have to be the
+		 * `.videopack-player` div itself; the closest one is used.
+		 *
+		 * @since 5.4.0
+		 * @param {HTMLElement} el Any element at or inside a `.videopack-player`.
+		 * @return {object|null} The parsed video variables, or null if absent/invalid.
+		 */
+		getPlayerVars: function (el) {
+			const playerEl = el.closest('.videopack-player') || el;
+			if (!playerEl.dataset.playerVars) {
+				return null;
+			}
+			try {
+				return JSON.parse(playerEl.dataset.playerVars);
+			} catch {
+				return null;
+			}
+		},
+
+		/**
 		 * Initialize a single player.
 		 *
 		 * @since 5.0.0
@@ -113,9 +136,7 @@
 			if (playerWrapper.dataset.videopackInitialized) {
 				return;
 			}
-			let playerId = playerWrapper.dataset.id;
-			const videoVars =
-				window.videopack.player_data && window.videopack.player_data[`videopack_player_${playerId}`];
+			const videoVars = this.getPlayerVars(playerWrapper);
 
 			if (!videoVars) {
 				return;
@@ -130,16 +151,33 @@
 					if (container) {
 						this.setupVideo(playerWrapper, videoVars);
 					} else {
-						// If still no container, MEJS hasn't initialized yet.
-						// We rely on onMejsSuccess, but as a last resort, check again in 1s.
+						// WordPress's own wp-mediaelement.js does the actual
+						// MediaElement.js initialization for .wp-video-shortcode
+						// elements (see Player_WordPress_Default::get_video_classes()),
+						// but its own scan only ever runs once, at page load — it
+						// never revisits content added afterward (e.g. AJAX
+						// pagination). Give it its normal chance first (matches
+						// original, real-page-load behavior unchanged), then
+						// construct the player ourselves if still nothing showed
+						// up, the same way loadVideoJS() already does for Video.js.
 						setTimeout(() => {
-							if (!playerWrapper.dataset.videopackInitialized) {
-								const secondCheck = playerWrapper.querySelector('.mejs-container');
-								if (secondCheck) {
-
-									this.setupVideo(playerWrapper, videoVars);
-								}
+							if (playerWrapper.dataset.videopackInitialized) {
+								return;
 							}
+							const secondCheck = playerWrapper.querySelector('.mejs-container');
+							if (secondCheck) {
+								this.setupVideo(playerWrapper, videoVars);
+								return;
+							}
+							const videoElement = playerWrapper.querySelector('video');
+							if (!videoElement || typeof window.MediaElementPlayer === 'undefined') {
+								return;
+							}
+							const settings = Object.assign({}, window._wpmejsSettings || {}, videoVars.mejs_settings || {});
+							settings.success = () => {
+								this.setupVideo(playerWrapper, videoVars);
+							};
+							new window.MediaElementPlayer(videoElement, settings);
 						}, 1000);
 					}
 				};
@@ -161,9 +199,8 @@
 			// domObject is optional in some contexts, fallback to mediaElement
 			const target = domObject || mediaElement;
 			const playerWrapper = target.closest('.videopack-player');
-			if (playerWrapper && !playerWrapper.dataset.videopackInitialized && window.videopack.player_data) {
-				const pid = playerWrapper.dataset.id;
-				this.setupVideo(playerWrapper, window.videopack.player_data[`videopack_player_${pid}`]);
+			if (playerWrapper && !playerWrapper.dataset.videopackInitialized) {
+				this.setupVideo(playerWrapper, this.getPlayerVars(playerWrapper));
 			}
 		},
 
@@ -1162,7 +1199,7 @@
 			if (!playerWrapper) {
 				return;
 			}
-			const videoVars = this.player_data[`videopack_player_${playerId}`];
+			const videoVars = this.getPlayerVars(playerWrapper);
 			if (!videoVars) {
 				return;
 			}
@@ -1196,6 +1233,58 @@
 		},
 
 		/**
+		 * Returns one source per distinct resolution from a flat list of
+		 * sources (which may span multiple codec/format groups). When a
+		 * resolution is offered by more than one codec, the browser's own
+		 * playback support decides which file backs it (preferring
+		 * "probably" over "maybe" over unsupported, falling back to the
+		 * first-configured one on a tie) — codec compatibility is resolved
+		 * automatically rather than exposed as a user choice. Sorted
+		 * descending by resolution.
+		 *
+		 * @since 5.0.0
+		 * @param {Array}                sources All sources across every codec group.
+		 * @param {HTMLMediaElement|null} mediaEl Element used to test codec support, if available.
+		 * @return {Array} Deduplicated sources, one per resolution.
+		 */
+		pickBestSourcesByResolution: function (sources, mediaEl) {
+			const byRes = {};
+			(sources || []).forEach((s) => {
+				const res = s.resolution || s['data-res'];
+				if (!res) {
+					return;
+				}
+				if (!byRes[res]) {
+					byRes[res] = [];
+				}
+				byRes[res].push(s);
+			});
+
+			const rank = (type) => {
+				if (!type || !mediaEl || typeof mediaEl.canPlayType !== 'function') {
+					return 0;
+				}
+				const support = mediaEl.canPlayType(type);
+				if (support === 'probably') {
+					return 2;
+				}
+				if (support === 'maybe') {
+					return 1;
+				}
+				return 0;
+			};
+
+			return Object.keys(byRes)
+				.map((res) => {
+					const candidates = byRes[res];
+					return candidates.length === 1
+						? candidates[0]
+						: [...candidates].sort((a, b) => rank(b.type) - rank(a.type))[0];
+				})
+				.sort((a, b) => parseInt(b.resolution || b['data-res'], 10) - parseInt(a.resolution || a['data-res'], 10));
+		},
+
+		/**
 		 * Set automatic resolution based on player size.
 		 *
 		 * @since 5.0.0
@@ -1204,7 +1293,8 @@
 		 * @param {number} aspectRatio The aspect ratio of the video.
 		 */
 		setAutomaticResolution: function (playerId, currentWidth, aspectRatio) {
-			const videoVars = this.player_data[`videopack_player_${playerId}`];
+			const playerWrapper = document.querySelector(`.videopack-player[data-id="${playerId}"]`);
+			const videoVars = playerWrapper && this.getPlayerVars(playerWrapper);
 			if (!videoVars) {
 				return;
 			}
@@ -1217,22 +1307,9 @@
 			// aspectRatio is height / width.
 			const targetHeight = targetWidth * aspectRatio;
 
-			let currentCodec = '';
-
-			if (videoVars.source_groups) {
-				const groupIds = Object.keys(videoVars.source_groups);
-				if (groupIds.length === 1) {
-					currentCodec = groupIds[0];
-				} else if (videoVars.source_groups['h264']) {
-					currentCodec = 'h264';
-				} else if (groupIds.length > 0) {
-					currentCodec = groupIds[0];
-				}
-			}
-
 			let player = null;
+			let mediaEl = null;
 
-			// Determine current codec and player instance
 			if (videoVars.embed_method === 'Video.js' && typeof videojs !== 'undefined') {
 				player = videojs.getPlayer(`videopack_video_${playerId}`);
 				if (player) {
@@ -1243,22 +1320,15 @@
 					const options = player.options();
 					const rsOptions = options.plugins && options.plugins.resolutionSelector;
 					const default_res = rsOptions ? rsOptions.default_res : undefined;
-					const default_codec = rsOptions ? rsOptions.default_codec : undefined;
 
 					if (default_res && !player.dataset.videopackInitialResSet && typeof player.changeRes === 'function') {
 						player.dataset.videopackInitialResSet = 'true';
-						player.changeRes(default_res, default_codec);
+						player.changeRes(default_res);
 					}
 
-					if (player.getCurrentCodec) {
-						const detectedCodec = player.getCurrentCodec();
-						if (detectedCodec) {
-							currentCodec = detectedCodec;
-						}
-					}
+					mediaEl = player.el().firstChild;
 				}
 			} else if (videoVars.embed_method === 'WordPress Default' && typeof window.mejs !== 'undefined') {
-				// For MEJS, check the selected radio button in the source chooser
 				const playerWrapper = document.querySelector(`.videopack-player[data-id="${playerId}"]`);
 				const mejsContainer = playerWrapper ? playerWrapper.querySelector('.mejs-container') : null;
 				if (mejsContainer && mejs.players[mejsContainer.id]) {
@@ -1266,72 +1336,43 @@
 					if (player.manualResolutionSelected) {
 						return;
 					}
-					// We can infer codec from the currently selected source if we had a way to map it back,
-					// but for now, we rely on auto_codec or the structure of source_groups.
-					// If the user manually switched codecs, MEJS doesn't explicitly store "currentCodec".
-					// So we check if we stored it, otherwise we try to respect auto_codec if supported,
-					// or fallback to the current source's codec.
-					if (videoVars.source_groups) {
-						if (player.currentCodec) {
-							currentCodec = player.currentCodec;
-						} else {
-							let autoCodecSupported = false;
-							if (currentCodec && videoVars.source_groups[currentCodec] && player.media && typeof player.media.canPlayType === 'function') {
-								const testSource = videoVars.source_groups[currentCodec].sources[0];
-								if (testSource && player.media.canPlayType(testSource.type) !== '') {
-									autoCodecSupported = true;
-								}
-							}
-
-							if (!autoCodecSupported) {
-								const currentSrc = player.getSrc();
-								for (const groupId in videoVars.source_groups) {
-									if (videoVars.source_groups[groupId].sources.some((s) => s.src === currentSrc)) {
-										currentCodec = groupId;
-										break;
-									}
-								}
-							}
-						}
-					}
+					mediaEl = player.media;
 				}
 			}
 
+			if (!player) {
+				return;
+			}
+
+			// Flatten every source across every codec group into one list —
+			// quality selection is resolution-only; codec compatibility is
+			// resolved automatically by pickBestSourcesByResolution.
 			let availableSources = [];
-			if (videoVars.source_groups && videoVars.source_groups[currentCodec]) {
-				availableSources = videoVars.source_groups[currentCodec].sources;
+			if (videoVars.source_groups && Object.keys(videoVars.source_groups).length > 0) {
+				availableSources = Object.values(videoVars.source_groups).flatMap((g) => g.sources || []);
 			} else if (videoVars.sources) {
 				availableSources = videoVars.sources;
 			}
 
-			if (!availableSources.length) {
-				return;
-			}
-
-			// Filter and sort sources by resolution (ascending)
-			const resSources = availableSources.filter((s) => s.resolution || s['data-res']);
-			resSources.sort((a, b) => parseInt(a.resolution || a['data-res'], 10) - parseInt(b.resolution || b['data-res'], 10));
-
+			const resSources = this.pickBestSourcesByResolution(availableSources, mediaEl);
 			if (!resSources.length) {
 				return;
 			}
 
-			// Find the best fit: the first source with height >= targetHeight
-			let bestSource = resSources.find((s) => parseInt(s.resolution || s['data-res'], 10) >= targetHeight);
-
-			// If all are smaller, use the largest available
-			if (!bestSource) {
-				bestSource = resSources[resSources.length - 1];
-			}
+			// resSources is sorted descending by resolution; find the
+			// smallest one that still meets the target height, else fall
+			// back to the smallest available.
+			const ascending = [...resSources].reverse();
+			const bestSource = ascending.find((s) => parseInt(s.resolution || s['data-res'], 10) >= targetHeight) || ascending[ascending.length - 1];
 
 			// Switch resolution if needed
-			if (videoVars.embed_method === 'Video.js' && player && player.changeRes) {
+			if (videoVars.embed_method === 'Video.js' && player.changeRes) {
 				const targetRes = bestSource.resolution || bestSource['data-res'];
 				if (player.getCurrentRes() !== targetRes) {
-					player.changeRes(targetRes, currentCodec);
+					player.changeRes(targetRes);
 				}
-			} else if (videoVars.embed_method === 'WordPress Default' && player && player.changeRes) {
-				player.changeRes(bestSource.src, currentCodec);
+			} else if (videoVars.embed_method === 'WordPress Default' && player.changeRes) {
+				player.changeRes(bestSource.src);
 			}
 		},
 
@@ -1366,7 +1407,7 @@
 			if (!playerWrapper) {
 				return;
 			}
-			const videoVars = this.player_data[`videopack_player_${playerId}`];
+			const videoVars = this.getPlayerVars(playerWrapper);
 
 			if (!videoVars) {
 				return;
@@ -1498,9 +1539,7 @@
 				playerWrapper.closest('.videopack-collection-item') ||
 				playerWrapper;
 
-			const playerId = playerWrapper.dataset.id || playerWrapper.dataset.postId || playerContainer.dataset.id || playerContainer.dataset.postId;
-			const videoVars =
-				(window.videopack.player_data && window.videopack.player_data[`videopack_player_${playerId}`]) || {};
+			const videoVars = this.getPlayerVars(playerWrapper) || {};
 			const shareIcon = playerWrapper.querySelector('.videopack-icons.share, .videopack-icons.close');
 			const embedWrapper = playerWrapper._shareContainer || playerContainer.querySelector('.videopack-share-container') || playerWrapper.querySelector('.videopack-share-container');
 			const clickTrap = playerWrapper._clickTrap || playerContainer.querySelector('.videopack-click-trap') || playerWrapper.querySelector('.videopack-click-trap');
@@ -1531,7 +1570,7 @@
 			}
 
 			if (videoVars.embed_method === 'Video.js') {
-				const activePlayerId = playerId || playerWrapper.dataset.id || playerContainer.dataset.id;
+				const activePlayerId = playerWrapper.dataset.id || playerContainer.dataset.id;
 				const player = videojs.getPlayer(`videopack_video_${activePlayerId}`);
 				if (player) {
 					player.pause();
@@ -1643,7 +1682,7 @@
 			}
 			const checkbox = embedWrapper.querySelector('.videopack-start-at-enable');
 			if (checkbox && checkbox.checked && embedWrapper.classList.contains('is-visible')) {
-				const videoVars = this.player_data[`videopack_player_${playerWrapper.dataset.id}`];
+				const videoVars = this.getPlayerVars(playerWrapper) || {};
 				let currentTime = 0;
 
 				if (videoVars.embed_method === 'Video.js') {
@@ -1985,11 +2024,11 @@
 				const keyframes = `@keyframes ${loadingKey} { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
 				playerContainer.innerHTML = `<style>${keyframes}</style><div class="videopack-loading-spinner" style="margin: auto; display: block; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: ${loadingKey} 1s linear infinite;"></div>`;
 				
-				let restUrl = videopack_config.rest_url + 'videopack/v1/player?id=' + attachmentId;
-				if (gallerySettings.inner_blocks_template) {
-					restUrl += '&inner_blocks_template=' + encodeURIComponent(gallerySettings.inner_blocks_template);
-				}
-				
+				// Safety-net fallback only (pre-embedded HTML is missing for
+				// some reason) — always built from global Player Settings
+				// server-side, so the only input needed is the video's id.
+				const restUrl = videopack_config.rest_url + 'videopack/v1/player?id=' + attachmentId;
+
 				fetch(restUrl, {
 					headers: { 'X-WP-Nonce': videopack_config.nonce }
 				}).then(r => r.json()).then(data => {
@@ -2044,6 +2083,17 @@
 
 			// For Video.js players
 			if (typeof this.currentGalleryPlayer.dispose === 'function') {
+				// dispose() alone doesn't reliably remove this player's own entry
+				// from Video.js's global players registry (see disposePlayersInElement's
+				// comment for how this was confirmed) — grab the id first so the
+				// entry can be explicitly deleted after disposal.
+				let playerId = null;
+				try {
+					playerId = typeof this.currentGalleryPlayer.id === 'function' ? this.currentGalleryPlayer.id() : null;
+				} catch {
+					playerId = null;
+				}
+
 				try {
 					// Prevent events from firing during disposal
 					if (typeof this.currentGalleryPlayer.off === 'function') {
@@ -2061,6 +2111,10 @@
 					}
 				} catch (e) {
 					// Fail silently or handle disposal error
+				}
+
+				if (playerId && typeof videojs !== 'undefined' && videojs.players) {
+					delete videojs.players[playerId];
 				}
 			} else if (typeof this.currentGalleryPlayer.remove === 'function') {
 				// For MediaElement.js players
@@ -2089,6 +2143,71 @@
 			}
 
 			this.currentGalleryPlayer = null;
+		},
+
+		/**
+		 * Safely disposes every Video.js player instance whose DOM element lives
+		 * inside a given container. Needed before replacing a gallery grid's
+		 * innerHTML wholesale (e.g. AJAX pagination) — a raw innerHTML swap
+		 * bypasses Video.js's own teardown, so without this, disposed-or-not,
+		 * the underlying DOM is simply gone out from under the Player object.
+		 *
+		 * Confirmed empirically (via videojs.getPlayers() inspection after
+		 * pagination) that calling .dispose() alone is not enough here: it nulls
+		 * out the player's tech_ but does not reliably remove the player's own
+		 * entry from Video.js's global players registry in this version/timing
+		 * scenario. That leaves a zombie entry — .dispose() ran, tech is gone,
+		 * but videojs.getPlayers() still returns it — which is exactly what a
+		 * later, unrelated player's 'play' handler crashes on when it iterates
+		 * videojs.getPlayers() (e.g. for pauseothervideos) and calls a method
+		 * like .paused() on it. So the entry is explicitly deleted from the
+		 * registry too, the same way this file already does for MediaElement.js
+		 * players in destroyCurrentGalleryPlayer().
+		 *
+		 * @since 5.4.0
+		 * @param {HTMLElement} container The element about to have its content replaced.
+		 */
+		disposePlayersInElement: function (container) {
+			if (!container || typeof videojs === 'undefined' || typeof videojs.getPlayers !== 'function') {
+				return;
+			}
+			const players = videojs.getPlayers();
+			Object.keys(players).forEach((id) => {
+				const player = players[id];
+				if (!player || typeof player.el !== 'function') {
+					return;
+				}
+				let el;
+				try {
+					el = player.el();
+				} catch {
+					el = null;
+				}
+				// Even if .el() no longer resolves (already torn down some other
+				// way), still remove the registry entry below rather than leaving
+				// it behind — only skip entirely when we can positively tell this
+				// player belongs to a *different*, still-live container.
+				if (el && !container.contains(el)) {
+					return;
+				}
+				try {
+					if (typeof player.off === 'function') {
+						player.off();
+					}
+					// Explicitly disable user activity tracking to prevent "Invalid target" error.
+					if (typeof player.userActive === 'function') {
+						player.userActive(false);
+					}
+					if (!player.isDisposed || !player.isDisposed()) {
+						player.dispose();
+					}
+				} catch {
+					// Fail silently — the element is being discarded regardless.
+				}
+				if (videojs.players) {
+					delete videojs.players[id];
+				}
+			});
 		},
 
 		closeGalleryPopup: function (popup) {
@@ -2379,6 +2498,7 @@
 							const newPaginations = newCollectionWrapper.querySelectorAll('.videopack-pagination');
 
 							if (grid && newGrid) {
+								this.disposePlayersInElement(grid);
 								grid.innerHTML = newGrid.innerHTML;
 							}
 							if (paginations.length) {

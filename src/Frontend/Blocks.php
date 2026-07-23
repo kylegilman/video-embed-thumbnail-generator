@@ -370,7 +370,11 @@ class Blocks implements Hook_Subscriber {
 		$settings              = Context_Manager::resolve( $attributes, $block->context, $this->options, array( 'skin' ) );
 		$normalized_attributes = array_merge( $this->options, $attributes, $settings['resolved'] );
 
-		// 1. Pre-fetch and cache metadata for all videos in this page of the collection.
+		// 1. Pre-fetch and cache metadata for all videos in this page of the
+		// collection — including a pre-built full_player_html for the
+		// lightbox, via the same real block-rendering function used
+		// everywhere else, so opening the lightbox never needs a REST round
+		// trip (see Modular_Renderer::render_standalone_player_assembly()).
 		$embed_method = $this->options['embed_method'] ?? 'Video.js';
 		foreach ( $query->posts as $attachment ) {
 			$attachment_id = $attachment->ID;
@@ -391,8 +395,11 @@ class Blocks implements Hook_Subscriber {
 
 			$item_metadata = $player->prepare_video_vars();
 
-			// Generate the full assembly (including title overlay, play button, etc).
-			$item_metadata['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_player_assembly( $player, $lightbox_atts, $source, $this->options );
+			$item_metadata['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_standalone_player_assembly(
+				$attachment_id,
+				$settings['resolved'],
+				$this->options
+			);
 			$item_metadata['player_html']      = $item_metadata['full_player_html'];
 
 			self::$collection_metadata_cache[ $collection_id ][ $attachment_id ] = $item_metadata;
@@ -452,6 +459,10 @@ class Blocks implements Hook_Subscriber {
 			$block_gap = str_replace( array( 'var:preset|spacing|', '|' ), array( 'var(--wp--preset--spacing--', '--' ), $block_gap ) . ')';
 		}
 
+		// Collection's own direct children (loop + pagination) — Gallery::
+		// collection_page() reads this same key to rebuild the entire
+		// collection's block markup for AJAX-paginated pages, so it needs
+		// this outer level of the tree, not the loop's per-item structure.
 		$inner_blocks_template = '';
 		if ( function_exists( 'serialize_blocks' ) ) {
 			$template_data = array();
@@ -651,8 +662,14 @@ class Blocks implements Hook_Subscriber {
 				$player      = $prepared['player'];
 				$player_data = $player->prepare_video_vars();
 
+				// Same shared assembly function as Blocks::render_collection(),
+				// always built from global options.
 				if ( ! isset( $player_data['full_player_html'] ) ) {
-					$player_data['full_player_html'] = $player->get_player_code( array_merge( $attributes, array( 'id' => $post_id ) ) );
+					$player_data['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_standalone_player_assembly(
+						$post_id,
+						$settings['resolved'],
+						$this->options
+					);
 				}
 				if ( ! isset( $player_data['player_html'] ) ) {
 					$player_data['player_html'] = $player_data['full_player_html'];

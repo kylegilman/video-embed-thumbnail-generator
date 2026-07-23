@@ -342,92 +342,40 @@
 
 				let source_groups = t.options.source_groups || null;
 
-				if (!source_groups && window.videopack && window.videopack.player_data) {
+				// The player's own video variables (including source_groups) are
+				// embedded directly on its .videopack-player element as
+				// data-player-vars (see Player::get_player_start_html()) —
+				// read straight from there rather than an ID-keyed global lookup,
+				// which never matched for AJAX-rendered players anyway.
+				if (!source_groups) {
 					const wrapper = t.node.closest('.videopack-player');
-					if (wrapper) {
-						let id = wrapper.dataset.id;
-						if (String(id).startsWith('gallery_')) {
-							id = `gallery_${id.split('_')[1]}`;
-						}
-						const vars = window.videopack.player_data['videopack_player_' + id];
-						if (vars) {
-							source_groups = vars.source_groups;
+					if (wrapper && wrapper.dataset.playerVars) {
+						try {
+							const vars = JSON.parse(wrapper.dataset.playerVars);
+							source_groups = vars.source_groups || null;
+						} catch {
+							// Ignore malformed data.
 						}
 					}
 				}
 
-				const hasMultipleCodecs = source_groups && Object.keys(source_groups).length > 1;
+				const hasSourceGroups = source_groups && Object.keys(source_groups).length > 0;
 
-				if (hasMultipleCodecs) {
-					for (const codecId in source_groups) {
-						const group = source_groups[codecId];
-						const codecLi = document.createElement('li');
-						codecLi.className = `${t.options.classPrefix}sourcechooser-codec-item`;
-						const span = document.createElement('span');
-						span.textContent = group.label || codecId;
-						codecLi.appendChild(span);
+				// Flatten every source across every codec group into one
+				// list, then auto-pick the best-supported codec for each
+				// resolution — quality selection is resolution-only; codec
+				// compatibility is resolved automatically, the same way a
+				// plain <source> fallback list would.
+				const flatSources = hasSourceGroups
+					? Object.keys(source_groups).flatMap((groupId) => source_groups[groupId].sources || [])
+					: sources;
+				const bestByRes = player.pickBestSourcesByResolution(flatSources, media);
 
-						const subMenu = document.createElement('ul');
-						subMenu.className = `${t.options.classPrefix}sourcechooser-submenu`;
-						codecLi.appendChild(subMenu);
-
-						subMenu.addEventListener('change', (e) => {
-							if (e.target.tagName === 'INPUT') {
-								player.currentCodec = codecId;
-							}
-						});
-
-						t.sourcechooserButton.querySelector('ul').appendChild(codecLi);
-
-						for (const groupSource of group.sources) {
-							const isCurrent = media.src === groupSource.src;
-							player.addSourceButton(groupSource, groupSource.label, groupSource.type, isCurrent, subMenu);
-						}
-
-						codecLi.addEventListener('mouseenter', () => {
-							const allCodecItems = t.sourcechooserButton.querySelectorAll(`.${t.options.classPrefix}sourcechooser-codec-item`);
-							allCodecItems.forEach((el) => {
-								if (el !== codecLi) {
-									el.classList.remove('mejs-submenu-open');
-								}
-							});
-
-							const parentRect = codecLi.getBoundingClientRect();
-							if (subMenu) {
-								subMenu.style.visibility = 'hidden';
-								subMenu.style.display = 'block';
-								const subMenuWidth = subMenu.offsetWidth;
-								subMenu.style.display = '';
-								subMenu.style.visibility = '';
-
-								// Default to left-opening. If it would go off the left edge, switch to right.
-								const container = t.container.get ? t.container.get(0) : t.container;
-								const playerOffset = container.getBoundingClientRect().left;
-								const nodeOffset = codecLi.getBoundingClientRect().left;
-								
-								if (nodeOffset - subMenuWidth < playerOffset) {
-									codecLi.classList.add(`${t.options.classPrefix}submenu-right`);
-								} else {
-									codecLi.classList.remove(`${t.options.classPrefix}submenu-right`);
-								}
-							}
-						});
-
-						codecLi.addEventListener('click', (e) => {
-							if (e.target === codecLi || e.target === span) {
-								e.preventDefault();
-								e.stopPropagation();
-								const wasOpen = codecLi.classList.contains('mejs-submenu-open');
-								const allCodecItems = t.sourcechooserButton.querySelectorAll(`.${t.options.classPrefix}sourcechooser-codec-item`);
-								allCodecItems.forEach((el) => {
-									el.classList.remove('mejs-submenu-open');
-								});
-								if (!wasOpen) {
-									codecLi.classList.add('mejs-submenu-open');
-								}
-							}
-						});
-					}
+				if (hasSourceGroups) {
+					bestByRes.forEach((source) => {
+						const isCurrent = media.src === source.src;
+						player.addSourceButton(source, source.label, source.type, isCurrent);
+					});
 				} else {
 					for (let i = 0, total = sources.length; i < total; i++) {
 						const src = sources[i];
@@ -515,13 +463,69 @@
 			},
 
 			/**
+			 * Picks one source per distinct resolution from a flat sources
+			 * array (which may span multiple codec/format groups). When a
+			 * resolution is offered by more than one codec, the browser's
+			 * own playback support decides which file backs it (preferring
+			 * "probably" over "maybe" over unsupported, falling back to the
+			 * first-configured one on a tie) — codec compatibility is
+			 * resolved automatically rather than exposed as a user choice.
+			 *
+			 * @param {Array} sources All sources across every codec group.
+			 * @param {HTMLMediaElement} mediaEl Element used to test codec support.
+			 * @return {Array} Deduplicated sources, one per resolution, sorted descending.
+			 */
+			pickBestSourcesByResolution(sources, mediaEl) {
+				const byRes = {};
+				sources.forEach((s) => {
+					const res = s.resolution || (s.dataset && s.dataset.res) || s['data-res'];
+					if (!res) {
+						return;
+					}
+					if (!byRes[res]) {
+						byRes[res] = [];
+					}
+					byRes[res].push(s);
+				});
+
+				const rank = (type) => {
+					if (!type || !mediaEl || typeof mediaEl.canPlayType !== 'function') {
+						return 0;
+					}
+					const support = mediaEl.canPlayType(type);
+					if (support === 'probably') {
+						return 2;
+					}
+					if (support === 'maybe') {
+						return 1;
+					}
+					return 0;
+				};
+
+				// Object.keys/for-in always iterate integer-like string keys
+				// (e.g. resolutions "1080", "720") in ascending numeric order
+				// regardless of insertion order, so an explicit descending
+				// sort is needed here rather than relying on key order.
+				return Object.keys(byRes)
+					.map((res) => {
+						const candidates = byRes[res];
+						return candidates.length === 1 ? candidates[0] : [...candidates].sort((a, b) => rank(b.type) - rank(a.type))[0];
+					})
+					.sort((a, b) => {
+						const resA = a.resolution || (a.dataset && a.dataset.res) || a['data-res'];
+						const resB = b.resolution || (b.dataset && b.dataset.res) || b['data-res'];
+						return parseInt(resB, 10) - parseInt(resA, 10);
+					});
+			},
+
+			/**
 			 *
 			 * @param {String} src
 			 * @param {String} label
 			 * @param {String} type
 			 * @param {Boolean} isCurrent
 			 */
-			addSourceButton(src, label, type, isCurrent, container) {
+			addSourceButton(src, label, type, isCurrent) {
 				const t = this;
 				const sourceUrl = src.src;
 				// Prioritize data-res, fallback to the title (passed as label), and finally the src URL.
@@ -535,7 +539,7 @@
 				// Create a unique ID from the source URL to avoid collisions.
 				const inputId = `${t.id}_sourcechooser_${sourceUrl.replace(/[^a-zA-Z0-9]/g, '')}`;
 
-				const target = container || t.sourcechooserButton.querySelector('ul');
+				const target = t.sourcechooserButton.querySelector('ul');
 				const li = document.createElement('li');
 				if (isCurrent) {
 					li.className = 'sourcechooser-selected';
@@ -550,13 +554,9 @@
 			/**
 			 *
 			 * @param {String} src
-			 * @param {String} codec
 			 */
-			changeRes(src, codec) {
+			changeRes(src) {
 				const t = this;
-				if (codec) {
-					t.currentCodec = codec;
-				}
 				const media = t.media;
 
 				if (t.sourcechooserButton) {
@@ -585,18 +585,76 @@
 				if (media.getSrc() !== src) {
 					let currentTime = media.currentTime;
 					const paused = media.paused;
+
+					// Freeze-frame overlay to mask the black/poster flash
+					// during the source swap, matching the other players.
+					const videoEl = t.node;
+					let canvas = null;
+					if (currentTime > 0 && videoEl && videoEl.videoWidth) {
+						canvas = document.createElement('canvas');
+						canvas.className = 'videopack_temp_thumb';
+						canvas.width = videoEl.videoWidth || videoEl.offsetWidth || 640;
+						canvas.height = videoEl.videoHeight || videoEl.offsetHeight || 360;
+						canvas.style.position = 'absolute';
+						canvas.style.top = '0';
+						canvas.style.left = '0';
+						canvas.style.width = '100%';
+						canvas.style.height = '100%';
+						canvas.style.pointerEvents = 'none';
+						canvas.style.zIndex = '5';
+
+						try {
+							const context = canvas.getContext('2d');
+							context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+							const container = t.container && t.container.get ? t.container.get(0) : t.container;
+							(container || videoEl.parentNode).appendChild(canvas);
+						} catch {
+							canvas = null;
+						}
+					}
+
+					const cleanupCanvas = () => {
+						if (canvas && canvas.parentNode) {
+							canvas.parentNode.removeChild(canvas);
+						}
+					};
+
+					// Wait for the actual 'seeked' event to remove the canvas
+					// rather than removing it right after issuing the seek:
+					// setCurrentTime() is async, and the frame at the restored
+					// position isn't actually rendered yet when 'canplay' fires,
+					// so removing the overlay there re-exposes a stale/black
+					// frame for a moment.
+					//
+					// Listening on the raw <video> node (not media.addEventListener)
+					// deliberately: MEJS's native-renderer wrapper only forwards
+					// DOM events to media's listeners while an internal "isActive"
+					// flag is true (set by its own show()/hide()), and that flag
+					// can still be false in the brief window right after setSrc()
+					// recreates the renderer — a 'seeked' firing in that window
+					// would otherwise be silently dropped and never clean up.
+					const seekedCleanupHandler = () => {
+						cleanupCanvas();
+						videoEl.removeEventListener('seeked', seekedCleanupHandler);
+					};
+
 					const canPlayAfterSourceSwitchHandler = () => {
-						media.setCurrentTime(currentTime);
+						if (currentTime > 0) {
+							media.setCurrentTime(currentTime);
+						} else {
+							cleanupCanvas();
+						}
 						if (!paused) {
 							media.play();
 						}
-						media.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
+						videoEl.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
 					};
 
 					media.pause();
 					media.setSrc(src);
 					media.load();
-					media.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
+					videoEl.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
+					videoEl.addEventListener('seeked', seekedCleanupHandler);
 				}
 			},
 

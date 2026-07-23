@@ -49,15 +49,16 @@ class Public_Controller extends Controller {
 			$this->namespace,
 			'/player',
 			array(
+				// A safety-net fallback only — the lightbox's normal path
+				// pre-embeds a player built by this exact same shared
+				// function server-side, so no round trip here in the common
+				// case. Always built from global Player Settings (never a
+				// per-instance template), so the only real input is `id`.
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'video_player' ),
 				'permission_callback' => array( $this, 'public_permissions' ),
 				'args'                => array(
-					'id'                    => array( 'type' => array( 'number', 'string' ) ),
-					'inner_blocks_template' => array(
-						'type'              => 'string',
-						'sanitize_callback' => array( $this, 'sanitize_inner_blocks_template' ),
-					),
+					'id' => array( 'type' => array( 'number', 'string' ) ),
 				),
 			)
 		);
@@ -135,7 +136,27 @@ class Public_Controller extends Controller {
 			)
 		);
 
+		register_rest_route(
+			$this->namespace,
+			'/global-styles',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_global_styles' ),
+				'permission_callback' => 'is_user_logged_in',
+			)
+		);
+
 		$this->add_data_to_rest_response();
+	}
+
+	/**
+	 * Callback to return compiled global theme styles for player previews.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function get_global_styles() {
+		$css = function_exists( 'wp_get_global_stylesheet' ) ? (string) wp_get_global_stylesheet() : '';
+		return new \WP_REST_Response( array( 'css' => $css ), 200 );
 	}
 
 	/**
@@ -157,91 +178,19 @@ class Public_Controller extends Controller {
 			return new \WP_Error( 'rest_source_not_found', 'Video source could not be found.', array( 'status' => 404 ) );
 		}
 
-		$template_json = $request->get_param( 'inner_blocks_template' );
-		$blocks        = $template_json ? json_decode( wp_unslash( $template_json ), true ) : array();
-
-		// If no custom template is provided, build default blocks based on global options.
-		if ( empty( $blocks ) ) {
-			$title_inner_blocks = array();
-			if ( ! empty( $this->options['downloadlink'] ) ) {
-				$title_inner_blocks[] = array(
-					'blockName' => 'videopack/download',
-					'attrs'     => array(
-						'icon'         => true,
-						'text'         => false,
-						'styleType'    => 'text',
-						'downloadMode' => 'direct',
-					),
-				);
-			}
-			if ( ! empty( $this->options['embedcode'] ) ) {
-				$title_inner_blocks[] = array(
-					'blockName' => 'videopack/share',
-					'attrs'     => array(
-						'iconType'  => 'share',
-						'showText'  => false,
-						'styleType' => 'text',
-					),
-				);
-			}
-
-			$player_inner_blocks = array();
-			if ( ( $this->options['overlay_title'] ?? true ) !== false || ! empty( $title_inner_blocks ) ) {
-				$player_inner_blocks[] = array(
-					'blockName'   => 'videopack/title',
-					'attrs'       => array(),
-					'innerBlocks' => $title_inner_blocks,
-				);
-			}
-			if ( ! empty( $this->options['watermark'] ) ) {
-				$player_inner_blocks[] = array(
-					'blockName' => 'videopack/watermark',
-					'attrs'     => array(),
-				);
-			}
-
-			$inner_blocks = array(
-				array(
-					'blockName'   => 'videopack/player',
-					'attrs'       => array(
-						'lock' => array(
-							'remove' => true,
-							'move'   => false,
-						),
-					),
-					'innerBlocks' => $player_inner_blocks,
-				),
-			);
-
-			if ( ! empty( $this->options['views'] ) ) {
-				$inner_blocks[] = array(
-					'blockName' => 'videopack/view-count',
-					'attrs'     => array(),
-				);
-			}
-
-			$blocks = $inner_blocks;
-		}
-
-		// Ensure we start with a player-container at the root.
-		if ( 'videopack/player-container' !== $blocks[0]['blockName'] ) {
-			$blocks = array(
-				array(
-					'blockName'   => 'videopack/player-container',
-					'attrs'       => array( 'id' => $post_id ),
-					'innerBlocks' => $blocks,
-				),
-			);
-		} else {
-			$blocks[0]['attrs']['id'] = $post_id;
-		}
-
-		$serialized_tree = \Videopack\Frontend\Modular_Renderer::serialize_player_container( $blocks );
-
-		$response = array(
-			'html' => do_blocks( serialize_blocks( $blocks ) ),
-			'tree' => $serialized_tree,
+		// This endpoint is only ever a safety-net fallback — the normal path
+		// pre-embeds a player built by this exact same shared function (see
+		// Blocks::render_collection()/render_thumbnail()), so opening the
+		// lightbox doesn't need a round trip here at all. No collection
+		// instance is known here, so no design overrides — global Player
+		// Settings only, same as the pre-embedded path defaults to anyway.
+		$html = \Videopack\Frontend\Modular_Renderer::render_standalone_player_assembly(
+			$post_id,
+			array(),
+			$this->options
 		);
+
+		$response = array( 'html' => $html );
 
 		return apply_filters( 'videopack_rest_video_player', new \WP_REST_Response( $response, 200 ), $request );
 	}
@@ -262,8 +211,9 @@ class Public_Controller extends Controller {
 		if ( ! $layout ) {
 			$layout = $gallery_atts['layout'] ?? ( ( isset( $gallery_atts['gallery'] ) && true === $gallery_atts['gallery'] ) ? 'gallery' : 'list' );
 		}
+		$skip_html = filter_var( $request->get_param( 'skip_html' ), FILTER_VALIDATE_BOOLEAN );
 
-		$result = $gallery->collection_page( $page, $gallery_atts, $layout );
+		$result = $gallery->collection_page( $page, $gallery_atts, $layout, $skip_html );
 		return apply_filters( 'videopack_rest_video_gallery', new \WP_REST_Response( $result, 200 ), $request );
 	}
 
@@ -473,7 +423,15 @@ class Public_Controller extends Controller {
 			return '';
 		}
 
-		$decoded = json_decode( wp_unslash( $value ), true );
+		// Not wp_unslash() here — sanitize_callbacks receive params AFTER
+		// WP_REST_Request has already unslashed them once internally (via
+		// set_query_params()/set_body_params()). Unslashing again strips
+		// legitimate backslashes out of JSON escape sequences within the
+		// embedded innerHTML/innerContent/attrs strings — e.g. turning "\n"
+		// into a bare "n" wherever the original saved content had a real
+		// newline (same bug previously found and fixed in video_player()'s
+		// own separate, now-removed use of this same field).
+		$decoded = json_decode( $value, true );
 
 		if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $decoded ) ) {
 			return '';

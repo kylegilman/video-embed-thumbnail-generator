@@ -449,6 +449,20 @@ class Gallery {
 			$player_vars['starts'] = (int) ( $final_atts['starts'] ?? 0 );
 		}
 
+		// Pre-built during this same request by Blocks::render_collection()'s
+		// do_blocks() call (see collection_page() above) — carrying it into
+		// the AJAX response's player_vars means the client's existing
+		// "embedded HTML" check in openGalleryPopup() finds it here too, so
+		// paginated pages get an instant lightbox exactly like the first
+		// page, with no REST round trip. Absent when $skip_html was true
+		// (do_blocks() never ran, so nothing was cached) — the client's
+		// existing REST fallback covers that rare case.
+		$full_player_html = Blocks::$collection_metadata_cache[ $collection_id ][ (int) $data['id'] ]['full_player_html'] ?? null;
+		if ( null !== $full_player_html ) {
+			$player_vars['full_player_html'] = $full_player_html;
+			$player_vars['player_html']      = $full_player_html;
+		}
+
 		$video_data = array(
 			'attachment_id' => (int) $data['id'],
 			'title'         => (string) $data['title'],
