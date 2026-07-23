@@ -3,6 +3,7 @@
  */
 
 import { Spinner } from '@wordpress/components';
+import { BlockContextProvider } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -10,11 +11,9 @@ import { decodeEntities } from '@wordpress/html-entities';
 import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer.js';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe.js';
 import { getSettings } from '../../../api/settings';
-import { BlockPreview } from '../../../components/Preview';
-import {
-	TITLE_DOWNLOAD_BLOCK_ATTRS,
-	TITLE_SHARE_BLOCK_ATTRS,
-} from '../../../utils/titleDownloadBlock';
+import useStablePreviewBlocks from '../../../hooks/useStablePreviewBlocks';
+import RealBlockPreview from '../../../components/RealBlockPreview';
+import { getTitleInnerTemplate } from '../../../utils/titleDownloadBlock';
 
 /**
  * AttachmentPreview component.
@@ -251,6 +250,8 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 		return styles;
 	}, [videopackConfig.contentSize, videopackConfig.wideSize]);
 
+	// Base context, shared by everything rendered here — the view-count block
+	// (a sibling of VideoPlayer, not inside its overlay) uses this directly.
 	const previewContext = useMemo(() => {
 		if (!attributes) {
 			return {};
@@ -260,8 +261,81 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 			ctx[`videopack/${key}`] = attributes[key];
 		});
 		ctx['videopack/postId'] = attachmentId;
+		ctx['videopack/attachmentId'] = attachmentId;
+		ctx['videopack/isPreview'] = true;
 		return ctx;
 	}, [attributes, attachmentId]);
+
+	// Title/Watermark render inside VideoPlayer's overlay chrome, so they need
+	// the extra isInsidePlayerOverlay/isInsidePlayerContainer context that
+	// their real edit.js components check for — view-count deliberately
+	// doesn't get these (it's outside the player, left-aligned by default).
+	const playerOverlayContext = useMemo(
+		() => ({
+			...previewContext,
+			'videopack/isInsidePlayerOverlay': true,
+			'videopack/isInsidePlayerContainer': true,
+		}),
+		[previewContext]
+	);
+
+	// These four determine the preview's block *structure* (which blocks/
+	// inner-blocks exist) — everything else (colors, watermark image URL,
+	// etc.) flows through playerOverlayContext/previewContext instead, so
+	// changing them doesn't need to rebuild the block tree below. Depending
+	// on the whole `attributes` object here would recompute overlayBlocks on
+	// every settings change (attributes is a new object each time), forcing
+	// useBlockPreview to tear down and remount its internal preview editor —
+	// visible as the whole player flashing even for an unrelated color tweak.
+	const overlayTitleAttr = attributes?.overlay_title;
+	const downloadlinkAttr = attributes?.downloadlink;
+	const embeddableAttr = attributes?.embeddable;
+	const embedcodeAttr = attributes?.embedcode;
+	const watermarkAttr = attributes?.watermark;
+	const viewsAttr = attributes?.views;
+
+	const showTitleBar = !!(
+		overlayTitleAttr ||
+		downloadlinkAttr ||
+		(embeddableAttr && embedcodeAttr)
+	);
+
+	const overlayTemplate = useMemo(() => {
+		const template = [];
+		if (showTitleBar) {
+			template.push([
+				'videopack/title',
+				{
+					overlay_title: !!overlayTitleAttr,
+					showBackground: true,
+				},
+				getTitleInnerTemplate(
+					!!downloadlinkAttr,
+					!!(embeddableAttr && embedcodeAttr)
+				),
+			]);
+		}
+		if (watermarkAttr) {
+			template.push(['videopack/watermark', {}]);
+		}
+		return template;
+	}, [
+		showTitleBar,
+		overlayTitleAttr,
+		downloadlinkAttr,
+		embeddableAttr,
+		embedcodeAttr,
+		watermarkAttr,
+	]);
+	const overlayBlocks = useStablePreviewBlocks(overlayTemplate);
+
+	const viewCountTemplate = useMemo(() => {
+		if (!viewsAttr) {
+			return [];
+		}
+		return [['videopack/view-count', { iconType: 'none', showText: true }]];
+	}, [viewsAttr]);
+	const viewCountBlocks = useStablePreviewBlocks(viewCountTemplate);
 
 	// Only render once we have resolved the record and calculated initial attributes.
 	if (!hasResolved || !options || !attributes) {
@@ -280,67 +354,16 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 				style={containerStyle}
 			>
 				<VideoPlayer attributes={attributes}>
-					{(attributes.overlay_title ||
-						attributes.downloadlink ||
-						(attributes.embeddable && attributes.embedcode)) && (
-						<BlockPreview
-							name="videopack/title"
-							attributes={{
-								title: attributes.title,
-								overlay_title: !!attributes.overlay_title,
-								embedcode: !!(
-									attributes.embeddable &&
-									attributes.embedcode
-								),
-								showBackground: true,
-							}}
-							isInsidePlayerOverlay={true}
-							isInsidePlayerContainer={true}
-							isOverlay={true}
-							context={previewContext}
-						>
-							{!!attributes.downloadlink && (
-								<BlockPreview
-									name="videopack/download"
-									attributes={TITLE_DOWNLOAD_BLOCK_ATTRS}
-									context={previewContext}
-									isInsidePlayerOverlay={true}
-									isInsidePlayerContainer={true}
-								/>
-							)}
-							{!!(
-								attributes.embeddable && attributes.embedcode
-							) && (
-								<BlockPreview
-									name="videopack/share"
-									attributes={TITLE_SHARE_BLOCK_ATTRS}
-									context={previewContext}
-									isInsidePlayerOverlay={true}
-									isInsidePlayerContainer={true}
-								/>
-							)}
-						</BlockPreview>
-					)}
-					{attributes.watermark && (
-						<BlockPreview
-							name="videopack/watermark"
-							isInsidePlayerOverlay={true}
-							isInsidePlayerContainer={true}
-							isOverlay={true}
-							context={previewContext}
-						/>
+					{overlayBlocks.length > 0 && (
+						<BlockContextProvider value={playerOverlayContext}>
+							<RealBlockPreview blocks={overlayBlocks} />
+						</BlockContextProvider>
 					)}
 				</VideoPlayer>
-				{attributes.views && (
-					<BlockPreview
-						name="videopack/view-count"
-						attributes={{
-							count: attributes.count,
-							showText: true,
-							iconType: 'none',
-						}}
-						context={previewContext}
-					/>
+				{viewCountBlocks.length > 0 && (
+					<BlockContextProvider value={previewContext}>
+						<RealBlockPreview blocks={viewCountBlocks} />
+					</BlockContextProvider>
 				)}
 			</div>
 		</PreviewIframe>

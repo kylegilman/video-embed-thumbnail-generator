@@ -106,6 +106,17 @@ const Thumbnails = ({
 			videopack_config.ffmpeg_exists !== 'notinstalled');
 	const ffmpegExists = effectiveFfmpegExists;
 	const { editPost } = useDispatch('core/editor') || {};
+	// player/edit.js and player-container/edit.js both pass a videoData that
+	// has no real .edit()/.save() (just a read-only record + a purely local
+	// setRecord override), so the save below always takes the raw apiFetch
+	// path — which writes to the server fine but never touches the `core`
+	// data store, so nothing reading this attachment via getEntityRecord
+	// (this block's own poster, other blocks on the same page, etc) knows to
+	// re-render until a full reload re-fetches everything. Invalidating the
+	// cached resolution after a successful save tells every mounted
+	// useSelect consumer of this exact attachment to refetch and pick up the
+	// change on its own.
+	const { invalidateResolution } = useDispatch('core');
 	const isEditingAttachment = useSelect(
 		(select) =>
 			select('core/editor')?.getCurrentPostType() === 'attachment',
@@ -534,6 +545,20 @@ const Thumbnails = ({
 						? Number(new_poster_id)
 						: null,
 				});
+			}
+
+			// Reflects this save everywhere this attachment is currently
+			// rendered (this block's own preview, other blocks on the page,
+			// etc) without waiting for a reload — see the comment on
+			// invalidateResolution above for why this is necessary even
+			// though the save itself already succeeded.
+			const savedAttachmentId = Number(new_attachment_id || id);
+			if (savedAttachmentId > 0) {
+				invalidateResolution('getEntityRecord', [
+					'postType',
+					'attachment',
+					savedAttachmentId,
+				]);
 			}
 
 			// Refresh the media library grid to show the updated thumbnail.

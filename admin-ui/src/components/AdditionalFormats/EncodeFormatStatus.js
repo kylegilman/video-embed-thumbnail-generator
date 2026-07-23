@@ -225,7 +225,6 @@ const EncodeFormatStatus = ({
 				)}
 
 			{(formatData.encoding_now ||
-				formatData.status === 'browser_pending' ||
 				formatData.status === 'browser_encoding' ||
 				formatData.status === 'failed' ||
 				formatData.status === 'error') && (

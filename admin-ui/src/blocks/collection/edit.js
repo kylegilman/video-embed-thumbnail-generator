@@ -101,7 +101,9 @@ export default function Edit({
 	const showCollectionAppender = isSelected || hasSelectedInnerBlock;
 
 	const previewPostId = useSelect(
-		(select) => select('core/editor').getCurrentPostId(),
+		// core/editor is only registered inside a real post-editing screen —
+		// undefined in other contexts this component can be previewed in.
+		(select) => select('core/editor')?.getCurrentPostId?.() ?? null,
 		[]
 	);
 

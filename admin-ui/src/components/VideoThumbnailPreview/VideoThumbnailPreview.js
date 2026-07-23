@@ -1,5 +1,4 @@
 import { useSelect } from '@wordpress/data';
-import { Spinner } from '@wordpress/components';
 import CustomDuotoneFilter from '../Duotone/CustomDuotoneFilter';
 import useVideopackContext from '../../hooks/useVideopackContext';
 
@@ -62,16 +61,25 @@ export default function VideoThumbnailPreview({
 		manualVideo && Object.keys(manualVideo).length > 0
 			? manualVideo
 			: context['videopack/video'] || {};
+	// 'videopack/poster' is a properly registered context key (unlike
+	// 'videopack/video', which only worked via ad hoc prop-passing in the old
+	// custom preview system) — Loop's real block-context provides it per item.
+	const contextPoster = context['videopack/poster'];
 	const postId = vpContext.resolved.attachmentId || propPostId;
 	const effectiveSkin = vpContext.resolved.skin;
-	const { thumbnailMedia, posterUrl, isResolving } = useSelect(
+	// Deliberately doesn't track/show an isResolving state here — this fires
+	// once per grid item lacking its own poster_url/contextPoster, and
+	// swapping this component's own output between a spinner and the real
+	// image (even boxed identically) was still visibly flashing OTHER,
+	// already-loaded items in the same grid each time any one of these
+	// resolved elsewhere. Falling straight through to defaultNoThumb below
+	// while unresolved, then swapping the <img>'s src in place once real
+	// data lands, avoids that entirely — no structural/state branch left to
+	// flash between.
+	const { thumbnailMedia, posterUrl } = useSelect(
 		(select) => {
-			if (!postId || postId < 1 || video.poster_url) {
-				return {
-					thumbnailMedia: null,
-					posterUrl: null,
-					isResolving: false,
-				};
+			if (!postId || postId < 1 || video.poster_url || contextPoster) {
+				return { thumbnailMedia: null, posterUrl: null };
 			}
 			const { getEntityRecord, getMedia } = select('core');
 
@@ -91,19 +99,10 @@ export default function VideoThumbnailPreview({
 			return {
 				thumbnailMedia: mediaId ? getMedia(mediaId) : null,
 				posterUrl: directPoster,
-				isResolving: select('core/data').isResolving(
-					'core',
-					'getEntityRecord',
-					['postType', 'attachment', postId]
-				),
 			};
 		},
-		[postId, video.poster_url]
+		[postId, video.poster_url, contextPoster]
 	);
-
-	if (isResolving && !video.poster_url) {
-		return <Spinner />;
-	}
 
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
@@ -111,9 +110,12 @@ export default function VideoThumbnailPreview({
 		? `${config.url}/src/images/nothumbnail.jpg`
 		: '';
 
-	// Priority: 1. Manual video data (previews), 2. Direct poster URL from meta, 3. WordPress media object, 4. Default "no thumbnail"
+	// Priority: 1. Manual video data (previews), 2. Context-provided poster
+	// (Loop's grid previews), 3. Direct poster URL from meta, 4. WordPress
+	// media object, 5. Default "no thumbnail"
 	const thumbnailUrl =
 		video.poster_url ||
+		contextPoster ||
 		posterUrl ||
 		thumbnailMedia?.source_url ||
 		defaultNoThumb;

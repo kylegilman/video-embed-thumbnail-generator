@@ -163,7 +163,9 @@ export default function Edit({
 	const isOverlay = isInsideThumbnail || isInsidePlayerOverlay;
 
 	const overlayStyles =
-		isOverlay || context.isPreview ? getWatermarkBlockStyles(resolved) : {};
+		isOverlay || resolved.isPreview
+			? getWatermarkBlockStyles(resolved)
+			: {};
 
 	// Implementation of Full-Frame Selection mode:
 	// When selected, the block expands to fill the entire container to allow dragging everywhere.

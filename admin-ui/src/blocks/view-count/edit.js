@@ -7,7 +7,6 @@ import {
 	AlignmentControl,
 	InspectorControls,
 } from '@wordpress/block-editor';
-import { useSelect } from '@wordpress/data';
 import { ToolbarGroup, ToolbarButton, PanelBody } from '@wordpress/components';
 import { seen, mediaAndText, notAllowed as noneIcon } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -37,7 +36,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const vpContext = useVideopackContext(attributes, context, {
 		classKeys: CLASS_KEYS,
 	});
-	const postId = vpContext.resolved.attachmentId;
 	const {
 		iconType,
 		showText,
@@ -76,26 +74,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const finalTextAlign =
 		textAlign || context['videopack/textAlign'] || defaultAlign;
 
-	const { latestVideoId } = useSelect(
-		(select) => {
-			if (!vpContext.resolved.isPreview) {
-				return { latestVideoId: null };
-			}
-			const { getEntityRecords } = select('core');
-			const query = {
-				post_type: 'attachment',
-				mime_type: 'video',
-				per_page: 1,
-				_fields: 'id',
-			};
-			const media = getEntityRecords('postType', 'attachment', query);
-			return { latestVideoId: media?.[0]?.id };
-		},
-		[vpContext.resolved.isPreview]
-	);
-
-	const effectiveAttachmentId = postId || latestVideoId;
-
 	const position =
 		attributes.position || context['videopack/position'] || 'top';
 
@@ -104,7 +82,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 			isOverlay ? 'is-overlay is-badge' : ''
 		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${!effectiveAttachmentId ? 'no-title' : ''} position-${position} has-text-align-${finalTextAlign}`,
+		} ${!vpContext.resolved.attachmentId ? 'no-title' : ''} position-${position} has-text-align-${finalTextAlign}`,
 		style: vpContext.style,
 	});
 
@@ -242,8 +220,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 				blockProps={blockProps}
 				iconType={iconType}
 				showText={showText}
-				postId={effectiveAttachmentId}
-				isInsideThumbnail={isInsideThumbnail}
 				context={context}
 				attributes={attributes}
 			/>

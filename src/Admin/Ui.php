@@ -425,6 +425,7 @@ class Ui implements Hook_Subscriber {
 			'videopack/play-button',
 			'videopack/pagination',
 			'videopack/player',
+			'videopack/player-container',
 			'videopack/watermark',
 			'videopack/caption',
 			'videopack/download',
@@ -554,7 +555,7 @@ class Ui implements Hook_Subscriber {
 				'isSuperAdmin'              => (bool) is_super_admin(),
 				'rest_url'                  => (string) get_rest_url(),
 				'themeColors'               => $theme_colors,
-				'globalStyles'              => is_admin() && function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
+				'globalStyles'              => '',
 				'mejs_controls_svg'         => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),
 				'options'                   => array_merge(
 					$options,

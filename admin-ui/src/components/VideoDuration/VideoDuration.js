@@ -10,24 +10,14 @@ const CLASS_KEYS = ['title_color', 'title_background_color'];
 /**
  * A internal component to display the video duration with correct formatting and data.
  *
- * @param {Object}  root0                   Component props.
- * @param {Object}  [root0.blockProps]      Block props from the parent Edit component,
- *                                          reused as-is when present so this component
- *                                          doesn't stamp a second, redundant wrapper.
- * @param {boolean} root0.isOverlay         Whether it's an overlay.
- * @param {boolean} root0.isInsideThumbnail Whether it's inside a thumbnail.
- * @param {string}  root0.textAlign         Text alignment.
- * @param {string}  root0.position          Position (top/bottom).
- * @param {Object}  root0.attributes        Block attributes.
- * @param {Object}  root0.context           Block context.
- * @return {Element}                        The rendered component.
+ * @param {Object} root0            Component props.
+ * @param {Object} root0.blockProps Block props from the parent Edit component.
+ * @param {Object} root0.attributes Block attributes.
+ * @param {Object} root0.context    Block context.
+ * @return {Element}                The rendered component.
  */
 export default function VideoDuration({
 	blockProps,
-	isOverlay,
-	isInsideThumbnail,
-	textAlign,
-	position,
 	attributes,
 	context = {},
 }) {
@@ -40,41 +30,13 @@ export default function VideoDuration({
 	);
 	const attachmentId = vpContext.resolved.attachmentId;
 
-	if (vpContext.resolved.isDiscovering && !attachmentId) {
-		return (
-			<div
-				className={`videopack-video-duration ${
-					isInsideThumbnail ||
-					!!context['videopack/isInsidePlayerOverlay']
-						? 'is-overlay'
-						: ''
-				}`}
-			>
-				<Spinner />
-			</div>
-		);
-	}
-
 	if (!attachmentId && !vpContext.resolved.isPreview) {
 		return null;
 	}
 
-	const actualIsOverlay =
-		isOverlay !== undefined
-			? isOverlay
-			: isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'];
-	const isInsidePlayerContainer =
-		!!context['videopack/isInsidePlayerContainer'];
-	const defaultAlign =
-		actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
-
-	if (isResolving) {
+	if ((vpContext.resolved.isDiscovering && !attachmentId) || isResolving) {
 		return (
-			<div
-				className={`videopack-video-duration ${
-					actualIsOverlay ? 'is-overlay' : ''
-				}`}
-			>
+			<div {...blockProps}>
 				<Spinner />
 			</div>
 		);
@@ -96,19 +58,8 @@ export default function VideoDuration({
 		return `${m}:${sec.toString().padStart(2, '0')}`;
 	};
 
-	const finalBlockProps = blockProps || {
-		className: `videopack-video-duration-block videopack-video-duration ${
-			vpContext.classes
-		} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${
-			position || 'top'
-		} has-text-align-${textAlign || defaultAlign} ${
-			vpContext.resolved.isPreview ? 'is-preview' : ''
-		}`,
-		style: vpContext.style,
-	};
-
 	return (
-		<div {...finalBlockProps}>
+		<div {...blockProps}>
 			{duration ? formatDuration(duration) : '0:00'}
 		</div>
 	);

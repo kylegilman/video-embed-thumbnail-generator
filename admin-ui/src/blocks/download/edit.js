@@ -97,10 +97,18 @@ export default function Edit({
 		!Array.isArray(contextSourceGroups) &&
 		Object.keys(contextSourceGroups).length > 0;
 
+	// Skip in preview contexts — there's no real attachment behind the
+	// hardcoded bundled sample video, so this can never resolve anything
+	// useful, and previews get rebuilt on every unrelated settings change.
 	const { formats: fetchedSourceGroups, isLoading: isLoadingSources } =
 		useVideoFormats(
-			!hasContextSourceGroups && attachmentId ? attachmentId : null,
-			!hasContextSourceGroups && !attachmentId && videoSrc
+			!hasContextSourceGroups && attachmentId && !vpContext.resolved.isPreview
+				? attachmentId
+				: null,
+			!hasContextSourceGroups &&
+				!attachmentId &&
+				videoSrc &&
+				!vpContext.resolved.isPreview
 				? videoSrc
 				: null
 		);

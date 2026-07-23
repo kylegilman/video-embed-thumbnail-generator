@@ -7,6 +7,20 @@ import AttachmentPreview from './components/AttachmentPreview';
 // No unused imports here now.
 import './attachment-details.scss';
 
+// Registers the block types AttachmentPreview's real-block-preview system
+// needs (registerBlockType() side effects) — title/download/share/watermark/
+// view-count only, since this screen previews overlay chrome over a real
+// VideoPlayer directly, not the player-container/player/loop/collection
+// family. Full attribute/context schemas come from the server-side bootstrap
+// injected by Assets::bootstrap_block_editor_definitions() (see
+// src/Admin/Assets.php) — this page never loads the real post editor, which
+// is the only thing that bootstrap normally runs for.
+import '../../blocks/title';
+import '../../blocks/download';
+import '../../blocks/share';
+import '../../blocks/watermark';
+import '../../blocks/view-count';
+
 const config = window.videopack_config || {};
 
 // Render on edit media screen.
