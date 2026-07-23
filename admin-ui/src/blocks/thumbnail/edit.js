@@ -58,7 +58,13 @@ export default function Edit({
 				latestVideoId: null,
 				hasSelectedInnerBlock: hasSelectedInner(clientId, true),
 			};
-			if (!vpContext.resolved.isPreview) {
+			// Only discover a fallback video when we don't already have one —
+			// otherwise every grid item in a real gallery preview (each with
+			// its own known attachmentId) fires this query pointlessly.
+			if (
+				!vpContext.resolved.isPreview ||
+				vpContext.resolved.attachmentId
+			) {
 				return result;
 			}
 			const query = {
@@ -74,7 +80,11 @@ export default function Edit({
 			);
 			return { ...result, latestVideoId: media?.[0]?.id };
 		},
-		[vpContext.resolved.isPreview, clientId]
+		[
+			vpContext.resolved.isPreview,
+			vpContext.resolved.attachmentId,
+			clientId,
+		]
 	);
 
 	// Only show the thumbnail's own "Add block" appender while this block

@@ -13,28 +13,20 @@ const CLASS_KEYS = ['title_color', 'title_background_color'];
 /**
  * A internal component to display the view count with correct styling and data.
  *
- * @param {Object}  root0                   Component props.
- * @param {Object}  root0.blockProps        Block props.
- * @param {string}  root0.iconType          Type of icon to display.
- * @param {boolean} root0.showText          Whether to show the "views" text.
- * @param {number}  root0.count             Manual count override.
- * @param {boolean} root0.isInsideThumbnail Whether it's inside a thumbnail.
- * @param {boolean} root0.isOverlay         Whether it's an overlay.
- * @param {string}  root0.textAlign         Text alignment.
- * @param {string}  root0.position          Position (top/bottom).
- * @param {Object}  root0.attributes        Block attributes.
- * @param {Object}  root0.context           Block context.
- * @return {Element}                        The rendered component.
+ * @param {Object}  root0            Component props.
+ * @param {Object}  root0.blockProps Block props.
+ * @param {string}  root0.iconType   Type of icon to display.
+ * @param {boolean} root0.showText   Whether to show the "views" text.
+ * @param {number}  root0.count      Manual count override.
+ * @param {Object}  root0.attributes Block attributes.
+ * @param {Object}  root0.context    Block context.
+ * @return {Element}                 The rendered component.
  */
 export default function ViewCount({
 	blockProps,
 	iconType = 'none',
 	showText = true,
 	count,
-	isInsideThumbnail = false,
-	isOverlay = false,
-	textAlign,
-	position = 'top',
 	attributes = {},
 	context = {},
 }) {
@@ -44,33 +36,9 @@ export default function ViewCount({
 	const { data: views, isResolving } = useVideopackData('views', context);
 	const attachmentId = vpContext.resolved.attachmentId;
 
-	const actualIsOverlay =
-		isOverlay !== undefined
-			? isOverlay
-			: isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'];
-	const isInsidePlayerContainer =
-		!!context['videopack/isInsidePlayerContainer'];
-	const defaultAlign =
-		isInsideThumbnail || actualIsOverlay || isInsidePlayerContainer
-			? 'right'
-			: 'left';
-
-	const wrapperClass = `videopack-view-count videopack-view-count-block ${vpContext.classes} ${
-		actualIsOverlay ? 'is-overlay is-badge' : ''
-	} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} position-${
-		position || 'top'
-	} has-text-align-${textAlign || defaultAlign} ${
-		vpContext.resolved.isPreview ? 'is-preview' : ''
-	}`;
-
-	const finalBlockProps = blockProps || {
-		className: wrapperClass,
-		style: vpContext.style,
-	};
-
 	if (vpContext.resolved.isDiscovering && !attachmentId) {
 		return (
-			<div {...finalBlockProps}>
+			<div {...blockProps}>
 				<Spinner />
 			</div>
 		);
@@ -82,7 +50,7 @@ export default function ViewCount({
 
 	if (isResolving) {
 		return (
-			<div {...finalBlockProps}>
+			<div {...blockProps}>
 				<Spinner />
 			</div>
 		);
@@ -136,7 +104,7 @@ export default function ViewCount({
 	};
 
 	return (
-		<div {...finalBlockProps}>
+		<div {...blockProps}>
 			{renderIcon()}
 			{displayValue}
 		</div>

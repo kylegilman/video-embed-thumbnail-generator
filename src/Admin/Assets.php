@@ -110,10 +110,12 @@ class Assets implements Hook_Subscriber {
 		$build_url = (string) plugins_url( 'admin-ui/build/', VIDEOPACK_PLUGIN_FILE );
 
 		$assets = array(
-			'videopack-core'           => 'videopack-core',
-			'videopack-admin-screens'  => 'admin-screens',
-			'videopack-media-library'  => 'media-library',
-			'videopack-classic-editor' => 'classic-editor',
+			'videopack-core'             => 'videopack-core',
+			'videopack-settings'         => 'settings',
+			'videopack-settings-network' => 'settings-network',
+			'videopack-encode-queue'     => 'encode-queue',
+			'videopack-media-library'    => 'media-library',
+			'videopack-classic-editor'   => 'classic-editor',
 		);
 
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
@@ -131,10 +133,16 @@ class Assets implements Hook_Subscriber {
 				$player_style_deps  = array_diff( (array) $player->get_player_style_handles(), array( (string) $handle ) );
 
 				if ( 'videopack-core' !== $handle ) {
+					// wp-blocks is required explicitly (not just left to each
+					// bundle's own auto-detected dependencies) because
+					// bootstrap_block_editor_definitions() attaches an inline
+					// script to these handles that calls wp.blocks directly —
+					// it needs to be loaded regardless of whether the bundle's
+					// own JS happens to import anything from @wordpress/blocks.
 					wp_register_script(
 						(string) $handle,
 						(string) $build_url . (string) $filename . '.js',
-						array_unique( array_merge( array( 'videopack-core' ), (array) $asset['dependencies'], $handle === 'videopack-media-library' ? array( 'media-views', 'media-models', 'media-editor' ) : array(), $player_script_deps ) ),
+						array_unique( array_merge( array( 'videopack-core', 'wp-blocks' ), (array) $asset['dependencies'], $handle === 'videopack-media-library' ? array( 'media-views', 'media-models', 'media-editor' ) : array(), $player_script_deps ) ),
 						(string) $asset['version'],
 						true
 					);
@@ -164,15 +172,14 @@ class Assets implements Hook_Subscriber {
 		}
 		$localized = true;
 
-		$ui          = new Ui( $this->options, new Formats\Registry( $this->options ) );
-		$config_data = (array) $ui->get_videopack_config_data();
-
 		if ( is_admin() ) {
+			$ui          = new Ui( $this->options, new Formats\Registry( $this->options ) );
+			$config_data = (array) $ui->get_videopack_config_data();
 			wp_localize_script( 'videopack-core', 'videopack_config', $config_data );
 		} else {
 			$frontend_config = array(
-				'rest_url'        => $config_data['rest_url'] ?? rest_url(),
-				'nonce'           => wp_create_nonce( 'wp_rest' ),
+				'rest_url' => (string) get_rest_url(),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
 			);
 			wp_localize_script( 'videopack-core', 'videopack_config', $frontend_config );
 		}
@@ -317,20 +324,101 @@ class Assets implements Hook_Subscriber {
 	}
 
 	/**
+	 * Makes real Gutenberg block previews (via useBlockPreview/createBlock)
+	 * work correctly on admin pages that don't load the real post editor.
+	 *
+	 * WordPress core only runs wp.blocks.unstable__bootstrapServerSideBlockDefinitions()
+	 * from four places: the post editor (edit-form-blocks.php), the Site
+	 * Editor, the Widgets screen, and the Customizer's widgets panel. None of
+	 * Classic Editor, the Settings page, or the Media Library Attachment
+	 * Details screen are among them, so most Videopack blocks' registerBlockType()
+	 * calls (which only pass {icon, edit, save} locally, relying on this
+	 * bootstrap for attributes/context/supports) would otherwise register
+	 * with an empty schema on those pages. This injects the same bootstrap
+	 * core already uses elsewhere, sourced from the same server-side block
+	 * registry (Ui::block_init() registers every Videopack block
+	 * unconditionally on every page load, so this is safe to call anywhere).
+	 *
+	 * More than one of this method's call sites can legitimately fire on the
+	 * same page load (e.g. the Settings page also calls wp_enqueue_media()
+	 * for its own image pickers, triggering enqueue_media_library_assets()
+	 * too) — a static guard keeps this large inline script from being
+	 * printed more than once per request regardless of which handle it
+	 * ends up attached to; it only needs to run once per page either way.
+	 *
+	 * @param string $script_handle The script handle to attach the inline bootstrap to (must already be enqueued).
+	 */
+	private function bootstrap_block_editor_definitions( string $script_handle ) {
+		static $bootstrapped = false;
+		if ( $bootstrapped ) {
+			return;
+		}
+
+		if ( ! function_exists( 'get_block_editor_server_block_settings' ) ) {
+			return;
+		}
+		$bootstrapped = true;
+
+		// get_block_editor_server_block_settings() returns every registered
+		// block type — 100+ core blocks plus anything else active, not just
+		// Videopack's own — since none of these three pages need to preview
+		// anything but Videopack blocks, narrow it down before encoding.
+		$block_settings = array_filter(
+			(array) get_block_editor_server_block_settings(),
+			static function ( $block_name ) {
+				return 0 === strpos( (string) $block_name, 'videopack/' );
+			},
+			ARRAY_FILTER_USE_KEY
+		);
+
+		// Must run BEFORE $script_handle's own file, not after (the default
+		// position): @wordpress/blocks' addUnprocessedBlockType() thunk calls
+		// processBlockType() synchronously, exactly once, the moment
+		// registerBlockType() is called — it requires a non-empty `title`,
+		// which for most of our blocks (all except player-container, the one
+		// block whose index.js spreads the full block.json ...metadata
+		// locally) only exists in this bootstrapped server data, not in the
+		// local {icon, edit, save} settings. If the bootstrap hasn't run yet,
+		// processBlockType() warns (silently, since @wordpress/warning is a
+		// no-op in production builds) and returns undefined — and there is no
+		// later retry once bootstrapped data does arrive, so the block never
+		// gets registered at all.
+		wp_add_inline_script(
+			$script_handle,
+			'wp.blocks.unstable__bootstrapServerSideBlockDefinitions(' . wp_json_encode( $block_settings, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES ) . ');',
+			'before'
+		);
+	}
+
+	/**
 	 * Enqueues assets for various admin screens.
 	 *
 	 * @param string $hook_suffix The current admin page hook.
 	 */
 	public function enqueue_admin_assets( $hook_suffix ) {
-		// Settings & Queue Pages.
-		if ( in_array( (string) $hook_suffix, array( 'settings_page_video_embed_thumbnail_generator_settings', 'tools_page_videopack_encode_queue', 'settings_page_videopack_network_encoding_queue' ), true ) ) {
-			wp_enqueue_script( 'videopack-admin-screens' );
-			wp_enqueue_style( 'videopack-admin-screens' );
+		$is_settings_page     = 'settings_page_video_embed_thumbnail_generator_settings' === (string) $hook_suffix;
+		$is_encode_queue_page = in_array( (string) $hook_suffix, array( 'tools_page_videopack_encode_queue', 'settings_page_videopack_network_encoding_queue' ), true );
+
+		// Settings page — needs the full block-preview machinery (live
+		// Player/Gallery previews), so it's the only one of these that gets
+		// the block-definition bootstrap and player assets.
+		if ( $is_settings_page ) {
+			wp_enqueue_script( 'videopack-settings' );
+			wp_enqueue_style( 'videopack-settings' );
 			wp_enqueue_style( 'videopack-core' );
-
-			// Enqueue player for previews.
+			$this->bootstrap_block_editor_definitions( 'videopack-settings' );
 			$this->enqueue_player_assets();
+		}
 
+		// Encode Queue pages (site + network) — just a data table, no block
+		// previews or a live player, so this is a much lighter bundle.
+		if ( $is_encode_queue_page ) {
+			wp_enqueue_script( 'videopack-encode-queue' );
+			wp_enqueue_style( 'videopack-encode-queue' );
+			wp_enqueue_style( 'videopack-core' );
+		}
+
+		if ( $is_settings_page || $is_encode_queue_page ) {
 			// Enqueue Freemius admin page styles if Freemius is enabled.
 			if ( function_exists( 'videopack_fs' ) && function_exists( 'fs_enqueue_local_style' ) ) {
 				fs_enqueue_local_style( 'fs_common', '/admin/common.css' );
@@ -345,6 +433,7 @@ class Assets implements Hook_Subscriber {
 		if ( in_array( (string) $hook_suffix, array( 'post.php', 'post-new.php' ), true ) && ! ( function_exists( 'use_block_editor_for_post' ) && use_block_editor_for_post( get_post() ) ) ) {
 			wp_enqueue_script( 'videopack-classic-editor' );
 			wp_enqueue_style( 'videopack-classic-editor' );
+			$this->bootstrap_block_editor_definitions( 'videopack-classic-editor' );
 
 			// Add editor styles for TinyMCE previews.
 			add_editor_style( (string) includes_url( 'css/media-views.css' ) );
@@ -388,6 +477,7 @@ class Assets implements Hook_Subscriber {
 	public function enqueue_media_library_assets() {
 		wp_enqueue_script( 'videopack-media-library' );
 		wp_enqueue_style( 'videopack-media-library' );
+		$this->bootstrap_block_editor_definitions( 'videopack-media-library' );
 		$this->enqueue_player_assets();
 		$this->localize_videopack_config();
 	}
@@ -406,6 +496,7 @@ class Assets implements Hook_Subscriber {
 	public function enqueue_classic_editor_assets() {
 		wp_enqueue_script( 'videopack-classic-editor' );
 		wp_enqueue_style( 'videopack-classic-editor' );
+		$this->bootstrap_block_editor_definitions( 'videopack-classic-editor' );
 
 		// Add editor styles for TinyMCE previews.
 		add_editor_style( (string) includes_url( 'css/media-views.css' ) );
@@ -429,11 +520,22 @@ class Assets implements Hook_Subscriber {
 	}
 
 	/**
-	 * Enqueues assets for generalized admin screens (settings, queue).
+	 * Enqueues assets for the network (multisite) Settings page. No block
+	 * previews or a live player here — settings-network.js is plain form
+	 * controls only.
 	 */
-	public function enqueue_admin_screens_assets() {
-		wp_enqueue_script( 'videopack-admin-screens' );
-		wp_enqueue_style( 'videopack-admin-screens' );
-		$this->enqueue_player_assets();
+	public function enqueue_settings_network_assets() {
+		wp_enqueue_script( 'videopack-settings-network' );
+		wp_enqueue_style( 'videopack-settings-network' );
+	}
+
+	/**
+	 * Enqueues assets for the network (multisite) Encode Queue page. Same
+	 * bundle as the single-site Encode Queue page — just a data table, no
+	 * block previews or a live player.
+	 */
+	public function enqueue_network_encode_queue_assets() {
+		wp_enqueue_script( 'videopack-encode-queue' );
+		wp_enqueue_style( 'videopack-encode-queue' );
 	}
 }

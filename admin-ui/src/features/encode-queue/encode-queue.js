@@ -63,7 +63,7 @@ const EncodeQueue = () => {
 	const [isClearing, setIsClearing] = useState(false);
 	const [isTogglingQueue, setIsTogglingQueue] = useState(false);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobIds: [] }
+	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'cancel'/'remove'/'delete_permanently', type: 'completed'/'all', jobIds: [] }
 	const [actingJobIds, setActingJobIds] = useState([]);
 
 	const hasTranscoder = useMemo(() => {
@@ -431,8 +431,8 @@ const EncodeQueue = () => {
 
 		if (itemToActOn.action === 'clear') {
 			handleClearQueue(itemToActOn.type);
-		} else if (itemToActOn.action === 'delete') {
-			handleDeleteJobs(itemToActOn.jobIds, 'delete');
+		} else if (itemToActOn.action === 'cancel') {
+			handleDeleteJobs(itemToActOn.jobIds, 'cancel');
 		} else if (itemToActOn.action === 'remove') {
 			handleRemoveJobs(itemToActOn.jobIds);
 		} else if (itemToActOn.action === 'delete_permanently') {
@@ -478,7 +478,7 @@ const EncodeQueue = () => {
 		}
 	};
 
-	const handleDeleteJobs = async (jobIds, action = 'delete') => {
+	const handleDeleteJobs = async (jobIds, action = 'cancel') => {
 		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
 		setActingJobIds((prev) => [...prev, ...ids]);
 		try {
@@ -500,7 +500,7 @@ const EncodeQueue = () => {
 					);
 				} else {
 					text = __(
-						'Job deleted.',
+						'Job canceled.',
 						'video-embed-thumbnail-generator'
 					);
 				}
@@ -515,8 +515,8 @@ const EncodeQueue = () => {
 				);
 			} else {
 				text = sprintf(
-					/* translators: %d: number of jobs deleted */
-					__('%d jobs deleted.', 'video-embed-thumbnail-generator'),
+					/* translators: %d: number of jobs canceled */
+					__('%d jobs canceled.', 'video-embed-thumbnail-generator'),
 					ids.length
 				);
 			}
@@ -780,14 +780,13 @@ const EncodeQueue = () => {
 											'processing',
 											'needs_insert',
 											'pending_replacement',
-											'browser_pending',
 											'browser_encoding',
 										].includes(item.status),
 										job_id: item.id,
 										label: item.status_l10n,
 									}}
 									onCancelJob={() =>
-										openConfirmDialog('delete', {
+										openConfirmDialog('cancel', {
 											jobIds: [item.id],
 										})
 									}
@@ -890,7 +889,7 @@ const EncodeQueue = () => {
 						].includes(item.status)
 					);
 					if (eligibleItems.length > 0) {
-						openConfirmDialog('delete', {
+						openConfirmDialog('cancel', {
 							jobIds: eligibleItems.map((i) => i.id),
 						});
 					}
@@ -1089,7 +1088,7 @@ const EncodeQueue = () => {
 										'video-embed-thumbnail-generator'
 									);
 						}
-						if (itemToActOn?.action === 'delete') {
+						if (itemToActOn?.action === 'cancel') {
 							return count > 1
 								? sprintf(
 										/* translators: %d: number of items */

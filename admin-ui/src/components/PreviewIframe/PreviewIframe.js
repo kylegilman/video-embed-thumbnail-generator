@@ -1,5 +1,4 @@
-/* global ResizeObserver */
-
+import apiFetch from '@wordpress/api-fetch';
 import {
 	createPortal,
 	useState,
@@ -8,6 +7,19 @@ import {
 	useMemo,
 	useRef,
 } from '@wordpress/element';
+
+let cachedGlobalStylesPromise = null;
+
+const fetchGlobalStyles = () => {
+	if (!cachedGlobalStylesPromise) {
+		cachedGlobalStylesPromise = apiFetch({
+			path: '/videopack/v1/global-styles',
+		})
+			.then((response) => response.css || '')
+			.catch(() => '');
+	}
+	return cachedGlobalStylesPromise;
+};
 
 /**
  * PreviewIframe component to isolate frontend styles from the admin UI.
@@ -27,8 +39,20 @@ const PreviewIframe = ({
 	fullScreen = false,
 }) => {
 	const [contentRef, setContentRef] = useState(null);
+	// Mirrored styles land in a useEffect, which by definition runs after the
+	// browser has already painted whatever was just portaled into the iframe
+	// — so the very first paint of any content is briefly completely
+	// unstyled (an <img> at its natural intrinsic size, etc). Keep the
+	// iframe invisible until that first mirror pass completes so this flash
+	// of unstyled content never reaches the screen.
+	const [stylesReady, setStylesReady] = useState(false);
 	const mountNode = contentRef?.contentWindow?.document?.body;
 	const observerRef = useRef(null);
+	// Debounces rapid-fire ResizeObserver callbacks (e.g. old content →
+	// loading placeholder → new content, each a genuine height change) down
+	// to a single, final resize — otherwise the iframe visibly snaps through
+	// each intermediate height instead of just settling on the last one.
+	const resizeDebounceRef = useRef(null);
 
 	/**
 	 * Measure and apply the correct iframe height.
@@ -38,32 +62,38 @@ const PreviewIframe = ({
 			return;
 		}
 
-		// Use requestAnimationFrame to ensure we measure after layout.
-		window.requestAnimationFrame(() => {
-			if (!contentRef || !mountNode || fullScreen) {
-				return;
-			}
+		if (resizeDebounceRef.current) {
+			clearTimeout(resizeDebounceRef.current);
+		}
 
-			// Measure the content wrapper directly.
-			const wrapper = mountNode.querySelector(
-				'.videopack-iframe-content-wrapper'
-			);
-			const height = wrapper
-				? wrapper.offsetHeight
-				: mountNode.scrollHeight;
-
-			if (height && height > 50) {
-				const currentHeight = parseInt(contentRef.style.height, 10);
-				if (
-					!currentHeight ||
-					(Math.abs(height - currentHeight) > 5 &&
-						Math.abs(height - currentHeight) < 2000) ||
-					height < currentHeight
-				) {
-					contentRef.style.height = `${height}px`;
+		resizeDebounceRef.current = setTimeout(() => {
+			// Use requestAnimationFrame to ensure we measure after layout.
+			window.requestAnimationFrame(() => {
+				if (!contentRef || !mountNode || fullScreen) {
+					return;
 				}
-			}
-		});
+
+				// Measure the content wrapper directly.
+				const wrapper = mountNode.querySelector(
+					'.videopack-iframe-content-wrapper'
+				);
+				const height = wrapper
+					? wrapper.offsetHeight
+					: mountNode.scrollHeight;
+
+				if (height && height > 50) {
+					const currentHeight = parseInt(contentRef.style.height, 10);
+					if (
+						!currentHeight ||
+						(Math.abs(height - currentHeight) > 5 &&
+							Math.abs(height - currentHeight) < 2000) ||
+						height < currentHeight
+					) {
+						contentRef.style.height = `${height}px`;
+					}
+				}
+			});
+		}, 120);
 	}, [contentRef, mountNode, fullScreen]);
 
 	const resizeDependenciesString = JSON.stringify(resizeDependencies);
@@ -163,16 +193,32 @@ const PreviewIframe = ({
 
 			// Inject theme styles from WordPress global styles.
 			if (!doc.getElementById('videopack-global-styles')) {
-				const globalStyles =
-					window.parent?.document?.getElementById('global-styles-inline-css')?.textContent ||
+				const existingDOMStyles =
+					window.parent?.document?.getElementById(
+						'global-styles-inline-css'
+					)?.textContent ||
 					window.videopack_config?.globalStyles ||
 					window.videopack_config?.global_styles;
-				if (globalStyles) {
+
+				if (existingDOMStyles) {
 					const themeStyle = doc.createElement('style');
 					themeStyle.id = 'videopack-global-styles';
-					themeStyle.textContent = globalStyles;
+					themeStyle.textContent = existingDOMStyles;
 					head.appendChild(themeStyle);
+					setStylesReady(true);
+				} else {
+					fetchGlobalStyles().then((css) => {
+						if (css && !doc.getElementById('videopack-global-styles')) {
+							const themeStyle = doc.createElement('style');
+							themeStyle.id = 'videopack-global-styles';
+							themeStyle.textContent = css;
+							head.appendChild(themeStyle);
+						}
+						setStylesReady(true);
+					});
 				}
+			} else {
+				setStylesReady(true);
 			}
 		}
 	}, [contentRef]);
@@ -209,6 +255,9 @@ const PreviewIframe = ({
 		return () => {
 			clearTimeout(t1);
 			clearTimeout(t2);
+			if (resizeDebounceRef.current) {
+				clearTimeout(resizeDebounceRef.current);
+			}
 			if (observerRef.current) {
 				observerRef.current.disconnect();
 			}
@@ -216,6 +265,9 @@ const PreviewIframe = ({
 	}, [contentRef, mountNode, handleIframeLoad, resizeIframe, fullScreen]);
 
 	const iframeStyle = useMemo(() => {
+		// Stays invisible until the first style-mirroring pass has landed, so
+		// the unstyled first paint (see stylesReady above) never shows.
+		const visibility = stylesReady ? 'visible' : 'hidden';
 		if (fullScreen) {
 			return {
 				position: 'fixed',
@@ -226,14 +278,19 @@ const PreviewIframe = ({
 				zIndex: 100000,
 				border: 'none',
 				background: 'transparent',
+				visibility,
 			};
 		}
 		return {
 			width: '100%',
 			border: 'none',
 			background: 'transparent',
+			// Smooths over any height change that still slips through the
+			// debounce above, instead of the iframe visibly snapping to size.
+			transition: 'height 0.2s ease',
+			visibility,
 		};
-	}, [fullScreen]);
+	}, [fullScreen, stylesReady]);
 
 	return (
 		<iframe

@@ -37,7 +37,15 @@ export default function useVideoQuery(
 	const [searchString, setSearchString] = useState('');
 	const debouncedSetSearchString = useDebounce(setSearchString, 500);
 
+	// These four are only for InspectorControls' gallery-source dropdown UI
+	// (category/tag/custom-gallery pickers) — never used to render the grid
+	// itself. useBlockPreview sets isPreviewMode on the block-editor store's
+	// own settings for every one of our disabled/read-only preview surfaces,
+	// where no Inspector ever renders, so skip them there.
 	const postTypes = useSelect((select) => {
+		if (select('core/block-editor').getSettings()?.isPreviewMode) {
+			return [];
+		}
 		const core = select('core');
 		return core ? core.getPostTypes({ per_page: -1 }) : [];
 	}, []);
@@ -140,7 +148,11 @@ export default function useVideoQuery(
 			gallery_tag: gallery_tag || '',
 			gallery_pagination: gallery_pagination ?? false,
 			gallery_include: gallery_include || '',
-			id: previewPostId,
+			// addQueryArgs serializes `null` as an empty query-string value
+			// (`id=`), which fails the REST route's `type: ['number','null']`
+			// validation. Omit the key entirely (addQueryArgs drops
+			// `undefined`) when there's no real post ID.
+			id: previewPostId || undefined,
 			prioritizePostData: attributes.prioritizePostData || false,
 			skip_html: true,
 		};
@@ -211,11 +223,17 @@ export default function useVideoQuery(
 	]);
 
 	const categories = useSelect((select) => {
+		if (select('core/block-editor').getSettings()?.isPreviewMode) {
+			return [];
+		}
 		const { getEntityRecords } = select('core');
 		return getEntityRecords('taxonomy', 'category', { per_page: -1 });
 	}, []);
 
 	const tags = useSelect((select) => {
+		if (select('core/block-editor').getSettings()?.isPreviewMode) {
+			return [];
+		}
 		const { getEntityRecords } = select('core');
 		return getEntityRecords('taxonomy', 'post_tag', { per_page: -1 });
 	}, []);
@@ -235,6 +253,9 @@ export default function useVideoQuery(
 	);
 
 	const { customGalleries } = useSelect((select) => {
+		if (select('core/block-editor').getSettings()?.isPreviewMode) {
+			return { customGalleries: [] };
+		}
 		const { getEntityRecords } = select('core');
 		return {
 			customGalleries: getEntityRecords('postType', 'videopack_gallery', {

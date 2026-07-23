@@ -9,7 +9,6 @@ import {
 } from '@wordpress/block-editor';
 import { PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useSelect } from '@wordpress/data';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import VideoDuration from '../../components/VideoDuration/VideoDuration';
 import { getColorFallbacks } from '../../utils/colors';
@@ -33,7 +32,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const vpContext = useVideopackContext(attributes, context, {
 		classKeys: CLASS_KEYS,
 	});
-	const postId = vpContext.resolved.attachmentId;
 	const {
 		textAlign,
 		position: attrPosition,
@@ -69,26 +67,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 			vpContext.resolved.title_background_color,
 		]
 	);
-
-	const { latestVideoId } = useSelect(
-		(select) => {
-			if (!vpContext.resolved.isPreview) {
-				return { latestVideoId: null };
-			}
-			const { getEntityRecords } = select('core');
-			const query = {
-				post_type: 'attachment',
-				mime_type: 'video',
-				per_page: 1,
-				_fields: 'id',
-			};
-			const media = getEntityRecords('postType', 'attachment', query);
-			return { latestVideoId: media?.[0]?.id };
-		},
-		[vpContext.resolved.isPreview]
-	);
-
-	const effectiveAttachmentId = postId || latestVideoId;
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-duration-block ${vpContext.classes} ${
@@ -162,11 +140,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 			</InspectorControls>
 			<VideoDuration
 				blockProps={blockProps}
-				postId={effectiveAttachmentId}
-				isOverlay={isOverlay}
-				isInsideThumbnail={isInsideThumbnail}
-				textAlign={finalTextAlign}
-				position={position}
 				attributes={attributes}
 				context={context}
 			/>

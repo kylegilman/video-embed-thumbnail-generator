@@ -1,61 +1,116 @@
 import { applyFilters } from '@wordpress/hooks';
 
 export const getColorFallbacks = (settings) => {
+	const globalOptions =
+		typeof videopack_config !== 'undefined'
+			? videopack_config?.options || {}
+			: {};
+
+	const resolveColor = (key, skinDefault) => {
+		if (
+			settings &&
+			settings[key] !== undefined &&
+			settings[key] !== null &&
+			settings[key] !== ''
+		) {
+			return settings[key];
+		}
+		if (
+			globalOptions &&
+			globalOptions[key] !== undefined &&
+			globalOptions[key] !== null &&
+			globalOptions[key] !== ''
+		) {
+			return globalOptions[key];
+		}
+		return skinDefault;
+	};
+
 	const { embed_method = 'Video.js', skin = 'vjs-theme-videopack' } =
-		settings || {};
+		settings || globalOptions || {};
 
 	const fallbacks = {
-		title_color: '#ffffff',
-		title_background_color: '#2b333f',
-		play_button_color: '#ffffff',
-		play_button_secondary_color: '#ffffff',
-		control_bar_bg_color: '#2b333f',
-		control_bar_color: '#ffffff',
-		pagination_color: '#1e1e1e',
-		pagination_background_color: '#ffffff',
-		pagination_active_bg_color: '#1e1e1e',
-		pagination_active_color: '#ffffff',
+		title_color: resolveColor('title_color', '#ffffff'),
+		title_background_color:
+			resolveColor('title_background_color', '#2b333f'),
+		play_button_color: resolveColor('play_button_color', '#ffffff'),
+		play_button_secondary_color:
+			resolveColor('play_button_secondary_color', '#ffffff'),
+		control_bar_bg_color: resolveColor('control_bar_bg_color', '#2b333f'),
+		control_bar_color: resolveColor('control_bar_color', '#ffffff'),
+		pagination_color: resolveColor('pagination_color', '#1e1e1e'),
+		pagination_background_color:
+			resolveColor('pagination_background_color', '#ffffff'),
+		pagination_active_bg_color:
+			resolveColor('pagination_active_bg_color', '#1e1e1e'),
+		pagination_active_color:
+			resolveColor('pagination_active_color', '#ffffff'),
 	};
 
 	if (embed_method === 'WordPress Default') {
-		fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
-		fallbacks.control_bar_bg_color = '#222222';
-		fallbacks.play_button_color = '#ffffff';
-		fallbacks.play_button_secondary_color = '#ffffff';
+		fallbacks.title_background_color =
+			resolveColor('title_background_color', 'rgba(40, 40, 40, 0.95)');
+		fallbacks.control_bar_bg_color =
+			resolveColor('control_bar_bg_color', '#222222');
+		fallbacks.play_button_color =
+			resolveColor('play_button_color', '#ffffff');
+		fallbacks.play_button_secondary_color =
+			resolveColor('play_button_secondary_color', '#ffffff');
 	} else if (embed_method?.startsWith('Video.js')) {
 		// Default skin (vjs-theme-videopack) defaults
-		fallbacks.play_button_color = '#ffffff';
-		fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
+		fallbacks.play_button_color =
+			resolveColor('play_button_color', '#ffffff');
+		fallbacks.play_button_secondary_color =
+			resolveColor('play_button_secondary_color', '#2b333f'); // Videopack Grey accent
 
 		switch (skin) {
 			case 'vjs-theme-city':
-				fallbacks.title_background_color = '#bf3b4d';
-				fallbacks.control_bar_bg_color = '#000000';
-				fallbacks.pagination_active_bg_color = '#bf3b4d';
+				fallbacks.title_background_color =
+					resolveColor('title_background_color', '#bf3b4d');
+				fallbacks.control_bar_bg_color =
+					resolveColor('control_bar_bg_color', '#000000');
+				fallbacks.pagination_active_bg_color =
+					resolveColor('pagination_active_bg_color', '#bf3b4d');
 				break;
 			case 'vjs-theme-fantasy':
-				fallbacks.title_background_color = '#9f44b4';
-				fallbacks.play_button_color = '#9f44b4';
-				fallbacks.play_button_secondary_color = '#ffffff';
-				fallbacks.pagination_active_bg_color = '#9f44b4';
+				fallbacks.title_background_color =
+					resolveColor('title_background_color', '#9f44b4');
+				fallbacks.play_button_color =
+					resolveColor('play_button_color', '#9f44b4');
+				fallbacks.play_button_secondary_color =
+					resolveColor('play_button_secondary_color', '#ffffff');
+				fallbacks.pagination_active_bg_color =
+					resolveColor('pagination_active_bg_color', '#9f44b4');
 				break;
 			case 'vjs-theme-forest':
-				fallbacks.title_background_color = '#6fb04e';
-				fallbacks.play_button_secondary_color = '#6fb04e';
-				fallbacks.control_bar_bg_color = 'transparent';
-				fallbacks.pagination_active_bg_color = '#6fb04e';
+				fallbacks.title_background_color =
+					resolveColor('title_background_color', '#6fb04e');
+				fallbacks.play_button_secondary_color =
+					resolveColor('play_button_secondary_color', '#6fb04e');
+				fallbacks.control_bar_bg_color =
+					resolveColor('control_bar_bg_color', 'transparent');
+				fallbacks.pagination_active_bg_color =
+					resolveColor('pagination_active_bg_color', '#6fb04e');
 				break;
 			case 'vjs-theme-sea':
-				fallbacks.title_background_color = '#4176bc';
-				fallbacks.play_button_secondary_color = '#4176bc';
-				fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
-				fallbacks.pagination_active_bg_color = '#4176bc';
+				fallbacks.title_background_color =
+					resolveColor('title_background_color', '#4176bc');
+				fallbacks.play_button_secondary_color =
+					resolveColor('play_button_secondary_color', '#4176bc');
+				fallbacks.control_bar_bg_color =
+					resolveColor('control_bar_bg_color', 'rgba(255, 255, 255, 0.4)');
+				fallbacks.pagination_active_bg_color =
+					resolveColor('pagination_active_bg_color', '#4176bc');
 				break;
 			case 'kg-video-js-skin':
-				fallbacks.title_background_color = '#000000';
-				fallbacks.play_button_secondary_color = '#000000';
-				fallbacks.control_bar_bg_color = '#000000';
-				fallbacks.pagination_active_bg_color = '#000000';
+				fallbacks.title_background_color =
+					resolveColor('title_background_color', '#000000');
+				fallbacks.play_button_secondary_color =
+					resolveColor('play_button_secondary_color', '#000000');
+				fallbacks.control_bar_bg_color =
+					resolveColor('control_bar_bg_color', '#000000');
+				fallbacks.pagination_active_bg_color =
+					resolveColor('pagination_active_bg_color', '#000000');
 				break;
 		}
 	}

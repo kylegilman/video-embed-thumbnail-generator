@@ -379,10 +379,10 @@ class Multisite implements Hook_Subscriber {
 	 * Enqueues assets for the React Network Settings page.
 	 */
 	public function enqueue_network_settings_assets() {
-		( new Assets( $this->options ) )->enqueue_admin_screens_assets();
+		( new Assets( $this->options ) )->enqueue_settings_network_assets();
 
 		wp_localize_script(
-			'videopack-admin-screens',
+			'videopack-settings-network',
 			'videopackNetworkSettings',
 			array(
 				'settings' => (array) $this->network_options,
@@ -398,7 +398,7 @@ class Multisite implements Hook_Subscriber {
 	 * Enqueues assets for the React Network Queue page.
 	 */
 	public function enqueue_network_queue_assets() {
-		( new Assets( $this->options ) )->enqueue_admin_screens_assets();
+		( new Assets( $this->options ) )->enqueue_network_encode_queue_assets();
 
 		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.encodeQueueData = ' . (string) wp_json_encode(
 			array(
@@ -409,7 +409,7 @@ class Multisite implements Hook_Subscriber {
 		) . ';';
 
 		wp_add_inline_script(
-			'videopack-admin-screens',
+			'videopack-encode-queue',
 			$inline_script,
 			'before'
 		);

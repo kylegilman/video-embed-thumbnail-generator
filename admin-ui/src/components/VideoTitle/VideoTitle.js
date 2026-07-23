@@ -75,10 +75,8 @@ export default function VideoTitle({
 		context
 	);
 	const displayTitle = decodeEntities(manualTitle || resolvedTitle || '');
-
-	if (isResolving && !displayTitle && !vpContext.resolved.isPreview) {
-		return <Spinner />;
-	}
+	const isLoadingTitle =
+		isResolving && !displayTitle && !vpContext.resolved.isPreview;
 
 	const position =
 		attrPosition ||
@@ -114,15 +112,6 @@ export default function VideoTitle({
 	}
 	const iconsClass = 'videopack-meta-icons';
 
-	const finalBlockProps = blockProps || {
-		className: `videopack-video-title-block videopack-video-title-wrapper ${vpContext.classes} ${
-			isOverlay ? `is-overlay position-${position}` : ''
-		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
-			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${!postId && !manualTitle ? 'no-title' : ''} has-text-align-${finalTextAlign}`,
-		style: vpContext.style,
-	};
-
 	const barClass = `videopack-video-title videopack-video-title-visible ${
 		isOverlay ? 'is-overlay' : ''
 	} ${!showBackground && isOverlay ? 'has-no-background' : ''} ${
@@ -130,31 +119,35 @@ export default function VideoTitle({
 	} ${isInsidePlayerOverlay || isOverlay ? `position-${position}` : ''}`.trim();
 
 	return (
-		<div {...finalBlockProps}>
+		<div {...blockProps}>
 			<div className={`${barClass} has-text-align-${finalTextAlign}`}>
-				{finalOverlayTitle && (
-					<RichText
-						tagName={Tag}
-						className={`${titleClass} ${vpContext.classes} ${linkToPost ? 'is-link' : ''}`}
-						style={vpContext.style}
-						value={displayTitle}
-						onChange={onTitleChange}
-						placeholder={placeholder}
-						allowedFormats={[
-							'core/bold',
-							'core/italic',
-							'core/strikethrough',
-						]}
-						// Only the real Edit component passes onTitleChange (it wires up
-						// setAttributes). Everywhere else this renders — Loop's templated
-						// preview items, the settings-page preview, the classic-editor
-						// preview — has nowhere to persist an edit, so RichText must not
-						// accept one; an editable field that silently discards changes
-						// just looks broken to a user.
-						readOnly={!onTitleChange}
-					/>
+				{isLoadingTitle ? (
+					<Spinner />
+				) : (
+					finalOverlayTitle && (
+						<RichText
+							tagName={Tag}
+							className={`${titleClass} ${vpContext.classes} ${linkToPost ? 'is-link' : ''}`}
+							style={vpContext.style}
+							value={displayTitle}
+							onChange={onTitleChange}
+							placeholder={placeholder}
+							allowedFormats={[
+								'core/bold',
+								'core/italic',
+								'core/strikethrough',
+							]}
+							// Only the real Edit component passes onTitleChange (it wires up
+							// setAttributes). Everywhere else this renders — Loop's templated
+							// preview items, the settings-page preview, the classic-editor
+							// preview — has nowhere to persist an edit, so RichText must not
+							// accept one; an editable field that silently discards changes
+							// just looks broken to a user.
+							readOnly={!onTitleChange}
+						/>
+					)
 				)}
-				{isOverlay && (
+				{!isLoadingTitle && isOverlay && (
 					<div className={iconsClass}>
 						<VideopackContextBridge
 							attributes={attributes}
@@ -179,17 +172,16 @@ export default function VideoTitle({
 									: {}),
 							}}
 						>
-							{children ||
-								(vpContext.resolved.isPreview ? null : (
-									<InnerBlocks
-										allowedBlocks={[
-											'videopack/download',
-											'videopack/share',
-										]}
-										template={[]}
-										templateLock={false}
-									/>
-								))}
+							{children || (
+								<InnerBlocks
+									allowedBlocks={[
+										'videopack/download',
+										'videopack/share',
+									]}
+									template={[]}
+									templateLock={false}
+								/>
+							)}
 						</VideopackContextBridge>
 					</div>
 				)}

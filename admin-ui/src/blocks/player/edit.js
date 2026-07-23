@@ -138,9 +138,12 @@ export default function Edit(props) {
 		(parentAttributes.source_groups &&
 			Object.keys(parentAttributes.source_groups).length > 0);
 
+	// Skip in preview contexts — there's no real attachment behind the
+	// hardcoded bundled sample video, so this can never resolve anything
+	// useful, and previews get rebuilt on every unrelated settings change.
 	const { formats } = useVideoFormats(
-		!hasSources && src ? resolvedPostId : null,
-		!hasSources && src ? src : null
+		!hasSources && src && !resolved.isPreview ? resolvedPostId : null,
+		!hasSources && src && !resolved.isPreview ? src : null
 	);
 
 	useEffect(() => {
@@ -156,7 +159,7 @@ export default function Edit(props) {
 			id: resolvedPostId,
 		};
 
-		if (context.isPreview) {
+		if (resolved.isPreview) {
 			result.src =
 				videopack_config.url + '/src/images/Adobestock_469037984.mp4';
 			result.poster =
@@ -165,13 +168,7 @@ export default function Edit(props) {
 		}
 
 		return result;
-	}, [
-		options,
-		parentAttributes,
-		resolved,
-		resolvedPostId,
-		context.isPreview,
-	]);
+	}, [options, parentAttributes, resolved, resolvedPostId]);
 
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
