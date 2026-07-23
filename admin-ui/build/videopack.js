@@ -327,6 +327,12 @@ const external_wp_hooks_namespaceObject = window["wp"]["hooks"];
 
 
 
+
+// Stable reference for callers that don't pass their own excludeKeys — a
+// literal `[]` default would be a new array every call (JS re-evaluates
+// default param expressions per invocation), which would defeat the
+// `initial` useMemo below on every render since excludeKeys is a dependency.
+const EMPTY_EXCLUDE_KEYS = [];
 const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'views', 'duration', 'videopack', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
 const VIDEOPACK_CONTEXT_KEYS =
 /**
@@ -349,7 +355,7 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = [],
+    excludeKeys = EMPTY_EXCLUDE_KEYS,
     // Restricts which resolved values become videopack-has-{key} classes /
     // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
     // always computed — only the stamping is scoped). null means "stamp
@@ -2044,61 +2050,71 @@ const CompactColorPicker = ({
 ;// ./src/utils/colors.js
 
 const getColorFallbacks = settings => {
+  const globalOptions = typeof videopack_config !== 'undefined' ? videopack_config?.options || {} : {};
+  const resolveColor = (key, skinDefault) => {
+    if (settings && settings[key] !== undefined && settings[key] !== null && settings[key] !== '') {
+      return settings[key];
+    }
+    if (globalOptions && globalOptions[key] !== undefined && globalOptions[key] !== null && globalOptions[key] !== '') {
+      return globalOptions[key];
+    }
+    return skinDefault;
+  };
   const {
     embed_method = 'Video.js',
     skin = 'vjs-theme-videopack'
-  } = settings || {};
+  } = settings || globalOptions || {};
   const fallbacks = {
-    title_color: '#ffffff',
-    title_background_color: '#2b333f',
-    play_button_color: '#ffffff',
-    play_button_secondary_color: '#ffffff',
-    control_bar_bg_color: '#2b333f',
-    control_bar_color: '#ffffff',
-    pagination_color: '#1e1e1e',
-    pagination_background_color: '#ffffff',
-    pagination_active_bg_color: '#1e1e1e',
-    pagination_active_color: '#ffffff'
+    title_color: resolveColor('title_color', '#ffffff'),
+    title_background_color: resolveColor('title_background_color', '#2b333f'),
+    play_button_color: resolveColor('play_button_color', '#ffffff'),
+    play_button_secondary_color: resolveColor('play_button_secondary_color', '#ffffff'),
+    control_bar_bg_color: resolveColor('control_bar_bg_color', '#2b333f'),
+    control_bar_color: resolveColor('control_bar_color', '#ffffff'),
+    pagination_color: resolveColor('pagination_color', '#1e1e1e'),
+    pagination_background_color: resolveColor('pagination_background_color', '#ffffff'),
+    pagination_active_bg_color: resolveColor('pagination_active_bg_color', '#1e1e1e'),
+    pagination_active_color: resolveColor('pagination_active_color', '#ffffff')
   };
   if (embed_method === 'WordPress Default') {
-    fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
-    fallbacks.control_bar_bg_color = '#222222';
-    fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_secondary_color = '#ffffff';
+    fallbacks.title_background_color = resolveColor('title_background_color', 'rgba(40, 40, 40, 0.95)');
+    fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', '#222222');
+    fallbacks.play_button_color = resolveColor('play_button_color', '#ffffff');
+    fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#ffffff');
   } else if (embed_method?.startsWith('Video.js')) {
     // Default skin (vjs-theme-videopack) defaults
-    fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
+    fallbacks.play_button_color = resolveColor('play_button_color', '#ffffff');
+    fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#2b333f'); // Videopack Grey accent
 
     switch (skin) {
       case 'vjs-theme-city':
-        fallbacks.title_background_color = '#bf3b4d';
-        fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = '#bf3b4d';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#bf3b4d');
+        fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', '#000000');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#bf3b4d');
         break;
       case 'vjs-theme-fantasy':
-        fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_color = '#9f44b4';
-        fallbacks.play_button_secondary_color = '#ffffff';
-        fallbacks.pagination_active_bg_color = '#9f44b4';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#9f44b4');
+        fallbacks.play_button_color = resolveColor('play_button_color', '#9f44b4');
+        fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#ffffff');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#9f44b4');
         break;
       case 'vjs-theme-forest':
-        fallbacks.title_background_color = '#6fb04e';
-        fallbacks.play_button_secondary_color = '#6fb04e';
-        fallbacks.control_bar_bg_color = 'transparent';
-        fallbacks.pagination_active_bg_color = '#6fb04e';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#6fb04e');
+        fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#6fb04e');
+        fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', 'transparent');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#6fb04e');
         break;
       case 'vjs-theme-sea':
-        fallbacks.title_background_color = '#4176bc';
-        fallbacks.play_button_secondary_color = '#4176bc';
-        fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
-        fallbacks.pagination_active_bg_color = '#4176bc';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#4176bc');
+        fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#4176bc');
+        fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', 'rgba(255, 255, 255, 0.4)');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#4176bc');
         break;
       case 'kg-video-js-skin':
-        fallbacks.title_background_color = '#000000';
-        fallbacks.play_button_secondary_color = '#000000';
-        fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = '#000000';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#000000');
+        fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#000000');
+        fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', '#000000');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#000000');
         break;
     }
   }
@@ -3308,6 +3324,19 @@ const Thumbnails = ({
   const {
     editPost
   } = (0,external_wp_data_namespaceObject.useDispatch)('core/editor') || {};
+  // player/edit.js and player-container/edit.js both pass a videoData that
+  // has no real .edit()/.save() (just a read-only record + a purely local
+  // setRecord override), so the save below always takes the raw apiFetch
+  // path — which writes to the server fine but never touches the `core`
+  // data store, so nothing reading this attachment via getEntityRecord
+  // (this block's own poster, other blocks on the same page, etc) knows to
+  // re-render until a full reload re-fetches everything. Invalidating the
+  // cached resolution after a successful save tells every mounted
+  // useSelect consumer of this exact attachment to refetch and pick up the
+  // change on its own.
+  const {
+    invalidateResolution
+  } = (0,external_wp_data_namespaceObject.useDispatch)('core');
   const isEditingAttachment = (0,external_wp_data_namespaceObject.useSelect)(select => select('core/editor')?.getCurrentPostType() === 'attachment', []);
   const featured = (() => {
     if (attributes.featured !== undefined) {
@@ -3596,6 +3625,16 @@ const Thumbnails = ({
         editPost({
           featured_media: new_poster_id ? Number(new_poster_id) : null
         });
+      }
+
+      // Reflects this save everywhere this attachment is currently
+      // rendered (this block's own preview, other blocks on the page,
+      // etc) without waiting for a reload — see the comment on
+      // invalidateResolution above for why this is necessary even
+      // though the save itself already succeeded.
+      const savedAttachmentId = Number(new_attachment_id || id);
+      if (savedAttachmentId > 0) {
+        invalidateResolution('getEntityRecord', ['postType', 'attachment', savedAttachmentId]);
       }
 
       // Refresh the media library grid to show the updated thumbnail.
