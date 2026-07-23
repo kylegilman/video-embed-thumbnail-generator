@@ -626,6 +626,14 @@ abstract class Source {
 				$this->mime_type = $filetype['type'];
 			}
 		}
+
+		// get_mime_type() is declared to always return string. mime_content_type()
+		// can return false on failure, and a placeholder source with no
+		// resolvable URL/file leaves $filetype['type'] empty above — either way,
+		// guarantee a string here rather than let null/false through.
+		if ( ! is_string( $this->mime_type ) ) {
+			$this->mime_type = '';
+		}
 	}
 
 	/**
