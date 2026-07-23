@@ -173,6 +173,12 @@ const external_wp_hooks_namespaceObject = window["wp"]["hooks"];
 
 
 
+
+// Stable reference for callers that don't pass their own excludeKeys — a
+// literal `[]` default would be a new array every call (JS re-evaluates
+// default param expressions per invocation), which would defeat the
+// `initial` useMemo below on every render since excludeKeys is a dependency.
+const EMPTY_EXCLUDE_KEYS = [];
 const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'views', 'duration', 'videopack', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
 const VIDEOPACK_CONTEXT_KEYS =
 /**
@@ -195,7 +201,7 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = [],
+    excludeKeys = EMPTY_EXCLUDE_KEYS,
     // Restricts which resolved values become videopack-has-{key} classes /
     // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
     // always computed — only the stamping is scoped). null means "stamp

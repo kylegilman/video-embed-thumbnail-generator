@@ -11,8 +11,6 @@ const external_wp_blockEditor_namespaceObject = window["wp"]["blockEditor"];
 const external_wp_components_namespaceObject = window["wp"]["components"];
 ;// external ["wp","i18n"]
 const external_wp_i18n_namespaceObject = window["wp"]["i18n"];
-;// external ["wp","data"]
-const external_wp_data_namespaceObject = window["wp"]["data"];
 ;// external "ReactJSXRuntime"
 const external_ReactJSXRuntime_namespaceObject = window["ReactJSXRuntime"];
 ;// ./src/components/CompactColorPicker/CompactColorPicker.js
@@ -95,6 +93,8 @@ const CompactColorPicker = ({
   });
 };
 /* harmony default export */ const CompactColorPicker_CompactColorPicker = (CompactColorPicker);
+;// external ["wp","data"]
+const external_wp_data_namespaceObject = window["wp"]["data"];
 ;// ./src/utils/context.js
 /* global videopack_config */
 
@@ -255,6 +255,12 @@ const external_wp_hooks_namespaceObject = window["wp"]["hooks"];
 
 
 
+
+// Stable reference for callers that don't pass their own excludeKeys — a
+// literal `[]` default would be a new array every call (JS re-evaluates
+// default param expressions per invocation), which would defeat the
+// `initial` useMemo below on every render since excludeKeys is a dependency.
+const EMPTY_EXCLUDE_KEYS = [];
 const DEFAULT_CONTEXT_KEYS = ['skin', 'title_color', 'title_background_color', 'play_button_color', 'play_button_secondary_color', 'control_bar_bg_color', 'control_bar_color', 'pagination_color', 'pagination_background_color', 'pagination_active_bg_color', 'pagination_active_color', 'watermark', 'watermark_styles', 'watermark_align', 'watermark_valign', 'watermark_scale', 'watermark_x', 'watermark_y', 'watermark_link_to', 'align', 'gallery_per_page', 'gallery_source', 'gallery_id', 'gallery_category', 'gallery_tag', 'gallery_orderby', 'gallery_order', 'gallery_include', 'gallery_exclude', 'layout', 'columns', 'gallery_pagination', 'gallery_title', 'videos', 'enable_collection_video_limit', 'collection_video_limit', 'prioritizePostData', 'embed_method', 'isPreview', 'isStandalone', 'src', 'poster', 'title', 'views', 'duration', 'videopack', 'caption', 'width', 'height', 'autoplay', 'controls', 'loop', 'muted', 'playsinline', 'preload', 'volume', 'auto_res', 'sources', 'source_groups', 'text_tracks', 'playback_rate', 'downloadlink', 'embedcode', 'embedlink', 'showCaption', 'showBackground', 'title_position', 'restartCount', 'duotone', 'style', 'loopDuotoneId', 'fixed_aspect', 'fullwidth', 'rotate', 'default_ratio', 'currentPage', 'totalPages', 'onPageChange', 'isInsideThumbnail', 'isInsidePlayerOverlay', 'isInsidePlayerContainer', 'isInsideTitleMeta'];
 const VIDEOPACK_CONTEXT_KEYS =
 /**
@@ -277,7 +283,7 @@ const VIDEOPACK_CONTEXT_KEYS =
 function useVideopackContext(attributes, context, options = {}) {
   const {
     excludeHoverTrigger: optionsExclude = false,
-    excludeKeys = [],
+    excludeKeys = EMPTY_EXCLUDE_KEYS,
     // Restricts which resolved values become videopack-has-{key} classes /
     // --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
     // always computed — only the stamping is scoped). null means "stamp
@@ -608,24 +614,14 @@ const CLASS_KEYS = ['title_color', 'title_background_color'];
 /**
  * A internal component to display the video duration with correct formatting and data.
  *
- * @param {Object}  root0                   Component props.
- * @param {Object}  [root0.blockProps]      Block props from the parent Edit component,
- *                                          reused as-is when present so this component
- *                                          doesn't stamp a second, redundant wrapper.
- * @param {boolean} root0.isOverlay         Whether it's an overlay.
- * @param {boolean} root0.isInsideThumbnail Whether it's inside a thumbnail.
- * @param {string}  root0.textAlign         Text alignment.
- * @param {string}  root0.position          Position (top/bottom).
- * @param {Object}  root0.attributes        Block attributes.
- * @param {Object}  root0.context           Block context.
- * @return {Element}                        The rendered component.
+ * @param {Object} root0            Component props.
+ * @param {Object} root0.blockProps Block props from the parent Edit component.
+ * @param {Object} root0.attributes Block attributes.
+ * @param {Object} root0.context    Block context.
+ * @return {Element}                The rendered component.
  */
 function VideoDuration({
   blockProps,
-  isOverlay,
-  isInsideThumbnail,
-  textAlign,
-  position,
   attributes,
   context = {}
 }) {
@@ -637,21 +633,12 @@ function VideoDuration({
     isResolving
   } = useVideopackData('duration', context);
   const attachmentId = vpContext.resolved.attachmentId;
-  if (vpContext.resolved.isDiscovering && !attachmentId) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      className: `videopack-video-duration ${isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'] ? 'is-overlay' : ''}`,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {})
-    });
-  }
   if (!attachmentId && !vpContext.resolved.isPreview) {
     return null;
   }
-  const actualIsOverlay = isOverlay !== undefined ? isOverlay : isInsideThumbnail || !!context['videopack/isInsidePlayerOverlay'];
-  const isInsidePlayerContainer = !!context['videopack/isInsidePlayerContainer'];
-  const defaultAlign = actualIsOverlay || isInsidePlayerContainer ? 'right' : 'left';
-  if (isResolving) {
+  if (vpContext.resolved.isDiscovering && !attachmentId || isResolving) {
     return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      className: `videopack-video-duration ${actualIsOverlay ? 'is-overlay' : ''}`,
+      ...blockProps,
       children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {})
     });
   }
@@ -668,73 +655,79 @@ function VideoDuration({
     }
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
-  const finalBlockProps = blockProps || {
-    className: `videopack-video-duration-block videopack-video-duration ${vpContext.classes} ${actualIsOverlay ? 'is-overlay is-badge' : ''} position-${position || 'top'} has-text-align-${textAlign || defaultAlign} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`,
-    style: vpContext.style
-  };
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-    ...finalBlockProps,
+    ...blockProps,
     children: duration ? formatDuration(duration) : '0:00'
   });
 }
 ;// ./src/utils/colors.js
 
 const getColorFallbacks = settings => {
+  const globalOptions = typeof videopack_config !== 'undefined' ? videopack_config?.options || {} : {};
+  const resolveColor = (key, skinDefault) => {
+    if (settings && settings[key] !== undefined && settings[key] !== null && settings[key] !== '') {
+      return settings[key];
+    }
+    if (globalOptions && globalOptions[key] !== undefined && globalOptions[key] !== null && globalOptions[key] !== '') {
+      return globalOptions[key];
+    }
+    return skinDefault;
+  };
   const {
     embed_method = 'Video.js',
     skin = 'vjs-theme-videopack'
-  } = settings || {};
+  } = settings || globalOptions || {};
   const fallbacks = {
-    title_color: '#ffffff',
-    title_background_color: '#2b333f',
-    play_button_color: '#ffffff',
-    play_button_secondary_color: '#ffffff',
-    control_bar_bg_color: '#2b333f',
-    control_bar_color: '#ffffff',
-    pagination_color: '#1e1e1e',
-    pagination_background_color: '#ffffff',
-    pagination_active_bg_color: '#1e1e1e',
-    pagination_active_color: '#ffffff'
+    title_color: resolveColor('title_color', '#ffffff'),
+    title_background_color: resolveColor('title_background_color', '#2b333f'),
+    play_button_color: resolveColor('play_button_color', '#ffffff'),
+    play_button_secondary_color: resolveColor('play_button_secondary_color', '#ffffff'),
+    control_bar_bg_color: resolveColor('control_bar_bg_color', '#2b333f'),
+    control_bar_color: resolveColor('control_bar_color', '#ffffff'),
+    pagination_color: resolveColor('pagination_color', '#1e1e1e'),
+    pagination_background_color: resolveColor('pagination_background_color', '#ffffff'),
+    pagination_active_bg_color: resolveColor('pagination_active_bg_color', '#1e1e1e'),
+    pagination_active_color: resolveColor('pagination_active_color', '#ffffff')
   };
   if (embed_method === 'WordPress Default') {
-    fallbacks.title_background_color = 'rgba(40, 40, 40, 0.95)';
-    fallbacks.control_bar_bg_color = '#222222';
-    fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_secondary_color = '#ffffff';
+    fallbacks.title_background_color = resolveColor('title_background_color', 'rgba(40, 40, 40, 0.95)');
+    fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', '#222222');
+    fallbacks.play_button_color = resolveColor('play_button_color', '#ffffff');
+    fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#ffffff');
   } else if (embed_method?.startsWith('Video.js')) {
     // Default skin (vjs-theme-videopack) defaults
-    fallbacks.play_button_color = '#ffffff';
-    fallbacks.play_button_secondary_color = '#2b333f'; // Videopack Grey accent
+    fallbacks.play_button_color = resolveColor('play_button_color', '#ffffff');
+    fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#2b333f'); // Videopack Grey accent
 
     switch (skin) {
       case 'vjs-theme-city':
-        fallbacks.title_background_color = '#bf3b4d';
-        fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = '#bf3b4d';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#bf3b4d');
+        fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', '#000000');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#bf3b4d');
         break;
       case 'vjs-theme-fantasy':
-        fallbacks.title_background_color = '#9f44b4';
-        fallbacks.play_button_color = '#9f44b4';
-        fallbacks.play_button_secondary_color = '#ffffff';
-        fallbacks.pagination_active_bg_color = '#9f44b4';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#9f44b4');
+        fallbacks.play_button_color = resolveColor('play_button_color', '#9f44b4');
+        fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#ffffff');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#9f44b4');
         break;
       case 'vjs-theme-forest':
-        fallbacks.title_background_color = '#6fb04e';
-        fallbacks.play_button_secondary_color = '#6fb04e';
-        fallbacks.control_bar_bg_color = 'transparent';
-        fallbacks.pagination_active_bg_color = '#6fb04e';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#6fb04e');
+        fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#6fb04e');
+        fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', 'transparent');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#6fb04e');
         break;
       case 'vjs-theme-sea':
-        fallbacks.title_background_color = '#4176bc';
-        fallbacks.play_button_secondary_color = '#4176bc';
-        fallbacks.control_bar_bg_color = 'rgba(255, 255, 255, 0.4)';
-        fallbacks.pagination_active_bg_color = '#4176bc';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#4176bc');
+        fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#4176bc');
+        fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', 'rgba(255, 255, 255, 0.4)');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#4176bc');
         break;
       case 'kg-video-js-skin':
-        fallbacks.title_background_color = '#000000';
-        fallbacks.play_button_secondary_color = '#000000';
-        fallbacks.control_bar_bg_color = '#000000';
-        fallbacks.pagination_active_bg_color = '#000000';
+        fallbacks.title_background_color = resolveColor('title_background_color', '#000000');
+        fallbacks.play_button_secondary_color = resolveColor('play_button_secondary_color', '#000000');
+        fallbacks.control_bar_bg_color = resolveColor('control_bar_bg_color', '#000000');
+        fallbacks.pagination_active_bg_color = resolveColor('pagination_active_bg_color', '#000000');
         break;
     }
   }
@@ -753,7 +746,6 @@ const getColorFallbacks = settings => {
 };
 ;// ./src/blocks/duration/edit.js
 /* global videopack_config */
-
 
 
 
@@ -786,7 +778,6 @@ function Edit({
   const vpContext = useVideopackContext(attributes, context, {
     classKeys: edit_CLASS_KEYS
   });
-  const postId = vpContext.resolved.attachmentId;
   const {
     textAlign,
     position: attrPosition,
@@ -808,29 +799,6 @@ function Edit({
     title_color: vpContext.resolved.title_color,
     title_background_color: vpContext.resolved.title_background_color
   }), [vpContext.resolved.title_color, vpContext.resolved.title_background_color]);
-  const {
-    latestVideoId
-  } = (0,external_wp_data_namespaceObject.useSelect)(select => {
-    if (!vpContext.resolved.isPreview) {
-      return {
-        latestVideoId: null
-      };
-    }
-    const {
-      getEntityRecords
-    } = select('core');
-    const query = {
-      post_type: 'attachment',
-      mime_type: 'video',
-      per_page: 1,
-      _fields: 'id'
-    };
-    const media = getEntityRecords('postType', 'attachment', query);
-    return {
-      latestVideoId: media?.[0]?.id
-    };
-  }, [vpContext.resolved.isPreview]);
-  const effectiveAttachmentId = postId || latestVideoId;
   const blockProps = (0,external_wp_blockEditor_namespaceObject.useBlockProps)({
     className: `videopack-video-duration-block ${vpContext.classes} ${isOverlay ? 'is-inside-thumbnail is-overlay is-badge' : ''} position-${position} has-text-align-${finalTextAlign}`,
     style: vpContext.style
@@ -888,11 +856,6 @@ function Edit({
       })
     }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideoDuration, {
       blockProps: blockProps,
-      postId: effectiveAttachmentId,
-      isOverlay: isOverlay,
-      isInsideThumbnail: isInsideThumbnail,
-      textAlign: finalTextAlign,
-      position: position,
       attributes: attributes,
       context: context
     })]
@@ -903,7 +866,7 @@ function save() {
   return null;
 }
 ;// ./src/blocks/duration/block.json
-const block_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"videopack/duration"}');
+const block_namespaceObject = /*#__PURE__*/JSON.parse('{"UU":"videopack/duration"}');
 ;// ../src/icons.json
 const icons_namespaceObject = /*#__PURE__*/JSON.parse('{"download":{"viewBox":"0 0 24 24","paths":[{"d":"M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z"}]},"share":{"viewBox":"0 0 24 24","paths":[{"d":"M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z"}]},"close":{"viewBox":"0 0 24 24","paths":[{"d":"m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"}]},"external":{"viewBox":"0 0 1080 1080","paths":[{"d":"M994.56 986.8H68.33V169.45h463.11v70H138.33V916.8h786.23V623.33h70z"},{"d":"M549.07 598.54h-70v-3.49c-.02-63.64-.04-142.85 49.5-207.82 56.32-73.87 162.4-109.79 324.25-109.79h.24c111.9.02 128.37-.04 135.4-.06 1.82 0 3-.01 5-.01v70c-1.89 0-3.01 0-4.74.01-7.07.03-23.63.09-135.67.06h-.22c-75.54 0-137.44 8.45-183.99 25.11-37.98 13.59-65.66 32.28-84.6 57.13-35.2 46.17-35.18 109.49-35.17 165.36v3.51Z"},{"d":"m873.68 499.79-52.2-46.63L946.4 313.31 823.14 183.75l50.72-48.25 167.74 176.32z"}]},"iosShare":{"viewBox":"0 0 1080 1080","paths":[{"d":"M760.96 270.67h170.07V979H126.25V270.67H312.3m226.28 367.29V89.31m-149.87 152 149.87-152 153.17 152","fill":"none","stroke":"currentColor","stroke-miterlimit":"10","stroke-width":"70"}]},"curveShare":{"viewBox":"0 0 512 512","paths":[{"d":"M512 241.7 273.643 3.343v156.152c-71.41 3.744-138.015 33.337-188.958 84.28C30.075 298.384 0 370.991 0 448.222v60.436l29.069-52.985c45.354-82.671 132.173-134.027 226.573-134.027 5.986 0 12.004.212 18.001.632v157.779zm-256.358 48.966c-84.543 0-163.661 36.792-217.939 98.885 26.634-114.177 129.256-199.483 251.429-199.483h15.489V78.131l163.568 163.568-163.568 163.568V294.531l-13.585-1.683a289 289 0 0 0-35.394-2.182"}]},"embed":{"viewBox":"0 0 24 24","paths":[{"d":"M20.8 10.7l-4.3-4.3-1.1 1.1 4.3 4.3c.1.1.1.3 0 .4l-4.3 4.3 1.1 1.1 4.3-4.3c.7-.8.7-1.9 0-2.6zM4.2 11.8l4.3-4.3-1-1-4.3 4.3c-.7.7-.7 1.8 0 2.5l4.3 4.3 1.1-1.1-4.3-4.3c-.2-.1-.2-.3-.1-.4z"}]},"eye":{"viewBox":"0 0 24 24","paths":[{"d":"M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"}]},"play":{"viewBox":"0 0 24 24","paths":[{"d":"M8 5v14l11-7z"}]},"playOutline":{"viewBox":"0 0 24 24","paths":[{"d":"M8 5v14l11-7z","fill":"none","stroke":"currentColor","stroke-width":"2","stroke-linecap":"round","stroke-linejoin":"round"}]},"copyLink":{"viewBox":"0 0 16 16","paths":[{"d":"M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"},{"d":"M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"}]},"bluesky":{"viewBox":"0 0 16 16","paths":[{"d":"M3.468 1.948C5.303 3.325 7.276 6.118 8 7.616c.725-1.498 2.698-4.29 4.532-5.668C13.855.955 16 .186 16 2.632c0 .489-.28 4.105-.444 4.692-.572 2.04-2.653 2.561-4.504 2.246 3.236.551 4.06 2.375 2.281 4.2-3.376 3.464-4.852-.87-5.23-1.98-.07-.204-.103-.3-.103-.218 0-.081-.033.014-.102.218-.379 1.11-1.855 5.444-5.231 1.98-1.778-1.825-.955-3.65 2.28-4.2-1.85.315-3.932-.205-4.503-2.246C.28 6.737 0 3.12 0 2.632 0 .186 2.145.955 3.468 1.948"}]},"threads":{"viewBox":"0 0 16 16","paths":[{"d":"M6.321 6.016c-.27-.18-1.166-.802-1.166-.802.756-1.081 1.753-1.502 3.132-1.502.975 0 1.803.327 2.394.948s.928 1.509 1.005 2.644q.492.207.905.484c1.109.745 1.719 1.86 1.719 3.137 0 2.716-2.226 5.075-6.256 5.075C4.594 16 1 13.987 1 7.994 1 2.034 4.482 0 8.044 0 9.69 0 13.55.243 15 5.036l-1.36.353C12.516 1.974 10.163 1.43 8.006 1.43c-3.565 0-5.582 2.171-5.582 6.79 0 4.143 2.254 6.343 5.63 6.343 2.777 0 4.847-1.443 4.847-3.556 0-1.438-1.208-2.127-1.27-2.127-.236 1.234-.868 3.31-3.644 3.31-1.618 0-3.013-1.118-3.013-2.582 0-2.09 1.984-2.847 3.55-2.847.586 0 1.294.04 1.663.114 0-.637-.54-1.728-1.9-1.728-1.25 0-1.566.405-1.967.868ZM8.716 8.19c-2.04 0-2.304.87-2.304 1.416 0 .878 1.043 1.168 1.6 1.168 1.02 0 2.067-.282 2.232-2.423a6.2 6.2 0 0 0-1.528-.161"}]},"facebook":{"viewBox":"0 0 16 16","paths":[{"d":"M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.8V16c3.824-.604 6.75-3.934 6.75-7.951z"}]},"reddit":{"viewBox":"0 0 16 16","paths":[{"d":"M6.167 8a.83.83 0 0 0-.83.83c0 .459.372.84.83.831a.831.831 0 0 0 0-1.661m1.843 3.647c.315 0 1.403-.038 1.976-.611a.23.23 0 0 0 0-.306.213.213 0 0 0-.306 0c-.353.363-1.126.487-1.67.487-.545 0-1.308-.124-1.671-.487a.213.213 0 0 0-.306 0 .213.213 0 0 0 0 .306c.564.563 1.652.61 1.977.61zm.992-2.807c0 .458.373.83.831.83s.83-.381.83-.83a.831.831 0 0 0-1.66 0z"},{"d":"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.828-1.165c-.315 0-.602.124-.812.325-.801-.573-1.9-.945-3.121-.993l.534-2.501 1.738.372a.83.83 0 1 0 .83-.869.83.83 0 0 0-.744.468l-1.938-.41a.2.2 0 0 0-.153.028.2.2 0 0 0-.086.134l-.592 2.788c-1.24.038-2.358.41-3.17.992-.21-.2-.496-.324-.81-.324a1.163 1.163 0 0 0-.478 2.224q-.03.17-.029.353c0 1.795 2.091 3.256 4.669 3.256s4.668-1.451 4.668-3.256c0-.114-.01-.238-.029-.353.401-.181.688-.592.688-1.069 0-.65-.525-1.165-1.165-1.165"}]},"email":{"viewBox":"0 0 16 16","paths":[{"d":"M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.976-5.64-3.384L8 9.83l-1.326-.795-5.64 3.384A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.641ZM1 11.105l4.708-2.897L1 5.383v5.722Z"}]}}');
 ;// ./src/assets/icon.js
@@ -1715,7 +1678,7 @@ const email = createIcon('email');
 
 
 
-(0,external_wp_blocks_namespaceObject.registerBlockType)(block_namespaceObject.name, {
+(0,external_wp_blocks_namespaceObject.registerBlockType)(block_namespaceObject.UU, {
   icon: videopackDuration,
   edit: Edit,
   save: save
