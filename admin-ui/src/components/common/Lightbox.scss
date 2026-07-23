@@ -33,6 +33,7 @@
 
 		.modal-content {
 			position: relative;
+			box-sizing: border-box;
 			padding: 15px;
 			border-radius: 15px;
 			background-color: colors.$white;
@@ -46,6 +47,17 @@
 				margin: 0 !important;
 				width: 100% !important;
 				max-width: 100% !important;
+			}
+
+			// Below-player metadata (view-count, duration) normally inherits the
+			// page's body text color, which is only readable against the page's
+			// own background. This card's background is always white regardless
+			// of the active theme, so pin these to a fixed dark color instead.
+			.videopack-view-count:not(.is-overlay),
+			.videopack-view-count-block:not(.is-overlay),
+			.videopack-video-duration:not(.is-overlay),
+			.videopack-video-duration-block:not(.is-overlay) {
+				color: colors.$gray-900;
 			}
 		}
 

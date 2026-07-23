@@ -591,17 +591,8 @@ class Player {
 
 		$video_vars = $this->prepare_video_vars();
 
-		if ( ! is_admin() && ! empty( $video_vars['id'] ) ) {
-			$script = (string) sprintf(
-				'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["%1$s"] = %2$s;',
-				(string) $video_vars['id'],
-				(string) wp_json_encode( (array) $video_vars )
-			);
-			wp_add_inline_script( 'videopack-core', $script );
-		}
-
 		$player_code  = '';
-		$player_code .= $this->get_player_start_html() . "\n";
+		$player_code .= $this->get_player_start_html( $video_vars ) . "\n";
 
 		if ( ! empty( $inner_content ) ) {
 			$player_code .= $inner_content . "\n";
@@ -622,12 +613,26 @@ class Player {
 	/**
 	 * Generates the HTML for the player div start tag.
 	 *
+	 * @param array $video_vars The prepared video variables, embedded directly on this
+	 *                          element (as data-player-vars) so client-side JS can read
+	 *                          them straight off the element it's initializing/handling,
+	 *                          rather than needing a separate, ID-keyed global lookup that
+	 *                          has to be kept in sync with whatever ID this specific
+	 *                          Player instance happens to have (which breaks whenever a
+	 *                          different Player object elsewhere computes the metadata,
+	 *                          e.g. Gallery::prepare_video_data_for_js() for AJAX
+	 *                          pagination responses).
 	 * @return string The player div start HTML.
 	 */
-	protected function get_player_start_html(): string {
+	protected function get_player_start_html( array $video_vars = array() ): string {
 		$player_classes = apply_filters( 'videopack_player_div_classes', array( 'videopack-player' ), $this->atts );
 
-		return '<div class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '">';
+		$attrs = 'class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '"';
+		if ( ! empty( $video_vars ) ) {
+			$attrs .= ' data-player-vars="' . esc_attr( (string) wp_json_encode( $video_vars ) ) . '"';
+		}
+
+		return '<div ' . $attrs . '>';
 	}
 
 	/**

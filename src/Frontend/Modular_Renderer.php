@@ -461,15 +461,13 @@ class Modular_Renderer {
 			$show_background = self::is_true( $atts['showBackground'] );
 		}
 
-		// When called via Blocks::render_video_title(), title_color has already been
-		// resolved by Context_Manager into style_vars, and the base (non-overlay)
-		// ".videopack-video-title" rule in Overlays.scss reads it via
-		// var(--videopack-title-color) — so rebuilding a direct `color:` here would
-		// just duplicate it. title_background_color has no such CSS rule for the
-		// non-overlay case (only the .is-overlay bar reads the background var), so
-		// that one stays unconditional regardless of caller. The other caller
-		// (render_player_assembly, for standalone/legacy shortcode players) doesn't
-		// go through Context_Manager, so it still needs the color fallback too.
+		// Called via Blocks::render_video_title(), where title_color has already
+		// been resolved by Context_Manager into style_vars, and the base
+		// (non-overlay) ".videopack-video-title" rule in Overlays.scss reads it
+		// via var(--videopack-title-color) — so rebuilding a direct `color:`
+		// here would just duplicate it. title_background_color has no such CSS
+		// rule for the non-overlay case (only the .is-overlay bar reads the
+		// background var), so that one stays unconditional.
 		$context_colors_resolved = ! empty( $atts['context_colors_resolved'] );
 
 		if ( ! $is_overlay ) {
@@ -1263,85 +1261,112 @@ class Modular_Renderer {
 	}
 
 	/**
-	 * Renders the full player assembly.
+	 * Builds a standalone player-container assembly for one attachment, via
+	 * real block rendering (do_blocks()/serialize_blocks()) rather than a
+	 * hand-maintained parallel renderer. Deliberately always built from
+	 * global Player Settings, not any Loop's own per-item saved template —
+	 * a Loop's player-container can never itself trigger the lightbox (only
+	 * a Thumbnail block with linkTo="lightbox" can), so letting its
+	 * structure drive the lightbox's design would be a mismatch: a user
+	 * could edit a Grid Loop's item to add a player-container and
+	 * unexpectedly change every lightbox's structure for that gallery, or a
+	 * List Loop's title/watermark customization would silently leak into a
+	 * popup nothing in that template can even open. Per-instance colors/
+	 * skin/watermark ($design_overrides) are a separate case — those belong
+	 * to the Collection block itself, which does own the thumbnail that
+	 * triggers the lightbox, so those are still respected.
 	 *
-	 * @param \Videopack\Frontend\Video_Players\Player $player        The player instance.
-	 * @param array                                    $atts          The video attributes.
-	 * @param \Videopack\Video_Source\Source           $source        The video source object.
-	 * @param array                                    $options       The global plugin options.
-	 * @param bool                                     $is_block      Optional. Whether this is a block context.
-	 * @param string                                   $inner_content Optional. Pre-rendered inner block content.
-	 * @return string The rendered HTML.
+	 * @param int   $post_id          The resolved attachment ID.
+	 * @param array $design_overrides Resolved per-instance design values (skin,
+	 *                                colors, watermark) to merge onto the
+	 *                                player-container root's attrs.
+	 * @param array $options          Global plugin options — the sole source
+	 *                                for which blocks (title/watermark/
+	 *                                download/share/view-count) appear.
+	 * @return string Rendered HTML.
 	 */
-	public static function render_player_assembly( $player, $atts, $source, $options, $is_block = false, $inner_content = '' ) {
-		$player_content = '';
+	public static function render_standalone_player_assembly( $post_id, array $design_overrides, array $options ) {
+		// Builds one hand-constructed parsed-block array. serialize_block()
+		// (WordPress core) walks innerContent — an array of static-HTML
+		// strings interleaved with null placeholders, one per innerBlocks
+		// entry, marking where each nested block gets spliced back in — to
+		// reconstruct the HTML-comment representation. Every block built here
+		// needs that key set, or its children silently vanish from the
+		// serialized output (they just never get a placeholder to be
+		// inserted at).
+		$make_block = function ( $name, $attrs, $inner_blocks = array() ) {
+			return array(
+				'blockName'    => $name,
+				'attrs'        => $attrs,
+				'innerBlocks'  => $inner_blocks,
+				'innerContent' => array_fill( 0, count( $inner_blocks ), null ),
+			);
+		};
 
-		if ( ! empty( $inner_content ) ) {
-			// If we have inner blocks (from Block Editor or simulation), use them.
-			// Wrap in relative container to ensure overlays (Title, Watermark, etc.) are positioned correctly.
-			$player_content = sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $inner_content );
-		} else {
-			// Auto-assembly logic for standalone players/legacy shortcodes.
-
-			// Video Title / Social Bar.
-			$title_inner_content = '';
-			if ( ! empty( $atts['downloadlink'] ) || ! empty( $options['downloadlink'] ) ) {
-				$title_inner_content .= self::render_download(
-					array(
-						'icon'              => true,
-						'text'              => false,
-						'styleType'         => 'text',
-						'downloadMode'      => 'direct',
-						'isInsideTitleMeta' => true,
-					),
-					$source,
-					$options
-				);
-			}
-			if ( ! empty( $atts['embedcode'] ) || ! empty( $options['embedcode'] ) ) {
-				$title_inner_content .= self::render_share(
-					array(
-						'iconType'          => 'share',
-						'showText'          => false,
-						'styleType'         => 'text',
-						'isInsideTitleMeta' => true,
-					),
-					$source,
-					$player->get_id(),
-					$options
-				);
-			}
-
-			$title_atts = array_merge(
-				$atts,
+		$title_inner_blocks = array();
+		if ( ! empty( $options['downloadlink'] ) ) {
+			$title_inner_blocks[] = $make_block(
+				'videopack/download',
 				array(
-					'isOverlay'     => true,
-					'inner_content' => $title_inner_content,
+					'icon'         => true,
+					'text'         => false,
+					'styleType'    => 'text',
+					'downloadMode' => 'direct',
 				)
 			);
-			$player_content .= self::render_video_title( $title_atts, $source, $player->get_id() );
-
-			// Watermark.
-			$player_content .= self::render_watermark( $atts + array( 'instance_id' => $player->get_id() ) );
-
-			// Core Player.
-			$player_content .= $player->get_player_code( $atts );
-
-			// Wrap in relative container.
-			$player_content = sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $player_content );
-
-			// View Count.
-			if ( ! empty( $atts['views'] ) ) {
-				$player_content .= self::render_view_count( $source, $atts );
-			}
-
-			// Caption.
-			if ( ! empty( $atts['caption'] ) ) {
-				$player_content .= self::render_video_caption( $atts['caption'] );
-			}
+		}
+		if ( ! empty( $options['embedcode'] ) ) {
+			$title_inner_blocks[] = $make_block(
+				'videopack/share',
+				array(
+					'iconType'  => 'share',
+					'showText'  => false,
+					'styleType' => 'text',
+				)
+			);
 		}
 
-		return self::render_video_container( $atts, $player_content, $is_block, $options );
+		$player_inner_blocks = array();
+		if ( ( $options['overlay_title'] ?? true ) !== false || ! empty( $title_inner_blocks ) ) {
+			$player_inner_blocks[] = $make_block( 'videopack/title', array(), $title_inner_blocks );
+		}
+		if ( ! empty( $options['watermark'] ) ) {
+			$player_inner_blocks[] = $make_block( 'videopack/watermark', array() );
+		}
+
+		$blocks = array(
+			$make_block(
+				'videopack/player',
+				array(
+					'lock' => array(
+						'remove' => true,
+						'move'   => false,
+					),
+				),
+				$player_inner_blocks
+			),
+		);
+
+		if ( ! empty( $options['views'] ) ) {
+			$blocks[] = $make_block( 'videopack/view-count', array() );
+		}
+
+		$design_overrides = array_filter(
+			$design_overrides,
+			function ( $value ) {
+				return null !== $value && '' !== $value && false !== $value;
+			}
+		);
+
+		$blocks = array(
+			$make_block(
+				'videopack/player-container',
+				array_merge( $design_overrides, array( 'id' => (int) $post_id ) ),
+				$blocks
+			),
+		);
+
+		return do_blocks( serialize_blocks( $blocks ) );
 	}
 
 	/**
@@ -1446,27 +1471,4 @@ class Modular_Renderer {
 		return (string) ob_get_clean();
 	}
 
-	/**
-	 * Recursively compiles a parsed block tree into a structured array for REST/JSON serialization.
-	 *
-	 * @param array $blocks Array of parsed blocks.
-	 * @return array The serialized block tree.
-	 */
-	public static function serialize_player_container( $blocks ) {
-		$serialized = array();
-		foreach ( $blocks as $block ) {
-			if ( empty( $block['blockName'] ) ) {
-				continue;
-			}
-			$node = array(
-				'name'       => $block['blockName'],
-				'attributes' => $block['attrs'] ?? array(),
-			);
-			if ( ! empty( $block['innerBlocks'] ) ) {
-				$node['innerBlocks'] = self::serialize_player_container( $block['innerBlocks'] );
-			}
-			$serialized[] = $node;
-		}
-		return $serialized;
-	}
 }
