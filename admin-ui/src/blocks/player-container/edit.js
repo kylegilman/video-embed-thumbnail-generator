@@ -570,6 +570,17 @@ export default function Edit({
 	]);
 
 	useEffect(() => {
+		// Skip entirely in preview contexts (Settings/Classic-editor/Attachment
+		// Details previews) — the hardcoded bundled sample asset never has real
+		// transcoded source_groups to discover, and every one of these previews
+		// gets rebuilt (and this block's attributes re-synced from its own
+		// unresolved 'videopack-preview-video' default) on every unrelated
+		// settings change, which was turning this into a self-perpetuating
+		// resolve → refetch → resolve cascade on every keystroke.
+		if (effectiveDesign.isPreview) {
+			return;
+		}
+
 		if (src === 'videopack-preview-video') {
 			setAttributes({
 				src:
@@ -596,7 +607,7 @@ export default function Edit({
 					console.error('Error fetching video sources:', error);
 				});
 		}
-	}, [id, src, setAttributes]);
+	}, [id, src, setAttributes, effectiveDesign.isPreview]);
 
 	const { isProbing, probedMetadata } = useVideoProbe(effectiveSrc);
 	const [probedMetadataOverride, setProbedMetadataOverride] = useState(null);
@@ -645,7 +656,7 @@ export default function Edit({
 		return [
 			[
 				'videopack/player',
-				{},
+				{ lock: { remove: true, move: false } },
 				engine_inner_blocks,
 			],
 			['videopack/view-count', {}],

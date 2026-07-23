@@ -5,6 +5,12 @@ export { isTrue };
 
 import { applyFilters } from '@wordpress/hooks';
 
+// Stable reference for callers that don't pass their own excludeKeys — a
+// literal `[]` default would be a new array every call (JS re-evaluates
+// default param expressions per invocation), which would defeat the
+// `initial` useMemo below on every render since excludeKeys is a dependency.
+const EMPTY_EXCLUDE_KEYS = [];
+
 const DEFAULT_CONTEXT_KEYS = [
 	'skin',
 	'title_color',
@@ -111,7 +117,7 @@ export const VIDEOPACK_CONTEXT_KEYS =
 export default function useVideopackContext(attributes, context, options = {}) {
 	const {
 		excludeHoverTrigger: optionsExclude = false,
-		excludeKeys = [],
+		excludeKeys = EMPTY_EXCLUDE_KEYS,
 		// Restricts which resolved values become videopack-has-{key} classes /
 		// --videopack-{key} CSS vars (unlike excludeKeys, resolved[key] is still
 		// always computed — only the stamping is scoped). null means "stamp

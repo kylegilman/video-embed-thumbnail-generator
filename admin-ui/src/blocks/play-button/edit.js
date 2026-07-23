@@ -26,7 +26,8 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const embed_method =
-		typeof config !== 'undefined' ? config.embed_method : 'Video.js';
+		(typeof config !== 'undefined' ? config.options?.embed_method : null) ||
+		'Video.js';
 	const THEME_COLORS = config?.themeColors;
 
 	const { resolved } = useVideopackContext(attributes, context);
@@ -42,7 +43,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 	);
 
 	const overlayStyles = {};
-	if (isInsidePlayerOverlay || isInsideThumbnail || context.isPreview) {
+	if (isInsidePlayerOverlay || isInsideThumbnail || resolved.isPreview) {
 		overlayStyles.position = 'absolute';
 		overlayStyles.top = 0;
 		overlayStyles.left = 0;

@@ -39,6 +39,26 @@ import AdminSettings from './components/AdminSettings';
 import FreemiusPage from './components/FreemiusPage';
 import './settings.scss';
 
+// Registers every Videopack block type on this page (registerBlockType()
+// side effects) — required for the real-block-preview system (buildPreviewBlocks
+// + RealBlockPreview) used by PlayerSettings/VideoCollectionSettings. Full
+// attribute/context schemas come from the server-side bootstrap injected by
+// Assets::bootstrap_block_editor_definitions() (see src/Admin/Assets.php) —
+// this page never loads the real post editor, which is the only thing that
+// bootstrap normally runs for.
+import '../../blocks/player-container';
+import '../../blocks/player';
+import '../../blocks/title';
+import '../../blocks/download';
+import '../../blocks/share';
+import '../../blocks/watermark';
+import '../../blocks/view-count';
+import '../../blocks/loop';
+import '../../blocks/thumbnail';
+import '../../blocks/play-button';
+import '../../blocks/pagination';
+import '../../blocks/collection';
+
 /**
  * VideopackSettingsPage component.
  *

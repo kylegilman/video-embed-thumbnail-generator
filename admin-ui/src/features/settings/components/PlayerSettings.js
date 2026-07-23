@@ -17,6 +17,7 @@ import {
 	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
+import { BlockContextProvider } from '@wordpress/block-editor';
 import { volumeUp, volumeDown } from '../../../assets/icon';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe';
 import CompactColorPicker from '../../../components/CompactColorPicker/CompactColorPicker';
@@ -24,11 +25,10 @@ import { getColorFallbacks } from '../../../utils/colors';
 import VideopackTooltip from './VideopackTooltip';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import useResolutions from '../../../hooks/useResolutions';
-import { BlockPreview } from '../../../components/Preview';
-import {
-	TITLE_DOWNLOAD_BLOCK_ATTRS,
-	TITLE_SHARE_BLOCK_ATTRS,
-} from '../../../utils/titleDownloadBlock';
+import useStablePreviewBlocks from '../../../hooks/useStablePreviewBlocks';
+import RealBlockPreview from '../../../components/RealBlockPreview';
+import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer';
+import { getTitleInnerTemplate } from '../../../utils/titleDownloadBlock';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
@@ -383,9 +383,30 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		settings
 	);
 
+	// Real attributes for the actual <VideoPlayer> instance — deliberately
+	// the real, final URL rather than player-container/block.json's
+	// 'videopack-preview-video' placeholder default — that string only
+	// exists so a freshly-inserted real player-container block can swap
+	// itself to a demo video via its own edit.js effect, which would
+	// otherwise cascade REST requests here on every keystroke.
+	const playerAttributes = useMemo(
+		() => ({
+			src: `${videopack_config.url}/src/images/Adobestock_469037984.mp4`,
+			title: 'Sample Video',
+			overlay_title: !!overlay_title,
+			isPreview: true,
+			embedlink: 'https://www.website.com/embed/',
+			caption: __(
+				"If text is entered in the attachment's caption field it is displayed here automatically."
+			),
+		}),
+		[overlay_title]
+	);
+
 	const previewContext = useMemo(() => {
 		const ctx = {
 			'videopack/isInsidePlayerContainer': true,
+			'videopack/isPreview': true,
 		};
 		// Add fallbacks first
 		Object.keys(PLAYER_COLOR_FALLBACKS).forEach((key) => {
@@ -412,8 +433,77 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			});
 		}
 
+		// Title/download/share blocks (rendered separately via
+		// RealBlockPreview, not as real InnerBlocks descendants of a
+		// player-container/player block) get the sample video's actual data
+		// — title, caption, embedlink — only through this ambient context,
+		// since useVideopackData reads context, not a block's own saved
+		// attribute. See VideoTitle.js.
+		Object.keys(playerAttributes).forEach((key) => {
+			ctx[`videopack/${key}`] = playerAttributes[key];
+		});
+
 		return ctx;
-	}, [settings, PLAYER_COLOR_FALLBACKS]);
+	}, [settings, PLAYER_COLOR_FALLBACKS, playerAttributes]);
+
+	// The sample player itself is rendered directly via <VideoPlayer> (see
+	// JSX below), not through useBlockPreview/RealBlockPreview — that hook
+	// applies useDisabled() to everything it renders, which would leave the
+	// sample video permanently unplayable and hide Video.js's control-bar
+	// colors (only visible once playback has actually started). Only the
+	// overlay chrome (title/watermark) and view-count, which don't need to
+	// be interactive, go through RealBlockPreview — mirroring
+	// AttachmentPreview.js's established pattern for the same tradeoff.
+	const showTitleBar = !!(
+		overlay_title ||
+		downloadlink ||
+		(embeddable && embedcode)
+	);
+
+	const overlayTemplate = useMemo(() => {
+		const template = [];
+		if (showTitleBar) {
+			template.push([
+				'videopack/title',
+				{ overlay_title: !!overlay_title, showBackground: true },
+				getTitleInnerTemplate(
+					!!downloadlink,
+					!!(embeddable && embedcode)
+				),
+			]);
+		}
+		if (watermark) {
+			template.push(['videopack/watermark', {}]);
+		}
+		return template;
+	}, [showTitleBar, overlay_title, downloadlink, embeddable, embedcode, watermark]);
+	const overlayBlocks = useStablePreviewBlocks(overlayTemplate);
+
+	const viewCountTemplate = useMemo(() => {
+		if (!views) {
+			return [];
+		}
+		return [['videopack/view-count', {}]];
+	}, [views]);
+	const viewCountBlocks = useStablePreviewBlocks(viewCountTemplate);
+
+	// Title/Watermark render inside VideoPlayer's overlay chrome, so they
+	// need the extra isInsidePlayerOverlay context their real edit.js
+	// components check for — view-count (rendered as a sibling, outside
+	// VideoPlayer) uses previewContext directly instead.
+	const playerOverlayContext = useMemo(
+		() => ({
+			...previewContext,
+			'videopack/isInsidePlayerOverlay': true,
+		}),
+		[previewContext]
+	);
+
+	// Mirrors player-container/edit.js's own effectiveAlign resolution so
+	// the sample player keeps the same width/alignment behavior now that
+	// it's no longer rendered through that block's own edit.js.
+	const effectiveAlign =
+		align || videopack_config?.options?.align || '';
 
 	return (
 		<>
@@ -489,7 +579,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label={__(
-										'Download link',
+										'Download',
 										'video-embed-thumbnail-generator'
 									)}
 									onChange={changeHandlerFactory.downloadlink}
@@ -501,7 +591,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 									<ToggleControl
 										__nextHasNoMarginBottom
 										label={__(
-											'Embed code',
+											'Share',
 											'video-embed-thumbnail-generator'
 										)}
 										onChange={
@@ -521,109 +611,33 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 						resizeDependencies={[align]}
 					>
-						<BlockPreview
-							key={embed_method}
-							name="videopack/player-container"
-							attributes={{
-								id: 'sample-video',
-								src:
-									videopack_config.url +
-									'/src/images/Adobestock_469037984.mp4',
-								title: 'Sample Video',
-								overlay_title,
-								width: undefined,
-								height: undefined,
-								starts: 23,
-								embedlink: 'https://www.website.com/embed/',
-								caption: __(
-									"If text is entered in the attachment's caption field it is displayed here automatically."
-								),
-							}}
-							context={previewContext}
+						<div
+							className={`wp-block-videopack-player-container${
+								effectiveAlign ? ` align${effectiveAlign}` : ''
+							}`}
 						>
-							<BlockPreview
-								name="videopack/player"
-								video={{
-									attachment_id: 'sample-video',
-									title: 'Sample Video',
-									player_vars: {
-										sources: [
-											{
-												src:
-													videopack_config.url +
-													'/src/images/Adobestock_469037984.mp4',
-												type: 'video/mp4',
-											},
-										],
-										starts: 23,
-									},
-								}}
+							<VideoPlayer
+								attributes={playerAttributes}
 								context={previewContext}
 							>
-								{(overlay_title ||
-									downloadlink ||
-									(embeddable && embedcode)) && (
-									<BlockPreview
-										name="videopack/title"
-										attributes={{
-											title: 'Sample Video',
-											overlay_title: !!overlay_title,
-											embedcode: !!(
-												embeddable && embedcode
-											),
-											showBackground: true,
-										}}
-										isInsidePlayerOverlay={true}
-										isInsidePlayerContainer={true}
-										isOverlay={true}
-										context={previewContext}
+								{overlayBlocks.length > 0 && (
+									<BlockContextProvider
+										value={playerOverlayContext}
 									>
-										{!!downloadlink && (
-											<BlockPreview
-												name="videopack/download"
-												attributes={
-													TITLE_DOWNLOAD_BLOCK_ATTRS
-												}
-												context={previewContext}
-												isInsidePlayerOverlay={true}
-												isInsidePlayerContainer={true}
-											/>
-										)}
-										{!!(embeddable && embedcode) && (
-											<BlockPreview
-												name="videopack/share"
-												attributes={
-													TITLE_SHARE_BLOCK_ATTRS
-												}
-												context={previewContext}
-												isInsidePlayerOverlay={true}
-												isInsidePlayerContainer={true}
-											/>
-										)}
-									</BlockPreview>
+										<RealBlockPreview
+											blocks={overlayBlocks}
+										/>
+									</BlockContextProvider>
 								)}
-								{watermark && (
-									<BlockPreview
-										name="videopack/watermark"
-										isInsidePlayerOverlay={true}
-										isInsidePlayerContainer={true}
-										isOverlay={true}
-										context={previewContext}
+							</VideoPlayer>
+							{viewCountBlocks.length > 0 && (
+								<BlockContextProvider value={previewContext}>
+									<RealBlockPreview
+										blocks={viewCountBlocks}
 									/>
-								)}
-							</BlockPreview>
-							{views && (
-								<BlockPreview
-									name="videopack/view-count"
-									attributes={{
-										count: 1234,
-										showText: true,
-										iconType: 'none',
-									}}
-									context={previewContext}
-								/>
+								</BlockContextProvider>
 							)}
-						</BlockPreview>
+						</div>
 					</PreviewIframe>
 
 					<PanelRow className="videopack-flex-right">

@@ -22,6 +22,14 @@ const PLAYER_CONTEXT_CLASS_KEYS = [
 	'control_bar_color',
 	'play_button_color',
 	'play_button_secondary_color',
+	// On the frontend, Modular_Renderer::render_video_container() always
+	// stamps a videopack-embed-{method} class on the outer player wrapper
+	// (unconditionally, not gated by any classKeys scoping) — engine-specific
+	// stylesheets (e.g. a third-party add-on's Video.js 10 skin) key their
+	// title-overlay overrides off this class being present on an ancestor.
+	// This wrapper is the equivalent ancestor for the admin preview, so it
+	// needs the same class or those overrides never apply there.
+	'embed_method',
 ];
 
 const DEFAULT_PLAYERS = {
@@ -348,12 +356,22 @@ const VideoPlayer = ({
 		return [];
 	}, [source_groups, incomingSources, src]);
 
-	const uniqueKey = useMemo(() => {
-		if (blockAttributes.id) {
-			return `${blockAttributes.id}-${JSON.stringify(source_groups)}`;
-		}
-		return Math.random().toString(36).substr(2, 9);
-	}, [blockAttributes.id, source_groups]);
+	// Only the id-based branch actually needs to react to source_groups
+	// content (e.g. an async source-groups fetch landing for the same
+	// attachment) — the no-id fallback (true for previews with no real
+	// attachment) should stay stable for this component's whole lifetime.
+	// Depending on source_groups for the fallback too meant every re-render
+	// generated a brand new random string — source_groups defaults to a new
+	// {} reference whenever unset, and even an unrelated settings change
+	// (which recreates the context object passed in) counted as a
+	// re-render — forcing Video.js to fully remount each time.
+	const randomKeyRef = useRef();
+	if (!randomKeyRef.current) {
+		randomKeyRef.current = Math.random().toString(36).substr(2, 9);
+	}
+	const uniqueKey = blockAttributes.id
+		? `${blockAttributes.id}-${JSON.stringify(source_groups)}`
+		: randomKeyRef.current;
 
 	const genericPlayerOptions = useMemo(() => {
 		const config = window.videopack_config || {};
