@@ -1,6 +1,7 @@
-import { useMemo, useState } from '@wordpress/element';
+import { useMemo } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
+import { BlockContextProvider } from '@wordpress/block-editor';
 import {
 	PanelBody,
 	SelectControl,
@@ -9,14 +10,14 @@ import {
 	Button,
 	Flex,
 	FlexItem,
-	Spinner,
 } from '@wordpress/components';
 import { sortAscending, sortDescending } from '../../../assets/icon';
-import useVideoQuery from '../../../hooks/useVideoQuery';
-import { BlockPreview, TemplatePreview } from '../../../components/Preview';
+import useStablePreviewBlocks from '../../../hooks/useStablePreviewBlocks';
+import RealBlockPreview from '../../../components/RealBlockPreview';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe';
 import CompactColorPicker from '../../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../../utils/colors';
+import getSharedDesignAttributes from '../../../utils/sharedDesignAttributes';
 import VideopackTooltip from './VideopackTooltip';
 
 /* global videopack_config */
@@ -24,14 +25,10 @@ import VideopackTooltip from './VideopackTooltip';
 // Color fallbacks are now handled by getColorFallbacks utility.
 
 const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
-	const config = videopack_config;
-	const embed_method = config?.embed_method || 'Video.js';
-
 	const colorFallbacks = useMemo(
 		() => getColorFallbacks(settings),
 		[settings]
 	);
-	const [currentPage, setCurrentPage] = useState(1);
 
 	const {
 		enable_collection_video_limit,
@@ -53,6 +50,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		pagination_active_bg_color,
 		pagination_active_color,
 		skin,
+		embed_method,
 	} = settings;
 
 	const skinOptions = useMemo(() => {
@@ -101,17 +99,35 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		);
 	}, [embed_method]);
 
-	const previewQueryAttributes = useMemo(() => {
+	// videopack/collection always runs its own useVideoQuery internally
+	// (using its own attributes) and re-provides its own VideopackProvider to
+	// its children — it doesn't defer to anything supplied from outside. So
+	// these have to be real attributes on the collection block itself, not
+	// context/an outer query, or its internal fetch (defaulting to
+	// gallery_source="current", which needs a real post) comes back empty and
+	// silently overrides whatever we set up around it.
+	//
+	// This also covers colors/skin (via getSharedDesignAttributes):
+	// videopack/collection is one of Ui.php's $receives_shared_attributes
+	// blocks, so Gutenberg's own providesContext mechanism reads those only
+	// from collection's own attributes too, never from previewContext below.
+	// That does mean a color/skin change rebuilds the block tree the same
+	// way a structural setting does — a brief flash, but colors actually apply.
+	const collectionAttributes = useMemo(() => {
 		const isPaginationEnabled =
 			gallery_pagination === true ||
 			gallery_pagination === 1 ||
 			gallery_pagination === '1';
 
 		const attrs = {
-			...settings,
+			...getSharedDesignAttributes(settings, colorFallbacks),
+			gallery_source: 'recent', // Pull videos from the whole site for the preview
+			gallery_orderby,
+			gallery_order,
+			gallery_per_page,
 			gallery_pagination: isPaginationEnabled,
-			gallery_source: 'all', // Pull videos from the whole site for the preview
-			page_number: currentPage,
+			columns: gallery_columns,
+			overlay_title: gallery_title,
 		};
 
 		// Safety restriction for the preview: if pagination is disabled, force a limit of 12
@@ -121,12 +137,16 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		}
 
 		return attrs;
-	}, [settings, currentPage, gallery_pagination]);
-
-	const { videoResults, maxNumPages, isResolving } = useVideoQuery(
-		previewQueryAttributes,
-		0
-	);
+	}, [
+		settings,
+		colorFallbacks,
+		gallery_orderby,
+		gallery_order,
+		gallery_per_page,
+		gallery_pagination,
+		gallery_columns,
+		gallery_title,
+	]);
 
 	// Sync total pages from the query results
 	const handlers = useMemo(() => {
@@ -146,7 +166,19 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		const template = [
 			[
 				'videopack/loop',
-				{},
+				// isPreview is a real declared attribute on videopack/loop's
+				// own block.json (added specifically for this), so it
+				// survives createBlock()'s sanitizeBlockAttributes() and
+				// resolves directly from loop's own attribute — it keeps
+				// loop/edit.js's canEdit false, so every grid item (including
+				// the first/"active" one) renders through its static
+				// LoopItemPreview path instead of real, persisted
+				// <InnerBlocks>, which otherwise doesn't pick up attribute/
+				// context changes on rebuild. Scoped to loop specifically:
+				// videopack/collection only ever sees isPreview via context
+				// fallback (it's never set as collection's own attribute
+				// here), and forces gallery_per_page to 2 when true.
+				{ isPreview: true },
 				[
 					[
 						'videopack/thumbnail',
@@ -172,20 +204,18 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			template.push(['videopack/pagination', {}]);
 		}
 
-		return template;
-	}, [gallery_title, gallery_pagination]);
+		return [['videopack/collection', collectionAttributes, template]];
+	}, [gallery_title, gallery_pagination, collectionAttributes]);
+
+	const previewBlocks = useStablePreviewBlocks(galleryTemplate);
 
 	const previewContext = useMemo(() => {
-		const ctx = {
-			'videopack/layout': 'grid',
-			'videopack/columns': gallery_columns,
-			'videopack/videos': videoResults,
-			'videopack/gallery_pagination': !!gallery_pagination,
-			'videopack/gallery_per_page': gallery_per_page,
-			'videopack/currentPage': currentPage,
-			'videopack/totalPages': maxNumPages,
-			'videopack/onPageChange': (page) => setCurrentPage(page),
-		};
+		// Gallery query/structure attributes (source, per_page, columns, etc.)
+		// live directly on the videopack/collection block itself now (see
+		// collectionAttributes) — this context only needs to carry design
+		// values (colors, watermark styles) that flow to children via
+		// fallback, not anything collection's own query depends on.
+		const ctx = {};
 
 		// Pass all global settings into the context bridge for child blocks
 		Object.keys(settings).forEach((key) => {
@@ -217,12 +247,6 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		return ctx;
 	}, [
 		settings,
-		gallery_columns,
-		gallery_pagination,
-		gallery_per_page,
-		videoResults,
-		maxNumPages,
-		currentPage,
 		colorFallbacks,
 		play_button_color,
 		play_button_secondary_color,
@@ -709,21 +733,13 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 								fullScreen={false}
 							>
 								<div className="videopack-preview-content-container">
-									{isResolving && (
-										<div className="videopack-preview-loader">
-											<Spinner />
-										</div>
-									)}
-									<BlockPreview
-										name="videopack/collection"
-										attributes={settings}
-										context={previewContext}
+									<BlockContextProvider
+										value={previewContext}
 									>
-										<TemplatePreview
-											template={galleryTemplate}
-											context={previewContext}
+										<RealBlockPreview
+											blocks={previewBlocks}
 										/>
-									</BlockPreview>
+									</BlockContextProvider>
 								</div>
 							</PreviewIframe>
 						</div>

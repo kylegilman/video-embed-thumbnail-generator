@@ -295,6 +295,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 				onTitleChange={(newTitle) => setAttributes({ title: newTitle })}
 				usePostTitle={usePostTitle}
 				linkToPost={linkToPost}
+				overlay_title={finalOverlayTitle}
 			/>
 		</>
 	);

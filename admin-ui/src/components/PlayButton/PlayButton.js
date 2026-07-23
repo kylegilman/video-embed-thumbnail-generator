@@ -16,7 +16,8 @@ export default function PlayButton({ attributes = {}, context = {} }) {
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const embed_method =
-		typeof config !== 'undefined' ? config.embed_method : 'Video.js';
+		(typeof config !== 'undefined' ? config.options?.embed_method : null) ||
+		'Video.js';
 	const vpContext = useVideopackContext(attributes, context, {
 		classKeys: CLASS_KEYS,
 	});

@@ -3,14 +3,44 @@
  */
 
 import { createRoot, useState, useEffect, useMemo } from '@wordpress/element';
+import { BlockContextProvider } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
-import { TemplatePreview } from '../../components/Preview';
 import { getGridTemplate, getListTemplate } from '../../utils/templates';
 import { getTitleInnerTemplate } from '../../utils/titleDownloadBlock';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideoQuery from '../../hooks/useVideoQuery';
+import { VideopackProvider } from '../../utils/VideopackContext';
+import useStablePreviewBlocks from '../../hooks/useStablePreviewBlocks';
+import RealBlockPreview from '../../components/RealBlockPreview';
 /* global videopack_config, tinymce, MutationObserver, videojs */
 import './tinymce.scss';
+
+// Stable reference: TinyMCE has no real block context, so we always pass an
+// empty object. A fresh `{}` literal here would be a new reference every
+// render, defeating useVideopackContext's internal memoization and causing
+// the preview to recompute (and flicker) on every render, including ones
+// merely toggling isSelected.
+const EMPTY_CONTEXT = {};
+
+// Registers every Videopack block type on this page (registerBlockType() side
+// effects) — required for buildPreviewBlocks()'s createBlock() calls and
+// RealBlockPreview's useBlockPreview to work at all. Full attribute/context
+// schemas come from the server-side bootstrap injected by
+// Assets::bootstrap_block_editor_definitions() (see src/Admin/Assets.php) —
+// this page never loads the real post editor, which is the only thing that
+// bootstrap normally runs for.
+import '../../blocks/player-container';
+import '../../blocks/player';
+import '../../blocks/title';
+import '../../blocks/download';
+import '../../blocks/share';
+import '../../blocks/watermark';
+import '../../blocks/view-count';
+import '../../blocks/loop';
+import '../../blocks/thumbnail';
+import '../../blocks/play-button';
+import '../../blocks/pagination';
+import '../../blocks/collection';
 
 (function () {
 	/**
@@ -74,14 +104,47 @@ import './tinymce.scss';
 		const activePostId = useMemo(() => detectPostId(), []);
 		// Use unified context hook for all design and behavior resolution.
 		// TinyMCE doesn't have block context, so we pass an empty object.
-		const vpContext = useVideopackContext(
-			attributes,
-			{},
-			{ excludeHoverTrigger: true }
-		);
+		const vpContext = useVideopackContext(attributes, EMPTY_CONTEXT, {
+			excludeHoverTrigger: true,
+		});
 		const mergedAttributes = useMemo(() => {
 			const resolved = { ...vpContext.resolved };
 			resolved.autoplay = false; // Never autoplay in TinyMCE preview
+
+			// overlay_title isn't one of useVideopackContext's
+			// VIDEOPACK_CONTEXT_KEYS (it's resolved as a simple
+			// attribute-or-global-default special case everywhere else — see
+			// VideoTitle.js's finalOverlayTitle), so vpContext.resolved never
+			// carries it. Without this, getGridTemplate/getListTemplate below
+			// (which read options.overlay_title to decide whether to include
+			// a title block at all) never see the real global setting and
+			// silently build a template with no title block.
+			resolved.overlay_title =
+				attributes.overlay_title !== undefined
+					? attributes.overlay_title
+					: (videopack_config?.options?.overlay_title !== undefined
+							? videopack_config.options.overlay_title
+							: true);
+
+			// A standalone single-video shortcode (`[videopack id="123"]`) names
+			// one specific attachment directly. useVideoQuery has no "fetch this
+			// one attachment" mode of its own — only gallery-style queries — so
+			// without this it falls through to gallery_source="current", which
+			// queries videos attached to the post being edited, not attachment
+			// `id` itself. Route it through the existing manual-inclusion query
+			// path instead (the same one Collection/Loop use for explicit
+			// video-ID lists). mountReactToNode only assigns type="Video" when
+			// gallery_source/gallery_category/gallery_tag weren't explicitly set
+			// and there's a single (non-comma) id, so this can't clobber an
+			// explicit gallery query.
+			if (
+				type === 'Video' &&
+				attributes.id &&
+				!String(attributes.id).includes(',')
+			) {
+				resolved.gallery_source = 'manual';
+				resolved.gallery_include = String(attributes.id);
+			}
 
 			// Fix for gallery_source="current" in TinyMCE/REST context where get_the_ID() is 0.
 			if (
@@ -95,7 +158,13 @@ import './tinymce.scss';
 				}
 			}
 			return resolved;
-		}, [vpContext.resolved, activePostId]);
+		}, [
+			vpContext.resolved,
+			activePostId,
+			type,
+			attributes.id,
+			attributes.overlay_title,
+		]);
 
 		const { videoResults, isResolving, maxNumPages } = useVideoQuery(
 			{ ...mergedAttributes, page_number: 1 },
@@ -134,6 +203,114 @@ import './tinymce.scss';
 			return () => observer.disconnect();
 		}, [mountNode]);
 
+		// Resolve template. Memoized on its actual inputs (not recomputed fresh
+		// every render, e.g. whenever `isSelected` toggles) so buildPreviewBlocks()
+		// below doesn't create brand-new createBlock() instances (new clientIds)
+		// on every render, which would make useBlockPreview fully remount its
+		// internal editor instance each time — the cause of a visible flicker
+		// whenever this preview is selected/deselected in TinyMCE.
+		const template = useMemo(() => {
+			if (type === 'Video') {
+				const showTitleBar = !!(
+					mergedAttributes.overlay_title !== false ||
+					mergedAttributes.downloadlink ||
+					mergedAttributes.embedcode
+				);
+
+				const engineChildren = [];
+				if (showTitleBar) {
+					engineChildren.push([
+						'videopack/title',
+						{
+							overlay_title:
+								mergedAttributes.overlay_title !== false,
+						},
+						getTitleInnerTemplate(
+							!!mergedAttributes.downloadlink,
+							!!mergedAttributes.embedcode
+						),
+					]);
+				}
+				if (mergedAttributes.watermark) {
+					engineChildren.push(['videopack/watermark', {}]);
+				}
+
+				const videoChildren = [
+					['videopack/player', {}, engineChildren],
+				];
+
+				if (mergedAttributes.views) {
+					videoChildren.push(['videopack/view-count', {}]);
+				}
+
+				// player-container/edit.js reads its own `id`/`src` attributes
+				// directly (not just context) to decide whether to show a real
+				// player or the "select a video" placeholder — mergedAttributes
+				// only carries the resolved `attachmentId` (a design-context
+				// concept), not the block's own `id`/`src` attribute names, so
+				// those need to be set explicitly here, matching what a real,
+				// saved standalone Player-Container block would have.
+				const playerContainerAttrs = {
+					...mergedAttributes,
+					id: attributes.id ? Number(attributes.id) : undefined,
+					src: attributes.src || undefined,
+				};
+
+				return [
+					[
+						'videopack/player-container',
+						playerContainerAttrs,
+						videoChildren,
+					],
+				];
+			}
+
+			// Gallery/List match the real, server-side shortcode-to-block
+			// structure (Shortcode::simulate_collection_block()): a
+			// videopack/collection wrapping videopack/loop, with the actual
+			// query attributes (gallery_source, gallery_orderby, etc.) set
+			// directly on collection itself — collection always runs its own
+			// useVideoQuery internally and re-provides its own context/videos
+			// to children, so this can't be supplied from outside via the
+			// context/VideopackProvider below (see the equivalent fix in
+			// VideoCollectionSettings.js for why).
+			const layout = type === 'Gallery' ? 'grid' : 'list';
+			const collectionAttrs = {
+				...mergedAttributes,
+				layout,
+				columns: parseInt(mergedAttributes.gallery_columns, 10) || 3,
+			};
+			const innerTemplate =
+				layout === 'grid'
+					? getGridTemplate(mergedAttributes)
+					: getListTemplate(mergedAttributes);
+
+			// getGridTemplate/getListTemplate are shared with videopack/
+			// collection's own real-editor default template (new, empty
+			// collection blocks), so this can't be baked in there directly.
+			// Set it only here, on the loop tuple these functions return as
+			// their first entry: isPreview (now a real declared attribute on
+			// videopack/loop's own block.json, so it survives createBlock()'s
+			// sanitizeBlockAttributes()) keeps loop/edit.js's canEdit false,
+			// so every grid item — including the first/"active" one —
+			// renders through its static LoopItemPreview path instead of
+			// real, persisted <InnerBlocks>, which otherwise doesn't pick up
+			// attribute/context changes on rebuild. Scoped to loop
+			// specifically: videopack/collection only ever sees isPreview via
+			// context fallback (it's never set as collection's own
+			// attribute here), and forces gallery_per_page to 2 when true.
+			const [loopName, loopAttrs, loopChildren] = innerTemplate[0];
+			innerTemplate[0] = [
+				loopName,
+				{ ...loopAttrs, isPreview: true },
+				loopChildren,
+			];
+
+			return [['videopack/collection', collectionAttrs, innerTemplate]];
+		}, [type, mergedAttributes, attributes.id, attributes.src]);
+
+		const previewBlocks = useStablePreviewBlocks(template);
+
 		if (isResolving) {
 			return (
 				<div className="loading-placeholder">
@@ -145,43 +322,11 @@ import './tinymce.scss';
 			);
 		}
 
-		// Resolve template
-		let template;
-		if (type === 'Video') {
-			const showTitleBar = !!(
-				mergedAttributes.overlay_title !== false ||
-				mergedAttributes.downloadlink ||
-				mergedAttributes.embedcode
-			);
-
-			const engineChildren = [];
-			if (showTitleBar) {
-				engineChildren.push([
-					'videopack/title',
-					{},
-					getTitleInnerTemplate(
-						!!mergedAttributes.downloadlink,
-						!!mergedAttributes.embedcode
-					),
-				]);
-			}
-			if (mergedAttributes.watermark) {
-				engineChildren.push(['videopack/watermark', {}]);
-			}
-
-			const videoChildren = [['videopack/player', {}, engineChildren]];
-
-			if (mergedAttributes.views) {
-				videoChildren.push(['videopack/view-count', {}]);
-			}
-
-			template = [['videopack/player-container', {}, videoChildren]];
-		} else if (type === 'Gallery') {
-			template = getGridTemplate(mergedAttributes);
-		} else {
-			template = getListTemplate(mergedAttributes);
-		}
-
+		// The single-video shortcode's own attachment (videoResults[0]) — for
+		// Gallery/List, videopack/collection now owns its own query/videos/
+		// pagination internally (see the template useMemo above), so these
+		// gallery-shaped keys are unused there, not conflicting with anything.
+		const singleVideo = videoResults[0] || {};
 		const contextValue = {
 			...vpContext.sharedContext,
 			'videopack/videos': videoResults,
@@ -190,6 +335,30 @@ import './tinymce.scss';
 				parseInt(mergedAttributes.gallery_columns, 10) || 3,
 			'videopack/totalPages': maxNumPages,
 			'videopack/currentPage': 1,
+			'videopack/postId': singleVideo.attachment_id,
+			'videopack/attachmentId': singleVideo.attachment_id,
+			'videopack/title': singleVideo.title,
+			'videopack/caption': singleVideo.caption,
+			'videopack/poster': singleVideo.poster_url,
+			// Gallery.php's collection_page() only ever nests the view count
+			// inside player_vars.starts — see buildItemContext.js for the
+			// same fix applied to Loop's own per-item context.
+			'videopack/views': singleVideo.player_vars?.starts,
+			'videopack/duration':
+				singleVideo.duration || singleVideo.player_vars?.duration,
+			'videopack/embedlink':
+				singleVideo.embed_url ||
+				singleVideo.player_vars?.full_player_html ||
+				'',
+			// Deliberately not setting videopack/isPreview here: every block
+			// in this tree (single video or Gallery/List) always has real,
+			// resolved attachment data — there's no "nothing selected yet"
+			// state to signal. isPreview is a broad "no real data, be
+			// lenient" flag consumed differently by many blocks; two
+			// consumers actively misbehave if it's true here regardless of
+			// real data being present: player/edit.js unconditionally
+			// substitutes the real src/poster with its hardcoded sample
+			// video, and videopack/collection forces gallery_per_page to 2.
 		};
 
 		return (
@@ -197,13 +366,11 @@ import './tinymce.scss';
 				className="videopack-tinymce-wrapper"
 				style={themePresetsStyle}
 			>
-				<TemplatePreview
-					attributes={mergedAttributes}
-					template={template}
-					context={contextValue}
-					video={videoResults[0]}
-					postId={detectPostId()}
-				/>
+				<BlockContextProvider value={contextValue}>
+					<VideopackProvider value={{ videos: videoResults }}>
+						<RealBlockPreview blocks={previewBlocks} />
+					</VideopackProvider>
+				</BlockContextProvider>
 				{!isSelected && <div className="videopack-block-overlay" />}
 			</div>
 		);
