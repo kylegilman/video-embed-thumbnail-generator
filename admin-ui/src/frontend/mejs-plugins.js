@@ -362,19 +362,33 @@
 				const hasSourceGroups = source_groups && Object.keys(source_groups).length > 0;
 
 				// Flatten every source across every codec group into one
-				// list, then auto-pick the best-supported codec for each
-				// resolution — quality selection is resolution-only; codec
-				// compatibility is resolved automatically, the same way a
-				// plain <source> fallback list would.
+				// list, then group by resolution — quality selection stays
+				// resolution-only. When a resolution has multiple codec
+				// candidates, changeRes() hands all of them to the browser
+				// as <source> elements and lets its native fallback choose
+				// (see changeRes below), rather than us guessing from a
+				// one-shot canPlayType() check.
 				const flatSources = hasSourceGroups
 					? Object.keys(source_groups).flatMap((groupId) => source_groups[groupId].sources || [])
 					: sources;
-				const bestByRes = player.pickBestSourcesByResolution(flatSources, media);
 
 				if (hasSourceGroups) {
-					bestByRes.forEach((source) => {
-						const isCurrent = media.src === source.src;
-						player.addSourceButton(source, source.label, source.type, isCurrent);
+					const groups = player.groupSourcesByResolution(flatSources);
+					player.resolutionCandidates = {};
+					const currentSrc = media.src;
+					groups.forEach(({ res, candidates }) => {
+						player.resolutionCandidates[res] = candidates;
+						const isCurrent = candidates.some((c) => c.src === currentSrc);
+						if (isCurrent) {
+							// Seeds getCurrentRes()/changeRes()'s dedup guard with
+							// whatever resolution the browser's own native
+							// <source> selection already landed on, so a
+							// same-resolution automatic-resolution call doesn't
+							// perform a redundant (and disruptive — it pauses
+							// and reloads) swap the moment playback starts.
+							player.currentRes = res;
+						}
+						player.addSourceButton({ src: res, resolution: res }, null, null, isCurrent);
 					});
 				} else {
 					for (let i = 0, total = sources.length; i < total; i++) {
@@ -452,7 +466,11 @@
 
 				// Handle click so that screen readers can toggle the menu
 				player.sourcechooserButton.querySelector('button').addEventListener('click', function () {
-					if (mejs.Utils.hasClass(mejs.Utils.siblings(this, `.${t.options.classPrefix}sourcechooser-selector`), `${t.options.classPrefix}offscreen`)) {
+					// siblings() takes a predicate function (not a CSS-selector
+					// string, unlike this call previously assumed) and returns
+					// an array — hasClass() needs a single element, hence [0].
+					const selector = mejs.Utils.siblings(this, (el) => mejs.Utils.hasClass(el, `${t.options.classPrefix}sourcechooser-selector`))[0];
+					if (mejs.Utils.hasClass(selector, `${t.options.classPrefix}offscreen`)) {
 						player.showSourcechooserSelector();
 						player.sourcechooserButton.querySelector('input[type=radio]:checked').focus();
 					} else {
@@ -463,19 +481,20 @@
 			},
 
 			/**
-			 * Picks one source per distinct resolution from a flat sources
-			 * array (which may span multiple codec/format groups). When a
-			 * resolution is offered by more than one codec, the browser's
-			 * own playback support decides which file backs it (preferring
-			 * "probably" over "maybe" over unsupported, falling back to the
-			 * first-configured one on a tie) — codec compatibility is
-			 * resolved automatically rather than exposed as a user choice.
+			 * Groups a flat sources array (which may span multiple
+			 * codec/format groups) by resolution. When a resolution is
+			 * offered by more than one codec, all candidates are kept — the
+			 * browser's native <source> fallback picks and, if needed,
+			 * retries the next one on an actual load failure, rather than us
+			 * guessing from a one-shot canPlayType() check. Candidates
+			 * already arrive ordered by codec efficiency (most efficient
+			 * first) from Player::set_sources() server-side, so that order
+			 * is preserved as-is.
 			 *
 			 * @param {Array} sources All sources across every codec group.
-			 * @param {HTMLMediaElement} mediaEl Element used to test codec support.
-			 * @return {Array} Deduplicated sources, one per resolution, sorted descending.
+			 * @return {Array} `{ res, candidates }` entries, one per resolution, sorted descending.
 			 */
-			pickBestSourcesByResolution(sources, mediaEl) {
+			groupSourcesByResolution(sources) {
 				const byRes = {};
 				sources.forEach((s) => {
 					const res = s.resolution || (s.dataset && s.dataset.res) || s['data-res'];
@@ -488,34 +507,9 @@
 					byRes[res].push(s);
 				});
 
-				const rank = (type) => {
-					if (!type || !mediaEl || typeof mediaEl.canPlayType !== 'function') {
-						return 0;
-					}
-					const support = mediaEl.canPlayType(type);
-					if (support === 'probably') {
-						return 2;
-					}
-					if (support === 'maybe') {
-						return 1;
-					}
-					return 0;
-				};
-
-				// Object.keys/for-in always iterate integer-like string keys
-				// (e.g. resolutions "1080", "720") in ascending numeric order
-				// regardless of insertion order, so an explicit descending
-				// sort is needed here rather than relying on key order.
 				return Object.keys(byRes)
-					.map((res) => {
-						const candidates = byRes[res];
-						return candidates.length === 1 ? candidates[0] : [...candidates].sort((a, b) => rank(b.type) - rank(a.type))[0];
-					})
-					.sort((a, b) => {
-						const resA = a.resolution || (a.dataset && a.dataset.res) || a['data-res'];
-						const resB = b.resolution || (b.dataset && b.dataset.res) || b['data-res'];
-						return parseInt(resB, 10) - parseInt(resA, 10);
-					});
+					.map((res) => ({ res, candidates: byRes[res] }))
+					.sort((a, b) => parseInt(b.res, 10) - parseInt(a.res, 10));
 			},
 
 			/**
@@ -552,12 +546,111 @@
 			},
 
 			/**
+			 * Shared freeze-frame-canvas + playback-restore choreography for
+			 * a source swap. `setSourceFn` performs the actual source
+			 * change (setting a single src, or rebuilding <source>
+			 * children); this method handles pausing, snapshotting a canvas
+			 * overlay to mask the black/poster flash, calling .load(), and
+			 * restoring position/playback once the swap completes.
 			 *
-			 * @param {String} src
+			 * Listens on the raw <video> node (not media.addEventListener)
+			 * deliberately: MEJS's native-renderer wrapper only forwards DOM
+			 * events to media's listeners while an internal "isActive" flag
+			 * is true (set by its own show()/hide()), and that flag can
+			 * still be false in the brief window right after a source
+			 * change recreates the renderer — a 'seeked' firing in that
+			 * window would otherwise be silently dropped and never clean up.
+			 *
+			 * @param {HTMLVideoElement} videoEl
+			 * @param {Object} media MEJS media wrapper.
+			 * @param {Function} setSourceFn Performs the actual source change.
+			 */
+			performResolutionSwap(videoEl, media, setSourceFn) {
+				const currentTime = media.currentTime;
+				const paused = media.paused;
+				let canvas = null;
+
+				if (currentTime > 0 && videoEl.videoWidth) {
+					canvas = document.createElement('canvas');
+					canvas.className = 'videopack_temp_thumb';
+					canvas.width = videoEl.videoWidth || videoEl.offsetWidth || 640;
+					canvas.height = videoEl.videoHeight || videoEl.offsetHeight || 360;
+					canvas.style.position = 'absolute';
+					canvas.style.top = '0';
+					canvas.style.left = '0';
+					canvas.style.width = '100%';
+					canvas.style.height = '100%';
+					canvas.style.pointerEvents = 'none';
+					canvas.style.zIndex = '5';
+
+					try {
+						const context = canvas.getContext('2d');
+						context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+						const container = this.container && this.container.get ? this.container.get(0) : this.container;
+						(container || videoEl.parentNode).appendChild(canvas);
+					} catch {
+						canvas = null;
+					}
+				}
+
+				const cleanupCanvas = () => {
+					if (canvas && canvas.parentNode) {
+						canvas.parentNode.removeChild(canvas);
+					}
+				};
+
+				// Wait for the actual 'seeked' event to remove the canvas
+				// rather than removing it right after issuing the seek:
+				// setCurrentTime() is async, and the frame at the restored
+				// position isn't actually rendered yet when 'canplay' fires,
+				// so removing the overlay there re-exposes a stale/black
+				// frame for a moment.
+				const seekedCleanupHandler = () => {
+					cleanupCanvas();
+					videoEl.removeEventListener('seeked', seekedCleanupHandler);
+				};
+
+				const canPlayAfterSourceSwitchHandler = () => {
+					if (currentTime > 0) {
+						media.setCurrentTime(currentTime);
+					} else {
+						cleanupCanvas();
+					}
+					if (!paused) {
+						media.play();
+					}
+					videoEl.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
+				};
+
+				media.pause();
+				setSourceFn();
+				videoEl.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
+				videoEl.addEventListener('seeked', seekedCleanupHandler);
+				videoEl.load();
+			},
+
+			/**
+			 *
+			 * @param {String} src A resolution (multi-codec case, looked up
+			 *   in resolutionCandidates) or a literal source URL (single-
+			 *   codec/legacy fallback case).
 			 */
 			changeRes(src) {
 				const t = this;
 				const media = t.media;
+				const videoEl = t.node;
+
+				// Already at this resolution — skip. Without this, a caller
+				// like setAutomaticResolution (invoked repeatedly, e.g. off a
+				// ResizeObserver) would re-trigger a full pause/reload/seek
+				// cycle for the *same* resolution on every call. Worse, an
+				// in-flight swap's own restorePlayback media.play() would get
+				// aborted by the next redundant call's media.pause(), which is
+				// exactly what surfaced as "video immediately pauses" plus an
+				// uncaught AbortError.
+				if (t.currentRes && t.currentRes === src) {
+					return;
+				}
 
 				if (t.sourcechooserButton) {
 					const radios = t.sourcechooserButton.querySelectorAll('input[type=radio]');
@@ -582,82 +675,66 @@
 					}
 				}
 
-				if (media.getSrc() !== src) {
-					let currentTime = media.currentTime;
-					const paused = media.paused;
+				const candidates = t.resolutionCandidates && t.resolutionCandidates[src];
 
-					// Freeze-frame overlay to mask the black/poster flash
-					// during the source swap, matching the other players.
-					const videoEl = t.node;
-					let canvas = null;
-					if (currentTime > 0 && videoEl && videoEl.videoWidth) {
-						canvas = document.createElement('canvas');
-						canvas.className = 'videopack_temp_thumb';
-						canvas.width = videoEl.videoWidth || videoEl.offsetWidth || 640;
-						canvas.height = videoEl.videoHeight || videoEl.offsetHeight || 360;
-						canvas.style.position = 'absolute';
-						canvas.style.top = '0';
-						canvas.style.left = '0';
-						canvas.style.width = '100%';
-						canvas.style.height = '100%';
-						canvas.style.pointerEvents = 'none';
-						canvas.style.zIndex = '5';
+				if (candidates && candidates.length && videoEl) {
+					// Multi-codec resolution: hand the browser every
+					// candidate at this resolution as real <source>
+					// elements (already ordered by codec efficiency, most
+					// efficient first) and let its native resource-selection
+					// algorithm choose, rather than deciding via a one-shot
+					// canPlayType() guess. This also gets automatic fallback
+					// to the next candidate if the chosen one fails to
+					// actually load — a static pick can't do that. Only
+					// <source> children are removed, so <track> (captions)
+					// elements are left untouched.
+					t.performResolutionSwap(videoEl, media, () => {
+						// A present src ATTRIBUTE on <video> takes absolute
+						// priority over <source> children per the HTML
+						// resource-selection algorithm — MEJS's native
+						// renderer sets one directly at init, so it must be
+						// removed or the children we add below are ignored.
+						videoEl.removeAttribute('src');
+						Array.from(videoEl.querySelectorAll('source')).forEach((el) => el.remove());
+						candidates.forEach((source) => {
+							const sourceEl = document.createElement('source');
+							sourceEl.src = source.src;
+							sourceEl.type = source.type;
+							videoEl.appendChild(sourceEl);
+						});
+					});
+					t.currentRes = src;
+					return;
+				}
 
-						try {
-							const context = canvas.getContext('2d');
-							context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-							const container = t.container && t.container.get ? t.container.get(0) : t.container;
-							(container || videoEl.parentNode).appendChild(canvas);
-						} catch {
-							canvas = null;
-						}
-					}
-
-					const cleanupCanvas = () => {
-						if (canvas && canvas.parentNode) {
-							canvas.parentNode.removeChild(canvas);
-						}
-					};
-
-					// Wait for the actual 'seeked' event to remove the canvas
-					// rather than removing it right after issuing the seek:
-					// setCurrentTime() is async, and the frame at the restored
-					// position isn't actually rendered yet when 'canplay' fires,
-					// so removing the overlay there re-exposes a stale/black
-					// frame for a moment.
-					//
-					// Listening on the raw <video> node (not media.addEventListener)
-					// deliberately: MEJS's native-renderer wrapper only forwards
-					// DOM events to media's listeners while an internal "isActive"
-					// flag is true (set by its own show()/hide()), and that flag
-					// can still be false in the brief window right after setSrc()
-					// recreates the renderer — a 'seeked' firing in that window
-					// would otherwise be silently dropped and never clean up.
-					const seekedCleanupHandler = () => {
-						cleanupCanvas();
-						videoEl.removeEventListener('seeked', seekedCleanupHandler);
-					};
-
-					const canPlayAfterSourceSwitchHandler = () => {
-						if (currentTime > 0) {
-							media.setCurrentTime(currentTime);
-						} else {
-							cleanupCanvas();
-						}
-						if (!paused) {
-							media.play();
-						}
-						videoEl.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
-					};
-
-					media.pause();
-					media.setSrc(src);
-					media.load();
-					videoEl.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
-					videoEl.addEventListener('seeked', seekedCleanupHandler);
+				// Fallback: a single literal source URL (no codec grouping).
+				// The `typeof src === 'string' && src.includes('/')` check
+				// guards against being called with something that isn't
+				// actually a URL — e.g. a bare resolution value (sometimes a
+				// number, not a string) from a caller that assumed
+				// resolutionCandidates would be populated, which it never is
+				// for a single-source video (the sourcechooser feature, and
+				// thus resolutionCandidates, is only built server-side when
+				// there's more than one source) — media.setSrc() crashes on
+				// that kind of garbage input.
+				if (media.getSrc() !== src && videoEl && typeof src === 'string' && src.includes('/')) {
+					t.performResolutionSwap(videoEl, media, () => {
+						media.setSrc(src);
+					});
 				}
 			},
 
+			/**
+			 * Mirrors Video.js's player.getCurrentRes() so callers (e.g.
+			 * videopack.js's setAutomaticResolution) can check the current
+			 * resolution before calling changeRes(), the same way they
+			 * already do for the Video.js player.
+			 *
+			 * @return {String}
+			 */
+			getCurrentRes() {
+				return this.currentRes || '';
+			},
 
 			/**
 			 *

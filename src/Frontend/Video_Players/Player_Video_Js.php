@@ -67,7 +67,6 @@ class Player_Video_Js extends Player {
 		parent::register_scripts();
 
 		wp_register_script( 'video-js', plugins_url( 'video-js/video.min.js', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VIDEOJS_VERSION, true );
-		wp_register_script( 'video-js-quality-selector', plugins_url( 'video-js/video-quality-selector.js', VIDEOPACK_PLUGIN_FILE ), array( 'video-js' ), VIDEOPACK_VERSION, true );
 
 		$locale        = self::get_videojs_locale();
 		$translations  = array(

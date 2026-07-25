@@ -39,19 +39,20 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				return (/^\d+$/.test(res)) ? res + 'p' : res;
 			},
 			/**
-			 * Picks one source per distinct resolution from a flat sources
-			 * array (which may span multiple codec/format groups). When a
-			 * resolution is offered by more than one codec, the browser's
-			 * own playback support decides which file backs it (preferring
-			 * "probably" over "maybe" over unsupported, falling back to the
-			 * first-configured one on a tie) — codec compatibility is
-			 * resolved automatically rather than exposed as a user choice.
+			 * Groups a flat sources array (which may span multiple
+			 * codec/format groups) by resolution. When a resolution is
+			 * offered by more than one codec, all candidates are kept — the
+			 * browser's native <source> fallback picks and, if needed,
+			 * retries the next one on an actual load failure, rather than us
+			 * guessing from a one-shot canPlayType() capability check.
+			 * Candidates already arrive ordered by codec efficiency (most
+			 * efficient first) from Player::set_sources() server-side, so
+			 * that order is preserved as-is.
 			 *
-			 * @param {Array}              sources All sources across every codec group.
-			 * @param {HTMLVideoElement}   videoEl Element used to test codec support.
-			 * @return {Object} Map of resolution -> best source for that resolution.
+			 * @param {Array} sources All sources across every codec group.
+			 * @return {Object} Map of resolution -> array of candidate sources for that resolution.
 			 */
-			pick_best_by_resolution: function (sources, videoEl) {
+			group_sources_by_resolution: function (sources) {
 				const byRes = {};
 				sources.forEach((s) => {
 					const res = s.resolution || s['data-res'];
@@ -59,21 +60,7 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 					if (!byRes[res]) { byRes[res] = []; }
 					byRes[res].push(s);
 				});
-
-				const rank = (type) => {
-					if (!type || !videoEl || typeof videoEl.canPlayType !== 'function') { return 0; }
-					const support = videoEl.canPlayType(type);
-					if (support === 'probably') { return 2; }
-					if (support === 'maybe') { return 1; }
-					return 0;
-				};
-
-				const best = {};
-				for (const res in byRes) {
-					const candidates = byRes[res];
-					best[res] = candidates.length === 1 ? candidates[0] : [...candidates].sort((a, b) => rank(b.type) - rank(a.type))[0];
-				}
-				return best;
+				return byRes;
 			},
 		};
 
@@ -284,25 +271,24 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				return;
 			}
 
-			const video = this.el().firstChild;
 			const source_groups = options.source_groups || {};
 			const has_source_groups = source_groups && Object.keys(source_groups).length > 0;
 
-			// Flatten every source across every codec group into one list,
-			// then auto-pick the best-supported codec for each resolution —
-			// quality selection stays resolution-only; codec compatibility
-			// is resolved automatically, the same way a plain <source>
-			// fallback list would.
+			// Flatten every source across every codec group into one list —
+			// quality selection stays resolution-only; when a resolution has
+			// multiple codec candidates, changeRes() hands all of them to
+			// the browser as <source> elements and lets its native fallback
+			// choose (see changeRes below).
 			const flat_sources = has_source_groups
 				? Object.keys(source_groups).flatMap((groupId) => source_groups[groupId].sources || [])
 				: sources;
 
 			const available_res = { length: 0 };
-			const best_by_res = methods.pick_best_by_resolution(flat_sources, video);
+			const sources_by_res = methods.group_sources_by_resolution(flat_sources);
 
-			for (const current_res in best_by_res) {
+			for (const current_res in sources_by_res) {
 				available_res.length++;
-				available_res[current_res] = best_by_res[current_res];
+				available_res[current_res] = sources_by_res[current_res];
 
 				if (current_res === player.localize('Full')) {
 					player.off('loadedmetadata', player.updateFullResLabel);
@@ -370,9 +356,9 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 					return;
 				}
 
-				const target_source = player.availableRes[target_resolution] || player.availableRes[target_resolution.toString()];
+				const candidates = player.availableRes[target_resolution] || player.availableRes[target_resolution.toString()];
 
-				if (!target_source) {
+				if (!candidates || !candidates.length) {
 					return;
 				}
 				const targetVideo = player.el().firstChild;
@@ -414,7 +400,23 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 					});
 				}
 
-				player.src(target_source);
+				// Hand every candidate at this resolution to the browser as
+				// real <source> elements (ordered by codec efficiency, most
+				// efficient first — see group_sources_by_resolution above)
+				// and let its native resource-selection algorithm choose,
+				// rather than deciding via a one-shot canPlayType() guess.
+				// This also gets us automatic fallback to the next candidate
+				// if the chosen one fails to actually load, which a static
+				// pick can't do. Only <source> children are removed, so
+				// <track> (captions) elements are left untouched.
+				Array.from(targetVideo.querySelectorAll('source')).forEach((el) => el.remove());
+				candidates.forEach((source) => {
+					const sourceEl = document.createElement('source');
+					sourceEl.src = source.src;
+					sourceEl.type = source.type;
+					targetVideo.appendChild(sourceEl);
+				});
+				targetVideo.load();
 				player.one('loadedmetadata', function () {
 					if (current_time > 0) {
 						player.currentTime(current_time);

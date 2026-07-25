@@ -128,14 +128,9 @@ class Player {
 	 */
 	public function register_scripts() {
 
-		wp_register_script(
-			'videopack-core',
-			plugins_url( '/src/Frontend/js/videopack.js', VIDEOPACK_PLUGIN_FILE ),
-			$this->get_videopack_script_dependencies(),
-			VIDEOPACK_VERSION,
-			true
-		);
-
+		// The 'videopack-core' script itself is registered from the built
+		// admin-ui bundle (see Admin\Assets::register_assets()) — this
+		// method only localizes data onto it and conditionally enqueues.
 		if ( ! self::$script_localized ) {
 			wp_localize_script(
 				'videopack-core',
@@ -223,15 +218,6 @@ class Player {
 		wp_enqueue_style( 'videopack-core' );
 	}
 
-
-	/**
-	 * Returns script dependencies for the frontend script.
-	 *
-	 * @return array Array of script handles.
-	 */
-	public function get_videopack_script_dependencies(): array {
-		return array( 'jquery' );
-	}
 
 	/**
 	 * Enqueues frontend scripts and styles.
