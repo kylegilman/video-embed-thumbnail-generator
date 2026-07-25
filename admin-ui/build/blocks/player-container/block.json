@@ -180,6 +180,9 @@
     "isPreview": {
       "type": "boolean",
       "default": false
+    },
+    "instanceId": {
+      "type": "string"
     }
   },
   "textdomain": "video-embed-thumbnail-generator",

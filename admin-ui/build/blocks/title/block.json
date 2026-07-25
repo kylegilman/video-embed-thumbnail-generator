@@ -14,7 +14,11 @@
   "description": "Overlay title and action buttons for the video player.",
   "usesContext": [
     "postId",
-    "postType"
+    "postType",
+    "videopack/postId",
+    "videopack/attachmentId",
+    "videopack/src",
+    "videopack/title"
   ],
   "providesContext": {
     "videopack/isInsideTitleMeta": "isInsideTitleMeta"
