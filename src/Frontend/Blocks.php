@@ -56,6 +56,56 @@ class Blocks implements Hook_Subscriber {
 
 		// Inject render callbacks via metadata filter as early as possible.
 		add_filter( 'block_type_metadata_settings', array( $this, 'inject_render_callbacks' ), 10, 2 );
+
+		// Computes and injects videopack/* context ahead of child rendering
+		// (see inject_videopack_context()'s docblock for why this can't be
+		// done from inside render_player()/render_player_engine() instead).
+		add_filter( 'render_block_context', array( $this, 'inject_videopack_context' ), 10, 2 );
+	}
+
+	/**
+	 * Computes the dynamic videopack/* context (postId, attachmentId, src,
+	 * watermark settings) that videopack/player-container's descendants
+	 * (player, title, view-count, download, share, watermark) rely on to
+	 * resolve which video they're rendering for.
+	 *
+	 * This can't be done by mutating $block->context inside render_player()'s
+	 * render_callback body (which the code used to attempt) — WP_Block
+	 * constructs every inner block, using the context available at that
+	 * point, BEFORE the parent's own render_callback ever runs; a
+	 * render_callback-body mutation happens strictly after all descendants
+	 * have already rendered, so it never reaches them. The render_block_context
+	 * filter, by contrast, fires while a block's own available context is
+	 * still being assembled — early enough for descendants to actually see it.
+	 *
+	 * @param array $context      The block's available context so far.
+	 * @param array $parsed_block The parsed block about to render.
+	 * @return array Modified context.
+	 */
+	public function inject_videopack_context( $context, $parsed_block ) {
+		$name = $parsed_block['blockName'] ?? '';
+
+		if ( 'videopack/player-container' === $name ) {
+			$attributes = (array) ( $parsed_block['attrs'] ?? array() );
+			$post_id    = $this->get_effective_attachment_id( $attributes, $context );
+
+			if ( $post_id ) {
+				$context['videopack/postId']       = (int) $post_id;
+				$context['videopack/attachmentId'] = (int) $post_id;
+			}
+			if ( ! empty( $attributes['src'] ) ) {
+				$context['videopack/src'] = $attributes['src'];
+			}
+
+			$context['videopack/watermark']              = $attributes['watermark'] ?? ( $this->options['watermark'] ?? '' );
+			$context['videopack/watermark_styles']       = $attributes['watermark_styles'] ?? ( $this->options['watermark_styles'] ?? array() );
+			$context['videopack/watermark_link_to']      = $attributes['watermark_link_to'] ?? ( $this->options['watermark_link_to'] ?? 'false' );
+			$context['videopack/isInsidePlayerContainer'] = true;
+		} elseif ( 'videopack/player' === $name ) {
+			$context['videopack/isInsidePlayerOverlay'] = true;
+		}
+
+		return $context;
 	}
 
 	/**
@@ -204,8 +254,17 @@ class Blocks implements Hook_Subscriber {
 	 * @return string Rendered HTML.
 	 */
 	public function render_player( $attributes, $content, $block ) {
-		++self::$instance_counter;
-		$instance_id = 'vp_' . self::$instance_counter;
+		// Honor an instance id supplied by the caller (e.g. a synthetic
+		// assembly built by Modular_Renderer::render_standalone_player_assembly()
+		// that needs its rendered player to match an already-computed
+		// player_data key) instead of always minting a fresh one — otherwise
+		// this counter and the caller's own id-generation are two unrelated
+		// sequences that never agree.
+		$instance_id = $attributes['instanceId'] ?? null;
+		if ( ! $instance_id ) {
+			++self::$instance_counter;
+			$instance_id = 'vp_' . self::$instance_counter;
+		}
 
 		$block->context['videopack/instanceId']              = $instance_id;
 		$block->context['videopack/isInsidePlayerContainer'] = true;
@@ -283,7 +342,15 @@ class Blocks implements Hook_Subscriber {
 			$settings['resolved'],
 			$context_content,
 			$attributes,
-			array( 'id' => is_numeric( $post_id ) ? (int) $post_id : 0 )
+			array(
+				'id'         => is_numeric( $post_id ) ? (int) $post_id : 0,
+				// Carry the instance id assigned by the enclosing player-container
+				// (render_player()) through to prepare_player(), so the Player
+				// object's own get_id() (and therefore its rendered data-id)
+				// matches the videopack_player_{instanceId} key used everywhere
+				// else metadata for this same render is looked up.
+				'instanceId' => $block->context['videopack/instanceId'] ?? null,
+			)
 		);
 		$player            = $shortcode_handler->prepare_player( $merged_attributes );
 
@@ -395,10 +462,16 @@ class Blocks implements Hook_Subscriber {
 
 			$item_metadata = $player->prepare_video_vars();
 
+			// Must match the "videopack_player_" + this string convention
+			// used for this same item's window.videopack.player_data key
+			// (see render_thumbnail()'s $videopack_id) so the rendered
+			// player's own data-id can be used to look its metadata back up.
+			$gallery_instance_id                = "gallery_{$attachment_id}_{$collection_id}";
 			$item_metadata['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_standalone_player_assembly(
 				$attachment_id,
 				$settings['resolved'],
-				$this->options
+				$this->options,
+				$gallery_instance_id
 			);
 			$item_metadata['player_html']      = $item_metadata['full_player_html'];
 
@@ -668,7 +741,8 @@ class Blocks implements Hook_Subscriber {
 					$player_data['full_player_html'] = \Videopack\Frontend\Modular_Renderer::render_standalone_player_assembly(
 						$post_id,
 						$settings['resolved'],
-						$this->options
+						$this->options,
+						$collection_id ? "gallery_{$post_id}_{$collection_id}" : $instance_id
 					);
 				}
 				if ( ! isset( $player_data['player_html'] ) ) {
@@ -1234,29 +1308,21 @@ class Blocks implements Hook_Subscriber {
 			return true;
 		}
 
-		static $has_lightbox = null;
-
-		if ( null !== $has_lightbox ) {
-			return $has_lightbox;
-		}
-
-		$has_lightbox = false;
-
-		global $wp_query;
-		$posts = ( $wp_query instanceof \WP_Query ) ? (array) $wp_query->posts : array();
-
-		foreach ( $posts as $post ) {
-			if ( ! ( $post instanceof \WP_Post ) || empty( $post->post_content ) ) {
-				continue;
-			}
-
-			if ( false !== strpos( $post->post_content, '<!-- wp:videopack/collection' )
-				|| false !== strpos( $post->post_content, 'lightbox' ) ) {
-				$has_lightbox = true;
-				break;
-			}
-		}
-
-		return $has_lightbox;
+		// Modular_Renderer::render_thumbnail() sets this the moment it
+		// actually renders a lightbox trigger (linkTo="lightbox"), for
+		// every rendering path alike — block-authored or shortcode-
+		// simulated. render_global_modal() runs on wp_footer, after all
+		// main content (where that render happens) has already output, so
+		// by the time this is checked the flag reflects the real page.
+		//
+		// Previously this guessed from $wp_query->posts' raw post_content
+		// instead (checking for the literal '<!-- wp:videopack/collection'
+		// block comment or the substring 'lightbox'), which missed every
+		// shortcode-built gallery: a [videopack gallery="true"] shortcode's
+		// stored post_content contains neither — that markup only exists
+		// after do_shortcode() expands it at render time — so the global
+		// modal never rendered and the lightbox silently had no target to
+		// open into.
+		return Modular_Renderer::$rendered_lightbox_trigger;
 	}
 }

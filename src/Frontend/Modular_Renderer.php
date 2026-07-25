@@ -19,6 +19,24 @@ namespace Videopack\Frontend;
  */
 class Modular_Renderer {
 	/**
+	 * Set true the moment any thumbnail actually renders a lightbox trigger
+	 * on the current request — read by Blocks::page_has_lightbox_content()
+	 * to decide whether to output the global lightbox modal in wp_footer.
+	 *
+	 * Tracking real render output here (rather than pattern-matching a
+	 * post's raw post_content for '<!-- wp:videopack/collection' or the
+	 * literal word 'lightbox') is what makes this accurate for every
+	 * rendering path, block-authored or shortcode-simulated alike: a
+	 * [videopack gallery="true"] shortcode's stored post_content contains
+	 * neither substring — that markup only exists after do_shortcode()
+	 * expands it at render time — so the old heuristic silently missed
+	 * every shortcode-built gallery's lightbox modal.
+	 *
+	 * @var bool
+	 */
+	public static bool $rendered_lightbox_trigger = false;
+
+	/**
 	 * Helper to normalize boolean-like attributes from shortcodes or blocks.
 	 *
 	 * @param mixed $val The value to check.
@@ -1177,6 +1195,7 @@ class Modular_Renderer {
 		if ( 'none' !== $link_to ) {
 			if ( 'lightbox' === $link_to ) {
 				$url = '#';
+				self::$rendered_lightbox_trigger = true;
 			} elseif ( 'parent' === $link_to ) {
 				$parent_id = wp_get_post_parent_id( $post_id );
 				$url       = $parent_id ? get_permalink( $parent_id ) : get_permalink( $post_id );
@@ -1283,9 +1302,17 @@ class Modular_Renderer {
 	 * @param array $options          Global plugin options — the sole source
 	 *                                for which blocks (title/watermark/
 	 *                                download/share/view-count) appear.
+	 * @param string|null $instance_id Optional. Instance id to assign to the
+	 *                                 rendered player (via the player-container
+	 *                                 block's 'instanceId' attribute), so it
+	 *                                 matches an already-computed
+	 *                                 window.videopack.player_data key instead
+	 *                                 of getting an unrelated, freshly-minted
+	 *                                 one. Omit only when no such key exists
+	 *                                 yet for this render.
 	 * @return string Rendered HTML.
 	 */
-	public static function render_standalone_player_assembly( $post_id, array $design_overrides, array $options ) {
+	public static function render_standalone_player_assembly( $post_id, array $design_overrides, array $options, $instance_id = null ) {
 		// Builds one hand-constructed parsed-block array. serialize_block()
 		// (WordPress core) walks innerContent — an array of static-HTML
 		// strings interleaved with null placeholders, one per innerBlocks
@@ -1358,10 +1385,15 @@ class Modular_Renderer {
 			}
 		);
 
+		$player_container_attrs = array_merge( $design_overrides, array( 'id' => (int) $post_id ) );
+		if ( null !== $instance_id ) {
+			$player_container_attrs['instanceId'] = (string) $instance_id;
+		}
+
 		$blocks = array(
 			$make_block(
 				'videopack/player-container',
-				array_merge( $design_overrides, array( 'id' => (int) $post_id ) ),
+				$player_container_attrs,
 				$blocks
 			),
 		);
