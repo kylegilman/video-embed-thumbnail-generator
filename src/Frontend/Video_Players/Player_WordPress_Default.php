@@ -27,6 +27,22 @@ class Player_WordPress_Default extends Player {
 	private static $hooks_registered = false;
 
 	/**
+	 * Union of MediaElement.js feature names needed by every video
+	 * processed so far on this page. filter_video_vars() runs once per
+	 * video, but wp_localize_script('wp-mediaelement', '_wpmejsSettings', ...)
+	 * is a single shared global that WordPress's own native
+	 * MediaElement.js auto-init reads for every standalone player it
+	 * constructs — overwriting it with only the current video's own
+	 * feature list (e.g. omitting 'sourcechooser' for a single-source
+	 * video processed after a multi-source one) meant whichever video was
+	 * processed *last* silently decided the feature set for every
+	 * standalone player on the page. Accumulating a union fixes that.
+	 *
+	 * @var array $accumulated_features
+	 */
+	private static $accumulated_features = array();
+
+	/**
 	 * Registers WordPress hooks for MediaElement.js.
 	 */
 	public function register_hooks() {
@@ -63,14 +79,6 @@ class Player_WordPress_Default extends Player {
 	public function register_scripts() {
 
 		parent::register_scripts();
-
-		wp_register_script(
-			'videopack-mejs',
-			plugins_url( '/src/Frontend/js/videopack-mejs.js', VIDEOPACK_PLUGIN_FILE ),
-			array( 'wp-mediaelement' ),
-			VIDEOPACK_VERSION,
-			true
-		);
 	}
 
 	/**
@@ -136,10 +144,21 @@ class Player_WordPress_Default extends Player {
 		// Always add fullscreen for video.
 		$mejs_settings['features'][] = 'fullscreen';
 
-		// Localize MediaElement.js settings.
-		wp_localize_script( 'wp-mediaelement', '_wpmejsSettings', $mejs_settings );
-
+		// The per-video settings (used by our own explicit
+		// MediaElementPlayer construction — the lightbox/gallery path,
+		// which always builds its own player rather than relying on
+		// WordPress's native auto-init) stay scoped to just this video's
+		// own feature list; no need for other videos' features on an
+		// instance that doesn't need them.
 		$video_variables['mejs_settings'] = $mejs_settings;
+
+		// The shared global, by contrast, accumulates a union across
+		// every video processed so far on this page — see
+		// $accumulated_features's docblock for why.
+		self::$accumulated_features        = array_values( array_unique( array_merge( self::$accumulated_features, $mejs_settings['features'] ) ) );
+		$global_mejs_settings               = $mejs_settings;
+		$global_mejs_settings['features']   = self::$accumulated_features;
+		wp_localize_script( 'wp-mediaelement', '_wpmejsSettings', $global_mejs_settings );
 
 		return $video_variables;
 	}

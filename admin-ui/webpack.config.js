@@ -22,9 +22,23 @@ module.exports = {
 		...defaultEntries,
 		...blockEntries,
 
-		'videopack-core': path.resolve(
+		'videopack-core': [
+			path.resolve(process.cwd(), 'src/videopack-core.scss'),
+			path.resolve(process.cwd(), 'src/frontend/index.js'),
+		],
+		// MediaElement.js plugins (Speed + Source Chooser) — own entry/handle
+		// ('videopack-mejs') since it's a separate script dependency chain
+		// (depends on 'wp-mediaelement', not 'videopack-core').
+		'videopack-mejs': path.resolve(
 			process.cwd(),
-			'src/videopack-core.scss'
+			'src/frontend/mejs-plugins.js'
+		),
+		// Video.js classic (v8) quality selector — own entry/handle
+		// ('video-js-quality-selector') since it depends on 'video-js', not
+		// 'videopack-core'.
+		'quality-selector': path.resolve(
+			process.cwd(),
+			'src/frontend/quality-selector.js'
 		),
 
 		// Settings page bundle — the only one of these three that needs the
@@ -67,7 +81,6 @@ module.exports = {
 	},
 	optimization: {
 		...defaultConfig.optimization,
-		minimize: false, // Ensure this isn't lost if needed
 		// Named chunk IDs so dynamically-imported chunks (e.g. loop/edit.js's
 		// `import(/* webpackChunkName: "loop-sortable-grid" */ ...)`) get a
 		// readable filename instead of a numeric one.

@@ -111,6 +111,8 @@ class Assets implements Hook_Subscriber {
 
 		$assets = array(
 			'videopack-core'             => 'videopack-core',
+			'videopack-mejs'             => 'videopack-mejs',
+			'video-js-quality-selector'  => 'quality-selector',
 			'videopack-settings'         => 'settings',
 			'videopack-settings-network' => 'settings-network',
 			'videopack-encode-queue'     => 'encode-queue',
@@ -118,8 +120,18 @@ class Assets implements Hook_Subscriber {
 			'videopack-classic-editor'   => 'classic-editor',
 		);
 
+		// Handles whose own dependency chain isn't the standard admin/
+		// block-editor one ('videopack-core' + 'wp-blocks') — the frontend
+		// runtime bundle itself, and its two sibling scripts, each of which
+		// depends on a different player library instead of on
+		// 'videopack-core'.
+		$frontend_runtime_deps = array(
+			'videopack-core'            => array(),
+			'videopack-mejs'            => array( 'wp-mediaelement' ),
+			'video-js-quality-selector' => array( 'video-js' ),
+		);
+
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
-		$player->register_scripts();
 
 		foreach ( $assets as $handle => $filename ) {
 			$asset_file = (string) $build_dir . (string) $filename . '.asset.php';
@@ -132,7 +144,18 @@ class Assets implements Hook_Subscriber {
 				$player_script_deps = array_diff( (array) $player->get_player_script_handles(), array( (string) $handle ) );
 				$player_style_deps  = array_diff( (array) $player->get_player_style_handles(), array( (string) $handle ) );
 
-				if ( 'videopack-core' !== $handle ) {
+				if ( array_key_exists( $handle, $frontend_runtime_deps ) ) {
+					// Frontend runtime scripts — no self-dependency, and no
+					// wp-blocks/translations (those are editor-only concerns
+					// for the admin/block bundles registered below).
+					wp_register_script(
+						(string) $handle,
+						(string) $build_url . (string) $filename . '.js',
+						array_unique( array_merge( $frontend_runtime_deps[ $handle ], (array) $asset['dependencies'], $player_script_deps ) ),
+						(string) $asset['version'],
+						true
+					);
+				} else {
 					// wp-blocks is required explicitly (not just left to each
 					// bundle's own auto-detected dependencies) because
 					// bootstrap_block_editor_definitions() attaches an inline
@@ -160,6 +183,11 @@ class Assets implements Hook_Subscriber {
 			}
 		}
 
+		// Must run after the loop above so 'videopack-core' is already
+		// registered (from the build output) before this localizes data
+		// onto it — wp_localize_script() silently no-ops on an unregistered
+		// handle.
+		$player->register_scripts();
 	}
 
 	/**
@@ -178,8 +206,14 @@ class Assets implements Hook_Subscriber {
 			wp_localize_script( 'videopack-core', 'videopack_config', $config_data );
 		} else {
 			$frontend_config = array(
-				'rest_url' => (string) get_rest_url(),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'rest_url'         => (string) get_rest_url(),
+				'nonce'            => wp_create_nonce( 'wp_rest' ),
+				// admin-ajax, not REST: view/play counting fires on every
+				// video play, so it uses WordPress's lighter admin-ajax
+				// dispatch (skips rest_api_init and REST route/schema
+				// overhead) instead of a REST route for this one hot path.
+				'ajax_url'         => (string) admin_url( 'admin-ajax.php' ),
+				'count_play_nonce' => wp_create_nonce( 'videopack_count_play' ),
 			);
 			wp_localize_script( 'videopack-core', 'videopack_config', $frontend_config );
 		}

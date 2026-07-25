@@ -691,7 +691,14 @@ class Shortcode implements Hook_Subscriber {
 		$player->set_atts( $final_atts );
 
 		// Data integrity: do NOT sync HTML IDs from attachment IDs to avoid DOM collisions in loops.
-		// The player handles its own unique instance counting.
+		// The player handles its own unique instance counting — unless the
+		// caller supplies an explicit instanceId (a dedicated per-render
+		// token, never an attachment/post ID), in which case honor it so
+		// this player's own get_id()/data-id agrees with whatever key the
+		// caller already used for this same render's window.videopack.player_data entry.
+		if ( ! empty( $atts['instanceId'] ) ) {
+			$player->set_id( (string) $atts['instanceId'] );
+		}
 
 		// Enqueue player-specific scripts and styles.
 		$player->enqueue_scripts();
