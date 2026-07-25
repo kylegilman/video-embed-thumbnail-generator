@@ -31,6 +31,31 @@ class Public_Controller extends Controller {
 	}
 
 	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * Play/view counting fires on every video play — frequent enough that
+	 * it uses admin-ajax rather than a REST route (see ajax_count_play()),
+	 * so it's registered here rather than via register_routes().
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array_merge(
+			parent::get_actions(),
+			array(
+				array(
+					'hook'     => 'wp_ajax_count_play',
+					'callback' => 'ajax_count_play',
+				),
+				array(
+					'hook'     => 'wp_ajax_nopriv_count_play',
+					'callback' => 'ajax_count_play',
+				),
+			)
+		);
+	}
+
+	/**
 	 * Registers REST API routes.
 	 */
 	public function register_routes() {
@@ -94,33 +119,6 @@ class Public_Controller extends Controller {
 					'content' => array(
 						'type'     => 'string',
 						'required' => false,
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
-			'/count-play',
-			array(
-				'methods'             => \WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'count_play' ),
-				'permission_callback' => array( $this, 'public_permissions' ),
-				'args'                => array(
-					'attachment_id' => array(
-						'type'              => 'integer',
-						'required'          => true,
-						'sanitize_callback' => 'absint',
-					),
-					'video_event'   => array(
-						'type'              => 'string',
-						'required'          => true,
-						'sanitize_callback' => 'sanitize_text_field',
-					),
-					'show_views'    => array(
-						'type'              => 'boolean',
-						'default'           => false,
-						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
 				),
 			)
@@ -254,18 +252,26 @@ class Public_Controller extends Controller {
 	}
 
 	/**
-	 * REST callback to count play.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
+	 * admin-ajax callback to count a video play/view event, for both
+	 * logged-in and logged-out visitors (wp_ajax_count_play /
+	 * wp_ajax_nopriv_count_play). Deliberately not a REST route: this
+	 * fires on every video play, and admin-ajax skips rest_api_init and
+	 * the REST server's route-matching/schema/permission-callback
+	 * overhead, while still running at the same point in the request
+	 * lifecycle (after `init`) as a REST call would — so any other
+	 * security/rate-limiting plugin on the site gets the same chance to
+	 * inspect the request first.
 	 */
-	public function count_play( \WP_REST_Request $request ) {
-		$attachment_id = (int) $request->get_param( 'attachment_id' );
+	public function ajax_count_play() {
+		check_ajax_referer( 'videopack_count_play', 'security' );
+
+		$attachment_id = isset( $_POST['attachment_id'] ) ? absint( wp_unslash( $_POST['attachment_id'] ) ) : 0;
 		if ( ! $attachment_id || 'attachment' !== get_post_type( $attachment_id ) ) {
-			return new \WP_Error( 'rest_invalid_attachment_id', 'Invalid attachment ID.', array( 'status' => 400 ) );
+			wp_send_json_error( array( 'message' => 'Invalid attachment ID.' ), 400 );
 		}
 
-		$video_event = (string) $request->get_param( 'video_event' );
-		$show_views  = (bool) $request->get_param( 'views' );
+		$video_event = isset( $_POST['video_event'] ) ? sanitize_text_field( wp_unslash( $_POST['video_event'] ) ) : '';
+		$show_views  = ! empty( $_POST['show_views'] );
 
 		$meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options, $attachment_id );
 		$updated_meta = $meta_manager->increment_video_stat( $video_event );
@@ -274,7 +280,7 @@ class Public_Controller extends Controller {
 		if ( $show_views && isset( $updated_meta['starts'] ) ) {
 			$response['views'] = \Videopack\Common\I18n::format_view_count( (int) $updated_meta['starts'] );
 		}
-		return apply_filters( 'videopack_rest_count_play', new \WP_REST_Response( $response, 200 ), $request );
+		wp_send_json_success( apply_filters( 'videopack_count_play_response', $response, $attachment_id, $video_event ) );
 	}
 
 	/**
