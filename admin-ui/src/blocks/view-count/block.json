@@ -6,7 +6,16 @@
 	"category": "media",
 	"icon": "visibility",
 	"description": "Displays the view count of the video.",
-	"usesContext": ["postId", "postType"],
+	"usesContext": [
+		"postId",
+		"postType",
+		"videopack/postId",
+		"videopack/attachmentId",
+		"videopack/isInsideThumbnail",
+		"videopack/isInsidePlayerOverlay",
+		"videopack/isInsidePlayerContainer",
+		"videopack/textAlign"
+	],
 	"attributes": {
 		"position": {
 			"type": "string"

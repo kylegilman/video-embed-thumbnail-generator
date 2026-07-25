@@ -7,6 +7,16 @@
 	"icon": "format-video",
 	"parent": ["videopack/player-container"],
 	"allowedBlocks": ["videopack/watermark", "videopack/title"],
+	"usesContext": [
+		"videopack/postId",
+		"videopack/attachmentId",
+		"videopack/src",
+		"videopack/instanceId",
+		"videopack/isInsidePlayerOverlay",
+		"videopack/watermark",
+		"videopack/watermark_styles",
+		"videopack/watermark_link_to"
+	],
 	"editorStyle": "file:./index.css",
 	"attributes": {
 		"isInsidePlayerOverlay": {
