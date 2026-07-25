@@ -12,3 +12,6 @@ node_modules
 wp-tests-config.php
 tests/wp-tests-config.php
 /dashboard
+playwright-report/
+test-results/
+tests/e2e/.embed-method
