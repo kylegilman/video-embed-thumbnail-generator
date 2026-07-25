@@ -1,0 +1,19 @@
+{
+	"name": "videopack-e2e",
+	"private": true,
+	"version": "1.0.0",
+	"description": "wp-env + Playwright end-to-end test environment for Videopack. Not part of the shipped plugin.",
+	"scripts": {
+		"env:start": "wp-env start",
+		"env:stop": "wp-env stop",
+		"env:destroy": "wp-env destroy",
+		"e2e:seed": "wp-env run cli wp eval-file wp-content/plugins/video-embed-thumbnail-generator/tests/e2e/seed.php",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:headed": "playwright test --headed"
+	},
+	"devDependencies": {
+		"@playwright/test": "latest",
+		"@wordpress/env": "latest"
+	}
+}

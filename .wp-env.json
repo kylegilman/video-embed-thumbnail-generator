@@ -1,0 +1,13 @@
+{
+	"core": null,
+	"testsEnvironment": false,
+	"plugins": [
+		".",
+		"../videopack-player-pro"
+	],
+	"config": {
+		"WP_DEBUG": true,
+		"WP_DEBUG_LOG": true,
+		"WP_DEBUG_DISPLAY": false
+	}
+}
