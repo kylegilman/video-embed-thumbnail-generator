@@ -27,8 +27,8 @@
 	},
 	"devDependencies": {
 		"@wordpress/base-styles": "^6.3.0",
-		"@wordpress/eslint-plugin": "^22.13.0",
-		"@wordpress/scripts": "^31.7.0",
-		"eslint": "^8.55.0"
+		"@wordpress/eslint-plugin": "^25.7.0",
+		"@wordpress/scripts": "^33.0.0",
+		"eslint": "^10.8.0"
 	}
 }
