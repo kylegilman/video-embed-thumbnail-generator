@@ -3,11 +3,15 @@
 	"testsEnvironment": false,
 	"plugins": [
 		".",
-		"../videopack-player-pro"
+		"../videopack-player-pro",
+		"../videopack-cloud-streaming"
 	],
 	"config": {
 		"WP_DEBUG": true,
 		"WP_DEBUG_LOG": true,
 		"WP_DEBUG_DISPLAY": false
+	},
+	"mappings": {
+		"wp-content/mu-plugins": "./tests/mu-plugins"
 	}
 }

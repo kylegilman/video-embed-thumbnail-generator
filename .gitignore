@@ -9,9 +9,9 @@ admin-ui/node_modules/
 working-react/
 node_modules
 /.agents
-wp-tests-config.php
-tests/wp-tests-config.php
+/wp-tests-config.php
 /dashboard
 playwright-report/
 test-results/
 tests/e2e/.embed-method
+/.wp-env.override.json
