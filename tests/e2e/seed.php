@@ -139,4 +139,28 @@ videopack_e2e_upsert_page(
 	)
 );
 
+// --- Behavioral attributes page: several independent [videopack] shortcode
+// instances, each isolated in its own #test-* container so a Playwright
+// spec can scope queries to exactly one without disturbing the others.
+// Covers the handful of documented attributes whose correctness is
+// genuinely JS-behavioral (autoplay actually autoplaying, right_click
+// actually blocking the context menu, etc.) rather than just HTML shape —
+// see tests/ShortcodeAttributesTest.php for everything else. ---
+
+videopack_e2e_upsert_page(
+	'videopack-e2e-behavioral',
+	'Videopack E2E - Behavioral Attributes',
+	implode(
+		"\n",
+		array(
+			sprintf( '<div id="test-autoplay-muted">[videopack id="%d" autoplay="true" muted="true" controls="false"]</div>', $single_video_id ),
+			sprintf( '<div id="test-loop">[videopack id="%d" loop="true" controls="false"]</div>', $single_video_id ),
+			sprintf( '<div id="test-pauseothervideos-a">[videopack id="%d" pauseothervideos="true" instanceId="e2e_pause_a"]</div>', $single_video_id ),
+			sprintf( '<div id="test-pauseothervideos-b">[videopack id="%d" pauseothervideos="true" instanceId="e2e_pause_b"]</div>', $single_video_id ),
+			sprintf( '<div id="test-skip-buttons">[videopack id="%d" skip_buttons="true"]</div>', $single_video_id ),
+			sprintf( '<div id="test-right-click-disabled">[videopack id="%d" right_click="false"]</div>', $single_video_id ),
+		)
+	)
+);
+
 WP_CLI::success( 'Videopack E2E fixture content ready.' );

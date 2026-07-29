@@ -1,5 +1,9 @@
 # Videopack E2E tests
 
+See [../README.md](../README.md) for the PHPUnit suite — prefer that for
+anything checkable from rendered HTML alone; reserve this suite for
+behavior that genuinely needs a real browser.
+
 Real-browser tests (Playwright) against a real, disposable WordPress site
 (wp-env/Docker) with this plugin and `videopack-player-pro` both active.
 Unlike a hand-authored HTML fixture, nothing here freezes what the markup

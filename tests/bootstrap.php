@@ -28,9 +28,12 @@ if ( ! defined( 'VIDEOPACK_FREEMIUS_ENABLED' ) ) {
 	define( 'VIDEOPACK_FREEMIUS_ENABLED', false );
 }
 
-// Explicitly define path to the relocated wp-tests-config.php configuration file
-if ( ! defined( 'WP_TESTS_CONFIG_PATH' ) ) {
-	define( 'WP_TESTS_CONFIG_PATH', __DIR__ . '/wp-tests-config.php' );
+// Explicitly define path to the relocated wp-tests-config.php configuration
+// file. Must be WP_TESTS_CONFIG_FILE_PATH — wp-phpunit/includes/bootstrap.php
+// only checks that exact constant name; WP_TESTS_CONFIG_PATH (no "_FILE_")
+// is silently ignored, which is why this never actually found the config.
+if ( ! defined( 'WP_TESTS_CONFIG_FILE_PATH' ) ) {
+	define( 'WP_TESTS_CONFIG_FILE_PATH', __DIR__ . '/wp-tests-config.php' );
 }
 
 // Define path to the wp-phpunit test library installed via Composer
