@@ -7,12 +7,14 @@ import {
 	AlignmentControl,
 	InspectorControls,
 } from '@wordpress/block-editor';
-import { PanelBody } from '@wordpress/components';
+import { PanelBody, ToolbarGroup } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
+import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
 import VideoDuration from '../../components/VideoDuration/VideoDuration';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
+import useShowBackground from '../../hooks/useShowBackground';
 
 // Duration shares "badge" title/background colors with Title/View-count —
 // see Overlays.scss's $badge-selectors. Module-level so the reference stays
@@ -44,6 +46,11 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const isInsidePlayerContainer =
 		!!context['videopack/isInsidePlayerContainer'];
 	const isOverlay = isInsideThumbnail || isInsidePlayerOverlay;
+	const finalShowBackground = useShowBackground(
+		attributes,
+		context,
+		isOverlay
+	);
 
 	let defaultAlign = 'left';
 	if (isOverlay || isInsidePlayerContainer) {
@@ -71,7 +78,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const blockProps = useBlockProps({
 		className: `videopack-video-duration-block ${vpContext.classes} ${
 			isOverlay ? 'is-inside-thumbnail is-overlay is-badge' : ''
-		} position-${position} has-text-align-${finalTextAlign}`,
+		} ${isOverlay && !finalShowBackground ? 'has-no-background' : ''} position-${position} has-text-align-${finalTextAlign}`,
 		style: vpContext.style,
 	});
 
@@ -94,6 +101,16 @@ export default function Edit({ attributes, setAttributes, context }) {
 						setAttributes({ textAlign: nextAlign });
 					}}
 				/>
+				{isOverlay && (
+					<ToolbarGroup>
+						<BackgroundToggleButton
+							showBackground={finalShowBackground}
+							onChange={(value) =>
+								setAttributes({ showBackground: value })
+							}
+						/>
+					</ToolbarGroup>
+				)}
 			</BlockControls>
 			<InspectorControls>
 				<PanelBody

@@ -64,10 +64,10 @@ class Blocks implements Hook_Subscriber {
 	}
 
 	/**
-	 * Computes the dynamic videopack/* context (postId, attachmentId, src,
-	 * watermark settings) that videopack/player-container's descendants
-	 * (player, title, view-count, download, share, watermark) rely on to
-	 * resolve which video they're rendering for.
+	 * Computes the dynamic videopack/* context that videopack/player-container's
+	 * descendants (player, title, view-count, download, share, watermark)
+	 * rely on to resolve which video — and which of its resolved attributes
+	 * (title, caption, poster, width, height, etc.) — they're rendering for.
 	 *
 	 * This can't be done by mutating $block->context inside render_player()'s
 	 * render_callback body (which the code used to attempt) — WP_Block
@@ -77,6 +77,16 @@ class Blocks implements Hook_Subscriber {
 	 * have already rendered, so it never reaches them. The render_block_context
 	 * filter, by contrast, fires while a block's own available context is
 	 * still being assembled — early enough for descendants to actually see it.
+	 *
+	 * Forwards player-container's own resolved attributes into context
+	 * generically (as videopack/{key}), rather than hand-picking which ones
+	 * matter — an earlier version of this method did exactly that and
+	 * missed title/caption/poster/width/height, silently dropping them for
+	 * every shortcode-rendered video (Shortcode::atts() always fully
+	 * resolves every recognized attribute — including falling back to the
+	 * site's global options — onto player-container's own attributes before
+	 * serializing it, so nothing here is untrusted or unbounded data; it's
+	 * the same values already used to render player-container itself).
 	 *
 	 * @param array $context      The block's available context so far.
 	 * @param array $parsed_block The parsed block about to render.
@@ -93,13 +103,28 @@ class Blocks implements Hook_Subscriber {
 				$context['videopack/postId']       = (int) $post_id;
 				$context['videopack/attachmentId'] = (int) $post_id;
 			}
-			if ( ! empty( $attributes['src'] ) ) {
-				$context['videopack/src'] = $attributes['src'];
+
+			foreach ( $attributes as $key => $value ) {
+				$context[ "videopack/{$key}" ] = $value;
 			}
 
-			$context['videopack/watermark']              = $attributes['watermark'] ?? ( $this->options['watermark'] ?? '' );
-			$context['videopack/watermark_styles']       = $attributes['watermark_styles'] ?? ( $this->options['watermark_styles'] ?? array() );
-			$context['videopack/watermark_link_to']      = $attributes['watermark_link_to'] ?? ( $this->options['watermark_link_to'] ?? 'false' );
+			// A real block-editor-authored player-container can omit an
+			// attribute entirely when it matches its declared default —
+			// unlike the shortcode-simulation path, which always resolves
+			// every attribute explicitly — so videopack/watermark's one
+			// consumer (the videopack/watermark child block) still needs an
+			// options-level fallback for the case the generic forward above
+			// doesn't cover.
+			if ( ! array_key_exists( 'watermark', $attributes ) ) {
+				$context['videopack/watermark'] = $this->options['watermark'] ?? '';
+			}
+			if ( ! array_key_exists( 'watermark_styles', $attributes ) ) {
+				$context['videopack/watermark_styles'] = $this->options['watermark_styles'] ?? array();
+			}
+			if ( ! array_key_exists( 'watermark_link_to', $attributes ) ) {
+				$context['videopack/watermark_link_to'] = $this->options['watermark_link_to'] ?? 'false';
+			}
+
 			$context['videopack/isInsidePlayerContainer'] = true;
 		} elseif ( 'videopack/player' === $name ) {
 			$context['videopack/isInsidePlayerOverlay'] = true;
@@ -328,13 +353,37 @@ class Blocks implements Hook_Subscriber {
 			array( 'skin', 'control_bar_bg_color', 'control_bar_color', 'play_button_color', 'play_button_secondary_color' )
 		);
 
-		// Pull content attributes from context if not in attributes (essential for external URLs).
-		$content_keys    = array( 'src', 'poster', 'title', 'caption' );
+		// Pull every resolved attribute player-container forwarded into
+		// context (see Blocks::inject_videopack_context()) generically,
+		// rather than through a hand-picked list — a hand-picked list here
+		// silently dropped width/height/title/caption, then separately
+		// autoplay/muted/loop/controls/and most of the rest of the
+		// playback-behavior attributes, each only discovered once a test
+		// happened to check that specific one. This is the same
+		// already-fully-trusted data described in that method's docblock;
+		// the keys below are excluded only because they're structural
+		// (computed once above, or merged separately) rather than
+		// resolved shortcode/block attributes in their own right.
+		$structural_context_keys = array(
+			'postId',
+			'attachmentId',
+			'instanceId',
+			'isInsidePlayerOverlay',
+			'isInsidePlayerContainer',
+			'watermark',
+			'watermark_styles',
+			'watermark_link_to',
+		);
 		$context_content = array();
-		foreach ( $content_keys as $ck ) {
-			if ( isset( $block->context[ "videopack/{$ck}" ] ) ) {
-				$context_content[ $ck ] = $block->context[ "videopack/{$ck}" ];
+		foreach ( $block->context as $context_key => $context_value ) {
+			if ( 0 !== strpos( $context_key, 'videopack/' ) ) {
+				continue;
 			}
+			$key = substr( $context_key, strlen( 'videopack/' ) );
+			if ( in_array( $key, $structural_context_keys, true ) ) {
+				continue;
+			}
+			$context_content[ $key ] = $context_value;
 		}
 
 		$merged_attributes = array_merge(
@@ -844,13 +893,20 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		// Pull content attributes from context if not in attributes.
-		$content_keys    = array( 'title', 'caption', 'src' );
+		// showBackground is resolved separately below via the shared helper
+		// (attribute -> context -> global option -> true), rather than a
+		// bare context passthrough here, so the global-option fallback step
+		// isn't silently skipped.
+		$content_keys    = array( 'title', 'caption', 'src', 'overlay_title' );
 		$context_content = array();
 		foreach ( $content_keys as $ck ) {
 			if ( isset( $block->context[ "videopack/{$ck}" ] ) ) {
 				$context_content[ $ck ] = $block->context[ "videopack/{$ck}" ];
 			}
 		}
+
+		$is_overlay       = $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayerOverlay'] ) );
+		$show_background = Context_Manager::resolve_show_background( $attributes, $block->context, $this->options, (bool) $is_overlay );
 
 		$display_id = is_numeric( $post_id ) ? (int) $post_id : ( $block->context['videopack/src'] ?? 0 );
 		$source     = \Videopack\Video_Source\Source_Factory::create( $display_id, $this->options, $this->format_registry );
@@ -861,13 +917,20 @@ class Blocks implements Hook_Subscriber {
 			array( 'skin', 'title_color', 'title_background_color' )
 		);
 
-		// Merge context and resolved attributes.
+		// Merge context and resolved attributes. $attributes is deliberately
+		// only merged once here, filtered to non-empty values — so the
+		// title block's own attribute wins when it's meaningfully set, but
+		// otherwise defers to $context_content (e.g. a shortcode's explicit
+		// title="..." override, bridged in via videopack/title context).
+		// An earlier version also merged $attributes unfiltered ahead of
+		// this, which unconditionally clobbered $context_content with the
+		// block's *empty* declared default before this filtered layer ever
+		// got a chance to run — silently dropping every such override.
 		$merged_attributes = array_merge(
 			$settings['resolved'],
 			$context_content,
-			$attributes,
 			array(
-				'isOverlay'               => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayerOverlay'] ) ),
+				'isOverlay'               => $is_overlay,
 				'isInsideThumbnail'       => ! empty( $block->context['videopack/isInsideThumbnail'] ),
 				'isInsidePlayerOverlay'   => ! empty( $block->context['videopack/isInsidePlayerOverlay'] ),
 				'isInsidePlayerContainer' => ! empty( $block->context['videopack/isInsidePlayerContainer'] ),
@@ -876,7 +939,13 @@ class Blocks implements Hook_Subscriber {
 				(array) $attributes,
 				function ( $v ) {
 					return ! is_null( $v ) && '' !== $v; }
-			)
+			),
+			// Always wins over the raw $attributes merge above -- the raw
+			// value could be an unnormalized string/boolean-ish value from
+			// serialization, where resolve_show_background() has already
+			// applied the correct attribute -> context -> option -> true
+			// precedence and normalized the result to a real boolean.
+			array( 'showBackground' => $show_background )
 		);
 
 		// If embedcode is on, ensure we have an embedlink.
@@ -931,6 +1000,7 @@ class Blocks implements Hook_Subscriber {
 		$is_inside_title            = ! empty( $block->context['videopack/isInsideTitleMeta'] );
 		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
 		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
+		$is_overlay                 = ( $is_inside_thumb || $is_inside_player_overlay ) && ! $is_inside_title;
 
 		$html = Modular_Renderer::render_download(
 			array_merge(
@@ -942,6 +1012,7 @@ class Blocks implements Hook_Subscriber {
 					'isInsidePlayerContainer' => $is_inside_player_container,
 					'isInsidePlayerOverlay'   => $is_inside_player_overlay,
 					'isInsideThumbnail'       => $is_inside_thumb,
+					'showBackground'          => Context_Manager::resolve_show_background( $attributes, $block->context, $this->options, $is_overlay ),
 				)
 			),
 			$source,
@@ -983,6 +1054,7 @@ class Blocks implements Hook_Subscriber {
 		$is_inside_title            = ! empty( $block->context['videopack/isInsideTitleMeta'] );
 		$is_inside_player_container = ! empty( $block->context['videopack/isInsidePlayerContainer'] );
 		$is_inside_player_overlay   = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
+		$is_overlay                 = ( $is_inside_thumb || $is_inside_player_overlay ) && ! $is_inside_title;
 
 		$html = Modular_Renderer::render_share(
 			array_merge(
@@ -994,6 +1066,7 @@ class Blocks implements Hook_Subscriber {
 					'isInsidePlayerContainer' => $is_inside_player_container,
 					'isInsidePlayerOverlay'   => $is_inside_player_overlay,
 					'isInsideThumbnail'       => $is_inside_thumb,
+					'showBackground'          => Context_Manager::resolve_show_background( $attributes, $block->context, $this->options, $is_overlay ),
 				)
 			),
 			$source,
@@ -1032,14 +1105,19 @@ class Blocks implements Hook_Subscriber {
 			array( 'title_color', 'title_background_color' )
 		);
 
+		$is_inside_thumb          = ! empty( $block->context['videopack/isInsideThumbnail'] );
+		$is_inside_player_overlay = ! empty( $block->context['videopack/isInsidePlayerOverlay'] );
+		$is_overlay               = $is_inside_thumb || $is_inside_player_overlay;
+
 		return Modular_Renderer::render_video_duration(
 			array(
 				'seconds'                 => (int) $seconds,
 				'position'                => $attributes['position'] ?? ( $block->context['videopack/position'] ?? null ),
 				'textAlign'               => $attributes['textAlign'] ?? null,
-				'isInsideThumbnail'       => ! empty( $block->context['videopack/isInsideThumbnail'] ),
-				'isInsidePlayerOverlay'   => ! empty( $block->context['videopack/isInsidePlayerOverlay'] ),
+				'isInsideThumbnail'       => $is_inside_thumb,
+				'isInsidePlayerOverlay'   => $is_inside_player_overlay,
 				'isInsidePlayerContainer' => ! empty( $block->context['videopack/isInsidePlayerContainer'] ),
+				'showBackground'          => Context_Manager::resolve_show_background( $attributes, $block->context, $this->options, $is_overlay ),
 				'wrapper_class'           => $settings['classes'],
 				'style_vars'              => $settings['style'],
 			)
@@ -1096,6 +1174,8 @@ class Blocks implements Hook_Subscriber {
 			array( 'title_color', 'title_background_color' )
 		);
 
+		$is_overlay = $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayerOverlay'] ) );
+
 		$merged_attributes = array_merge(
 			$settings['resolved'],
 			array_filter(
@@ -1104,11 +1184,12 @@ class Blocks implements Hook_Subscriber {
 					return ! is_null( $v ); }
 			),
 			array(
-				'isOverlay'               => $attributes['isOverlay'] ?? ( ! empty( $block->context['videopack/isInsideThumbnail'] ) || ! empty( $block->context['videopack/isInsidePlayerOverlay'] ) ),
+				'isOverlay'               => $is_overlay,
 				'isInsideThumbnail'       => ! empty( $block->context['videopack/isInsideThumbnail'] ),
 				'isInsidePlayerOverlay'   => ! empty( $block->context['videopack/isInsidePlayerOverlay'] ),
 				'isInsidePlayerContainer' => ! empty( $block->context['videopack/isInsidePlayerContainer'] ),
 				'textAlign'               => $attributes['textAlign'] ?? ( $block->context['videopack/textAlign'] ?? null ),
+				'showBackground'          => Context_Manager::resolve_show_background( $attributes, $block->context, $this->options, (bool) $is_overlay ),
 				'wrapper_class'           => $settings['classes'] . ' videopack-view-count-block',
 				'style_vars'              => $settings['style'],
 				// Tells render_view_count() that title_color/title_background_color

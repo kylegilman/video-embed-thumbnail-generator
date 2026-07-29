@@ -6,6 +6,12 @@
 	"category": "media",
 	"icon": "visibility",
 	"description": "Displays the view count of the video.",
+	"parent": [
+		"videopack/title",
+		"videopack/player-container",
+		"videopack/player",
+		"videopack/thumbnail"
+	],
 	"usesContext": [
 		"postId",
 		"postType",
@@ -36,6 +42,9 @@
 		},
 		"title_background_color": {
 			"type": "string"
+		},
+		"showBackground": {
+			"type": "boolean"
 		},
 		"isPreview": {
 			"type": "boolean",

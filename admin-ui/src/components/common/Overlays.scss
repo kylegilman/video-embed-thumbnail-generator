@@ -1,5 +1,6 @@
 @use "sass:string";
 @use "@wordpress/base-styles/colors";
+@use "../../blocks/shared/overlay-position" as pos;
 
 // Source of Truth for Video Overlays
 // Shared between VideoPlayer, GalleryItem, and Thumbnail blocks
@@ -81,7 +82,33 @@ $badge-selectors: (
 	}
 }
 
+// Shared position/inset/z-index/transition for the title's background
+// underlay -- deliberately no color here. The overlay case (bar-over-video)
+// and the standalone case (plain text with an optional custom background)
+// each apply their own color/opacity/fallback rules on top of this, since
+// standalone titles must never fall back to the overlay's dark default.
+%videopack-title-bg-underlay {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: -1;
+	transition: visibility 0.3s linear, opacity 0.3s linear;
+}
+
 .videopack-video-title {
+	// Standalone (non-overlay) title with an effectively-set custom
+	// background color and showBackground on -- see VideoTitle.js's
+	// barClass. No fallback color: this class is only ever added when a
+	// real custom color is already confirmed present.
+	&.has-title-background:not(.is-overlay)::before {
+		@extend %videopack-title-bg-underlay;
+		background-color: var(--videopack-title-background-color);
+		opacity: var(--videopack-title-bg-alpha, 0.9);
+	}
+
 	&.is-overlay {
 		display: flex;
 		flex-direction: row;
@@ -103,14 +130,7 @@ $badge-selectors: (
 		}
 
 		&::before {
-			content: "";
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			z-index: -1;
-			transition: visibility 0.3s linear, opacity 0.3s linear;
+			@extend %videopack-title-bg-underlay;
 			background-color: var(--videopack-title-background-color, var(--videopack-title-bg-fallback, rgba(20, 20, 20, 0.9)));
 			opacity: var(--videopack-title-bg-alpha, 0.9);
 		}
@@ -160,7 +180,13 @@ $badge-selectors: (
 	}
 
 	&.no-title { background: transparent; }
-	&.has-no-background { background: transparent !important; }
+	// The actual visible background lives on the ::before pseudo-element
+	// (see &::before above), not the element's own `background` -- setting
+	// `background: transparent` here did nothing to it.
+	&.has-no-background::before {
+		background: transparent !important;
+		opacity: 0 !important;
+	}
 
 	&.is-overlay {
 		// Default state for overlays is hidden unless the visibility class is present
@@ -360,32 +386,24 @@ $badge-selectors: (
 	z-index: 105; /* Above player controls but below main overlay overlays if needed */
 	box-shadow: none;
 
-	&.position-top { top: 5px; bottom: auto; }
-	&.position-bottom { bottom: 5px; top: auto; }
-	&.has-text-align-left { left: 5px; right: auto; margin-right: auto; }
-	&.has-text-align-right { right: 5px; left: auto; margin-left: auto; }
-	&.has-text-align-center {
-		left: 50%;
-		right: auto;
-		transform: translateX(-50%);
-	}
-
-	&.position-center,
-	&.position-middle {
-		top: 50%;
-		bottom: auto;
-		transform: translateY(-50%);
-
-		&.has-text-align-center {
-			transform: translate(-50%, -50%);
-		}
-	}
+	@include pos.overlay-corner-position;
+	&.has-text-align-left { margin-right: auto; }
+	&.has-text-align-right { margin-left: auto; }
 
 	// Common badge colors and positioning (when overlay)
 	.videopack-icon-svg,
 	.videopack-icons,
 	svg {
 		fill: currentColor;
+	}
+
+	// Unlike Title's ::before-based background (a separate layer behind the
+	// text), the badge element's own background-color sits directly on the
+	// same box as its icon/text content -- so only background/box-shadow
+	// are suppressed here, not opacity, which would hide the badge entirely.
+	&.has-no-background {
+		background: transparent !important;
+		box-shadow: none !important;
 	}
 }
 

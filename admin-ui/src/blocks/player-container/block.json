@@ -72,6 +72,30 @@
 			"type": "boolean",
 			"default": false
 		},
+		"pauseothervideos": {
+			"type": "boolean"
+		},
+		"right_click": {
+			"type": "boolean"
+		},
+		"skip_buttons": {
+			"type": "boolean"
+		},
+		"gifmode": {
+			"type": "boolean"
+		},
+		"resize": {
+			"type": "boolean"
+		},
+		"pixel_ratio": {
+			"type": "boolean"
+		},
+		"schema": {
+			"type": "boolean"
+		},
+		"skin": {
+			"type": "string"
+		},
 		"muted": {
 			"type": "boolean",
 			"default": false
@@ -104,8 +128,7 @@
 			"default": []
 		},
 		"playback_rate": {
-			"type": "boolean",
-			"default": false
+			"type": "boolean"
 		},
 		"watermark": {
 			"type": "string"
@@ -139,7 +162,7 @@
 		"overlay_title": {
 			"type": "boolean"
 		},
-		"views": {
+		"view_count": {
 			"type": "boolean"
 		},
 		"embedcode": {

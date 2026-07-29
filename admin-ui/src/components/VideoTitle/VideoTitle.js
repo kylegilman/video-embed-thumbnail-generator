@@ -112,11 +112,22 @@ export default function VideoTitle({
 	}
 	const iconsClass = 'videopack-meta-icons';
 
+	// Background visibility is controlled by showBackground regardless of
+	// overlay status (matches the frontend's non-overlay branch in
+	// Modular_Renderer::render_video_title(), which never special-cased
+	// this on is_overlay either). has-title-background is the standalone
+	// (non-overlay) case specifically -- it only ever gets added when a
+	// real custom color is present, since its CSS has no fallback color.
+	const hasCustomBackgroundColor = !!vpContext.resolved.title_background_color;
 	const barClass = `videopack-video-title videopack-video-title-visible ${
 		isOverlay ? 'is-overlay' : ''
-	} ${!showBackground && isOverlay ? 'has-no-background' : ''} ${
-		isInsideThumbnail ? 'videopack-thumbnail-title' : ''
-	} ${isInsidePlayerOverlay || isOverlay ? `position-${position}` : ''}`.trim();
+	} ${!showBackground ? 'has-no-background' : ''} ${
+		showBackground && !isOverlay && hasCustomBackgroundColor
+			? 'has-title-background'
+			: ''
+	} ${isInsideThumbnail ? 'videopack-thumbnail-title' : ''} ${
+		isInsidePlayerOverlay || isOverlay ? `position-${position}` : ''
+	}`.trim();
 
 	return (
 		<div {...blockProps}>

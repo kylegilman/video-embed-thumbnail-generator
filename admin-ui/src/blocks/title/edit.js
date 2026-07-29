@@ -15,14 +15,13 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import {
-	title as titleIcon,
-	background as backgroundIcon,
-} from '@wordpress/icons';
+import { title as titleIcon } from '@wordpress/icons';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
+import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
 import VideoTitle from '../../components/VideoTitle/VideoTitle';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
+import useShowBackground from '../../hooks/useShowBackground';
 import './editor.scss';
 
 // Title is a valid theme-context root (Overlays.scss) and owns its own
@@ -60,7 +59,6 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 		title_color,
 		title_background_color,
 		overlay_title,
-		showBackground,
 		usePostTitle,
 		linkToPost,
 	} = attributes;
@@ -85,19 +83,16 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 			: true;
 	}, [overlay_title, globalOptions.overlay_title]);
 
-	const finalShowBackground = useMemo(() => {
-		if (showBackground !== undefined) {
-			return !!showBackground;
-		}
-		return globalOptions.showBackground !== undefined
-			? !!globalOptions.showBackground
-			: true;
-	}, [showBackground, globalOptions.showBackground]);
-
 	const isOverlay =
 		explicitIsOverlay !== undefined
 			? explicitIsOverlay
 			: isInsideThumbnail || isInsidePlayerOverlay;
+
+	const finalShowBackground = useShowBackground(
+		attributes,
+		context,
+		isOverlay
+	);
 	const wrapperClass = 'videopack-video-title-wrapper';
 
 	const THEME_COLORS = videopack_config?.themeColors;
@@ -151,8 +146,8 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 						setAttributes({ textAlign: nextAlign });
 					}}
 				/>
-				{(isInsidePlayerOverlay || isInsidePlayerContainer) && (
-					<ToolbarGroup>
+				<ToolbarGroup>
+					{(isInsidePlayerOverlay || isInsidePlayerContainer) && (
 						<ToolbarButton
 							icon={titleIcon}
 							label={
@@ -173,29 +168,19 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 								})
 							}
 						/>
+					)}
 
-						<ToolbarButton
-							icon={backgroundIcon}
-							label={
-								finalShowBackground
-									? __(
-											'Hide Background Bar',
-											'video-embed-thumbnail-generator'
-										)
-									: __(
-											'Show Background Bar',
-											'video-embed-thumbnail-generator'
-										)
-							}
-							isPressed={finalShowBackground}
-							onClick={() =>
-								setAttributes({
-									showBackground: !finalShowBackground,
-								})
-							}
-						/>
-					</ToolbarGroup>
-				)}
+					{/* Background toggle is available regardless of overlay
+					status -- a standalone title can have a real background
+					color just like an overlay one; see VideoTitle.js's
+					has-title-background handling for the non-overlay case. */}
+					<BackgroundToggleButton
+						showBackground={finalShowBackground}
+						onChange={(value) =>
+							setAttributes({ showBackground: value })
+						}
+					/>
+				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
 				{!vpContext.resolved.isStandalone && (
@@ -296,6 +281,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 				usePostTitle={usePostTitle}
 				linkToPost={linkToPost}
 				overlay_title={finalOverlayTitle}
+				showBackground={finalShowBackground}
 			/>
 		</>
 	);

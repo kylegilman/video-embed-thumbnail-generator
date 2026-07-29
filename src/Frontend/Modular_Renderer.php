@@ -77,6 +77,9 @@ class Modular_Renderer {
 		if ( ! empty( $atts['wrapper_class'] ) ) {
 			$class .= ' ' . $atts['wrapper_class'];
 		}
+		if ( $is_overlay && isset( $atts['showBackground'] ) && ! $atts['showBackground'] ) {
+			$class .= ' has-no-background';
+		}
 		$class .= ' position-' . esc_attr( $position );
 		$class .= ' has-text-align-' . esc_attr( $text_align );
 
@@ -193,7 +196,7 @@ class Modular_Renderer {
 		foreach ( $colors as $variable => $attribute ) {
 				$val = array_key_exists( $attribute, $atts ) ? $atts[ $attribute ] : ( $options[ $attribute ] ?? '' );
 			if ( ! empty( $val ) ) {
-				$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
+				$show_bg = ! isset( $atts['showBackground'] ) || self::is_true( $atts['showBackground'] );
 
 				// Suppress background color variable if showBackground is false.
 				if ( 'title-background-color' === $variable && ! $show_bg ) {
@@ -258,7 +261,7 @@ class Modular_Renderer {
 				'play_button_secondary_color',
 				'control_bar_bg_color',
 				'control_bar_color',
-				'views',
+				'view_count',
 				'overlay_title',
 				'enable_collection_video_limit',
 				'collection_video_limit',
@@ -769,6 +772,9 @@ class Modular_Renderer {
 		}
 		if ( $is_overlay ) {
 			$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
+			if ( isset( $atts['showBackground'] ) && ! $atts['showBackground'] ) {
+				$wrapper_class .= ' has-no-background';
+			}
 		}
 		if ( ! empty( $atts['wrapper_class'] ) ) {
 			$wrapper_class .= ' ' . $atts['wrapper_class'];
@@ -857,6 +863,9 @@ class Modular_Renderer {
 		}
 		if ( $is_overlay ) {
 			$wrapper_class .= ' is-overlay position-' . esc_attr( $position );
+			if ( isset( $atts['showBackground'] ) && ! $atts['showBackground'] ) {
+				$wrapper_class .= ' has-no-background';
+			}
 		}
 		if ( $is_inside_thumbnail ) {
 			$wrapper_class .= ' is-inside-thumbnail';
@@ -1119,7 +1128,7 @@ class Modular_Renderer {
 			$style_attrs[] = 'color: var(--videopack-title-color)';
 		}
 
-		$show_bg = ! isset( $atts['showBackground'] ) || ( 'false' !== $atts['showBackground'] && '0' !== $atts['showBackground'] && false !== $atts['showBackground'] && '' !== $atts['showBackground'] );
+		$show_bg = ! isset( $atts['showBackground'] ) || self::is_true( $atts['showBackground'] );
 
 		if ( $show_bg && $has_custom_bg ) {
 			$style_attrs[] = '--videopack-title-background-color:' . $atts['title_background_color'];
@@ -1146,6 +1155,15 @@ class Modular_Renderer {
 
 		if ( $is_overlay ) {
 			$classes .= ' is-overlay is-badge';
+			// Belt-and-suspenders: $show_bg above already prevents the custom
+			// color from ever reaching $style_attrs, but this class also
+			// force-hides the CSS rule's own skin-fallback background via
+			// !important (see Overlays.scss's $badge-selectors block) --
+			// that fallback would otherwise still render even with no
+			// custom color set.
+			if ( ! $show_bg ) {
+				$classes .= ' has-no-background';
+			}
 		} else {
 			$classes .= ' is-not-overlay';
 		}
@@ -1374,7 +1392,7 @@ class Modular_Renderer {
 			),
 		);
 
-		if ( ! empty( $options['views'] ) ) {
+		if ( ! empty( $options['view_count'] ) ) {
 			$blocks[] = $make_block( 'videopack/view-count', array() );
 		}
 

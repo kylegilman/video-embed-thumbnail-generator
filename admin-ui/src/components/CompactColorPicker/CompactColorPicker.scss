@@ -66,3 +66,28 @@
 	padding: 12px;
 	width: 280px;
 }
+
+// A slashed circle (like a "no value" / "not set" glyph) so an inherited
+// color is visually distinct from both a real color swatch and the empty
+// "cleared" state, which shows the global fallback swatch instead.
+.videopack-color-inherit-indicator {
+	display: block;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: linear-gradient(
+		to bottom right,
+		transparent calc(50% - 1px),
+		#757575 calc(50% - 1px),
+		#757575 calc(50% + 1px),
+		transparent calc(50% + 1px)
+	);
+	border: 1px solid #757575;
+	box-sizing: border-box;
+}
+
+.videopack-color-inherit-button {
+	width: 100%;
+	justify-content: center !important;
+	margin-top: 8px;
+}
