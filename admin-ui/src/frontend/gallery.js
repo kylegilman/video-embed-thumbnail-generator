@@ -219,7 +219,7 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 			}, 100 );
 		} else if ( videoData.embed_method === 'WordPress Default' && typeof window.MediaElementPlayer !== 'undefined' ) {
 			const videoVars = videoData.player_vars || videoData;
-			const settings = Object.assign( {}, window._wpmejsSettings || {}, videoVars.mejs_settings || {} );
+			const settings = Object.assign( {}, videoVars.mejs_settings || {} );
 			settings.success = ( mediaElement, domObject, player ) => {
 				currentGalleryPlayer = player;
 				if ( ! playerWrapper.dataset.videopackInitialized ) {

@@ -157,31 +157,29 @@ const WpMejsPlayer = (props) => {
 
 				container.appendChild(videoElement);
 
-				const mejsSettings = window._wpmejsSettings || {};
 				const mejsOptions = {
 					pluginPath: '/wp-includes/js/mediaelement/',
-					...mejsSettings,
 					source_groups: source_groups || options.source_groups,
-				};
-
-				// Ensure features is an array to avoid MEJS crashes in setResponsiveMode.
-				if (
-					!mejsOptions.features ||
-					!Array.isArray(mejsOptions.features)
-				) {
-					mejsOptions.features = [
+					// Matches Player_WordPress_Default::filter_video_vars()'s
+					// base feature list (no 'current'/'duration' -- the real
+					// frontend never builds a time-elapsed/remaining display),
+					// only including 'sourcechooser' when there's more than
+					// one source to choose between (same $total_sources > 1
+					// gate that method uses). Always built fresh here --
+					// unlike the real frontend, this preview has no
+					// per-video PHP-rendered settings to start from, only
+					// its own live props.
+					features: [
 						'playpause',
 						'progress',
-						'current',
-						'duration',
 						'tracks',
-						'sourcechooser',
+						...(curOptions.sources.length > 1
+							? ['sourcechooser']
+							: []),
 						'volume',
 						'fullscreen',
-					];
-				} else if (!mejsOptions.features.includes('sourcechooser')) {
-					mejsOptions.features.push('sourcechooser');
-				}
+					],
+				};
 
 				if (!mejsOptions.stretching) {
 					mejsOptions.stretching = 'responsive';
@@ -202,7 +200,21 @@ const WpMejsPlayer = (props) => {
 				}
 
 				if (curPlaybackRate) {
-					mejsOptions.features.push('speed');
+					// Insert right after 'volume' (matching the real
+					// frontend's feature order in
+					// Player_WordPress_Default.php) rather than pushing to
+					// the end, which would place it after fullscreen
+					// instead.
+					const volumeIndex = mejsOptions.features.indexOf('volume');
+					if (volumeIndex === -1) {
+						mejsOptions.features.push('speed');
+					} else {
+						mejsOptions.features.splice(
+							volumeIndex + 1,
+							0,
+							'speed'
+						);
+					}
 				}
 
 				const onPlayHandler = (e) => {
@@ -464,6 +476,21 @@ const WpMejsPlayer = (props) => {
 			media.setVolume(options.volume);
 		}
 	}, [options.volume]);
+
+	// Unlike muted/volume, MEJS's player class doesn't delegate a "loop"
+	// property/method of its own -- confirmed against the vendored library
+	// (wp-includes/js/mediaelement/mediaelement.js): 'loop' is one of the
+	// generic html5media properties MEJS auto-generates a getter/setter for
+	// on player.media specifically (assignGettersSetters), not on the player
+	// object itself. So this has to go through player.media.loop, not
+	// player.loop directly -- unlike preload/playback_rate (handled via a
+	// forced remount in VideoPlayer.js instead), it needs no full rebuild.
+	useEffect(() => {
+		const media = playerRef.current?.media;
+		if (media) {
+			media.loop = !!options.loop;
+		}
+	}, [options.loop]);
 
 	return (
 		<div

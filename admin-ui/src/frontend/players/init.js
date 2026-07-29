@@ -93,43 +93,29 @@ export function initPlayer( playerWrapper ) {
 	if ( videoVars.embed_method === 'Video.js' ) {
 		return loadVideoJS( playerWrapper, videoVars );
 	} else if ( videoVars.embed_method === 'WordPress Default' ) {
-		const checkMejs = () => {
-			const container = playerWrapper.querySelector( '.mejs-container' );
+		const container = playerWrapper.querySelector( '.mejs-container' );
 
-			if ( container ) {
-				setupVideo( playerWrapper, videoVars );
-			} else {
-				// WordPress's own wp-mediaelement.js does the actual
-				// MediaElement.js initialization for .wp-video-shortcode
-				// elements (see Player_WordPress_Default::get_video_classes()),
-				// but its own scan only ever runs once, at page load — it
-				// never revisits content added afterward (e.g. AJAX
-				// pagination). Give it its normal chance first (matches
-				// original, real-page-load behavior unchanged), then
-				// construct the player ourselves if still nothing showed
-				// up, the same way loadVideoJS() already does for Video.js.
-				setTimeout( () => {
-					if ( playerWrapper.dataset.videopackInitialized ) {
-						return;
-					}
-					const secondCheck = playerWrapper.querySelector( '.mejs-container' );
-					if ( secondCheck ) {
-						setupVideo( playerWrapper, videoVars );
-						return;
-					}
-					const videoElement = playerWrapper.querySelector( 'video' );
-					if ( ! videoElement || typeof window.MediaElementPlayer === 'undefined' ) {
-						return;
-					}
-					const settings = Object.assign( {}, window._wpmejsSettings || {}, videoVars.mejs_settings || {} );
-					settings.success = () => {
-						setupVideo( playerWrapper, videoVars );
-					};
-					new window.MediaElementPlayer( videoElement, settings );
-				}, 1000 );
-			}
+		if ( container ) {
+			// Already constructed -- e.g. the lightbox/gallery path built
+			// this same markup ahead of time.
+			setupVideo( playerWrapper, videoVars );
+			return;
+		}
+
+		// Videopack always constructs its own MediaElementPlayer instance
+		// explicitly with this video's own settings (see
+		// Player_WordPress_Default::get_player_script_handles()'s docblock
+		// for why it doesn't rely on WordPress's own wp-mediaelement.js
+		// auto-init) -- no need to wait and check for one showing up first.
+		const videoElement = playerWrapper.querySelector( 'video' );
+		if ( ! videoElement || typeof window.MediaElementPlayer === 'undefined' ) {
+			return;
+		}
+		const settings = Object.assign( {}, videoVars.mejs_settings || {} );
+		settings.success = () => {
+			setupVideo( playerWrapper, videoVars );
 		};
-		checkMejs();
+		new window.MediaElementPlayer( videoElement, settings );
 	} else {
 		setupVideo( playerWrapper, videoVars );
 	}
