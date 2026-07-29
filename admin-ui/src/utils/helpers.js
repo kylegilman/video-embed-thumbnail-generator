@@ -20,12 +20,11 @@ export const normalizeOptions = (options) => {
 		'playsinline',
 		'downloadlink',
 		'overlay_title',
-		'nativecontrolsfortouch',
 		'pauseothervideos',
 		'right_click',
 		'gallery_pagination',
 		'gallery_title',
-		'views',
+		'view_count',
 		'auto_res',
 	];
 

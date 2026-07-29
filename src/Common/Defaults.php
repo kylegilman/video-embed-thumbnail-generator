@@ -47,7 +47,6 @@ class Defaults {
 			'downloadlink'                  => (bool) ( $options['downloadlink'] ?? false ),
 			'overlay_title'                 => (bool) ( $options['overlay_title'] ?? false ),
 			'title_position'                => (string) ( $options['title_position'] ?? 'top' ),
-			'nativecontrolsfortouch'        => (bool) ( $options['nativecontrolsfortouch'] ?? false ),
 			'pauseothervideos'              => (bool) ( $options['pauseothervideos'] ?? true ),
 			'right_click'                   => (bool) ( $options['right_click'] ?? false ),
 			'auto_res'                      => (string) ( $options['auto_res'] ?? 'automatic' ),

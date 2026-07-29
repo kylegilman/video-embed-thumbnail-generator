@@ -79,7 +79,7 @@
 			"type": "number",
 			"default": 1
 		},
-		"views": {
+		"view_count": {
 			"type": "boolean"
 		},
 		"overlay_title": {

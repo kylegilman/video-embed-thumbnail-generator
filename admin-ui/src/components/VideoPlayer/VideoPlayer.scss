@@ -307,7 +307,7 @@
 	}
 
 	&.videopack-has-control-bar-color .mejs-controls {
-		.mejs-button:not(.mejs-sourcechooser-button) button {
+		.mejs-button:not(.mejs-sourcechooser-button):not(.mejs-speed-button) button {
 			background-image: none;
 			background-color: var(--videopack-control-bar-color);
 			mask-image: var(--videopack-mejs-controls-svg);

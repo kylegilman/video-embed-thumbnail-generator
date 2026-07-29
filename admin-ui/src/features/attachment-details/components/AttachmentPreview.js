@@ -292,7 +292,7 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 	const embeddableAttr = attributes?.embeddable;
 	const embedcodeAttr = attributes?.embedcode;
 	const watermarkAttr = attributes?.watermark;
-	const viewsAttr = attributes?.views;
+	const viewsAttr = attributes?.view_count;
 
 	const showTitleBar = !!(
 		overlayTitleAttr ||
