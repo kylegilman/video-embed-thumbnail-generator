@@ -52,6 +52,9 @@
     "title_background_color": {
       "type": "string"
     },
+    "showBackground": {
+      "type": "boolean"
+    },
     "isPreview": {
       "type": "boolean",
       "default": false
