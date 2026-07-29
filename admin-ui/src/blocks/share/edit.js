@@ -36,8 +36,10 @@ import {
 	email,
 } from '../../assets/icon';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
+import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
+import useShowBackground from '../../hooks/useShowBackground';
 
 const CLASS_KEYS = ['title_color', 'title_background_color'];
 
@@ -84,6 +86,11 @@ export default function Edit({
 		isInsideThumbnail || (isInsidePlayerOverlay && !isInsideTitleMeta);
 	const shouldPortal =
 		isInsideThumbnail || isInsidePlayerOverlay || isInsideTitleMeta;
+	const finalShowBackground = useShowBackground(
+		attributes,
+		context,
+		isOverlay
+	);
 
 	const colorFallbacks = useMemo(
 		() =>
@@ -115,7 +122,9 @@ export default function Edit({
 			isOverlay ? `is-overlay position-${position}` : ''
 		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${isInsideTitleMeta ? 'is-inside-title-meta' : ''} has-text-align-${finalTextAlign}`,
+		} ${isInsideTitleMeta ? 'is-inside-title-meta' : ''} ${
+			isOverlay && !finalShowBackground ? 'has-no-background' : ''
+		} has-text-align-${finalTextAlign}`,
 		style: {
 			...vpContext.style,
 			display: 'inline-flex',
@@ -465,6 +474,16 @@ export default function Edit({
 						isPressed={showText}
 					/>
 				</ToolbarGroup>
+				{isOverlay && (
+					<ToolbarGroup>
+						<BackgroundToggleButton
+							showBackground={finalShowBackground}
+							onChange={(value) =>
+								setAttributes({ showBackground: value })
+							}
+						/>
+					</ToolbarGroup>
+				)}
 				<ToolbarGroup
 					label={__('Style Type', 'video-embed-thumbnail-generator')}
 				>

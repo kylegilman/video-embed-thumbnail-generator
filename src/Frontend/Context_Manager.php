@@ -88,10 +88,18 @@ class Context_Manager {
 		foreach ( $design_keys as $key ) {
 			$context_key = "videopack/{$key}";
 
+			// An empty string means "cleared -- defer to context/global",
+			// matching the JS resolver's isValid() check in
+			// admin-ui/src/utils/context.js; it is NOT a terminal value.
+			// The literal string 'inherit' (set via the color picker's
+			// distinct "Inherit" control, as opposed to "Clear") IS a real
+			// terminal value here -- it flows straight through as
+			// `--videopack-{key}: inherit`, which browsers resolve as the
+			// `inherit` keyword once substituted into `color: var(...)`.
 			$value = null;
-			if ( array_key_exists( $key, $normalized_attributes ) ) {
+			if ( array_key_exists( $key, $normalized_attributes ) && '' !== $normalized_attributes[ $key ] ) {
 				$value = $normalized_attributes[ $key ];
-			} elseif ( array_key_exists( $context_key, $context ) ) {
+			} elseif ( array_key_exists( $context_key, $context ) && '' !== $context[ $context_key ] ) {
 				$value = $context[ $context_key ];
 			} else {
 				$value = $options[ $key ] ?? ( $defaults[ $key ] ?? null );
@@ -161,5 +169,46 @@ class Context_Manager {
 			'style'    => implode( '; ', $style_vars ),
 			'classes'  => implode( ' ', array_unique( $classes ) ),
 		);
+	}
+
+	/**
+	 * Resolves whether an overlay/badge block's background should show.
+	 *
+	 * A boolean control flag rather than a color/string value, so it's
+	 * resolved separately from resolve()'s $design_keys loop (which is
+	 * built around emitting `--videopack-{key}: {value}` CSS vars for
+	 * scalar values, not a plain show/hide flag). Precedence: the block's
+	 * own attribute (if explicitly set) -> inherited context
+	 * (videopack/showBackground) -> the global option -> $is_overlay itself.
+	 * A background bar makes sense by default when it's actually a bar/badge
+	 * overlaid on a video or thumbnail; a standalone block (plain text/icon
+	 * in normal page flow, not overlaid on anything) defaults to no
+	 * background box instead.
+	 *
+	 * @param array $attributes Block attributes.
+	 * @param array $context    Block context.
+	 * @param array $options    Global plugin options.
+	 * @param bool  $is_overlay Whether this block is currently rendering as
+	 *                          an overlay/badge. Used only as the final
+	 *                          fallback default.
+	 * @return bool Whether the background should show.
+	 */
+	public static function resolve_show_background( array $attributes, array $context, array $options, bool $is_overlay = true ): bool {
+		$normalized_attributes = array();
+		foreach ( $attributes as $key => $val ) {
+			$snake_key                           = strtolower( preg_replace( '/(?<!^)[A-Z]/', '_$0', (string) $key ) );
+			$normalized_attributes[ $snake_key ] = $val;
+		}
+
+		if ( array_key_exists( 'show_background', $normalized_attributes ) && null !== $normalized_attributes['show_background'] ) {
+			return \Videopack\Frontend\Modular_Renderer::is_true( $normalized_attributes['show_background'] );
+		}
+		if ( array_key_exists( 'videopack/showBackground', $context ) ) {
+			return \Videopack\Frontend\Modular_Renderer::is_true( $context['videopack/showBackground'] );
+		}
+		if ( isset( $options['showBackground'] ) ) {
+			return \Videopack\Frontend\Modular_Renderer::is_true( $options['showBackground'] );
+		}
+		return $is_overlay;
 	}
 }

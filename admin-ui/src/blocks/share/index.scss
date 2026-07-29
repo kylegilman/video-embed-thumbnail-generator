@@ -1,4 +1,5 @@
 @use "../shared/block-button.scss" as shared;
+@use "../shared/overlay-position" as pos;
 @use '@wordpress/base-styles/colors';
 
 // Shared overlay surface (matches duration / view-count badges in Overlays.scss)
@@ -14,6 +15,18 @@
 	z-index: 10;
 }
 
+// Top/bottom/transform offsets specifically are layered so they always
+// beat editor.scss's wrapper-constraint rule (`@layer editor-overrides`,
+// see that file) regardless of specificity or source order -- both rules
+// can end up matching with identical specificity in the block editor.
+@layer editor-overrides, positioning;
+
+@layer positioning {
+	.videopack-share-wrapper.is-overlay:not(.is-inside-title-meta) {
+		@include pos.overlay-corner-position;
+	}
+}
+
 /* Player-corner overlay (not inside title meta bar) */
 .videopack-share-wrapper.is-overlay:not(.is-inside-title-meta) {
 	position: absolute;
@@ -21,41 +34,12 @@
 	font-size: 11px;
 	line-height: 1.4;
 
-	&.position-top {
-		top: 5px;
-		bottom: auto;
-	}
-
-	&.position-bottom {
-		bottom: 5px;
-		top: auto;
-	}
-
-	&.position-center,
-	&.position-middle {
-		top: 50%;
-		bottom: auto;
-		transform: translateY(-50%);
-
-		&.has-text-align-center {
-			transform: translate(-50%, -50%);
+	&.has-no-background {
+		.videopack-share-link.style-button {
+			background: transparent !important;
+			box-shadow: none !important;
+			backdrop-filter: none !important;
 		}
-	}
-
-	&.has-text-align-left {
-		left: 5px;
-		right: auto;
-	}
-
-	&.has-text-align-right {
-		right: 5px;
-		left: auto;
-	}
-
-	&.has-text-align-center {
-		left: 50%;
-		right: auto;
-		transform: translateX(-50%);
 	}
 
 	.videopack-share-link.style-button {

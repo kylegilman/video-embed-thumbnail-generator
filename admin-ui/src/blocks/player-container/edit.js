@@ -229,7 +229,6 @@ export default function Edit({
 				attachment.videopack?.views ||
 				attachment.meta?.videopack_views ||
 				attachment.meta?.['_videopack-meta']?.starts ||
-				attributes.views ||
 				0,
 			duration:
 				attachment.videopack?.duration ||
@@ -301,6 +300,20 @@ export default function Edit({
 				attributes.control_bar_color ||
 				options?.control_bar_color ||
 				config?.control_bar_color,
+			// A real per-video block attribute (no block.json default, so
+			// it's genuinely undefined until the user overrides it for this
+			// video) -- ?? rather than || so an explicit per-video "false"
+			// isn't clobbered by a truthy global default.
+			playback_rate:
+				attributes.playback_rate ??
+				options?.playback_rate ??
+				config?.playback_rate,
+			// Unlike skip_buttons/right_click (real per-video block
+			// attributes), the seconds values are a Video.js v8 constraint
+			// (skipButtons only accepts fixed 5/10/30s values) configured
+			// globally, never per-video — see Player_Video_Js::filter_video_vars().
+			skip_forward: options?.skip_forward,
+			skip_backward: options?.skip_backward,
 			title_color:
 				attributes.title_color ||
 				options?.title_color ||

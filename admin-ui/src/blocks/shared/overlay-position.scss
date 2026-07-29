@@ -1,0 +1,27 @@
+// Shared corner-overlay positioning for badge/bar-style overlay blocks
+// (Duration, View Count, Share, Download). Mixin-only -- no top-level
+// output -- so it can be @use'd from each block's own separately-compiled
+// bundle without duplicating unrelated CSS into every block's output.
+@mixin overlay-corner-position {
+	&.position-top { top: 5px; bottom: auto; }
+	&.position-bottom { bottom: 5px; top: auto; }
+
+	&.position-center,
+	&.position-middle {
+		top: 50%;
+		bottom: auto;
+		transform: translateY(-50%);
+
+		&.has-text-align-center {
+			transform: translate(-50%, -50%);
+		}
+	}
+
+	&.has-text-align-left { left: 5px; right: auto; }
+	&.has-text-align-right { right: 5px; left: auto; }
+	&.has-text-align-center {
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+	}
+}

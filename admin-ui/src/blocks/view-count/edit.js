@@ -15,9 +15,11 @@ import {
 	playOutline as playOutlineIcon,
 } from '../../assets/icon';
 import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
+import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
 import ViewCount from '../../components/ViewCount/ViewCount';
 import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
+import useShowBackground from '../../hooks/useShowBackground';
 
 // View-count shares "badge" title/background colors with Title/Duration —
 // see the $badge-selectors comment in VideoDuration.js.
@@ -49,6 +51,11 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const isInsidePlayerContainer =
 		!!context['videopack/isInsidePlayerContainer'];
 	const isOverlay = isInsideThumbnail || isInsidePlayerOverlay;
+	const finalShowBackground = useShowBackground(
+		attributes,
+		context,
+		isOverlay
+	);
 
 	const colorFallbacks = useMemo(
 		() =>
@@ -82,7 +89,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 			isOverlay ? 'is-overlay is-badge' : ''
 		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
 			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${!vpContext.resolved.attachmentId ? 'no-title' : ''} position-${position} has-text-align-${finalTextAlign}`,
+		} ${isOverlay && !finalShowBackground ? 'has-no-background' : ''} ${!vpContext.resolved.attachmentId ? 'no-title' : ''} position-${position} has-text-align-${finalTextAlign}`,
 		style: vpContext.style,
 	});
 
@@ -169,6 +176,16 @@ export default function Edit({ attributes, setAttributes, context }) {
 						isPressed={showText}
 					/>
 				</ToolbarGroup>
+				{isOverlay && (
+					<ToolbarGroup>
+						<BackgroundToggleButton
+							showBackground={finalShowBackground}
+							onChange={(value) =>
+								setAttributes({ showBackground: value })
+							}
+						/>
+					</ToolbarGroup>
+				)}
 			</BlockControls>
 			<InspectorControls>
 				<PanelBody

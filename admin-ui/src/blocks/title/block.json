@@ -12,7 +12,7 @@
 	],
 	"icon": "heading",
 	"description": "Overlay title and action buttons for the video player.",
-	"usesContext": ["postId", "postType", "videopack/postId", "videopack/attachmentId", "videopack/src", "videopack/title"],
+	"usesContext": ["postId", "postType", "videopack/postId", "videopack/attachmentId", "videopack/src", "videopack/title", "videopack/caption", "videopack/overlay_title", "videopack/showBackground"],
 	"providesContext": {
 		"videopack/isInsideTitleMeta": "isInsideTitleMeta"
 	},

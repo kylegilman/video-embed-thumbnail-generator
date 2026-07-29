@@ -4,6 +4,20 @@ import {
 	ColorPalette,
 	Dropdown,
 } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+
+// Sentinel attribute value meaning "force CSS `inherit`", distinct from an
+// empty string (which means "unset -- defer to context/global settings").
+// Both Context_Manager::resolve() (PHP) and getEffectiveValue() (JS) already
+// treat any non-empty string as a terminal, chain-stopping value, so the
+// literal word "inherit" needs no special-casing there -- it flows straight
+// through into `--videopack-{key}: inherit`, which is itself valid CSS when
+// substituted into `color: var(--videopack-{key}, ...)`. The label shown to
+// users is "Theme Default" rather than "Inherit" -- less jargon-y, and
+// "Inherit Text"/"Inherit Background" read awkwardly next to each other,
+// where "Theme Default" reads fine for either.
+export const INHERIT = 'inherit';
+const INHERIT_LABEL = __('Theme Default', 'video-embed-thumbnail-generator');
 
 /**
  * A compact color picker using a dropdown and color palette.
@@ -14,6 +28,7 @@ import {
  * @param {Function} props.onChange      Callback for color change.
  * @param {Array}    props.colors        Available color palette.
  * @param {string}   props.fallbackValue Default color to show when value is empty.
+ * @param {boolean}  [props.allowInherit] Whether to offer the "Inherit" option.
  * @return {Element} The rendered component.
  */
 const CompactColorPicker = ({
@@ -22,7 +37,10 @@ const CompactColorPicker = ({
 	onChange,
 	colors,
 	fallbackValue,
+	allowInherit = true,
 }) => {
+	const isInherit = value === INHERIT;
+
 	const resolveValueToHex = (val) => {
 		if (
 			typeof val === 'string' &&
@@ -39,7 +57,7 @@ const CompactColorPicker = ({
 		return val;
 	};
 
-	const hexValue = resolveValueToHex(value);
+	const hexValue = isInherit ? '' : resolveValueToHex(value);
 	const displayColor =
 		hexValue || resolveValueToHex(fallbackValue) || 'transparent';
 
@@ -67,20 +85,43 @@ const CompactColorPicker = ({
 						onClick={onToggle}
 						aria-expanded={isOpen}
 						variant="secondary"
-						className="videopack-color-picker-button"
+						label={isInherit ? INHERIT_LABEL : undefined}
+						className={`videopack-color-picker-button ${
+							isInherit ? 'is-inherit' : ''
+						}`}
 					>
-						<ColorIndicator colorValue={displayColor} />
+						{isInherit ? (
+							<span className="videopack-color-inherit-indicator" />
+						) : (
+							<ColorIndicator colorValue={displayColor} />
+						)}
 					</Button>
 				)}
 				renderContent={() => (
 					<div className="videopack-color-picker-palette-wrapper">
 						<ColorPalette
 							colors={colors}
-							value={hexValue === '' ? undefined : hexValue}
+							value={
+								!isInherit && hexValue !== ''
+									? hexValue
+									: undefined
+							}
 							onChange={handleOnChange}
 							disableCustomColors={false}
 							clearable={true}
 						/>
+						{allowInherit && (
+							<Button
+								className="videopack-color-inherit-button"
+								variant="tertiary"
+								isPressed={isInherit}
+								onClick={() =>
+									onChange(isInherit ? '' : INHERIT)
+								}
+							>
+								{INHERIT_LABEL}
+							</Button>
+						)}
 					</div>
 				)}
 			/>
