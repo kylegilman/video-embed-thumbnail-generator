@@ -27,22 +27,6 @@ class Player_WordPress_Default extends Player {
 	private static $hooks_registered = false;
 
 	/**
-	 * Union of MediaElement.js feature names needed by every video
-	 * processed so far on this page. filter_video_vars() runs once per
-	 * video, but wp_localize_script('wp-mediaelement', '_wpmejsSettings', ...)
-	 * is a single shared global that WordPress's own native
-	 * MediaElement.js auto-init reads for every standalone player it
-	 * constructs — overwriting it with only the current video's own
-	 * feature list (e.g. omitting 'sourcechooser' for a single-source
-	 * video processed after a multi-source one) meant whichever video was
-	 * processed *last* silently decided the feature set for every
-	 * standalone player on the page. Accumulating a union fixes that.
-	 *
-	 * @var array $accumulated_features
-	 */
-	private static $accumulated_features = array();
-
-	/**
 	 * Registers WordPress hooks for MediaElement.js.
 	 */
 	public function register_hooks() {
@@ -66,10 +50,24 @@ class Player_WordPress_Default extends Player {
 	/**
 	 * Returns the handles for MediaElement.js specific scripts.
 	 *
+	 * Depends on the raw 'mediaelement' handle rather than 'wp-mediaelement'
+	 * deliberately: 'wp-mediaelement' bundles WordPress's own auto-init scan
+	 * (wp.mediaelement.initialize(), wp-includes/js/mediaelement/
+	 * wp-mediaelement.js), which shares a single global settings object
+	 * across every standalone player it constructs on the page — so two
+	 * videos with different playback_rate/sourcechooser needs would
+	 * incorrectly get the same feature set. Videopack always constructs its
+	 * own MediaElementPlayer instances explicitly (players/init.js) with
+	 * correct per-video settings instead, so it only needs the underlying
+	 * library, never the auto-init wrapper. 'wp-mediaelement' the
+	 * *stylesheet* (get_player_style_handles() below) is unrelated and
+	 * stays -- that's the actual WordPress-native player styling this
+	 * player mode exists to use.
+	 *
 	 * @return array The script handles.
 	 */
 	public function get_player_script_handles(): array {
-		return array( 'wp-mediaelement', 'videopack-mejs' );
+		return array_merge( array( 'mediaelement', 'videopack-mejs' ), parent::get_player_script_handles() );
 	}
 
 
@@ -88,19 +86,10 @@ class Player_WordPress_Default extends Player {
 	 * @return array The filtered metadata.
 	 */
 	public function filter_block_metadata( $metadata ) {
-		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'wp-mediaelement' );
+		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'mediaelement' );
 		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'videopack-mejs' );
 		$metadata = $this->ensure_array_and_append( $metadata, 'style', 'wp-mediaelement' );
 		return (array) $metadata;
-	}
-
-	/**
-	 * Enqueues MediaElement.js player-specific scripts and styles.
-	 */
-	public function enqueue_player_scripts(): void {
-		wp_enqueue_script( 'wp-mediaelement' );
-		wp_enqueue_script( 'videopack-mejs' );
-		wp_enqueue_style( 'wp-mediaelement' );
 	}
 
 	/**
@@ -150,15 +139,11 @@ class Player_WordPress_Default extends Player {
 		// WordPress's native auto-init) stay scoped to just this video's
 		// own feature list; no need for other videos' features on an
 		// instance that doesn't need them.
+		// Only ever consumed via this per-video mejs_settings, by our own
+		// explicit MediaElementPlayer construction (players/init.js) --
+		// there's no shared global to also populate since we don't rely on
+		// WordPress's native per-page auto-init (see get_player_script_handles()).
 		$video_variables['mejs_settings'] = $mejs_settings;
-
-		// The shared global, by contrast, accumulates a union across
-		// every video processed so far on this page — see
-		// $accumulated_features's docblock for why.
-		self::$accumulated_features        = array_values( array_unique( array_merge( self::$accumulated_features, $mejs_settings['features'] ) ) );
-		$global_mejs_settings               = $mejs_settings;
-		$global_mejs_settings['features']   = self::$accumulated_features;
-		wp_localize_script( 'wp-mediaelement', '_wpmejsSettings', $global_mejs_settings );
 
 		return $video_variables;
 	}

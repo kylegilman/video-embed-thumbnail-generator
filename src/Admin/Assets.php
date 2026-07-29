@@ -127,7 +127,11 @@ class Assets implements Hook_Subscriber {
 		// 'videopack-core'.
 		$frontend_runtime_deps = array(
 			'videopack-core'            => array(),
-			'videopack-mejs'            => array( 'wp-mediaelement' ),
+			// The raw library handle, deliberately not 'wp-mediaelement' --
+			// see Player_WordPress_Default::get_player_script_handles()'s
+			// docblock for why this plugin never depends on WordPress's own
+			// MediaElement.js auto-init wrapper.
+			'videopack-mejs'            => array( 'mediaelement' ),
 			'video-js-quality-selector' => array( 'video-js' ),
 		);
 
@@ -141,7 +145,7 @@ class Assets implements Hook_Subscriber {
 				$player_script_deps = array();
 				$player_style_deps  = array();
 
-				$player_script_deps = array_diff( (array) $player->get_player_script_handles(), array( (string) $handle ) );
+				$player_script_deps = ( 'videopack-core' === (string) $handle ) ? array() : array_diff( (array) $player->get_player_script_handles(), array( (string) $handle ) );
 				$player_style_deps  = array_diff( (array) $player->get_player_style_handles(), array( (string) $handle ) );
 
 				if ( array_key_exists( $handle, $frontend_runtime_deps ) ) {
