@@ -68,7 +68,7 @@ export const getListTemplate = (options) => {
 		],
 	];
 
-	if (options?.views) {
+	if (options?.view_count) {
 		videoChildren.push(['videopack/view-count', {}]);
 	}
 

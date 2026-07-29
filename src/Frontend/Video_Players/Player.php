@@ -541,7 +541,7 @@ class Player {
 			'pagination_background_color' => (string) ( $this->atts['pagination_background_color'] ?? '' ),
 			'pagination_active_bg_color'  => (string) ( $this->atts['pagination_active_bg_color'] ?? '' ),
 			'caption'                     => (string) ( $this->atts['caption'] ?? '' ),
-			'views'                       => (bool) ( $this->atts['views'] ?? false ),
+			'view_count'                  => (bool) ( $this->atts['view_count'] ?? false ),
 			'view_count_text'             => $this->get_source() ? \Videopack\Common\I18n::format_view_count( $this->get_source()->get_views() ) : '',
 			'rotate'                      => (int) ( $this->get_source() ? $this->get_source()->get_rotate() : 0 ),
 			'skin'                        => (string) ( $this->atts['skin'] ?? ( $this->options['skin'] ?? 'vjs-theme-videopack' ) ),
@@ -723,7 +723,22 @@ class Player {
 	protected function get_source_elements(): string {
 		$source_elements = '';
 
-		foreach ( $this->get_flat_sources() as $source ) {
+		/**
+		 * Filters the sources rendered as <source> HTML elements, separately
+		 * from the full source list used elsewhere (e.g. the `source_groups`
+		 * data passed to JS via data-player-vars). Lets an add-on keep a
+		 * source out of the initial markup entirely while still surfacing
+		 * it through another channel — e.g. a source whose delivery method
+		 * needs to be driven exclusively by JS rather than left for the
+		 * browser to discover on its own at parse time.
+		 *
+		 * @param array  $sources Flat sources array.
+		 * @param array  $atts    Player attributes.
+		 * @param Player $player  This player instance.
+		 */
+		$sources = apply_filters( 'videopack_video_player_html_sources', $this->get_flat_sources(), $this->atts, $this );
+
+		foreach ( $sources as $source ) {
 			$source_elements .= '<source src="' . $source['src'] . '" type="' . $source['type'];
 
 			if ( ! empty( $source['codecs'] ) ) {

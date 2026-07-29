@@ -163,9 +163,7 @@ export const VideoJS = (props) => {
 				player.volume(options.volume);
 				player.poster(options.poster);
 				player.controls(options.controls);
-				player.playbackRates(
-					options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []
-				);
+				player.playbackRates(options.playbackRates || []);
 				player.preload(options.preload);
 
 				if (previousSkinRef.current !== skin) {

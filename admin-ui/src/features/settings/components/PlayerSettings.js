@@ -60,12 +60,15 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		embedcode,
 		downloadlink,
 		inline,
-		views,
+		view_count,
 		autoplay,
 		loop,
 		muted,
 		gifmode,
 		playback_rate,
+		skip_buttons,
+		skip_forward,
+		skip_backward,
 		encode,
 		right_click,
 		click_download,
@@ -96,7 +99,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				controls: false,
 				embeddable: false,
 				overlay_title: false,
-				views: false,
+				view_count: false,
 				playsinline: true,
 			}));
 		} else {
@@ -178,6 +181,25 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		{
 			value: 'none',
 			label: _x('None', 'Preload value'),
+		},
+	];
+
+	// Video.js v8's skipButtons option only accepts 5, 10, or 30 seconds
+	// (https://legacy.videojs.org/guides/options/#skipbuttons) — other
+	// values are silently ignored by the player, so this is a select, not
+	// free numeric entry.
+	const skipSecondsOptions = [
+		{
+			value: 5,
+			label: __('5 seconds', 'video-embed-thumbnail-generator'),
+		},
+		{
+			value: 10,
+			label: __('10 seconds', 'video-embed-thumbnail-generator'),
+		},
+		{
+			value: 30,
+			label: __('30 seconds', 'video-embed-thumbnail-generator'),
 		},
 	];
 
@@ -383,6 +405,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		settings
 	);
 
+	// skip_buttons only works with classic Video.js v8 (skipButtons is a
+	// Video.js player option, only accepting 5/10/30 second values —
+	// https://legacy.videojs.org/guides/options/#skipbuttons). Neither
+	// MediaElement.js/WordPress Default nor Video.js v10 (which always shows
+	// its own skip buttons regardless, with no configuration hook to match
+	// this setting to) support it, so this only shows for the exact 'Video.js'
+	// embed method rather than every Video.js-flavored one.
+	const showSkipButtons = applyFilters(
+		'videopack.videoSettings.showSkipButtons',
+		embed_method === 'Video.js',
+		settings
+	);
+
 	// Real attributes for the actual <VideoPlayer> instance — deliberately
 	// the real, final URL rather than player-container/block.json's
 	// 'videopack-preview-video' placeholder default — that string only
@@ -480,11 +515,11 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const overlayBlocks = useStablePreviewBlocks(overlayTemplate);
 
 	const viewCountTemplate = useMemo(() => {
-		if (!views) {
+		if (!view_count) {
 			return [];
 		}
 		return [['videopack/view-count', {}]];
-	}, [views]);
+	}, [view_count]);
 	const viewCountBlocks = useStablePreviewBlocks(viewCountTemplate);
 
 	// Title/Watermark render inside VideoPlayer's overlay chrome, so they
@@ -647,8 +682,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								'View count',
 								'video-embed-thumbnail-generator'
 							)}
-							onChange={changeHandlerFactory.views}
-							checked={!!views}
+							onChange={changeHandlerFactory.view_count}
+							checked={!!view_count}
 						/>
 					</PanelRow>
 				</div>
@@ -913,6 +948,66 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							disabled={gifmode}
 							checked={!!playback_rate}
 						/>
+						{showSkipButtons && (
+							<div className="videopack-control-with-tooltip">
+								<ToggleControl
+									__nextHasNoMarginBottom
+									label={__(
+										'Skip buttons',
+										'video-embed-thumbnail-generator'
+									)}
+									onChange={changeHandlerFactory.skip_buttons}
+									checked={!!skip_buttons}
+									disabled={gifmode}
+								/>
+								<VideopackTooltip
+									text={__(
+										'Adds buttons to skip forward and backward in the video by a set number of seconds.',
+										'video-embed-thumbnail-generator'
+									)}
+								/>
+							</div>
+						)}
+						{showSkipButtons && skip_buttons && (
+							<>
+								<span className="videopack-setting-auto-width">
+									<SelectControl
+										__nextHasNoMarginBottom
+										__next40pxDefaultSize
+										label={__(
+											'Skip backward',
+											'video-embed-thumbnail-generator'
+										)}
+										value={skip_backward}
+										onChange={(value) =>
+											changeHandlerFactory.skip_backward(
+												parseInt(value, 10)
+											)
+										}
+										options={skipSecondsOptions}
+										disabled={gifmode}
+									/>
+								</span>
+								<span className="videopack-setting-auto-width">
+									<SelectControl
+										__nextHasNoMarginBottom
+										__next40pxDefaultSize
+										label={__(
+											'Skip forward',
+											'video-embed-thumbnail-generator'
+										)}
+										value={skip_forward}
+										onChange={(value) =>
+											changeHandlerFactory.skip_forward(
+												parseInt(value, 10)
+											)
+										}
+										options={skipSecondsOptions}
+										disabled={gifmode}
+									/>
+								</span>
+							</>
+						)}
 						<RadioControl
 							label={
 								<span className="videopack-label-with-tooltip">

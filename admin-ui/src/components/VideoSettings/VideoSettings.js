@@ -54,6 +54,19 @@ const VideoSettings = ({
 		displayAttributes
 	);
 
+	// skip_buttons only works with classic Video.js v8 (skipButtons is a
+	// Video.js player option, only accepting 5/10/30 second values —
+	// https://legacy.videojs.org/guides/options/#skipbuttons). Neither
+	// MediaElement.js/WordPress Default nor Video.js v10 (which always shows
+	// its own skip buttons regardless, with no configuration hook to match
+	// this setting to) support it, so this only shows for the exact 'Video.js'
+	// embed method rather than every Video.js-flavored one.
+	const showSkipButtons = applyFilters(
+		'videopack.videoSettings.showSkipButtons',
+		displayAttributes.embed_method === 'Video.js',
+		displayAttributes
+	);
+
 	return (
 		<div className="videopack-video-settings">
 			{!isBlockEditor && (
@@ -112,9 +125,9 @@ const VideoSettings = ({
 								'video-embed-thumbnail-generator'
 							)}
 							onChange={(value) =>
-								handleSettingChange('views', value)
+								handleSettingChange('view_count', value)
 							}
-							checked={!!displayAttributes.views}
+							checked={!!displayAttributes.view_count}
 						/>
 					</PanelRow>
 					{(() => {
@@ -320,7 +333,7 @@ const VideoSettings = ({
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label={__(
-										'Variable playback speeds',
+										'Variable speeds',
 										'video-embed-thumbnail-generator'
 									)}
 									onChange={(value) =>
@@ -331,6 +344,24 @@ const VideoSettings = ({
 									}
 									checked={!!displayAttributes.playback_rate}
 								/>
+								{showSkipButtons && (
+									<ToggleControl
+										__nextHasNoMarginBottom
+										label={__(
+											'Skip buttons',
+											'video-embed-thumbnail-generator'
+										)}
+										onChange={(value) =>
+											handleSettingChange(
+												'skip_buttons',
+												value
+											)
+										}
+										checked={
+											!!displayAttributes.skip_buttons
+										}
+									/>
+								)}
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label={__(

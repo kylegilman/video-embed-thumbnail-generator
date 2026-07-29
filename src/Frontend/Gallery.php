@@ -536,7 +536,7 @@ class Gallery {
 		if ( empty( $inner_blocks ) ) {
 			$grid_metadata = (string) ( $query_atts['grid_metadata'] ?? '' );
 			$show_duration = strpos( $grid_metadata, 'duration' ) !== false || ! empty( $query_atts['showDuration'] );
-			$show_views    = strpos( $grid_metadata, 'views' ) !== false || ! empty( $query_atts['views'] );
+			$show_views    = strpos( $grid_metadata, 'views' ) !== false || ! empty( $query_atts['view_count'] );
 			$link_to       = $query_atts['grid_link_to'] ?? 'lightbox';
 
 			$inner_blocks  = '<!-- wp:videopack/loop -->';

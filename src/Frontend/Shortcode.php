@@ -204,7 +204,6 @@ class Shortcode implements Hook_Subscriber {
 				'resize',
 				'auto_res',
 				'pixel_ratio',
-				'nativecontrolsfortouch',
 				'schema',
 				'gallery_thumb',
 				'gallery_orderby',
@@ -238,7 +237,6 @@ class Shortcode implements Hook_Subscriber {
 				'fullwidth',
 				'gallery_pagination',
 				'gallery_title',
-				'nativecontrolsfortouch',
 				'pixel_ratio',
 				'schema',
 				'gifmode',
@@ -415,7 +413,6 @@ class Shortcode implements Hook_Subscriber {
 				'height',
 				'loop',
 				'muted',
-				'nativecontrolsfortouch',
 				'pixel_ratio',
 				'resize',
 				'set_volume',
@@ -484,7 +481,22 @@ class Shortcode implements Hook_Subscriber {
 			$query_atts['track_default'] = 'default';
 		}
 		if ( (string) ( $query_atts['count_views'] ?? '' ) === 'false' ) {
-			$query_atts['views'] = 'false';
+			$query_atts['view_count'] = 'false';
+		}
+
+		// Backward compatibility: title="false" disables the title text and
+		// its background bar — but NOT the title block's wrapper itself,
+		// since (in the current block structure, unlike when this shortcode
+		// attribute was introduced) the download/share icon overlays are
+		// nested inside that same wrapper; simulate_player_block() still
+		// needs to include it whenever downloadlink/embedcode are enabled.
+		// This has to run here (not in get_final_atts(), where it lived
+		// before) because simulate_player_block()'s decision of whether to
+		// include the title block's markup at all — based on overlay_title
+		// — happens before get_final_atts() is ever called.
+		if ( 'false' === (string) ( $query_atts['title'] ?? '' ) ) {
+			$query_atts['overlay_title']  = false;
+			$query_atts['showBackground'] = false;
 		}
 
 		/**
@@ -606,7 +618,7 @@ class Shortcode implements Hook_Subscriber {
 				'embeddable'   => false,
 				'downloadlink' => false,
 				'playsinline'  => true,
-				'views'        => false,
+				'view_count'   => false,
 			);
 			/**
 			 * Filter the GIF mode attributes.
@@ -769,9 +781,9 @@ class Shortcode implements Hook_Subscriber {
 			$block_atts['gallery_include'] = $query_atts['id'];
 		}
 
-		// Map legacy view count attributes to standardized 'views' key used by modular blocks.
+		// Map legacy view count attributes to the standardized 'view_count' key used by modular blocks.
 		if ( ! empty( $query_atts['view_count'] ) || ! empty( $query_atts['count_views'] ) ) {
-			$block_atts['views'] = true;
+			$block_atts['view_count'] = true;
 		}
 
 		// Special case: gallery_source might need current page ID.
@@ -814,7 +826,7 @@ class Shortcode implements Hook_Subscriber {
 
 			$inner_blocks .= sprintf( '<!-- wp:videopack/player -->%s<!-- /wp:videopack/player -->', $engine_inner );
 
-			if ( ! empty( $block_atts['views'] ) ) {
+			if ( ! empty( $block_atts['view_count'] ) ) {
 				$inner_blocks .= '<!-- wp:videopack/view-count /-->';
 			}
 
@@ -898,7 +910,7 @@ class Shortcode implements Hook_Subscriber {
 
 		// Map legacy view count attributes.
 		if ( ! empty( $query_atts['view_count'] ) || ! empty( $query_atts['count_views'] ) ) {
-			$block_atts['views'] = true;
+			$block_atts['view_count'] = true;
 		}
 
 		// Build nested structure matching getListTemplate in templates.js.
@@ -914,7 +926,7 @@ class Shortcode implements Hook_Subscriber {
 		}
 		$inner_blocks .= '<!-- /wp:videopack/player -->';
 
-		if ( ! empty( $block_atts['views'] ) ) {
+		if ( ! empty( $block_atts['view_count'] ) ) {
 			$inner_blocks .= '<!-- wp:videopack/view-count /-->';
 		}
 

@@ -38,6 +38,20 @@ const DEFAULT_PLAYERS = {
 	None: GenericPlayer,
 };
 
+// Stable references for the `sources`/`source_groups` destructuring
+// defaults below. An inline `[]`/`{}` literal as a default parameter value
+// creates a *new* reference every time this component runs whenever the
+// real value is undefined -- which cascades into WpMejsPlayer's
+// construction-effect dependency array (source_groups is one of its
+// deps), causing it to continuously tear down and rebuild the MEJS player
+// on every unrelated re-render (e.g. the encode-queue panel's background
+// polling), not just on an actual settings change. Confirmed directly:
+// without this, the construction effect's own logging showed a
+// construct-cleanup-construct cycle running continuously even with no
+// user interaction at all.
+const EMPTY_ARRAY = [];
+const EMPTY_OBJECT = {};
+
 // Make sure to pass isSelected from the block's edit component.
 const noop = () => {};
 
@@ -141,10 +155,14 @@ const VideoPlayer = ({
 		src,
 		volume,
 		auto_res,
-		sources: incomingSources = [],
-		source_groups: incomingSourceGroups = {},
-		text_tracks = [],
+		sources: incomingSources = EMPTY_ARRAY,
+		source_groups: incomingSourceGroups = EMPTY_OBJECT,
+		text_tracks = EMPTY_ARRAY,
 		playback_rate,
+		skip_buttons,
+		skip_forward,
+		skip_backward,
+		right_click,
 		default_ratio,
 		// Design settings resolved from context
 		skin,
@@ -450,6 +468,10 @@ const VideoPlayer = ({
 			volume,
 			crossorigin: resolvedCrossorigin,
 			playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
+			skip_buttons,
+			skip_forward,
+			skip_backward,
+			playback_rate,
 			sources: finalizedSources.map((s) => ({
 				src: s.src,
 				type: s.type,
@@ -465,6 +487,17 @@ const VideoPlayer = ({
 		};
 
 		options.source_groups = source_groups;
+
+		// Matches admin-ui/src/frontend/players/video-js.js's real-frontend
+		// gating exactly: only set once all three are present.
+		if (skip_buttons && skip_forward && skip_backward) {
+			options.controlBar = {
+				skipButtons: {
+					forward: Number(skip_forward),
+					backward: Number(skip_backward),
+				},
+			};
+		}
 
 		const hasMultipleSources = finalizedSources.length > 1;
 		const hasResolutions = finalizedSources.some(
@@ -493,6 +526,9 @@ const VideoPlayer = ({
 		poster,
 		loop,
 		playback_rate,
+		skip_buttons,
+		skip_forward,
+		skip_backward,
 		playsinline,
 		volume,
 		auto_res,
@@ -607,6 +643,19 @@ const VideoPlayer = ({
 	const renderReady =
 		src || (finalizedSources && finalizedSources.length > 0);
 
+	// Matches admin-ui/src/frontend/players/init.js's real-frontend
+	// behavior exactly: player-engine-agnostic (a wrapper-level listener,
+	// not something built into any specific player's own options), so
+	// handling it once here covers every preview player type.
+	const handleContextMenu = useCallback(
+		(e) => {
+			if (true !== right_click) {
+				e.preventDefault();
+			}
+		},
+		[right_click]
+	);
+
 	if (!renderReady) {
 		return null; // Or a loading spinner
 	}
@@ -617,6 +666,7 @@ const VideoPlayer = ({
 			ref={wrapperRef}
 			style={playerStyles}
 			id={instanceId}
+			onContextMenu={handleContextMenu}
 		>
 			<div
 				className={`videopack-player ${
@@ -633,9 +683,16 @@ const VideoPlayer = ({
 					if (final_embed_method === 'Video.js') {
 						return (
 							<PlayerComponent
+								// skip_buttons/skip_forward/skip_backward build
+								// Video.js's control-bar skip buttons at
+								// construction time only -- VideoJS.js has no
+								// live-update path for them (unlike
+								// autoplay/muted/etc, which it does update in
+								// place), so a settings change has to force a
+								// full remount to actually take effect here.
 								key={`videojs-${src}-${resetKey}-${uniqueKey}-${
 									blockAttributes.restartCount || 0
-								}`}
+								}-${skip_buttons ? `${skip_forward}-${skip_backward}` : 'noskip'}`}
 								options={videoJsOptions}
 								skin={final_skin}
 								onPlay={handlePlay}
@@ -650,9 +707,18 @@ const VideoPlayer = ({
 					if (final_embed_method === 'WordPress Default') {
 						return (
 							<PlayerComponent
+								// preload/playback_rate are read once at
+								// construction time inside WpMejsPlayer.js
+								// (preload is set as a DOM attribute the
+								// browser only honors before its resource
+								// selection algorithm runs; playback_rate
+								// decides whether the "speed" MEJS feature
+								// button gets built into the control bar at
+								// all) -- neither has a live-update path
+								// there, so force a remount here instead.
 								key={`wpvideo-${src}-${resetKey}-${uniqueKey}-${
 									blockAttributes.restartCount || 0
-								}`}
+								}-${preload}-${playback_rate ? 'rate' : 'norate'}`}
 								options={genericPlayerOptions}
 								controls={controls}
 								actualAutoplay={actualAutoplay}
@@ -672,7 +738,9 @@ const VideoPlayer = ({
 						<PlayerComponent
 							key={`${final_embed_method}-${src}-${resetKey}-${uniqueKey}-${
 								blockAttributes.restartCount || 0
-							}`}
+							}-${controls ? 'controls' : 'nocontrols'}-${
+								skip_buttons ? `${skip_forward}-${skip_backward}` : 'noskip'
+							}-${playback_rate ? 'rate' : 'norate'}`}
 							options={videoJsOptions || genericPlayerOptions}
 							{...(PlayerComponent === GenericPlayer
 								? genericPlayerOptions

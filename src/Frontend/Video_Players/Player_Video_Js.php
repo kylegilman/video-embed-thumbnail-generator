@@ -155,8 +155,15 @@ class Player_Video_Js extends Player {
 	 */
 	public static function filter_video_vars( $video_variables, $atts ) {
 
-		$video_variables['nativecontrolsfortouch'] = (bool) ( $atts['nativecontrolsfortouch'] ?? false );
 		$video_variables['locale']                 = self::get_videojs_locale();
+
+		if ( ! empty( $atts['skip_buttons'] ) ) {
+			$options                         = (array) get_option( 'videopack_options', array() );
+			$video_variables['skip_buttons'] = array(
+				'forward'  => (int) ( $options['skip_forward'] ?? 10 ),
+				'backward' => (int) ( $options['skip_backward'] ?? 10 ),
+			);
+		}
 
 		return $video_variables;
 	}

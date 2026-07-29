@@ -239,7 +239,7 @@ import '../../blocks/collection';
 					['videopack/player', {}, engineChildren],
 				];
 
-				if (mergedAttributes.views) {
+				if (mergedAttributes.view_count) {
 					videoChildren.push(['videopack/view-count', {}]);
 				}
 

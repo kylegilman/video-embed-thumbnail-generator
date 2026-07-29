@@ -723,7 +723,7 @@ class Screens implements Hook_Subscriber {
 	<li><code>title="Video Title"</code> ' . sprintf( /* translators: %s is the word 'false' in code tags */ (string) esc_html__( 'or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
 	<li><code>embeddable="true/false"</code> ' . (string) esc_html__( 'enable or disable video embedding and sharing icons.', 'video-embed-thumbnail-generator' ) . '</li>
 	<li><code>embedcode="html code"</code> ' . sprintf( /* translators: %s is the word 'false' in code tags */ (string) esc_html__( 'changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
-	<li><code>views="true/false"</code> ' . (string) esc_html__( 'turns the view count on or off.', 'video-embed-thumbnail-generator' ) . '</li>
+	<li><code>view_count="true/false"</code> ' . (string) esc_html__( 'turns the view count on or off.', 'video-embed-thumbnail-generator' ) . '</li>
 	<li><code>count_views="quarters/start_complete/start/false"</code> ' . (string) esc_html__( 'sets the level of video view counting.', 'video-embed-thumbnail-generator' ) . '</li>
 	<li><code>caption="Caption"</code> ' . (string) esc_html__( 'text that is displayed below the video (not subtitles or closed captioning)', 'video-embed-thumbnail-generator' ) . '</li>
 	<li><code>description="Description"</code> ' . (string) esc_html__( 'Used for metadata only.', 'video-embed-thumbnail-generator' ) . '</li>
@@ -741,7 +741,6 @@ class Screens implements Hook_Subscriber {
 	<li><code>track_default="default"</code> ' . (string) esc_html__( 'track is enabled by default.', 'video-embed-thumbnail-generator' ) . '</li></ul>
 	<p><strong>' . (string) esc_html__( 'These options will only affect Video.js playback', 'video-embed-thumbnail-generator' ) . '</strong></p>
 	<ul><li><code>skin="example-css-class"</code> ' . sprintf( /* translators: %s is an <a> link to instructions */ esc_html__( 'Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator' ), '<a href="http://codepen.io/heff/pen/EarCt">' ) . '</a></li>
-	<li><code>nativecontrolsfortouch="true/false"</code> ' . (string) esc_html__( 'enables or disables native controls on touchscreen devices.', 'video-embed-thumbnail-generator' ) . '</li>
 	</ul>
 	<p><strong>' . (string) esc_html__( 'These options are available for video galleries (options work the same as standard WordPress image galleries)', 'video-embed-thumbnail-generator' ) . '</p></strong>
 	<ul><li><code>gallery="true"</code> ' . (string) esc_html__( 'turns on the gallery', 'video-embed-thumbnail-generator' ) . '</li>

@@ -204,6 +204,7 @@ class Attachment_Meta implements Hook_Subscriber {
 				'playback_rate'               => (bool) ( $this->options['playback_rate'] ?? false ),
 				'playsinline'                 => (bool) ( $this->options['playsinline'] ?? true ),
 				'right_click'                 => (bool) ( $this->options['right_click'] ?? true ),
+				'skip_buttons'                => (bool) ( $this->options['skip_buttons'] ?? false ),
 				'gifmode'                     => (bool) ( $this->options['gifmode'] ?? false ),
 				'fixed_aspect'                => (string) ( $this->options['fixed_aspect'] ?? 'vertical' ),
 				'align'                       => (string) ( $this->options['align'] ?? '' ),
@@ -213,7 +214,7 @@ class Attachment_Meta implements Hook_Subscriber {
 				'embeddable'                  => (bool) ( $this->options['embeddable'] ?? false ),
 				'embedcode'                   => (bool) ( $this->options['embedcode'] ?? false ),
 				'overlay_title'               => (bool) ( $this->options['overlay_title'] ?? false ),
-				'views'                       => (bool) ( $this->options['views'] ?? false ),
+				'view_count'                  => (bool) ( $this->options['view_count'] ?? false ),
 				'watermark'                   => (string) ( $this->options['watermark'] ?? '' ),
 				'watermark_link_to'           => (string) ( $this->options['watermark_link_to'] ?? 'none' ),
 				'watermark_url'               => (string) ( $this->options['watermark_url'] ?? '' ),
@@ -261,13 +262,6 @@ class Attachment_Meta implements Hook_Subscriber {
 		}
 		$defaults = $this->get_defaults();
 		$migrated = false;
-
-		// Standardize terminology: migration from view_count to views.
-		if ( array_key_exists( 'view_count', $current_meta ) ) {
-			$current_meta['views'] = (bool) $current_meta['view_count'];
-			unset( $current_meta['view_count'] );
-			$migrated = true;
-		}
 
 		// Attempt to migrate from _kgvid-meta if _videopack-meta is empty.
 		if ( empty( $current_meta ) ) {
@@ -465,11 +459,16 @@ class Attachment_Meta implements Hook_Subscriber {
 		$meta = $this->get();
 
 		$key_map = array(
-			'play' => 'starts',
-			'25'   => 'play_25',
-			'50'   => 'play_50',
-			'75'   => 'play_75',
-			'end'  => 'completeviews',
+			'play'          => 'starts',
+			'starts'        => 'starts',
+			'25'            => 'play_25',
+			'play_25'       => 'play_25',
+			'50'            => 'play_50',
+			'play_50'       => 'play_50',
+			'75'            => 'play_75',
+			'play_75'       => 'play_75',
+			'end'           => 'completeviews',
+			'completeviews' => 'completeviews',
 		);
 
 		if ( isset( $key_map[ $video_event ] ) ) {
@@ -877,6 +876,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'playback_rate'               => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'playsinline'                 => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'right_click'                 => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'skip_buttons'                => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'gifmode'                     => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'fixed_aspect'                => array( 'type' => array( 'string', 'null' ) ),
 			'align'                       => array( 'type' => array( 'string', 'null' ) ),
@@ -886,7 +886,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'embeddable'                  => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'embedcode'                   => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'overlay_title'               => array( 'type' => array( 'string', 'boolean', 'null' ) ),
-			'views'                       => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'view_count'                  => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 			'watermark'                   => array( 'type' => array( 'string', 'null' ) ),
 			'watermark_link_to'           => array( 'type' => array( 'string', 'null' ) ),
 			'watermark_url'               => array(
@@ -964,20 +964,18 @@ class Attachment_Meta implements Hook_Subscriber {
 	 * @return bool True if successful, false otherwise.
 	 */
 	public function merge_meta_value( $value, $post, $meta_key, $request ) {
+		unset( $request );
 		if ( '_videopack-meta' !== $meta_key ) {
 			return false;
 		}
 
-		$current_meta = get_post_meta( $post->ID, '_videopack-meta', true );
-		if ( ! is_array( $current_meta ) ) {
-			$current_meta = array();
-		}
+		$this->post_id = $post->ID;
+		$current_meta  = $this->get();
 
 		// Merge incoming value with current meta.
 		$merged_meta = array_merge( $current_meta, (array) $value );
 
 		// Only save if it differs from the defaults (leveraging existing save logic).
-		$this->post_id = $post->ID;
 		$this->save( $merged_meta );
 
 		return true;

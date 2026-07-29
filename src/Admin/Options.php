@@ -205,7 +205,7 @@ class Options implements Hook_Subscriber {
 			'embedcode'                     => false,
 			'downloadlink'                  => false,
 			'click_download'                => true,
-			'views'                         => false,
+			'view_count'                    => false,
 			'count_views'                   => 'start_complete',
 			'embeddable'                    => true,
 			'inline'                        => false,
@@ -224,7 +224,6 @@ class Options implements Hook_Subscriber {
 			'control_bar_color'             => '',
 
 			// Player Controls & Playback.
-			'nativecontrolsfortouch'        => false,
 			'controls'                      => true,
 			'autoplay'                      => false,
 			'pauseothervideos'              => true,
