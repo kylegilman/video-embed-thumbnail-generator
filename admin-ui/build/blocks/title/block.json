@@ -18,7 +18,10 @@
     "videopack/postId",
     "videopack/attachmentId",
     "videopack/src",
-    "videopack/title"
+    "videopack/title",
+    "videopack/caption",
+    "videopack/overlay_title",
+    "videopack/showBackground"
   ],
   "providesContext": {
     "videopack/isInsideTitleMeta": "isInsideTitleMeta"
