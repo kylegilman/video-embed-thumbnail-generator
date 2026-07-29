@@ -10,7 +10,9 @@
 		"e2e:seed": "wp-env run cli wp eval-file wp-content/plugins/video-embed-thumbnail-generator/tests/e2e/seed.php",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
-		"test:e2e:headed": "playwright test --headed"
+		"test:e2e:headed": "playwright test --headed",
+		"pretest:php": "wp-env run cli wp db query \"CREATE DATABASE IF NOT EXISTS phpunit_test\"",
+		"test:php": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit.xml"
 	},
 	"devDependencies": {
 		"@playwright/test": "latest",

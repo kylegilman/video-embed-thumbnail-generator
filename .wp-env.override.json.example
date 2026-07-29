@@ -1,0 +1,8 @@
+{
+	"config": {
+		"VIDEOPACK_FORCE_PREMIUM_FOR_TESTING": true,
+
+		"VIDEOPACK_PLAYER_PRO_FS_SECRET_KEY": "sk_...",
+		"VIDEOPACK_CLOUD_STREAMING_FS_SECRET_KEY": "sk_..."
+	}
+}
