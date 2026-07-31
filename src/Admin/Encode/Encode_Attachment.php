@@ -1036,13 +1036,6 @@ class Encode_Attachment {
 
 		// Input.
 		$input_source = (string) $this->encode_input;
-		if ( ! empty( $this->options['htaccess_login'] ) && (bool) filter_var( $input_source, FILTER_VALIDATE_URL ) ) {
-			if ( strpos( $input_source, 'http://' ) === 0 ) {
-				$input_source = (string) substr_replace( $input_source, (string) $this->options['htaccess_login'] . ':' . (string) $this->options['htaccess_password'] . '@', 7, 0 );
-			} elseif ( strpos( $input_source, 'https://' ) === 0 ) {
-				$input_source = (string) substr_replace( $input_source, (string) $this->options['htaccess_login'] . ':' . (string) $this->options['htaccess_password'] . '@', 8, 0 );
-			}
-		}
 		$builder->add_input( $input_source );
 
 		// Watermark input if applicable.
@@ -1225,13 +1218,6 @@ class Encode_Attachment {
 		}
 
 		$input_source = (string) $this->encode_input;
-		if ( ! empty( $this->options['htaccess_login'] ) && (bool) filter_var( $input_source, FILTER_VALIDATE_URL ) ) {
-			if ( strpos( $input_source, 'http://' ) === 0 ) {
-				$input_source = (string) substr_replace( $input_source, (string) $this->options['htaccess_login'] . ':' . (string) $this->options['htaccess_password'] . '@', 7, 0 );
-			} elseif ( strpos( $input_source, 'https://' ) === 0 ) {
-				$input_source = (string) substr_replace( $input_source, (string) $this->options['htaccess_login'] . ':' . (string) $this->options['htaccess_password'] . '@', 8, 0 );
-			}
-		}
 
 		$ffmpeg_flags_before = (array) array_merge(
 			$nice_prefix,

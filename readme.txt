@@ -94,7 +94,7 @@ Most of Videopack's features will work without FFmpeg. You can generate embed sh
 
 = How can I encode videos in directories protected by .htaccess passwords? =
 
-Enter the username & password in the Videopack settings page, "FFmpeg Settings" tab, or use the "Embed from URL" tab and enter the URL in this format http://username:password@yourdomain.com/uploads/2012/01/awesomevid.mp4 in the Video URL field.
+Use the "Embed from URL" tab and enter the URL in this format http://username:password@yourdomain.com/uploads/2012/01/awesomevid.mp4 in the Video URL field.
 
 == Screenshots ==
 
