@@ -149,22 +149,6 @@ export const createJob = async (input, outputs, parentId = 0) => {
 };
 
 /**
- * Fetches the status of a specific job.
- *
- * @param {number|string} jobId The ID of the job to check.
- */
-export const getJobStatus = async (jobId) => {
-	try {
-		return await apiFetch({
-			path: `/videopack/v1/jobs/${jobId}`,
-		});
-	} catch (error) {
-		console.error('Error fetching job status:', error);
-		throw error;
-	}
-};
-
-/**
  * Lists jobs, optionally filtered by input.
  *
  * @param {number|string} input Optional. The input attachment ID or URL to filter by.

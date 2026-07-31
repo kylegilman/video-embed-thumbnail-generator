@@ -96,11 +96,6 @@ class Job_Controller extends Controller {
 			'/jobs/(?P<id>\d+)',
 			array(
 				array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'job_get' ),
-					'permission_callback' => array( $this, 'can_encode_videos' ),
-				),
-				array(
 					'methods'             => \WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'job_delete' ),
 					'permission_callback' => array( $this, 'can_encode_videos' ),
@@ -232,29 +227,6 @@ class Job_Controller extends Controller {
 		 * @param \WP_REST_Request  $request  The REST request.
 		 */
 		return apply_filters( 'videopack_rest_jobs_clear', new \WP_REST_Response( array( 'cleared' => true ), 200 ), $request );
-	}
-
-	/**
-	 * REST callback to get a job.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 */
-	public function job_get( \WP_REST_Request $request ) {
-		$id               = (int) $request->get_param( 'id' );
-		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
-		$prepared         = $queue_controller->get_job_prepared( $id );
-		if ( is_wp_error( $prepared ) ) {
-			return $prepared;
-		}
-				/**
-		 * Filters the REST response for retrieving single transcode job details.
-		 *
-		 * @since 5.0.0
-		 *
-		 * @param \WP_REST_Response $response The REST response.
-		 * @param \WP_REST_Request  $request  The REST request.
-		 */
-		return apply_filters( 'videopack_rest_job_get', new \WP_REST_Response( (array) $prepared, 200 ), $request );
 	}
 
 	/**
