@@ -1518,8 +1518,13 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 	 */
 	public function get_job_prepared( int $job_id ) {
 		global $wpdb;
+		// Scoped to the current blog, matching get_jobs_list_data()'s existing
+		// scoping - this table is shared network-wide when Videopack is
+		// network-active, and there's no REST-exposed cross-blog job view even
+		// for network admins, so a job belonging to another blog is treated the
+		// same as one that doesn't exist.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$job_data = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
+		$job_data = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d AND blog_id = %d', $this->queue_table_name, $job_id, get_current_blog_id() ), ARRAY_A );
 
 		if ( ! $job_data ) {
 			return new \WP_Error( 'videopack_job_not_found', __( 'Job not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
