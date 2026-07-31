@@ -276,12 +276,19 @@ class Attachment implements Hook_Subscriber {
 		if ( ! empty( $existing ) ) {
 			$attachment_id = (int) $existing[0];
 			if ( $parent_id && (int) wp_get_post_parent_id( $attachment_id ) !== (int) $parent_id ) {
-				wp_update_post(
-					array(
-						'ID'          => $attachment_id,
-						'post_parent' => (int) $parent_id,
-					)
-				);
+				// Reparenting is a side effect of resolving a URL, not the caller's
+				// main intent - if they can't edit both the attachment and the
+				// target post, skip it silently rather than failing the whole
+				// resolution, but never let an unauthorized caller move an
+				// existing attachment (possibly not theirs) onto an arbitrary post.
+				if ( current_user_can( 'edit_post', $attachment_id ) && current_user_can( 'edit_post', $parent_id ) ) {
+					wp_update_post(
+						array(
+							'ID'          => $attachment_id,
+							'post_parent' => (int) $parent_id,
+						)
+					);
+				}
 			}
 			return $attachment_id;
 		}
