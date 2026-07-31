@@ -266,8 +266,6 @@ class Options implements Hook_Subscriber {
 			'open_graph'                    => false,
 			'schema'                        => true,
 			'oembed_provider'               => false,
-			'htaccess_login'                => '',
-			'htaccess_password'             => '',
 			'alwaysloadscripts'             => false,
 			'replace_video_shortcode'       => false,
 			'replace_video_block'           => false,
@@ -508,10 +506,23 @@ class Options implements Hook_Subscriber {
 	 * @return array Filtered options.
 	 */
 	public function filter_options_for_rest() {
-		$all_options = (array) $this->get_options();
+		return self::filter_unsafe_keys( (array) $this->get_options() );
+	}
 
+	/**
+	 * Strips options that shouldn't be exposed to non-administrator users
+	 * (e.g. system paths) from an already-loaded options array.
+	 *
+	 * Shared by filter_options_for_rest() and any other code (such as
+	 * Ui::get_videopack_config_data()) that hands plugin options to the
+	 * browser and needs the same admin-only filtering applied.
+	 *
+	 * @param array $options The full options array.
+	 * @return array The options array, with unsafe keys removed for non-admins.
+	 */
+	public static function filter_unsafe_keys( array $options ) {
 		if ( current_user_can( 'manage_options' ) ) {
-			return $all_options;
+			return $options;
 		}
 
 		$unsafe_keys = array(
@@ -519,19 +530,17 @@ class Options implements Hook_Subscriber {
 			'error_email',
 			'ffmpeg_watermark',
 			'ffmpeg_thumb_watermark',
-			'htaccess_login',
-			'htaccess_password',
 		);
 
-		$safe_options = $all_options;
+		$safe_options = $options;
 		foreach ( $unsafe_keys as $key ) {
 			unset( $safe_options[ $key ] );
 		}
 
 				/**
-		 * Filters the plugin options exposed to non-administrator users via the REST API.
+		 * Filters the plugin options exposed to non-administrator users.
 		 *
-		 * By default, sensitive options (e.g. system paths, credentials) are stripped.
+		 * By default, sensitive options (e.g. system paths) are stripped.
 		 * Use this filter to expose additional safe options or further restrict access.
 		 *
 		 * @since 5.0.0

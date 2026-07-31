@@ -562,7 +562,7 @@ class Ui implements Hook_Subscriber {
 				'globalStyles'              => '',
 				'mejs_controls_svg'         => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),
 				'options'                   => array_merge(
-					$options,
+					\Videopack\Admin\Options::filter_unsafe_keys( $options ),
 					array(
 						'ffmpeg_exists' => apply_filters(
 						/** This filter is documented in src/Admin/Options.php */
