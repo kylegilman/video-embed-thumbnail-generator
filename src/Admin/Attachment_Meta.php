@@ -614,14 +614,14 @@ class Attachment_Meta implements Hook_Subscriber {
 		\Videopack\Common\Debug_Logger::log( 'Fetching remote metadata for URL: ' . $url );
 		$start_time = microtime( true );
 
-		$response = wp_remote_get( (string) $url, $args );
+		$response = wp_safe_remote_get( (string) $url, $args );
 
 		$duration = round( microtime( true ) - $start_time, 4 );
 
 		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 299 ) {
 			\Videopack\Common\Debug_Logger::log( 'Initial remote fetch failed for URL: ' . $url . ' | Duration: ' . $duration . 's', array( 'error' => is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_response_code( $response ) ) );
 			unset( $args['headers']['Range'] );
-			$response = wp_remote_get( (string) $url, $args );
+			$response = wp_safe_remote_get( (string) $url, $args );
 			if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 299 ) {
 				\Videopack\Common\Debug_Logger::log( 'Retry remote fetch failed for URL: ' . $url );
 				return false;
