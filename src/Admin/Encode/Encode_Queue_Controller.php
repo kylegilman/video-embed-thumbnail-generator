@@ -1095,13 +1095,11 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			return new \WP_Error( 'videopack_job_not_found', __( 'Encoding job not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
 		}
 
-		// Permission check: Only allow users who can encode videos to remove jobs.
-		// Also, if it's not their own job, they need 'edit_others_video_encodes' capability.
-		$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
-		if ( ! current_user_can( 'encode_videos' ) || ( ! $is_own_job && ! current_user_can( 'edit_others_video_encodes' ) ) ) {
-			return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to remove this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
-		}
-
+		// Switch to the job's blog before checking capabilities, not after -
+		// otherwise a role/capability assignment on the caller's own site
+		// (e.g. edit_others_video_encodes as an Editor there) would be used
+		// to authorize acting on a job belonging to a different site the
+		// caller has no role on at all.
 		$original_blog_id = false;
 		if ( is_multisite() ) {
 			$original_blog_id = get_current_blog_id();
@@ -1111,6 +1109,13 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		}
 
 		try {
+			// Permission check: Only allow users who can encode videos to remove jobs.
+			// Also, if it's not their own job, they need 'edit_others_video_encodes' capability.
+			$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
+			if ( ! current_user_can( 'encode_videos' ) || ( ! $is_own_job && ! current_user_can( 'edit_others_video_encodes' ) ) ) {
+				return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to remove this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+			}
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$delete_result = $wpdb->delete(
 				$this->queue_table_name,
@@ -1252,12 +1257,8 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			return new \WP_Error( 'videopack_job_not_retryable', __( 'Only failed, canceled, or deleted jobs can be retried.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
 
-		// Permission check.
-		$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
-		if ( ! current_user_can( 'edit_others_video_encodes' ) && ! ( current_user_can( 'encode_videos' ) && $is_own_job ) ) {
-			return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to retry this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
-		}
-
+		// Switch to the job's blog before checking capabilities, not after -
+		// see remove_job() for why.
 		$original_blog_id = false;
 		if ( is_multisite() ) {
 			$original_blog_id = get_current_blog_id();
@@ -1266,52 +1267,61 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			}
 		}
 
-		$update_data = array(
-			'status'               => 'queued',
-			'error_message'        => null,
-			'failed_at'            => null,
-			'pid'                  => null,
-			'progress'             => 0,
-			'started_at'           => null,
-			'output_attachment_id' => null,
-			'retry_count'          => (int) $job['retry_count'] + 1,
-		);
+		try {
+			// Permission check.
+			$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
+			if ( ! current_user_can( 'edit_others_video_encodes' ) && ! ( current_user_can( 'encode_videos' ) && $is_own_job ) ) {
+				return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to retry this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+			}
 
-		// If the job was deleted, paths were cleared. We need to restore them.
-		if ( empty( $job['output_path'] ) ) {
-			$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
-			$encoder              = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $job['input_url'] );
-			$video_formats        = $this->format_registry->get_video_formats();
-			$format_id            = $job['format_id'];
+			$update_data = array(
+				'status'               => 'queued',
+				'error_message'        => null,
+				'failed_at'            => null,
+				'pid'                  => null,
+				'progress'             => 0,
+				'started_at'           => null,
+				'output_attachment_id' => null,
+				'retry_count'          => (int) $job['retry_count'] + 1,
+			);
 
-			if ( isset( $video_formats[ $format_id ] ) ) {
-				$video_format_obj           = $video_formats[ $format_id ];
-				$attachment_id              = ! empty( $job['attachment_id'] ) ? (int) $job['attachment_id'] : null;
-				$encode_info_obj            = new Encode_Info( $attachment_id, (string) $job['input_url'], $video_format_obj, $this->options, $this->format_registry );
-				$update_data['output_path'] = (string) $encode_info_obj->path;
-				$update_data['output_url']  = (string) $encode_info_obj->url;
+			// If the job was deleted, paths were cleared. We need to restore them.
+			if ( empty( $job['output_path'] ) ) {
+				$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
+				$encoder              = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $job['input_url'] );
+				$video_formats        = $this->format_registry->get_video_formats();
+				$format_id            = $job['format_id'];
+
+				if ( isset( $video_formats[ $format_id ] ) ) {
+					$video_format_obj           = $video_formats[ $format_id ];
+					$attachment_id              = ! empty( $job['attachment_id'] ) ? (int) $job['attachment_id'] : null;
+					$encode_info_obj            = new Encode_Info( $attachment_id, (string) $job['input_url'], $video_format_obj, $this->options, $this->format_registry );
+					$update_data['output_path'] = (string) $encode_info_obj->path;
+					$update_data['output_url']  = (string) $encode_info_obj->url;
+				}
+			}
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$update_result = $wpdb->update(
+				$this->queue_table_name,
+				$update_data,
+				array( 'id' => $job_id )
+			);
+
+			if ( false === $update_result ) {
+				return new \WP_Error( 'videopack_db_error', __( 'Could not update job status to retry.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
+			}
+
+			// Trigger a one-off action to process any 'queued' items immediately.
+			$this->schedule_immediate_heartbeat();
+			wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
+			return true;
+
+		} finally {
+			if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
+				restore_current_blog();
 			}
 		}
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$update_result = $wpdb->update(
-			$this->queue_table_name,
-			$update_data,
-			array( 'id' => $job_id )
-		);
-
-		if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
-			restore_current_blog();
-		}
-
-		if ( false === $update_result ) {
-			return new \WP_Error( 'videopack_db_error', __( 'Could not update job status to retry.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
-		}
-
-		// Trigger a one-off action to process any 'queued' items immediately.
-		$this->schedule_immediate_heartbeat();
-		wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
-		return true;
 	}
 
 
