@@ -125,9 +125,22 @@ class Source_Factory {
 			$url_parts      = wp_parse_url( $source );
 
 			if ( isset( $url_parts['host'] ) && $url_parts['host'] === $site_url_parts['host'] ) {
-				// It's a local URL. Convert to a server path.
-				$path = str_replace( site_url( '/' ), trailingslashit( ABSPATH ), $source );
-				return array( urldecode( $path ), 'file' );
+				// It's a local URL. Convert to a server path. Decode before building the
+				// path so a percent-encoded ".." can't slip past the containment check below.
+				$path = str_replace( site_url( '/' ), trailingslashit( ABSPATH ), urldecode( $source ) );
+
+				// The target file may not exist yet (see comment above), so containment can't
+				// be verified with realpath(). Resolve "." / ".." segments logically instead
+				// and confirm the result still sits inside ABSPATH, without touching the
+				// filesystem or restricting *where* under ABSPATH a source may live.
+				$normalized_path = self::normalize_path( $path );
+				$normalized_base = self::normalize_path( trailingslashit( ABSPATH ) );
+
+				if ( $normalized_path === $normalized_base || 0 === strpos( $normalized_path, $normalized_base . '/' ) ) {
+					return array( $normalized_path, 'file' );
+				}
+
+				return array( $source, 'placeholder' );
 			}
 
 			// If all else fails for a URL, it's a remote URL.
@@ -139,5 +152,34 @@ class Source_Factory {
 		}
 
 		return array( $source, 'placeholder' );
+	}
+
+	/**
+	 * Logically resolves "." and ".." segments in a path without touching the
+	 * filesystem (unlike realpath(), this works even if the path doesn't exist).
+	 *
+	 * @param string $path The path to normalize.
+	 * @return string The normalized path.
+	 */
+	private static function normalize_path( string $path ): string {
+		$path        = str_replace( '\\', '/', $path );
+		$is_absolute = ( 0 === strpos( $path, '/' ) );
+		$segments    = explode( '/', $path );
+		$resolved    = array();
+
+		foreach ( $segments as $segment ) {
+			if ( '' === $segment || '.' === $segment ) {
+				continue;
+			}
+			if ( '..' === $segment ) {
+				if ( ! empty( $resolved ) ) {
+					array_pop( $resolved );
+				}
+				continue;
+			}
+			$resolved[] = $segment;
+		}
+
+		return ( $is_absolute ? '/' : '' ) . implode( '/', $resolved );
 	}
 }
