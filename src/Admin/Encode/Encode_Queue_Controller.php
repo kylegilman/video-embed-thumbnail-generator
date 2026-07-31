@@ -1412,7 +1412,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			'parent_id'        => $parent_id,
 			'parent_title'     => $parent_title,
 			'parent_edit_link' => $parent_edit_link,
-			'extra_meta'       => $job->get_extra_meta(),
 			'updated_at'       => $job->get_updated_at(),
 			'exists'           => in_array( $status, array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_REMOTE_EXISTS ), true ),
 			'encoding_now'     => in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_BROWSER_ENCODING ), true ),
