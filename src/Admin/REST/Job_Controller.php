@@ -46,7 +46,7 @@ class Job_Controller extends Controller {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'jobs_list' ),
-					'permission_callback' => 'is_user_logged_in',
+					'permission_callback' => array( $this, 'can_encode_videos' ),
 					'args'                => array(
 						'input' => array(
 							'type'     => array( 'string', 'number' ),
@@ -98,7 +98,7 @@ class Job_Controller extends Controller {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'job_get' ),
-					'permission_callback' => 'is_user_logged_in',
+					'permission_callback' => array( $this, 'can_encode_videos' ),
 				),
 				array(
 					'methods'             => \WP_REST_Server::DELETABLE,
