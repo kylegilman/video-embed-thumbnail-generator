@@ -200,6 +200,45 @@ class Thumbnail_Controller extends Controller {
 	}
 
 	/**
+	 * Verifies the current user can edit the attachment and, if applicable,
+	 * the post whose featured image would be set (either an explicit
+	 * parent_id or the attachment's own post_parent). set_post_thumbnail()
+	 * performs no capability check of its own, and the blanket
+	 * can_make_thumbnails()/can_manage_options() permission_callback on
+	 * these routes isn't scoped to a specific post.
+	 *
+	 * @param int  $attachment_id       The attachment ID.
+	 * @param int  $parent_id           Optional. An explicit parent post ID.
+	 * @param bool $check_parent_target Whether to also check the resolved
+	 *                                   parent-post target; skip for endpoints
+	 *                                   that never set a parent's thumbnail.
+	 * @return true|\WP_Error
+	 */
+	protected function ensure_can_set_thumbnail( int $attachment_id, int $parent_id = 0, bool $check_parent_target = true ) {
+		if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
+			return new \WP_Error( 'rest_cannot_edit', __( 'You do not have permission to edit this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+		}
+
+		if ( ! $check_parent_target ) {
+			return true;
+		}
+
+		$effective_parent_id = $parent_id;
+		if ( ! $effective_parent_id ) {
+			$attachment_post = get_post( $attachment_id );
+			if ( $attachment_post instanceof \WP_Post && ! empty( $attachment_post->post_parent ) ) {
+				$effective_parent_id = (int) $attachment_post->post_parent;
+			}
+		}
+
+		if ( $effective_parent_id && ! current_user_can( 'edit_post', $effective_parent_id ) ) {
+			return new \WP_Error( 'rest_cannot_edit', __( 'You do not have permission to edit the target post.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+		}
+
+		return true;
+	}
+
+	/**
 	 * REST callback to generate temporary thumbnails.
 	 *
 	 * @param \WP_REST_Request $request REST request.
@@ -209,6 +248,11 @@ class Thumbnail_Controller extends Controller {
 		$attachment_id = $this->ensure_attachment_id( $request );
 		if ( is_wp_error( $attachment_id ) ) {
 			return $attachment_id;
+		}
+
+		$can_edit = $this->ensure_can_set_thumbnail( (int) $attachment_id, 0, false );
+		if ( is_wp_error( $can_edit ) ) {
+			return $can_edit;
 		}
 
 		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
@@ -264,14 +308,19 @@ class Thumbnail_Controller extends Controller {
 			return $attachment_id;
 		}
 
+		$parent_id = (int) $request->get_param( 'parent_id' );
+		$can_edit  = $this->ensure_can_set_thumbnail( (int) $attachment_id, $parent_id );
+		if ( is_wp_error( $can_edit ) ) {
+			return $can_edit;
+		}
+
 		$thumb_urls     = (array) $request->get_param( 'thumb_urls' );
 		$thumbnails     = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 		$attachment_url = (string) wp_get_attachment_url( (int) $attachment_id );
 		$post_name      = $attachment_url ? pathinfo( basename( $attachment_url ), PATHINFO_FILENAME ) : get_the_title( (int) $attachment_id );
 
-		$results   = array();
-		$parent_id = (int) $request->get_param( 'parent_id' );
-		$featured  = $request->get_param( 'featured' );
+		$results  = array();
+		$featured = $request->get_param( 'featured' );
 
 		foreach ( $thumb_urls as $index => $url ) {
 			$res                  = (array) $thumbnails->save( (int) $attachment_id, $post_name, (string) $url, (int) $index + 1, $parent_id, $featured );
@@ -300,6 +349,11 @@ class Thumbnail_Controller extends Controller {
 		$attachment_id = $this->ensure_attachment_id( $request );
 		if ( is_wp_error( $attachment_id ) ) {
 			return $attachment_id;
+		}
+
+		$can_edit = $this->ensure_can_set_thumbnail( (int) $attachment_id, (int) $request->get_param( 'parent_id' ) );
+		if ( is_wp_error( $can_edit ) ) {
+			return $can_edit;
 		}
 
 		$post_name = (string) $request->get_param( 'post_name' );
@@ -343,7 +397,12 @@ class Thumbnail_Controller extends Controller {
 			return $attachment_id;
 		}
 
-		$params     = $request->get_params();
+		$params   = $request->get_params();
+		$can_edit = $this->ensure_can_set_thumbnail( (int) $attachment_id, (int) ( $params['parent_id'] ?? 0 ) );
+		if ( is_wp_error( $can_edit ) ) {
+			return $can_edit;
+		}
+
 		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 
 		$attachment_url = (string) wp_get_attachment_url( (int) $attachment_id );
