@@ -39,7 +39,7 @@ class Video_Source_Finder {
 			return (bool) $exists;
 		}
 
-		$response = wp_remote_head(
+		$response = wp_safe_remote_head(
 			$url,
 			array(
 				'redirection' => 5,
