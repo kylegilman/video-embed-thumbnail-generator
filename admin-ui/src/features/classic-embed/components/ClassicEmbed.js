@@ -184,7 +184,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 		apiFetch({
 			path: '/videopack/v1/attachment/register-url',
 			method: 'POST',
-			data: { url: debouncedVideoUrl, post_id: postId },
+			data: { url: debouncedVideoUrl, parent_id: postId },
 			signal: controller.signal,
 		})
 			.then((response) => {
