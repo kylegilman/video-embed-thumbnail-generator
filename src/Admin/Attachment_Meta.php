@@ -569,7 +569,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'sslverify' => false,
 			'method'    => 'HEAD',
 		);
-		$response = wp_remote_head( (string) $url, $args );
+		$response = wp_safe_remote_head( (string) $url, $args );
 
 		if ( ! is_wp_error( $response ) ) {
 			$headers       = wp_remote_retrieve_headers( $response );
