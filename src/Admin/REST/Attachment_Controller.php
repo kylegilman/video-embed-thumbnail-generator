@@ -38,6 +38,11 @@ class Attachment_Controller extends Controller {
 						'required' => false,
 						'default'  => 0,
 					),
+					'create'    => array(
+						'type'     => 'boolean',
+						'required' => false,
+						'default'  => false,
+					),
 				),
 			)
 		);

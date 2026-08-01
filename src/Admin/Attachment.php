@@ -291,12 +291,17 @@ class Attachment implements Hook_Subscriber {
 		$filetype = wp_check_filetype( $url );
 		$mime     = ! empty( $filetype['type'] ) ? $filetype['type'] : 'video/mp4';
 
+		// Only associate the new attachment with parent_id if the caller can
+		// actually edit that post - otherwise a caller could get a new
+		// externally-hosted "attachment" attached to a post they don't own.
+		$safe_parent_id = ( $parent_id && current_user_can( 'edit_post', $parent_id ) ) ? (int) $parent_id : 0;
+
 		$attachment_id = wp_insert_post(
 			array(
 				'post_title'     => $title,
 				'post_type'      => 'attachment',
 				'post_status'    => 'inherit',
-				'post_parent'    => (int) $parent_id,
+				'post_parent'    => $safe_parent_id,
 				'post_mime_type' => $mime,
 			)
 		);
