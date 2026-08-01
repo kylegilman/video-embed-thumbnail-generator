@@ -148,7 +148,18 @@ class Source_Factory {
 		}
 
 		if ( file_exists( $source ) ) {
-			return array( $source, 'file' );
+			// A bare path (not a URL) reaches here unvalidated - apply the same
+			// ABSPATH containment used for the same-host-URL branch above, so a
+			// caller can't pass an absolute path outside the WordPress install
+			// (e.g. "/etc/passwd") and get it treated as a valid local source.
+			$normalized_path = self::normalize_path( (string) $source );
+			$normalized_base = self::normalize_path( trailingslashit( ABSPATH ) );
+
+			if ( $normalized_path === $normalized_base || 0 === strpos( $normalized_path, $normalized_base . '/' ) ) {
+				return array( $source, 'file' );
+			}
+
+			return array( $source, 'placeholder' );
 		}
 
 		return array( $source, 'placeholder' );
