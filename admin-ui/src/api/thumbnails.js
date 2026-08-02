@@ -89,8 +89,8 @@ export const saveAllThumbnails = async (
 ) => {
 	try {
 		return await apiFetch({
-			path: '/videopack/v1/thumbs/save_all',
-			method: 'POST',
+			path: '/videopack/v1/thumbs',
+			method: 'PUT',
 			data: {
 				attachment_id,
 				thumb_urls,
@@ -122,17 +122,18 @@ export const setPosterImage = async (
 	featured = null
 ) => {
 	try {
-		return await apiFetch({
+		const response = await apiFetch({
 			path: '/videopack/v1/thumbs',
 			method: 'PUT',
 			data: {
 				attachment_id,
-				thumburl: thumb_url,
+				thumb_urls: [thumb_url],
 				parent_id: Number(parent_id) || 0,
 				url,
 				featured,
 			},
 		});
+		return response?.[0];
 	} catch (error) {
 		console.error('Error setting poster image:', error);
 		throw error;

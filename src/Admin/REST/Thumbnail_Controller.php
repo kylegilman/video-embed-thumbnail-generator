@@ -25,30 +25,30 @@ class Thumbnail_Controller extends Controller {
 				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'thumb_save' ),
-					'permission_callback' => array( $this, 'can_manage_options' ),
+					'permission_callback' => array( $this, 'can_make_thumbnails' ),
 					'args'                => array(
-						'attachment_id'   => array(
+						'attachment_id' => array(
 							'type'     => array( 'number', 'string' ),
 							'required' => true,
 						),
-						'parent_id'       => array(
+						'parent_id'     => array(
 							'type'     => 'number',
 							'required' => false,
 							'default'  => 0,
 						),
-						'url'             => array(
+						'url'           => array(
 							'type'     => 'string',
 							'required' => false,
 						),
-						'thumburl'        => array(
-							'type'     => 'string',
+						'thumb_urls'    => array(
+							'type'     => 'array',
 							'required' => true,
+							'items'    => array(
+								'type'   => 'string',
+								'format' => 'uri',
+							),
 						),
-						'thumbnail_index' => array(
-							'type'     => 'number',
-							'required' => false,
-						),
-						'featured'        => array(
+						'featured'      => array(
 							'type'     => 'boolean',
 							'required' => false,
 						),
@@ -146,43 +146,6 @@ class Thumbnail_Controller extends Controller {
 						'type'     => 'string',
 						'required' => false,
 						'default'  => '_thumb',
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
-			'/thumbs/save_all',
-			array(
-				'methods'             => \WP_REST_Server::EDITABLE,
-				'callback'            => array( $this, 'thumb_save_all' ),
-				'permission_callback' => array( $this, 'can_make_thumbnails' ),
-				'args'                => array(
-					'attachment_id' => array(
-						'type'     => 'number',
-						'required' => true,
-					),
-					'parent_id'     => array(
-						'type'     => 'number',
-						'required' => false,
-						'default'  => 0,
-					),
-					'url'           => array(
-						'type'     => 'string',
-						'required' => false,
-					),
-					'thumb_urls'    => array(
-						'type'     => 'array',
-						'required' => true,
-						'items'    => array(
-							'type'   => 'string',
-							'format' => 'uri',
-						),
-					),
-					'featured'      => array(
-						'type'     => 'boolean',
-						'required' => false,
 					),
 				),
 			)
@@ -297,49 +260,6 @@ class Thumbnail_Controller extends Controller {
 	}
 
 	/**
-	 * REST callback to save all generated thumbnails.
-	 *
-	 * @param \WP_REST_Request $request REST request.
-	 * @return \WP_REST_Response|\WP_Error
-	 */
-	public function thumb_save_all( \WP_REST_Request $request ) {
-		$attachment_id = $this->ensure_attachment_id( $request );
-		if ( is_wp_error( $attachment_id ) ) {
-			return $attachment_id;
-		}
-
-		$parent_id = (int) $request->get_param( 'parent_id' );
-		$can_edit  = $this->ensure_can_set_thumbnail( (int) $attachment_id, $parent_id );
-		if ( is_wp_error( $can_edit ) ) {
-			return $can_edit;
-		}
-
-		$thumb_urls     = (array) $request->get_param( 'thumb_urls' );
-		$thumbnails     = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
-		$attachment_url = (string) wp_get_attachment_url( (int) $attachment_id );
-		$post_name      = $attachment_url ? pathinfo( basename( $attachment_url ), PATHINFO_FILENAME ) : get_the_title( (int) $attachment_id );
-
-		$results  = array();
-		$featured = $request->get_param( 'featured' );
-
-		foreach ( $thumb_urls as $index => $url ) {
-			$res                  = (array) $thumbnails->save( (int) $attachment_id, $post_name, (string) $url, (int) $index + 1, $parent_id, $featured );
-			$res['attachment_id'] = (int) $attachment_id;
-			$results[]            = $res;
-		}
-
-				/**
-		 * Filters the REST response after successfully saving all generated thumbnails.
-		 *
-		 * @since 5.0.0
-		 *
-		 * @param \WP_REST_Response $response The REST response.
-		 * @param \WP_REST_Request  $request  The REST request.
-		 */
-		return apply_filters( 'videopack_rest_thumb_save_all', new \WP_REST_Response( $results, 200 ), $request );
-	}
-
-	/**
 	 * REST callback to save thumbnail from upload.
 	 *
 	 * @param \WP_REST_Request $request REST request.
@@ -386,7 +306,7 @@ class Thumbnail_Controller extends Controller {
 	}
 
 	/**
-	 * REST callback to save single thumbnail.
+	 * REST callback to save one or more generated thumbnails.
 	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -397,35 +317,40 @@ class Thumbnail_Controller extends Controller {
 			return $attachment_id;
 		}
 
-		$params   = $request->get_params();
-		$can_edit = $this->ensure_can_set_thumbnail( (int) $attachment_id, (int) ( $params['parent_id'] ?? 0 ) );
+		$parent_id = (int) $request->get_param( 'parent_id' );
+		$can_edit  = $this->ensure_can_set_thumbnail( (int) $attachment_id, $parent_id );
 		if ( is_wp_error( $can_edit ) ) {
 			return $can_edit;
 		}
 
-		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
-
+		$thumb_urls     = (array) $request->get_param( 'thumb_urls' );
+		$thumbnails     = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 		$attachment_url = (string) wp_get_attachment_url( (int) $attachment_id );
 		$post_name      = $attachment_url ? pathinfo( basename( $attachment_url ), PATHINFO_FILENAME ) : get_the_title( (int) $attachment_id );
 
-		$response = (array) $thumbnails->save(
-			(int) $attachment_id,
-			$post_name,
-			(string) ( $params['thumburl'] ?? '' ),
-			$params['thumbnail_index'] ?? false,
-			(int) ( $params['parent_id'] ?? 0 ),
-			$params['featured'] ?? null
-		);
+		$results  = array();
+		$featured = $request->get_param( 'featured' );
+		// Only the explicit "set this one as my poster" case (a single thumbnail)
+		// should reassign the active poster; a multi-item save persists candidates
+		// as media library attachments without silently reassigning it to whichever
+		// one happens to be last in the array.
+		$force_set_poster = ( count( $thumb_urls ) === 1 );
+
+		foreach ( $thumb_urls as $index => $url ) {
+			$res                  = (array) $thumbnails->save( (int) $attachment_id, $post_name, (string) $url, (int) $index + 1, $parent_id, $featured, $force_set_poster );
+			$res['attachment_id'] = (int) $attachment_id;
+			$results[]            = $res;
+		}
 
 				/**
-		 * Filters the REST response after successfully saving a single video thumbnail.
+		 * Filters the REST response after successfully saving one or more generated thumbnails.
 		 *
 		 * @since 5.0.0
 		 *
 		 * @param \WP_REST_Response $response The REST response.
 		 * @param \WP_REST_Request  $request  The REST request.
 		 */
-		return apply_filters( 'videopack_rest_thumb_save', new \WP_REST_Response( $response, 200 ), $request );
+		return apply_filters( 'videopack_rest_thumb_save', new \WP_REST_Response( $results, 200 ), $request );
 	}
 
 	/**
