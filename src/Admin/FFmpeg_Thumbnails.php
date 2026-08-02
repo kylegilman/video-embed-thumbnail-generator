@@ -127,21 +127,23 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Generates a single temporary thumbnail image for a given video.
 	 *
-	 * @param int  $attachment_id    The ID of the source video attachment.
-	 * @param int  $total_thumbnails The total number of thumbnails being generated in this batch.
-	 * @param int  $thumbnail_index  The 1-based index of the thumbnail to generate.
-	 * @param bool $is_random        Whether to use a random offset for the timecode.
+	 * @param int|string $source_id        A video attachment ID, or a raw video URL if no attachment exists yet.
+	 * @param int        $total_thumbnails The total number of thumbnails being generated in this batch.
+	 * @param int        $thumbnail_index  The 1-based index of the thumbnail to generate.
+	 * @param bool       $is_random        Whether to use a random offset for the timecode.
 	 * @return array|\WP_Error An array with 'path' and 'url' on success, or WP_Error on failure.
 	 */
-	public function generate_single_thumbnail_data( int $attachment_id, int $total_thumbnails, int $thumbnail_index, bool $is_random ) {
-		$source = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options, $this->format_registry );
+	public function generate_single_thumbnail_data( $source_id, int $total_thumbnails, int $thumbnail_index, bool $is_random ) {
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_id, $this->options, $this->format_registry );
 		if ( ! $source || ! $source->exists() ) {
-			return new \WP_Error( 'file_not_found', (string) __( 'Video file not found for this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'file_not_found', (string) __( 'Video file not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
 		}
 
 		$input_path     = (string) $source->get_direct_path();
+		$is_attachment  = ( $source instanceof \Videopack\Video_Source\Source_Attachment );
+		$metadata_id    = $is_attachment ? (int) $source->get_id() : 0;
 		$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? (string) $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
-		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $attachment_id, $input_path, true, (string) $ffmpeg_path, $this->options );
+		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $metadata_id, $input_path, $is_attachment, (string) $ffmpeg_path, $this->options );
 
 		if ( ! $video_metadata->worked || ! $video_metadata->duration ) {
 			return new \WP_Error( 'metadata_failed', (string) __( 'Could not read video metadata.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
@@ -162,19 +164,21 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Generates a single thumbnail for a video at a specific timecode.
 	 *
-	 * @param int   $attachment_id The ID of the source video attachment.
-	 * @param float $timecode      The time in seconds to capture the thumbnail from.
+	 * @param int|string $source_id A video attachment ID, or a raw video URL if no attachment exists yet.
+	 * @param float      $timecode  The time in seconds to capture the thumbnail from.
 	 * @return array|\WP_Error An array with 'path' and 'url' on success, or WP_Error on failure.
 	 */
-	public function generate_thumbnail_at_timecode( int $attachment_id, float $timecode ) {
-		$source = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options, $this->format_registry );
+	public function generate_thumbnail_at_timecode( $source_id, float $timecode ) {
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_id, $this->options, $this->format_registry );
 		if ( ! $source || ! $source->exists() ) {
-			return new \WP_Error( 'file_not_found', (string) __( 'Video file not found for this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'file_not_found', (string) __( 'Video file not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
 		}
 
 		$input_path     = (string) $source->get_direct_path();
+		$is_attachment  = ( $source instanceof \Videopack\Video_Source\Source_Attachment );
+		$metadata_id    = $is_attachment ? (int) $source->get_id() : 0;
 		$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? (string) $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
-		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $attachment_id, $input_path, true, (string) $ffmpeg_path, $this->options );
+		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $metadata_id, $input_path, $is_attachment, (string) $ffmpeg_path, $this->options );
 
 		if ( ! $video_metadata->worked ) {
 			return new \WP_Error( 'metadata_failed', (string) __( 'Could not read video metadata.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
@@ -367,6 +371,31 @@ class FFmpeg_Thumbnails {
 	}
 
 	/**
+	 * Moves an uploaded file blob into the thumb_tmp directory and returns its
+	 * temporary URL, ready for save() or create_thumbnail_image().
+	 *
+	 * @param array $file_info The uploaded file data from $_FILES.
+	 * @return string|\WP_Error The temporary file URL, or a WP_Error on failure.
+	 */
+	protected function stage_uploaded_file_as_temp( array $file_info ) {
+		if ( ! isset( $file_info['tmp_name'] ) || ! is_uploaded_file( $file_info['tmp_name'] ) ) {
+			return new \WP_Error( 'no_file', (string) __( 'No file uploaded or invalid upload.', 'video-embed-thumbnail-generator' ) );
+		}
+
+		$uploads  = wp_upload_dir();
+		$temp_dir = trailingslashit( (string) $uploads['path'] ) . 'thumb_tmp';
+		wp_mkdir_p( $temp_dir );
+		$temp_file_name = (string) wp_unique_filename( $temp_dir, sanitize_file_name( (string) $file_info['name'] ) );
+		$temp_file_path = trailingslashit( $temp_dir ) . $temp_file_name;
+
+		if ( ! move_uploaded_file( (string) $file_info['tmp_name'], $temp_file_path ) ) {
+			return new \WP_Error( 'move_failed', (string) __( 'Failed to move uploaded file.', 'video-embed-thumbnail-generator' ) );
+		}
+
+		return trailingslashit( (string) $uploads['url'] ) . 'thumb_tmp/' . $temp_file_name;
+	}
+
+	/**
 	 * Saves a thumbnail image from an uploaded blob to the Media Library.
 	 *
 	 * @param int    $attachment_id    The ID of the video attachment.
@@ -379,33 +408,51 @@ class FFmpeg_Thumbnails {
 	 * @return array Result with 'thumb_id' and 'error'.
 	 */
 	public function save_from_blob( $attachment_id, $post_name, $file_info, $force_parent_id = 0, $force_featured = null, $force_set_poster = true, $filename_suffix = '_thumb' ) {
-		if ( ! isset( $file_info['tmp_name'] ) || ! is_uploaded_file( $file_info['tmp_name'] ) ) {
+		$temp_file_url = $this->stage_uploaded_file_as_temp( $file_info );
+		if ( is_wp_error( $temp_file_url ) ) {
 			return array(
 				'thumb_id' => false,
-				'error'    => (string) __( 'No file uploaded or invalid upload.', 'video-embed-thumbnail-generator' ),
+				'error'    => $temp_file_url->get_error_message(),
 			);
 		}
-
-		$uploads  = wp_upload_dir();
-		$temp_dir = trailingslashit( (string) $uploads['path'] ) . 'thumb_tmp';
-		wp_mkdir_p( $temp_dir );
-		$temp_file_name = (string) wp_unique_filename( $temp_dir, sanitize_file_name( (string) $file_info['name'] ) );
-		$temp_file_path = trailingslashit( $temp_dir ) . $temp_file_name;
-
-		if ( ! move_uploaded_file( (string) $file_info['tmp_name'], $temp_file_path ) ) {
-			return array(
-				'thumb_id' => false,
-				'error'    => (string) __( 'Failed to move uploaded file.', 'video-embed-thumbnail-generator' ),
-			);
-		}
-
-		$temp_file_url = trailingslashit( (string) $uploads['url'] ) . 'thumb_tmp/' . $temp_file_name;
 
 		return $this->save( (int) $attachment_id, (string) $post_name, $temp_file_url, false, (int) $force_parent_id, $force_featured, $force_set_poster, $filename_suffix );
 	}
 
 	/**
+	 * Resolves/creates a thumbnail image attachment from an uploaded blob,
+	 * without any video-poster side effects - the upload-only counterpart to
+	 * create_thumbnail_image(), for verifying an upload before a video
+	 * attachment exists.
+	 *
+	 * @param string $post_name       Base filename for the new attachment.
+	 * @param string $video_title     Descriptive title used in the attachment description.
+	 * @param int    $parent_id       Parent post ID for the new attachment.
+	 * @param array  $file_info       The uploaded file data from $_FILES.
+	 * @param string $filename_suffix Optional. Suffix for the thumbnail filename. Default '_thumb'.
+	 * @return array Result with 'thumb_id' and 'error'/'thumb_url'.
+	 */
+	public function create_thumbnail_image_from_blob( $post_name, $video_title, $parent_id, $file_info, $filename_suffix = '_thumb' ) {
+		$temp_file_url = $this->stage_uploaded_file_as_temp( $file_info );
+		if ( is_wp_error( $temp_file_url ) ) {
+			return array(
+				'thumb_id' => false,
+				'error'    => $temp_file_url->get_error_message(),
+			);
+		}
+
+		return $this->create_thumbnail_image( $temp_file_url, (string) $post_name, (string) $video_title, (int) $parent_id, false, $filename_suffix );
+	}
+
+	/**
 	 * Saves a thumbnail image to the Media Library.
+	 *
+	 * A thin wrapper preserving the original combined behavior: resolves the
+	 * parent to use (respecting the thumb_parent option), creates/resolves the
+	 * thumbnail image, then wires it up as the video's poster. Callers that
+	 * need to verify a real thumbnail can be generated *before* a video
+	 * attachment exists should call create_thumbnail_image() directly instead
+	 * - see Thumbnail_Controller::thumb_save().
 	 *
 	 * @param int|string      $attachment_id    Video attachment ID.
 	 * @param string          $post_name        Video post name.
@@ -425,221 +472,187 @@ class FFmpeg_Thumbnails {
 			$force_set_poster = (bool) $force_set_poster;
 		}
 
-		$video   = get_post( (int) $attachment_id );
-		$user_ID = (int) get_current_user_id();
-		$uploads = wp_upload_dir();
-
-		$thumb_id         = false;
-		$final_poster_url = (string) $thumb_url;
+		$video = get_post( (int) $attachment_id );
 
 		if ( empty( $thumb_url ) ) {
-			if ( $force_set_poster && is_numeric( $attachment_id ) ) {
-				delete_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster' );
-				delete_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id' );
-
-				$attachment_meta_instance  = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
-				$current_meta              = $attachment_meta_instance->get();
-				$current_meta['poster']    = null;
-				$current_meta['poster_id'] = null;
-				$attachment_meta_instance->save( $current_meta );
-
-				delete_post_thumbnail( (int) $attachment_id );
-				$video = get_post( (int) $attachment_id );
-				if ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
-					delete_post_thumbnail( (int) $video->post_parent );
-				}
-			}
+			$this->assign_thumbnail_to_video( (int) $attachment_id, false, (int) $force_parent_id, $force_featured, $force_set_poster );
 			return array(
 				'thumb_id'  => false,
 				'thumb_url' => '',
 			);
 		}
 
+		// Preserve the existing parent-resolution: default to the video
+		// attachment itself, unless thumb_parent=post, in which case prefer
+		// an explicit override or the video's own post_parent.
+		$parent_id = (int) $attachment_id;
+		if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
+			if ( ! empty( $force_parent_id ) ) {
+				$parent_id = (int) $force_parent_id;
+			} elseif ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
+				$parent_id = (int) $video->post_parent;
+			}
+		}
+
+		$video_title        = (string) get_the_title( (int) $attachment_id );
+		$fallback_author_id = $video instanceof \WP_Post ? (int) $video->post_author : 0;
+
+		$result = $this->create_thumbnail_image( $thumb_url, $post_name, $video_title, $parent_id, $thumbnail_index, $filename_suffix, $fallback_author_id );
+
+		if ( ! empty( $result['thumb_id'] ) && ! is_wp_error( $result['thumb_id'] ) ) {
+			$this->assign_thumbnail_to_video( (int) $attachment_id, (int) $result['thumb_id'], (int) $force_parent_id, $force_featured, $force_set_poster );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Resolves an existing thumbnail image attachment for a URL, or creates a
+	 * new one in the Media Library, parented to $parent_id directly. Does not
+	 * touch any video's poster/featured-image meta - see
+	 * assign_thumbnail_to_video() for that. Safe to call before a video
+	 * attachment exists, since it never reads or writes anything keyed by a
+	 * video attachment ID.
+	 *
+	 * @param string       $thumb_url          Thumbnail URL (local temp or remote).
+	 * @param string       $post_name          Base filename for the new attachment.
+	 * @param string       $video_title        Descriptive title used in the attachment description.
+	 * @param int          $parent_id          Parent post ID for the new thumbnail attachment.
+	 * @param int|bool     $thumbnail_index    Optional. Index for the thumbnail filename.
+	 * @param string       $filename_suffix    Optional. Suffix for the thumbnail filename. Default '_thumb'.
+	 * @param int          $fallback_author_id Optional. Author to use if no user is logged in.
+	 * @return array Result with 'thumb_id' (int|false|\WP_Error) and 'thumb_url'.
+	 */
+	public function create_thumbnail_image( $thumb_url, $post_name, $video_title, $parent_id, $thumbnail_index = false, $filename_suffix = '_thumb', $fallback_author_id = 0 ) {
+		$user_ID = (int) get_current_user_id();
+		$uploads = wp_upload_dir();
+
 		$existing_attachment_id = (int) attachment_url_to_postid( (string) $thumb_url );
 		if ( $existing_attachment_id ) {
-			$thumb_id = $existing_attachment_id;
-		} else {
-			$tmp_prefix         = trailingslashit( (string) $uploads['url'] ) . 'thumb_tmp/';
-			$is_local_temp_file = ( 0 === strpos( (string) $thumb_url, $tmp_prefix ) );
-
-			$video_post_title = (string) html_entity_decode( (string) get_the_title( (int) $attachment_id ), ENT_QUOTES, 'UTF-8' );
-			/**
-			 * Filters the description type suffix for a generated thumbnail file.
-			 *
-			 * Default is 'thumbnail'. Allows customizing attachment description metadata.
-			 *
-			 * @since 5.0.0
-			 *
-			 * @param string $desc_type       The thumbnail description type label.
-			 * @param string $filename_suffix The custom suffix appended to the thumbnail file name.
-			 */
-			$desc_type = (string) apply_filters( 'videopack_thumb_desc_type', 'thumbnail', $filename_suffix );
-			$suffix    = ( 'thumbnail' === $desc_type ) ? esc_html_x( 'thumbnail', 'text appended to newly created attachment titles', 'video-embed-thumbnail-generator' ) : esc_html( $desc_type );
-			$desc      = $video_post_title . ' ' . (string) $suffix;
-			if ( $thumbnail_index ) {
-				$desc .= ' ' . (string) $thumbnail_index;
-			}
-
-			if ( $is_local_temp_file ) {
-				$posterfile_basename = (string) pathinfo( (string) $thumb_url, PATHINFO_BASENAME );
-				$tmp_posterpath      = (string) $uploads['path'] . '/thumb_tmp/' . $posterfile_basename;
-
-				if ( ! is_file( $tmp_posterpath ) ) {
-					return array(
-						'thumb_id'  => false,
-						'thumb_url' => (string) $thumb_url,
-					);
-				}
-
-				$base_filename    = (string) sanitize_file_name( (string) $post_name );
-				$poster_extension = (string) pathinfo( $posterfile_basename, PATHINFO_EXTENSION );
-				$extension        = ! empty( $poster_extension ) ? $poster_extension : 'jpg';
-
-				$index = 1;
-				if ( false !== $thumbnail_index && is_numeric( $thumbnail_index ) ) {
-					$index = (int) $thumbnail_index;
-				}
-
-				$new_filename_base = "{$base_filename}{$filename_suffix}{$index}";
-				$final_posterpath  = (string) $uploads['path'] . '/' . $new_filename_base . '.' . $extension;
-
-				$parent_id = (int) $attachment_id;
-				if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
-					if ( ! empty( $force_parent_id ) ) {
-						$parent_id = (int) $force_parent_id;
-					} elseif ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
-						$parent_id = (int) $video->post_parent;
-					}
-				}
-
-				$counter = $index;
-				while ( $this->thumb_exists( $final_posterpath, $parent_id ) ) {
-					++$counter;
-					$new_filename_base = "{$base_filename}{$filename_suffix}{$counter}";
-					$final_posterpath  = (string) $uploads['path'] . '/' . $new_filename_base . '.' . $extension;
-				}
-
-				$final_poster_url = (string) $uploads['url'] . '/' . basename( $final_posterpath );
-
-				$success = copy( $tmp_posterpath, $final_posterpath );
-				wp_delete_file( $tmp_posterpath );
-
-				if ( ! $success ) {
-					return array(
-						'thumb_id'  => false,
-						'thumb_url' => (string) $thumb_url,
-					);
-				}
-
-				$wp_filetype = wp_check_filetype( basename( $final_posterpath ), null );
-				if ( empty( $wp_filetype['type'] ) ) {
-					$wp_filetype['type'] = 'image/jpeg';
-				}
-
-				if ( 0 === $user_ID && $video instanceof \WP_Post ) {
-					$user_ID = (int) $video->post_author;
-				}
-
-				$attachment = array(
-					'guid'           => $final_poster_url,
-					'post_mime_type' => (string) $wp_filetype['type'],
-					'post_title'     => $desc,
-					'post_content'   => '',
-					'post_status'    => 'inherit',
-					'post_author'    => $user_ID,
-				);
-
-				$thumb_id = (int) wp_insert_attachment( $attachment, $final_posterpath, $parent_id );
-				require_once ABSPATH . 'wp-admin/includes/image.php';
-				$attach_data = wp_generate_attachment_metadata( $thumb_id, $final_posterpath );
-				wp_update_attachment_metadata( $thumb_id, $attach_data );
-			} else {
-				$tmp = (string) download_url( (string) $thumb_url );
-
-				preg_match( '/[^\?]+\.(jpg|JPG|jpe|JPE|jpeg|JPEG|gif|GIF|png|PNG)/', (string) $thumb_url, $matches );
-				$file_array['name']     = (string) basename( $matches[0] ?? 'thumbnail.jpg' );
-				$file_array['tmp_name'] = $tmp;
-
-				if ( is_wp_error( $tmp ) ) {
-					wp_delete_file( (string) $file_array['tmp_name'] );
-					return array(
-						'thumb_id'  => false,
-						'thumb_url' => (string) $thumb_url,
-					);
-				}
-
-				$parent_id = (int) $attachment_id;
-				if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
-					if ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
-						$parent_id = (int) $video->post_parent;
-					}
-				}
-
-				$thumb_id = media_handle_sideload( $file_array, $parent_id, $desc );
-
-				if ( is_wp_error( $thumb_id ) ) {
-					wp_delete_file( (string) $file_array['tmp_name'] );
-					return array(
-						'thumb_id'  => $thumb_id,
-						'thumb_url' => (string) $thumb_url,
-					);
-				}
-
-				$final_poster_url = (string) wp_get_attachment_url( (int) $thumb_id );
-			}
+			// An attachment that already exists keeps its parent - it
+			// shouldn't move just because it's being reused as a thumbnail here.
+			return array(
+				'thumb_id'  => $existing_attachment_id,
+				'thumb_url' => (string) $thumb_url,
+				'is_new'    => false,
+			);
 		}
 
-		if ( $thumb_id ) {
-			if ( is_numeric( $attachment_id ) ) {
-				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
-				$current_meta             = $attachment_meta_instance->get();
-				$force_featured_bool      = null;
-				if ( $force_featured !== null ) {
-					if ( is_string( $force_featured ) ) {
-						$force_featured_bool = ( 'false' !== strtolower( $force_featured ) && '0' !== $force_featured && '' !== $force_featured );
-					} else {
-						$force_featured_bool = (bool) $force_featured;
-					}
-				}
+		$final_poster_url = (string) $thumb_url;
+		$tmp_prefix         = trailingslashit( (string) $uploads['url'] ) . 'thumb_tmp/';
+		$is_local_temp_file = ( 0 === strpos( (string) $thumb_url, $tmp_prefix ) );
 
-				if ( $force_set_poster ) {
-					set_post_thumbnail( (int) $attachment_id, (int) $thumb_id );
-				}
-
-				$is_featured = $force_featured_bool !== null ? $force_featured_bool : (bool) ( $current_meta['featured'] ?? ( $this->options['featured'] ?? true ) );
-
-				if ( $is_featured ) {
-					if ( ! empty( $force_parent_id ) ) {
-						set_post_thumbnail( (int) $force_parent_id, (int) $thumb_id );
-					} elseif ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
-						set_post_thumbnail( (int) $video->post_parent, (int) $thumb_id );
-					}
-				}
-
-				if ( $force_set_poster ) {
-					update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster', $final_poster_url );
-					update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id', (int) $thumb_id );
-
-					$current_meta['featured']  = $is_featured;
-					$current_meta['poster']    = (string) $final_poster_url;
-					$current_meta['poster_id'] = (int) $thumb_id;
-					$attachment_meta_instance->save( $current_meta );
-				}
-				delete_post_meta( (int) $attachment_id, '_videopack_needs_browser_thumb' );
-				delete_post_meta( (int) $attachment_id, '_videopack_browser_thumb_failed' );
-			}
-			update_post_meta( (int) $thumb_id, '_videopack-video-id', (int) $attachment_id );
-		}
-
+		$video_title_decoded = (string) html_entity_decode( (string) $video_title, ENT_QUOTES, 'UTF-8' );
 		/**
-		 * Filters the URL of newly-saved thumbnail images.
+		 * Filters the description type suffix for a generated thumbnail file.
+		 *
+		 * Default is 'thumbnail'. Allows customizing attachment description metadata.
 		 *
 		 * @since 5.0.0
 		 *
-		 * @param string  $final_poster_url Thumbnail URL.
-		 * @param int     $thumb_id         Thumbnail ID.
+		 * @param string $desc_type       The thumbnail description type label.
+		 * @param string $filename_suffix The custom suffix appended to the thumbnail file name.
 		 */
-				/**
+		$desc_type = (string) apply_filters( 'videopack_thumb_desc_type', 'thumbnail', $filename_suffix );
+		$suffix    = ( 'thumbnail' === $desc_type ) ? esc_html_x( 'thumbnail', 'text appended to newly created attachment titles', 'video-embed-thumbnail-generator' ) : esc_html( $desc_type );
+		$desc      = $video_title_decoded . ' ' . (string) $suffix;
+		if ( $thumbnail_index ) {
+			$desc .= ' ' . (string) $thumbnail_index;
+		}
+
+		if ( $is_local_temp_file ) {
+			$posterfile_basename = (string) pathinfo( (string) $thumb_url, PATHINFO_BASENAME );
+			$tmp_posterpath      = (string) $uploads['path'] . '/thumb_tmp/' . $posterfile_basename;
+
+			if ( ! is_file( $tmp_posterpath ) ) {
+				return array(
+					'thumb_id'  => false,
+					'thumb_url' => (string) $thumb_url,
+				);
+			}
+
+			$base_filename    = (string) sanitize_file_name( (string) $post_name );
+			$poster_extension = (string) pathinfo( $posterfile_basename, PATHINFO_EXTENSION );
+			$extension        = ! empty( $poster_extension ) ? $poster_extension : 'jpg';
+
+			$index = 1;
+			if ( false !== $thumbnail_index && is_numeric( $thumbnail_index ) ) {
+				$index = (int) $thumbnail_index;
+			}
+
+			$new_filename_base = "{$base_filename}{$filename_suffix}{$index}";
+			$final_posterpath  = (string) $uploads['path'] . '/' . $new_filename_base . '.' . $extension;
+
+			$counter = $index;
+			while ( $this->thumb_exists( $final_posterpath, (int) $parent_id ) ) {
+				++$counter;
+				$new_filename_base = "{$base_filename}{$filename_suffix}{$counter}";
+				$final_posterpath  = (string) $uploads['path'] . '/' . $new_filename_base . '.' . $extension;
+			}
+
+			$final_poster_url = (string) $uploads['url'] . '/' . basename( $final_posterpath );
+
+			$success = copy( $tmp_posterpath, $final_posterpath );
+			wp_delete_file( $tmp_posterpath );
+
+			if ( ! $success ) {
+				return array(
+					'thumb_id'  => false,
+					'thumb_url' => (string) $thumb_url,
+				);
+			}
+
+			$wp_filetype = wp_check_filetype( basename( $final_posterpath ), null );
+			if ( empty( $wp_filetype['type'] ) ) {
+				$wp_filetype['type'] = 'image/jpeg';
+			}
+
+			if ( 0 === $user_ID && $fallback_author_id ) {
+				$user_ID = (int) $fallback_author_id;
+			}
+
+			$attachment = array(
+				'guid'           => $final_poster_url,
+				'post_mime_type' => (string) $wp_filetype['type'],
+				'post_title'     => $desc,
+				'post_content'   => '',
+				'post_status'    => 'inherit',
+				'post_author'    => $user_ID,
+			);
+
+			$thumb_id = (int) wp_insert_attachment( $attachment, $final_posterpath, (int) $parent_id );
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+			$attach_data = wp_generate_attachment_metadata( $thumb_id, $final_posterpath );
+			wp_update_attachment_metadata( $thumb_id, $attach_data );
+		} else {
+			$tmp = (string) download_url( (string) $thumb_url );
+
+			preg_match( '/[^\?]+\.(jpg|JPG|jpe|JPE|jpeg|JPEG|gif|GIF|png|PNG)/', (string) $thumb_url, $matches );
+			$file_array['name']     = (string) basename( $matches[0] ?? 'thumbnail.jpg' );
+			$file_array['tmp_name'] = $tmp;
+
+			if ( is_wp_error( $tmp ) ) {
+				wp_delete_file( (string) $file_array['tmp_name'] );
+				return array(
+					'thumb_id'  => false,
+					'thumb_url' => (string) $thumb_url,
+				);
+			}
+
+			$thumb_id = media_handle_sideload( $file_array, (int) $parent_id, $desc );
+
+			if ( is_wp_error( $thumb_id ) ) {
+				wp_delete_file( (string) $file_array['tmp_name'] );
+				return array(
+					'thumb_id'  => $thumb_id,
+					'thumb_url' => (string) $thumb_url,
+				);
+			}
+
+			$final_poster_url = (string) wp_get_attachment_url( (int) $thumb_id );
+		}
+
+		/**
 		 * Filters the final URL of the poster thumbnail after it is successfully saved to the media library.
 		 *
 		 * Useful for modifying paths, offloading to CDNs, or storing custom thumbnail size versions.
@@ -654,7 +667,75 @@ class FFmpeg_Thumbnails {
 		return array(
 			'thumb_id'  => $thumb_id,
 			'thumb_url' => (string) $final_poster_url,
+			'is_new'    => ! is_wp_error( $thumb_id ) && (bool) $thumb_id,
 		);
+	}
+
+	/**
+	 * Wires up an already-resolved thumbnail image as a video attachment's
+	 * poster/featured image. If $thumb_id is falsy, clears the video's
+	 * existing poster instead (mirrors the previous behavior of save() when
+	 * called with an empty thumb_url).
+	 *
+	 * @param int              $video_attachment_id The video attachment ID.
+	 * @param int|false        $thumb_id            The thumbnail image attachment ID, or false to clear.
+	 * @param int              $force_parent_id     Optional. If the video is featured, also set this post's featured image.
+	 * @param bool|string|null $force_featured      Optional. Flag to force featured status.
+	 * @param bool             $force_set_poster    Whether to set/clear this as the video's poster.
+	 * @return void
+	 */
+	public function assign_thumbnail_to_video( $video_attachment_id, $thumb_id, $force_parent_id = 0, $force_featured = null, $force_set_poster = true ) {
+		if ( ! is_numeric( $video_attachment_id ) ) {
+			return;
+		}
+		$video_attachment_id      = (int) $video_attachment_id;
+		$video                    = get_post( $video_attachment_id );
+		$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options, $video_attachment_id );
+
+		if ( ! $thumb_id ) {
+			if ( $force_set_poster ) {
+				$attachment_meta_instance->set_poster( null, null );
+
+				delete_post_thumbnail( $video_attachment_id );
+				if ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
+					delete_post_thumbnail( (int) $video->post_parent );
+				}
+			}
+			return;
+		}
+
+		$current_meta        = $attachment_meta_instance->get();
+		$force_featured_bool = null;
+		if ( $force_featured !== null ) {
+			if ( is_string( $force_featured ) ) {
+				$force_featured_bool = ( 'false' !== strtolower( $force_featured ) && '0' !== $force_featured && '' !== $force_featured );
+			} else {
+				$force_featured_bool = (bool) $force_featured;
+			}
+		}
+
+		if ( $force_set_poster ) {
+			set_post_thumbnail( $video_attachment_id, (int) $thumb_id );
+		}
+
+		$is_featured = $force_featured_bool !== null ? $force_featured_bool : (bool) ( $current_meta['featured'] ?? ( $this->options['featured'] ?? true ) );
+
+		if ( $is_featured ) {
+			if ( ! empty( $force_parent_id ) ) {
+				set_post_thumbnail( (int) $force_parent_id, (int) $thumb_id );
+			} elseif ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
+				set_post_thumbnail( (int) $video->post_parent, (int) $thumb_id );
+			}
+		}
+
+		if ( $force_set_poster ) {
+			$final_poster_url = (string) wp_get_attachment_url( (int) $thumb_id );
+			$attachment_meta_instance->set_poster( $final_poster_url, (int) $thumb_id, $is_featured );
+		}
+		delete_post_meta( $video_attachment_id, '_videopack_needs_browser_thumb' );
+		delete_post_meta( $video_attachment_id, '_videopack_browser_thumb_failed' );
+
+		update_post_meta( (int) $thumb_id, '_videopack-video-id', $video_attachment_id );
 	}
 
 	/**

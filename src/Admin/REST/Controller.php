@@ -115,29 +115,4 @@ abstract class Controller extends \WP_REST_Controller implements Hook_Subscriber
 		 */
 		return (bool) apply_filters( 'videopack_rest_public_permission', true, $request );
 	}
-
-	/**
-	 * Ensures a valid attachment ID, creating one from URL if needed.
-	 *
-	 * @param \WP_REST_Request $request REST request.
-	 * @return int|\WP_Error
-	 */
-	protected function ensure_attachment_id( \WP_REST_Request $request ) {
-		$attachment_id = (int) $request->get_param( 'attachment_id' );
-
-		if ( 0 === $attachment_id ) {
-			$url       = $request->get_param( 'url' );
-			$parent_id = (int) $request->get_param( 'parent_id' );
-			if ( $url ) {
-				$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options );
-				$attachment      = new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta );
-				$resolved        = $attachment->resolve_url_to_attachment( $url, $parent_id, true );
-				if ( is_wp_error( $resolved ) ) {
-					return $resolved;
-				}
-				return (int) $resolved;
-			}
-		}
-		return $attachment_id;
-	}
 }
