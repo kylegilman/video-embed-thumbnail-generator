@@ -254,9 +254,11 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 	 *
 	 * @param array $args {
 	 *     Required. An array of arguments.
-	 *     @type int|string $id      Attachment ID or unique identifier for external URLs.
-	 *     @type string     $url     Input URL of the video.
-	 *     @type array      $formats Array of format_id strings to encode.
+	 *     @type int|string $id        Attachment ID or unique identifier for external URLs.
+	 *     @type string     $url       Input URL of the video.
+	 *     @type array      $formats   Array of format_id strings to encode.
+	 *     @type int        $parent_id Optional. For a URL-sourced job, the post to
+	 *                                 associate the eventual master attachment with.
 	 * }
 	 * @return array Log of actions taken.
 	 */
@@ -279,9 +281,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 		$attachment_identifier     = sanitize_text_field( $args['id'] );
 		$input_url                 = esc_url_raw( $args['url'] );
+		$requested_parent_id       = (int) ( $args['parent_id'] ?? 0 );
 		$user_id                   = get_current_user_id();
 		$current_blog_id           = get_current_blog_id();
-		$encoder                   = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $input_url );
+		$encoder                   = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $input_url, array(), $requested_parent_id, (int) $user_id );
 		$formats_to_encode         = (array) $this->resolve_replacement_formats( $args['formats'], $encoder );
 		$results                   = array();
 		$successfully_queued_items = array();
@@ -382,7 +385,11 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 				$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
 
-				$encoder = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $job['input_url'] );
+				// parent_id/user_id are only meaningful for a URL-sourced job
+				// (see Encode_Attachment::create_new_attachment()) - passed
+				// through regardless since they're harmless no-ops for an
+				// attachment-sourced job.
+				$encoder = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $job['input_url'], array(), (int) ( $job['parent_id'] ?? 0 ), (int) ( $job['user_id'] ?? 0 ) );
 
 				switch ( $job['status'] ) {
 					case Encode_Format::STATUS_QUEUED:

@@ -241,12 +241,16 @@ class Attachment implements Hook_Subscriber {
 	/**
 	 * Resolves a URL to an attachment ID, creating a "remote attachment" if needed.
 	 *
-	 * @param string $url       The external video URL.
-	 * @param int    $parent_id The ID of the post to associate the attachment with.
-	 * @param bool   $create    Whether to create the attachment if it doesn't exist.
+	 * @param string $url            The external video URL.
+	 * @param int    $parent_id      The ID of the post to associate the attachment with.
+	 * @param bool   $create         Whether to create the attachment if it doesn't exist.
+	 * @param int    $acting_user_id Optional. Check this user's capability instead of the
+	 *                               current session's - for callers running outside a real
+	 *                               request context (e.g. an Action Scheduler job), where
+	 *                               current_user_can() has no logged-in user to check.
 	 * @return int|\WP_Error|null The attachment ID on success, null if not found (and $create is false), or WP_Error on failure.
 	 */
-	public function resolve_url_to_attachment( $url, $parent_id = 0, $create = false ) {
+	public function resolve_url_to_attachment( $url, $parent_id = 0, $create = false, $acting_user_id = 0 ) {
 		if ( ! $url ) {
 			return new \WP_Error( 'missing_url', __( 'No URL provided.', 'video-embed-thumbnail-generator' ) );
 		}
@@ -294,7 +298,10 @@ class Attachment implements Hook_Subscriber {
 		// Only associate the new attachment with parent_id if the caller can
 		// actually edit that post - otherwise a caller could get a new
 		// externally-hosted "attachment" attached to a post they don't own.
-		$safe_parent_id = ( $parent_id && current_user_can( 'edit_post', $parent_id ) ) ? (int) $parent_id : 0;
+		$can_edit_parent = $acting_user_id
+			? user_can( $acting_user_id, 'edit_post', $parent_id )
+			: current_user_can( 'edit_post', $parent_id );
+		$safe_parent_id  = ( $parent_id && $can_edit_parent ) ? (int) $parent_id : 0;
 
 		$attachment_id = wp_insert_post(
 			array(
