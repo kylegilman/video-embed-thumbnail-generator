@@ -162,6 +162,27 @@ class Encode_Attachment {
 	protected $browser_metadata = array();
 
 	/**
+	 * For a URL-sourced job, the post the client asked to associate the
+	 * eventual master attachment with. Not yet capability-checked here - see
+	 * $requesting_user_id.
+	 *
+	 * @var int
+	 */
+	protected $requested_parent_id = 0;
+
+	/**
+	 * The user who originally submitted this job (from the queue row's
+	 * user_id column, captured server-side at submission time - never
+	 * client-suppliable). Used to re-check edit_post on
+	 * $requested_parent_id via user_can() when creating a master attachment
+	 * from inside an Action Scheduler callback, which has no logged-in user
+	 * for current_user_can() to check.
+	 *
+	 * @var int
+	 */
+	protected $requesting_user_id = 0;
+
+	/**
 	 * Flag to prevent recursion during deletion.
 	 *
 	 * @var bool
@@ -171,25 +192,31 @@ class Encode_Attachment {
 	/**
 	 * Constructor.
 	 *
-	 * @param array                             $options          Plugin options.
-	 * @param \Videopack\Admin\Formats\Registry $format_registry  Video formats registry.
-	 * @param int|string                        $id               The ID of the video attachment or source URL.
-	 * @param string|null                       $url              Optional. The URL of the video (if not an attachment).
-	 * @param array                             $browser_metadata Optional. Browser-provided metadata for the video.
+	 * @param array                             $options             Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry     Video formats registry.
+	 * @param int|string                        $id                  The ID of the video attachment or source URL.
+	 * @param string|null                       $url                 Optional. The URL of the video (if not an attachment).
+	 * @param array                             $browser_metadata    Optional. Browser-provided metadata for the video.
+	 * @param int                               $requested_parent_id Optional. See $requested_parent_id property.
+	 * @param int                               $requesting_user_id  Optional. See $requesting_user_id property.
 	 */
 	public function __construct(
 		array $options,
 		\Videopack\Admin\Formats\Registry $format_registry,
 		$id,
 		string $url = null,
-		array $browser_metadata = array()
+		array $browser_metadata = array(),
+		int $requested_parent_id = 0,
+		int $requesting_user_id = 0
 	) {
-		$this->options            = $options;
-		$this->format_registry    = $format_registry;
-		$this->id                 = $id;
-		$this->url                = $url;
-		$this->browser_metadata   = $browser_metadata;
-		$attachment_meta          = new Attachment_Meta( $this->options );
+		$this->options             = $options;
+		$this->format_registry     = $format_registry;
+		$this->id                  = $id;
+		$this->url                 = $url;
+		$this->browser_metadata    = $browser_metadata;
+		$this->requested_parent_id = $requested_parent_id;
+		$this->requesting_user_id  = $requesting_user_id;
+		$attachment_meta           = new Attachment_Meta( $this->options );
 		$this->attachment_manager = new Attachment( $this->options, $format_registry, $attachment_meta );
 		$this->uploads            = (array) wp_upload_dir();
 		$this->video_formats      = (array) $format_registry->get_video_formats();
@@ -1532,6 +1559,12 @@ class Encode_Attachment {
 			if ( $post ) {
 				$parent_id = (int) $post->post_parent;
 			}
+		} else {
+			// URL-sourced job: store the caller's requested parent on the job
+			// row as-is (unvalidated here) - it's re-checked against the
+			// submitting user's real capability at the point a master
+			// attachment actually gets created, in create_new_attachment().
+			$parent_id = (int) $this->requested_parent_id;
 		}
 
 		$job_data = array(
@@ -2254,6 +2287,23 @@ class Encode_Attachment {
 		$parent_post_id = 0;
 		if ( (bool) $this->is_attachment && is_numeric( $this->id ) ) {
 			$parent_post_id = (int) $this->id;
+		} elseif ( ! empty( $this->url ) ) {
+			// URL-sourced job (no pre-existing attachment): the input URL has
+			// no WordPress attachment of its own to parent this output to.
+			// Get-or-create an empty "master" attachment for the source URL -
+			// the same mechanism the thumbnail flow uses - so multiple
+			// formats transcoded from the same URL end up grouped under one
+			// video instead of each becoming its own disconnected,
+			// unparented media library entry. Only reached here because a
+			// format has *already* finished encoding successfully, so this
+			// never creates anything for a URL that never produces real
+			// output. $requesting_user_id lets the capability check run
+			// correctly even though this executes inside an Action
+			// Scheduler callback with no logged-in user.
+			$master_attachment_id = $this->attachment_manager->resolve_url_to_attachment( $this->url, $this->requested_parent_id, true, $this->requesting_user_id );
+			if ( ! is_wp_error( $master_attachment_id ) && $master_attachment_id ) {
+				$parent_post_id = (int) $master_attachment_id;
+			}
 		}
 
 		$existing_attachment_id = (int) $this->attachment_manager->url_to_id( $url );

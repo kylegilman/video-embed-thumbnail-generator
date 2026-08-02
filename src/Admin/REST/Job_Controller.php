@@ -117,6 +117,7 @@ class Job_Controller extends Controller {
 	public function jobs_create( \WP_REST_Request $request ) {
 		$input         = $request->get_param( 'input' );
 		$outputs       = (array) $request->get_param( 'outputs' );
+		$parent_id     = (int) $request->get_param( 'parent_id' );
 		$attachment_id = is_numeric( $input ) ? (int) $input : 0;
 		$input_url     = $attachment_id ? (string) wp_get_attachment_url( $attachment_id ) : (string) esc_url_raw( (string) $input );
 
@@ -127,9 +128,10 @@ class Job_Controller extends Controller {
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 		$result           = $queue_controller->enqueue_encodes(
 			array(
-				'id'      => $attachment_id ? $attachment_id : $input_url,
-				'url'     => $input_url,
-				'formats' => $outputs,
+				'id'        => $attachment_id ? $attachment_id : $input_url,
+				'url'       => $input_url,
+				'formats'   => $outputs,
+				'parent_id' => $parent_id,
 			)
 		);
 
