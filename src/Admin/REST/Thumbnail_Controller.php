@@ -204,18 +204,33 @@ class Thumbnail_Controller extends Controller {
 	/**
 	 * REST callback to generate temporary thumbnails.
 	 *
+	 * Never creates a video attachment: given a real attachment_id it operates
+	 * on that attachment as before, but given only a url it probes and
+	 * generates directly from the URL, leaving attachment creation to
+	 * thumb_save() once a thumbnail has actually been verified to work.
+	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function thumb_generate( \WP_REST_Request $request ) {
-		$attachment_id = $this->ensure_attachment_id( $request );
-		if ( is_wp_error( $attachment_id ) ) {
-			return $attachment_id;
-		}
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+		$parent_id     = (int) $request->get_param( 'parent_id' );
 
-		$can_edit = $this->ensure_can_set_thumbnail( (int) $attachment_id, 0, false );
-		if ( is_wp_error( $can_edit ) ) {
-			return $can_edit;
+		if ( $attachment_id ) {
+			$can_edit = $this->ensure_can_set_thumbnail( $attachment_id, 0, false );
+			if ( is_wp_error( $can_edit ) ) {
+				return $can_edit;
+			}
+			$source_id = $attachment_id;
+		} else {
+			$url = (string) $request->get_param( 'url' );
+			if ( ! $url ) {
+				return new \WP_Error( 'missing_source', __( 'No attachment or URL provided.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+			}
+			if ( $parent_id && ! current_user_can( 'edit_post', $parent_id ) ) {
+				return new \WP_Error( 'rest_cannot_edit', __( 'You do not have permission to edit the target post.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+			}
+			$source_id = $url;
 		}
 
 		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
@@ -223,10 +238,10 @@ class Thumbnail_Controller extends Controller {
 		$time = $request->get_param( 'time' );
 
 		if ( ! is_null( $time ) ) {
-			$result = $ffmpeg_thumbnails->generate_thumbnail_at_timecode( (int) $attachment_id, (float) $time );
+			$result = $ffmpeg_thumbnails->generate_thumbnail_at_timecode( $source_id, (float) $time );
 		} else {
 			$result = $ffmpeg_thumbnails->generate_single_thumbnail_data(
-				(int) $attachment_id,
+				$source_id,
 				(int) $request->get_param( 'total_thumbnails' ),
 				(int) $request->get_param( 'thumbnail_index' ),
 				( $request->get_param( 'generate_button' ) === 'random' )
@@ -251,7 +266,7 @@ class Thumbnail_Controller extends Controller {
 			new \WP_REST_Response(
 				array(
 					'real_thumb_url' => (string) ( $result['url'] ?? '' ),
-					'attachment_id'  => (int) $attachment_id,
+					'attachment_id'  => $attachment_id,
 				),
 				200
 			),
@@ -262,19 +277,16 @@ class Thumbnail_Controller extends Controller {
 	/**
 	 * REST callback to save thumbnail from upload.
 	 *
+	 * With an existing attachment_id, behavior is unchanged. With only a url,
+	 * verifies the upload actually saves as a real image before creating the
+	 * video attachment - see thumb_save() for the same pattern.
+	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function thumb_upload_save( \WP_REST_Request $request ) {
-		$attachment_id = $this->ensure_attachment_id( $request );
-		if ( is_wp_error( $attachment_id ) ) {
-			return $attachment_id;
-		}
-
-		$can_edit = $this->ensure_can_set_thumbnail( (int) $attachment_id, (int) $request->get_param( 'parent_id' ) );
-		if ( is_wp_error( $can_edit ) ) {
-			return $can_edit;
-		}
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+		$parent_id     = (int) $request->get_param( 'parent_id' );
 
 		$post_name = (string) $request->get_param( 'post_name' );
 		if ( ! empty( $post_name ) ) {
@@ -287,12 +299,61 @@ class Thumbnail_Controller extends Controller {
 		}
 
 		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
-		$response = (array) $thumbnails->save_from_blob( (int) $attachment_id, $post_name, (array) $files['file'], (int) $request->get_param( 'parent_id' ), $request->get_param( 'featured' ), $request->get_param( 'set_poster' ), $request->get_param( 'filename_suffix' ) );
 
-		$response['attachment_id'] = (int) $attachment_id;
-		if ( empty( $response['thumb_id'] ) ) {
+		if ( $attachment_id ) {
+			$can_edit = $this->ensure_can_set_thumbnail( $attachment_id, $parent_id );
+			if ( is_wp_error( $can_edit ) ) {
+				return $can_edit;
+			}
+
+			$response = (array) $thumbnails->save_from_blob( $attachment_id, $post_name, (array) $files['file'], $parent_id, $request->get_param( 'featured' ), $request->get_param( 'set_poster' ), $request->get_param( 'filename_suffix' ) );
+
+			$response['attachment_id'] = $attachment_id;
+			if ( empty( $response['thumb_id'] ) ) {
+				return new \WP_Error( 'upload_failed', $response['error'] ?? 'Could not save uploaded thumbnail.', array( 'status' => 500 ) );
+			}
+
+			return apply_filters( 'videopack_rest_thumb_upload_save', new \WP_REST_Response( $response, 200 ), $request );
+		}
+
+		$url = (string) $request->get_param( 'url' );
+		if ( ! $url ) {
+			return new \WP_Error( 'missing_source', __( 'No attachment or URL provided.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+		if ( $parent_id && ! current_user_can( 'edit_post', $parent_id ) ) {
+			return new \WP_Error( 'rest_cannot_edit', __( 'You do not have permission to edit the target post.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+		}
+
+		$video_title = $parent_id ? (string) get_the_title( $parent_id ) : $post_name;
+
+		$response = (array) $thumbnails->create_thumbnail_image_from_blob( $post_name, $video_title, $parent_id, (array) $files['file'], $request->get_param( 'filename_suffix' ) );
+
+		if ( empty( $response['thumb_id'] ) || is_wp_error( $response['thumb_id'] ) ) {
+			$response['attachment_id'] = 0;
 			return new \WP_Error( 'upload_failed', $response['error'] ?? 'Could not save uploaded thumbnail.', array( 'status' => 500 ) );
 		}
+
+		// The upload verified - a real image was saved. Now create the video
+		// attachment and hand the thumbnail over to it.
+		$attachment_meta     = new \Videopack\Admin\Attachment_Meta( $this->options );
+		$attachment_manager  = new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta );
+		$video_attachment_id = $attachment_manager->resolve_url_to_attachment( $url, $parent_id, true );
+		if ( is_wp_error( $video_attachment_id ) ) {
+			return $video_attachment_id;
+		}
+		$video_attachment_id = (int) $video_attachment_id;
+
+		if ( ! empty( $response['is_new'] ) ) {
+			wp_update_post(
+				array(
+					'ID'          => (int) $response['thumb_id'],
+					'post_parent' => $video_attachment_id,
+				)
+			);
+		}
+		$thumbnails->assign_thumbnail_to_video( $video_attachment_id, (int) $response['thumb_id'], $parent_id, $request->get_param( 'featured' ), (bool) $request->get_param( 'set_poster' ) );
+
+		$response['attachment_id'] = $video_attachment_id;
 
 				/**
 		 * Filters the REST response after successfully saving an uploaded thumbnail.
@@ -308,39 +369,106 @@ class Thumbnail_Controller extends Controller {
 	/**
 	 * REST callback to save one or more generated thumbnails.
 	 *
+	 * With an existing attachment_id, behavior is unchanged. With only a url,
+	 * verifies at least one thumbnail can actually be generated from it
+	 * before creating the video attachment, so an unauthorized or invalid
+	 * request leaves nothing behind in the media library.
+	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function thumb_save( \WP_REST_Request $request ) {
-		$attachment_id = $this->ensure_attachment_id( $request );
-		if ( is_wp_error( $attachment_id ) ) {
-			return $attachment_id;
-		}
-
-		$parent_id = (int) $request->get_param( 'parent_id' );
-		$can_edit  = $this->ensure_can_set_thumbnail( (int) $attachment_id, $parent_id );
-		if ( is_wp_error( $can_edit ) ) {
-			return $can_edit;
-		}
-
-		$thumb_urls     = (array) $request->get_param( 'thumb_urls' );
-		$thumbnails     = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
-		$attachment_url = (string) wp_get_attachment_url( (int) $attachment_id );
-		$post_name      = $attachment_url ? pathinfo( basename( $attachment_url ), PATHINFO_FILENAME ) : get_the_title( (int) $attachment_id );
-
-		$results  = array();
-		$featured = $request->get_param( 'featured' );
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+		$parent_id     = (int) $request->get_param( 'parent_id' );
+		$thumb_urls    = (array) $request->get_param( 'thumb_urls' );
+		$featured      = $request->get_param( 'featured' );
+		$thumbnails    = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 		// Only the explicit "set this one as my poster" case (a single thumbnail)
 		// should reassign the active poster; a multi-item save persists candidates
 		// as media library attachments without silently reassigning it to whichever
 		// one happens to be last in the array.
 		$force_set_poster = ( count( $thumb_urls ) === 1 );
 
-		foreach ( $thumb_urls as $index => $url ) {
-			$res                  = (array) $thumbnails->save( (int) $attachment_id, $post_name, (string) $url, (int) $index + 1, $parent_id, $featured, $force_set_poster );
-			$res['attachment_id'] = (int) $attachment_id;
-			$results[]            = $res;
+		if ( $attachment_id ) {
+			$can_edit = $this->ensure_can_set_thumbnail( $attachment_id, $parent_id );
+			if ( is_wp_error( $can_edit ) ) {
+				return $can_edit;
+			}
+
+			$attachment_url = (string) wp_get_attachment_url( $attachment_id );
+			$post_name      = $attachment_url ? pathinfo( basename( $attachment_url ), PATHINFO_FILENAME ) : get_the_title( $attachment_id );
+
+			$results = array();
+			foreach ( $thumb_urls as $index => $url ) {
+				$res                  = (array) $thumbnails->save( $attachment_id, $post_name, (string) $url, (int) $index + 1, $parent_id, $featured, $force_set_poster );
+				$res['attachment_id'] = $attachment_id;
+				$results[]            = $res;
+			}
+
+			return apply_filters( 'videopack_rest_thumb_save', new \WP_REST_Response( $results, 200 ), $request );
 		}
+
+		$url = (string) $request->get_param( 'url' );
+		if ( ! $url ) {
+			return new \WP_Error( 'missing_source', __( 'No attachment or URL provided.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+		if ( $parent_id && ! current_user_can( 'edit_post', $parent_id ) ) {
+			return new \WP_Error( 'rest_cannot_edit', __( 'You do not have permission to edit the target post.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+		}
+
+		$post_name   = pathinfo( basename( $url ), PATHINFO_FILENAME );
+		$video_title = $parent_id ? (string) get_the_title( $parent_id ) : $post_name;
+
+		$results        = array();
+		$created_thumbs = array();
+		foreach ( $thumb_urls as $index => $thumb_url ) {
+			$res = (array) $thumbnails->create_thumbnail_image( (string) $thumb_url, $post_name, $video_title, $parent_id, (int) $index + 1 );
+			if ( ! empty( $res['thumb_id'] ) && ! is_wp_error( $res['thumb_id'] ) ) {
+				$created_thumbs[] = array(
+					'thumb_id' => (int) $res['thumb_id'],
+					'is_new'   => ! empty( $res['is_new'] ),
+				);
+			}
+			$res['attachment_id'] = 0;
+			$results[]             = $res;
+		}
+
+		if ( empty( $created_thumbs ) ) {
+			// Nothing generated successfully, so the URL wasn't a real,
+			// processable video - create nothing and report the per-item
+			// errors back to the caller.
+			return apply_filters( 'videopack_rest_thumb_save', new \WP_REST_Response( $results, 200 ), $request );
+		}
+
+		// At least one thumbnail is real - the video is real. Now create the
+		// video attachment and hand the thumbnail(s) over to it.
+		$attachment_meta      = new \Videopack\Admin\Attachment_Meta( $this->options );
+		$attachment_manager   = new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta );
+		$video_attachment_id  = $attachment_manager->resolve_url_to_attachment( $url, $parent_id, true );
+		if ( is_wp_error( $video_attachment_id ) ) {
+			return $video_attachment_id;
+		}
+		$video_attachment_id = (int) $video_attachment_id;
+
+		foreach ( $created_thumbs as $created_thumb ) {
+			// Only reparent thumbnails create_thumbnail_image() actually
+			// created here - one that already existed keeps its parent,
+			// same rule as for video attachments (resolve_url_to_attachment()).
+			if ( $created_thumb['is_new'] ) {
+				wp_update_post(
+					array(
+						'ID'          => $created_thumb['thumb_id'],
+						'post_parent' => $video_attachment_id,
+					)
+				);
+			}
+			$thumbnails->assign_thumbnail_to_video( $video_attachment_id, $created_thumb['thumb_id'], $parent_id, $featured, $force_set_poster );
+		}
+
+		foreach ( $results as &$res ) {
+			$res['attachment_id'] = $video_attachment_id;
+		}
+		unset( $res );
 
 				/**
 		 * Filters the REST response after successfully saving one or more generated thumbnails.
