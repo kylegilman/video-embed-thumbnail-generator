@@ -20,7 +20,7 @@ use function sprintf;
 final class VersionComparisonOperator
 {
     /**
-     * @psalm-var '<'|'lt'|'<='|'le'|'>'|'gt'|'>='|'ge'|'=='|'='|'eq'|'!='|'<>'|'ne'
+     * @psalm-var '!='|'<'|'<='|'<>'|'='|'=='|'>'|'>='|'eq'|'ge'|'gt'|'le'|'lt'|'ne'
      */
     private $operator;
 
@@ -50,8 +50,8 @@ final class VersionComparisonOperator
             throw new Exception(
                 sprintf(
                     '"%s" is not a valid version_compare() operator',
-                    $operator
-                )
+                    $operator,
+                ),
             );
         }
     }

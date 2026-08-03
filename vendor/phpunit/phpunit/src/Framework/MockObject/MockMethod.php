@@ -19,6 +19,7 @@ use function preg_replace;
 use function sprintf;
 use function strlen;
 use function strpos;
+use function strtolower;
 use function substr;
 use function substr_count;
 use function trim;
@@ -140,7 +141,7 @@ final class MockMethod
             $reference,
             $callOriginalMethod,
             $method->isStatic(),
-            $deprecation
+            $deprecation,
         );
     }
 
@@ -157,7 +158,7 @@ final class MockMethod
             '',
             false,
             false,
-            null
+            null,
         );
     }
 
@@ -188,15 +189,15 @@ final class MockMethod
     {
         if ($this->static) {
             $templateFile = 'mocked_static_method.tpl';
-        } elseif ($this->returnType->isNever() || $this->returnType->isVoid()) {
+        } elseif ($this->returnType->isNever() || $this->returnType->isVoid() || $this->mustNotReturnValue()) {
             $templateFile = sprintf(
                 '%s_method_never_or_void.tpl',
-                $this->callOriginalMethod ? 'proxied' : 'mocked'
+                $this->callOriginalMethod ? 'proxied' : 'mocked',
             );
         } else {
             $templateFile = sprintf(
                 '%s_method.tpl',
-                $this->callOriginalMethod ? 'proxied' : 'mocked'
+                $this->callOriginalMethod ? 'proxied' : 'mocked',
             );
         }
 
@@ -209,7 +210,7 @@ final class MockMethod
             $deprecationTemplate->setVar(
                 [
                     'deprecation' => var_export($deprecation, true),
-                ]
+                ],
             );
 
             $deprecation = $deprecationTemplate->render();
@@ -230,7 +231,7 @@ final class MockMethod
                 'reference'          => $this->reference,
                 'clone_arguments'    => $this->cloneArguments ? 'true' : 'false',
                 'deprecation'        => $deprecation,
-            ]
+            ],
         );
 
         return $template->render();
@@ -255,12 +256,22 @@ final class MockMethod
                 throw new RuntimeException(
                     $e->getMessage(),
                     $e->getCode(),
-                    $e
+                    $e,
                 );
             }
         }
 
         return self::$templates[$filename];
+    }
+
+    /**
+     * @see https://wiki.php.net/rfc/deprecate-return-value-from-construct
+     */
+    private function mustNotReturnValue(): bool
+    {
+        $methodName = strtolower($this->methodName);
+
+        return $methodName === '__construct' || $methodName === '__destruct';
     }
 
     /**
@@ -361,18 +372,18 @@ final class MockMethod
                 substr(
                     substr(
                         $parameterAsString,
-                        strpos($parameterAsString, '<optional> ') + strlen('<optional> ')
+                        strpos($parameterAsString, '<optional> ') + strlen('<optional> '),
                     ),
                     0,
-                    -2
-                )
+                    -2,
+                ),
             )[1];
             // @codeCoverageIgnoreStart
         } catch (\ReflectionException $e) {
             throw new ReflectionException(
                 $e->getMessage(),
                 $e->getCode(),
-                $e
+                $e,
             );
         }
         // @codeCoverageIgnoreEnd
