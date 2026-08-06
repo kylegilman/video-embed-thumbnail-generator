@@ -262,13 +262,11 @@ class Source_Attachment extends Source {
 	public function get_poster(): string {
 		$poster_url = '';
 
-		// 1. Check for poster_id in _videopack-meta.
-		$poster_id = $this->metadata['poster_id'] ?? null;
-		if ( ! empty( $poster_id ) ) {
-			$poster_url = wp_get_attachment_url( (int) $poster_id );
-			if ( $poster_url ) {
-				return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
-			}
+		// 1. Check for poster defined in attachment metadata via Attachment_Meta helper.
+		$attachment_meta = new \Videopack\Admin\Attachment_Meta( array(), (int) $this->id );
+		$poster_url      = $attachment_meta->get_poster_url();
+		if ( $poster_url ) {
+			return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
 		}
 
 		// 2. Check for featured image (_thumbnail_id) on the attachment itself.
@@ -278,21 +276,6 @@ class Source_Attachment extends Source {
 			if ( $poster_url ) {
 				return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
 			}
-		}
-
-		// 3. Check for legacy poster ID (already migrated to poster_id by Attachment_Meta).
-		// Note: Attachment_Meta also handles the fallback to get_post_thumbnail_id.
-		$poster_id = $this->metadata['poster_id'] ?? null;
-		if ( ! empty( $poster_id ) ) {
-			$poster_url = wp_get_attachment_url( (int) $poster_id );
-			if ( $poster_url ) {
-				return (string) apply_filters( 'videopack_source_get_poster', $poster_url, $this );
-			}
-		}
-
-		// 4. Check for poster URL in metadata.
-		if ( ! empty( $this->metadata['poster'] ) ) {
-			return (string) apply_filters( 'videopack_source_get_poster', (string) $this->metadata['poster'], $this );
 		}
 
 		// 5. Fallback to original GIF itself if mime type is image/gif.

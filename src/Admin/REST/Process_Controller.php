@@ -26,7 +26,7 @@ class Process_Controller extends Controller {
 		 * @param array $batch_types List of batch type names.
 		 */
 		$batch_types    = apply_filters( 'videopack_batch_types', array( 'featured', 'parents', 'thumbs', 'encoding' ) );
-		$progress_types = array_merge( $batch_types, array( 'all', 'browser' ) );
+		$progress_types = array_merge( $batch_types, array( 'all', 'browser', 'browser_sprites' ) );
 
 		register_rest_route(
 			$this->namespace,
@@ -226,10 +226,37 @@ class Process_Controller extends Controller {
 					'failed'      => 0,
 				)
 			);
+			$counts['browser_sprites'] = (array) apply_filters(
+				/**
+				 * Filters the progress counts for browser-based (client-side) sprite sheet generation.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param array $progress_counts Standard counts dictionary with pending/in-progress/complete/failed keys.
+				 */
+				'videopack_rest_browser_sprite_progress',
+				array(
+					'pending'     => 0,
+					'in-progress' => 0,
+					'complete'    => 0,
+					'failed'      => 0,
+				)
+			);
 		} elseif ( 'browser' === $type ) {
 			$counts = (array) apply_filters(
 				/** This filter is documented in src/Admin/REST/Process_Controller.php */
 				'videopack_rest_browser_thumbnail_progress',
+				array(
+					'pending'     => 0,
+					'in-progress' => 0,
+					'complete'    => 0,
+					'failed'      => 0,
+				)
+			);
+		} elseif ( 'browser_sprites' === $type ) {
+			$counts = (array) apply_filters(
+				/** This filter is documented in src/Admin/REST/Process_Controller.php */
+				'videopack_rest_browser_sprite_progress',
 				array(
 					'pending'     => 0,
 					'in-progress' => 0,

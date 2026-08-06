@@ -379,6 +379,14 @@ class FFmpeg_Thumbnails {
 	 */
 	protected function stage_uploaded_file_as_temp( array $file_info ) {
 		if ( ! isset( $file_info['tmp_name'] ) || ! is_uploaded_file( $file_info['tmp_name'] ) ) {
+			\Videopack\Common\Debug_Logger::log(
+				'stage_uploaded_file_as_temp: invalid upload',
+				array(
+					'has_tmp_name' => isset( $file_info['tmp_name'] ),
+					'tmp_name'     => $file_info['tmp_name'] ?? null,
+					'error_code'   => $file_info['error'] ?? null,
+				)
+			);
 			return new \WP_Error( 'no_file', (string) __( 'No file uploaded or invalid upload.', 'video-embed-thumbnail-generator' ) );
 		}
 
@@ -389,6 +397,10 @@ class FFmpeg_Thumbnails {
 		$temp_file_path = trailingslashit( $temp_dir ) . $temp_file_name;
 
 		if ( ! move_uploaded_file( (string) $file_info['tmp_name'], $temp_file_path ) ) {
+			\Videopack\Common\Debug_Logger::log(
+				'stage_uploaded_file_as_temp: move_uploaded_file failed',
+				array( 'target' => $temp_file_path )
+			);
 			return new \WP_Error( 'move_failed', (string) __( 'Failed to move uploaded file.', 'video-embed-thumbnail-generator' ) );
 		}
 
@@ -494,13 +506,33 @@ class FFmpeg_Thumbnails {
 			}
 		}
 
-		$video_title        = (string) get_the_title( (int) $attachment_id );
+		// Raw, not get_the_title() -- this becomes another post's post_title
+		// below (via $desc), and get_the_title() runs the full the_title
+		// filter chain (wptexturize and anything else hooked to it), which
+		// shouldn't get baked into a new stored title.
+		$video_title        = (string) get_post_field( 'post_title', (int) $attachment_id, 'raw' );
 		$fallback_author_id = $video instanceof \WP_Post ? (int) $video->post_author : 0;
 
 		$result = $this->create_thumbnail_image( $thumb_url, $post_name, $video_title, $parent_id, $thumbnail_index, $filename_suffix, $fallback_author_id );
 
 		if ( ! empty( $result['thumb_id'] ) && ! is_wp_error( $result['thumb_id'] ) ) {
+			\Videopack\Common\Debug_Logger::log(
+				'FFmpeg_Thumbnails::save: assigning thumbnail to video',
+				array(
+					'attachment_id' => $attachment_id,
+					'thumb_id'      => $result['thumb_id'],
+					'force_set_poster' => $force_set_poster,
+				)
+			);
 			$this->assign_thumbnail_to_video( (int) $attachment_id, (int) $result['thumb_id'], (int) $force_parent_id, $force_featured, $force_set_poster );
+		} else {
+			\Videopack\Common\Debug_Logger::log(
+				'FFmpeg_Thumbnails::save: create_thumbnail_image did not return a usable thumb_id',
+				array(
+					'attachment_id' => $attachment_id,
+					'result'        => $result,
+				)
+			);
 		}
 
 		return $result;
@@ -542,7 +574,6 @@ class FFmpeg_Thumbnails {
 		$tmp_prefix         = trailingslashit( (string) $uploads['url'] ) . 'thumb_tmp/';
 		$is_local_temp_file = ( 0 === strpos( (string) $thumb_url, $tmp_prefix ) );
 
-		$video_title_decoded = (string) html_entity_decode( (string) $video_title, ENT_QUOTES, 'UTF-8' );
 		/**
 		 * Filters the description type suffix for a generated thumbnail file.
 		 *
@@ -555,7 +586,7 @@ class FFmpeg_Thumbnails {
 		 */
 		$desc_type = (string) apply_filters( 'videopack_thumb_desc_type', 'thumbnail', $filename_suffix );
 		$suffix    = ( 'thumbnail' === $desc_type ) ? esc_html_x( 'thumbnail', 'text appended to newly created attachment titles', 'video-embed-thumbnail-generator' ) : esc_html( $desc_type );
-		$desc      = $video_title_decoded . ' ' . (string) $suffix;
+		$desc      = (string) $video_title . ' ' . (string) $suffix;
 		if ( $thumbnail_index ) {
 			$desc .= ' ' . (string) $thumbnail_index;
 		}
@@ -565,9 +596,14 @@ class FFmpeg_Thumbnails {
 			$tmp_posterpath      = (string) $uploads['path'] . '/thumb_tmp/' . $posterfile_basename;
 
 			if ( ! is_file( $tmp_posterpath ) ) {
+				\Videopack\Common\Debug_Logger::log(
+					'create_thumbnail_image: staged temp file missing',
+					array( 'expected_path' => $tmp_posterpath )
+				);
 				return array(
 					'thumb_id'  => false,
 					'thumb_url' => (string) $thumb_url,
+					'error'     => 'Staged temporary thumbnail file was not found on disk.',
 				);
 			}
 
@@ -596,9 +632,17 @@ class FFmpeg_Thumbnails {
 			wp_delete_file( $tmp_posterpath );
 
 			if ( ! $success ) {
+				\Videopack\Common\Debug_Logger::log(
+					'create_thumbnail_image: copy() to final path failed',
+					array(
+						'from' => $tmp_posterpath,
+						'to'   => $final_posterpath,
+					)
+				);
 				return array(
 					'thumb_id'  => false,
 					'thumb_url' => (string) $thumb_url,
+					'error'     => 'Failed to copy the generated thumbnail into the uploads directory.',
 				);
 			}
 
@@ -621,6 +665,12 @@ class FFmpeg_Thumbnails {
 			);
 
 			$thumb_id = (int) wp_insert_attachment( $attachment, $final_posterpath, (int) $parent_id );
+			if ( ! $thumb_id ) {
+				\Videopack\Common\Debug_Logger::log(
+					'create_thumbnail_image: wp_insert_attachment returned 0',
+					array( 'path' => $final_posterpath )
+				);
+			}
 			require_once ABSPATH . 'wp-admin/includes/image.php';
 			$attach_data = wp_generate_attachment_metadata( $thumb_id, $final_posterpath );
 			wp_update_attachment_metadata( $thumb_id, $attach_data );

@@ -520,7 +520,12 @@ class Modular_Renderer {
 				$class .= ' ' . $atts['wrapper_class'];
 			}
 
-			return '<' . esc_attr( $tag ) . ' class="' . esc_attr( $class ) . '"' . $style . '>' . esc_html( (string) $title ) . '</' . esc_attr( $tag ) . '>';
+			$title_text = esc_html( (string) $title );
+			if ( ! empty( $atts['link_url'] ) ) {
+				$title_text = sprintf( '<a href="%s" class="videopack-title-link">%s</a>', esc_url( $atts['link_url'] ), $title_text );
+			}
+
+			return '<' . esc_attr( $tag ) . ' class="' . esc_attr( $class ) . '"' . $style . '>' . $title_text . '</' . esc_attr( $tag ) . '>';
 		}
 
 		// Overlay Mode (Info Bar).
@@ -761,10 +766,9 @@ class Modular_Renderer {
 		$position             = $atts['position'] ?? 'top';
 		$text_align           = $atts['textAlign'] ?? 'left';
 
-		$show_icon  = $atts['icon'] ?? true;
-		$show_text  = $atts['text'] ?? false;
-		$style_type = $atts['styleType'] ?? 'text';
-		$mode       = $atts['downloadMode'] ?? 'direct';
+		$show_icon = $atts['icon'] ?? true;
+		$show_text = $atts['text'] ?? false;
+		$mode      = $atts['downloadMode'] ?? 'direct';
 
 		$wrapper_class = 'videopack-download-wrapper videopack-download-block mode-' . esc_attr( $mode );
 		if ( $is_inside_title_meta ) {
@@ -793,7 +797,7 @@ class Modular_Renderer {
 			$trigger_inner .= '<span class="videopack-download-text-label">' . esc_html__( 'Download', 'video-embed-thumbnail-generator' ) . '</span>' . "\n";
 		}
 
-		$element_class = 'videopack-icons style-' . esc_attr( $style_type );
+		$element_class = 'videopack-icons style-button';
 
 		$html = '<div class="' . esc_attr( $wrapper_class ) . '"' . $style . '>' . "\n";
 
@@ -853,9 +857,8 @@ class Modular_Renderer {
 		$position             = $atts['position'] ?? 'top';
 		$text_align           = $atts['textAlign'] ?? ( $is_inside_thumbnail ? 'center' : 'left' );
 
-		$icon_type  = $atts['iconType'] ?? 'share';
-		$show_text  = $atts['showText'] ?? false;
-		$style_type = $atts['styleType'] ?? 'text';
+		$icon_type = $atts['iconType'] ?? 'share';
+		$show_text = $atts['showText'] ?? false;
 
 		$wrapper_class = 'videopack-share-wrapper videopack-share-block';
 		if ( $is_inside_title_meta ) {
@@ -909,7 +912,7 @@ class Modular_Renderer {
 
 		// In overlay mode, the dynamic icon class switches between 'share' and 'close'.
 		// If icon is not standard 'share', it still acts as class for querySelector.
-		$element_class = 'videopack-share-link videopack-share-toggle videopack-icons style-' . esc_attr( $style_type ) . ' share';
+		$element_class = 'videopack-share-link videopack-share-toggle videopack-icons style-button share';
 
 		$embedlink = $atts['embedlink'] ?? '';
 		if ( empty( $embedlink ) && $source->get_id() ) {
@@ -923,9 +926,6 @@ class Modular_Renderer {
 			$html .= '<span class="videopack-caret">▼</span>' . "\n";
 		}
 		$html .= '</button>' . "\n";
-
-		// Click trap (used for the overlay popup closing trigger).
-		$html .= '<button class="videopack-click-trap"></button>' . "\n";
 
 		// Embed/Share Overlay / Dropdown Markup.
 		$title        = $atts['title'] ?? $source->get_title();
@@ -1355,7 +1355,6 @@ class Modular_Renderer {
 				array(
 					'icon'         => true,
 					'text'         => false,
-					'styleType'    => 'text',
 					'downloadMode' => 'direct',
 				)
 			);
@@ -1364,9 +1363,8 @@ class Modular_Renderer {
 			$title_inner_blocks[] = $make_block(
 				'videopack/share',
 				array(
-					'iconType'  => 'share',
-					'showText'  => false,
-					'styleType' => 'text',
+					'iconType' => 'share',
+					'showText' => false,
 				)
 			);
 		}

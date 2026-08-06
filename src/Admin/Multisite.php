@@ -144,7 +144,7 @@ class Multisite implements Hook_Subscriber {
 			'videopack_default_network_settings',
 			array(
 				'app_path'                        => (string) ( $this->default_options['app_path'] ?? '' ),
-				'ffmpeg_exists'                   => $this->default_options['ffmpeg_exists'] ?? 'notchecked',
+				'ffmpeg_exists'                   => $this->default_options['ffmpeg_exists'] ?? 'unchecked',
 				'simultaneous_encodes'            => (int) ( $this->default_options['simultaneous_encodes'] ?? 1 ),
 				'threads'                         => (int) ( $this->default_options['threads'] ?? 1 ),
 				'nice'                            => (bool) ( $this->default_options['nice'] ?? true ),
@@ -201,14 +201,17 @@ class Multisite implements Hook_Subscriber {
 			$old_network_options = get_site_option( $old_options_key, false );
 
 			if ( is_array( $old_network_options ) && ! empty( $old_network_options ) ) {
-				$options_instance        = new \Videopack\Admin\Options();
-				$network_options_to_save = $options_instance->merge_options_with_defaults( $old_network_options, $this->default_network_options );
+				$old_network_options      = \Videopack\Admin\Options::convert_legacy_checkbox_values( $old_network_options );
+				$options_instance         = new \Videopack\Admin\Options();
+				$network_options_to_save  = $options_instance->merge_options_with_defaults( $old_network_options, $this->default_network_options );
+				$network_options_to_save['ffmpeg_exists'] = \Videopack\Admin\Options::normalize_ffmpeg_status( $network_options_to_save['ffmpeg_exists'] ?? null );
 
-				if ( ( $network_options_to_save['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-					$ffmpeg_tester                            = new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options, $this->format_registry );
-					$ffmpeg_info                              = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $network_options_to_save['app_path'] ?? '' ) );
-					$network_options_to_save['ffmpeg_exists'] = $ffmpeg_info['ffmpeg_exists'] ? true : 'notinstalled';
-					$network_options_to_save['app_path']      = (string) $ffmpeg_info['app_path'];
+				if ( ( $network_options_to_save['ffmpeg_exists'] ?? 'unchecked' ) === 'unchecked' ) {
+					// Reuses the same detection-and-convert logic as
+					// site-level options (Options::validate_ffmpeg_settings(),
+					// also used by validate_network_settings() below)
+					// instead of maintaining a second, independent copy.
+					$network_options_to_save = (array) ( new \Videopack\Admin\Options() )->validate_ffmpeg_settings( $network_options_to_save );
 				}
 				update_site_option( $new_options_key, $network_options_to_save );
 				delete_site_option( $old_options_key );
@@ -223,6 +226,8 @@ class Multisite implements Hook_Subscriber {
 				}
 				restore_current_blog();
 
+				$main_site_options = \Videopack\Admin\Options::convert_legacy_checkbox_values( (array) $main_site_options );
+
 				if ( is_array( $main_site_options ) && ! empty( $main_site_options ) ) {
 					foreach ( $this->default_network_options as $key => $default_value ) {
 						if ( isset( $main_site_options[ (string) $key ] ) ) {
@@ -234,11 +239,14 @@ class Multisite implements Hook_Subscriber {
 					}
 				}
 
-				if ( ( $network_options_to_save['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-					$ffmpeg_tester                            = new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options, $this->format_registry );
-					$ffmpeg_info                              = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $network_options_to_save['app_path'] ?? '' ) );
-					$network_options_to_save['ffmpeg_exists'] = $ffmpeg_info['ffmpeg_exists'] ? true : 'notinstalled';
-					$network_options_to_save['app_path']      = (string) $ffmpeg_info['app_path'];
+				$network_options_to_save['ffmpeg_exists'] = \Videopack\Admin\Options::normalize_ffmpeg_status( $network_options_to_save['ffmpeg_exists'] ?? null );
+
+				if ( ( $network_options_to_save['ffmpeg_exists'] ?? 'unchecked' ) === 'unchecked' ) {
+					// Reuses the same detection-and-convert logic as
+					// site-level options (Options::validate_ffmpeg_settings(),
+					// also used by validate_network_settings() below)
+					// instead of maintaining a second, independent copy.
+					$network_options_to_save = (array) ( new \Videopack\Admin\Options() )->validate_ffmpeg_settings( $network_options_to_save );
 				}
 				update_site_option( $new_options_key, $network_options_to_save );
 				$this->network_options = $network_options_to_save;
@@ -317,7 +325,7 @@ class Multisite implements Hook_Subscriber {
 	 * Adds the network queue page to the sidebar.
 	 */
 	public function add_network_queue_page() {
-		if ( $this->is_videopack_active_for_network() && true === ( $this->network_options['ffmpeg_exists'] ?? false ) ) {
+		if ( $this->is_videopack_active_for_network() && 'available' === ( $this->network_options['ffmpeg_exists'] ?? null ) ) {
 			$page_hook_suffix = (string) add_submenu_page(
 				'settings.php',
 				(string) esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
@@ -345,7 +353,7 @@ class Multisite implements Hook_Subscriber {
 		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $options['app_path'] ?? '' ) ) {
 			$input = (array) ( new Options() )->validate_ffmpeg_settings( (array) $input );
 		} else {
-			$input['ffmpeg_exists'] = $options['ffmpeg_exists'] ?? 'notchecked';
+			$input['ffmpeg_exists'] = $options['ffmpeg_exists'] ?? 'unchecked';
 		}
 
 		foreach ( $this->get_default_network_settings_structure() as $key => $value ) {
@@ -403,7 +411,7 @@ class Multisite implements Hook_Subscriber {
 		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.encodeQueueData = ' . (string) wp_json_encode(
 			array(
 				'initialQueueState' => $this->network_options['queue_control'] ?? 'enabled',
-				'ffmpegExists'      => $this->network_options['ffmpeg_exists'] ?? false,
+				'ffmpegExists'      => $this->network_options['ffmpeg_exists'] ?? 'unchecked',
 				'isNetwork'         => true,
 			)
 		) . ';';
@@ -553,7 +561,7 @@ class Multisite implements Hook_Subscriber {
 		$options['nice']                 = (bool) ( $this->network_options['nice'] ?? $options['nice'] ?? true );
 
 		$options['app_path']      = (string) ( $this->network_options['app_path'] ?? $options['app_path'] ?? '' );
-		$options['ffmpeg_exists'] = $this->network_options['ffmpeg_exists'] ?? $options['ffmpeg_exists'] ?? 'notchecked';
+		$options['ffmpeg_exists'] = $this->network_options['ffmpeg_exists'] ?? $options['ffmpeg_exists'] ?? 'unchecked';
 
 		return (array) apply_filters( 'videopack_override_local_options', $options, $this->network_options );
 	}

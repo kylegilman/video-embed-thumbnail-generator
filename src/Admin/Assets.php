@@ -118,6 +118,12 @@ class Assets implements Hook_Subscriber {
 			'videopack-encode-queue'     => 'encode-queue',
 			'videopack-media-library'    => 'media-library',
 			'videopack-classic-editor'   => 'classic-editor',
+			// Registered (not enqueued anywhere here) so it stays available
+			// as a script handle for anything that needs the `videopack.jsUtils`
+			// @wordpress/hooks filter (e.g. addon plugins) to declare as an
+			// explicit dependency -- see videopack-player-pro's
+			// Previews_Admin::enqueue_admin_scripts().
+			'videopack-js-utils'         => 'js-utils',
 		);
 
 		// Handles whose own dependency chain isn't the standard admin/

@@ -2310,7 +2310,11 @@ class Encode_Attachment {
 
 		if ( $existing_attachment_id <= 0 ) {
 			$wp_filetype = (array) wp_check_filetype( (string) basename( $path ) );
-			$title_base  = (string) ( $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( (int) $this->id ) );
+			// Raw, not get_the_title() -- this becomes the new format
+			// attachment's post_title, and get_the_title() runs the full
+			// the_title filter chain (wptexturize and anything else hooked to
+			// it), which shouldn't get baked into a new stored title.
+			$title_base  = (string) get_post_field( 'post_title', $parent_post_id ? $parent_post_id : (int) $this->id, 'raw' );
 			$label       = $encode_format->get_label();
 			if ( empty( $label ) ) {
 				$label = $video_format_config instanceof Video_Format ? $video_format_config->get_label() : '';

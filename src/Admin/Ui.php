@@ -330,6 +330,7 @@ class Ui implements Hook_Subscriber {
 				'videopack/postType',
 				'videopack/isStandalone',
 				'videopack/prioritizePostData',
+				'videopack/parentPostId',
 				'videopack/isInsideThumbnail',
 				'videopack/isInsidePlayerOverlay',
 				'videopack/isInsidePlayerContainer',
@@ -365,6 +366,7 @@ class Ui implements Hook_Subscriber {
 				'videopack/showCaption',
 				'videopack/showBackground',
 				'videopack/title_position',
+				'videopack/aspect_ratio',
 				'videopack/restartCount',
 				'videopack/textAlign',
 				'videopack/position',
@@ -518,6 +520,13 @@ class Ui implements Hook_Subscriber {
 
 
 
+		// $options['ffmpeg_exists'] is guaranteed to be one of 'available' /
+		// 'unavailable' / 'unchecked' -- normalized at the one migration
+		// boundary by Options::init_options() / Multisite::init(), and
+		// produced directly in that shape by every writer since. See
+		// Options::ffmpeg_exists_raw() for the strict-boolean equivalent
+		// exposed below as `raw_ffmpeg_exists`.
+
 		/**
 		 * Filters the central localization configuration data array passed to JavaScript.
 		 *
@@ -534,11 +543,8 @@ class Ui implements Hook_Subscriber {
 				'url'                       => (string) plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
 				'codecs'                    => $codecs_data,
 				'resolutions'               => $resolutions_data,
-				'ffmpeg_exists'             => apply_filters(
-					/** This filter is documented in src/Admin/Options.php */
-					'videopack_ffmpeg_exists',
-					is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) )
-				),
+				'ffmpeg_exists'             => $options['ffmpeg_exists'],
+				'raw_ffmpeg_exists'         => \Videopack\Admin\Options::ffmpeg_exists_raw( $options ),
 				'contentSize'               => $global_settings['layout']['contentSize'] ?? false,
 				'wideSize'                  => $global_settings['layout']['wideSize'] ?? false,
 				'freemiusEnabled'           => $freemius_enabled,
@@ -564,11 +570,7 @@ class Ui implements Hook_Subscriber {
 				'options'                   => array_merge(
 					\Videopack\Admin\Options::filter_unsafe_keys( $options ),
 					array(
-						'ffmpeg_exists' => apply_filters(
-						/** This filter is documented in src/Admin/Options.php */
-							'videopack_ffmpeg_exists',
-							is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) )
-						),
+						'ffmpeg_exists' => $options['ffmpeg_exists'],
 					)
 				),
 				'defaults'                  => \Videopack\Common\Defaults::get_all( $options ),

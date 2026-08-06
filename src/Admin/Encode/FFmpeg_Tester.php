@@ -108,7 +108,7 @@ class FFmpeg_Tester {
 	 * @param string $app_path The path to the FFmpeg executable.
 	 * @return array An associative array with:
 	 *               - 'proc_open_enabled': bool, true if proc_open is enabled.
-	 *               - 'ffmpeg_exists': bool|string, true if FFmpeg is found and executable, 'notinstalled' otherwise.
+	 *               - 'ffmpeg_exists': bool, true if FFmpeg is found and executable, false otherwise.
 	 *               - 'output': array, output from the FFmpeg test command.
 	 *               - 'app_path': string, the validated path to FFmpeg.
 	 *               - 'ffmpeg_error': string, a user-friendly error message if FFmpeg is not working.

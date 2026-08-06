@@ -727,7 +727,7 @@ class Blocks implements Hook_Subscriber {
 			$attributes,
 			$block->context,
 			$this->options,
-			array( 'skin', 'play_button_color', 'play_button_secondary_color' )
+			array( 'skin', 'play_button_color', 'play_button_secondary_color', 'aspect_ratio' )
 		);
 		$attributes = array_merge( $this->options, $attributes, $settings['resolved'] );
 
@@ -832,6 +832,14 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		$classes = array( 'videopack-thumbnail-wrapper', 'gallery-thumbnail', 'videopack-gallery-item' );
+		if ( 'auto' === ( $settings['resolved']['aspect_ratio'] ?? '' ) ) {
+			// "Native" mode has no fixed ratio to reserve space with, so the
+			// overlay stack (Title/Play-button/etc.) can't just fill 100% of
+			// a wrapper whose own height depends on a still-loading image —
+			// see Thumbnail.scss's `.has-native-aspect-ratio` for the CSS
+			// Grid layout that sidesteps that circular sizing problem.
+			$classes[] = 'has-native-aspect-ratio';
+		}
 		$classes = (array) apply_filters( 'videopack_thumbnail_wrapper_classes', $classes, $settings['resolved'], $attributes );
 		$classes[] = $settings['classes'];
 
@@ -880,15 +888,29 @@ class Blocks implements Hook_Subscriber {
 			return '';
 		}
 
-		if ( ! empty( $block->context['videopack/prioritizePostData'] ) || ! empty( $attributes['usePostTitle'] ) ) {
-			$display_post_id = $block->context['postId'] ?? get_the_ID();
+		// usePostTitle has no default in block.json, so an untouched block
+		// simply omits it here -- that's what lets it inherit the Loop's
+		// prioritizePostData setting. An explicit true/false (the block's own
+		// toggle was set directly) always wins over it, in either direction.
+		// videopack/parentPostId is the video's real attached-post id, set
+		// unconditionally whenever one exists (regardless of the Loop's
+		// prioritizePostData toggle) -- see Blocks::render_video_loop(). Using
+		// it here (rather than the prioritizePostData-gated `postId`) means a
+		// single Title block's own override works on its own, without
+		// requiring the whole Loop to be switched into post-data mode.
+		$use_post_title = isset( $attributes['usePostTitle'] )
+			? (bool) $attributes['usePostTitle']
+			: ! empty( $block->context['videopack/prioritizePostData'] );
+
+		if ( $use_post_title ) {
+			$display_post_id = ( $block->context['videopack/parentPostId'] ?? 0 ) ?: ( $block->context['postId'] ?? get_the_ID() );
 			if ( (int) $display_post_id !== (int) $post_id || ! empty( $attributes['usePostTitle'] ) ) {
 				$attributes['title'] = get_the_title( (int) $display_post_id );
 			}
 		}
 
 		if ( ! empty( $attributes['linkToPost'] ) ) {
-			$link_post_id           = $block->context['postId'] ?? get_the_ID();
+			$link_post_id           = ( $block->context['videopack/parentPostId'] ?? 0 ) ?: ( $block->context['postId'] ?? get_the_ID() );
 			$attributes['link_url'] = get_permalink( (int) $link_post_id );
 		}
 

@@ -862,7 +862,6 @@ class Shortcode implements Hook_Subscriber {
 				array(
 					'icon'         => true,
 					'text'         => false,
-					'styleType'    => 'text',
 					'downloadMode' => 'direct',
 				)
 			);
@@ -871,9 +870,8 @@ class Shortcode implements Hook_Subscriber {
 		if ( $include_share ) {
 			$share_atts    = wp_json_encode(
 				array(
-					'iconType'  => 'share',
-					'showText'  => false,
-					'styleType' => 'text',
+					'iconType' => 'share',
+					'showText' => false,
 				)
 			);
 			$inner_blocks .= '<!-- wp:videopack/share ' . $share_atts . ' /-->';

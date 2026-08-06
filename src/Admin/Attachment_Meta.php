@@ -130,7 +130,40 @@ class Attachment_Meta implements Hook_Subscriber {
 				'priority'      => 10,
 				'accepted_args' => 5,
 			),
+			array(
+				'hook'          => 'get_post_metadata',
+				'callback'      => 'filter_legacy_post_metadata',
+				'priority'      => 10,
+				'accepted_args' => 4,
+			),
 		);
+	}
+
+	/**
+	 * Intercepts legacy get_post_meta calls for poster keys and returns data from _videopack-meta.
+	 *
+	 * @param mixed  $value     Original value.
+	 * @param int    $object_id Post ID.
+	 * @param string $meta_key  Meta key.
+	 * @param bool   $single    Single value requested.
+	 * @return mixed Filtered value or null to pass through.
+	 */
+	public function filter_legacy_post_metadata( $value, $object_id, $meta_key, $single ) {
+		if ( '_kgflashmediaplayer-poster' === $meta_key ) {
+			$meta_handler = new self( $this->options, (int) $object_id );
+			$meta         = $meta_handler->get();
+			$poster_url   = (string) ( $meta['poster'] ?? '' );
+			return $single ? $poster_url : array( $poster_url );
+		}
+
+		if ( '_kgflashmediaplayer-poster-id' === $meta_key ) {
+			$meta_handler = new self( $this->options, (int) $object_id );
+			$meta         = $meta_handler->get();
+			$poster_id    = (int) ( $meta['poster_id'] ?? 0 );
+			return $single ? $poster_id : array( $poster_id );
+		}
+
+		return $value;
 	}
 
 	/**
@@ -167,7 +200,6 @@ class Attachment_Meta implements Hook_Subscriber {
 				'pickedformat'                => null,
 				'encode'                      => (array) ( $this->options['encode'] ?? array() ),
 				'rotate'                      => null,
-				'autothumb_error'             => null,
 				'total_thumbnails'            => (int) ( $this->options['total_thumbnails'] ?? 4 ),
 				'randomize'                   => false,
 				'forcefirst'                  => false,
@@ -316,6 +348,22 @@ class Attachment_Meta implements Hook_Subscriber {
 			}
 		}
 
+		// Migrate legacy poster keys if poster/poster_id are not set in $current_meta.
+		$legacy_poster_url = get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-poster', true );
+		$legacy_poster_id  = get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-poster-id', true );
+		if ( ! empty( $legacy_poster_url ) || ! empty( $legacy_poster_id ) ) {
+			if ( empty( $current_meta['poster'] ) && ! empty( $legacy_poster_url ) ) {
+				$current_meta['poster'] = (string) $legacy_poster_url;
+				$migrated               = true;
+			}
+			if ( empty( $current_meta['poster_id'] ) && ! empty( $legacy_poster_id ) ) {
+				$current_meta['poster_id'] = (int) $legacy_poster_id;
+				$migrated                  = true;
+			}
+			delete_post_meta( (int) $this->post_id, '_kgflashmediaplayer-poster' );
+			delete_post_meta( (int) $this->post_id, '_kgflashmediaplayer-poster-id' );
+		}
+
 		if ( $migrated ) {
 			$this->save( $current_meta );
 		}
@@ -447,6 +495,49 @@ class Attachment_Meta implements Hook_Subscriber {
 		} else {
 			update_post_meta( (int) $this->post_id, '_videopack-meta', $meta_to_persist );
 		}
+	}
+
+	/**
+	 * Gets the poster image URL for this video attachment.
+	 *
+	 * @return string Poster URL or empty string.
+	 */
+	public function get_poster_url(): string {
+		$meta = $this->get();
+		if ( ! empty( $meta['poster_id'] ) ) {
+			$url = wp_get_attachment_url( (int) $meta['poster_id'] );
+			if ( $url ) {
+				return (string) $url;
+			}
+		}
+		return (string) ( $meta['poster'] ?? '' );
+	}
+
+	/**
+	 * Gets the poster attachment ID for this video attachment.
+	 *
+	 * @return int Poster attachment ID or 0.
+	 */
+	public function get_poster_id(): int {
+		$meta = $this->get();
+		return (int) ( $meta['poster_id'] ?? 0 );
+	}
+
+	/**
+	 * Sets or clears the poster image for this video attachment.
+	 *
+	 * @param string|null $poster_url Poster URL or null/empty to clear.
+	 * @param int|null    $poster_id  Poster attachment ID or null/0 to clear.
+	 * @param bool|null   $featured   Optional featured image preference update.
+	 */
+	public function set_poster( ?string $poster_url = null, ?int $poster_id = null, ?bool $featured = null ) {
+		$meta              = $this->get();
+		$meta['poster']    = ! empty( $poster_url ) ? (string) $poster_url : null;
+		$meta['poster_id'] = ! empty( $poster_id ) && (int) $poster_id > 0 ? (int) $poster_id : null;
+		if ( null !== $featured ) {
+			$meta['featured'] = (bool) $featured;
+		}
+		$this->save( $meta );
 	}
 
 	/**

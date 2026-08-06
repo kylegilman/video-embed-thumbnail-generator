@@ -62,6 +62,7 @@ class Context_Manager {
 			'exclude_hover_trigger',
 			'title_position',
 			'hover_effect',
+			'aspect_ratio',
 		);
 
 		$resolved   = array();
