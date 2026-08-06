@@ -9,8 +9,18 @@
 	width: 100%;
 	transition: all 0.2s ease;
 	box-sizing: border-box;
-	padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-	height: 0;
+	// `aspect-ratio` instead of the old `padding-bottom: 56.25%` hack --
+	// that percentage always resolves against the element's *containing
+	// block* width, not its own rendered width. A standalone Thumbnail
+	// block sits directly in a theme's width-constrained content column,
+	// where those two widths differ (the containing block is the wider,
+	// unconstrained parent) -- the old hack rendered roughly 30% too tall
+	// there while looking fine inside a Collection/Loop grid item, whose
+	// containing block genuinely is its own grid-track width. aspect-ratio
+	// computes purely from the element's own box, sidestepping this
+	// entirely regardless of what it's nested in.
+	aspect-ratio: var(--videopack-aspect-ratio, 16 / 9);
+	height: auto;
 	overflow: hidden;
 	background: #000;
 	container-type: inline-size;
@@ -35,6 +45,42 @@
 		object-fit: cover;
 		display: block;
 	}
+
+	// "Native" mode (the aspect_ratio setting/attribute resolved to "auto"):
+	// there's no ratio to reserve space with ahead of time, so the image
+	// can't stay absolutely positioned to fill a box whose own height that
+	// same image would otherwise have to establish -- that's circular, and
+	// the box collapses to ~0 height (taking the whole overlay stack down
+	// with it) until the image finishes loading. Stacking the image and the
+	// overlay layer in the same CSS Grid cell instead: the image sizes
+	// itself normally from its own intrinsic ratio (no cropping), Grid
+	// resolves the row's height from that, then stretches the overlay layer
+	// to match -- so the overlay stack never depends on a ratio being known
+	// in advance.
+	&.has-native-aspect-ratio {
+		aspect-ratio: auto;
+		display: grid;
+		grid-template-areas: 'stack';
+
+		// On the frontend, a linked thumbnail (linkTo !== 'none') wraps img +
+		// .videopack-inner-blocks-container in a real <a> (see
+		// Modular_Renderer::render_thumbnail()) so they're grandchildren of
+		// this grid container, not direct children -- grid-area: stack below
+		// only has any effect on actual grid items. display: contents drops
+		// the <a>'s own box so its children become grid items directly,
+		// without losing the link itself or its click behavior.
+		> .videopack-thumbnail-link {
+			display: contents;
+		}
+
+		img {
+			grid-area: stack;
+			position: static;
+			width: 100%;
+			height: auto;
+			object-fit: initial;
+		}
+	}
 }
 
 .videopack-inner-blocks-container {
@@ -48,4 +94,14 @@
 	& > * {
 		pointer-events: auto;
 	}
+}
+
+// Stacks in the same Grid cell as the image (see `.has-native-aspect-ratio`
+// above) instead of being absolutely positioned against a box whose height
+// that same image is establishing.
+.has-native-aspect-ratio > .videopack-inner-blocks-container {
+	grid-area: stack;
+	position: static;
+	top: auto;
+	left: auto;
 }

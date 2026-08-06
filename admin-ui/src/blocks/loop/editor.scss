@@ -128,6 +128,18 @@
 		border: 2px dashed rgba(0, 0, 0, 0.05);
 		transition: all 0.2s ease;
 		padding: 0;
+		// Reserves the same breathing room the appender below needs (see its
+		// own comment) -- as padding on this container rather than a margin
+		// on the Thumbnail block itself, so it doesn't depend on the
+		// thumbnail's own box at all. That distinction actually matters: the
+		// appender sits at a *fixed* `bottom: -25px` offset from this
+		// container's edge, sized assuming a roughly-fixed aspect ratio.
+		// With Thumbnail's "Native" aspect ratio option, the thumbnail's
+		// height can be genuinely anything, so a margin living on the
+		// thumbnail (whose own background is solid black) reads as a stray
+		// black bar the moment that assumption doesn't hold, instead of the
+		// intended sliver of (near-invisible) container background.
+		padding-bottom: 5px;
 		overflow: visible;
 
 		&:hover {
@@ -164,11 +176,6 @@
 			justify-content: center;
 			width: auto;
 			margin: 0;
-		}
-
-		// Ensure the thumbnail within the editable template doesn't cut off our appender
-		.wp-block-videopack-thumbnail {
-			margin-bottom: 5px;
 		}
 	}
 

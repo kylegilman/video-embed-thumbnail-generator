@@ -1,5 +1,3 @@
-/* global videopack_config */
-import { useMemo } from '@wordpress/element';
 import {
 	useBlockProps,
 	BlockControls,
@@ -7,12 +5,10 @@ import {
 	AlignmentControl,
 	InspectorControls,
 } from '@wordpress/block-editor';
-import { PanelBody, ToolbarGroup } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
-import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
+import { ToolbarGroup } from '@wordpress/components';
 import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
+import TitleColorPanel from '../../components/TitleColorPanel/TitleColorPanel';
 import VideoDuration from '../../components/VideoDuration/VideoDuration';
-import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useShowBackground from '../../hooks/useShowBackground';
 
@@ -34,12 +30,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const vpContext = useVideopackContext(attributes, context, {
 		classKeys: CLASS_KEYS,
 	});
-	const {
-		textAlign,
-		position: attrPosition,
-		title_color,
-		title_background_color,
-	} = attributes;
+	const { textAlign, position: attrPosition } = attributes;
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
@@ -59,21 +50,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const finalTextAlign =
 		textAlign || context['videopack/textAlign'] || defaultAlign;
 	const position = attrPosition || context['videopack/position'] || 'top';
-
-	const THEME_COLORS = videopack_config?.themeColors;
-
-	const colorFallbacks = useMemo(
-		() =>
-			getColorFallbacks({
-				title_color: vpContext.resolved.title_color,
-				title_background_color:
-					vpContext.resolved.title_background_color,
-			}),
-		[
-			vpContext.resolved.title_color,
-			vpContext.resolved.title_background_color,
-		]
-	);
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-duration-block ${vpContext.classes} ${
@@ -113,47 +89,11 @@ export default function Edit({ attributes, setAttributes, context }) {
 				)}
 			</BlockControls>
 			<InspectorControls>
-				<PanelBody
-					title={__('Colors', 'video-embed-thumbnail-generator')}
-					initialOpen={true}
-				>
-					<div className="videopack-color-section">
-						<div className="videopack-color-flex-row">
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Text',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_color}
-									onChange={(value) =>
-										setAttributes({ title_color: value })
-									}
-									colors={THEME_COLORS}
-									fallbackValue={colorFallbacks.title_color}
-								/>
-							</div>
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Background',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_background_color}
-									onChange={(value) =>
-										setAttributes({
-											title_background_color: value,
-										})
-									}
-									colors={THEME_COLORS}
-									fallbackValue={
-										colorFallbacks.title_background_color
-									}
-								/>
-							</div>
-						</div>
-					</div>
-				</PanelBody>
+				<TitleColorPanel
+					attributes={attributes}
+					setAttributes={setAttributes}
+					resolved={vpContext.resolved}
+				/>
 			</InspectorControls>
 			<VideoDuration
 				blockProps={blockProps}

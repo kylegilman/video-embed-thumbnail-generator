@@ -25,3 +25,13 @@
 		transform: translateX(-50%);
 	}
 }
+
+// Shared text/stacking chrome for the same badge/bar-style overlay blocks
+// (Duration, View Count, Share, Download) — split out from
+// overlay-corner-position so it can be included independently where a
+// block's own padding differs (badges vs. Share/Download's button surface).
+@mixin overlay-badge-chrome {
+	font-size: 0.85em;
+	line-height: 1.4;
+	z-index: 105; // Above player controls but below main overlay overlays if needed
+}

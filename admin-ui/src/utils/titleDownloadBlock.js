@@ -4,14 +4,12 @@
 export const TITLE_DOWNLOAD_BLOCK_ATTRS = {
 	icon: true,
 	text: false,
-	styleType: 'text',
 	downloadMode: 'direct',
 };
 
 export const TITLE_SHARE_BLOCK_ATTRS = {
 	iconType: 'share',
 	showText: false,
-	styleType: 'text',
 };
 
 /**

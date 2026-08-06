@@ -1,4 +1,4 @@
-import { useMemo } from '@wordpress/element';
+import { useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 import { BlockContextProvider } from '@wordpress/block-editor';
@@ -18,6 +18,15 @@ import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe';
 import CompactColorPicker from '../../../components/CompactColorPicker/CompactColorPicker';
 import { getColorFallbacks } from '../../../utils/colors';
 import getSharedDesignAttributes from '../../../utils/sharedDesignAttributes';
+import {
+	ASPECT_RATIO_DEFAULT,
+	ASPECT_RATIO_CUSTOM_VALUE,
+	getAspectRatioSelectOptions,
+	getAspectRatioSelectValue,
+	isCustomRatioValue,
+	parseRatioValue,
+	formatRatioValue,
+} from '../../../utils/aspectRatioOptions';
 import VideopackTooltip from './VideopackTooltip';
 
 /* global videopack_config */
@@ -51,7 +60,18 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		pagination_active_color,
 		skin,
 		embed_method,
+		aspect_ratio,
 	} = settings;
+
+	// See thumbnail/edit.js's identical flag for why this can't just be
+	// derived from `aspect_ratio` -- selecting "Custom…" while the current
+	// value is a real preset (e.g. "16/9") needs to stay on "Custom…" long
+	// enough to show the text field, rather than instantly re-matching that
+	// same preset and snapping back.
+	const [isPickingCustom, setIsPickingCustom] = useState(false);
+	const aspectRatioSelectValue = isPickingCustom
+		? ASPECT_RATIO_CUSTOM_VALUE
+		: getAspectRatioSelectValue(aspect_ratio || '');
 
 	const skinOptions = useMemo(() => {
 		const options = [
@@ -545,6 +565,87 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							options={skinOptions}
 						/>
 					</div>
+					<div className="videopack-grid-row-align">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'Thumbnail Aspect Ratio',
+								'video-embed-thumbnail-generator'
+							)}
+							value={aspectRatioSelectValue}
+							onChange={(value) => {
+								if (ASPECT_RATIO_CUSTOM_VALUE === value) {
+									setIsPickingCustom(true);
+									if (!isCustomRatioValue(aspect_ratio)) {
+										handlers.aspect_ratio(
+											ASPECT_RATIO_DEFAULT
+										);
+									}
+									return;
+								}
+								setIsPickingCustom(false);
+								handlers.aspect_ratio(value);
+							}}
+							options={getAspectRatioSelectOptions()}
+						/>
+					</div>
+					{ASPECT_RATIO_CUSTOM_VALUE === aspectRatioSelectValue &&
+						(() => {
+							const { width, height } = parseRatioValue(
+								isCustomRatioValue(aspect_ratio)
+									? aspect_ratio
+									: ASPECT_RATIO_DEFAULT
+							);
+							return (
+								<div className="videopack-grid-row-align videopack-narrow-input">
+									<Flex align="flex-end">
+										<FlexItem>
+											<TextControl
+												__nextHasNoMarginBottom
+												__next40pxDefaultSize
+												type="number"
+												min={1}
+												label={__(
+													'Width',
+													'video-embed-thumbnail-generator'
+												)}
+												value={width}
+												onChange={(value) =>
+													handlers.aspect_ratio(
+														formatRatioValue(
+															value,
+															height
+														)
+													)
+												}
+											/>
+										</FlexItem>
+										<FlexItem>
+											<TextControl
+												__nextHasNoMarginBottom
+												__next40pxDefaultSize
+												type="number"
+												min={1}
+												label={__(
+													'Height',
+													'video-embed-thumbnail-generator'
+												)}
+												value={height}
+												onChange={(value) =>
+													handlers.aspect_ratio(
+														formatRatioValue(
+															width,
+															value
+														)
+													)
+												}
+											/>
+										</FlexItem>
+									</Flex>
+								</div>
+							);
+						})()}
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
 							{__('Title', 'video-embed-thumbnail-generator')}

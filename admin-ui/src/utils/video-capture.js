@@ -30,6 +30,23 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
 			video = source;
 		}
 
+		// Guards against requestVideoFrameCallback (and the 'seeked'
+		// fallback) never firing -- observed happening when the tab isn't
+		// compositing frames (backgrounded/inactive tabs, some headless/
+		// embedded webview contexts). Without this, a single stuck frame
+		// hangs forever with no rejection ever surfacing, silently blocking
+		// any caller (e.g. captureFramesWithFallback) instead of letting it
+		// move on to a fallback strategy.
+		const timeoutId = setTimeout(() => {
+			video.removeEventListener('seeked', onFrameReady);
+			if (isTempVideo) {
+				video.removeEventListener('error', onError);
+				video.src = '';
+				video.load();
+			}
+			reject(new Error('Video frame capture timed out'));
+		}, 15000);
+
 		const processFrame = async () => {
 			const canvas = document.createElement('canvas');
 			canvas.width = video.videoWidth;
@@ -67,15 +84,19 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
 		};
 
 		const onFrameReady = () => {
+			clearTimeout(timeoutId);
 			// Clean up listeners if we added them
 			if (isTempVideo) {
 				video.removeEventListener('seeked', onFrameReady);
 				video.removeEventListener('error', onError);
+			} else {
+				video.removeEventListener('seeked', onFrameReady);
 			}
 			processFrame();
 		};
 
 		const onError = (e) => {
+			clearTimeout(timeoutId);
 			if (isTempVideo) {
 				video.removeEventListener('seeked', onFrameReady);
 				video.removeEventListener('error', onError);
@@ -107,17 +128,16 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
 			video.addEventListener('loadedmetadata', onLoadedMetadata);
 			video.load();
 		} else {
-			// For existing video element
+			// For existing video element -- routed through the same
+			// onFrameReady used above so the timeout is cleared and
+			// listeners are torn down consistently regardless of which
+			// branch (temp vs existing element) actually ran.
 			if ('requestVideoFrameCallback' in video) {
 				video.requestVideoFrameCallback(() => {
-					processFrame();
+					onFrameReady();
 				});
 			} else {
-				const oneShotSeek = () => {
-					video.removeEventListener('seeked', oneShotSeek);
-					processFrame();
-				};
-				video.addEventListener('seeked', oneShotSeek);
+				video.addEventListener('seeked', onFrameReady);
 			}
 			video.currentTime = time;
 		}
@@ -348,4 +368,41 @@ export const calculateTimecodes = (duration, count, options = {}) => {
 		}
 	}
 	return timecodes;
+};
+
+/**
+ * Captures a frame at each timecode, trying each strategy in order until one
+ * succeeds. A single timecode failing every strategy does not stop the rest
+ * from being attempted.
+ *
+ * @param {number[]} timecodes          Timecodes (seconds) to capture.
+ * @param {Array}    strategies         Ordered capture strategies to try per timecode -- each `(time, index) => Promise<*>`, receiving the timecode and its 0-based index in `timecodes`.
+ * @param {Object}   options
+ * @param {Function} options.onProgress Called once per timecode, as `({time, index, result, strategyIndex, error}) => (Promise<void>|void)`, after all strategies have been tried. `result`/`strategyIndex` are null and `error` is set when every strategy failed for that timecode.
+ * @return {Promise<void>}
+ */
+export const captureFramesWithFallback = async (
+	timecodes,
+	strategies,
+	{ onProgress }
+) => {
+	for (let index = 0; index < timecodes.length; index++) {
+		const time = timecodes[index];
+		let result = null;
+		let strategyIndex = -1;
+		let error = null;
+
+		for (let i = 0; i < strategies.length; i++) {
+			try {
+				result = await strategies[i](time, index);
+				strategyIndex = i;
+				error = null;
+				break;
+			} catch (e) {
+				error = e;
+			}
+		}
+
+		await onProgress({ time, index, result, strategyIndex, error });
+	}
 };

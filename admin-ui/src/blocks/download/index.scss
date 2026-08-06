@@ -29,9 +29,7 @@
 /* Player-corner overlay (not inside title meta bar) */
 .videopack-download-wrapper.is-overlay:not(.is-inside-title-meta) {
 	position: absolute;
-	margin: 5px;
-	font-size: 11px;
-	line-height: 1.4;
+	@include pos.overlay-badge-chrome;
 
 	&.has-no-background {
 		.videopack-download-trigger.style-button,
@@ -49,33 +47,6 @@
 		align-items: center;
 		gap: 4px;
 		padding: 2px 8px;
-		cursor: pointer;
-		text-decoration: none;
-		font-family: inherit;
-		font-size: inherit;
-		line-height: inherit;
-		transition: opacity 0.15s ease;
-
-		&:hover {
-			opacity: 0.85;
-			transform: none;
-			box-shadow: none;
-		}
-
-		&:active {
-			transform: none;
-		}
-	}
-
-	.videopack-download-trigger.style-text,
-	.videopack-download-link.style-text {
-		background: transparent;
-		color: var(--videopack-title-color, #fff);
-		border: none;
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 2px 4px;
 		cursor: pointer;
 		text-decoration: none;
 		font-family: inherit;

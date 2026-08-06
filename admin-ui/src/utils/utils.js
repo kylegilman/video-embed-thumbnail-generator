@@ -10,3 +10,4 @@ export * from '../api/thumbnails';
 export * from '../api/gallery';
 export * from '../api/media';
 export * from './helpers';
+export * from './ffmpegCapability';

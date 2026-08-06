@@ -22,6 +22,7 @@ import EncodeFormatStatus from './EncodeFormatStatus';
 import { getVideoFormats } from '../../api/gallery';
 import { enqueueJob, deleteJob } from '../../api/jobs';
 import { deleteFile, deleteFormat, assignFormat } from '../../api/media';
+import { getEffectiveFfmpegExists } from '../../utils/ffmpegCapability';
 
 /**
  * Helper to get the ordinal string for a number.
@@ -77,19 +78,11 @@ const AdditionalFormats = ({
 }) => {
 	const parentId = providedParentId || attributes.id || 0;
 	const src = propSrc || attributes.src;
-	const { ffmpeg_exists, active_encoder = 'ffmpeg' } = options;
-	const activeEncoderReady = applyFilters(
-		'videopack.encoder.is_ready',
-		!!videopack_config.isTranscodingServiceReady,
-		active_encoder,
-		options
+	const { active_encoder = 'ffmpeg' } = options;
+	const effectiveFfmpegExists = getEffectiveFfmpegExists(
+		options,
+		videopack_config.isTranscodingServiceReady
 	);
-	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
-		ffmpeg_exists === true ||
-		ffmpeg_exists === 'true' ||
-		ffmpeg_exists === 1 ||
-		ffmpeg_exists === '1';
 	const [videoFormats, setVideoFormats] = useState(null);
 	const isExternal = useMemo(() => {
 		let isSrcExternal = false;

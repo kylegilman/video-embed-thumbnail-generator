@@ -67,8 +67,7 @@
       "type": "boolean"
     },
     "usePostTitle": {
-      "type": "boolean",
-      "default": false
+      "type": "boolean"
     },
     "linkToPost": {
       "type": "boolean",

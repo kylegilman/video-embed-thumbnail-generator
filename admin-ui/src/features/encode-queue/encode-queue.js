@@ -37,6 +37,10 @@ import {
 } from '../../api/jobs';
 import { getBatchProgress, startBatchProcess } from '../../api/media';
 import { stripHtml } from '../../utils/helpers';
+import {
+	isFfmpegAvailable,
+	getEffectiveFfmpegExists,
+} from '../../utils/ffmpegCapability';
 import { applyFilters } from '@wordpress/hooks';
 
 const defaultLayouts = {
@@ -45,6 +49,13 @@ const defaultLayouts = {
 			density: 'compact',
 		},
 	},
+};
+
+// Batch ids that have a browser-side generation companion, and the
+// CustomEvent each one's browser-generation JS listener expects.
+const BROWSER_TRIGGER_EVENTS = {
+	thumbs: 'videopack_trigger_browser_thumbnail_generation',
+	sprites: 'videopack_trigger_browser_sprite_generation',
 };
 
 /**
@@ -60,18 +71,34 @@ const EncodeQueue = () => {
 		window.videopack?.encodeQueueData?.initialQueueState === 'pause'
 	);
 	const [message, setMessage] = useState(null);
+	// Separate from `message` (rendered at the top of the panel) -- this one
+	// renders inside the Bulk Video Processing panel, next to the button
+	// that triggers it, so the feedback is visible without scrolling up.
+	const [bulkMessage, setBulkMessage] = useState(null);
 	const [isClearing, setIsClearing] = useState(false);
 	const [isTogglingQueue, setIsTogglingQueue] = useState(false);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'cancel'/'remove'/'delete_permanently', type: 'completed'/'all', jobIds: [] }
 	const [actingJobIds, setActingJobIds] = useState([]);
 
+	// Raw local-ffmpeg-only check -- used for the server-FFmpeg-specific
+	// "thumbs" bulk option below. Don't broaden this one; it's labeled as
+	// server-side FFmpeg specifically.
 	const hasTranscoder = useMemo(() => {
-		return (
-			window.videopack_config?.ffmpeg_exists === true ||
-			window.videopack_config?.ffmpeg_exists === 'true' ||
-			window.videopack_config?.ffmpeg_exists === 1 ||
-			window.videopack_config?.ffmpeg_exists === '1'
+		return isFfmpegAvailable(window.videopack_config?.ffmpeg_exists);
+	}, []);
+
+	// Broader check -- true if local ffmpeg OR the active/fallback encoder
+	// (browser, cloud) is ready. The Encoding Queue table itself should show
+	// whenever ANY of these can actually produce jobs, not just local ffmpeg.
+	const hasEncodingCapability = useMemo(() => {
+		return getEffectiveFfmpegExists(
+			{
+				ffmpeg_exists: window.videopack_config?.ffmpeg_exists,
+				active_encoder:
+					window.videopack_config?.options?.active_encoder,
+			},
+			window.videopack_config?.isTranscodingServiceReady
 		);
 	}, []);
 	const [batchProgress, setBatchProgress] = useState({});
@@ -184,24 +211,62 @@ const EncodeQueue = () => {
 			return;
 		}
 		setIsQueueingBulk(true);
+		setBulkMessage(null);
+		const errors = [];
+		let browserGenerationTriggered = false;
 		for (const id of selectedIds) {
 			setIsRunningBatch((prev) => ({ ...prev, [id]: true }));
 			try {
 				const response = await startBatchProcess(id);
-				if (id === 'thumbs' && response && response.browser) {
+				if (
+					response &&
+					response.browser &&
+					BROWSER_TRIGGER_EVENTS[id]
+				) {
+					browserGenerationTriggered = true;
 					window.dispatchEvent(
-						new CustomEvent(
-							'videopack_trigger_browser_thumbnail_generation'
-						)
+						new CustomEvent(BROWSER_TRIGGER_EVENTS[id])
 					);
 				}
 			} catch (err) {
 				console.error(`Failed to start batch process: ${id}`, err);
+				errors.push(err.message || err.code || id);
 			} finally {
 				setIsRunningBatch((prev) => ({ ...prev, [id]: false }));
 			}
 		}
 		setIsQueueingBulk(false);
+
+		if (errors.length > 0) {
+			setBulkMessage({
+				type: 'error',
+				text: sprintf(
+					/* translators: %s is a list of error messages */
+					__(
+						'Failed to start one or more batch processes: %s',
+						'video-embed-thumbnail-generator'
+					),
+					errors.join(', ')
+				),
+			});
+		} else if (browserGenerationTriggered) {
+			setBulkMessage({
+				type: 'success',
+				text: __(
+					'Selected batch processes started. In-browser generation has been initiated -- please keep this browser window open until it completes.',
+					'video-embed-thumbnail-generator'
+				),
+			});
+		} else {
+			setBulkMessage({
+				type: 'success',
+				text: __(
+					'Selected batch processes started successfully.',
+					'video-embed-thumbnail-generator'
+				),
+			});
+		}
+
 		fetchQueue();
 	};
 
@@ -214,16 +279,14 @@ const EncodeQueue = () => {
 					window.videopack_config?.options?.thumb_parent || 'post';
 			}
 			const response = await startBatchProcess(batchId, additionalData);
-			if (batchId === 'thumbs' && response.browser) {
+			if (response.browser && BROWSER_TRIGGER_EVENTS[batchId]) {
 				window.dispatchEvent(
-					new CustomEvent(
-						'videopack_trigger_browser_thumbnail_generation'
-					)
+					new CustomEvent(BROWSER_TRIGGER_EVENTS[batchId])
 				);
 				setMessage({
 					type: 'success',
 					text: __(
-						'In-browser thumbnail generation has been initiated. Please keep this browser window open until the process completes.',
+						'In-browser generation has been initiated. Please keep this browser window open until the process completes.',
 						'video-embed-thumbnail-generator'
 					),
 				});
@@ -338,6 +401,15 @@ const EncodeQueue = () => {
 			return () => clearTimeout(timer);
 		}
 	}, [message]);
+
+	useEffect(() => {
+		if (bulkMessage && bulkMessage.type === 'success') {
+			const timer = setTimeout(() => {
+				setBulkMessage(null);
+			}, 30000);
+			return () => clearTimeout(timer);
+		}
+	}, [bulkMessage]);
 	const fetchQueue = async () => {
 		try {
 			const newData = await getQueue();
@@ -763,7 +835,6 @@ const EncodeQueue = () => {
 									'processing',
 									'needs_insert',
 									'pending_replacement',
-									'browser_pending',
 									'browser_encoding',
 								].includes(item.status)
 									? 'videopack-job-running'
@@ -1141,7 +1212,7 @@ const EncodeQueue = () => {
 					</Notice>
 				)}
 
-				{hasTranscoder && (
+				{hasEncodingCapability && (
 					<PanelBody
 						title={__(
 							'Encoding Queue',
@@ -1240,6 +1311,19 @@ const EncodeQueue = () => {
 							browserPending + browserComplete + browserFailed;
 
 						if (browserTotal > 0) {
+							// complete/failed intentionally use only the
+							// browser-tracked counts, not
+							// normalizedProgress.thumbs's -- those come from
+							// Action Scheduler's own completed/failed action
+							// history for the server-FFmpeg path, which
+							// accumulates indefinitely (Action Scheduler only
+							// prunes it on its own housekeeping schedule) and
+							// isn't scoped to "this batch" at all. Adding it
+							// in here made a browser-only run show a stale,
+							// unrelated "Completed" count from unrelated past
+							// runs. pending still merges both, since a video
+							// genuinely waiting in either mechanism is
+							// meaningfully "still pending" right now.
 							normalizedProgress.thumbs = {
 								pending:
 									(normalizedProgress.thumbs?.pending || 0) +
@@ -1248,12 +1332,8 @@ const EncodeQueue = () => {
 									normalizedProgress.thumbs?.[
 										'in-progress'
 									] || 0,
-								complete:
-									(normalizedProgress.thumbs?.complete || 0) +
-									browserComplete,
-								failed:
-									(normalizedProgress.thumbs?.failed || 0) +
-									browserFailed,
+								complete: browserComplete,
+								failed: browserFailed,
 								total:
 									(normalizedProgress.thumbs?.total || 0) +
 									browserTotal,
@@ -1262,12 +1342,63 @@ const EncodeQueue = () => {
 						delete normalizedProgress.browser;
 					}
 
+					if (normalizedProgress.browser_sprites) {
+						const spritesBrowserPending =
+							normalizedProgress.browser_sprites.pending || 0;
+						const spritesBrowserComplete =
+							normalizedProgress.browser_sprites.complete || 0;
+						const spritesBrowserFailed =
+							normalizedProgress.browser_sprites.failed || 0;
+						const spritesBrowserTotal =
+							spritesBrowserPending +
+							spritesBrowserComplete +
+							spritesBrowserFailed;
+
+						if (spritesBrowserTotal > 0) {
+							// Mirrors the thumbs/browser merge above -- see
+							// that block's comment for why complete/failed
+							// use only the browser-tracked counts.
+							normalizedProgress.sprites = {
+								pending:
+									(normalizedProgress.sprites?.pending || 0) +
+									spritesBrowserPending,
+								'in-progress':
+									normalizedProgress.sprites?.[
+										'in-progress'
+									] || 0,
+								complete: spritesBrowserComplete,
+								failed: spritesBrowserFailed,
+								total:
+									(normalizedProgress.sprites?.total || 0) +
+									spritesBrowserTotal,
+							};
+						}
+						delete normalizedProgress.browser_sprites;
+					}
+
 					return Object.entries(normalizedProgress).map(
 						([type, progress]) => {
+							// 'thumbs' also needs to stay visible once
+							// pending/in-progress hit 0 if the browser merge
+							// above left a nonzero failed count -- otherwise
+							// a batch that fails outright (every video
+							// errors, nothing stays pending) has nothing left
+							// to trigger this panel and the failure is never
+							// shown at all. Scoped to 'thumbs' specifically:
+							// its failed count is the real, current
+							// browser-tracked one after the merge above,
+							// unlike featured/parents/encoding's, which is
+							// Action Scheduler's own failed-action history
+							// and would otherwise keep this panel pinned
+							// open indefinitely after any past failure.
 							if (
 								!progress ||
 								(progress.pending === 0 &&
-									progress['in-progress'] === 0)
+									progress['in-progress'] === 0 &&
+									!(
+										['thumbs', 'sprites'].includes(type) &&
+										progress.failed > 0
+									))
 							) {
 								return null;
 							}
@@ -1287,6 +1418,10 @@ const EncodeQueue = () => {
 								),
 								browser: __(
 									'Generating Thumbnails',
+									'video-embed-thumbnail-generator'
+								),
+								sprites: __(
+									'Generating Thumbnail Sprites',
 									'video-embed-thumbnail-generator'
 								),
 								encoding: __(
@@ -1311,7 +1446,8 @@ const EncodeQueue = () => {
 									className="videopack-batch-progress-panel"
 								>
 									<div className="videopack-batch-progress-content">
-										{type === 'thumbs' &&
+										{(type === 'thumbs' ||
+											type === 'sprites') &&
 											isBrowserActive && (
 												<div
 													className="notice notice-info videopack-browser-queue-warning"
@@ -1456,6 +1592,7 @@ const EncodeQueue = () => {
 							onClick={handleRunSelectedBulk}
 							isBusy={isQueueingBulk}
 							disabled={
+								isQueueingBulk ||
 								Object.values(checkedBulkIds).filter(Boolean)
 									.length === 0
 							}
@@ -1466,6 +1603,14 @@ const EncodeQueue = () => {
 							)}
 						</Button>
 					</div>
+					{bulkMessage && (
+						<Notice
+							status={bulkMessage.type}
+							onRemove={() => setBulkMessage(null)}
+						>
+							{bulkMessage.text}
+						</Notice>
+					)}
 				</PanelBody>
 				<PanelBody
 					title={__(

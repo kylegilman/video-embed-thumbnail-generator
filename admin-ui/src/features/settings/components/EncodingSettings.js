@@ -3,6 +3,10 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 import { getUsersWithCapability } from '../../../utils/utils';
+import {
+	getEffectiveFfmpegExists,
+	isFfmpegAvailable,
+} from '../../../utils/ffmpegCapability';
 import { startBatchProcess, getBatchProgress } from '../../../api/media';
 import useBatchProcess from '../../../hooks/useBatchProcess';
 import {
@@ -50,7 +54,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		simultaneous_encodes,
 		threads,
 		nice,
-		ffmpeg_exists,
 		ffmpeg_error,
 		auto_encode,
 		auto_encode_gif,
@@ -59,18 +62,10 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		active_encoder = 'ffmpeg',
 	} = settings;
 
-	const activeEncoderReady = applyFilters(
-		'videopack.encoder.is_ready',
-		!!videopack_config.isTranscodingServiceReady,
-		active_encoder,
-		settings
+	const effectiveFfmpegExists = getEffectiveFfmpegExists(
+		settings,
+		videopack_config.isTranscodingServiceReady
 	);
-	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
-		ffmpeg_exists === true ||
-		ffmpeg_exists === 'true' ||
-		ffmpeg_exists === 1 ||
-		ffmpeg_exists === '1';
 
 	const availableEncoders =
 		/**
@@ -134,13 +129,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				return false;
 			}
 			if (codec.id === 'thumbnail') {
-				const rawFfmpegExists = settings.ffmpeg_exists;
-				return (
-					rawFfmpegExists === true ||
-					rawFfmpegExists === 'true' ||
-					rawFfmpegExists === 1 ||
-					rawFfmpegExists === '1'
-				);
+				return isFfmpegAvailable(settings.ffmpeg_exists);
 			}
 			return true;
 		});

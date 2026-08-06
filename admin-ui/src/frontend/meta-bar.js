@@ -241,7 +241,6 @@ export function toggleShare( playerWrapper ) {
 	const videoVars = window.videopack.getPlayerVars( playerWrapper ) || {};
 	const shareIcon = playerWrapper.querySelector( '.videopack-icons.share, .videopack-icons.close' );
 	const embedWrapper = playerWrapper._shareContainer || playerContainer.querySelector( '.videopack-share-container' ) || playerWrapper.querySelector( '.videopack-share-container' );
-	const clickTrap = playerWrapper._clickTrap || playerContainer.querySelector( '.videopack-click-trap' ) || playerWrapper.querySelector( '.videopack-click-trap' );
 
 	if ( ! shareIcon || ! embedWrapper ) {
 		return;
@@ -253,18 +252,14 @@ export function toggleShare( playerWrapper ) {
 		shareIcon.classList.remove( 'close' );
 		shareIcon.classList.add( 'share' );
 		shareIcon.classList.remove( 'is-active' );
+		playerWrapper.classList.remove( 'is-open' );
 		embedWrapper.classList.remove( 'is-visible' );
-		if ( clickTrap ) {
-			clickTrap.classList.remove( 'is-visible' );
-		}
 	} else {
 		shareIcon.classList.remove( 'share' );
 		shareIcon.classList.add( 'close' );
 		shareIcon.classList.add( 'is-active' );
+		playerWrapper.classList.add( 'is-open' );
 		embedWrapper.classList.add( 'is-visible' );
-		if ( clickTrap ) {
-			clickTrap.classList.add( 'is-visible' );
-		}
 		setStartAt( playerContainer, playerWrapper );
 	}
 
@@ -313,12 +308,19 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 		} );
 		shareToggle.dataset.videopackInitialized = 'true';
 
-		const clickTrap = wrapper.querySelector( '.videopack-click-trap' );
-		if ( clickTrap ) {
-			clickTrap.addEventListener( 'click', ( e ) => {
-				e.preventDefault();
-				e.stopPropagation();
-				toggleShare( wrapper );
+		// A click landing on the share panel's own background (not one of
+		// its buttons/inputs, which are all separate descendant elements —
+		// hence the target/currentTarget check) closes the menu, same as
+		// clicking a modal's backdrop. Replaces a separate .videopack-click-
+		// trap element that used to sit behind this container at the exact
+		// same size/position -- it could never actually receive a click,
+		// since this container was always on top of it.
+		const shareContainerForClose = wrapper.querySelector( '.videopack-share-container' );
+		if ( shareContainerForClose ) {
+			shareContainerForClose.addEventListener( 'click', ( e ) => {
+				if ( e.target === e.currentTarget ) {
+					toggleShare( wrapper );
+				}
 			} );
 		}
 	}
@@ -529,15 +531,12 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 				document.querySelectorAll( '.videopack-share-wrapper' ).forEach( ( shareWrapper ) => {
 					const shareIcon = shareWrapper.querySelector( '.videopack-icons.close' );
 					const embedWrapper = shareWrapper._shareContainer || shareWrapper.querySelector( '.videopack-share-container' );
-					const clickTrap = shareWrapper._clickTrap || shareWrapper.querySelector( '.videopack-click-trap' );
 					if ( shareIcon && embedWrapper && embedWrapper.classList.contains( 'is-visible' ) ) {
 						shareIcon.classList.remove( 'close' );
 						shareIcon.classList.add( 'share' );
 						shareIcon.classList.remove( 'is-active' );
+						shareWrapper.classList.remove( 'is-open' );
 						embedWrapper.classList.remove( 'is-visible' );
-						if ( clickTrap ) {
-							clickTrap.classList.remove( 'is-visible' );
-						}
 					}
 				} );
 			}
@@ -672,25 +671,20 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 		downloadLink.dataset.videopackDownloadInitialized = 'true';
 	} );
 
-	// Portal fix: Lift the share overlay container and click-trap to the player container root
-	// so they are not trapped by inner layout/position bounds of the share block.
+	// Portal fix: Lift the share overlay container to the player container root
+	// so it is not trapped by inner layout/position bounds of the share block.
 	const isInsideTitleMeta = wrapper.classList.contains( 'is-inside-title-meta' );
 	const isOverlay = wrapper.classList.contains( 'is-overlay' );
 	const isInsideThumbnail = wrapper.classList.contains( 'is-inside-thumbnail' );
 	const shouldPortal = isInsideTitleMeta || isOverlay || isInsideThumbnail;
 
 	const shareContainer = wrapper.querySelector( '.videopack-share-container' );
-	const clickTrap = wrapper.querySelector( '.videopack-click-trap' );
 
 	wrapper._shareContainer = shareContainer;
-	wrapper._clickTrap = clickTrap;
 
 	if ( shouldPortal && playerContainer ) {
 		if ( shareContainer && shareContainer.parentElement !== playerContainer ) {
 			playerContainer.appendChild( shareContainer );
-		}
-		if ( clickTrap && clickTrap.parentElement !== playerContainer ) {
-			playerContainer.appendChild( clickTrap );
 		}
 	}
 

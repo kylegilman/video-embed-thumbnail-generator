@@ -83,6 +83,7 @@ const DEFAULT_CONTEXT_KEYS = [
 	'showCaption',
 	'showBackground',
 	'title_position',
+	'aspect_ratio',
 	'restartCount',
 	'duotone',
 	'style',

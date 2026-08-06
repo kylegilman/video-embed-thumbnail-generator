@@ -57,20 +57,22 @@ export function initPlayers( container = document ) {
  * @param {HTMLElement|Document} container The container to search.
  */
 export function initModularBlocks( container = document ) {
-	container.querySelectorAll( '.videopack-meta-wrapper, .videopack-thumbnail-wrapper, .videopack-video-watermark' ).forEach( ( element ) => {
-		const shareToggle = element.querySelector( '.videopack-share-toggle' );
-		const downloadLink = element.querySelector( '.videopack-download-link' );
-		const downloadTrigger = element.querySelector( '.videopack-download-trigger' );
-		const downloadWrapper = element.querySelector( '.videopack-download-wrapper' );
-		if ( shareToggle || downloadLink || downloadTrigger || downloadWrapper ) {
-			setupMetaBar( element );
-		}
-	} );
-
+	// setupMetaBar() must be called with the share/download wrapper itself,
+	// not a broader ancestor container — it reads is-overlay/
+	// is-inside-thumbnail/is-inside-title-meta directly off whatever element
+	// it's given (for the portal-lift decision), and captures that same
+	// element by reference in the share-toggle's click-listener closure (for
+	// toggleShare()'s later is-open class toggling). setupMetaBar()'s own
+	// per-element dataset guard (videopackMetaInitialized) means only the
+	// *first* call for a given button actually attaches its listener, so a
+	// broader "does this container have a share/download somewhere inside
+	// it" call (an earlier version of this function had one, alongside this
+	// loop) would win that race with the wrong element and silently break
+	// both of the above — there is no need for such a call now, this loop on
+	// its own already reaches every share/download wrapper regardless of
+	// ancestor.
 	container.querySelectorAll( '.videopack-download-wrapper, .videopack-share-wrapper' ).forEach( ( element ) => {
-		if ( ! element.closest( '.videopack-meta-wrapper, .videopack-thumbnail-wrapper, .videopack-video-watermark' ) ) {
-			setupMetaBar( element );
-		}
+		setupMetaBar( element );
 	} );
 }
 
