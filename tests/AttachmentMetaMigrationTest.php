@@ -18,6 +18,8 @@ class AttachmentMetaMigrationTest extends WP_UnitTestCase {
 		parent::set_up();
 		delete_post_meta( self::$attachment_id, '_kgvid-meta' );
 		delete_post_meta( self::$attachment_id, '_videopack-meta' );
+		delete_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster' );
+		delete_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster-id' );
 	}
 
 	/**
@@ -106,5 +108,49 @@ class AttachmentMetaMigrationTest extends WP_UnitTestCase {
 		// Increment using direct meta field name 'completeviews'
 		$updated = $meta_handler->increment_video_stat( 'completeviews' );
 		$this->assertSame( 3, (int) $updated['completeviews'] );
+	}
+
+	/**
+	 * Test that legacy _kgflashmediaplayer-poster* postmeta keys are migrated to _videopack-meta and deleted.
+	 */
+	public function test_legacy_poster_keys_migration_and_filter_interception(): void {
+		update_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster', 'https://example.com/poster.jpg' );
+		update_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster-id', 999 );
+
+		$meta_handler = new Attachment_Meta( array(), self::$attachment_id );
+		$meta         = $meta_handler->get();
+
+		$this->assertSame( 'https://example.com/poster.jpg', $meta['poster'] );
+		$this->assertSame( 999, $meta['poster_id'] );
+
+		// Physical DB keys should be deleted
+		$raw_poster_url = get_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster', true );
+
+		// Hook up the filter subscriber
+		add_filter( 'get_post_metadata', array( $meta_handler, 'filter_legacy_post_metadata' ), 10, 4 );
+
+		// Querying legacy key via get_post_meta should return value via filter hook
+		$filtered_poster_url = get_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster', true );
+		$filtered_poster_id  = get_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster-id', true );
+
+		$this->assertSame( 'https://example.com/poster.jpg', $filtered_poster_url );
+		$this->assertSame( 999, (int) $filtered_poster_id );
+	}
+
+	/**
+	 * Test get_poster_url(), get_poster_id(), and set_poster() helper methods on Attachment_Meta.
+	 */
+	public function test_poster_helper_methods(): void {
+		$meta_handler = new Attachment_Meta( array(), self::$attachment_id );
+
+		// Set poster image
+		$meta_handler->set_poster( 'https://example.com/new-poster.jpg', 555 );
+		$this->assertSame( 'https://example.com/new-poster.jpg', $meta_handler->get_poster_url() );
+		$this->assertSame( 555, $meta_handler->get_poster_id() );
+
+		// Clear poster image
+		$meta_handler->set_poster( null, null );
+		$this->assertSame( '', $meta_handler->get_poster_url() );
+		$this->assertSame( 0, $meta_handler->get_poster_id() );
 	}
 }

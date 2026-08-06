@@ -2,7 +2,9 @@
 
 See [../README.md](../README.md) for the PHPUnit suite — prefer that for
 anything checkable from rendered HTML alone; reserve this suite for
-behavior that genuinely needs a real browser.
+behavior that genuinely needs a real browser. See
+[docs/e2e-testing.md](../../docs/e2e-testing.md) for the full write-up
+(troubleshooting, the player-type matrix, extending the suite).
 
 Real-browser tests (Playwright) against a real, disposable WordPress site
 (wp-env/Docker) with this plugin and `videopack-player-pro` both active.
