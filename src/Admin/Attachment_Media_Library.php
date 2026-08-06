@@ -240,8 +240,9 @@ class Attachment_Media_Library implements Hook_Subscriber {
 		$count  = 0;
 
 		foreach ( $videos as $video_id ) {
-			$poster_id = get_post_meta( (int) $video_id, '_kgflashmediaplayer-poster-id', true );
-			$post      = get_post( (int) $video_id );
+			$meta_manager = new Attachment_Meta( $this->options, (int) $video_id );
+			$poster_id    = $meta_manager->get_poster_id();
+			$post         = get_post( (int) $video_id );
 			if ( $poster_id && $post instanceof \WP_Post && ! empty( $post->post_parent ) ) {
 				as_enqueue_async_action(
 					'videopack_set_featured_image',

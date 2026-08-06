@@ -129,8 +129,9 @@ class Edit_Posts implements Hook_Subscriber {
 				);
 
 				// Include poster only if set but without a poster-id.
-				$poster    = (string) get_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster', true );
-				$poster_id = (int) get_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id', true );
+				$attachment_meta = new Attachment_Meta( $this->options, (int) $attachment_id );
+				$poster          = $attachment_meta->get_poster_url();
+				$poster_id       = $attachment_meta->get_poster_id();
 				if ( ! empty( $poster ) && empty( $poster_id ) ) {
 					$shortcode_atts['poster'] = $poster;
 				}

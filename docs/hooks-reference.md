@@ -48,7 +48,6 @@ Total Unique Hooks Found: **132**
 - [videopack_delete_format](#videopack-delete-format) (`Action`) (Videopack Core)
 - [videopack_embed_method_options](#videopack-embed-method-options) (`Filter`) (Videopack Core JS)
 - [videopack_exempt_cdns](#videopack-exempt-cdns) (`Filter`) (Videopack Core)
-- [videopack_ffmpeg_exists](#videopack-ffmpeg-exists) (`Filter`) (Videopack Core)
 - [videopack_file_download_logger_end](#videopack-file-download-logger-end) (`Action`) (Videopack Core)
 - [videopack_file_download_logger_start](#videopack-file-download-logger-start) (`Filter`) (Videopack Core)
 - [videopack_generate_encode_array](#videopack-generate-encode-array) (`Filter`) (Videopack Core)
@@ -258,7 +257,7 @@ Filters the React element used to render the player play button.  Allowing full 
 
 ### Description
 
-EncodingSettings component.  const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => { const { isNetworkActive } = videopack_config; const { app_path, encode, hide_video_formats, enable_custom_resolution, custom_resolution, error_email, ffmpeg_watermark, audio_bitrate, audio_channels, simultaneous_encodes, threads, nice, ffmpeg_exists, ffmpeg_error, auto_encode, auto_encode_gif, keep_gif_source, sample_rotate, auto_publish_post, active_encoder = 'ffmpeg', browser_encoder_assets_status = 'missing', } = settings;  const effectiveFfmpegExists = ( active_encoder !== 'ffmpeg' && ( !!videopack_config.isTranscodingServiceReady || !!videopack_config.is_pro ) ) || ffmpeg_exists === true || ffmpeg_exists === 'true' || ffmpeg_exists === 1 || ffmpeg_exists === '1';  const availableEncoders = /** Filters the list of available encoders in the dropdown list.
+EncodingSettings component.  const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => { const { isNetworkActive } = videopack_config; const { app_path, encode, enable_custom_resolution, custom_resolution, error_email, ffmpeg_watermark, audio_bitrate, audio_channels, simultaneous_encodes, threads, nice, ffmpeg_error, auto_encode, auto_encode_gif, keep_gif_source, auto_publish_post, active_encoder = 'ffmpeg', } = settings;  const effectiveFfmpegExists = getEffectiveFfmpegExists( settings, videopack_config.isTranscodingServiceReady );  const availableEncoders = /** Filters the list of available encoders in the dropdown list.
 
 - **Since:** `5.0.0`
 
@@ -849,26 +848,6 @@ Filter the list of CDN domains exempt from URL rewriting.
 | Type | Parameter Name | Description |
 |---|---|---|
 | `array` | `$exempt_cdns` | Array of CDN domains. |
-
----
-
-## videopack_ffmpeg_exists
-
-- **Type:** `Filter`
-- **Defined In:** Videopack Core (`src\Admin\Attachment_Processor.php` on line 112)
-- **Other Occurrences:**
-  - Videopack Core (`src\Admin\Attachment_Processor.php` on line 186)
-  - Videopack Core (`src\Admin\Attachment_Processor.php` on line 312)
-  - Videopack Core (`src\Admin\Screens.php` on line 230)
-  - Videopack Core (`src\Admin\REST\Thumbnail_Controller.php` on line 67)
-  - Videopack Pro (`src\Local_Encoding\AutoThumb.php` on line 86)
-  - Videopack Pro (`src\Local_Encoding\AutoThumb.php` on line 226)
-
-### Description
-
-*No description available.*
-
-- **Since:** `5.0.0`
 
 ---
 

@@ -180,6 +180,9 @@ class Attachment_Deleter implements Hook_Subscriber {
 					delete_post_meta( $meta_post->ID, '_kgflashmediaplayer-poster-id' );
 					delete_post_meta( $meta_post->ID, '_thumbnail-id' );
 					delete_post_meta( $meta_post->ID, '_kgflashmediaplayer-poster' );
+
+					$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( array(), (int) $meta_post->ID );
+					$attachment_meta_instance->set_poster( null, null );
 				}
 			}
 		}

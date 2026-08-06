@@ -58,17 +58,8 @@ class Thumbnail_Controller extends Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'thumb_generate' ),
 					'permission_callback' => function () {
-						$ffmpeg_exists = (bool) $this->options['ffmpeg_exists'] && 'notinstalled' !== $this->options['ffmpeg_exists'];
-						$is_cloud_ready = apply_filters(
-							/** This filter is documented in src/Admin/Ui.php */
-							'videopack_transcoding_service_ready',
-							false
-						);
-						return (bool) ( $this->can_make_thumbnails() && ( apply_filters(
-							/** This filter is documented in src/Admin/Options.php */
-							'videopack_ffmpeg_exists',
-							$ffmpeg_exists
-						) || $is_cloud_ready ) );
+						return (bool) ( $this->can_make_thumbnails()
+							&& \Videopack\Admin\Options::is_transcoding_capability_ready( $this->options ) );
 					},
 					'args'                => array(
 						'url'              => array(
@@ -295,14 +286,33 @@ class Thumbnail_Controller extends Controller {
 
 		$files = $request->get_file_params();
 		if ( empty( $files['file'] ) ) {
+			\Videopack\Common\Debug_Logger::log( 'thumb_upload_save: no file in request', array( 'attachment_id' => $attachment_id ) );
 			return new \WP_Error( 'missing_file', 'No file was uploaded.', array( 'status' => 400 ) );
 		}
 
 		$thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 
 		if ( $attachment_id ) {
+			\Videopack\Common\Debug_Logger::log(
+				'thumb_upload_save: starting',
+				array(
+					'attachment_id' => $attachment_id,
+					'parent_id'     => $parent_id,
+					'file_name'     => $files['file']['name'] ?? null,
+					'file_size'     => $files['file']['size'] ?? null,
+					'file_error'    => $files['file']['error'] ?? null,
+				)
+			);
+
 			$can_edit = $this->ensure_can_set_thumbnail( $attachment_id, $parent_id );
 			if ( is_wp_error( $can_edit ) ) {
+				\Videopack\Common\Debug_Logger::log(
+					'thumb_upload_save: permission check failed',
+					array(
+						'attachment_id' => $attachment_id,
+						'error'         => $can_edit->get_error_message(),
+					)
+				);
 				return $can_edit;
 			}
 
@@ -310,8 +320,23 @@ class Thumbnail_Controller extends Controller {
 
 			$response['attachment_id'] = $attachment_id;
 			if ( empty( $response['thumb_id'] ) ) {
+				\Videopack\Common\Debug_Logger::log(
+					'thumb_upload_save: save_from_blob failed',
+					array(
+						'attachment_id' => $attachment_id,
+						'error'         => $response['error'] ?? 'Could not save uploaded thumbnail.',
+					)
+				);
 				return new \WP_Error( 'upload_failed', $response['error'] ?? 'Could not save uploaded thumbnail.', array( 'status' => 500 ) );
 			}
+
+			\Videopack\Common\Debug_Logger::log(
+				'thumb_upload_save: success',
+				array(
+					'attachment_id' => $attachment_id,
+					'thumb_id'      => $response['thumb_id'],
+				)
+			);
 
 			return apply_filters( 'videopack_rest_thumb_upload_save', new \WP_REST_Response( $response, 200 ), $request );
 		}
@@ -324,7 +349,11 @@ class Thumbnail_Controller extends Controller {
 			return new \WP_Error( 'rest_cannot_edit', __( 'You do not have permission to edit the target post.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
 		}
 
-		$video_title = $parent_id ? (string) get_the_title( $parent_id ) : $post_name;
+		// Raw, not get_the_title() -- this becomes the new thumbnail's
+		// post_title, and get_the_title() runs the full the_title filter
+		// chain (wptexturize and anything else hooked to it), which
+		// shouldn't get baked into a new stored title.
+		$video_title = $parent_id ? (string) get_post_field( 'post_title', $parent_id, 'raw' ) : $post_name;
 
 		$response = (array) $thumbnails->create_thumbnail_image_from_blob( $post_name, $video_title, $parent_id, (array) $files['file'], $request->get_param( 'filename_suffix' ) );
 
@@ -417,7 +446,11 @@ class Thumbnail_Controller extends Controller {
 		}
 
 		$post_name   = pathinfo( basename( $url ), PATHINFO_FILENAME );
-		$video_title = $parent_id ? (string) get_the_title( $parent_id ) : $post_name;
+		// Raw, not get_the_title() -- this becomes the new thumbnail's
+		// post_title, and get_the_title() runs the full the_title filter
+		// chain (wptexturize and anything else hooked to it), which
+		// shouldn't get baked into a new stored title.
+		$video_title = $parent_id ? (string) get_post_field( 'post_title', $parent_id, 'raw' ) : $post_name;
 
 		$results        = array();
 		$created_thumbs = array();

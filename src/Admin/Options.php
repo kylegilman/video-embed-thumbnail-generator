@@ -120,7 +120,25 @@ class Options implements Hook_Subscriber {
 				'priority'      => 10,
 				'accepted_args' => 4,
 			),
+			array(
+				'hook'     => 'option_kgvid_video_embed_options',
+				'callback' => 'filter_legacy_options',
+				'priority' => 10,
+			),
 		);
+	}
+
+	/**
+	 * Dynamic filter callback for legacy option requests (kgvid_video_embed_options).
+	 *
+	 * @param mixed $value Existing option value.
+	 * @return array Videopack options array.
+	 */
+	public function filter_legacy_options( $value ) {
+		if ( false === $value ) {
+			return $this->get_options();
+		}
+		return $value;
 	}
 
 	/**
@@ -140,7 +158,7 @@ class Options implements Hook_Subscriber {
 
 			// FFmpeg & Encoding Settings.
 			'app_path'                      => '',
-			'ffmpeg_exists'                 => 'notchecked',
+			'ffmpeg_exists'                 => 'unchecked',
 			'ffmpeg_error'                  => '',
 			'replace_format'                => 'h264',
 			'enable_custom_resolution'      => false,
@@ -202,6 +220,7 @@ class Options implements Hook_Subscriber {
 			'watermark_url'                 => '',
 			'overlay_title'                 => true,
 			'title_position'                => 'top',
+			'aspect_ratio'                  => '16/9',
 			'embedcode'                     => false,
 			'downloadlink'                  => false,
 			'click_download'                => true,
@@ -451,6 +470,26 @@ class Options implements Hook_Subscriber {
 			}
 			unset( $old_options['ogv_CRF'] );
 
+			if ( isset( $old_options['encode'] ) && is_array( $old_options['encode'] ) ) {
+				$res_map = array(
+					'fullres' => 'fullres',
+					'1080'    => '1080',
+					'720'     => '720',
+					'480'     => '480',
+					'mobile'  => '360',
+				);
+				foreach ( $res_map as $old_res => $new_res ) {
+					if ( isset( $old_options['encode'][ $old_res ] ) ) {
+						$is_on = ( 'on' === $old_options['encode'][ $old_res ] || true === $old_options['encode'][ $old_res ] );
+						$options_to_init['encode']['h264']['resolutions'][ $new_res ] = $is_on;
+					}
+				}
+				if ( isset( $old_options['encode']['webm'] ) ) {
+					$options_to_init['encode']['vp8']['enabled'] = ( 'on' === $old_options['encode']['webm'] || true === $old_options['encode']['webm'] );
+				}
+				unset( $old_options['encode'] );
+			}
+
 			if ( isset( $old_options['delete_children'] ) ) {
 				$options_to_init['delete_child_thumbnails'] = ( 'all' === $old_options['delete_children'] );
 				$options_to_init['delete_child_encoded']    = ( 'all' === $old_options['delete_children'] || 'encoded videos only' === $old_options['delete_children'] );
@@ -464,12 +503,10 @@ class Options implements Hook_Subscriber {
 
 			$options_to_init['legacy_dimensions'] = true;
 
-			foreach ( $old_options as $key => &$value ) {
-				if ( 'on' === $value ) {
-					$value = true;
-				} elseif ( 'off' === $value || '' === $value ) {
-					$value = false;
-				}
+			$old_options = self::convert_legacy_checkbox_values( $old_options );
+
+			if ( isset( $old_options['ffmpeg_exists'] ) ) {
+				$old_options['ffmpeg_exists'] = self::normalize_ffmpeg_status( $old_options['ffmpeg_exists'] );
 			}
 
 			$options_to_init = (array) $this->merge_options_with_defaults( (array) $old_options, $options_to_init );
@@ -609,7 +646,7 @@ class Options implements Hook_Subscriber {
 			$att_type = 'string';
 			if ( in_array( $option, array( 'h264_level', 'h265_level' ), true ) ) {
 				$att_type = 'string';
-			} elseif ( is_bool( $value ) || 'ffmpeg_exists' === $option ) {
+			} elseif ( is_bool( $value ) ) {
 				$att_type = array( 'boolean', 'string' );
 			} elseif ( is_numeric( $value ) ) {
 				$att_type = array( 'number', 'string' );
@@ -637,7 +674,7 @@ class Options implements Hook_Subscriber {
 	public function save_default_options() {
 		$options_to_save = (array) $this->get_default();
 
-		if ( ( $options_to_save['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
+		if ( ( $options_to_save['ffmpeg_exists'] ?? 'unchecked' ) === 'unchecked' ) {
 			$options_to_save = (array) $this->validate_ffmpeg_settings( $options_to_save );
 		}
 
@@ -672,19 +709,6 @@ class Options implements Hook_Subscriber {
 			}
 		}
 
-				/**
-		 * Filters the FFmpeg availability status on the server.
-		 *
-		 * This filter is used to override whether FFmpeg is considered active, allowing
-		 * custom transcoders, cloud offloading, or custom server setups to bypass the local
-		 * checks.
-		 *
-		 * @since 5.0.0
-		 *
-		 * @param bool|string $ffmpeg_exists 'notchecked', true/false, or 'notinstalled'.
-		 */
-		$options['ffmpeg_exists'] = apply_filters( 'videopack_ffmpeg_exists', $options['ffmpeg_exists'] );
-
 		// Ensure registry is using merged options.
 		if ( $this->formats_registry ) {
 			$this->merged_options   = $options;
@@ -692,6 +716,113 @@ class Options implements Hook_Subscriber {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Normalizes any legacy stored shape of the 'ffmpeg_exists' option
+	 * into the canonical 3-value enum: 'available', 'unavailable',
+	 * 'unchecked'. The pre-5.0 (kgvid_*) plugin stored 'on' for detected
+	 * present and 'notinstalled'/'notchecked' unchanged; a rare
+	 * pre-4.9.5 shape stored a raw boolean true instead of 'on'. Used
+	 * only at the one-time legacy-options migration boundaries in
+	 * init_options() and Multisite::init() -- every writer going
+	 * forward (validate_ffmpeg_settings()) produces the enum directly.
+	 *
+	 * @param mixed $raw The raw legacy stored value.
+	 * @return string One of 'available', 'unavailable', 'unchecked'.
+	 */
+	public static function normalize_ffmpeg_status( $raw ): string {
+		if ( 'on' === $raw || true === $raw ) {
+			return 'available';
+		}
+		if ( 'notinstalled' === $raw ) {
+			return 'unavailable';
+		}
+		return 'unchecked';
+	}
+
+	/**
+	 * Converts legacy WordPress-checkbox string values from the pre-5.0
+	 * (kgvid_*) plugin into real booleans. Every checkbox on the old
+	 * settings pages was paired with a hidden fallback input, so a
+	 * checked box was stored as the string 'on' and an unchecked box as
+	 * the string 'false' -- never the string 'off', which the plugin
+	 * never actually wrote (kept here only for defensiveness).
+	 *
+	 * @param array $options Raw legacy options array (any shape -- site or network).
+	 * @return array Same array with 'on'/'off'/'false' string values converted to bool.
+	 */
+	public static function convert_legacy_checkbox_values( array $options ): array {
+		foreach ( $options as $key => &$value ) {
+			if ( 'on' === $value ) {
+				$value = true;
+			} elseif ( 'off' === $value || 'false' === $value ) {
+				$value = false;
+			}
+		}
+		unset( $value );
+		return $options;
+	}
+
+	/**
+	 * Determines whether a real local FFmpeg binary was detected on this
+	 * server, from a raw (unfiltered) options array.
+	 *
+	 * This is the sole authoritative accessor for the raw 'ffmpeg_exists'
+	 * fact. It is a pure function over the flat options array with no
+	 * WordPress filter/hook dependency, so it is safe to call from any
+	 * class -- in core or in an add-on -- that only holds the flat options
+	 * array via constructor injection (e.g. Attachment_Processor, Player
+	 * Pro's AutoThumb). It must never be composed with apply_filters();
+	 * callers that want the broader "is some transcoding capability ready"
+	 * signal must use is_transcoding_capability_ready() instead.
+	 *
+	 * @param array $options Flat Videopack options array (site- or network-level; both use the same 'ffmpeg_exists' key shape).
+	 * @return bool
+	 */
+	public static function ffmpeg_exists_raw( array $options ): bool {
+		return 'available' === ( $options['ffmpeg_exists'] ?? '' );
+	}
+
+	/**
+	 * Determines whether browser-based (client-side) capture is enabled for
+	 * thumbnail/sprite generation: either the explicit 'browser_thumbnails'
+	 * option is on, or the active encoder is a cloud provider whose
+	 * configured fallback is 'browser'. Distinct from "browser encoding"
+	 * (active_encoder === 'browser', which governs video FORMAT encoding)
+	 * -- this governs canvas/ffmpeg.wasm CAPTURE for thumbnails and sprites
+	 * specifically.
+	 *
+	 * @param array $options Flat Videopack options array.
+	 * @return bool
+	 */
+	public static function browser_capture_enabled( array $options ): bool {
+		$active_encoder = (string) ( $options['active_encoder'] ?? 'ffmpeg' );
+		$fallback       = (string) ( $options['cloud_fallback_encoder'] ?? 'none' );
+		$is_cloud       = ( 'mediaconvert' === $active_encoder || 'aws_mediaconvert' === $active_encoder || 'google_transcoder' === $active_encoder );
+
+		return ( ! empty( $options['browser_thumbnails'] ) && true === $options['browser_thumbnails'] )
+			|| ( $is_cloud && 'browser' === $fallback );
+	}
+
+	/**
+	 * Determines whether SOME ffmpeg-equivalent transcoding capability is
+	 * ready: local ffmpeg OR a properly-initialized cloud provider OR
+	 * active browser encoding, reported via the videopack_transcoding_
+	 * service_ready filter (which add-ons hook to report their own
+	 * readiness). This is the sole authoritative accessor for the broader
+	 * capability signal.
+	 *
+	 * @param array $options Flat Videopack options array.
+	 * @return bool
+	 */
+	public static function is_transcoding_capability_ready( array $options ): bool {
+		if ( self::ffmpeg_exists_raw( $options ) ) {
+			return true;
+		}
+
+		/** This filter is documented in src/Admin/Ui.php */
+		return (bool) apply_filters( 'videopack_transcoding_service_ready', false );
 	}
 
 	/**
@@ -810,23 +941,22 @@ class Options implements Hook_Subscriber {
 		// Allow add-ons to validate/modify setting options dynamically.
 		$input = apply_filters( 'videopack_validate_options', $input, $this->options );
 
-		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $this->options['app_path'] ?? '' ) || ( $input['ffmpeg_exists'] ?? '' ) === 'notchecked' ) {
+		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $this->options['app_path'] ?? '' ) || ( $input['ffmpeg_exists'] ?? '' ) === 'unchecked' ) {
 			$input = (array) $this->validate_ffmpeg_settings( $input );
 		} else {
-			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'] ?? 'notchecked';
+			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'] ?? 'unchecked';
 			$input['ffmpeg_error']  = (string) ( $this->options['ffmpeg_error'] ?? '' );
 		}
 
-		if ( 'notinstalled' === ( $input['ffmpeg_exists'] ?? 'notinstalled' ) ) {
+		if ( 'unavailable' === ( $input['ffmpeg_exists'] ?? 'unavailable' ) ) {
 			$input['browser_thumbnails'] = true;
 		}
 
-		if ( 'notinstalled' === apply_filters(
-			/** This filter is documented in src/Admin/Options.php */
-			'videopack_ffmpeg_exists',
-			$input['ffmpeg_exists'] ?? 'notinstalled',
-			$input
-		) ) {
+		// auto_encode stays enabled if SOME transcoding capability exists
+		// (local ffmpeg, or an add-on reporting readiness via
+		// videopack_transcoding_service_ready -- e.g. Browser or Cloud
+		// Encoding), not just local ffmpeg specifically.
+		if ( ! self::is_transcoding_capability_ready( $input ) ) {
 			$input['auto_encode']     = false;
 			$input['auto_encode_gif'] = false;
 			$input['keep_gif_source'] = false;
@@ -912,10 +1042,10 @@ class Options implements Hook_Subscriber {
 		$ffmpeg_info   = (array) $ffmpeg_tester->check_ffmpeg_exists( (string) ( $input['app_path'] ?? '' ) );
 
 		if ( true === $ffmpeg_info['ffmpeg_exists'] ) {
-			$input['ffmpeg_exists'] = true;
+			$input['ffmpeg_exists'] = 'available';
 			$input['ffmpeg_error']  = '';
 		} else {
-			$input['ffmpeg_exists'] = 'notinstalled';
+			$input['ffmpeg_exists'] = 'unavailable';
 			$input['ffmpeg_error']  = (string) $ffmpeg_info['ffmpeg_error'];
 		}
 

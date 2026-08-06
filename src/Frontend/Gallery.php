@@ -292,6 +292,23 @@ class Gallery {
 		}
 
 		if ( (bool) $attachments->have_posts() ) {
+			// video_to_post_mapping is only pre-populated above for the
+			// 'archive' source (where "parent post" comes from a separate
+			// query, e.g. the first video child of an archive listing's own
+			// posts). Every other source (custom/current/category/tag/etc.)
+			// never touches it, so prioritizePostData had nothing to read
+			// for them -- fill the gap generically here from each
+			// attachment's own post_parent, without overwriting any entry a
+			// source-specific branch above already set.
+			foreach ( $attachments->posts as $attachment_post ) {
+				$attachment_id = (int) $attachment_post->ID;
+				if ( ! isset( $this->video_to_post_mapping[ $attachment_id ] ) ) {
+					$parent_id = (int) wp_get_post_parent_id( $attachment_id );
+					if ( $parent_id ) {
+						$this->video_to_post_mapping[ $attachment_id ] = $parent_id;
+					}
+				}
+			}
 			return $attachments;
 		}
 
@@ -320,7 +337,7 @@ class Gallery {
 				'id'          => (int) $video->ID,
 				'url'         => (string) ( $video_meta['url'] ?? wp_get_attachment_url( $video->ID ) ),
 				'poster'      => (string) ( $video_meta['poster'] ?? '' ),
-				'title'       => (string) $video->post_title,
+				'title'       => get_the_title( $video ),
 				'caption'     => (string) $video->post_excerpt,
 				'description' => (string) $video->post_content,
 				'countable'   => true, // Attachments are countable.

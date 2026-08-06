@@ -1358,8 +1358,9 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$attachment_link = '';
 
 		if ( $attachment_id ) {
-			$poster_id       = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', true );
-			$poster_url      = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
+			$meta_manager    = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
+			$poster_id       = $meta_manager->get_poster_id();
+			$poster_url      = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : $meta_manager->get_poster_url();
 			$attachment_link = get_edit_post_link( $attachment_id );
 		}
 

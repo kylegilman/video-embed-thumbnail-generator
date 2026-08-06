@@ -114,12 +114,15 @@ class Attachment_Processor implements Hook_Subscriber {
 		// Thumbnail generation logic.
 		if ( ! empty( $this->options['auto_thumb'] ) && $this->is_video( $post ) && 'image/gif' !== $post->post_mime_type ) {
 			if ( ! has_post_thumbnail( (int) $post_id ) ) {
-				$ffmpeg_exists = (bool) $this->options['ffmpeg_exists'] && 'notinstalled' !== $this->options['ffmpeg_exists'];
-				if ( apply_filters(
-					/** This filter is documented in src/Admin/Options.php */
-					'videopack_ffmpeg_exists',
-					$ffmpeg_exists
-				) ) {
+				// generate_thumbnails_with_ffmpeg() has no fallback of its own
+				// -- it always shells out to a literal local ffmpeg binary --
+				// so this must ask the raw local-ffmpeg fact, not the broader
+				// "is some transcoding capability ready" question (which
+				// Browser/Cloud Encoding can legitimately answer yes to
+				// without covering synchronous local thumbnail generation,
+				// starving AutoThumb::flag_for_browser_thumb() in Player Pro
+				// of ever running).
+				if ( Options::ffmpeg_exists_raw( $this->options ) ) {
 					$this->generate_thumbnails_with_ffmpeg( (int) $post_id );
 				}
 			}
@@ -187,13 +190,10 @@ class Attachment_Processor implements Hook_Subscriber {
 	 * @param int $post_id The ID of the video attachment.
 	 */
 	public function generate_thumbnails_with_ffmpeg( $post_id ) {
-		$ffmpeg_exists = (bool) $this->options['ffmpeg_exists'] && 'notinstalled' !== $this->options['ffmpeg_exists'];
-
-		if ( ! apply_filters(
-			/** This filter is documented in src/Admin/Options.php */
-			'videopack_ffmpeg_exists',
-			$ffmpeg_exists
-		) ) {
+		// See the comment in process_new_attachment_action() -- this method
+		// has no non-ffmpeg fallback of its own, so it must ask the raw
+		// local-ffmpeg fact.
+		if ( ! Options::ffmpeg_exists_raw( $this->options ) ) {
 			return;
 		}
 
@@ -312,13 +312,10 @@ class Attachment_Processor implements Hook_Subscriber {
 		$videos = get_posts( $args );
 		$count  = 0;
 
-		$ffmpeg_exists = (bool) $this->options['ffmpeg_exists'] && 'notinstalled' !== $this->options['ffmpeg_exists'];
-
-		if ( ! apply_filters(
-			/** This filter is documented in src/Admin/Options.php */
-			'videopack_ffmpeg_exists',
-			$ffmpeg_exists
-		) ) {
+		// See the comment in process_new_attachment_action() -- these queue
+		// jobs that call generate_thumbnails_with_ffmpeg(), which has no
+		// non-ffmpeg fallback, so this must ask the raw local-ffmpeg fact.
+		if ( ! Options::ffmpeg_exists_raw( $this->options ) ) {
 			return array( 'total' => 0 );
 		}
 

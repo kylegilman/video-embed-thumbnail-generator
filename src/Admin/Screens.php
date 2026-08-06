@@ -665,7 +665,7 @@ class Screens implements Hook_Subscriber {
 				( new \Videopack\Admin\Attachment_Media_Library( $this->options ) )->change_thumbnail_parent( (int) $post_id, $parent_id );
 
 				if ( true === ( $this->options['featured'] ?? false ) && ! has_post_thumbnail( $parent_id ) ) {
-					$featured_id = (int) get_post_meta( (int) $post_id, '_kgflashmediaplayer-poster-id', true );
+					$featured_id = $attachment_meta->get_poster_id();
 					if ( $featured_id > 0 ) {
 						set_post_thumbnail( $parent_id, $featured_id );
 					}
