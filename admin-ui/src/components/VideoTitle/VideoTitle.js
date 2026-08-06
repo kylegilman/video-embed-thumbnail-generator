@@ -33,7 +33,7 @@ const TITLE_CONTEXT_OPTS = {
  * @param {string}   root0.position              Position (top/bottom).
  * @param {Object}   root0.attributes            Block attributes.
  * @param {Object}   root0.context               Block context.
- * @param {boolean}  root0.usePostTitle          Whether to use parent post title.
+ * @param {boolean}  [root0.usePostTitle]        Whether to use the parent post title. Undefined inherits the Collection/Loop's prioritizePostData setting.
  * @param {boolean}  root0.linkToPost            Whether to link to parent post.
  * @return {Element}                             The rendered component.
  */
@@ -52,7 +52,7 @@ export default function VideoTitle({
 	position: attrPosition,
 	attributes = {},
 	context = {},
-	usePostTitle = false,
+	usePostTitle,
 	linkToPost = false,
 	children,
 }) {
@@ -63,13 +63,20 @@ export default function VideoTitle({
 		prioritizePostData,
 	} = vpContext.resolved;
 
-	const postId =
-		prioritizePostData || usePostTitle
-			? resolvedPostId || propPostId
-			: resolvedAttachmentId || resolvedPostId || propPostId;
+	// Undefined (never explicitly set on this block) inherits the
+	// Collection/Loop's prioritizePostData setting; an explicit true/false
+	// always wins over it, in either direction.
+	const usePostData = usePostTitle ?? !!prioritizePostData;
 
-	const titleKey =
-		prioritizePostData || usePostTitle ? 'parentTitle' : 'title';
+	// context's parentPostId is the video's real attached-post id, set
+	// unconditionally whenever one exists -- unlike resolvedPostId, it isn't
+	// gated by the Loop's prioritizePostData toggle, so this block's own
+	// usePostTitle override works even when the Loop-level setting disagrees.
+	const postId = usePostData
+		? context['videopack/parentPostId'] || resolvedPostId || propPostId
+		: resolvedAttachmentId || resolvedPostId || propPostId;
+
+	const titleKey = usePostData ? 'parentTitle' : 'title';
 	const { data: resolvedTitle, isResolving } = useVideopackData(
 		titleKey,
 		context
@@ -135,28 +142,51 @@ export default function VideoTitle({
 				{isLoadingTitle ? (
 					<Spinner />
 				) : (
-					finalOverlayTitle && (
-						<RichText
-							tagName={Tag}
-							className={`${titleClass} ${vpContext.classes} ${linkToPost ? 'is-link' : ''}`}
-							style={vpContext.style}
-							value={displayTitle}
-							onChange={onTitleChange}
-							placeholder={placeholder}
-							allowedFormats={[
-								'core/bold',
-								'core/italic',
-								'core/strikethrough',
-							]}
-							// Only the real Edit component passes onTitleChange (it wires up
-							// setAttributes). Everywhere else this renders — Loop's templated
-							// preview items, the settings-page preview, the classic-editor
-							// preview — has nowhere to persist an edit, so RichText must not
-							// accept one; an editable field that silently discards changes
-							// just looks broken to a user.
-							readOnly={!onTitleChange}
-						/>
-					)
+					finalOverlayTitle &&
+					(() => {
+						const richText = (
+							<RichText
+								tagName={Tag}
+								className={`${titleClass} has-text-align-${finalTextAlign} ${vpContext.classes}`}
+								style={vpContext.style}
+								value={displayTitle}
+								onChange={onTitleChange}
+								placeholder={placeholder}
+								allowedFormats={[
+									'core/bold',
+									'core/italic',
+									'core/strikethrough',
+								]}
+								// Only the real Edit component passes onTitleChange (it wires up
+								// setAttributes). Everywhere else this renders — Loop's templated
+								// preview items, the settings-page preview, the classic-editor
+								// preview — has nowhere to persist an edit, so RichText must not
+								// accept one; an editable field that silently discards changes
+								// just looks broken to a user.
+								readOnly={!onTitleChange}
+							/>
+						);
+
+						// A real <a> (rather than a CSS class faking the look) so the
+						// active theme's own link styling — whatever it actually is —
+						// applies here the same way it will on the frontend
+						// (Modular_Renderer::render_video_title() wraps the title in
+						// exactly this class there). href="#" + preventDefault keeps
+						// it inert instead of navigating away mid-edit; the heading
+						// tag stays nested inside so it's still announced as a
+						// heading, matching <h3><a>Title</a></h3> semantics.
+						return linkToPost ? (
+							<a
+								href="#"
+								className="videopack-title-link"
+								onClick={(e) => e.preventDefault()}
+							>
+								{richText}
+							</a>
+						) : (
+							richText
+						);
+					})()
 				)}
 				{!isLoadingTitle && isOverlay && (
 					<div className={iconsClass}>

@@ -310,7 +310,7 @@ const NetworkSettingsPage = () => {
 							)}
 						/>
 					</PanelRow>
-					{settings.ffmpeg_exists !== true &&
+					{settings.ffmpeg_exists !== 'available' &&
 						settings.ffmpeg_error && (
 							<div className="notice notice-error videopack-ffmpeg-notice">
 								<p
@@ -335,7 +335,7 @@ const NetworkSettingsPage = () => {
 
 				<PanelBody
 					title={__('Execution', 'video-embed-thumbnail-generator')}
-					opened={settings.ffmpeg_exists === true}
+					opened={settings.ffmpeg_exists === 'available'}
 				>
 					<RangeControl
 						__nextHasNoMarginBottom
@@ -351,7 +351,7 @@ const NetworkSettingsPage = () => {
 						max={10}
 						step={1}
 						marks={generateNonCrfMarks('simultaneous')}
-						disabled={settings.ffmpeg_exists !== true}
+						disabled={settings.ffmpeg_exists !== 'available'}
 					/>
 					<RangeControl
 						__nextHasNoMarginBottom
@@ -364,7 +364,7 @@ const NetworkSettingsPage = () => {
 						max={16}
 						step={1}
 						marks={generateNonCrfMarks('threads')}
-						disabled={settings.ffmpeg_exists !== true}
+						disabled={settings.ffmpeg_exists !== 'available'}
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
@@ -374,7 +374,7 @@ const NetworkSettingsPage = () => {
 						)}
 						checked={!!settings.nice}
 						onChange={changeHandlerFactory.nice}
-						disabled={settings.ffmpeg_exists !== true}
+						disabled={settings.ffmpeg_exists !== 'available'}
 					/>
 				</PanelBody>
 
@@ -383,7 +383,7 @@ const NetworkSettingsPage = () => {
 						'Email Notifications',
 						'video-embed-thumbnail-generator'
 					)}
-					opened={settings.ffmpeg_exists === true}
+					opened={settings.ffmpeg_exists === 'available'}
 				>
 					<div className="videopack-setting-auto-width">
 						<SelectControl
@@ -400,7 +400,7 @@ const NetworkSettingsPage = () => {
 								'Receive encoding error notifications for all sites in the network.',
 								'video-embed-thumbnail-generator'
 							)}
-							disabled={settings.ffmpeg_exists !== true}
+							disabled={settings.ffmpeg_exists !== 'available'}
 						/>
 					</div>
 				</PanelBody>

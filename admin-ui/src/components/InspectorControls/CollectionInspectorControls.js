@@ -118,6 +118,21 @@ export default function CollectionInspectorControls({
 							__nextHasNoMarginBottom
 						/>
 					)}
+				<ToggleControl
+					label={__(
+						'Prioritize Attached Post Data',
+						'video-embed-thumbnail-generator'
+					)}
+					help={__(
+						'When enabled, some blocks use the data from the post a video is attached to, instead of the video itself.',
+						'video-embed-thumbnail-generator'
+					)}
+					checked={!!attributes.prioritizePostData}
+					onChange={(value) =>
+						setAttributes({ prioritizePostData: value })
+					}
+					__nextHasNoMarginBottom
+				/>
 				<SelectControl
 					label={__('Layout', 'video-embed-thumbnail-generator')}
 					value={layout}

@@ -16,10 +16,9 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { title as titleIcon } from '@wordpress/icons';
-import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
+import TitleColorPanel from '../../components/TitleColorPanel/TitleColorPanel';
 import VideoTitle from '../../components/VideoTitle/VideoTitle';
-import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useShowBackground from '../../hooks/useShowBackground';
 import './editor.scss';
@@ -48,7 +47,7 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 		context,
 		TITLE_CONTEXT_OPTS
 	);
-	const { postId, postType } = vpContext.resolved;
+	const { postId, postType, prioritizePostData } = vpContext.resolved;
 	const embedlink = context['videopack/embedlink'];
 	const {
 		title,
@@ -56,12 +55,15 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 		position: attrPosition,
 		isOverlay: explicitIsOverlay,
 		textAlign: attrTextAlign,
-		title_color,
-		title_background_color,
 		overlay_title,
 		usePostTitle,
 		linkToPost,
 	} = attributes;
+
+	// Undefined (never touched by this block) inherits the Collection/Loop's
+	// setting -- the toggle shows that inherited value and nothing is written
+	// to this block's attributes until the user explicitly overrides it.
+	const effectiveUsePostTitle = usePostTitle ?? !!prioritizePostData;
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
@@ -94,21 +96,6 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 		isOverlay
 	);
 	const wrapperClass = 'videopack-video-title-wrapper';
-
-	const THEME_COLORS = videopack_config?.themeColors;
-
-	const colorFallbacks = useMemo(
-		() =>
-			getColorFallbacks({
-				title_color: vpContext.resolved.title_color,
-				title_background_color:
-					vpContext.resolved.title_background_color,
-			}),
-		[
-			vpContext.resolved.title_color,
-			vpContext.resolved.title_background_color,
-		]
-	);
 
 	const blockProps = useBlockProps({
 		className: `videopack-video-title-block ${wrapperClass} ${vpContext.classes} ${
@@ -183,88 +170,47 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
-				{!vpContext.resolved.isStandalone && (
-					<PanelBody
-						title={__(
-							'Data Settings',
-							'video-embed-thumbnail-generator'
-						)}
-						initialOpen={true}
-					>
-						<ToggleControl
-							label={__(
-								'Use Post Title',
-								'video-embed-thumbnail-generator'
-							)}
-							help={__(
-								'When enabled, this block will display the title of the parent post instead of the video title.',
-								'video-embed-thumbnail-generator'
-							)}
-							checked={usePostTitle}
-							onChange={(value) =>
-								setAttributes({ usePostTitle: value })
-							}
-						/>
-						<ToggleControl
-							label={__(
-								'Make title a link',
-								'video-embed-thumbnail-generator'
-							)}
-							help={__(
-								'When enabled, the title will link to the parent post.',
-								'video-embed-thumbnail-generator'
-							)}
-							checked={linkToPost}
-							onChange={(value) =>
-								setAttributes({ linkToPost: value })
-							}
-						/>
-					</PanelBody>
-				)}
 				<PanelBody
-					title={__('Colors', 'video-embed-thumbnail-generator')}
+					title={__(
+						'Data Settings',
+						'video-embed-thumbnail-generator'
+					)}
 					initialOpen={true}
 				>
-					<div className="videopack-color-section">
-						<p className="videopack-settings-section-title">
-							{__('Title Bar', 'video-embed-thumbnail-generator')}
-						</p>
-						<div className="videopack-color-flex-row">
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Text',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_color}
-									onChange={(value) =>
-										setAttributes({ title_color: value })
-									}
-									colors={THEME_COLORS}
-									fallbackValue={colorFallbacks.title_color}
-								/>
-							</div>
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Background',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_background_color}
-									onChange={(value) =>
-										setAttributes({
-											title_background_color: value,
-										})
-									}
-									colors={THEME_COLORS}
-									fallbackValue={
-										colorFallbacks.title_background_color
-									}
-								/>
-							</div>
-						</div>
-					</div>
+					<ToggleControl
+						label={__(
+							'Use Post Title',
+							'video-embed-thumbnail-generator'
+						)}
+						help={__(
+							"When enabled, this block will display the title of the parent post instead of the video title. Follows the Collection/Loop's Prioritize Attached Post Data setting until you set this directly.",
+							'video-embed-thumbnail-generator'
+						)}
+						checked={effectiveUsePostTitle}
+						onChange={(value) =>
+							setAttributes({ usePostTitle: value })
+						}
+					/>
+					<ToggleControl
+						label={__(
+							'Make title a link',
+							'video-embed-thumbnail-generator'
+						)}
+						help={__(
+							'When enabled, the title will link to the parent post.',
+							'video-embed-thumbnail-generator'
+						)}
+						checked={linkToPost}
+						onChange={(value) =>
+							setAttributes({ linkToPost: value })
+						}
+					/>
 				</PanelBody>
+				<TitleColorPanel
+					attributes={attributes}
+					setAttributes={setAttributes}
+					resolved={vpContext.resolved}
+				/>
 			</InspectorControls>
 			<VideoTitle
 				blockProps={blockProps}
@@ -272,6 +218,8 @@ export default function Edit({ clientId, attributes, setAttributes, context }) {
 				postId={postId}
 				postType={postType}
 				clientId={clientId}
+				tagName={Tag}
+				textAlign={textAlign}
 				isInsideThumbnail={isInsideThumbnail}
 				isInsidePlayerOverlay={isInsidePlayerOverlay}
 				isOverlay={isOverlay}

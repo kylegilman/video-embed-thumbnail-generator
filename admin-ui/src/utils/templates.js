@@ -94,13 +94,7 @@ export const getFeedTemplate = (options) => {
 			'videopack/thumbnail',
 			{ linkTo: 'parent' },
 			[
-				[
-					'videopack/duration',
-					{
-						position: 'bottom',
-						style: { typography: { fontSize: '14px' } },
-					},
-				],
+				['videopack/duration', { position: 'bottom' }],
 			],
 		],
 		['videopack/title', {}],
@@ -112,6 +106,14 @@ export const getFeedTemplate = (options) => {
 						datetime: {
 							source: 'core/post-data',
 							args: { field: 'date' },
+						},
+					},
+				},
+				style: {
+					spacing: {
+						margin: {
+							top: 'var:preset|spacing|20',
+							bottom: 'var:preset|spacing|20',
 						},
 					},
 				},

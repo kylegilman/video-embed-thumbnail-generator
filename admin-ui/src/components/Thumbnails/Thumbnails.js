@@ -27,7 +27,9 @@ import { listJobs } from '../../api/jobs';
 import {
 	captureVideoFrame,
 	calculateTimecodes,
+	captureFramesWithFallback,
 } from '../../utils/video-capture';
+import { getEffectiveFfmpegExists } from '../../utils/ffmpegCapability';
 
 import { chevronUp, chevronDown } from '@wordpress/icons';
 
@@ -93,18 +95,16 @@ const Thumbnails = ({
 
 		return () => clearInterval(pollInterval);
 	}, [id]);
-	const { active_encoder = 'ffmpeg' } = options;
-	const activeEncoderReady = applyFilters(
-		'videopack.encoder.is_ready',
-		!!videopack_config.isTranscodingServiceReady,
-		active_encoder,
-		options
+	// active_encoder comes from `options` (this block's own settings), but
+	// ffmpeg_exists comes from the global videopack_config, not `options` --
+	// preserving that existing data-source split intentionally.
+	const ffmpegExists = getEffectiveFfmpegExists(
+		{
+			ffmpeg_exists: videopack_config.ffmpeg_exists,
+			active_encoder: options.active_encoder,
+		},
+		videopack_config.isTranscodingServiceReady
 	);
-	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
-		(!!videopack_config.ffmpeg_exists &&
-			videopack_config.ffmpeg_exists !== 'notinstalled');
-	const ffmpegExists = effectiveFfmpegExists;
 	const { editPost } = useDispatch('core/editor') || {};
 	// player/edit.js and player-container/edit.js both pass a videoData that
 	// has no real .edit()/.save() (just a read-only record + a purely local
@@ -278,68 +278,79 @@ const Thumbnails = ({
 				{ random: type === 'random' }
 			);
 
-			for (let i = 0; i < timePoints.length; i++) {
-				const time = timePoints[i];
-				const index = i + 1;
-				let thumb;
-				try {
-					let canvas;
-					if (!canvasTainted) {
-						canvas = await captureVideoFrame(
+			await captureFramesWithFallback(
+				timePoints,
+				[
+					(time) => {
+						if (canvasTainted) {
+							throw new Error(
+								'Canvas tainted, skipping browser capture.'
+							);
+						}
+						return captureVideoFrame(
 							src,
 							time,
 							options?.ffmpeg_thumb_watermark || {}
 						);
-					} else {
-						throw new Error(
-							'Canvas tainted, skipping browser capture.'
+					},
+					(time, index) => {
+						if (!ffmpegExists) {
+							throw new Error('FFmpeg fallback unavailable.');
+						}
+						return generateThumb(
+							index + 1,
+							type,
+							workingId,
+							featured
 						);
-					}
-					thumb = {
-						src: canvas.toDataURL(),
-						type: 'canvas',
-						canvasObject: canvas,
-					};
-					newThumbCanvases.push(thumb);
-					setThumbChoices([...newThumbCanvases]); // Update incrementally
-				} catch (error) {
-					if (!canvasTainted) {
-						console.error(
-							'Error generating canvas thumbnail:',
-							error
-						);
-					}
-					if (!!ffmpegExists) {
-						try {
-							const response = await generateThumb(
-								index,
-								type,
-								workingId,
-								featured
-							);
+					},
+				],
+				{
+					onProgress: async ({ result, strategyIndex, error }) => {
+						if (strategyIndex === 0) {
+							const thumb = {
+								src: result.toDataURL(),
+								type: 'canvas',
+								canvasObject: result,
+							};
+							newThumbCanvases.push(thumb);
+							setThumbChoices([...newThumbCanvases]);
+							return;
+						}
 
-							if (response?.attachment_id && workingId === 0) {
+						if (strategyIndex === 1) {
+							if (result?.attachment_id && workingId === 0) {
 								workingId =
-									parseInt(response.attachment_id, 10) || 0;
+									parseInt(result.attachment_id, 10) || 0;
 								setAttributes({
 									...attributes,
 									id: workingId,
 								});
 							}
-							if (response?.real_thumb_url) {
-								thumb = {
-									src: response.real_thumb_url,
+							if (result?.real_thumb_url) {
+								const thumb = {
+									src: result.real_thumb_url,
 									type: 'ffmpeg',
 								};
 								newThumbCanvases.push(thumb);
 								setThumbChoices([...newThumbCanvases]);
 							}
-						} catch {
-							// Silently handle FFmpeg fallback errors
+							return;
 						}
-					}
+
+						// Both strategies failed for this timecode --
+						// canvasTainted failures are expected (cross-origin
+						// source, already surfaced via the "CORS ..."
+						// notice), so only log the unexpected case.
+						if (!canvasTainted) {
+							console.error(
+								'Error generating canvas thumbnail:',
+								error
+							);
+						}
+					},
 				}
-			}
+			);
 			setIsSaving(false);
 		},
 		[
@@ -476,10 +487,14 @@ const Thumbnails = ({
 				featured
 			);
 
+			// createThumbnailFromCanvas already persisted this server-side
+			// (the upload endpoint sets the poster by default), so this call
+			// only needs to sync local state -- not write it again.
 			setPosterData(
 				response.thumb_url,
 				response.thumb_id,
-				response.attachment_id
+				response.attachment_id,
+				{ skipServerWrite: true }
 			);
 		} catch (error) {
 			console.error('Error uploading thumbnail:', error);
@@ -489,54 +504,66 @@ const Thumbnails = ({
 		}
 	};
 
+	// Persists a poster choice and syncs local/editor state to match. The
+	// server write only fires when skipServerWrite is false (the default) --
+	// callers that already persisted this themselves (setImgAsPoster via
+	// setPosterImage, setCanvasAsPoster via createThumbnailFromCanvas) pass
+	// skipServerWrite: true and use this purely for the client-side sync.
+	// onRemovePoster is the one caller with nothing upstream to persist it,
+	// so it relies on the write happening here.
+	//
+	// The write itself only touches _videopack-meta -- _kgflashmediaplayer-*
+	// are legacy keys nothing should still be writing; reads of them are
+	// already transparently redirected to _videopack-meta server-side (see
+	// Attachment_Meta::filter_legacy_post_metadata()).
 	const setPosterData = async (
 		new_poster,
 		new_poster_id,
-		new_attachment_id
+		new_attachment_id,
+		{ skipServerWrite = false } = {}
 	) => {
 		try {
 			const cleanPoster = new_poster
 				? new_poster.replace(/&amp;/g, '&')
 				: '';
-			const existingMeta =
-				videoData?.record?.meta?.['_videopack-meta'] || {};
 
-			const metaData = {
-				'_kgflashmediaplayer-poster': cleanPoster || '',
-				'_kgflashmediaplayer-poster-id': new_poster_id
-					? Number(new_poster_id)
-					: 0,
-				'_videopack-meta': {
-					...existingMeta,
-					poster: cleanPoster || '',
-					poster_id: new_poster_id ? Number(new_poster_id) : 0,
-				},
-			};
+			if (!skipServerWrite) {
+				const existingMeta =
+					videoData?.record?.meta?.['_videopack-meta'] || {};
 
-			if (attributes.featured !== undefined) {
-				metaData['_videopack-meta'].featured = attributes.featured;
-			}
+				const metaData = {
+					'_videopack-meta': {
+						...existingMeta,
+						poster: cleanPoster || '',
+						poster_id: new_poster_id ? Number(new_poster_id) : 0,
+					},
+				};
 
-			if (videoData?.edit) {
-				await videoData.edit({
-					featured_media: new_poster_id
-						? Number(new_poster_id)
-						: null,
-					meta: metaData,
-				});
-				await videoData.save();
-			} else if (id && Number(id) > 0) {
-				// Fallback for contexts without a core-data entity record (e.g. attachment details pane)
-				await apiFetch({
-					path: `/wp/v2/media/${id}`,
-					method: 'POST',
-					data: {
+				if (attributes.featured !== undefined) {
+					metaData['_videopack-meta'].featured = attributes.featured;
+				}
+
+				if (videoData?.edit) {
+					await videoData.edit({
 						featured_media: new_poster_id
 							? Number(new_poster_id)
 							: null,
 						meta: metaData,
-					},
-				});
+					});
+					await videoData.save();
+				} else if (id && Number(id) > 0) {
+					// Fallback for contexts without a core-data entity record (e.g. attachment details pane)
+					await apiFetch({
+						path: `/wp/v2/media/${id}`,
+						method: 'POST',
+						data: {
+							featured_media: new_poster_id
+								? Number(new_poster_id)
+								: null,
+							meta: metaData,
+						},
+					});
+				}
 			}
 
 			if (featured && parentId && editPost && !isEditingAttachment) {
@@ -606,10 +633,13 @@ const Thumbnails = ({
 				src,
 				featured
 			);
+			// setPosterImage already persisted this server-side; sync local
+			// state only.
 			setPosterData(
 				response.thumb_url,
 				response.thumb_id,
-				response.attachment_id
+				response.attachment_id,
+				{ skipServerWrite: true }
 			);
 		} catch (error) {
 			console.error(error);
@@ -1048,7 +1078,6 @@ const Thumbnails = ({
 						/>
 					</Modal>
 				)}
-
 			</PanelBody>
 		</div>
 	);

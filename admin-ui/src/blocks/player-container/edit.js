@@ -216,7 +216,6 @@ export default function Edit({
 			title:
 				attributes.title ||
 				context['videopack/title'] ||
-				attachment?.title?.raw ||
 				attachment?.title?.rendered ||
 				'',
 			caption:
@@ -375,12 +374,8 @@ export default function Edit({
 					attachmentObject.meta?.['_videopack-meta']
 						?.total_thumbnails,
 				featured: attachmentObject.meta?.['_videopack-meta']?.featured,
-				title:
-					attachmentObject.title?.raw ??
-					attachmentObject.title?.rendered,
-				caption:
-					attachmentObject.caption?.raw ??
-					attachmentObject.caption?.rendered,
+				title: attachmentObject.title?.rendered,
+				caption: attachmentObject.caption?.rendered,
 				starts: attachmentObject.meta?.['_videopack-meta']?.starts,
 				text_tracks:
 					attachmentObject.meta?.['_videopack-meta']?.track ||

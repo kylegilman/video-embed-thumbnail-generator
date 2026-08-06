@@ -14,6 +14,7 @@ export default function useVideopackData(key, context = {}) {
 
 	const ctxAttachmentId = context['videopack/attachmentId'];
 	const ctxPostId = context['videopack/postId'];
+	const ctxParentPostId = context['videopack/parentPostId'];
 	const ctxPostType = context['videopack/postType'];
 	const propPostId = context.postId;
 	const propPostType = context.postType;
@@ -28,8 +29,12 @@ export default function useVideopackData(key, context = {}) {
 
 			// 2. Otherwise, we need an ID to fetch from the database.
 			const isParentRequest = key === 'parentTitle';
+			// parentPostId is the video's real attached-post id, set
+			// unconditionally whenever one exists -- unlike ctxPostId, it
+			// isn't gated by the Loop's prioritizePostData toggle, so a
+			// single Title block's usePostTitle override works on its own.
 			const attachmentId = isParentRequest
-				? ctxPostId || propPostId
+				? ctxParentPostId || ctxPostId || propPostId
 				: ctxAttachmentId ||
 					(ctxPostType === 'attachment' ? ctxPostId : null) ||
 					(propPostType === 'attachment' ? propPostId : null);
@@ -40,6 +45,15 @@ export default function useVideopackData(key, context = {}) {
 			// or we are in standalone mode, then the postType should be 'attachment'.
 			if (!isParentRequest && (ctxAttachmentId || isStandalone)) {
 				postType = 'attachment';
+			}
+
+			// A real parent post is never the attachment itself -- force
+			// postType to 'post' so this resolves against the right entity
+			// even when ctxPostType is still 'attachment' (prioritizePostData
+			// off), matching buildItemContext.js's own 'post' assumption for
+			// attached-post ids.
+			if (isParentRequest && ctxParentPostId) {
+				postType = 'post';
 			}
 
 			if (!attachmentId) {

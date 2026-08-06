@@ -27,12 +27,32 @@
 	}
 }
 
+// While the menu is open, always relocate the trigger/close button to the
+// top-right corner, regardless of its configured position — a
+// position-center/middle button otherwise ends up stranded in the middle of
+// the now-fully-expanded panel, which doesn't read as a close control.
+// Unlayered, so it naturally wins over the @layer positioning rule above
+// regardless of specificity (unlayered styles always beat layered ones).
+.videopack-share-wrapper.is-overlay:not(.is-inside-title-meta).is-open {
+	top: 5px;
+	right: 5px;
+	bottom: auto;
+	left: auto;
+	transform: none;
+
+	// The open .videopack-share-container is deliberately raised above
+	// Thumbnail's other overlay children (z-index: 120, see Overlays.scss's
+	// Thumbnail-specific override) so Duration/View-count don't poke through
+	// it -- but that also puts it above this wrapper's own base z-index
+	// (105, see overlay-badge-chrome), which would bury the very button that
+	// opened it. Raise the wrapper above the panel it's toggling while open.
+	z-index: 121;
+}
+
 /* Player-corner overlay (not inside title meta bar) */
 .videopack-share-wrapper.is-overlay:not(.is-inside-title-meta) {
 	position: absolute;
-	margin: 5px;
-	font-size: 11px;
-	line-height: 1.4;
+	@include pos.overlay-badge-chrome;
 
 	&.has-no-background {
 		.videopack-share-link.style-button {
@@ -55,28 +75,6 @@
 		line-height: inherit;
 		transition: opacity 0.15s ease;
 		border: none;
-
-		&:hover {
-			opacity: 0.85;
-			transform: none;
-			box-shadow: none;
-		}
-	}
-
-	.videopack-share-link.style-text {
-		background: transparent;
-		color: var(--videopack-title-color, #fff);
-		border: none;
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 2px 4px;
-		cursor: pointer;
-		text-decoration: none;
-		font-family: inherit;
-		font-size: inherit;
-		line-height: inherit;
-		transition: opacity 0.15s ease;
 
 		&:hover {
 			opacity: 0.85;
@@ -154,10 +152,6 @@
 .videopack-share-wrapper:not(.is-overlay):not(.is-inside-title-meta) {
 	.videopack-share-link {
 		@include shared.standalone-button-base;
-	}
-
-	.videopack-click-trap {
-		display: none !important;
 	}
 
 	/* Standalone dropdown rendering */

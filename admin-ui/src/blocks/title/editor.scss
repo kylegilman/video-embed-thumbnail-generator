@@ -4,13 +4,44 @@
 .videopack-video-title-block {
 	.videopack-video-title {
 		pointer-events: auto;
-		
+
 		// Ensure the bar has height and pushes the selection outline correctly.
 		// We use relative positioning here so that the block-wrapper (which is absolute)
 		// correctly wraps the content footprint.
 		position: relative !important;
 		height: auto !important;
 		display: flex !important;
+	}
+
+	// The bar above is a flex row in every case, not just overlays -- its
+	// direct child (the RichText title itself, standalone case only; the
+	// overlay/thumbnail cases use their own .videopack-title/
+	// .videopack-thumbnail-title-text classes, already grown by Overlays.scss's
+	// &.is-overlay rules) must grow to fill that row, or alignment has no
+	// room to visibly move within. The nested selector (rather than a bare
+	// class) is deliberate -- the bar and this direct child share the exact
+	// same class name here.
+	.videopack-video-title > .videopack-video-title {
+		flex-grow: 1;
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	// text-align has NO effect here, confirmed via DevTools -- .videopack-video-title
+	// is display:flex (see above), and this selector matches the RichText
+	// editable element too (it carries the same class), which makes the
+	// RichText element itself a flex container. text-align only positions
+	// inline content of a normal block box; a flex container instead
+	// positions its (anonymous, for a lone text node) child via
+	// justify-content. Applying this to the bare class (not scoped to
+	// .is-overlay, and not restricted to a particular nesting depth) covers
+	// the bar, the standalone RichText element, and the "make title a link"
+	// anchor's RichText child alike -- VideoTitle.js stamps has-text-align-*
+	// directly onto the RichText element for exactly this reason.
+	.videopack-video-title {
+		&.has-text-align-left { justify-content: flex-start !important; }
+		&.has-text-align-center { justify-content: center !important; }
+		&.has-text-align-right { justify-content: flex-end !important; }
 	}
 }
 
@@ -66,12 +97,23 @@
 	}
 }
 
-.videopack-video-title,
-.videopack-thumbnail-title-text {
-	&.is-link {
-		text-decoration: underline;
-		cursor: pointer;
-	}
+// The "Make title a link" anchor is a direct child of the title bar (see
+// VideoTitle.js) — in every case (overlay, thumbnail, or standalone) the bar
+// is a flex row (see above), so the anchor needs the same flex-child role its
+// wrapped element (.videopack-title/.videopack-thumbnail-title-text/
+// .videopack-video-title) used to have directly before getting wrapped, or
+// the bar's centering/alignment breaks. Overlays.scss carries an equivalent
+// rule scoped to .is-overlay, but as with other title/play-button overrides
+// in this file, it doesn't reliably win here — !important + living in this
+// editor-specific stylesheet is what actually applies, and unlike Overlays.scss
+// this one deliberately isn't scoped to .is-overlay, since the standalone
+// case's bar is a flex container too.
+.videopack-video-title-block .videopack-title-link {
+	display: flex !important;
+	flex-grow: 1;
+	flex-shrink: 1;
+	min-width: 0;
+	align-items: center;
 }
 
 // Title meta bar: editor Gutenberg wrappers only (spacing lives in Overlays.scss)

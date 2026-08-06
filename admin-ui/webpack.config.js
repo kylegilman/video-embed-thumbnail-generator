@@ -76,8 +76,10 @@ module.exports = {
 			),
 			path.resolve(process.cwd(), 'src/features/tinymce/tinymce.js'),
 		],
-		// Main legacy admin script
-		videopack: path.resolve(process.cwd(), 'src/videopack-admin.js'),
+		// Registers the `videopack.jsUtils` filter, exposing this bundle's
+		// video-capture/upload helpers for add-on plugins (e.g. player-pro)
+		// to reuse without vendoring a copy — see src/js-utils.js.
+		'js-utils': path.resolve(process.cwd(), 'src/js-utils.js'),
 	},
 	optimization: {
 		...defaultConfig.optimization,

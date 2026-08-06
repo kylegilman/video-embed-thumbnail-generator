@@ -14,13 +14,13 @@ import useBatchProcess from '../../../hooks/useBatchProcess';
 import SelectFromLibrary from './SelectFromLibrary';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import VideopackTooltip from './VideopackTooltip';
+import { getEffectiveFfmpegExists } from '../../../utils/ffmpegCapability';
 
 const config = window.videopack_config || {};
 
 const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	const {
 		browser_thumbnails,
-		ffmpeg_exists,
 		poster,
 		endofvideooverlay,
 		ffmpeg_thumb_watermark,
@@ -32,21 +32,12 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 		auto_thumb,
 		auto_thumb_number,
 		auto_thumb_position,
-		active_encoder = 'ffmpeg',
 	} = settings;
 
-	const activeEncoderReady = applyFilters(
-		'videopack.encoder.is_ready',
-		!!config.isTranscodingServiceReady,
-		active_encoder,
-		settings
+	const effectiveFfmpegExists = getEffectiveFfmpegExists(
+		settings,
+		config.isTranscodingServiceReady
 	);
-	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
-		ffmpeg_exists === true ||
-		ffmpeg_exists === 'true' ||
-		ffmpeg_exists === 1 ||
-		ffmpeg_exists === '1';
 
 	const browserThumbnailsRequirement = applyFilters(
 		'videopack.settings.browserThumbnailsRequirement',

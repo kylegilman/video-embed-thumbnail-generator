@@ -1,4 +1,3 @@
-/* global videopack_config */
 import {
 	useMemo,
 	useState,
@@ -35,9 +34,8 @@ import {
 	reddit,
 	email,
 } from '../../assets/icon';
-import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
-import { getColorFallbacks } from '../../utils/colors';
+import TitleColorPanel from '../../components/TitleColorPanel/TitleColorPanel';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useShowBackground from '../../hooks/useShowBackground';
 
@@ -66,10 +64,7 @@ export default function Edit({
 	const {
 		iconType = 'share',
 		showText = false,
-		styleType = 'text',
 		textAlign,
-		title_color,
-		title_background_color,
 		shareCopyLink = true,
 		shareNativeShare = true,
 		shareBluesky = true,
@@ -92,19 +87,6 @@ export default function Edit({
 		isOverlay
 	);
 
-	const colorFallbacks = useMemo(
-		() =>
-			getColorFallbacks({
-				title_color: vpContext.resolved.title_color,
-				title_background_color:
-					vpContext.resolved.title_background_color,
-			}),
-		[
-			vpContext.resolved.title_color,
-			vpContext.resolved.title_background_color,
-		]
-	);
-
 	const defaultAlign = useMemo(() => {
 		if (isInsideThumbnail) {
 			return 'center';
@@ -117,6 +99,8 @@ export default function Edit({
 	const position =
 		attributes.position || context['videopack/position'] || 'top';
 
+	const [isOpen, setIsOpen] = useState(false);
+
 	const blockProps = useBlockProps({
 		className: `videopack-share-block videopack-share-wrapper ${vpContext.classes} ${
 			isOverlay ? `is-overlay position-${position}` : ''
@@ -124,19 +108,24 @@ export default function Edit({
 			isInsidePlayerOverlay ? 'is-inside-player' : ''
 		} ${isInsideTitleMeta ? 'is-inside-title-meta' : ''} ${
 			isOverlay && !finalShowBackground ? 'has-no-background' : ''
-		} has-text-align-${finalTextAlign}`,
+		} ${isOpen ? 'is-open' : ''} has-text-align-${finalTextAlign}`,
 		style: {
 			...vpContext.style,
 			display: 'inline-flex',
 			alignItems: 'center',
 		},
 	});
-
-	const THEME_COLORS = videopack_config?.themeColors;
-
-	const [isOpen, setIsOpen] = useState(false);
 	const menuContainerRef = useRef(null);
 	const [portalTarget, setPortalTarget] = useState(null);
+	// Gutenberg selects a block on mousedown, which fires (and re-renders
+	// with isSelected=true) before our button's click handler ever runs —
+	// checking the isSelected *prop* inside onClick always sees the
+	// already-updated value, so it can't distinguish "was this block
+	// selected before this click" from "did this click just select it".
+	// Snapshotting it here on mousedown (which fires before Gutenberg's own
+	// ancestor mousedown handler, since ours is the deeper/target element)
+	// captures the true pre-click state instead.
+	const wasSelectedOnMouseDownRef = useRef(isSelected);
 
 	useEffect(() => {
 		if (shouldPortal && menuContainerRef.current) {
@@ -249,7 +238,7 @@ export default function Edit({
 		</>
 	);
 
-	const linkClassName = `videopack-share-link videopack-icons style-${styleType}`;
+	const linkClassName = 'videopack-share-link videopack-icons style-button';
 
 	const shareContainerContent = (
 		<div
@@ -484,76 +473,13 @@ export default function Edit({
 						/>
 					</ToolbarGroup>
 				)}
-				<ToolbarGroup
-					label={__('Style Type', 'video-embed-thumbnail-generator')}
-				>
-					<ToolbarButton
-						label={__(
-							'Link Style',
-							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ styleType: 'text' })}
-						isPressed={styleType === 'text'}
-					>
-						{__('Link', 'video-embed-thumbnail-generator')}
-					</ToolbarButton>
-					<ToolbarButton
-						label={__(
-							'Button Style',
-							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ styleType: 'button' })}
-						isPressed={styleType === 'button'}
-					>
-						{__('Button', 'video-embed-thumbnail-generator')}
-					</ToolbarButton>
-				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
-				<PanelBody
-					title={__('Colors', 'video-embed-thumbnail-generator')}
-					initialOpen={true}
-				>
-					<div className="videopack-color-section">
-						<p className="videopack-settings-section-title">
-							{__('Colors', 'video-embed-thumbnail-generator')}
-						</p>
-						<div className="videopack-color-flex-row">
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Text',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_color}
-									onChange={(value) =>
-										setAttributes({ title_color: value })
-									}
-									colors={THEME_COLORS}
-									fallbackValue={colorFallbacks.title_color}
-								/>
-							</div>
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Background',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_background_color}
-									onChange={(value) =>
-										setAttributes({
-											title_background_color: value,
-										})
-									}
-									colors={THEME_COLORS}
-									fallbackValue={
-										colorFallbacks.title_background_color
-									}
-								/>
-							</div>
-						</div>
-					</div>
-				</PanelBody>
+				<TitleColorPanel
+					attributes={attributes}
+					setAttributes={setAttributes}
+					resolved={vpContext.resolved}
+				/>
 				<PanelBody
 					title={__(
 						'Share Services',
@@ -617,8 +543,17 @@ export default function Edit({
 				<button
 					type="button"
 					className={`${linkClassName}${isOpen ? ' is-active' : ''}`}
+					onMouseDown={() => {
+						wasSelectedOnMouseDownRef.current = isSelected;
+					}}
 					onClick={(e) => {
 						e.preventDefault();
+						// First click on an unselected block should only
+						// select it (Gutenberg's own click handling does
+						// that already) — not also open the share menu.
+						if (!wasSelectedOnMouseDownRef.current) {
+							return;
+						}
 						setIsOpen(!isOpen);
 					}}
 				>

@@ -1,4 +1,3 @@
-/* global videopack_config */
 import { useMemo } from '@wordpress/element';
 import {
 	useBlockProps,
@@ -7,17 +6,16 @@ import {
 	AlignmentControl,
 	InspectorControls,
 } from '@wordpress/block-editor';
-import { ToolbarGroup, ToolbarButton, PanelBody } from '@wordpress/components';
+import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import { seen, mediaAndText, notAllowed as noneIcon } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import {
 	play as playIcon,
 	playOutline as playOutlineIcon,
 } from '../../assets/icon';
-import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
+import TitleColorPanel from '../../components/TitleColorPanel/TitleColorPanel';
 import ViewCount from '../../components/ViewCount/ViewCount';
-import { getColorFallbacks } from '../../utils/colors';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useShowBackground from '../../hooks/useShowBackground';
 
@@ -38,13 +36,7 @@ export default function Edit({ attributes, setAttributes, context }) {
 	const vpContext = useVideopackContext(attributes, context, {
 		classKeys: CLASS_KEYS,
 	});
-	const {
-		iconType,
-		showText,
-		textAlign,
-		title_color,
-		title_background_color,
-	} = attributes;
+	const { iconType, showText, textAlign } = attributes;
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
 	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
@@ -55,19 +47,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 		attributes,
 		context,
 		isOverlay
-	);
-
-	const colorFallbacks = useMemo(
-		() =>
-			getColorFallbacks({
-				title_color: vpContext.resolved.title_color,
-				title_background_color:
-					vpContext.resolved.title_background_color,
-			}),
-		[
-			vpContext.resolved.title_color,
-			vpContext.resolved.title_background_color,
-		]
 	);
 
 	const defaultAlign = useMemo(() => {
@@ -92,8 +71,6 @@ export default function Edit({ attributes, setAttributes, context }) {
 		} ${isOverlay && !finalShowBackground ? 'has-no-background' : ''} ${!vpContext.resolved.attachmentId ? 'no-title' : ''} position-${position} has-text-align-${finalTextAlign}`,
 		style: vpContext.style,
 	});
-
-	const THEME_COLORS = videopack_config?.themeColors;
 
 	return (
 		<>
@@ -188,50 +165,11 @@ export default function Edit({ attributes, setAttributes, context }) {
 				)}
 			</BlockControls>
 			<InspectorControls>
-				<PanelBody
-					title={__('Colors', 'video-embed-thumbnail-generator')}
-					initialOpen={true}
-				>
-					<div className="videopack-color-section">
-						<p className="videopack-settings-section-title">
-							{__('Colors', 'video-embed-thumbnail-generator')}
-						</p>
-						<div className="videopack-color-flex-row">
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Text',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_color}
-									onChange={(value) =>
-										setAttributes({ title_color: value })
-									}
-									colors={THEME_COLORS}
-									fallbackValue={colorFallbacks.title_color}
-								/>
-							</div>
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Background',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_background_color}
-									onChange={(value) =>
-										setAttributes({
-											title_background_color: value,
-										})
-									}
-									colors={THEME_COLORS}
-									fallbackValue={
-										colorFallbacks.title_background_color
-									}
-								/>
-							</div>
-						</div>
-					</div>
-				</PanelBody>
+				<TitleColorPanel
+					attributes={attributes}
+					setAttributes={setAttributes}
+					resolved={vpContext.resolved}
+				/>
 			</InspectorControls>
 			<ViewCount
 				blockProps={blockProps}

@@ -7,14 +7,31 @@ export const getColorFallbacks = (settings) => {
 			: {};
 
 	const resolveColor = (key, skinDefault) => {
+		const hasSettingsValue = !!settings && key in settings;
+
 		if (
-			settings &&
+			hasSettingsValue &&
 			settings[key] !== undefined &&
 			settings[key] !== null &&
 			settings[key] !== ''
 		) {
 			return settings[key];
 		}
+
+		// An explicitly cleared field ('') on the Settings page IS the
+		// global option being edited -- there's no separate, more-global
+		// source above it to defer to. Falling through to globalOptions
+		// below in that case would just echo back videopack_config.options,
+		// a snapshot frozen at page load, making "Clear" look like it did
+		// nothing (still showing the pre-edit custom color) until the page
+		// is reloaded. Only a settings key that's genuinely absent (e.g. a
+		// block's already-resolved value, which is undefined rather than ''
+		// when nothing resolved -- see getEffectiveValue's isValid()) should
+		// fall through to the live global option.
+		if (hasSettingsValue && settings[key] === '') {
+			return skinDefault;
+		}
+
 		if (
 			globalOptions &&
 			globalOptions[key] !== undefined &&

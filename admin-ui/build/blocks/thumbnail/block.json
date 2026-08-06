@@ -8,6 +8,9 @@
   "editorStyle": "file:./index.css",
   "description": "Displays the video poster image. Can contain overlays.",
   "attributes": {
+    "id": {
+      "type": "number"
+    },
     "linkTo": {
       "type": "string",
       "default": "none"
@@ -19,6 +22,9 @@
     "isPreview": {
       "type": "boolean",
       "default": false
+    },
+    "aspect_ratio": {
+      "type": "string"
     }
   },
   "example": {

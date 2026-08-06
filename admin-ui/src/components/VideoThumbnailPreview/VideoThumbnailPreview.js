@@ -126,7 +126,7 @@ export default function VideoThumbnailPreview({
 		embed_method: effectiveEmbedMethod,
 	} = vpContext.resolved;
 	const containerClass =
-		`gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${
+		`videopack-thumbnail-wrapper gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${
 			effectiveEmbedMethod === 'Video.js' ? effectiveSkin || '' : ''
 		} ${!loopDuotoneId && resolvedDuotoneClass ? resolvedDuotoneClass : ''} ${
 			play_button_color ? 'videopack-has-play-button-color' : ''
@@ -138,7 +138,11 @@ export default function VideoThumbnailPreview({
 			(vpContext.resolved.linkTo || propLinkTo) !== 'none'
 				? 'has-link'
 				: ''
-		} ${vpContext.resolved.isPreview ? 'is-preview' : ''}`.trim();
+		} ${vpContext.resolved.isPreview ? 'is-preview' : ''} ${
+			'auto' === vpContext.resolved.aspect_ratio
+				? 'has-native-aspect-ratio'
+				: ''
+		}`.trim();
 
 	const imgStyle =
 		resolvedDuotoneClass && !loopDuotoneId

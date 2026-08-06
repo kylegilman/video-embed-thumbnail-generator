@@ -21,6 +21,31 @@
 			justify-content: center;
 		}
 
+		// "Native" aspect ratio mode -- see Thumbnail.scss's own
+		// `.has-native-aspect-ratio` for why this needs Grid stacking
+		// instead of absolute positioning. Repeated here (rather than
+		// relying on Thumbnail.scss's copy) because this selector chain is
+		// equally specific and editor.scss's own load order isn't
+		// guaranteed to lose to it.
+		&.has-native-aspect-ratio {
+			display: grid;
+			grid-template-areas: 'stack';
+
+			img {
+				grid-area: stack;
+				width: 100%;
+				height: auto;
+				object-fit: initial;
+			}
+
+			.videopack-inner-blocks-container {
+				grid-area: stack;
+				position: static;
+				top: auto;
+				left: auto;
+			}
+		}
+
 		.videopack-inner-blocks-container {
 			position: absolute;
 			top: 0;
@@ -43,17 +68,47 @@
 				}
 			}
 
-			// Standard overlay block behavior is handled in Overlays.scss
-			.videopack-video-title-block.is-inside-thumbnail,
-			.videopack-video-duration-block.is-inside-thumbnail,
-			.videopack-view-count-block.is-inside-thumbnail {
+			// Standard overlay block behavior is handled in Overlays.scss.
+			// Only Title needs the pointer-events: none/restore dance below —
+			// its overlay bar spans the full width (position: absolute; width:
+			// 100%, see Overlays.scss), so its wrapper's bounding box is bigger
+			// than its visible content and needs to let clicks outside that
+			// content pass through to the Thumbnail underneath. Duration and
+			// View-count are single-element badges sized with width:
+			// fit-content (Overlays.scss again) — their wrapper IS their
+			// visible content, so excluding them here (rather than trying to
+			// restore pointer-events on an inner element that doesn't exist
+			// for them) is what keeps them selectable.
+			.videopack-video-title-block.is-inside-thumbnail {
 				pointer-events: none;
 				z-index: 20;
 
-				// Restore pointer events for the actual visible elements so they can be selected
-				.videopack-thumbnail-title,
-				.videopack-video-duration,
-				.videopack-view-count {
+				// Restore pointer events for the actual visible title element so it can be selected
+				.videopack-thumbnail-title {
+					pointer-events: all;
+				}
+			}
+
+			// Play-button has the same shape of problem as Title: its wrapper
+			// is a full-cover absolute overlay (see PlayButton.scss / play-button
+			// edit.js's overlayStyles), much bigger than its own visible centered
+			// icon.
+			.videopack-play-button-block {
+				pointer-events: none;
+
+				// Restore pointer events only on the actual small, visible
+				// play-button element for each engine — NOT via a blanket
+				// `> *`/descendant selector. Several engines (classic
+				// Video.js, WordPress Default, None) wrap their small icon in
+				// an intermediate .play-button-container div that
+				// PlayButton.scss ALSO stretches to fully cover this block
+				// (position: absolute; inset: 0) — restoring pointer-events
+				// on that direct child recreates the exact same full-cover
+				// click-stealing problem (confirmed live: DevTools' element
+				// picker landed on a play-button element when clicking
+				// Duration/View-count's badge text) one level deeper instead
+				// of fixing it.
+				:is(.vjs-big-play-button, .mejs-overlay-button, .videopack-none-play-button, .videopack-play-button-v10) {
 					pointer-events: all;
 				}
 			}

@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "videopack/download",
-	"title": "Videopack Video Download",
+	"title": "Videopack Download",
 	"category": "media",
 	"icon": "download",
 	"description": "Displays a dynamic download link, button, or quality dropdown list for the video.",
@@ -33,9 +33,6 @@
 		},
 		"text": {
 			"type": "boolean"
-		},
-		"styleType": {
-			"type": "string"
 		},
 		"downloadMode": {
 			"type": "string"

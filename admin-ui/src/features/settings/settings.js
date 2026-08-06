@@ -108,7 +108,7 @@ const VideopackSettingsPage = () => {
 			activeTab === 'encoding' &&
 			settings.sample_codec &&
 			settings.sample_resolution &&
-			settings.ffmpeg_exists === true &&
+			settings.ffmpeg_exists === 'available' &&
 			(settings.active_encoder === 'ffmpeg' || !settings.active_encoder)
 		) {
 			testFfmpeg(settings.sample_codec, settings.sample_resolution);

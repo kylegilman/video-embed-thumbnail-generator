@@ -1,4 +1,3 @@
-/* global videopack_config */
 import { useMemo, useEffect, useRef, useState } from '@wordpress/element';
 import {
 	useBlockProps,
@@ -7,13 +6,12 @@ import {
 	AlignmentControl,
 	InspectorControls,
 } from '@wordpress/block-editor';
-import { ToolbarGroup, ToolbarButton, PanelBody } from '@wordpress/components';
+import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import { Icon, mediaAndText } from '@wordpress/icons';
 import { download as downloadIcon } from '../../assets/icon';
 import { __ } from '@wordpress/i18n';
-import CompactColorPicker from '../../components/CompactColorPicker/CompactColorPicker';
 import BackgroundToggleButton from '../../components/BackgroundToggleButton/BackgroundToggleButton';
-import { getColorFallbacks } from '../../utils/colors';
+import TitleColorPanel from '../../components/TitleColorPanel/TitleColorPanel';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useShowBackground from '../../hooks/useShowBackground';
 import useVideopackData from '../../hooks/useVideopackData';
@@ -48,11 +46,8 @@ export default function Edit({
 	const {
 		icon = true,
 		text = false,
-		styleType = 'text',
 		downloadMode = 'direct',
 		textAlign,
-		title_color,
-		title_background_color,
 	} = attributes;
 
 	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
@@ -64,19 +59,6 @@ export default function Edit({
 		attributes,
 		context,
 		isOverlay
-	);
-
-	const colorFallbacks = useMemo(
-		() =>
-			getColorFallbacks({
-				title_color: vpContext.resolved.title_color,
-				title_background_color:
-					vpContext.resolved.title_background_color,
-			}),
-		[
-			vpContext.resolved.title_color,
-			vpContext.resolved.title_background_color,
-		]
 	);
 
 	const defaultAlign = useMemo(() => {
@@ -172,8 +154,6 @@ export default function Edit({
 		},
 	});
 
-	const THEME_COLORS = videopack_config?.themeColors;
-
 	const [isOpen, setIsOpen] = useState(false);
 	const [openSubmenu, setOpenSubmenu] = useState(null);
 	const menuContainerRef = useRef(null);
@@ -209,8 +189,8 @@ export default function Edit({
 		}
 	}, [isSelected]);
 
-	const triggerClassName = `videopack-download-trigger videopack-icons style-${styleType}${isOpen ? ' is-active' : ''}`;
-	const linkClassName = `videopack-download-link videopack-icons style-${styleType}`;
+	const triggerClassName = `videopack-download-trigger videopack-icons style-button${isOpen ? ' is-active' : ''}`;
+	const linkClassName = 'videopack-download-link videopack-icons style-button';
 
 	const renderTriggerContent = () => (
 		<>
@@ -332,30 +312,6 @@ export default function Edit({
 					</ToolbarGroup>
 				)}
 				<ToolbarGroup
-					label={__('Style Type', 'video-embed-thumbnail-generator')}
-				>
-					<ToolbarButton
-						label={__(
-							'Link Style',
-							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ styleType: 'text' })}
-						isPressed={styleType === 'text'}
-					>
-						{__('Link', 'video-embed-thumbnail-generator')}
-					</ToolbarButton>
-					<ToolbarButton
-						label={__(
-							'Button Style',
-							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ styleType: 'button' })}
-						isPressed={styleType === 'button'}
-					>
-						{__('Button', 'video-embed-thumbnail-generator')}
-					</ToolbarButton>
-				</ToolbarGroup>
-				<ToolbarGroup
 					label={__(
 						'Download Mode',
 						'video-embed-thumbnail-generator'
@@ -386,50 +342,11 @@ export default function Edit({
 				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
-				<PanelBody
-					title={__('Colors', 'video-embed-thumbnail-generator')}
-					initialOpen={true}
-				>
-					<div className="videopack-color-section">
-						<p className="videopack-settings-section-title">
-							{__('Colors', 'video-embed-thumbnail-generator')}
-						</p>
-						<div className="videopack-color-flex-row">
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Text',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_color}
-									onChange={(value) =>
-										setAttributes({ title_color: value })
-									}
-									colors={THEME_COLORS}
-									fallbackValue={colorFallbacks.title_color}
-								/>
-							</div>
-							<div className="videopack-color-flex-item">
-								<CompactColorPicker
-									label={__(
-										'Background',
-										'video-embed-thumbnail-generator'
-									)}
-									value={title_background_color}
-									onChange={(value) =>
-										setAttributes({
-											title_background_color: value,
-										})
-									}
-									colors={THEME_COLORS}
-									fallbackValue={
-										colorFallbacks.title_background_color
-									}
-								/>
-							</div>
-						</div>
-					</div>
-				</PanelBody>
+				<TitleColorPanel
+					attributes={attributes}
+					setAttributes={setAttributes}
+					resolved={vpContext.resolved}
+				/>
 			</InspectorControls>
 			<div {...blockProps}>
 				{downloadMode === 'menu' ? (

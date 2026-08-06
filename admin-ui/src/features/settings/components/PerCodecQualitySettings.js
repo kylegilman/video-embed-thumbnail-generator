@@ -16,12 +16,12 @@ import {
 	useMemo,
 } from '@wordpress/element';
 import VideopackTooltip from './VideopackTooltip';
+import { getEffectiveFfmpegExists } from '../../../utils/ffmpegCapability';
 
 const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 	const [bitrates, setBitrates] = useState([]);
 	const { resolutions } = videopack_config;
 	const {
-		ffmpeg_exists,
 		h264_profile,
 		h264_level,
 		h265_profile,
@@ -29,18 +29,10 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		active_encoder = 'ffmpeg',
 	} = settings;
 
-	const activeEncoderReady = applyFilters(
-		'videopack.encoder.is_ready',
-		!!videopack_config.isTranscodingServiceReady,
-		active_encoder,
-		settings
+	const effectiveFfmpegExists = getEffectiveFfmpegExists(
+		settings,
+		videopack_config.isTranscodingServiceReady
 	);
-	const effectiveFfmpegExists =
-		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
-		ffmpeg_exists === true ||
-		ffmpeg_exists === 'true' ||
-		ffmpeg_exists === 1 ||
-		ffmpeg_exists === '1';
 
 	const encodeKey = applyFilters(
 		/**
