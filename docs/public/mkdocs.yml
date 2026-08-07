@@ -1,0 +1,78 @@
+site_name: Videopack Documentation
+site_description: Official documentation for the Videopack WordPress plugin and add-ons.
+site_author: Kyle Gilman
+site_url: https://www.videopack.video/docs/
+
+repo_name: kylegilman/video-embed-thumbnail-generator
+repo_url: https://github.com/kylegilman/video-embed-thumbnail-generator
+
+theme:
+  name: material
+  language: en
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Overview: index.md
+  - User Guide:
+    - Getting Started: user-guide/index.md
+    - Block Editor (Gutenberg): user-guide/blocks.md
+    - Classic Editor & Shortcodes: user-guide/classic-editor.md
+    - Thumbnails & Watermarking: user-guide/thumbnails.md
+    - FFmpeg Setup & Hosting: user-guide/ffmpeg-setup.md
+  - Migration:
+    - Upgrading to Videopack 5.0: migration/v5-upgrade.md
+  - Developer API:
+    - REST API Endpoints: developer/rest-api.md
+    - Action & Filter Hooks: developer/hooks-and-filters.md
+    - Extension Development: developer/add-on-development.md
+  - Add-ons:
+    - Overview: add-ons/index.md
+    - Videopack Player Pro: add-ons/player-pro.md
+    - Videopack Ads: add-ons/ads.md

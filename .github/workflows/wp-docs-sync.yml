@@ -1,0 +1,33 @@
+name: Publish Documentation to WordPress
+
+# Disabled automatically running on push.
+# Trigger manually via GitHub Actions UI (workflow_dispatch) when ready to publish.
+on:
+  workflow_dispatch:
+
+jobs:
+  sync-to-wordpress:
+    name: Sync Markdown to WordPress Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests markdown
+
+      - name: Run WordPress Sync Script
+        env:
+          WP_URL: ${{ secrets.WP_URL }}
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_PASSWORD: ${{ secrets.WP_PASSWORD }}
+          DOCS_DIR: 'docs/public'
+        run: |
+          python scripts/publish_docs_to_wp.py
