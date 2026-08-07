@@ -1344,6 +1344,10 @@ class Modular_Renderer {
 				'blockName'    => $name,
 				'attrs'        => $attrs,
 				'innerBlocks'  => $inner_blocks,
+				// Unused by serialize_block() (it reconstructs output from
+				// innerContent instead), but part of the block array shape
+				// serialize_blocks() expects.
+				'innerHTML'    => '',
 				'innerContent' => array_fill( 0, count( $inner_blocks ), null ),
 			);
 		};

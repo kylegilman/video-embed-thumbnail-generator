@@ -31,8 +31,6 @@ class Player_Video_Js extends Player {
 	 */
 	public function register_hooks() {
 
-		parent::register_hooks();
-
 		if ( ! self::$hooks_registered ) {
 			add_filter( 'videopack_video_player_data', array( __CLASS__, 'filter_video_vars' ), 10, 2 );
 			add_filter( 'videopack_video_player_classes', array( __CLASS__, 'filter_video_classes' ), 10, 2 );

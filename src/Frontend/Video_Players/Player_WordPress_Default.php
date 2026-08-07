@@ -30,8 +30,6 @@ class Player_WordPress_Default extends Player {
 	 * Registers WordPress hooks for MediaElement.js.
 	 */
 	public function register_hooks() {
-		parent::register_hooks();
-
 		if ( ! self::$hooks_registered ) {
 			add_filter( 'videopack_video_player_data', array( __CLASS__, 'filter_video_vars' ), 10, 2 );
 			self::$hooks_registered = true;

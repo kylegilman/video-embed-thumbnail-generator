@@ -1305,24 +1305,6 @@ class Blocks implements Hook_Subscriber {
 	}
 
 	/**
-	 * Formats seconds into HH:MM:SS or MM:SS.
-	 *
-	 * @param int $seconds The number of seconds.
-	 */
-	private function format_duration( $seconds ) {
-		if ( ! $seconds ) {
-			return '0:00';
-		}
-		$h = floor( $seconds / 3600 );
-		$m = floor( ( $seconds % 3600 ) / 60 );
-		$s = $seconds % 60;
-		if ( $h > 0 ) {
-			return sprintf( '%d:%02d:%02d', $h, $m, $s );
-		}
-		return sprintf( '%d:%02d', $m, $s );
-	}
-
-	/**
 	 * Recursively finds attributes inside inner blocks.
 	 *
 	 * @param \WP_Block_List $inner_blocks   The inner blocks.
