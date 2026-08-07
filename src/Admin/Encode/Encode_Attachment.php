@@ -396,7 +396,6 @@ class Encode_Attachment {
 			}
 		}
 
-
 		$wpdb->update( (string) $this->queue_table_name, (array) $db_data, array( 'id' => $job_id ) );
 	}
 

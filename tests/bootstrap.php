@@ -9,15 +9,18 @@
 $loader = require dirname( __DIR__ ) . '/vendor/autoload.php';
 
 // Dynamically register namespaces for premium add-ons in composer loader if enabled
+// Sibling add-on repos are expected to live next to this repo (matches
+// .wp-env.json's plugin mappings and the wp-env container's plugin
+// directory layout), so this resolves the same way locally and in CI.
 if ( getenv( 'LOAD_PLAYER_PRO' ) === '1' ) {
-	$player_pro_dir = 'C:/Users/kyleg/OneDrive/Documents/Videopack/GitHub/videopack-player-pro';
+	$player_pro_dir = dirname( __DIR__, 2 ) . '/videopack-player-pro';
 	if ( file_exists( $player_pro_dir . '/src/' ) ) {
 		$loader->addPsr4( 'Videopack\\Player_Pro\\', $player_pro_dir . '/src/' );
 	}
 }
 
 if ( getenv( 'LOAD_CLOUD_STREAMING' ) === '1' ) {
-	$cloud_streaming_dir = 'C:/Users/kyleg/OneDrive/Documents/Videopack/GitHub/videopack-cloud-streaming';
+	$cloud_streaming_dir = dirname( __DIR__, 2 ) . '/videopack-cloud-streaming';
 	if ( file_exists( $cloud_streaming_dir . '/src/' ) ) {
 		$loader->addPsr4( 'Videopack\\Cloud_Streaming\\', $cloud_streaming_dir . '/src/' );
 	}
@@ -56,7 +59,7 @@ function _manually_load_plugin() {
 
 	// Load Player Pro if env variable is set
 	if ( getenv( 'LOAD_PLAYER_PRO' ) === '1' ) {
-		$player_pro_file = 'C:/Users/kyleg/OneDrive/Documents/Videopack/GitHub/videopack-player-pro/videopack-player-pro.php';
+		$player_pro_file = dirname( __DIR__, 2 ) . '/videopack-player-pro/videopack-player-pro.php';
 		if ( file_exists( $player_pro_file ) ) {
 			require_once $player_pro_file;
 		}
@@ -64,7 +67,7 @@ function _manually_load_plugin() {
 
 	// Load Cloud Streaming if env variable is set
 	if ( getenv( 'LOAD_CLOUD_STREAMING' ) === '1' ) {
-		$cloud_streaming_file = 'C:/Users/kyleg/OneDrive/Documents/Videopack/GitHub/videopack-cloud-streaming/videopack-cloud-streaming.php';
+		$cloud_streaming_file = dirname( __DIR__, 2 ) . '/videopack-cloud-streaming/videopack-cloud-streaming.php';
 		if ( file_exists( $cloud_streaming_file ) ) {
 			require_once $cloud_streaming_file;
 		}

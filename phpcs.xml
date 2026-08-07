@@ -3,6 +3,10 @@
 
 	<description>Custom Videopack Coding Standards</description>
 
+	<file>src</file>
+	<file>video-embed-thumbnail-generator.php</file>
+	<arg name="extensions" value="php"/>
+
 	<exclude-pattern>*/video-js/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>

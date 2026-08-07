@@ -903,14 +903,16 @@ class Blocks implements Hook_Subscriber {
 			: ! empty( $block->context['videopack/prioritizePostData'] );
 
 		if ( $use_post_title ) {
-			$display_post_id = ( $block->context['videopack/parentPostId'] ?? 0 ) ?: ( $block->context['postId'] ?? get_the_ID() );
+			$parent_post_id  = $block->context['videopack/parentPostId'] ?? 0;
+			$display_post_id = $parent_post_id ? $parent_post_id : ( $block->context['postId'] ?? get_the_ID() );
 			if ( (int) $display_post_id !== (int) $post_id || ! empty( $attributes['usePostTitle'] ) ) {
 				$attributes['title'] = get_the_title( (int) $display_post_id );
 			}
 		}
 
 		if ( ! empty( $attributes['linkToPost'] ) ) {
-			$link_post_id           = ( $block->context['videopack/parentPostId'] ?? 0 ) ?: ( $block->context['postId'] ?? get_the_ID() );
+			$parent_post_id         = $block->context['videopack/parentPostId'] ?? 0;
+			$link_post_id           = $parent_post_id ? $parent_post_id : ( $block->context['postId'] ?? get_the_ID() );
 			$attributes['link_url'] = get_permalink( (int) $link_post_id );
 		}
 

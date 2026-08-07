@@ -213,7 +213,11 @@ class Encode_Info {
 					$wp_attached_file = str_replace( array( '\\', '/' ), DIRECTORY_SEPARATOR, $wp_attached_file );
 				}
 			}
-			/** @var array<string, mixed>|false $video_meta */
+			/**
+			 * Attachment video metadata.
+			 *
+			 * @var array<string, mixed>|false $video_meta
+			 */
 			$video_meta       = wp_get_attachment_metadata( $child->ID );
 			$meta_format      = get_post_meta( $child->ID, '_kgflashmediaplayer-format', true );
 			$legacy_id_exists = $this->format->get_legacy_id() !== false;

@@ -518,8 +518,6 @@ class Ui implements Hook_Subscriber {
 			'color' => 'transparent',
 		);
 
-
-
 		// $options['ffmpeg_exists'] is guaranteed to be one of 'available' /
 		// 'unavailable' / 'unchecked' -- normalized at the one migration
 		// boundary by Options::init_options() / Multisite::init(), and

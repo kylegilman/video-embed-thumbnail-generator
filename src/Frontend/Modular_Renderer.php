@@ -34,7 +34,7 @@ class Modular_Renderer {
 	 *
 	 * @var bool
 	 */
-	public static bool $rendered_lightbox_trigger = false;
+	public static $rendered_lightbox_trigger = false;
 
 	/**
 	 * Helper to normalize boolean-like attributes from shortcodes or blocks.
@@ -457,7 +457,7 @@ class Modular_Renderer {
 	/**
 	 * Renders the Video Title HTML (with optional player overlay icons).
 	 *
-	 * @param array                          $atts   The block or shortcode attributes.
+	 * @param array                               $atts   The block or shortcode attributes.
 	 * @param \Videopack\Video_Source\Source|null $source The video source object.
 	 * @param int|string                          $id     Unique ID for this player instance.
 	 * @return string The rendered HTML.
@@ -836,7 +836,7 @@ class Modular_Renderer {
 	/**
 	 * Renders the Video Share block.
 	 *
-	 * @param array                          $atts    Block attributes.
+	 * @param array                               $atts    Block attributes.
 	 * @param \Videopack\Video_Source\Source|null $source  The video source.
 	 * @param string|int                          $id      The player/post instance ID.
 	 * @param array                               $options Plugin options.
@@ -1313,13 +1313,13 @@ class Modular_Renderer {
 	 * to the Collection block itself, which does own the thumbnail that
 	 * triggers the lightbox, so those are still respected.
 	 *
-	 * @param int   $post_id          The resolved attachment ID.
-	 * @param array $design_overrides Resolved per-instance design values (skin,
-	 *                                colors, watermark) to merge onto the
-	 *                                player-container root's attrs.
-	 * @param array $options          Global plugin options — the sole source
-	 *                                for which blocks (title/watermark/
-	 *                                download/share/view-count) appear.
+	 * @param int         $post_id          The resolved attachment ID.
+	 * @param array       $design_overrides Resolved per-instance design values (skin,
+	 *                                      colors, watermark) to merge onto the
+	 *                                      player-container root's attrs.
+	 * @param array       $options          Global plugin options — the sole source
+	 *                                      for which blocks (title/watermark/
+	 *                                      download/share/view-count) appear.
 	 * @param string|null $instance_id Optional. Instance id to assign to the
 	 *                                 rendered player (via the player-container
 	 *                                 block's 'instanceId' attribute), so it
@@ -1518,5 +1518,4 @@ class Modular_Renderer {
 		<?php
 		return (string) ob_get_clean();
 	}
-
 }

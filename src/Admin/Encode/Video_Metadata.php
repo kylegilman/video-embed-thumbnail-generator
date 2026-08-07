@@ -162,7 +162,11 @@ class Video_Metadata {
 
 			// If videopack meta is missing or incomplete, try WP metadata first.
 			if ( empty( $videopack_postmeta['worked'] ) || empty( $videopack_postmeta['actualheight'] ) || empty( $videopack_postmeta['codec'] ) ) {
-				/** @var array<string, mixed>|false $wp_metadata */
+				/**
+				 * WordPress attachment metadata.
+				 *
+				 * @var array<string, mixed>|false $wp_metadata
+				 */
 				$wp_metadata = wp_get_attachment_metadata( $this->id );
 				if ( is_array( $wp_metadata ) ) {
 					$this->actualwidth  = $wp_metadata['width'] ?? null;
@@ -263,7 +267,11 @@ class Video_Metadata {
 		} else {
 			$this->worked = false;
 			if ( $this->is_attachment ) {
-				/** @var array<string, mixed>|false $wp_meta */
+				/**
+				 * WordPress attachment metadata.
+				 *
+				 * @var array<string, mixed>|false $wp_meta
+				 */
 				$wp_meta = wp_get_attachment_metadata( $this->id );
 				if ( is_array( $wp_meta ) && ! empty( $wp_meta['width'] ) && ! empty( $wp_meta['height'] ) ) {
 					$this->worked       = true;

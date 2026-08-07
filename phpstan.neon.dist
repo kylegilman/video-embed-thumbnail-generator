@@ -1,6 +1,8 @@
 includes:
     # Load the WordPress rules and stubs extension
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
+    # Pre-existing errors, accepted as of the CI rollout; new errors still fail the build.
+    - phpstan-baseline.neon
 
 parameters:
     # Start at level 5

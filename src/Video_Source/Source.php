@@ -1123,6 +1123,13 @@ abstract class Source {
 		return Video_Source_Finder::find_format_in_same_directory( $format, $this );
 	}
 
+	/**
+	 * Finds the given format alongside this source, resolving via URL rather than filesystem path.
+	 *
+	 * @param \Videopack\Admin\Formats\Video_Format $format The format to find.
+	 * @param int                                   $post_id The attachment post ID.
+	 * @return bool|string The found path or false.
+	 */
 	protected function find_format_in_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, $post_id ) {
 
 		return Video_Source_Finder::find_format_in_same_url_directory( $format, $this );

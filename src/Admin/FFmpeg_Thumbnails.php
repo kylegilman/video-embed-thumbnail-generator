@@ -466,14 +466,14 @@ class FFmpeg_Thumbnails {
 	 * attachment exists should call create_thumbnail_image() directly instead
 	 * - see Thumbnail_Controller::thumb_save().
 	 *
-	 * @param int|string      $attachment_id    Video attachment ID.
-	 * @param string          $post_name        Video post name.
-	 * @param string          $thumb_url        Thumbnail URL (local temp or remote).
-	 * @param int|bool        $thumbnail_index  Optional. Index for the thumbnail filename.
-	 * @param int             $force_parent_id  Optional. Parent ID to set.
+	 * @param int|string       $attachment_id    Video attachment ID.
+	 * @param string           $post_name        Video post name.
+	 * @param string           $thumb_url        Thumbnail URL (local temp or remote).
+	 * @param int|bool         $thumbnail_index  Optional. Index for the thumbnail filename.
+	 * @param int              $force_parent_id  Optional. Parent ID to set.
 	 * @param bool|string|null $force_featured   Optional. Flag to force featured status.
-	 * @param bool|string     $force_set_poster Optional. Whether to force setting the poster. Default true.
-	 * @param string          $filename_suffix  Optional. Suffix for the thumbnail filename. Default '_thumb'.
+	 * @param bool|string      $force_set_poster Optional. Whether to force setting the poster. Default true.
+	 * @param string           $filename_suffix  Optional. Suffix for the thumbnail filename. Default '_thumb'.
 	 * @return array Result of the save operation.
 	 */
 	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false, $force_parent_id = 0, $force_featured = null, $force_set_poster = true, $filename_suffix = '_thumb' ) {
@@ -546,13 +546,13 @@ class FFmpeg_Thumbnails {
 	 * attachment exists, since it never reads or writes anything keyed by a
 	 * video attachment ID.
 	 *
-	 * @param string       $thumb_url          Thumbnail URL (local temp or remote).
-	 * @param string       $post_name          Base filename for the new attachment.
-	 * @param string       $video_title        Descriptive title used in the attachment description.
-	 * @param int          $parent_id          Parent post ID for the new thumbnail attachment.
-	 * @param int|bool     $thumbnail_index    Optional. Index for the thumbnail filename.
-	 * @param string       $filename_suffix    Optional. Suffix for the thumbnail filename. Default '_thumb'.
-	 * @param int          $fallback_author_id Optional. Author to use if no user is logged in.
+	 * @param string   $thumb_url          Thumbnail URL (local temp or remote).
+	 * @param string   $post_name          Base filename for the new attachment.
+	 * @param string   $video_title        Descriptive title used in the attachment description.
+	 * @param int      $parent_id          Parent post ID for the new thumbnail attachment.
+	 * @param int|bool $thumbnail_index    Optional. Index for the thumbnail filename.
+	 * @param string   $filename_suffix    Optional. Suffix for the thumbnail filename. Default '_thumb'.
+	 * @param int      $fallback_author_id Optional. Author to use if no user is logged in.
 	 * @return array Result with 'thumb_id' (int|false|\WP_Error) and 'thumb_url'.
 	 */
 	public function create_thumbnail_image( $thumb_url, $post_name, $video_title, $parent_id, $thumbnail_index = false, $filename_suffix = '_thumb', $fallback_author_id = 0 ) {

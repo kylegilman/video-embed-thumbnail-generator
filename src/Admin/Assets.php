@@ -259,6 +259,9 @@ class Assets implements Hook_Subscriber {
 		}
 	}
 
+	/**
+	 * Registers (and conditionally enqueues) the frontend player scripts/styles.
+	 */
 	public function register_player_scripts() {
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
 		// Handles the alwaysloadscripts case internally (enqueues scripts + styles).
@@ -345,7 +348,7 @@ class Assets implements Hook_Subscriber {
 	 * (via Player::get_player_code()) and enqueued its styles too late for
 	 * wp_head to print them, print them now.
 	 *
-	 * wp_print_styles() does not itself check whether a handle was enqueued
+	 * The wp_print_styles() function does not itself check whether a handle was enqueued
 	 * when given an explicit handle list — it will print any registered
 	 * handle you pass it. So we must filter down to handles that are actually
 	 * enqueued-but-not-yet-printed ourselves, or this would force these styles
@@ -518,6 +521,9 @@ class Assets implements Hook_Subscriber {
 		}
 	}
 
+	/**
+	 * Enqueues the scripts/styles used by the media library's video attachment UI.
+	 */
 	public function enqueue_media_library_assets() {
 		wp_enqueue_script( 'videopack-media-library' );
 		wp_enqueue_style( 'videopack-media-library' );

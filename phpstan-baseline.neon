@@ -1,0 +1,103 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: src/Admin/Encode/Encode_Attachment.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: src/Admin/Encode/Encode_Attachment.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Admin/Encode/Encode_Attachment.php
+
+		-
+			message: '#^Result of \|\| is always true\.$#'
+			identifier: booleanOr.alwaysTrue
+			count: 1
+			path: src/Admin/Encode/Encode_Attachment.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 2
+			path: src/Admin/Encode/Encode_Attachment.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Admin/Encode/Encode_Format.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: src/Admin/Encode/Encode_Queue_Controller.php
+
+		-
+			message: '#^Call to function is_numeric\(\) with int will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Admin/FFmpeg_Thumbnails.php
+
+		-
+			message: '#^Call to function is_wp_error\(\) with int will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: src/Admin/FFmpeg_Thumbnails.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Admin/Multisite.php
+
+		-
+			message: '#^Call to method Videopack\\Admin\\Options\:\:set_capabilities\(\) on a separate line has no effect\.$#'
+			identifier: method.resultUnused
+			count: 3
+			path: src/Admin/Multisite.php
+
+		-
+			message: '#^Offset ''ffmpeg_exists'' on non\-empty\-array on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: src/Admin/Multisite.php
+
+		-
+			message: '#^Method Videopack\\Frontend\\Blocks\:\:format_duration\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Frontend/Blocks.php
+
+		-
+			message: '#^Parameter \#1 \$blocks of function serialize_blocks expects array\<int\|string, array\{blockName\: string\|null, attrs\: array, innerBlocks\: array\<array\>, innerHTML\: string, innerContent\: array\}\>, array\{array\{blockName\: mixed, attrs\: mixed, innerBlocks\: mixed, innerContent\: list\<null\>\}\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Frontend/Modular_Renderer.php
+
+		-
+			message: '#^Call to Videopack\\Frontend\\Video_Players\\Player\:\:register_hooks\(\) on a separate line has no effect\.$#'
+			identifier: staticMethod.resultUnused
+			count: 1
+			path: src/Frontend/Video_Players/Player_Video_Js.php
+
+		-
+			message: '#^Call to Videopack\\Frontend\\Video_Players\\Player\:\:register_hooks\(\) on a separate line has no effect\.$#'
+			identifier: staticMethod.resultUnused
+			count: 1
+			path: src/Frontend/Video_Players/Player_WordPress_Default.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 2
+			path: video-embed-thumbnail-generator.php

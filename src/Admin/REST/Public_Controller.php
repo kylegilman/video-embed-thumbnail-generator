@@ -88,8 +88,6 @@ class Public_Controller extends Controller {
 			)
 		);
 
-
-
 		register_rest_route(
 			$this->namespace,
 			'/sources',
@@ -252,7 +250,7 @@ class Public_Controller extends Controller {
 	}
 
 	/**
-	 * admin-ajax callback to count a video play/view event, for both
+	 * Admin-ajax callback to count a video play/view event, for both
 	 * logged-in and logged-out visitors (wp_ajax_count_play /
 	 * wp_ajax_nopriv_count_play). Deliberately not a REST route: this
 	 * fires on every video play, and admin-ajax skips rest_api_init and
