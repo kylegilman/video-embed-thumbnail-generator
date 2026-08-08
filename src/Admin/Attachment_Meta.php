@@ -108,7 +108,41 @@ class Attachment_Meta implements Hook_Subscriber {
 				'hook'     => 'init',
 				'callback' => 'register',
 			),
+			array(
+				'hook'          => 'updated_post_meta',
+				'callback'      => 'invalidate_meta_cache',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'          => 'added_post_meta',
+				'callback'      => 'invalidate_meta_cache',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'          => 'deleted_post_meta',
+				'callback'      => 'invalidate_meta_cache',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
 		);
+	}
+
+	/**
+	 * Clears the process-lifetime meta cache for a post whenever any of its
+	 * postmeta changes, regardless of which code made the change. self::get()
+	 * only re-reads from postmeta on a cache miss, so any write path that
+	 * doesn't go through this class's own save() -- direct update_post_meta()
+	 * calls, other plugins, WP-CLI, etc. -- would otherwise leave a stale
+	 * snapshot cached for the rest of the request.
+	 *
+	 * @param int $meta_id   Unused. The meta ID (or an array of IDs for deletions).
+	 * @param int $object_id The post ID the changed meta belongs to.
+	 */
+	public function invalidate_meta_cache( $meta_id, $object_id ) {
+		unset( $meta_id );
+		unset( self::$meta_cache[ (int) $object_id ] );
 	}
 
 	/**
@@ -149,6 +183,16 @@ class Attachment_Meta implements Hook_Subscriber {
 	 * @return mixed Filtered value or null to pass through.
 	 */
 	public function filter_legacy_post_metadata( $value, $object_id, $meta_key, $single ) {
+		// get() reads these same legacy keys directly (via get_post_meta())
+		// while scanning for data to migrate. Without this guard, that read
+		// re-enters this filter, which re-enters get() on a fresh instance,
+		// which hits the recursion guard in get() and returns nothing --
+		// silently defeating the very migration get() is in the middle of.
+		// Only rewrite the value for callers outside get()'s own migration scan.
+		if ( self::$getting_meta ) {
+			return $value;
+		}
+
 		if ( '_kgflashmediaplayer-poster' === $meta_key ) {
 			$meta_handler = new self( $this->options, (int) $object_id );
 			$meta         = $meta_handler->get();
@@ -495,6 +539,10 @@ class Attachment_Meta implements Hook_Subscriber {
 		} else {
 			update_post_meta( (int) $this->post_id, '_videopack-meta', $meta_to_persist );
 		}
+
+		// Invalidate the process-lifetime cache so the next get() re-reads
+		// from postmeta instead of returning the pre-save snapshot.
+		unset( self::$meta_cache[ (int) $this->post_id ] );
 	}
 
 	/**

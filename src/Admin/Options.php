@@ -125,6 +125,12 @@ class Options implements Hook_Subscriber {
 				'callback' => 'filter_legacy_options',
 				'priority' => 10,
 			),
+			array(
+				'hook'          => 'default_option_kgvid_video_embed_options',
+				'callback'      => 'filter_legacy_default_option',
+				'priority'      => 10,
+				'accepted_args' => 1,
+			),
 		);
 	}
 
@@ -139,6 +145,22 @@ class Options implements Hook_Subscriber {
 			return $this->get_options();
 		}
 		return $value;
+	}
+
+	/**
+	 * Dynamic filter callback for legacy option requests once the legacy
+	 * option row no longer exists at all (WordPress fires
+	 * default_option_{$option} instead of option_{$option} in that case,
+	 * so filter_legacy_options() above never runs post-migration).
+	 *
+	 * @param mixed $default_value The default value passed to get_option().
+	 * @return array Videopack options array.
+	 */
+	public function filter_legacy_default_option( $default_value ) {
+		if ( false === $default_value ) {
+			return $this->get_options();
+		}
+		return $default_value;
 	}
 
 	/**

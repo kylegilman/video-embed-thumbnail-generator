@@ -53,8 +53,21 @@ class OptionsMigrationTest extends WP_UnitTestCase {
 		// Verify empty string app_path was preserved as empty string (not boolean false)
 		$this->assertSame( '', $loaded_options['app_path'] );
 
-		// Verify old option key was deleted
-		$this->assertFalse( get_option( 'kgvid_video_embed_options' ) );
+		// Verify the old option row was actually deleted from the database.
+		// get_option() itself can't be used to check this: Options registers a
+		// default_option_kgvid_video_embed_options fallback (see
+		// test_legacy_option_filter_fallback) so third parties that still read
+		// the legacy option name keep getting a usable array instead of false,
+		// even once the row is gone -- that's by design, not a leak.
+		global $wpdb;
+		$this->assertNull(
+			$wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT option_id FROM {$wpdb->options} WHERE option_name = %s",
+					'kgvid_video_embed_options'
+				)
+			)
+		);
 	}
 
 	/**
