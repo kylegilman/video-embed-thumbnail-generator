@@ -39,4 +39,36 @@ class OptionsHelpersTest extends TestCase {
 		$this->assertFalse( Options::ffmpeg_exists_raw( array( 'ffmpeg_exists' => 'unchecked' ) ) );
 		$this->assertFalse( Options::ffmpeg_exists_raw( array() ) );
 	}
+
+	public function test_set_capabilities_strips_non_string_role_keys() {
+		$cleaned = ( new Options() )->set_capabilities(
+			array(
+				'make_video_thumbnails' => array(
+					'administrator' => true,
+					0                => true,
+					'editor'         => true,
+				),
+			)
+		);
+
+		$this->assertSame(
+			array(
+				'administrator' => true,
+				'editor'        => true,
+			),
+			$cleaned['make_video_thumbnails']
+		);
+	}
+
+	public function test_set_capabilities_drops_non_array_capability_values() {
+		$cleaned = ( new Options() )->set_capabilities(
+			array(
+				'make_video_thumbnails' => array( 'administrator' => true ),
+				'encode_videos'         => 'not-an-array',
+			)
+		);
+
+		$this->assertArrayHasKey( 'make_video_thumbnails', $cleaned );
+		$this->assertArrayNotHasKey( 'encode_videos', $cleaned );
+	}
 }

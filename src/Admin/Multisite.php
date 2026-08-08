@@ -266,12 +266,9 @@ class Multisite implements Hook_Subscriber {
 		if ( empty( $local_options ) ) {
 			$main_site_defaults = (array) ( new Options() )->get_default();
 			if ( isset( $this->network_options['default_capabilities'] ) ) {
-				$main_site_defaults['capabilities'] = (array) $this->network_options['default_capabilities'];
+				$main_site_defaults['capabilities'] = (array) ( new Options() )->set_capabilities( (array) $this->network_options['default_capabilities'] );
 			}
 			update_option( 'videopack_options', $main_site_defaults );
-			if ( isset( $this->network_options['default_capabilities'] ) ) {
-				( new Options() )->set_capabilities( (array) $this->network_options['default_capabilities'] );
-			}
 		}
 	}
 
@@ -494,12 +491,12 @@ class Multisite implements Hook_Subscriber {
 
 		$new_options = (array) array_merge( (array) $this->network_options, $validated_options );
 
+		if ( isset( $new_options['default_capabilities'] ) ) {
+			$new_options['default_capabilities'] = (array) ( new Options() )->set_capabilities( (array) $new_options['default_capabilities'] );
+		}
+
 		update_site_option( 'videopack_network_options', $new_options );
 		$this->network_options = $new_options;
-
-		if ( isset( $new_options['default_capabilities'] ) ) {
-			( new Options() )->set_capabilities( (array) $new_options['default_capabilities'] );
-		}
 
 		return new \WP_REST_Response( $this->network_options, 200 );
 	}
@@ -516,13 +513,13 @@ class Multisite implements Hook_Subscriber {
 
 		switch_to_blog( (int) $blog_id );
 
-		( new Options() )->set_capabilities( (array) $this->network_options['default_capabilities'] );
+		$clean_capabilities = (array) ( new Options() )->set_capabilities( (array) $this->network_options['default_capabilities'] );
 
 		$site_options = get_option( 'videopack_options', array() );
 		if ( empty( $site_options ) ) {
 			$site_options = (array) ( new Options() )->get_default();
 		}
-		$site_options['capabilities'] = (array) $this->network_options['default_capabilities'];
+		$site_options['capabilities'] = $clean_capabilities;
 		update_option( 'videopack_options', $site_options );
 
 		restore_current_blog();
