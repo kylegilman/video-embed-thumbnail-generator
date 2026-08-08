@@ -29,10 +29,12 @@ These aren't caught by CI and are easy to let drift:
 - [ ] `Stable tag` in `readme.txt` matches `Version` in
       `video-embed-thumbnail-generator.php`
 - [ ] `readme.txt`'s changelog has an entry for this version
-- [ ] `Requires PHP` / `Requires at least` (WP version) are the same in both
-      `readme.txt` and the plugin header comment — **these are currently out
-      of sync** (`readme.txt` says PHP 7.3, the plugin header says 7.2); pick
-      the actual minimum and make both agree next time either changes
+- [ ] `Requires PHP` / `Requires at least` (WP version) are the same in
+      `readme.txt`, the plugin header comment, `composer.json`'s
+      `require.php` / `config.platform.php`, and `phpcs.xml`'s
+      PHPCompatibility `testVersion` — all four currently agree on 7.4,
+      matching WordPress core's own documented floor (wordpress.org/about/requirements/);
+      keep them in sync if this ever changes
 - [ ] `Tested up to` reflects a WordPress version you've actually run the
       E2E suite against recently
 
