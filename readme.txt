@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, thumbnail, resolutions
 Requires at least: 6.2
 Tested up to: 7.0
-Requires PHP: 7.3
+Requires PHP: 7.4
 Stable tag: 4.10.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html

@@ -17,7 +17,7 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       video-embed-thumbnail-generator
  * Domain Path:       /languages
- * Requires PHP:      7.3
+ * Requires PHP:      7.4
  *
  * Credits & Bundled Libraries:
  * 1) Video-JS Player (http://www.videojs.com/) - Licensed under LGPL
