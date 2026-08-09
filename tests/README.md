@@ -33,25 +33,35 @@ sibling plugins if present at their expected sibling paths.
 ## What's covered
 
 - `ModularRendererTest.php` — server-rendered HTML for individual modular blocks.
-- `Pro/PlayerRestrictionTest.php` — pro-plugin player restrictions (skipped unless `LOAD_PLAYER_PRO=1`).
 - `ShortcodeAttributesTest.php` — every documented `[videopack]` shortcode attribute (see `Screens::add_contextual_help_tab()` for the reference list), verifying each still resolves/renders correctly. This is the backward-compatibility net for the 10,000+ sites running the shortcode directly.
 - `ShortcodeLegacyCompatTest.php` — the *undocumented* legacy compatibility layer (deprecated attribute aliases, old shortcode tag names, legacy value formats) that doesn't appear in the current help tab and is therefore easy to forget still needs to keep working.
+
+Tests specific to the premium add-ons (e.g. player restriction behavior)
+live in `videopack-player-pro`'s own (private) test suite instead of here —
+see that repo's `tests/README.md`. This repo is public, and those tests'
+assertions and comments would otherwise document the private add-ons'
+internal architecture (class/method names, data shapes, hook priorities)
+in a public place for anyone to read without buying anything.
 
 ## Testing premium (Freemius-gated) plugin code
 
 `videopack-player-pro` and `videopack-cloud-streaming` gate their real
 functionality behind a Freemius license check (`can_use_premium_code()`),
-which is never satisfied on a fresh local wp-env site. To exercise that code
-locally without a real license:
+which is never satisfied on a fresh local wp-env site. This repo's own
+suite doesn't need that (see above), but the E2E suite's
+`videojs-v10-standalone.spec.js` does, since it needs player-pro's Video.js
+v10 player to actually activate. To exercise premium code locally without a
+real license:
 
 1. Copy `.wp-env.override.json.example` (repo root) to `.wp-env.override.json`
    (gitignored — never commit real values here) and set
    `VIDEOPACK_FORCE_PREMIUM_FOR_TESTING: true`.
 2. `npm run env:start` (or `npx wp-env start`) — this constant is read by
-   `tests/mu-plugins/force-premium.php`, mounted into the site only via
-   `.wp-env.json`'s `mappings` config, which directly constructs and runs
-   `\Videopack\Player_Pro\Pro()` on `plugins_loaded` when the real license
-   check fails. The shipped plugin bootstrap files are never modified by
+   `videopack-player-pro`'s `tests/mu-plugins/force-premium.php`, mounted
+   into the site via this repo's `.wp-env.json` `mappings` config (from the
+   *private* add-on repo, not from here — see that repo's `tests/README.md`
+   for what it actually does and why it lives there instead of in this
+   public repo). The shipped plugin bootstrap files are never modified by
    this — `build-zip.ps1`'s include-list never references `tests/`, so this
    mechanism doesn't exist in any real install regardless of what's defined.
 

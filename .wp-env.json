@@ -12,6 +12,6 @@
 		"WP_DEBUG_DISPLAY": false
 	},
 	"mappings": {
-		"wp-content/mu-plugins": "./tests/mu-plugins"
+		"wp-content/mu-plugins": "../videopack-player-pro/tests/mu-plugins"
 	}
 }

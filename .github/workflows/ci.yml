@@ -74,6 +74,27 @@ jobs:
         working-directory: video-embed-thumbnail-generator
         run: npm ci
 
+      # .wp-env.override.json is gitignored -- without at least
+      # VIDEOPACK_FORCE_PREMIUM_FOR_TESTING set, no premium-gated code (e.g.
+      # player-pro's Video.js v10 player) ever activates on a fresh checkout,
+      # and videojs-v10-standalone.spec.js would silently test against
+      # whatever the free-tier fallback renders instead of the real thing.
+      # This value alone isn't a secret (it's just a boolean flag), so it's
+      # safe to write directly here -- the actual license-bypass logic it
+      # triggers lives in videopack-player-pro's tests/mu-plugins/
+      # force-premium.php (private repo), mounted via this repo's
+      # .wp-env.json, not committed anywhere in this (public) repo.
+      - name: Create wp-env override for premium testing
+        working-directory: video-embed-thumbnail-generator
+        run: |
+          cat > .wp-env.override.json <<'EOF'
+          {
+            "config": {
+              "VIDEOPACK_FORCE_PREMIUM_FOR_TESTING": true
+            }
+          }
+          EOF
+
       - name: Start wp-env
         working-directory: video-embed-thumbnail-generator
         run: npx wp-env start
@@ -81,10 +102,6 @@ jobs:
       - name: Run PHPUnit (core suite)
         working-directory: video-embed-thumbnail-generator
         run: npm run pretest:php && npm run test:php
-
-      - name: Run PHPUnit (Pro integration suite)
-        working-directory: video-embed-thumbnail-generator
-        run: npx wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit-pro.xml
 
       - name: Install Playwright browsers
         working-directory: video-embed-thumbnail-generator
