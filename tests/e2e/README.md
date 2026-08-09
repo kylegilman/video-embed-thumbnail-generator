@@ -43,14 +43,29 @@ Other useful commands:
 - `videojs-classic.spec.js` — Video.js (classic) playback + view counting, share/download dropdowns.
 - `mejs.spec.js` — WordPress Default (MediaElement.js), same coverage.
 - `gallery.spec.js` — lightbox open/navigate/close, AJAX pagination.
+- `shortcode-behavioral.spec.js` — autoplay/muted, loop, pauseothervideos, right_click attributes.
+- `videojs-v10-standalone.spec.js` — Video.js v10 (player-pro) with
+  `videopack-cloud-streaming` deliberately deactivated, since it's the only
+  listener for player-pro's adaptive-media-element filter; confirms the
+  plain-`<video>` fallback path actually works rather than assuming it does
+  because every other spec always has cloud-streaming active alongside it.
 
 Player type for the single-video fixture page is controlled by the global
 `embed_method` option, switched per spec via `helpers.js`'s `setEmbedMethod()`
 — not baked into the seeded content — so `test:e2e` must run serially
-(already configured in `playwright.config.js`).
+(already configured in `playwright.config.js`). `videojs-v10-standalone.spec.js`
+similarly toggles `videopack-cloud-streaming`'s activation state via
+`setPluginActive()` and restores it in `afterAll` — a general-purpose
+add-ons page tests would need if activation state elsewhere in the suite
+ever comes to matter.
 
-A Video.js v10 spec belongs in the `videopack-player-pro` repo instead, since
-that player only exists there.
+A general Video.js v10 *feature* spec (quality selector, captions, playback
+rate — anything not about cross-plugin behavior) belongs in the
+`videopack-player-pro` repo instead, once that repo has its own Playwright
+setup, since that player only exists there. This spec is the exception:
+testing "player-pro without cloud-streaming" is inherently a cross-repo
+scenario, and this repo's wp-env instance is where both are already
+checked out and mounted together.
 
 ## Extending
 

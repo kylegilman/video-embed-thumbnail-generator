@@ -38,4 +38,27 @@ function setEmbedMethod(method) {
 	);
 }
 
-module.exports = { setEmbedMethod };
+/**
+ * Activates or deactivates a plugin via WP-CLI, so a spec file can verify
+ * behavior that's supposed to degrade gracefully when an optional sibling
+ * add-on isn't installed (e.g. videopack-player-pro without
+ * videopack-cloud-streaming). Always restore the plugin's original state
+ * (e.g. in `test.afterAll`) — plugin activation is site-wide, shared with
+ * every other spec, and specs run serially but not in isolation from
+ * each other's state.
+ *
+ * @param {string} slug   Plugin folder/basename, e.g. 'videopack-cloud-streaming'.
+ * @param {boolean} active True to activate, false to deactivate.
+ */
+function setPluginActive(slug, active) {
+	execFileSync(
+		'npx',
+		[
+			'wp-env', 'run', 'cli',
+			'wp', 'plugin', active ? 'activate' : 'deactivate', slug,
+		],
+		{ stdio: 'inherit', shell: true }
+	);
+}
+
+module.exports = { setEmbedMethod, setPluginActive };
