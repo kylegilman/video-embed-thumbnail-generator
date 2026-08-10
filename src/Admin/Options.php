@@ -1020,11 +1020,14 @@ class Options implements Hook_Subscriber {
 			}
 		}
 
-		foreach ( (array) $this->get_default() as $key => $value ) {
-			if ( ! array_key_exists( (string) $key, $input ) ) {
-				$input[ (string) $key ] = false;
-			}
-		}
+		// Fill any key missing from $input with its previously-saved value
+		// (falling back to the real default only for keys never saved
+		// before, e.g. a setting introduced by a plugin update) -- not
+		// unconditionally `false`, and not the raw defaults either, since
+		// either would clobber the rest of a legitimate partial/incremental
+		// update (e.g. a REST client submitting a single changed field)
+		// back to factory settings.
+		$input = $this->merge_options_with_defaults( $input, array_replace( $this->get_default(), $this->options ) );
 
 		if ( empty( $input['embeddable'] ) ) {
 			$input['embedcode'] = false;
