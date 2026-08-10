@@ -442,6 +442,27 @@ class Blocks implements Hook_Subscriber {
 			$attributes['id'] = get_the_ID();
 		}
 
+		// Separate from the above: 'id' can be an arbitrary *other* post an
+		// author explicitly targeted (gallery_source: 'current' + a
+		// user-supplied id scopes the gallery to that other post's attached
+		// videos, a long-standing shortcode feature — Gallery.php's
+		// post_parent query). 'collection_post_id' always means "the post
+		// this specific block instance physically lives in" regardless of
+		// what 'id' is set to — Gallery::collection_page() needs that,
+		// unambiguously, to re-locate this instance's saved content via
+		// Blocks::locate_collection_inner_blocks().
+		//
+		// Conditional, not unconditional: collection_page() itself invokes
+		// do_blocks() on the resolved template, which re-enters this method
+		// a second time from within a REST request -- where get_the_ID()
+		// has no post loop context and returns false. An unconditional
+		// assignment here would clobber the real value that was correctly
+		// passed in via $attributes, breaking the *next* pagination request
+		// once this now-false value gets echoed back into data-settings-cache.
+		if ( empty( $attributes['collection_post_id'] ) ) {
+			$attributes['collection_post_id'] = get_the_ID();
+		}
+
 		$has_pagination = false;
 		foreach ( $block->inner_blocks as $inner_block ) {
 			if ( 'videopack/pagination' === $inner_block->name ) {
@@ -581,19 +602,6 @@ class Blocks implements Hook_Subscriber {
 			$block_gap = str_replace( array( 'var:preset|spacing|', '|' ), array( 'var(--wp--preset--spacing--', '--' ), $block_gap ) . ')';
 		}
 
-		// Collection's own direct children (loop + pagination) — Gallery::
-		// collection_page() reads this same key to rebuild the entire
-		// collection's block markup for AJAX-paginated pages, so it needs
-		// this outer level of the tree, not the loop's per-item structure.
-		$inner_blocks_template = '';
-		if ( function_exists( 'serialize_blocks' ) ) {
-			$template_data = array();
-			foreach ( $block->inner_blocks as $inner_block ) {
-				$template_data[] = $inner_block->parsed_block;
-			}
-			$inner_blocks_template = wp_json_encode( $template_data );
-		}
-
 		$output = Modular_Renderer::render_video_container(
 			array_merge(
 				$this->options,
@@ -602,7 +610,6 @@ class Blocks implements Hook_Subscriber {
 					'align'                 => $attributes['align'] ?? ( $this->options['gallery_align'] ?? 'wide' ),
 					'block_gap'             => $block_gap,
 					'wrapper_class'         => 'videopack-collection-wrapper',
-					'inner_blocks_template' => $inner_blocks_template,
 					'totalPages'            => $total_pages,
 					'currentPage'           => $paged,
 					'exclude_hover_trigger' => true,
@@ -1411,5 +1418,108 @@ class Blocks implements Hook_Subscriber {
 		// modal never rendered and the lightbox silently had no target to
 		// open into.
 		return Modular_Renderer::$rendered_lightbox_trigger;
+	}
+
+	/**
+	 * Locates a specific, previously-saved Collection block instance by its
+	 * persisted collectionId and returns its inner blocks, serialized —
+	 * the trusted-storage counterpart to a Collection's own template, used
+	 * by Gallery::collection_page() so AJAX pagination never has to trust
+	 * a client-supplied block tree for content that genuinely contains
+	 * non-videopack/* blocks (e.g. a Date block dropped into a Loop).
+	 *
+	 * Searches two tiers:
+	 *  1. A real post's post_content (posts/pages/CPTs, and in block/FSE
+	 *     themes, templates and template parts too, since those are posts)
+	 *     — including recursing into any core/block reusable-block
+	 *     references, since a Collection instance can legitimately live
+	 *     inside one of those.
+	 *  2. Block-based widget areas (classic themes), which aren't a
+	 *     `posts` row at all — WordPress persists their content as the
+	 *     `content` attribute of WP_Widget_Block instances, in the
+	 *     `widget_block` option.
+	 *
+	 * @param int|null $post_id       The post the instance is expected to live in, if known.
+	 * @param string   $collection_id The instance's persisted collectionId attribute value.
+	 * @return string Serialized inner-blocks markup, or '' if no matching instance was found in either tier.
+	 */
+	public static function locate_collection_inner_blocks( ?int $post_id, string $collection_id ): string {
+		if ( '' === $collection_id ) {
+			return '';
+		}
+
+		if ( $post_id && is_post_publicly_viewable( $post_id ) ) {
+			$post = get_post( $post_id );
+			if ( $post ) {
+				$match = self::find_collection_block_by_id( (array) parse_blocks( (string) $post->post_content ), $collection_id );
+				if ( null !== $match ) {
+					return (string) serialize_blocks( (array) $match['innerBlocks'] );
+				}
+			}
+		}
+
+		$widget_instances = (array) get_option( 'widget_block', array() );
+		foreach ( $widget_instances as $widget_instance ) {
+			if ( empty( $widget_instance['content'] ) || ! is_string( $widget_instance['content'] ) ) {
+				continue;
+			}
+			$match = self::find_collection_block_by_id( (array) parse_blocks( $widget_instance['content'] ), $collection_id );
+			if ( null !== $match ) {
+				return (string) serialize_blocks( (array) $match['innerBlocks'] );
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Recursively walks a parsed block array (as returned by parse_blocks())
+	 * looking for a videopack/collection block whose collectionId attribute
+	 * matches. Resolves core/block (reusable block) references along the
+	 * way, since a matching instance can legitimately live inside one.
+	 *
+	 * @param array  $blocks        Parsed blocks to search.
+	 * @param string $collection_id The collectionId to match.
+	 * @return array|null The matching parsed block, or null if not found.
+	 */
+	private static function find_collection_block_by_id( array $blocks, string $collection_id ): ?array {
+		foreach ( $blocks as $block ) {
+			if ( empty( $block['blockName'] ) ) {
+				continue;
+			}
+
+			if ( 'videopack/collection' === $block['blockName']
+				&& ( $block['attrs']['collectionId'] ?? null ) === $collection_id
+			) {
+				return $block;
+			}
+
+			if ( 'core/block' === $block['blockName'] && ! empty( $block['attrs']['ref'] ) ) {
+				// Reusable blocks (wp_block) are registered with public =>
+				// false, so is_post_publicly_viewable() would always reject
+				// them here regardless of status -- a real publish-status
+				// check is what actually matters for this post type.
+				$ref_id = (int) $block['attrs']['ref'];
+				if ( 'publish' === get_post_status( $ref_id ) ) {
+					$referenced_post = get_post( $ref_id );
+					if ( $referenced_post ) {
+						$match = self::find_collection_block_by_id( (array) parse_blocks( (string) $referenced_post->post_content ), $collection_id );
+						if ( null !== $match ) {
+							return $match;
+						}
+					}
+				}
+				continue;
+			}
+
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$match = self::find_collection_block_by_id( (array) $block['innerBlocks'], $collection_id );
+				if ( null !== $match ) {
+					return $match;
+				}
+			}
+		}
+
+		return null;
 	}
 }

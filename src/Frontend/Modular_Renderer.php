@@ -233,43 +233,28 @@ class Modular_Renderer {
 
 		$extra_attrs = array();
 		if ( ! empty( $atts['wrapper_class'] ) && strpos( $atts['wrapper_class'], 'collection' ) !== false ) {
-			// Ensure we pass back the settings for AJAX pagination.
-			// We only include attributes that are relevant to the video query to keep it clean.
-			$query_keys     = array(
-				'id',
-				'gallery_id',
-				'gallery_source',
-				'gallery_pagination',
-				'gallery_per_page',
-				'gallery_include',
-				'gallery_exclude',
-				'gallery_orderby',
-				'gallery_order',
-				'gallery_category',
-				'gallery_tag',
-				'relation',
-				'columns',
-				'layout',
-				'skin',
-				'pagination_color',
-				'pagination_background_color',
-				'pagination_active_bg_color',
-				'pagination_active_color',
-				'title_color',
-				'title_background_color',
-				'play_button_color',
-				'play_button_secondary_color',
-				'control_bar_bg_color',
-				'control_bar_color',
-				'view_count',
-				'overlay_title',
-				'enable_collection_video_limit',
-				'collection_video_limit',
-				'grid_metadata',
-				'grid_link_to',
-				'inner_blocks_template',
-				'collectionId',
-				'gallery_end',
+			// Ensure we pass back the settings for AJAX pagination. The
+			// per-item display options (colors, downloadlink, watermark,
+			// etc.) come from Shortcode::get_option_atts_keys() -- the
+			// single canonical list also used to sanitize/rebuild the
+			// [videopack] shortcode's own template -- rather than a second,
+			// separately-maintained list here that could silently drift out
+			// of parity with it. The remainder are gallery/collection-level
+			// structural keys that aren't per-item display options.
+			$query_keys = array_unique(
+				array_merge(
+					Shortcode::get_option_atts_keys(),
+					array(
+						'id',
+						'relation',
+						'columns',
+						'layout',
+						'grid_metadata',
+						'grid_link_to',
+						'collectionId',
+						'collection_post_id',
+					)
+				)
 			);
 			$query_settings = array();
 			foreach ( $query_keys as $key ) {

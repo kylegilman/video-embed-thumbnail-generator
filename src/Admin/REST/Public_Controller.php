@@ -197,10 +197,9 @@ class Public_Controller extends Controller {
 	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function video_gallery( \WP_REST_Request $request ) {
-		$shortcode                             = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
-		$gallery                               = new \Videopack\Frontend\Gallery( $this->options, $this->format_registry );
-		$gallery_atts                          = (array) $shortcode->atts( $request->get_params() );
-		$gallery_atts['inner_blocks_template'] = $request->get_param( 'inner_blocks_template' );
+		$shortcode    = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
+		$gallery      = new \Videopack\Frontend\Gallery( $this->options, $this->format_registry );
+		$gallery_atts = (array) $shortcode->atts( $request->get_params() );
 
 		$page   = (int) ( $request->get_param( 'page_number' ) ? $request->get_param( 'page_number' ) : 1 );
 		$layout = (string) $request->get_param( 'layout' );
@@ -210,6 +209,9 @@ class Public_Controller extends Controller {
 		$skip_html = filter_var( $request->get_param( 'skip_html' ), FILTER_VALIDATE_BOOLEAN );
 
 		$result = $gallery->collection_page( $page, $gallery_atts, $layout, $skip_html );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
 		return apply_filters( 'videopack_rest_video_gallery', new \WP_REST_Response( $result, 200 ), $request );
 	}
 
@@ -404,93 +406,10 @@ class Public_Controller extends Controller {
 			'layout'                => array( 'type' => 'string' ),
 			'grid_metadata'         => array( 'type' => 'string' ),
 			'grid_link_to'          => array( 'type' => 'string' ),
-			'inner_blocks_template' => array(
-				'type'              => 'string',
-				'sanitize_callback' => array( $this, 'sanitize_inner_blocks_template' ),
-			),
 			'collectionId'          => array( 'type' => 'string' ),
+			'collection_post_id'    => array( 'type' => array( 'number', 'null' ) ),
 			'id'                    => array( 'type' => array( 'number', 'null' ) ),
 			'prioritizePostData'    => array( 'type' => 'boolean' ),
 		);
-	}
-
-	/**
-	 * Sanitizes the inner_blocks_template JSON array.
-	 *
-	 * Ensures the JSON is valid and only allows videopack blocks to prevent
-	 * arbitrary block execution vulnerabilities.
-	 *
-	 * @param mixed $value The JSON string to sanitize.
-	 */
-	public function sanitize_inner_blocks_template( $value ) {
-		if ( empty( $value ) || ! is_string( $value ) ) {
-			return '';
-		}
-
-		// Not wp_unslash() here — sanitize_callbacks receive params AFTER
-		// WP_REST_Request has already unslashed them once internally (via
-		// set_query_params()/set_body_params()). Unslashing again strips
-		// legitimate backslashes out of JSON escape sequences within the
-		// embedded innerHTML/innerContent/attrs strings — e.g. turning "\n"
-		// into a bare "n" wherever the original saved content had a real
-		// newline (same bug previously found and fixed in video_player()'s
-		// own separate, now-removed use of this same field).
-		$decoded = json_decode( $value, true );
-
-		if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $decoded ) ) {
-			return '';
-		}
-
-		$sanitized = $this->sanitize_blocks_recursive( $decoded );
-
-		return wp_json_encode( $sanitized );
-	}
-
-	/**
-	 * Recursively sanitizes a parsed Gutenberg block array.
-	 *
-	 * @param array $blocks The array of blocks to sanitize.
-	 */
-	private function sanitize_blocks_recursive( array $blocks ) {
-		$sanitized = array();
-		foreach ( $blocks as $block ) {
-			// Security: allow any registered block.
-			if ( ! isset( $block['blockName'] ) ) {
-				continue;
-			}
-
-			$safe_block = array(
-				'blockName' => sanitize_text_field( $block['blockName'] ),
-			);
-
-			if ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) {
-				$safe_block['attrs'] = array();
-				foreach ( $block['attrs'] as $key => $val ) {
-					if ( is_array( $val ) ) {
-						$safe_block['attrs'][ sanitize_text_field( $key ) ] = map_deep( $val, 'sanitize_text_field' );
-					} elseif ( is_scalar( $val ) ) {
-						$safe_block['attrs'][ sanitize_text_field( $key ) ] = sanitize_text_field( $val );
-					}
-				}
-			}
-
-			if ( isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
-				$safe_block['innerBlocks'] = $this->sanitize_blocks_recursive( $block['innerBlocks'] );
-			}
-
-			if ( isset( $block['innerHTML'] ) ) {
-				$safe_block['innerHTML'] = wp_kses_post( $block['innerHTML'] );
-			}
-
-			if ( isset( $block['innerContent'] ) && is_array( $block['innerContent'] ) ) {
-				$safe_block['innerContent'] = array();
-				foreach ( $block['innerContent'] as $content ) {
-					$safe_block['innerContent'][] = is_string( $content ) ? wp_kses_post( $content ) : $content;
-				}
-			}
-
-			$sanitized[] = $safe_block;
-		}
-		return $sanitized;
 	}
 }

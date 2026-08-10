@@ -207,6 +207,26 @@ export default function Edit({
 		});
 	}, []);
 
+	// Give this instance a real, persisted identity the first time it's
+	// saved — the server-side AJAX pagination endpoint (Blocks::
+	// locate_collection_inner_blocks()) relies on this to re-locate this
+	// exact instance's saved content later, instead of trusting a client-
+	// resubmitted block tree. Same pattern WordPress core uses for
+	// core/query's queryId: generate once, persist, never regenerate.
+	useEffect(() => {
+		if (!attributes.collectionId) {
+			setAttributes({
+				collectionId:
+					'vp_' +
+					Date.now().toString(36) +
+					Math.random().toString(36).slice(2, 8),
+			});
+		}
+		// Deliberately runs only once per mount — collectionId must not be
+		// regenerated on subsequent re-renders once set.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
 	// We no longer hydrate design attributes from options here to avoid bloat.
 	// The VideopackContextBridge and useVideopackContext hook handle inheritance
 	// dynamically, so we only save attributes that are explicitly changed.

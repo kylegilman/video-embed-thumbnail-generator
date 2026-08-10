@@ -505,12 +505,14 @@ class Gallery {
 	 * @param array      $query_atts  The query attributes.
 	 * @param string     $layout      The layout type ('gallery' or 'list').
 	 * @param bool       $skip_html   Optional. Whether to skip generating HTML. Default false.
-	 * @return array {
+	 * @return array|\WP_Error {
 	 *     @type string $html          The rendered HTML.
 	 *     @type array  $videos        The prepared video data for JS.
 	 *     @type int    $max_num_pages The total number of pages.
 	 *     @type int    $current_page  The current page number.
 	 * }
+	 * A WP_Error is returned instead if a submitted collectionId refers to a
+	 * real Collection instance that couldn't be located in trusted storage.
 	 */
 	public function collection_page( $page_number, array $query_atts, $layout = 'gallery', $skip_html = false ) {
 		$page_number = (int) $page_number;
@@ -521,59 +523,46 @@ class Gallery {
 		// every visitor sees by default.
 		$query_atts['page_number'] = $page_number;
 		$query_atts['currentPage'] = $page_number;
+
+		// Capture the client-submitted collectionId, if any, BEFORE the
+		// fallback synthesis below overwrites it -- this raw value is the
+		// security-relevant signal: its presence unambiguously proves "this
+		// is a real, previously-saved Collection block instance" (only
+		// Blocks::render_collection() ever sets a real one, persisted via
+		// edit.js's setAttributes; the [videopack] shortcode's synthetic
+		// markup never has one, since it's built fresh in memory on every
+		// request rather than saved anywhere). See Blocks::locate_collection_inner_blocks().
+		$submitted_collection_id = (string) ( $query_atts['collectionId'] ?? '' );
+
 		if ( empty( $query_atts['collectionId'] ) ) {
 			$query_atts['collectionId'] = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
 		}
 		$query_atts['layout'] = ( 'gallery' === $layout || 'grid' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
 
 		/**
-		 * 1. Simulate the block structure.
+		 * 1. Resolve the inner-blocks template.
+		 *
+		 * The client never supplies block markup here -- either this is a
+		 * real, saved Collection instance (identified by its persisted
+		 * collectionId), resolved from trusted storage, or it's the
+		 * [videopack] shortcode's template, fully rebuilt from validated,
+		 * individually-typed atts using the exact same logic that already
+		 * renders it correctly on initial page load.
 		 */
-		$collection_id = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
-		$block_atts    = array_merge(
-			$this->options,
-			$query_atts,
-			array(
-				'columns'      => (int) ( $query_atts['gallery_columns'] ?? 3 ),
-				'collectionId' => $collection_id,
-			)
-		);
+		if ( '' !== $submitted_collection_id ) {
+			$post_id_hint = isset( $query_atts['collection_post_id'] ) ? (int) $query_atts['collection_post_id'] : null;
+			$inner_blocks = Blocks::locate_collection_inner_blocks( $post_id_hint, $submitted_collection_id );
 
-		$inner_blocks_json = (string) ( $query_atts['inner_blocks_template'] ?? '' );
-		$inner_blocks      = '';
-
-		if ( ! empty( $inner_blocks_json ) ) {
-			$template_data = json_decode( $inner_blocks_json, true );
-			if ( is_array( $template_data ) && function_exists( 'serialize_blocks' ) ) {
-				$inner_blocks = serialize_blocks( $template_data );
+			if ( '' === $inner_blocks ) {
+				return new \WP_Error(
+					'rest_gallery_instance_not_found',
+					__( 'This gallery’s content could not be located. Please reload the page.', 'video-embed-thumbnail-generator' ),
+					array( 'status' => 404 )
+				);
 			}
-		}
-
-		// Fallback to default structure if no template is provided (e.g. legacy galleries).
-		if ( empty( $inner_blocks ) ) {
-			$grid_metadata = (string) ( $query_atts['grid_metadata'] ?? '' );
-			$show_duration = strpos( $grid_metadata, 'duration' ) !== false || ! empty( $query_atts['showDuration'] );
-			$show_views    = strpos( $grid_metadata, 'views' ) !== false || ! empty( $query_atts['view_count'] );
-			$link_to       = $query_atts['grid_link_to'] ?? 'lightbox';
-
-			$inner_blocks  = '<!-- wp:videopack/loop -->';
-			$inner_blocks .= sprintf( '<!-- wp:videopack/thumbnail {"linkTo":"%s"} -->', esc_attr( $link_to ) );
-			$inner_blocks .= '<!-- wp:videopack/play-button /-->';
-			$inner_blocks .= '<!-- wp:videopack/title {"isOverlay":true} /-->';
-
-			if ( $show_duration ) {
-				$inner_blocks .= '<!-- wp:videopack/duration /-->';
-			}
-			if ( $show_views ) {
-				$inner_blocks .= '<!-- wp:videopack/view-count /-->';
-			}
-
-			$inner_blocks .= '<!-- /wp:videopack/thumbnail -->';
-			$inner_blocks .= '<!-- /wp:videopack/loop -->';
-
-			if ( ! empty( $query_atts['gallery_pagination'] ) ) {
-				$inner_blocks .= '<!-- wp:videopack/pagination /-->';
-			}
+		} else {
+			$is_gallery_layout = 'list' !== $query_atts['layout'];
+			$inner_blocks      = Shortcode::build_default_inner_blocks( $query_atts, $is_gallery_layout );
 		}
 
 		$serialized = sprintf(

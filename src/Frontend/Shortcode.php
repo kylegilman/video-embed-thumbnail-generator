@@ -113,7 +113,11 @@ class Shortcode implements Hook_Subscriber {
 			$post_id = 0;
 		}
 
+		$static_lists = self::get_static_attribute_lists();
+
 		return array(
+			'options_atts'    => $static_lists['options_atts'],
+			'boolean_convert' => $static_lists['boolean_convert'],
 			'default_atts'    => array(
 				'id'                            => null,
 				'orderby'                       => 'menu_order ID',
@@ -146,9 +150,24 @@ class Shortcode implements Hook_Subscriber {
 				'grid_columns'                  => 3,
 				'is_modular_engine'             => false,
 				'collectionId'                  => null,
+				'collection_post_id'            => null,
 				'instanceId'                    => null,
 				'prioritizePostData'            => false,
 			),
+		);
+	}
+
+	/**
+	 * Static, side-effect-free attribute lists (option names only, no
+	 * per-request defaults) -- split out from get_attribute_definitions()
+	 * so they can be reused without instantiating a Shortcode or having
+	 * post/options context available (e.g. from Modular_Renderer's static
+	 * rendering code).
+	 *
+	 * @return array{options_atts: string[], boolean_convert: string[]}
+	 */
+	private static function get_static_attribute_lists(): array {
+		return array(
 			'options_atts'    => array(
 				'width',
 				'height',
@@ -246,6 +265,22 @@ class Shortcode implements Hook_Subscriber {
 				'enable_collection_video_limit',
 			),
 		);
+	}
+
+	/**
+	 * Canonical list of round-trippable per-item display option names --
+	 * the closed vocabulary of typed dials (colors, downloadlink,
+	 * embedcode, watermark, etc.) that fully describe the shortcode's
+	 * gallery template, and an un-customized Collection block's default
+	 * Loop. Used by Modular_Renderer to decide what to echo back into
+	 * data-settings-cache for AJAX pagination requests to resubmit,
+	 * instead of maintaining a second, separately-drifting list there.
+	 *
+	 * @return string[] Option attribute names.
+	 */
+	public static function get_option_atts_keys(): array {
+		$lists = self::get_static_attribute_lists();
+		return array_values( array_unique( array_merge( $lists['options_atts'], $lists['boolean_convert'] ) ) );
 	}
 
 	/**
@@ -791,7 +826,33 @@ class Shortcode implements Hook_Subscriber {
 			$block_atts['gallery_id'] = get_the_ID() ? get_the_ID() : get_queried_object_id();
 		}
 
-		// Build serialized block string using correctly nested structure matching the block editor's templates.
+		$inner_blocks = self::build_default_inner_blocks( $query_atts, $is_gallery );
+
+		$serialized = sprintf(
+			'<!-- wp:videopack/collection %s -->%s<!-- /wp:videopack/collection -->',
+			wp_json_encode( $block_atts ),
+			$inner_blocks
+		);
+
+		return do_blocks( $serialized );
+	}
+
+	/**
+	 * Builds the inner-blocks markup (Loop + item template + optional
+	 * Pagination) for a Collection whose template is fully described by
+	 * typed atts -- the shortcode's own gallery/list template, and an
+	 * un-customized Collection block's default Loop. This is the single
+	 * source of truth for that template: both the shortcode's own initial
+	 * render (simulate_collection_block(), above) and
+	 * Gallery::collection_page()'s REST-pagination rebuild call this same
+	 * method, so there's no second, separately-maintained copy of this
+	 * logic to drift out of sync.
+	 *
+	 * @param array $query_atts Sanitized shortcode/gallery attributes.
+	 * @param bool  $is_gallery Whether to use the grid/thumbnail template (true) or the list/player template (false).
+	 * @return string Serialized block-comment markup for the Loop's inner blocks, correctly nested to match the block editor's templates.
+	 */
+	public static function build_default_inner_blocks( array $query_atts, bool $is_gallery ): string {
 		$inner_blocks = '<!-- wp:videopack/loop -->';
 
 		if ( $is_gallery ) {
@@ -815,7 +876,7 @@ class Shortcode implements Hook_Subscriber {
 
 			$engine_inner = '';
 			if ( ( $query_atts['overlay_title'] ?? true ) !== false || ! empty( $query_atts['downloadlink'] ) || ! empty( $query_atts['embedcode'] ) ) {
-				$engine_inner .= $this->get_title_with_inner_blocks_markup(
+				$engine_inner .= self::get_title_with_inner_blocks_markup(
 					! empty( $query_atts['downloadlink'] ),
 					! empty( $query_atts['embedcode'] )
 				);
@@ -826,7 +887,9 @@ class Shortcode implements Hook_Subscriber {
 
 			$inner_blocks .= sprintf( '<!-- wp:videopack/player -->%s<!-- /wp:videopack/player -->', $engine_inner );
 
-			if ( ! empty( $block_atts['view_count'] ) ) {
+			// Legacy count_views is normalized to view_count here rather
+			// than requiring callers to pre-normalize it.
+			if ( ! empty( $query_atts['view_count'] ) || ! empty( $query_atts['count_views'] ) ) {
 				$inner_blocks .= '<!-- wp:videopack/view-count /-->';
 			}
 
@@ -839,13 +902,7 @@ class Shortcode implements Hook_Subscriber {
 			$inner_blocks .= '<!-- wp:videopack/pagination /-->';
 		}
 
-		$serialized = sprintf(
-			'<!-- wp:videopack/collection %s -->%s<!-- /wp:videopack/collection -->',
-			wp_json_encode( $block_atts ),
-			$inner_blocks
-		);
-
-		return do_blocks( $serialized );
+		return $inner_blocks;
 	}
 
 	/**
@@ -855,7 +912,7 @@ class Shortcode implements Hook_Subscriber {
 	 * @param bool $include_share    Whether to include the share block.
 	 * @return string Block comment markup.
 	 */
-	private function get_title_with_inner_blocks_markup( bool $include_download, bool $include_share ): string {
+	public static function get_title_with_inner_blocks_markup( bool $include_download, bool $include_share ): string {
 		$inner_blocks = '';
 		if ( $include_download ) {
 			$download_atts = wp_json_encode(

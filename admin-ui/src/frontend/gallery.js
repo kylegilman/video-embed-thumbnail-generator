@@ -764,6 +764,13 @@ export function loadCollectionPage( page, collectionWrapper, openVideoAtIndex = 
 	} )
 		.then( ( response ) => response.json() )
 		.then( ( data ) => {
+			// A WP_Error response (e.g. rest_gallery_instance_not_found) is
+			// still valid JSON, just without an `html` key -- degrade
+			// gracefully by leaving the current page displayed rather than
+			// throwing, but surface it for debugging.
+			if ( ! data.html && data.code ) {
+				console.warn( 'Gallery pagination request failed:', data.code, data.message );
+			}
 			if ( data.html ) {
 				if ( data.videos ) {
 					data.videos.forEach( ( video ) => {
