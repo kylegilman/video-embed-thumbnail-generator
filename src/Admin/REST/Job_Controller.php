@@ -139,7 +139,10 @@ class Job_Controller extends Controller {
 			return new \WP_Error( 'enqueue_failed', 'Failed to enqueue any jobs.', array( 'status' => 500 ) );
 		}
 
-		$created_jobs = $queue_controller->get_jobs_list_data( $queue_controller->get_queue_items( get_current_blog_id() ), $attachment_id ? $attachment_id : $input_url );
+		$created_jobs = array_map(
+			array( $this, 'redact_encode_error_for_response' ),
+			$queue_controller->get_jobs_list_data( $queue_controller->get_queue_items( get_current_blog_id() ), $attachment_id ? $attachment_id : $input_url )
+		);
 		/**
 		 * Filters the REST response after successfully enqueuing transcoding jobs.
 		 *
@@ -172,7 +175,10 @@ class Job_Controller extends Controller {
 	public function jobs_list( \WP_REST_Request $request ) {
 		$input            = $request->get_param( 'input' );
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
-		$jobs             = (array) $queue_controller->get_jobs_list_data( (array) $queue_controller->get_queue_items( (int) get_current_blog_id() ), $input );
+		$jobs             = array_map(
+			array( $this, 'redact_encode_error_for_response' ),
+			(array) $queue_controller->get_jobs_list_data( (array) $queue_controller->get_queue_items( (int) get_current_blog_id() ), $input )
+		);
 				/**
 		 * Filters the REST response listing active/completed transcoding jobs.
 		 *

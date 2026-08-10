@@ -141,11 +141,13 @@ class Attachment_Controller extends Controller {
 		$encoder            = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id, $url, $browser_metadata );
 		$video_formats_data = (array) $encoder->get_all_formats_with_status();
 		foreach ( $video_formats_data as $id => $data ) {
-			$presets[] = array_merge(
-				$data,
-				array(
-					'id'            => (string) $id,
-					'attachment_id' => $data['id'] ?? null,
+			$presets[] = $this->redact_encode_error_for_response(
+				array_merge(
+					$data,
+					array(
+						'id'            => (string) $id,
+						'attachment_id' => $data['id'] ?? null,
+					)
 				)
 			);
 		}

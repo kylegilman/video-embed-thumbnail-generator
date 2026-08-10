@@ -99,6 +99,38 @@ abstract class Controller extends \WP_REST_Controller implements Hook_Subscriber
 	}
 
 	/**
+	 * Strips detailed FFmpeg error output from a job/format array unless the
+	 * current user has manage_options.
+	 *
+	 * Encode_Format::set_error() stores its plugin-authored prefix message
+	 * with raw, unbounded ffmpeg stderr appended (Encode_Attachment::
+	 * start_encode()) -- callers with only encode_videos or upload_files
+	 * (both commonly delegated to non-admin roles) shouldn't be able to use
+	 * that error text as a file-existence/content oracle by crafting inputs
+	 * and reading back what ffmpeg reports about them. A real admin still
+	 * sees the full detail, unchanged, for legitimate troubleshooting.
+	 *
+	 * @param array $item A job or format array, containing 'error' and/or 'error_message' keys if present.
+	 * @return array The same array, with those keys redacted for non-admin callers.
+	 */
+	protected function redact_encode_error_for_response( array $item ): array {
+		if ( current_user_can( 'manage_options' ) ) {
+			return $item;
+		}
+
+		$generic_message = __( 'Encoding failed. Contact a site administrator for details.', 'video-embed-thumbnail-generator' );
+
+		if ( ! empty( $item['error'] ) ) {
+			$item['error'] = $generic_message;
+		}
+		if ( ! empty( $item['error_message'] ) ) {
+			$item['error_message'] = $generic_message;
+		}
+
+		return $item;
+	}
+
+	/**
 	 * Permissions callback for public routes.
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
