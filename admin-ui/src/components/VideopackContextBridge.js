@@ -12,13 +12,13 @@ import { useMemo } from '@wordpress/element';
  * @param {Node}   root0.children    Children.
  * @return {Element} The rendered component with context bridge.
  */
-export default function VideopackContextBridge({
+export default function VideopackContextBridge( {
 	attributes,
 	context,
 	overrides = {},
 	children,
-}) {
-	const { sharedContext } = useVideopackContext(attributes, context);
+} ) {
+	const { sharedContext } = useVideopackContext( attributes, context );
 
 	// Every caller passes its own ambient `context` in expecting it to keep
 	// flowing to its children (title/views/duration/poster/etc — whatever an
@@ -26,18 +26,18 @@ export default function VideopackContextBridge({
 	// on top for what *this* block specifically contributes or overrides.
 	// Dropping `context` here (as this used to) forced every descendant to
 	// fall back to a REST fetch for data an ancestor had already provided.
-	const finalContext = useMemo(() => {
+	const finalContext = useMemo( () => {
 		const ctx = {
 			...context,
 			...sharedContext,
 			...overrides,
 		};
 		return ctx;
-	}, [context, sharedContext, overrides]);
+	}, [ context, sharedContext, overrides ] );
 
 	return (
-		<BlockContextProvider value={finalContext}>
-			{children}
+		<BlockContextProvider value={ finalContext }>
+			{ children }
 		</BlockContextProvider>
 	);
 }

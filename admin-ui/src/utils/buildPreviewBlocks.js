@@ -14,18 +14,20 @@ import { createBlock, sanitizeBlockAttributes } from '@wordpress/blocks';
  * @param {Array} template Template blocks, tuple or object shape.
  * @return {Array} Real block instances, as returned by createBlock().
  */
-export default function buildPreviewBlocks(template = []) {
-	return template.filter(Boolean).map((block) => {
-		const [name, attributes = {}, innerBlocks = []] = Array.isArray(block)
+export default function buildPreviewBlocks( template = [] ) {
+	return template.filter( Boolean ).map( ( block ) => {
+		const [ name, attributes = {}, innerBlocks = [] ] = Array.isArray(
+			block
+		)
 			? block
-			: [block.name, block.attributes, block.innerBlocks];
+			: [ block.name, block.attributes, block.innerBlocks ];
 
 		return createBlock(
 			name,
 			attributes || {},
-			buildPreviewBlocks(innerBlocks || [])
+			buildPreviewBlocks( innerBlocks || [] )
 		);
-	});
+	} );
 }
 
 /**
@@ -51,26 +53,28 @@ export default function buildPreviewBlocks(template = []) {
  *                           call) to diff against and reuse clientIds from.
  * @return {Array} Block instances, reusing clientIds where possible.
  */
-export function buildStablePreviewBlocks(template = [], prevBlocks = []) {
-	return template.filter(Boolean).map((block, index) => {
-		const [name, attributes = {}, innerBlocks = []] = Array.isArray(block)
+export function buildStablePreviewBlocks( template = [], prevBlocks = [] ) {
+	return template.filter( Boolean ).map( ( block, index ) => {
+		const [ name, attributes = {}, innerBlocks = [] ] = Array.isArray(
+			block
+		)
 			? block
-			: [block.name, block.attributes, block.innerBlocks];
+			: [ block.name, block.attributes, block.innerBlocks ];
 
-		const prevBlock = prevBlocks[index];
+		const prevBlock = prevBlocks[ index ];
 		const childBlocks = buildStablePreviewBlocks(
 			innerBlocks || [],
 			prevBlock?.innerBlocks || []
 		);
 
-		if (prevBlock && prevBlock.name === name) {
+		if ( prevBlock && prevBlock.name === name ) {
 			return {
 				...prevBlock,
-				attributes: sanitizeBlockAttributes(name, attributes || {}),
+				attributes: sanitizeBlockAttributes( name, attributes || {} ),
 				innerBlocks: childBlocks,
 			};
 		}
 
-		return createBlock(name, attributes || {}, childBlocks);
-	});
+		return createBlock( name, attributes || {}, childBlocks );
+	} );
 }

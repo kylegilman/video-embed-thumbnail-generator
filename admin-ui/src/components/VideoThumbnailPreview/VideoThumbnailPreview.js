@@ -17,7 +17,7 @@ import useVideopackContext from '../../hooks/useVideopackContext';
  * @param {Object} root0.attributes           Block attributes.
  * @return {Element}                          VideoThumbnail component
  */
-export default function VideoThumbnailPreview({
+export default function VideoThumbnailPreview( {
 	postId: propPostId,
 	linkTo: propLinkTo,
 	children,
@@ -27,8 +27,8 @@ export default function VideoThumbnailPreview({
 	style,
 	clientId,
 	attributes = {},
-}) {
-	const vpContext = useVideopackContext(attributes, context);
+} ) {
+	const vpContext = useVideopackContext( attributes, context );
 
 	const {
 		resolved: { duotone: contextDuotone },
@@ -41,30 +41,30 @@ export default function VideoThumbnailPreview({
 	/**
 	 * Derive the duotone class from attributes.
 	 */
-	const loopDuotoneId = context['videopack/loopDuotoneId'];
+	const loopDuotoneId = context[ 'videopack/loopDuotoneId' ];
 	let resolvedDuotoneClass = propResolvedDuotoneClass || loopDuotoneId;
-	if (!resolvedDuotoneClass) {
+	if ( ! resolvedDuotoneClass ) {
 		if (
 			typeof duotone === 'string' &&
-			duotone.startsWith('var:preset|duotone|')
+			duotone.startsWith( 'var:preset|duotone|' )
 		) {
-			resolvedDuotoneClass = `wp-duotone-${duotone.split('|').pop()}`;
-		} else if (Array.isArray(duotone)) {
+			resolvedDuotoneClass = `wp-duotone-${ duotone.split( '|' ).pop() }`;
+		} else if ( Array.isArray( duotone ) ) {
 			// Ensure a truly unique ID per instance in the editor
 			const instanceId =
-				clientId || Math.random().toString(36).substr(2, 9);
-			resolvedDuotoneClass = `videopack-custom-duotone-${instanceId}`;
+				clientId || Math.random().toString( 36 ).substr( 2, 9 );
+			resolvedDuotoneClass = `videopack-custom-duotone-${ instanceId }`;
 		}
 	}
 
 	const video =
-		manualVideo && Object.keys(manualVideo).length > 0
+		manualVideo && Object.keys( manualVideo ).length > 0
 			? manualVideo
-			: context['videopack/video'] || {};
+			: context[ 'videopack/video' ] || {};
 	// 'videopack/poster' is a properly registered context key (unlike
 	// 'videopack/video', which only worked via ad hoc prop-passing in the old
 	// custom preview system) — Loop's real block-context provides it per item.
-	const contextPoster = context['videopack/poster'];
+	const contextPoster = context[ 'videopack/poster' ];
 	const postId = vpContext.resolved.attachmentId || propPostId;
 	const effectiveSkin = vpContext.resolved.skin;
 	// Deliberately doesn't track/show an isResolving state here — this fires
@@ -77,11 +77,11 @@ export default function VideoThumbnailPreview({
 	// data lands, avoids that entirely — no structural/state branch left to
 	// flash between.
 	const { thumbnailMedia, posterUrl } = useSelect(
-		(select) => {
-			if (!postId || postId < 1 || video.poster_url || contextPoster) {
+		( select ) => {
+			if ( ! postId || postId < 1 || video.poster_url || contextPoster ) {
 				return { thumbnailMedia: null, posterUrl: null };
 			}
-			const { getEntityRecord, getMedia } = select('core');
+			const { getEntityRecord, getMedia } = select( 'core' );
 
 			// Fetch the attachment record for the video
 			const attachment = getEntityRecord(
@@ -89,7 +89,7 @@ export default function VideoThumbnailPreview({
 				'attachment',
 				postId
 			);
-			const videopackMeta = attachment?.meta?.['_videopack-meta'] || {};
+			const videopackMeta = attachment?.meta?.[ '_videopack-meta' ] || {};
 			const videopackData = attachment?.videopack || {};
 
 			// The thumbnail ID is stored in poster_id, and URL in poster
@@ -97,17 +97,17 @@ export default function VideoThumbnailPreview({
 			const directPoster = videopackData.poster || videopackMeta.poster;
 
 			return {
-				thumbnailMedia: mediaId ? getMedia(mediaId) : null,
+				thumbnailMedia: mediaId ? getMedia( mediaId ) : null,
 				posterUrl: directPoster,
 			};
 		},
-		[postId, video.poster_url, contextPoster]
+		[ postId, video.poster_url, contextPoster ]
 	);
 
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const defaultNoThumb = config
-		? `${config.url}/src/images/nothumbnail.jpg`
+		? `${ config.url }/src/images/nothumbnail.jpg`
 		: '';
 
 	// Priority: 1. Manual video data (previews), 2. Context-provided poster
@@ -128,25 +128,25 @@ export default function VideoThumbnailPreview({
 	const containerClass =
 		`videopack-thumbnail-wrapper gallery-thumbnail videopack-gallery-item wp-block wp-block-videopack-thumbnail ${
 			effectiveEmbedMethod === 'Video.js' ? effectiveSkin || '' : ''
-		} ${!loopDuotoneId && resolvedDuotoneClass ? resolvedDuotoneClass : ''} ${
-			play_button_color ? 'videopack-has-play-button-color' : ''
 		} ${
+			! loopDuotoneId && resolvedDuotoneClass ? resolvedDuotoneClass : ''
+		} ${ play_button_color ? 'videopack-has-play-button-color' : '' } ${
 			play_button_secondary_color
 				? 'videopack-has-play-button-secondary-color'
 				: ''
 		} ${
-			(vpContext.resolved.linkTo || propLinkTo) !== 'none'
+			( vpContext.resolved.linkTo || propLinkTo ) !== 'none'
 				? 'has-link'
 				: ''
-		} ${vpContext.resolved.isPreview ? 'is-preview' : ''} ${
+		} ${ vpContext.resolved.isPreview ? 'is-preview' : '' } ${
 			'auto' === vpContext.resolved.aspect_ratio
 				? 'has-native-aspect-ratio'
 				: ''
 		}`.trim();
 
 	const imgStyle =
-		resolvedDuotoneClass && !loopDuotoneId
-			? { filter: `url(#${resolvedDuotoneClass})` }
+		resolvedDuotoneClass && ! loopDuotoneId
+			? { filter: `url(#${ resolvedDuotoneClass })` }
 			: {};
 
 	const containerStyle = {
@@ -155,24 +155,24 @@ export default function VideoThumbnailPreview({
 	};
 
 	return (
-		<div className={containerClass} style={containerStyle}>
-			{thumbnailUrl && (
+		<div className={ containerClass } style={ containerStyle }>
+			{ thumbnailUrl && (
 				<img
-					src={thumbnailUrl}
-					alt={thumbnailMedia?.alt_text || ''}
+					src={ thumbnailUrl }
+					alt={ thumbnailMedia?.alt_text || '' }
 					className="videopack-thumbnail"
-					style={imgStyle}
+					style={ imgStyle }
 				/>
-			)}
-			{Array.isArray(duotone) &&
+			) }
+			{ Array.isArray( duotone ) &&
 				resolvedDuotoneClass &&
-				!loopDuotoneId && (
+				! loopDuotoneId && (
 					<CustomDuotoneFilter
-						colors={duotone}
-						id={resolvedDuotoneClass}
+						colors={ duotone }
+						id={ resolvedDuotoneClass }
 					/>
-				)}
-			<div className="videopack-inner-blocks-container">{children}</div>
+				) }
+			<div className="videopack-inner-blocks-container">{ children }</div>
 		</div>
 	);
 }

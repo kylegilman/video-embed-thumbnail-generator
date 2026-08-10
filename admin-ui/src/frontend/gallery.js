@@ -8,7 +8,7 @@
  * is already stable and tested.
  */
 
-/* global videojs, videopack_config, videopack_l10n */
+/* global videojs, videopack_config, videopack_l10n, ResizeObserver */
 
 import { getPlayerData, setPlayerData, buildKeyFromId } from './public-api';
 import { initPlayer, initPlayers, setupVideo } from './players/init';
@@ -35,23 +35,30 @@ export function setupGalleryItemScaling( container ) {
 	const ro = new ResizeObserver( ( entries ) => {
 		entries.forEach( ( entry ) => {
 			const clickableArea = entry.target;
-			const button = clickableArea.querySelector( '.mejs-overlay-button' );
+			const button = clickableArea.querySelector(
+				'.mejs-overlay-button'
+			);
 			if ( button ) {
 				const containerWidth = entry.contentRect.width;
 				const desiredButtonWidth = containerWidth * 0.25;
 				const initialButtonWidth = 80;
 				const finalButtonWidth = Math.min( desiredButtonWidth, 90 );
 				const scale = finalButtonWidth / initialButtonWidth;
-				button.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+				button.style.transform =
+					'translate(-50%, -50%) scale(' + scale + ')';
 			}
 		} );
 	} );
 
-	container.querySelectorAll( '.videopack-gallery-item .gallery-item-clickable-area' ).forEach( ( area ) => {
-		if ( area.querySelector( '.mejs-overlay-button' ) ) {
-			ro.observe( area );
-		}
-	} );
+	container
+		.querySelectorAll(
+			'.videopack-gallery-item .gallery-item-clickable-area'
+		)
+		.forEach( ( area ) => {
+			if ( area.querySelector( '.mejs-overlay-button' ) ) {
+				ro.observe( area );
+			}
+		} );
 }
 
 /**
@@ -61,7 +68,9 @@ export function setupGalleryItemScaling( container ) {
 export function initCollection( collectionWrapper ) {
 	// Ensure settings are cached if not already set by the server.
 	if ( ! collectionWrapper.dataset.settingsCache ) {
-		const settings = JSON.parse( collectionWrapper.dataset.settings || '{}' );
+		const settings = JSON.parse(
+			collectionWrapper.dataset.settings || '{}'
+		);
 		collectionWrapper.dataset.settingsCache = JSON.stringify( settings );
 	}
 
@@ -72,10 +81,16 @@ export function initCollection( collectionWrapper ) {
 	if ( collectionWrapper.classList.contains( 'videopack-gallery-wrapper' ) ) {
 		// Store initial video data order for navigation.
 		const initialVideoOrder = [];
-		collectionWrapper.querySelectorAll( '.videopack-gallery-item' ).forEach( ( thumb ) => {
-			initialVideoOrder.push( thumb.dataset.videopackId || `videopack_player_gallery_${ thumb.dataset.attachmentId }` );
-		} );
-		collectionWrapper.dataset.currentVideosOrder = JSON.stringify( initialVideoOrder );
+		collectionWrapper
+			.querySelectorAll( '.videopack-gallery-item' )
+			.forEach( ( thumb ) => {
+				initialVideoOrder.push(
+					thumb.dataset.videopackId ||
+						`videopack_player_gallery_${ thumb.dataset.attachmentId }`
+				);
+			} );
+		collectionWrapper.dataset.currentVideosOrder =
+			JSON.stringify( initialVideoOrder );
 		setupGalleryItemScaling( collectionWrapper );
 	}
 
@@ -95,14 +110,17 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 		? galleryWrapper
 		: galleryWrapper.querySelector( '.videopack-modal-overlay' );
 	const playerContainer = popup.querySelector( '.modal-content' );
-	const gallerySettings = JSON.parse( galleryWrapper.dataset.settingsCache || '{}' );
+	const gallerySettings = JSON.parse(
+		galleryWrapper.dataset.settingsCache || '{}'
+	);
 	let skinClass = gallerySettings.skin || '';
 	if ( skinClass === 'default' ) {
 		skinClass = '';
 	}
 
 	// Store a reference to the original wrapper for pagination if needed.
-	popup.videopackSourceWrapper = galleryWrapper.videopackSourceWrapper || galleryWrapper;
+	popup.videopackSourceWrapper =
+		galleryWrapper.videopackSourceWrapper || galleryWrapper;
 
 	// Clean up any previous player.
 	destroyCurrentGalleryPlayer();
@@ -114,14 +132,14 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 	const closeButton = popup.querySelector( '.modal-close' );
 
 	if ( nextButton ) {
-		nextButton.onclick = ( e ) => {
+		nextButton.onclick = () => {
 			setTimeout( () => {
 				navigateGalleryPopup( 1, galleryWrapper );
 			}, 0 );
 		};
 	}
 	if ( prevButton ) {
-		prevButton.onclick = ( e ) => {
+		prevButton.onclick = () => {
 			setTimeout( () => {
 				navigateGalleryPopup( -1, galleryWrapper );
 			}, 0 );
@@ -150,25 +168,32 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 	const initInjectedPlayer = ( playerHtml ) => {
 		playerContainer.innerHTML = playerHtml;
 
-		const playerWrapper = playerContainer.querySelector( '.videopack-player' );
+		const playerWrapper =
+			playerContainer.querySelector( '.videopack-player' );
 		if ( ! playerWrapper ) {
-			console.error( 'Videopack: Could not find .videopack-player in injected HTML' );
+			console.error(
+				'Videopack: Could not find .videopack-player in injected HTML'
+			);
 			return;
 		}
 
 		// Ensure IDs are unique for the lightbox to prevent DOM clashes with standalone players
-		let originalId = playerWrapper.dataset.id;
+		const originalId = playerWrapper.dataset.id;
 		// Strip prefix if present, as initPlayer will add it back when looking up data
-		let cleanId = originalId.replace( 'videopack_player_', '' );
+		const cleanId = originalId.replace( 'videopack_player_', '' );
 		const newId = cleanId + '_lightbox';
 		playerWrapper.dataset.id = newId;
 
-		const metaWrapper = playerContainer.querySelector( `[id="video_${ originalId }_meta"]` );
+		const metaWrapper = playerContainer.querySelector(
+			`[id="video_${ originalId }_meta"]`
+		);
 		if ( metaWrapper ) {
 			metaWrapper.id = `video_${ newId }_meta`;
 		}
 
-		const watermark = playerContainer.querySelector( `[id="video_${ originalId }_watermark"]` );
+		const watermark = playerContainer.querySelector(
+			`[id="video_${ originalId }_watermark"]`
+		);
 		if ( watermark ) {
 			watermark.id = `video_${ newId }_watermark`;
 		}
@@ -190,13 +215,21 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 		const videoElementId = videoElement ? videoElement.id : newId;
 
 		// Map the configuration data to this specific instance ID so initPlayer can find it.
-		setPlayerData( buildKeyFromId( newId ), videoData.player_vars || videoData );
+		setPlayerData(
+			buildKeyFromId( newId ),
+			videoData.player_vars || videoData
+		);
 
-		if ( videoData.embed_method && videoData.embed_method.startsWith( 'Video.js' ) ) {
+		if (
+			videoData.embed_method &&
+			videoData.embed_method.startsWith( 'Video.js' )
+		) {
 			currentGalleryPlayer = initPlayer( playerWrapper );
 
 			const checkPlayer = setInterval( () => {
-				const player = window.videojs ? window.videojs.getPlayer( videoElementId ) : null;
+				const player = window.videojs
+					? window.videojs.getPlayer( videoElementId )
+					: null;
 				if ( player ) {
 					clearInterval( checkPlayer );
 					currentGalleryPlayer = player;
@@ -205,7 +238,8 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 							player.play();
 						}
 						player.on( 'ended', () => {
-							const galleryEnd = gallerySettings.gallery_end || 'next';
+							const galleryEnd =
+								gallerySettings.gallery_end || 'next';
 							if ( galleryEnd === 'next' ) {
 								setTimeout( () => {
 									navigateGalleryPopup( 1, galleryWrapper );
@@ -217,7 +251,10 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 					} );
 				}
 			}, 100 );
-		} else if ( videoData.embed_method === 'WordPress Default' && typeof window.MediaElementPlayer !== 'undefined' ) {
+		} else if (
+			videoData.embed_method === 'WordPress Default' &&
+			typeof window.MediaElementPlayer !== 'undefined'
+		) {
 			const videoVars = videoData.player_vars || videoData;
 			const settings = Object.assign( {}, videoVars.mejs_settings || {} );
 			settings.success = ( mediaElement, domObject, player ) => {
@@ -253,7 +290,10 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 					const promise = originalPlay.apply( this, arguments );
 					if ( promise !== undefined ) {
 						promise.catch( ( error ) => {
-							if ( error.name !== 'AbortError' && error.name !== 'NotAllowedError' ) {
+							if (
+								error.name !== 'AbortError' &&
+								error.name !== 'NotAllowedError'
+							) {
 								console.error( error );
 							}
 						} );
@@ -261,7 +301,10 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 					return promise;
 				};
 			}
-			currentGalleryPlayer = new window.MediaElementPlayer( videoElement, settings );
+			currentGalleryPlayer = new window.MediaElementPlayer(
+				videoElement,
+				settings
+			);
 		} else {
 			if ( ! playerWrapper.dataset.videopackInitialized ) {
 				setupVideo( playerWrapper, videoData );
@@ -285,11 +328,12 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 		setupMetaBar( playerContainer );
 	};
 
-	let playerHtml =
+	const playerHtml =
 		videoData.player_html ||
 		videoData.full_player_html ||
 		( videoData.player_vars &&
-			( videoData.player_vars.player_html || videoData.player_vars.full_player_html ) );
+			( videoData.player_vars.player_html ||
+				videoData.player_vars.full_player_html ) );
 
 	if ( playerHtml ) {
 		initInjectedPlayer( playerHtml );
@@ -301,21 +345,42 @@ export function openGalleryPopup( videoData, galleryWrapper, videoIndex ) {
 		// Safety-net fallback only (pre-embedded HTML is missing for
 		// some reason) — always built from global Player Settings
 		// server-side, so the only input needed is the video's id.
-		const restUrl = videopack_config.rest_url + 'videopack/v1/player?id=' + attachmentId;
+		const restUrl =
+			videopack_config.rest_url +
+			'videopack/v1/player?id=' +
+			attachmentId;
 
 		fetch( restUrl, {
 			headers: { 'X-WP-Nonce': videopack_config.nonce },
-		} ).then( ( r ) => r.json() ).then( ( data ) => {
-			if ( data && data.html ) {
-				initInjectedPlayer( data.html );
-			} else {
-				playerContainer.innerHTML = '<p style="color:white;text-align:center;">' + ( typeof videopack_l10n !== 'undefined' && videopack_l10n.errorLoadingPlayer ? videopack_l10n.errorLoadingPlayer : 'Error loading player.' ) + '</p>';
-			}
-		} ).catch( ( e ) => {
-			playerContainer.innerHTML = '<p style="color:white;text-align:center;">' + ( typeof videopack_l10n !== 'undefined' && videopack_l10n.errorLoadingPlayer ? videopack_l10n.errorLoadingPlayer : 'Error loading player.' ) + '</p>';
-		} );
+		} )
+			.then( ( r ) => r.json() )
+			.then( ( data ) => {
+				if ( data && data.html ) {
+					initInjectedPlayer( data.html );
+				} else {
+					playerContainer.innerHTML =
+						'<p style="color:white;text-align:center;">' +
+						( typeof videopack_l10n !== 'undefined' &&
+						videopack_l10n.errorLoadingPlayer
+							? videopack_l10n.errorLoadingPlayer
+							: 'Error loading player.' ) +
+						'</p>';
+				}
+			} )
+			.catch( () => {
+				playerContainer.innerHTML =
+					'<p style="color:white;text-align:center;">' +
+					( typeof videopack_l10n !== 'undefined' &&
+					videopack_l10n.errorLoadingPlayer
+						? videopack_l10n.errorLoadingPlayer
+						: 'Error loading player.' ) +
+					'</p>';
+			} );
 	} else {
-		console.error( 'Videopack: Could not find player HTML and REST URL is missing', videoData );
+		console.error(
+			'Videopack: Could not find player HTML and REST URL is missing',
+			videoData
+		);
 	}
 
 	galleryWrapper.dataset.currentGalleryAttachmentId = attachmentId;
@@ -365,10 +430,11 @@ export function destroyCurrentGalleryPlayer() {
 	// entirely and left the old video playing in the background.
 	let outgoingMediaEl = null;
 	try {
-		outgoingMediaEl = typeof currentGalleryPlayer.el === 'function'
-			? currentGalleryPlayer.el().querySelector( 'video, audio' )
-			: currentGalleryPlayer.node;
-	} catch ( e ) {
+		outgoingMediaEl =
+			typeof currentGalleryPlayer.el === 'function'
+				? currentGalleryPlayer.el().querySelector( 'video, audio' )
+				: currentGalleryPlayer.node;
+	} catch {
 		outgoingMediaEl = null;
 	}
 
@@ -380,7 +446,10 @@ export function destroyCurrentGalleryPlayer() {
 		// entry can be explicitly deleted after disposal.
 		let playerId = null;
 		try {
-			playerId = typeof currentGalleryPlayer.id === 'function' ? currentGalleryPlayer.id() : null;
+			playerId =
+				typeof currentGalleryPlayer.id === 'function'
+					? currentGalleryPlayer.id()
+					: null;
 		} catch {
 			playerId = null;
 		}
@@ -397,10 +466,13 @@ export function destroyCurrentGalleryPlayer() {
 			}
 
 			// Double-check if already disposed to prevent "classList of null"
-			if ( ! currentGalleryPlayer.isDisposed || ! currentGalleryPlayer.isDisposed() ) {
+			if (
+				! currentGalleryPlayer.isDisposed ||
+				! currentGalleryPlayer.isDisposed()
+			) {
 				currentGalleryPlayer.dispose();
 			}
-		} catch ( e ) {
+		} catch {
 			// Fail silently or handle disposal error
 		}
 
@@ -421,11 +493,16 @@ export function destroyCurrentGalleryPlayer() {
 				currentGalleryPlayer.pause();
 			}
 			currentGalleryPlayer.remove();
-		} catch ( e ) {
+		} catch {
 			// Ignore errors from MediaElement.js cleanup.
 		}
 		// Ensure player instance is removed from global registry.
-		if ( currentGalleryPlayer.id && window.mejs && window.mejs.players && window.mejs.players[ currentGalleryPlayer.id ] ) {
+		if (
+			currentGalleryPlayer.id &&
+			window.mejs &&
+			window.mejs.players &&
+			window.mejs.players[ currentGalleryPlayer.id ]
+		) {
 			delete window.mejs.players[ currentGalleryPlayer.id ];
 		}
 	} else if ( typeof currentGalleryPlayer.pause === 'function' ) {
@@ -445,11 +522,13 @@ export function destroyCurrentGalleryPlayer() {
 	try {
 		if ( outgoingMediaEl ) {
 			outgoingMediaEl.pause();
-			outgoingMediaEl.querySelectorAll( 'source' ).forEach( ( s ) => s.removeAttribute( 'src' ) );
+			outgoingMediaEl
+				.querySelectorAll( 'source' )
+				.forEach( ( s ) => s.removeAttribute( 'src' ) );
 			outgoingMediaEl.removeAttribute( 'src' );
 			outgoingMediaEl.load();
 		}
-	} catch ( e ) {
+	} catch {
 		// Best-effort only.
 	}
 
@@ -479,7 +558,11 @@ export function destroyCurrentGalleryPlayer() {
  * @param {HTMLElement} container The element about to have its content replaced.
  */
 export function disposePlayersInElement( container ) {
-	if ( ! container || typeof videojs === 'undefined' || typeof videojs.getPlayers !== 'function' ) {
+	if (
+		! container ||
+		typeof videojs === 'undefined' ||
+		typeof videojs.getPlayers !== 'function'
+	) {
 		return;
 	}
 	const players = videojs.getPlayers();
@@ -529,9 +612,15 @@ export function closeGalleryPopup( popup ) {
 	const prevButton = popup.querySelector( '.modal-previous' );
 	const closeButton = popup.querySelector( '.modal-close' );
 
-	if ( nextButton ) nextButton.onclick = null;
-	if ( prevButton ) prevButton.onclick = null;
-	if ( closeButton ) closeButton.onclick = null;
+	if ( nextButton ) {
+		nextButton.onclick = null;
+	}
+	if ( prevButton ) {
+		prevButton.onclick = null;
+	}
+	if ( closeButton ) {
+		closeButton.onclick = null;
+	}
 
 	const content = popup.querySelector( '.modal-content' );
 	if ( content ) {
@@ -540,8 +629,12 @@ export function closeGalleryPopup( popup ) {
 }
 
 export function navigateGalleryPopup( direction, galleryWrapper ) {
-	const sourceWrapper = galleryWrapper.videopackSourceWrapper || galleryWrapper;
-	const currentIndex = parseInt( galleryWrapper.dataset.currentGalleryVideoIndex, 10 );
+	const sourceWrapper =
+		galleryWrapper.videopackSourceWrapper || galleryWrapper;
+	const currentIndex = parseInt(
+		galleryWrapper.dataset.currentGalleryVideoIndex,
+		10
+	);
 	const videoOrder = JSON.parse( galleryWrapper.dataset.currentVideosOrder );
 	const currentPage = parseInt( galleryWrapper.dataset.currentPage, 10 );
 	const totalPages = parseInt( galleryWrapper.dataset.totalPages, 10 );
@@ -558,7 +651,8 @@ export function navigateGalleryPopup( direction, galleryWrapper ) {
 		let nextVideoData = getPlayerData( nextVideoId ) || null;
 
 		if ( ! nextVideoData ) {
-			nextVideoData = getPlayerData( buildKeyFromId( nextVideoId ) ) || null;
+			nextVideoData =
+				getPlayerData( buildKeyFromId( nextVideoId ) ) || null;
 		}
 
 		if ( nextVideoData ) {
@@ -575,7 +669,8 @@ export function navigateGalleryPopup( direction, galleryWrapper ) {
 		let nextVideoData = getPlayerData( nextVideoId ) || null;
 
 		if ( ! nextVideoData ) {
-			nextVideoData = getPlayerData( buildKeyFromId( nextVideoId ) ) || null;
+			nextVideoData =
+				getPlayerData( buildKeyFromId( nextVideoId ) ) || null;
 		}
 
 		if ( nextVideoData ) {
@@ -605,39 +700,62 @@ export function handleGlobalLightboxClick( e, trigger ) {
 
 	// Fallback 2: search for data-attachment-id if explicit ID lookup failed.
 	if ( ! videoData ) {
-		videoData = getPlayerData( `videopack_player_gallery_${ attachmentId }` ) || null;
+		videoData =
+			getPlayerData( `videopack_player_gallery_${ attachmentId }` ) ||
+			null;
 	}
 
 	if ( videoData ) {
 		const modal = document.getElementById( 'videopack-global-modal' );
 		if ( modal ) {
 			// Check if this item belongs to a gallery/collection.
-			const collectionWrapper = trigger.closest( '.videopack-collection-wrapper' );
-			let videoOrder = [];
+			const collectionWrapper = trigger.closest(
+				'.videopack-collection-wrapper'
+			);
+			const videoOrder = [];
 			let clickedIndex = 0;
 
 			if ( collectionWrapper ) {
 				// Existing gallery logic: respect the collection's order and settings.
-				const siblingThumbnails = Array.from( collectionWrapper.querySelectorAll( '.videopack-gallery-item' ) );
+				const siblingThumbnails = Array.from(
+					collectionWrapper.querySelectorAll(
+						'.videopack-gallery-item'
+					)
+				);
 				siblingThumbnails.forEach( ( sibling, index ) => {
 					const sid = sibling.dataset.attachmentId;
 					// Rely on the server's videopackId; fallback to standard gallery format if missing.
-					const svid = sibling.dataset.videopackId || `videopack_player_gallery_${ sid }`;
+					const svid =
+						sibling.dataset.videopackId ||
+						`videopack_player_gallery_${ sid }`;
 					videoOrder.push( svid );
 					if ( sibling === trigger ) {
 						clickedIndex = index;
 					}
 				} );
 
-				modal.dataset.settingsCache = collectionWrapper.dataset.settings || collectionWrapper.dataset.settingsCache || '{}';
-				modal.dataset.totalPages = collectionWrapper.dataset.totalPages || 1;
-				modal.dataset.currentPage = collectionWrapper.dataset.currentPage || 1;
+				modal.dataset.settingsCache =
+					collectionWrapper.dataset.settings ||
+					collectionWrapper.dataset.settingsCache ||
+					'{}';
+				modal.dataset.totalPages =
+					collectionWrapper.dataset.totalPages || 1;
+				modal.dataset.currentPage =
+					collectionWrapper.dataset.currentPage || 1;
 			} else {
 				// Standalone block logic: look for other top-level blocks as pseudo-gallery.
-				const allTriggers = Array.from( document.querySelectorAll( '[data-videopack-lightbox="true"]' ) ).filter( ( t ) => ! t.closest( '.videopack-collection-wrapper' ) );
+				const allTriggers = Array.from(
+					document.querySelectorAll(
+						'[data-videopack-lightbox="true"]'
+					)
+				).filter(
+					( t ) => ! t.closest( '.videopack-collection-wrapper' )
+				);
 				allTriggers.forEach( ( sibling, index ) => {
 					const sid = sibling.dataset.attachmentId;
-					const svid = sibling.dataset.videopackId || `videopack_player_gallery_${ sid }`;
+					const svid =
+						sibling.dataset.videopackId ||
+						`videopack_player_gallery_${ sid }`;
 					videoOrder.push( svid );
 					if ( sibling === trigger ) {
 						clickedIndex = index;
@@ -664,7 +782,11 @@ export function handleGlobalLightboxClick( e, trigger ) {
 	}
 }
 
-export function handleCollectionPaginationClick( e, collectionWrapper, pageLink ) {
+export function handleCollectionPaginationClick(
+	e,
+	collectionWrapper,
+	pageLink
+) {
 	e.preventDefault();
 	let page = 1;
 	if ( pageLink ) {
@@ -677,7 +799,9 @@ export function handleCollectionPaginationClick( e, collectionWrapper, pageLink 
 				page = url.searchParams.get( 'paged' );
 			} else {
 				// Match /page/2 or /page/2/
-				const match = url.pathname.match( /\/page\/(\d+)\/?$/ ) || url.pathname.match( /\/page\/(\d+)\// );
+				const match =
+					url.pathname.match( /\/page\/(\d+)\/?$/ ) ||
+					url.pathname.match( /\/page\/(\d+)\// );
 				if ( match ) {
 					page = match[ 1 ];
 				}
@@ -685,7 +809,9 @@ export function handleCollectionPaginationClick( e, collectionWrapper, pageLink 
 		}
 	} else {
 		// Fallback if pageLink isn't explicitly passed
-		const target = e.target.closest( 'button, a.page-numbers, .videopack-pagination-button' );
+		const target = e.target.closest(
+			'button, a.page-numbers, .videopack-pagination-button'
+		);
 		if ( target && target.dataset.page ) {
 			page = target.dataset.page;
 		}
@@ -697,31 +823,49 @@ export function handleCollectionPaginationClick( e, collectionWrapper, pageLink 
 }
 
 export function handleGlobalPaginationClick( e ) {
-	var paginationButton = e.target.closest( '.videopack-pagination-button' );
-	if ( ! paginationButton ) return;
+	const paginationButton = e.target.closest( '.videopack-pagination-button' );
+	if ( ! paginationButton ) {
+		return;
+	}
 
 	// Always prevent default if it's a page number link
-	if ( paginationButton.tagName === 'A' || paginationButton.tagName === 'BUTTON' ) {
+	if (
+		paginationButton.tagName === 'A' ||
+		paginationButton.tagName === 'BUTTON'
+	) {
 		e.preventDefault();
 	}
 
 	// Find the associated collection wrapper
-	let collectionWrapper = paginationButton.closest( '.videopack-collection-wrapper' );
+	let collectionWrapper = paginationButton.closest(
+		'.videopack-collection-wrapper'
+	);
 
 	if ( ! collectionWrapper ) {
 		// If not inside, look for the closest collection wrapper before this block
-		const paginationBlock = paginationButton.closest( '.videopack-pagination' );
+		const paginationBlock = paginationButton.closest(
+			'.videopack-pagination'
+		);
 		if ( paginationBlock ) {
 			// Check siblings
 			collectionWrapper = paginationBlock.previousElementSibling;
-			while ( collectionWrapper && ! collectionWrapper.classList.contains( 'videopack-collection-wrapper' ) ) {
+			while (
+				collectionWrapper &&
+				! collectionWrapper.classList.contains(
+					'videopack-collection-wrapper'
+				)
+			) {
 				collectionWrapper = collectionWrapper.previousElementSibling;
 			}
 		}
 	}
 
 	if ( collectionWrapper ) {
-		handleCollectionPaginationClick( e, collectionWrapper, paginationButton );
+		handleCollectionPaginationClick(
+			e,
+			collectionWrapper,
+			paginationButton
+		);
 	}
 }
 
@@ -729,24 +873,41 @@ export function handleGalleryPaginationClick( e, galleryWrapper ) {
 	handleCollectionPaginationClick( e, galleryWrapper );
 }
 
-export function loadCollectionPage( page, collectionWrapper, openVideoAtIndex = null ) {
-	const settings = collectionWrapper.dataset.settingsCache ? JSON.parse( collectionWrapper.dataset.settingsCache ) : {};
+export function loadCollectionPage(
+	page,
+	collectionWrapper,
+	openVideoAtIndex = null
+) {
+	const settings = collectionWrapper.dataset.settingsCache
+		? JSON.parse( collectionWrapper.dataset.settingsCache )
+		: {};
 	const layout = collectionWrapper.dataset.layout || 'grid';
 
-	const grid = collectionWrapper.querySelector( '.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list' );
+	const grid = collectionWrapper.querySelector(
+		'.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list'
+	);
 	// A collection can have more than one pagination block (e.g. one
 	// above the loop, one below) — all of them need to stay in sync.
-	const paginations = collectionWrapper.querySelectorAll( '.videopack-pagination' );
+	const paginations = collectionWrapper.querySelectorAll(
+		'.videopack-pagination'
+	);
 
 	if ( grid ) {
 		grid.style.opacity = 0.5;
 	}
 
-	const restUrl = new URL( videopack_config.rest_url + 'videopack/v1/video_gallery' );
+	const restUrl = new URL(
+		videopack_config.rest_url + 'videopack/v1/video_gallery'
+	);
 
 	const postData = new URLSearchParams();
 	Object.keys( settings ).forEach( ( key ) => {
-		if ( settings[ key ] !== null && settings[ key ] !== false && settings[ key ] !== '' && typeof settings[ key ] !== 'undefined' ) {
+		if (
+			settings[ key ] !== null &&
+			settings[ key ] !== false &&
+			settings[ key ] !== '' &&
+			typeof settings[ key ] !== 'undefined'
+		) {
 			postData.append( key, settings[ key ] );
 		}
 	} );
@@ -769,44 +930,72 @@ export function loadCollectionPage( page, collectionWrapper, openVideoAtIndex = 
 			// gracefully by leaving the current page displayed rather than
 			// throwing, but surface it for debugging.
 			if ( ! data.html && data.code ) {
-				console.warn( 'Gallery pagination request failed:', data.code, data.message );
+				console.warn(
+					'Gallery pagination request failed:',
+					data.code,
+					data.message
+				);
 			}
 			if ( data.html ) {
 				if ( data.videos ) {
 					data.videos.forEach( ( video ) => {
 						if ( video.player_vars && video.player_vars.id ) {
-							setPlayerData( video.player_vars.id, video.player_vars );
+							setPlayerData(
+								video.player_vars.id,
+								video.player_vars
+							);
 						}
 					} );
 				}
 				const tempDiv = document.createElement( 'div' );
 				tempDiv.innerHTML = data.html;
 
-				const newCollectionWrapper = tempDiv.querySelector( '.videopack-collection-wrapper' );
+				const newCollectionWrapper = tempDiv.querySelector(
+					'.videopack-collection-wrapper'
+				);
 				if ( newCollectionWrapper ) {
 					// Sync datasets back to the modal if it's currently open and linked to this collection
-					const modal = document.getElementById( 'videopack-global-modal' );
-					if ( modal && modal.videopackSourceWrapper === collectionWrapper ) {
+					const modal = document.getElementById(
+						'videopack-global-modal'
+					);
+					if (
+						modal &&
+						modal.videopackSourceWrapper === collectionWrapper
+					) {
 						modal.dataset.currentPage = page;
 						// Re-sync video order for the lightbox
 						const newVideoOrder = [];
-						const newGrid = newCollectionWrapper.querySelector( '.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list' );
+						const newGrid = newCollectionWrapper.querySelector(
+							'.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list'
+						);
 						if ( newGrid ) {
-							newGrid.querySelectorAll( '.videopack-gallery-item' ).forEach( ( thumb ) => {
-								newVideoOrder.push( thumb.dataset.videopackId || `videopack_player_gallery_${ thumb.dataset.attachmentId }` );
-							} );
-							modal.dataset.currentVideosOrder = JSON.stringify( newVideoOrder );
+							newGrid
+								.querySelectorAll( '.videopack-gallery-item' )
+								.forEach( ( thumb ) => {
+									newVideoOrder.push(
+										thumb.dataset.videopackId ||
+											`videopack_player_gallery_${ thumb.dataset.attachmentId }`
+									);
+								} );
+							modal.dataset.currentVideosOrder =
+								JSON.stringify( newVideoOrder );
 						}
 						if ( data.max_num_pages ) {
 							modal.dataset.totalPages = data.max_num_pages;
 						}
 						if ( newCollectionWrapper.dataset.settingsCache ) {
-							modal.dataset.settingsCache = newCollectionWrapper.dataset.settingsCache;
+							modal.dataset.settingsCache =
+								newCollectionWrapper.dataset.settingsCache;
 						}
 					}
 
-					const newGrid = newCollectionWrapper.querySelector( '.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list' );
-					const newPaginations = newCollectionWrapper.querySelectorAll( '.videopack-pagination' );
+					const newGrid = newCollectionWrapper.querySelector(
+						'.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list'
+					);
+					const newPaginations =
+						newCollectionWrapper.querySelectorAll(
+							'.videopack-pagination'
+						);
 
 					if ( grid && newGrid ) {
 						disposePlayersInElement( grid );
@@ -814,45 +1003,82 @@ export function loadCollectionPage( page, collectionWrapper, openVideoAtIndex = 
 					}
 					if ( paginations.length ) {
 						// Fallback: look for pagination in the returned HTML if none were found in the wrapper.
-						const sourcePaginations = newPaginations.length ? newPaginations : tempDiv.querySelectorAll( '.videopack-pagination' );
+						const sourcePaginations = newPaginations.length
+							? newPaginations
+							: tempDiv.querySelectorAll(
+									'.videopack-pagination'
+							  );
 						paginations.forEach( ( paginationEl, index ) => {
 							const newPaginationEl = sourcePaginations[ index ];
-							paginationEl.innerHTML = newPaginationEl ? newPaginationEl.innerHTML : '';
+							paginationEl.innerHTML = newPaginationEl
+								? newPaginationEl.innerHTML
+								: '';
 						} );
 					}
 
 					collectionWrapper.dataset.currentPage = page;
 					if ( data.max_num_pages ) {
-						collectionWrapper.dataset.totalPages = data.max_num_pages;
+						collectionWrapper.dataset.totalPages =
+							data.max_num_pages;
 					}
 					initPlayers( collectionWrapper ); // Initialize any new players
 					initCollection( collectionWrapper ); // Re-initialize elements and listeners
 
 					// Update global state and navigate if requested
 					const newVideoOrder = [];
-					const currentGrid = collectionWrapper.querySelector( '.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list' );
+					const currentGrid = collectionWrapper.querySelector(
+						'.videopack-collection-inner, .videopack-gallery-items, .videopack-grid-items, .videopack-video-list'
+					);
 					if ( currentGrid ) {
-						currentGrid.querySelectorAll( '.videopack-gallery-item' ).forEach( ( thumb ) => {
-							newVideoOrder.push( thumb.dataset.videopackId || `videopack_player_gallery_${ thumb.dataset.attachmentId }` );
-						} );
-						collectionWrapper.dataset.currentVideosOrder = JSON.stringify( newVideoOrder );
+						currentGrid
+							.querySelectorAll( '.videopack-gallery-item' )
+							.forEach( ( thumb ) => {
+								newVideoOrder.push(
+									thumb.dataset.videopackId ||
+										`videopack_player_gallery_${ thumb.dataset.attachmentId }`
+								);
+							} );
+						collectionWrapper.dataset.currentVideosOrder =
+							JSON.stringify( newVideoOrder );
 					}
 
 					if ( data.videos ) {
 						data.videos.forEach( ( video ) => {
 							if ( video.player_vars && video.player_vars.id ) {
-								setPlayerData( video.player_vars.id, video.player_vars );
+								setPlayerData(
+									video.player_vars.id,
+									video.player_vars
+								);
 							}
 						} );
 					}
 
-					if ( openVideoAtIndex !== null && newVideoOrder.length > 0 ) {
-						const actualIndex = openVideoAtIndex === -1 ? newVideoOrder.length - 1 : openVideoAtIndex;
+					if (
+						openVideoAtIndex !== null &&
+						newVideoOrder.length > 0
+					) {
+						const actualIndex =
+							openVideoAtIndex === -1
+								? newVideoOrder.length - 1
+								: openVideoAtIndex;
 						const nextVideoId = newVideoOrder[ actualIndex ];
-						const videoToOpen = getPlayerData( nextVideoId ) || getPlayerData( `videopack_player_gallery_${ nextVideoId }` );
+						const videoToOpen =
+							getPlayerData( nextVideoId ) ||
+							getPlayerData(
+								`videopack_player_gallery_${ nextVideoId }`
+							);
 						if ( videoToOpen ) {
-							const targetForPopup = ( modal && modal.videopackSourceWrapper === collectionWrapper ) ? modal : collectionWrapper;
-							openGalleryPopup( videoToOpen, targetForPopup, actualIndex );
+							const targetForPopup =
+								modal &&
+								modal.videopackSourceWrapper ===
+									collectionWrapper
+									? modal
+									: collectionWrapper;
+							openGalleryPopup(
+								videoToOpen,
+								targetForPopup,
+								actualIndex
+							);
 						}
 					}
 				}
@@ -869,7 +1095,11 @@ export function loadCollectionPage( page, collectionWrapper, openVideoAtIndex = 
 		} );
 }
 
-export function loadGalleryPage( page, galleryWrapper, openVideoAtIndex = null ) {
+export function loadGalleryPage(
+	page,
+	galleryWrapper,
+	openVideoAtIndex = null
+) {
 	loadCollectionPage( page, galleryWrapper, openVideoAtIndex );
 }
 

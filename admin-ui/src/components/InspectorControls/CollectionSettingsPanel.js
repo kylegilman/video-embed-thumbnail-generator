@@ -6,7 +6,7 @@ import CollectionLayoutSettings from './CollectionLayoutSettings';
 import CollectionColorSettings from './CollectionColorSettings';
 import './CollectionSettingsPanel.scss';
 
-export default function CollectionSettingsPanel({
+export default function CollectionSettingsPanel( {
 	attributes,
 	setAttributes,
 	queryData = {},
@@ -22,7 +22,7 @@ export default function CollectionSettingsPanel({
 	showSkinSettings = true,
 	hasPaginationBlock = true,
 	clientId,
-}) {
+} ) {
 	const { excludedVideos } = queryData;
 
 	return (
@@ -33,59 +33,62 @@ export default function CollectionSettingsPanel({
 						? __(
 								'Query Settings',
 								'video-embed-thumbnail-generator'
-							)
-						: __('List Settings', 'video-embed-thumbnail-generator')
+						  )
+						: __(
+								'List Settings',
+								'video-embed-thumbnail-generator'
+						  )
 				}
 			>
 				<CollectionQuerySettings
-					attributes={attributes}
-					setAttributes={setAttributes}
-					queryData={queryData}
-					options={options}
-					showManualSource={showManualSource}
-					isSiteEditor={isSiteEditor}
-					hasPaginationBlock={hasPaginationBlock}
-					clientId={clientId}
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+					queryData={ queryData }
+					options={ options }
+					showManualSource={ showManualSource }
+					isSiteEditor={ isSiteEditor }
+					hasPaginationBlock={ hasPaginationBlock }
+					clientId={ clientId }
 				/>
 
-				{excludedVideos && excludedVideos.length > 0 && (
+				{ excludedVideos && excludedVideos.length > 0 && (
 					<CollectionFilterSettings
-						attributes={attributes}
-						setAttributes={setAttributes}
-						queryData={queryData}
+						attributes={ attributes }
+						setAttributes={ setAttributes }
+						queryData={ queryData }
 					/>
-				)}
+				) }
 			</PanelBody>
 
-			{showLayoutSettings && showGalleryOptions && (
+			{ showLayoutSettings && showGalleryOptions && (
 				<PanelBody
-					title={__(
+					title={ __(
 						'Layout Settings',
 						'video-embed-thumbnail-generator'
-					)}
-					initialOpen={showGalleryOptions}
+					) }
+					initialOpen={ showGalleryOptions }
 				>
 					<CollectionLayoutSettings
-						attributes={attributes}
-						setAttributes={setAttributes}
-						options={options}
+						attributes={ attributes }
+						setAttributes={ setAttributes }
+						options={ options }
 					/>
 				</PanelBody>
-			)}
+			) }
 
 			<PanelBody
-				title={__('Colors', 'video-embed-thumbnail-generator')}
-				initialOpen={true}
+				title={ __( 'Colors', 'video-embed-thumbnail-generator' ) }
+				initialOpen={ true }
 			>
 				<CollectionColorSettings
-					attributes={attributes}
-					setAttributes={setAttributes}
-					options={options}
-					blockType={blockType}
-					showPaginationSettings={showPaginationSettings}
-					showTitleSettings={showTitleSettings}
-					showPlayerSettings={showPlayerSettings}
-					showSkinSettings={showSkinSettings}
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+					options={ options }
+					blockType={ blockType }
+					showPaginationSettings={ showPaginationSettings }
+					showTitleSettings={ showTitleSettings }
+					showPlayerSettings={ showPlayerSettings }
+					showSkinSettings={ showSkinSettings }
 				/>
 			</PanelBody>
 		</>

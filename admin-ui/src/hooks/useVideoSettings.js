@@ -70,135 +70,138 @@ const useVideoSettings = (
 ) => {
 	const { id, gifmode } = attributes;
 
-	useEffect(() => {
-		if (gifmode) {
-			setAttributes({
+	useEffect( () => {
+		if ( gifmode ) {
+			setAttributes( {
 				autoplay: true,
 				loop: true,
 				muted: true,
 				controls: false,
-			});
+			} );
 		}
-	}, [gifmode, setAttributes]);
+	}, [ gifmode, setAttributes ] );
 
 	const updateAttachmentCallback = useCallback(
-		(key, value) => {
-			if (id && autoSave) {
-				apiFetch({
-					path: `/wp/v2/media/${id}`,
+		( key, value ) => {
+			if ( id && autoSave ) {
+				apiFetch( {
+					path: `/wp/v2/media/${ id }`,
 					method: 'POST',
-					data: { [key]: value },
-				}).catch(() => {
-					console.error(`Failed to update attachment ${id}`);
-				});
+					data: { [ key ]: value },
+				} ).catch( () => {
+					console.error( `Failed to update attachment ${ id }` );
+				} );
 			}
 		},
-		[id, autoSave]
+		[ id, autoSave ]
 	);
 
-	const updateAttachment = useDebounce(updateAttachmentCallback, 1000);
+	const updateAttachment = useDebounce( updateAttachmentCallback, 1000 );
 
 	// Persist the consolidated _videopack-meta object to the REST API.
 	// Since WordPress replaces the entire object meta field on POST,
 	// we must send the full set of desired overrides ogni volta.
 	const updateMetaCallback = useCallback(
-		(currentAttrs) => {
-			if (id && autoSave) {
+		( currentAttrs ) => {
+			if ( id && autoSave ) {
 				const metaToSave = {};
-				metaKeys.forEach((key) => {
-					if (key in currentAttrs) {
-						const value = currentAttrs[key];
+				metaKeys.forEach( ( key ) => {
+					if ( key in currentAttrs ) {
+						const value = currentAttrs[ key ];
 
 						// Skip empty strings for the title key to allow fallback to attachment title.
-						if (key === 'title' && value === '') {
-							metaToSave[key] = null;
+						if ( key === 'title' && value === '' ) {
+							metaToSave[ key ] = null;
 							return;
 						}
 
 						// Only store if it differs from the global option.
 						if (
-							options[key] !== undefined &&
-							value === options[key]
+							options[ key ] !== undefined &&
+							value === options[ key ]
 						) {
-							metaToSave[key] = null;
+							metaToSave[ key ] = null;
 						} else {
-							metaToSave[key] = value;
+							metaToSave[ key ] = value;
 						}
 					}
-				});
+				} );
 
-				apiFetch({
-					path: `/wp/v2/media/${id}`,
+				apiFetch( {
+					path: `/wp/v2/media/${ id }`,
 					method: 'POST',
 					data: {
 						meta: {
 							'_videopack-meta': metaToSave,
 						},
 					},
-				}).catch(() => {
+				} ).catch( () => {
 					console.error(
-						`Failed to update _videopack-meta for attachment ${id}`
+						`Failed to update _videopack-meta for attachment ${ id }`
 					);
-				});
+				} );
 			}
 		},
-		[id, options, autoSave]
+		[ id, options, autoSave ]
 	);
 
-	const updateMeta = useDebounce(updateMetaCallback, 1000);
+	const updateMeta = useDebounce( updateMetaCallback, 1000 );
 
-	const handleSettingChange = (key, value) => {
+	const handleSettingChange = ( key, value ) => {
 		let updatedAttrs;
-		if (typeof key === 'object' && key !== null) {
+		if ( typeof key === 'object' && key !== null ) {
 			const processedKey = { ...key };
-			if ('title' in processedKey && processedKey.title === '') {
+			if ( 'title' in processedKey && processedKey.title === '' ) {
 				processedKey.title = undefined;
 			}
 			updatedAttrs = { ...attributes, ...processedKey };
-			setAttributes(processedKey);
+			setAttributes( processedKey );
 		} else {
 			const processedValue =
 				key === 'title' && value === '' ? undefined : value;
-			updatedAttrs = { ...attributes, [key]: processedValue };
-			setAttributes({ [key]: processedValue });
+			updatedAttrs = { ...attributes, [ key ]: processedValue };
+			setAttributes( { [ key ]: processedValue } );
 		}
 
-		if (id) {
+		if ( id ) {
 			// Handle caption updates for the attachment record.
-			if (typeof key === 'object' && key !== null) {
-				if ('caption' in key) {
-					updateAttachment('caption', key.caption);
+			if ( typeof key === 'object' && key !== null ) {
+				if ( 'caption' in key ) {
+					updateAttachment( 'caption', key.caption );
 				}
-				if ('title' in key) {
-					updateAttachment('title', key.title);
+				if ( 'title' in key ) {
+					updateAttachment( 'title', key.title );
 				}
-			} else if ('caption' === key || 'title' === key) {
-				updateAttachment(key, value);
+			} else if ( 'caption' === key || 'title' === key ) {
+				updateAttachment( key, value );
 			}
 
 			// Check if any of the updated keys belong in _videopack-meta.
 			const updatedKeys =
 				typeof key === 'object' && key !== null
-					? Object.keys(key)
-					: [key];
+					? Object.keys( key )
+					: [ key ];
 
-			const shouldUpdateMeta = updatedKeys.some((k) =>
-				metaKeys.includes(k)
+			const shouldUpdateMeta = updatedKeys.some( ( k ) =>
+				metaKeys.includes( k )
 			);
 
-			if (shouldUpdateMeta) {
-				updateMeta(updatedAttrs);
+			if ( shouldUpdateMeta ) {
+				updateMeta( updatedAttrs );
 			}
 		}
 	};
 
 	const preloadOptions = [
-		{ value: 'auto', label: __('Auto', 'video-embed-thumbnail-generator') },
+		{
+			value: 'auto',
+			label: __( 'Auto', 'video-embed-thumbnail-generator' ),
+		},
 		{
 			value: 'metadata',
-			label: __('Metadata', 'video-embed-thumbnail-generator'),
+			label: __( 'Metadata', 'video-embed-thumbnail-generator' ),
 		},
-		{ value: 'none', label: _x('None', 'Preload value') },
+		{ value: 'none', label: _x( 'None', 'Preload value' ) },
 	];
 
 	return {

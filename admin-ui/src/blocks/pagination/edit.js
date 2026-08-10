@@ -11,13 +11,13 @@ import useVideopackContext from '../../hooks/useVideopackContext';
 
 /* global videopack_config */
 
-export default function Edit({
+export default function Edit( {
 	attributes,
 	setAttributes,
 	context,
 	clientId,
 	showPaginationSettings = true,
-}) {
+} ) {
 	const {
 		pagination_color,
 		pagination_background_color,
@@ -26,178 +26,180 @@ export default function Edit({
 	} = attributes;
 
 	const vpData = useVideopackData();
-	const { resolved } = useVideopackContext(attributes, context);
+	const { resolved } = useVideopackContext( attributes, context );
 	const currentPage =
-		vpData.currentPage || context['videopack/currentPage'] || 1;
+		vpData.currentPage || context[ 'videopack/currentPage' ] || 1;
 	const totalPages =
-		vpData.totalPages || context['videopack/totalPages'] || 1;
+		vpData.totalPages || context[ 'videopack/totalPages' ] || 1;
 
 	const THEME_COLORS = videopack_config?.themeColors || [];
 
-	const { updateBlockAttributes } = useDispatch('core/block-editor');
+	const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
 	const { parentClientId } = useSelect(
-		(select) => {
+		( select ) => {
 			return {
 				parentClientId:
-					select('core/block-editor').getBlockRootClientId(clientId),
+					select( 'core/block-editor' ).getBlockRootClientId(
+						clientId
+					),
 			};
 		},
-		[clientId]
+		[ clientId ]
 	);
 
 	const fallbacks = useMemo(
-		() => getColorFallbacks(attributes),
-		[attributes]
+		() => getColorFallbacks( attributes ),
+		[ attributes ]
 	);
 
-	const handlePageChange = (newPage) => {
-		if (parentClientId) {
-			updateBlockAttributes(parentClientId, { currentPage: newPage });
+	const handlePageChange = ( newPage ) => {
+		if ( parentClientId ) {
+			updateBlockAttributes( parentClientId, { currentPage: newPage } );
 		}
 	};
 
-	const blockProps = useBlockProps({
+	const blockProps = useBlockProps( {
 		className: 'videopack-pagination-block',
-	});
+	} );
 
 	return (
 		<>
 			<InspectorControls>
 				<PanelBody
-					title={__(
+					title={ __(
 						'Pagination Colors',
 						'video-embed-thumbnail-generator'
-					)}
+					) }
 				>
-					{showPaginationSettings && (
+					{ showPaginationSettings && (
 						<div className="videopack-color-section">
 							<p className="videopack-settings-section-title">
-								{__(
+								{ __(
 									'Pagination',
 									'video-embed-thumbnail-generator'
-								)}
+								) }
 							</p>
 							<div className="videopack-color-flex-row is-pagination">
 								<div className="videopack-color-flex-item">
 									<CompactColorPicker
-										label={__(
+										label={ __(
 											'Outline/Text',
 											'video-embed-thumbnail-generator'
-										)}
-										value={pagination_color}
-										onChange={(value) =>
-											setAttributes({
+										) }
+										value={ pagination_color }
+										onChange={ ( value ) =>
+											setAttributes( {
 												pagination_color: value,
-											})
+											} )
 										}
-										colors={THEME_COLORS}
+										colors={ THEME_COLORS }
 										fallbackValue={
 											pagination_color === ''
 												? fallbacks.pagination_color
 												: resolved.pagination_color ||
-													fallbacks.pagination_color
+												  fallbacks.pagination_color
 										}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
 									<CompactColorPicker
-										label={__(
+										label={ __(
 											'Background',
 											'video-embed-thumbnail-generator'
-										)}
-										value={pagination_background_color}
-										onChange={(value) =>
-											setAttributes({
+										) }
+										value={ pagination_background_color }
+										onChange={ ( value ) =>
+											setAttributes( {
 												pagination_background_color:
 													value,
-											})
+											} )
 										}
-										colors={THEME_COLORS}
+										colors={ THEME_COLORS }
 										fallbackValue={
 											pagination_background_color === ''
 												? fallbacks.pagination_background_color
 												: resolved.pagination_background_color ||
-													fallbacks.pagination_background_color
+												  fallbacks.pagination_background_color
 										}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
 									<CompactColorPicker
-										label={__(
+										label={ __(
 											'Active Background',
 											'video-embed-thumbnail-generator'
-										)}
-										value={pagination_active_bg_color}
-										onChange={(value) =>
-											setAttributes({
+										) }
+										value={ pagination_active_bg_color }
+										onChange={ ( value ) =>
+											setAttributes( {
 												pagination_active_bg_color:
 													value,
-											})
+											} )
 										}
-										colors={THEME_COLORS}
+										colors={ THEME_COLORS }
 										fallbackValue={
 											pagination_active_bg_color === ''
 												? fallbacks.pagination_active_bg_color
 												: resolved.pagination_active_bg_color ||
-													fallbacks.pagination_active_bg_color
+												  fallbacks.pagination_active_bg_color
 										}
 									/>
 								</div>
 								<div className="videopack-color-flex-item">
 									<CompactColorPicker
-										label={__(
+										label={ __(
 											'Active Text',
 											'video-embed-thumbnail-generator'
-										)}
-										value={pagination_active_color}
-										onChange={(value) =>
-											setAttributes({
+										) }
+										value={ pagination_active_color }
+										onChange={ ( value ) =>
+											setAttributes( {
 												pagination_active_color: value,
-											})
+											} )
 										}
-										colors={THEME_COLORS}
+										colors={ THEME_COLORS }
 										fallbackValue={
 											pagination_active_color === ''
 												? fallbacks.pagination_active_color
 												: resolved.pagination_active_color ||
-													fallbacks.pagination_active_color
+												  fallbacks.pagination_active_color
 										}
 									/>
 								</div>
 							</div>
 						</div>
-					)}
+					) }
 				</PanelBody>
 			</InspectorControls>
 
-			{totalPages <= 1 ? (
+			{ totalPages <= 1 ? (
 				<div
-					{...blockProps}
-					className={`${blockProps.className} is-placeholder`}
-					title={__(
+					{ ...blockProps }
+					className={ `${ blockProps.className } is-placeholder` }
+					title={ __(
 						'Pagination Placeholder (Preview Only)',
 						'video-embed-thumbnail-generator'
-					)}
+					) }
 				>
 					<Pagination
-						currentPage={1}
-						totalPages={10}
-						onPageChange={() => {}}
-						attributes={attributes}
-						context={context}
+						currentPage={ 1 }
+						totalPages={ 10 }
+						onPageChange={ () => {} }
+						attributes={ attributes }
+						context={ context }
 					/>
 				</div>
 			) : (
-				<div {...blockProps}>
+				<div { ...blockProps }>
 					<Pagination
-						currentPage={currentPage}
-						totalPages={totalPages}
-						onPageChange={handlePageChange}
-						attributes={attributes}
-						context={context}
+						currentPage={ currentPage }
+						totalPages={ totalPages }
+						onPageChange={ handlePageChange }
+						attributes={ attributes }
+						context={ context }
 					/>
 				</div>
-			)}
+			) }
 		</>
 	);
 }

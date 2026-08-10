@@ -22,7 +22,7 @@ const PLAYER_CONTEXT_CLASS_KEYS = [
  * @param {boolean} root0.isPreview            Whether it's a preview.
  * @return {Element}                           The rendered container.
  */
-export default function PlayerContainer({
+export default function PlayerContainer( {
 	children,
 	className,
 	attributes = {},
@@ -31,10 +31,10 @@ export default function PlayerContainer({
 	tagName: Tag = 'div',
 	style,
 	isPreview,
-}) {
-	const vpContext = useVideopackContext(attributes, context, {
+} ) {
+	const vpContext = useVideopackContext( attributes, context, {
 		classKeys: PLAYER_CONTEXT_CLASS_KEYS,
-	});
+	} );
 	const {
 		resolved: { duotone: contextDuotone },
 		classes: contextClasses,
@@ -44,26 +44,28 @@ export default function PlayerContainer({
 	const activeDuotone =
 		style?.color?.duotone || attributes?.duotone || contextDuotone;
 	let finalDuotoneClass = resolvedDuotoneClass || '';
-	const loopDuotoneId = context['videopack/loopDuotoneId'];
+	const loopDuotoneId = context[ 'videopack/loopDuotoneId' ];
 
-	if (loopDuotoneId) {
+	if ( loopDuotoneId ) {
 		finalDuotoneClass = ''; // Loop handles the filter via its own class on the parent
-	} else if (!finalDuotoneClass && activeDuotone) {
+	} else if ( ! finalDuotoneClass && activeDuotone ) {
 		if (
 			typeof activeDuotone === 'string' &&
-			activeDuotone.startsWith('var:preset|duotone|')
+			activeDuotone.startsWith( 'var:preset|duotone|' )
 		) {
-			finalDuotoneClass = `wp-duotone-${activeDuotone.split('|').pop()}`;
-		} else if (Array.isArray(activeDuotone)) {
+			finalDuotoneClass = `wp-duotone-${ activeDuotone
+				.split( '|' )
+				.pop() }`;
+		} else if ( Array.isArray( activeDuotone ) ) {
 			// If it's a custom array, we expect a class to be passed in resolvedDuotoneClass
 			// or we just leave it for the CustomDuotoneFilter to handle if rendered.
 		}
 	}
 
 	const finalClasses =
-		`videopack-video-block-container videopack-wrapper ${contextClasses} ${
+		`videopack-video-block-container videopack-wrapper ${ contextClasses } ${
 			className || ''
-		} ${finalDuotoneClass} ${
+		} ${ finalDuotoneClass } ${
 			isPreview || vpContext.resolved.isPreview ? 'is-preview' : ''
 		}`.trim();
 
@@ -73,8 +75,8 @@ export default function PlayerContainer({
 	};
 
 	return (
-		<Tag className={finalClasses} style={finalStyle}>
-			{children}
+		<Tag className={ finalClasses } style={ finalStyle }>
+			{ children }
 		</Tag>
 	);
 }

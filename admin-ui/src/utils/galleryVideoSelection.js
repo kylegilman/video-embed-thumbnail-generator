@@ -24,31 +24,31 @@
  * @param {number}       params.previewPostId  The current post's ID.
  * @return {{type: 'none'}|{type: 'no-change'}|{type: 'update', updates: Object}} Result.
  */
-export function resolveGalleryVideoSelection({
+export function resolveGalleryVideoSelection( {
 	media,
 	gallerySource,
 	galleryInclude,
 	previewPostId,
-}) {
-	const mediaArray = (Array.isArray(media) ? media : [media]).filter(
-		(item) => item?.id
+} ) {
+	const mediaArray = ( Array.isArray( media ) ? media : [ media ] ).filter(
+		( item ) => item?.id
 	);
-	if (!mediaArray.length) {
+	if ( ! mediaArray.length ) {
 		return { type: 'none' };
 	}
 
-	const newIds = mediaArray.map((item) => item.id.toString());
+	const newIds = mediaArray.map( ( item ) => item.id.toString() );
 
-	if (gallerySource === 'manual') {
+	if ( gallerySource === 'manual' ) {
 		const currentInclude = galleryInclude
-			? galleryInclude.split(',').map((id) => id.trim())
+			? galleryInclude.split( ',' ).map( ( id ) => id.trim() )
 			: [];
 		return {
 			type: 'update',
 			updates: {
 				gallery_include: [
-					...new Set([...currentInclude, ...newIds]),
-				].join(','),
+					...new Set( [ ...currentInclude, ...newIds ] ),
+				].join( ',' ),
 				gallery_orderby: 'include',
 			},
 		};
@@ -59,17 +59,17 @@ export function resolveGalleryVideoSelection({
 	// frame's attachment.toJSON() exposes the same value as `.uploadedTo` —
 	// check both since this function is used by both selection paths.
 	const alreadyAttachedHere = mediaArray.every(
-		(item) => (item.parent ?? item.uploadedTo) === previewPostId
+		( item ) => ( item.parent ?? item.uploadedTo ) === previewPostId
 	);
 
-	if (alreadyAttachedHere) {
+	if ( alreadyAttachedHere ) {
 		return { type: 'no-change' };
 	}
 
 	return {
 		type: 'update',
 		updates: {
-			gallery_include: newIds.join(','),
+			gallery_include: newIds.join( ',' ),
 			gallery_source: 'manual',
 			gallery_orderby: 'include',
 		},

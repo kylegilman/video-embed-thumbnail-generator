@@ -24,23 +24,23 @@ import {
 } from '../../utils/templates';
 import './editor.scss';
 
-const ALLOWED_BLOCKS = ['videopack/loop', 'videopack/pagination'];
+const ALLOWED_BLOCKS = [ 'videopack/loop', 'videopack/pagination' ];
 
 // Collection is a valid theme-context root (Overlays.scss) — nested blocks
 // inherit the skin class/CSS vars from here rather than each needing their own.
 const COLLECTION_CONTEXT_OPTS = {
 	excludeHoverTrigger: true,
-	classKeys: ['skin'],
+	classKeys: [ 'skin' ],
 };
 
-export default function Edit({
+export default function Edit( {
 	attributes,
 	setAttributes,
 	clientId,
 	context,
 	isSelected,
-}) {
-	const [options, setOptions] = useState();
+} ) {
+	const [ options, setOptions ] = useState();
 	const {
 		layout = 'grid',
 		columns = 3,
@@ -64,24 +64,24 @@ export default function Edit({
 
 	const { hasPaginationBlock, isNewlyInserted, hasSelectedInnerBlock } =
 		useSelect(
-			(select) => {
+			( select ) => {
 				const {
 					getBlocks,
 					getBlock,
 					hasSelectedInnerBlock: hasSelectedInner,
-				} = select('core/block-editor');
-				const blocks = getBlocks(clientId) || [];
-				const block = getBlock(clientId);
+				} = select( 'core/block-editor' );
+				const blocks = getBlocks( clientId ) || [];
+				const block = getBlock( clientId );
 				return {
 					hasPaginationBlock: blocks.some(
-						(b) => b.name === 'videopack/pagination'
+						( b ) => b.name === 'videopack/pagination'
 					),
 					isNewlyInserted:
 						block &&
-						!block.attributes.gallery_id &&
-						!block.attributes.gallery_category &&
-						!block.attributes.gallery_tag &&
-						!block.attributes.gallery_include,
+						! block.attributes.gallery_id &&
+						! block.attributes.gallery_category &&
+						! block.attributes.gallery_tag &&
+						! block.attributes.gallery_include,
 					// Shallow (direct children only) — Collection's own appender
 					// adds a sibling to Loop/Pagination at the top level, so it
 					// should only show while working with that top-level
@@ -90,10 +90,10 @@ export default function Edit({
 					// use for their own, much narrower trees) would leave it
 					// visible almost continuously, since nearly all editing
 					// happens somewhere inside the collection's tree.
-					hasSelectedInnerBlock: hasSelectedInner(clientId),
+					hasSelectedInnerBlock: hasSelectedInner( clientId ),
 				};
 			},
-			[clientId]
+			[ clientId ]
 		);
 
 	// Only show Collection's own "Add block" appender while this block (or
@@ -103,7 +103,7 @@ export default function Edit({
 	const previewPostId = useSelect(
 		// core/editor is only registered inside a real post-editing screen —
 		// undefined in other contexts this component can be previewed in.
-		(select) => select('core/editor')?.getCurrentPostId?.() ?? null,
+		( select ) => select( 'core/editor' )?.getCurrentPostId?.() ?? null,
 		[]
 	);
 
@@ -114,7 +114,7 @@ export default function Edit({
 	// doesn't work here since useVideoQuery's fetch effect depends on
 	// individual primitive fields, not object identity, so re-setting a
 	// value to itself is a no-op as far as its dependency array is concerned.
-	const [refreshToken, setRefreshToken] = useState(0);
+	const [ refreshToken, setRefreshToken ] = useState( 0 );
 
 	/**
 	 * Handles video(s) selected/uploaded via the "Add Video" toolbar button.
@@ -124,23 +124,28 @@ export default function Edit({
 	 * @param {Object|Array} media Selected attachment object(s).
 	 */
 	const handleSelectVideos = useCallback(
-		(media) => {
-			const result = resolveGalleryVideoSelection({
+		( media ) => {
+			const result = resolveGalleryVideoSelection( {
 				media,
 				gallerySource: attributes.gallery_source,
 				galleryInclude: attributes.gallery_include,
 				previewPostId,
-			});
+			} );
 
-			if (result.type === 'update') {
-				setAttributes(result.updates);
-			} else if (result.type === 'no-change') {
+			if ( result.type === 'update' ) {
+				setAttributes( result.updates );
+			} else if ( result.type === 'no-change' ) {
 				// A freshly uploaded file is already attached to this post,
 				// so no attribute changes — just force the Loop child to refetch.
-				setRefreshToken((prev) => prev + 1);
+				setRefreshToken( ( prev ) => prev + 1 );
 			}
 		},
-		[attributes.gallery_source, attributes.gallery_include, previewPostId, setAttributes]
+		[
+			attributes.gallery_source,
+			attributes.gallery_include,
+			previewPostId,
+			setAttributes,
+		]
 	);
 
 	/**
@@ -152,31 +157,31 @@ export default function Edit({
 	 * with "Attempted to synchronously unmount a root while React was
 	 * already rendering."
 	 */
-	const openAddVideoFrame = useCallback(() => {
-		const frame = window.wp.media({
-			title: __('Add Video', 'video-embed-thumbnail-generator'),
+	const openAddVideoFrame = useCallback( () => {
+		const frame = window.wp.media( {
+			title: __( 'Add Video', 'video-embed-thumbnail-generator' ),
 			button: {
-				text: __('Add', 'video-embed-thumbnail-generator'),
+				text: __( 'Add', 'video-embed-thumbnail-generator' ),
 			},
 			multiple: true,
 			library: { type: 'video' },
-		});
+		} );
 
-		frame.on('select', () => {
-			handleSelectVideos(frame.state().get('selection').toJSON());
-		});
+		frame.on( 'select', () => {
+			handleSelectVideos( frame.state().get( 'selection' ).toJSON() );
+		} );
 
 		frame.open();
-	}, [handleSelectVideos]);
+	}, [ handleSelectVideos ] );
 
-	const queryParams = useMemo(() => {
+	const queryParams = useMemo( () => {
 		let galleryPerPage = -1;
-		if (effectiveValues.isPreview) {
+		if ( effectiveValues.isPreview ) {
 			galleryPerPage = 2;
-		} else if (hasPaginationBlock) {
+		} else if ( hasPaginationBlock ) {
 			galleryPerPage =
 				gallery_per_page || effectiveValues.gallery_per_page;
-		} else if (effectiveValues.enable_collection_video_limit) {
+		} else if ( effectiveValues.enable_collection_video_limit ) {
 			galleryPerPage =
 				effectiveValues.collection_video_limit ||
 				effectiveValues.gallery_per_page;
@@ -197,15 +202,15 @@ export default function Edit({
 		effectiveValues.collection_video_limit,
 		gallery_per_page,
 		currentPage,
-	]);
+	] );
 	// We fetch query data to power the live preview template and pagination info
-	const queryData = useVideoQuery(queryParams, previewPostId, refreshToken);
+	const queryData = useVideoQuery( queryParams, previewPostId, refreshToken );
 
-	useEffect(() => {
-		getSettings().then((response) => {
-			setOptions(response);
-		});
-	}, []);
+	useEffect( () => {
+		getSettings().then( ( response ) => {
+			setOptions( response );
+		} );
+	}, [] );
 
 	// Give this instance a real, persisted identity the first time it's
 	// saved — the server-side AJAX pagination endpoint (Blocks::
@@ -213,33 +218,36 @@ export default function Edit({
 	// exact instance's saved content later, instead of trusting a client-
 	// resubmitted block tree. Same pattern WordPress core uses for
 	// core/query's queryId: generate once, persist, never regenerate.
-	useEffect(() => {
-		if (!attributes.collectionId) {
-			setAttributes({
+	useEffect( () => {
+		if ( ! attributes.collectionId ) {
+			setAttributes( {
 				collectionId:
 					'vp_' +
-					Date.now().toString(36) +
-					Math.random().toString(36).slice(2, 8),
-			});
+					Date.now().toString( 36 ) +
+					Math.random().toString( 36 ).slice( 2, 8 ),
+			} );
 		}
 		// Deliberately runs only once per mount — collectionId must not be
 		// regenerated on subsequent re-renders once set.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [] );
 
 	// We no longer hydrate design attributes from options here to avoid bloat.
 	// The VideopackContextBridge and useVideopackContext hook handle inheritance
 	// dynamically, so we only save attributes that are explicitly changed.
 
 	// Resolve blockGap value for use in internal grid spacing
-	const resolvedBlockGap = useMemo(() => {
+	const resolvedBlockGap = useMemo( () => {
 		const gap = attributes.style?.spacing?.blockGap;
-		if (!gap) {
+		if ( ! gap ) {
 			return undefined;
 		}
 
 		// Handle Gutenberg preset variables: var:preset|spacing|X -> var(--wp--preset--spacing--X)
-		if (typeof gap === 'string' && gap.startsWith('var:preset|spacing|')) {
+		if (
+			typeof gap === 'string' &&
+			gap.startsWith( 'var:preset|spacing|' )
+		) {
 			return (
 				gap.replace(
 					'var:preset|spacing|',
@@ -249,21 +257,21 @@ export default function Edit({
 		}
 
 		return gap;
-	}, [attributes.style?.spacing?.blockGap]);
+	}, [ attributes.style?.spacing?.blockGap ] );
 
 	// Dynamic Template based on global settings (only used for new blocks)
-	const dynamicTemplate = useMemo(() => {
-		if (layout === 'list') {
-			return getListTemplate(options);
+	const dynamicTemplate = useMemo( () => {
+		if ( layout === 'list' ) {
+			return getListTemplate( options );
 		}
 		// Base block (no variation) defaults to Feed template for grid layout
-		if (layout === 'grid' && !variation) {
-			return getFeedTemplate(options);
+		if ( layout === 'grid' && ! variation ) {
+			return getFeedTemplate( options );
 		}
-		return getGridTemplate(options);
-	}, [layout, variation, options]);
+		return getGridTemplate( options );
+	}, [ layout, variation, options ] );
 
-	const blockProps = useBlockProps({
+	const blockProps = useBlockProps( {
 		style: {
 			...contextStyle,
 			'--videopack-collection-columns': columns,
@@ -273,25 +281,25 @@ export default function Edit({
 		className: [
 			'videopack-collection',
 			'videopack-wrapper',
-			`layout-${layout}`,
-			`columns-${columns}`,
+			`layout-${ layout }`,
+			`columns-${ columns }`,
 			// If no explicit align is set, apply the effective (global) align class
-			!attributes.align && effectiveValues.align
-				? `align${effectiveValues.align}`
+			! attributes.align && effectiveValues.align
+				? `align${ effectiveValues.align }`
 				: '',
 			effectiveValues.isPreview ? 'is-preview' : '',
 			collectionClasses,
 		]
-			.filter(Boolean)
-			.join(' '),
-	});
+			.filter( Boolean )
+			.join( ' ' ),
+	} );
 
-	const videos = useMemo(() => {
-		if (queryData.videoResults && queryData.videoResults.length > 0) {
+	const videos = useMemo( () => {
+		if ( queryData.videoResults && queryData.videoResults.length > 0 ) {
 			return queryData.videoResults;
 		}
 
-		if (effectiveValues.isPreview) {
+		if ( effectiveValues.isPreview ) {
 			return [
 				{
 					attachment_id: 10001,
@@ -375,7 +383,7 @@ export default function Edit({
 		}
 
 		return [];
-	}, [queryData.videoResults, effectiveValues.isPreview]);
+	}, [ queryData.videoResults, effectiveValues.isPreview ] );
 
 	// The 'videos' array is used for live preview only and should not be persisted
 	// to block attributes to avoid bloat. The PHP renderer fetches these dynamically.
@@ -394,29 +402,29 @@ export default function Edit({
 	// in the common nested case, and context can't flow child-to-parent, so
 	// this callback is how Loop reaches back up to it.
 	const refreshVideos = useCallback(
-		() => setRefreshToken((prev) => prev + 1),
+		() => setRefreshToken( ( prev ) => prev + 1 ),
 		[]
 	);
 
 	const bridgeOverrides = useMemo(
-		() => ({
+		() => ( {
 			'videopack/gallery_pagination': hasPaginationBlock,
 			'videopack/totalPages': queryData.maxNumPages,
 			'videopack/videos': videos,
 			'videopack/refreshVideos': refreshVideos,
-		}),
-		[hasPaginationBlock, queryData.maxNumPages, videos, refreshVideos]
+		} ),
+		[ hasPaginationBlock, queryData.maxNumPages, videos, refreshVideos ]
 	);
 
 	// If options haven't loaded yet for a newly inserted block, don't render InnerBlocks
 	// to prevent the wrong template from being applied.
 	// We skip this check for previews to ensure they render immediately.
-	if (!options && isNewlyInserted && !effectiveValues.isPreview) {
+	if ( ! options && isNewlyInserted && ! effectiveValues.isPreview ) {
 		return (
 			<div
-				{...blockProps}
+				{ ...blockProps }
 				className={
-					(blockProps.className || '') + ' ' + collectionClasses
+					( blockProps.className || '' ) + ' ' + collectionClasses
 				}
 			>
 				<div className="videopack-collection-placeholder">
@@ -430,39 +438,39 @@ export default function Edit({
 		<>
 			<InspectorControls>
 				<CollectionInspectorControls
-					clientId={clientId}
-					attributes={attributes}
-					setAttributes={setAttributes}
-					queryData={queryData}
-					options={options}
-					hasPaginationBlock={hasPaginationBlock}
-					isEditingAllPages={isEditingAllPages}
+					clientId={ clientId }
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+					queryData={ queryData }
+					options={ options }
+					hasPaginationBlock={ hasPaginationBlock }
+					isEditingAllPages={ isEditingAllPages }
 				/>
 			</InspectorControls>
 
 			<BlockControls>
 				<ToolbarGroup>
 					<ToolbarButton
-						icon={plus}
-						label={__(
+						icon={ plus }
+						label={ __(
 							'Add Video',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={openAddVideoFrame}
+						) }
+						onClick={ openAddVideoFrame }
 					/>
 				</ToolbarGroup>
 			</BlockControls>
 
-			<div {...blockProps}>
+			<div { ...blockProps }>
 				<VideopackContextBridge
-					attributes={attributes}
-					context={context}
-					overrides={bridgeOverrides}
+					attributes={ attributes }
+					context={ context }
+					overrides={ bridgeOverrides }
 				>
-					<VideopackProvider value={videopackContextValue}>
+					<VideopackProvider value={ videopackContextValue }>
 						<InnerBlocks
-							allowedBlocks={ALLOWED_BLOCKS}
-							template={dynamicTemplate}
+							allowedBlocks={ ALLOWED_BLOCKS }
+							template={ dynamicTemplate }
 							renderAppender={
 								showCollectionAppender
 									? InnerBlocks.ButtonBlockAppender

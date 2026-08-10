@@ -1,3 +1,5 @@
+/* global ResizeObserver */
+
 import apiFetch from '@wordpress/api-fetch';
 import {
 	createPortal,
@@ -11,12 +13,12 @@ import {
 let cachedGlobalStylesPromise = null;
 
 const fetchGlobalStyles = () => {
-	if (!cachedGlobalStylesPromise) {
-		cachedGlobalStylesPromise = apiFetch({
+	if ( ! cachedGlobalStylesPromise ) {
+		cachedGlobalStylesPromise = apiFetch( {
 			path: '/videopack/v1/global-styles',
-		})
-			.then((response) => response.css || '')
-			.catch(() => '');
+		} )
+			.then( ( response ) => response.css || '' )
+			.catch( () => '' );
 	}
 	return cachedGlobalStylesPromise;
 };
@@ -31,45 +33,45 @@ const fetchGlobalStyles = () => {
  * @param {Array}   props.resizeDependencies Optional array of dependencies that trigger a resize when changed.
  * @param {boolean} props.fullScreen         Whether the iframe should occupy the full screen.
  */
-const PreviewIframe = ({
+const PreviewIframe = ( {
 	children,
 	title = 'Preview',
 	className = '',
 	resizeDependencies = [],
 	fullScreen = false,
-}) => {
-	const [contentRef, setContentRef] = useState(null);
+} ) => {
+	const [ contentRef, setContentRef ] = useState( null );
 	// Mirrored styles land in a useEffect, which by definition runs after the
 	// browser has already painted whatever was just portaled into the iframe
 	// — so the very first paint of any content is briefly completely
 	// unstyled (an <img> at its natural intrinsic size, etc). Keep the
 	// iframe invisible until that first mirror pass completes so this flash
 	// of unstyled content never reaches the screen.
-	const [stylesReady, setStylesReady] = useState(false);
+	const [ stylesReady, setStylesReady ] = useState( false );
 	const mountNode = contentRef?.contentWindow?.document?.body;
-	const observerRef = useRef(null);
+	const observerRef = useRef( null );
 	// Debounces rapid-fire ResizeObserver callbacks (e.g. old content →
 	// loading placeholder → new content, each a genuine height change) down
 	// to a single, final resize — otherwise the iframe visibly snaps through
 	// each intermediate height instead of just settling on the last one.
-	const resizeDebounceRef = useRef(null);
+	const resizeDebounceRef = useRef( null );
 
 	/**
 	 * Measure and apply the correct iframe height.
 	 */
-	const resizeIframe = useCallback(() => {
-		if (!contentRef || !mountNode || fullScreen) {
+	const resizeIframe = useCallback( () => {
+		if ( ! contentRef || ! mountNode || fullScreen ) {
 			return;
 		}
 
-		if (resizeDebounceRef.current) {
-			clearTimeout(resizeDebounceRef.current);
+		if ( resizeDebounceRef.current ) {
+			clearTimeout( resizeDebounceRef.current );
 		}
 
-		resizeDebounceRef.current = setTimeout(() => {
+		resizeDebounceRef.current = setTimeout( () => {
 			// Use requestAnimationFrame to ensure we measure after layout.
-			window.requestAnimationFrame(() => {
-				if (!contentRef || !mountNode || fullScreen) {
+			window.requestAnimationFrame( () => {
+				if ( ! contentRef || ! mountNode || fullScreen ) {
 					return;
 				}
 
@@ -81,67 +83,70 @@ const PreviewIframe = ({
 					? wrapper.offsetHeight
 					: mountNode.scrollHeight;
 
-				if (height && height > 50) {
-					const currentHeight = parseInt(contentRef.style.height, 10);
+				if ( height && height > 50 ) {
+					const currentHeight = parseInt(
+						contentRef.style.height,
+						10
+					);
 					if (
-						!currentHeight ||
-						(Math.abs(height - currentHeight) > 5 &&
-							Math.abs(height - currentHeight) < 2000) ||
+						! currentHeight ||
+						( Math.abs( height - currentHeight ) > 5 &&
+							Math.abs( height - currentHeight ) < 2000 ) ||
 						height < currentHeight
 					) {
-						contentRef.style.height = `${height}px`;
+						contentRef.style.height = `${ height }px`;
 					}
 				}
-			});
-		}, 120);
-	}, [contentRef, mountNode, fullScreen]);
+			} );
+		}, 120 );
+	}, [ contentRef, mountNode, fullScreen ] );
 
-	const resizeDependenciesString = JSON.stringify(resizeDependencies);
+	const resizeDependenciesString = JSON.stringify( resizeDependencies );
 	// Trigger resize when dependencies change (e.g. alignment).
-	useEffect(() => {
+	useEffect( () => {
 		resizeIframe();
-	}, [resizeIframe, resizeDependenciesString]);
+	}, [ resizeIframe, resizeDependenciesString ] );
 
-	const handleIframeLoad = useCallback(() => {
-		if (contentRef) {
+	const handleIframeLoad = useCallback( () => {
+		if ( contentRef ) {
 			const doc = contentRef.contentWindow.document;
 			const head = doc.head;
 
 			// Clear existing mirrored styles to prevent duplicates on reload.
-			head.querySelectorAll('.videopack-mirrored-style').forEach((el) =>
-				el.remove()
+			head.querySelectorAll( '.videopack-mirrored-style' ).forEach(
+				( el ) => el.remove()
 			);
 
 			// Mirror plugin and block styles into the iframe.
 			document
-				.querySelectorAll('link[rel="stylesheet"], style')
-				.forEach((style) => {
+				.querySelectorAll( 'link[rel="stylesheet"], style' )
+				.forEach( ( style ) => {
 					// Skip our own internal iframe styles to avoid conflicts.
 					// Also skip common WordPress admin styles that interfere with the preview.
 					if (
 						style.id !== 'videopack-isolated-global-styles' &&
 						style.id !== 'videopack-iframe-reset' &&
 						style.id !== 'videopack-global-styles' &&
-						!style.id?.startsWith('colors-css') &&
-						!style.id?.startsWith('common-css') &&
-						!style.id?.startsWith('admin-bar-css') &&
-						!style.id?.startsWith('wp-admin-css') &&
-						!style.id?.startsWith('buttons-css') &&
-						!style.id?.startsWith('dashicons-css') &&
-						!style.id?.startsWith('list-tables-css') &&
-						!style.id?.startsWith('edit-css') &&
-						!style.id?.startsWith('media-views-css') &&
-						!style.id?.startsWith('wp-color-picker-css')
+						! style.id?.startsWith( 'colors-css' ) &&
+						! style.id?.startsWith( 'common-css' ) &&
+						! style.id?.startsWith( 'admin-bar-css' ) &&
+						! style.id?.startsWith( 'wp-admin-css' ) &&
+						! style.id?.startsWith( 'buttons-css' ) &&
+						! style.id?.startsWith( 'dashicons-css' ) &&
+						! style.id?.startsWith( 'list-tables-css' ) &&
+						! style.id?.startsWith( 'edit-css' ) &&
+						! style.id?.startsWith( 'media-views-css' ) &&
+						! style.id?.startsWith( 'wp-color-picker-css' )
 					) {
-						const clone = style.cloneNode(true);
-						clone.classList.add('videopack-mirrored-style');
-						head.appendChild(clone);
+						const clone = style.cloneNode( true );
+						clone.classList.add( 'videopack-mirrored-style' );
+						head.appendChild( clone );
 					}
-				});
+				} );
 
 			// Add a basic reset and common styles to the iframe.
-			if (!doc.getElementById('videopack-iframe-reset')) {
-				const style = doc.createElement('style');
+			if ( ! doc.getElementById( 'videopack-iframe-reset' ) ) {
+				const style = doc.createElement( 'style' );
 				style.id = 'videopack-iframe-reset';
 				style.textContent = `
 					html, body {
@@ -181,18 +186,18 @@ const PreviewIframe = ({
 						background: rgba(0, 0, 0, 0.8) !important;
 					}
 				`;
-				head.appendChild(style);
+				head.appendChild( style );
 			}
 
 			// Replicate global configuration context into the iframe.
-			if (window.videopack_config) {
+			if ( window.videopack_config ) {
 				contentRef.contentWindow.videopack_config = {
 					...window.videopack_config,
 				};
 			}
 
 			// Inject theme styles from WordPress global styles.
-			if (!doc.getElementById('videopack-global-styles')) {
+			if ( ! doc.getElementById( 'videopack-global-styles' ) ) {
 				const existingDOMStyles =
 					window.parent?.document?.getElementById(
 						'global-styles-inline-css'
@@ -200,32 +205,35 @@ const PreviewIframe = ({
 					window.videopack_config?.globalStyles ||
 					window.videopack_config?.global_styles;
 
-				if (existingDOMStyles) {
-					const themeStyle = doc.createElement('style');
+				if ( existingDOMStyles ) {
+					const themeStyle = doc.createElement( 'style' );
 					themeStyle.id = 'videopack-global-styles';
 					themeStyle.textContent = existingDOMStyles;
-					head.appendChild(themeStyle);
-					setStylesReady(true);
+					head.appendChild( themeStyle );
+					setStylesReady( true );
 				} else {
-					fetchGlobalStyles().then((css) => {
-						if (css && !doc.getElementById('videopack-global-styles')) {
-							const themeStyle = doc.createElement('style');
+					fetchGlobalStyles().then( ( css ) => {
+						if (
+							css &&
+							! doc.getElementById( 'videopack-global-styles' )
+						) {
+							const themeStyle = doc.createElement( 'style' );
 							themeStyle.id = 'videopack-global-styles';
 							themeStyle.textContent = css;
-							head.appendChild(themeStyle);
+							head.appendChild( themeStyle );
 						}
-						setStylesReady(true);
-					});
+						setStylesReady( true );
+					} );
 				}
 			} else {
-				setStylesReady(true);
+				setStylesReady( true );
 			}
 		}
-	}, [contentRef]);
+	}, [ contentRef ] );
 
 	// Measure once on mount and whenever the content or width changes.
-	useEffect(() => {
-		if (!contentRef || !mountNode || fullScreen) {
+	useEffect( () => {
+		if ( ! contentRef || ! mountNode || fullScreen ) {
 			return;
 		}
 
@@ -235,40 +243,40 @@ const PreviewIframe = ({
 		const wrapper = mountNode.querySelector(
 			'.videopack-iframe-content-wrapper'
 		);
-		if (!wrapper) {
+		if ( ! wrapper ) {
 			return;
 		}
 
 		// First measurement — after initial render.
-		const t1 = setTimeout(resizeIframe, 600);
+		const t1 = setTimeout( resizeIframe, 600 );
 		// Second measurement — catches any deferred rendering (like MEJS).
-		const t2 = setTimeout(resizeIframe, 1500);
+		const t2 = setTimeout( resizeIframe, 1500 );
 
-		if (!observerRef.current) {
-			observerRef.current = new ResizeObserver(() => {
+		if ( ! observerRef.current ) {
+			observerRef.current = new ResizeObserver( () => {
 				resizeIframe();
-			});
+			} );
 		}
 
-		observerRef.current.observe(wrapper);
+		observerRef.current.observe( wrapper );
 
 		return () => {
-			clearTimeout(t1);
-			clearTimeout(t2);
-			if (resizeDebounceRef.current) {
-				clearTimeout(resizeDebounceRef.current);
+			clearTimeout( t1 );
+			clearTimeout( t2 );
+			if ( resizeDebounceRef.current ) {
+				clearTimeout( resizeDebounceRef.current );
 			}
-			if (observerRef.current) {
+			if ( observerRef.current ) {
 				observerRef.current.disconnect();
 			}
 		};
-	}, [contentRef, mountNode, handleIframeLoad, resizeIframe, fullScreen]);
+	}, [ contentRef, mountNode, handleIframeLoad, resizeIframe, fullScreen ] );
 
-	const iframeStyle = useMemo(() => {
+	const iframeStyle = useMemo( () => {
 		// Stays invisible until the first style-mirroring pass has landed, so
 		// the unstyled first paint (see stylesReady above) never shows.
 		const visibility = stylesReady ? 'visible' : 'hidden';
-		if (fullScreen) {
+		if ( fullScreen ) {
 			return {
 				position: 'fixed',
 				top: 0,
@@ -290,24 +298,24 @@ const PreviewIframe = ({
 			transition: 'height 0.2s ease',
 			visibility,
 		};
-	}, [fullScreen, stylesReady]);
+	}, [ fullScreen, stylesReady ] );
 
 	return (
 		<iframe
-			ref={setContentRef}
-			title={title}
-			className={className}
-			style={iframeStyle}
-			onLoad={handleIframeLoad}
+			ref={ setContentRef }
+			title={ title }
+			className={ className }
+			style={ iframeStyle }
+			onLoad={ handleIframeLoad }
 			scrolling="no"
 		>
-			{mountNode &&
+			{ mountNode &&
 				createPortal(
 					<div className="videopack-iframe-content-wrapper">
-						{children}
+						{ children }
 					</div>,
 					mountNode
-				)}
+				) }
 		</iframe>
 	);
 };

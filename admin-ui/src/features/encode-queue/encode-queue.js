@@ -64,34 +64,34 @@ const BROWSER_TRIGGER_EVENTS = {
  * @return {Object} The rendered component.
  */
 const EncodeQueue = () => {
-	const [queueData, setQueueData] = useState([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const initialLoadSucceeded = useRef(false);
-	const [isQueuePaused, setIsQueuePaused] = useState(
+	const [ queueData, setQueueData ] = useState( [] );
+	const [ isLoading, setIsLoading ] = useState( true );
+	const initialLoadSucceeded = useRef( false );
+	const [ isQueuePaused, setIsQueuePaused ] = useState(
 		window.videopack?.encodeQueueData?.initialQueueState === 'pause'
 	);
-	const [message, setMessage] = useState(null);
+	const [ message, setMessage ] = useState( null );
 	// Separate from `message` (rendered at the top of the panel) -- this one
 	// renders inside the Bulk Video Processing panel, next to the button
 	// that triggers it, so the feedback is visible without scrolling up.
-	const [bulkMessage, setBulkMessage] = useState(null);
-	const [isClearing, setIsClearing] = useState(false);
-	const [isTogglingQueue, setIsTogglingQueue] = useState(false);
-	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'cancel'/'remove'/'delete_permanently', type: 'completed'/'all', jobIds: [] }
-	const [actingJobIds, setActingJobIds] = useState([]);
+	const [ bulkMessage, setBulkMessage ] = useState( null );
+	const [ isClearing, setIsClearing ] = useState( false );
+	const [ isTogglingQueue, setIsTogglingQueue ] = useState( false );
+	const [ isConfirmOpen, setIsConfirmOpen ] = useState( false );
+	const [ itemToActOn, setItemToActOn ] = useState( null ); // { action: 'clear'/'cancel'/'remove'/'delete_permanently', type: 'completed'/'all', jobIds: [] }
+	const [ actingJobIds, setActingJobIds ] = useState( [] );
 
 	// Raw local-ffmpeg-only check -- used for the server-FFmpeg-specific
 	// "thumbs" bulk option below. Don't broaden this one; it's labeled as
 	// server-side FFmpeg specifically.
-	const hasTranscoder = useMemo(() => {
-		return isFfmpegAvailable(window.videopack_config?.ffmpeg_exists);
-	}, []);
+	const hasTranscoder = useMemo( () => {
+		return isFfmpegAvailable( window.videopack_config?.ffmpeg_exists );
+	}, [] );
 
 	// Broader check -- true if local ffmpeg OR the active/fallback encoder
 	// (browser, cloud) is ready. The Encoding Queue table itself should show
 	// whenever ANY of these can actually produce jobs, not just local ffmpeg.
-	const hasEncodingCapability = useMemo(() => {
+	const hasEncodingCapability = useMemo( () => {
 		return getEffectiveFfmpegExists(
 			{
 				ffmpeg_exists: window.videopack_config?.ffmpeg_exists,
@@ -100,11 +100,11 @@ const EncodeQueue = () => {
 			},
 			window.videopack_config?.isTranscodingServiceReady
 		);
-	}, []);
-	const [batchProgress, setBatchProgress] = useState({});
-	const [isRunningBatch, setIsRunningBatch] = useState({});
+	}, [] );
+	const [ batchProgress, setBatchProgress ] = useState( {} );
+	const [ isRunningBatch, setIsRunningBatch ] = useState( {} );
 
-	const defaultBatchProcesses = useMemo(() => {
+	const defaultBatchProcesses = useMemo( () => {
 		return [
 			{
 				id: 'featured',
@@ -124,21 +124,21 @@ const EncodeQueue = () => {
 					'video-embed-thumbnail-generator'
 				),
 				description:
-					(window.videopack_config?.options?.thumb_parent ||
-						'post') === 'video'
+					( window.videopack_config?.options?.thumb_parent ||
+						'post' ) === 'video'
 						? __(
 								'Switches all existing thumbnail attachments to be children of the video itself',
 								'video-embed-thumbnail-generator'
-							)
+						  )
 						: __(
 								"Switches all existing thumbnail attachments to be children of the video's parent post",
 								'video-embed-thumbnail-generator'
-							),
+						  ),
 			},
 		];
-	}, []);
+	}, [] );
 
-	const batchProcesses = useMemo(() => {
+	const batchProcesses = useMemo( () => {
 		const filtered = [
 			...applyFilters(
 				'videopack.queue.batch_processes',
@@ -146,99 +146,99 @@ const EncodeQueue = () => {
 			),
 		];
 		// Ensure the 'parents' batch process is always the very last one.
-		const parentsIdx = filtered.findIndex((p) => p.id === 'parents');
-		if (parentsIdx > -1) {
-			const [parentsItem] = filtered.splice(parentsIdx, 1);
-			filtered.push(parentsItem);
+		const parentsIdx = filtered.findIndex( ( p ) => p.id === 'parents' );
+		if ( parentsIdx > -1 ) {
+			const [ parentsItem ] = filtered.splice( parentsIdx, 1 );
+			filtered.push( parentsItem );
 		}
 		return filtered;
-	}, [defaultBatchProcesses]);
+	}, [ defaultBatchProcesses ] );
 
-	const bulkOptions = useMemo(() => {
+	const bulkOptions = useMemo( () => {
 		const optionsList = [];
 
-		if (hasTranscoder) {
-			optionsList.push({
+		if ( hasTranscoder ) {
+			optionsList.push( {
 				id: 'thumbs',
-				label: __('Thumbnails', 'video-embed-thumbnail-generator'),
+				label: __( 'Thumbnails', 'video-embed-thumbnail-generator' ),
 				description: __(
 					'Generates thumbnails in the background for all media library videos using server-side FFmpeg.',
 					'video-embed-thumbnail-generator'
 				),
-			});
+			} );
 		}
 
-		optionsList.push({
+		optionsList.push( {
 			id: 'encoding',
-			label: __('Video Formats', 'video-embed-thumbnail-generator'),
+			label: __( 'Video Formats', 'video-embed-thumbnail-generator' ),
 			description: __(
 				'Enqueues all videos for encoding to your configured formats.',
 				'video-embed-thumbnail-generator'
 			),
-		});
+		} );
 
-		return applyFilters('videopack.queue.bulk_options', optionsList, {
+		return applyFilters( 'videopack.queue.bulk_options', optionsList, {
 			ffmpegExists: hasTranscoder,
-		});
-	}, [hasTranscoder]);
+		} );
+	}, [ hasTranscoder ] );
 
-	const [checkedBulkIds, setCheckedBulkIds] = useState({});
+	const [ checkedBulkIds, setCheckedBulkIds ] = useState( {} );
 
-	useEffect(() => {
-		if (bulkOptions && bulkOptions.length > 0) {
+	useEffect( () => {
+		if ( bulkOptions && bulkOptions.length > 0 ) {
 			const initialChecked = {};
-			bulkOptions.forEach((opt) => {
-				initialChecked[opt.id] = true;
-			});
-			setCheckedBulkIds(initialChecked);
+			bulkOptions.forEach( ( opt ) => {
+				initialChecked[ opt.id ] = true;
+			} );
+			setCheckedBulkIds( initialChecked );
 		}
-	}, [bulkOptions]);
+	}, [ bulkOptions ] );
 
-	const handleToggleBulkOption = (id) => {
-		setCheckedBulkIds((prev) => ({
+	const handleToggleBulkOption = ( id ) => {
+		setCheckedBulkIds( ( prev ) => ( {
 			...prev,
-			[id]: !prev[id],
-		}));
+			[ id ]: ! prev[ id ],
+		} ) );
 	};
 
-	const [isQueueingBulk, setIsQueueingBulk] = useState(false);
+	const [ isQueueingBulk, setIsQueueingBulk ] = useState( false );
 
 	const handleRunSelectedBulk = async () => {
-		const selectedIds = Object.keys(checkedBulkIds).filter(
-			(id) => checkedBulkIds[id]
+		const selectedIds = Object.keys( checkedBulkIds ).filter(
+			( id ) => checkedBulkIds[ id ]
 		);
-		if (selectedIds.length === 0) {
+		if ( selectedIds.length === 0 ) {
 			return;
 		}
-		setIsQueueingBulk(true);
-		setBulkMessage(null);
+		setIsQueueingBulk( true );
+		setBulkMessage( null );
 		const errors = [];
 		let browserGenerationTriggered = false;
-		for (const id of selectedIds) {
-			setIsRunningBatch((prev) => ({ ...prev, [id]: true }));
+		for ( const id of selectedIds ) {
+			setIsRunningBatch( ( prev ) => ( { ...prev, [ id ]: true } ) );
 			try {
-				const response = await startBatchProcess(id);
+				const response = await startBatchProcess( id );
 				if (
 					response &&
 					response.browser &&
-					BROWSER_TRIGGER_EVENTS[id]
+					BROWSER_TRIGGER_EVENTS[ id ]
 				) {
 					browserGenerationTriggered = true;
 					window.dispatchEvent(
-						new CustomEvent(BROWSER_TRIGGER_EVENTS[id])
+						new CustomEvent( BROWSER_TRIGGER_EVENTS[ id ] )
 					);
 				}
-			} catch (err) {
-				console.error(`Failed to start batch process: ${id}`, err);
-				errors.push(err.message || err.code || id);
+			} catch ( err ) {
+				console.error( `Failed to start batch process: ${ id }`, err );
+				errors.push( err.message || err.code || id );
 			} finally {
-				setIsRunningBatch((prev) => ({ ...prev, [id]: false }));
+				setIsRunningBatch( ( prev ) => ( { ...prev, [ id ]: false } ) );
 			}
 		}
-		setIsQueueingBulk(false);
+		setIsQueueingBulk( false );
 
-		if (errors.length > 0) {
-			setBulkMessage({
+		if ( errors.length > 0 ) {
+			setBulkMessage( {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is a list of error messages */
@@ -246,52 +246,52 @@ const EncodeQueue = () => {
 						'Failed to start one or more batch processes: %s',
 						'video-embed-thumbnail-generator'
 					),
-					errors.join(', ')
+					errors.join( ', ' )
 				),
-			});
-		} else if (browserGenerationTriggered) {
-			setBulkMessage({
+			} );
+		} else if ( browserGenerationTriggered ) {
+			setBulkMessage( {
 				type: 'success',
 				text: __(
 					'Selected batch processes started. In-browser generation has been initiated -- please keep this browser window open until it completes.',
 					'video-embed-thumbnail-generator'
 				),
-			});
+			} );
 		} else {
-			setBulkMessage({
+			setBulkMessage( {
 				type: 'success',
 				text: __(
 					'Selected batch processes started successfully.',
 					'video-embed-thumbnail-generator'
 				),
-			});
+			} );
 		}
 
 		fetchQueue();
 	};
 
-	const handleRunBatch = async (batchId) => {
-		setIsRunningBatch((prev) => ({ ...prev, [batchId]: true }));
+	const handleRunBatch = async ( batchId ) => {
+		setIsRunningBatch( ( prev ) => ( { ...prev, [ batchId ]: true } ) );
 		try {
 			const additionalData = {};
-			if (batchId === 'parents') {
+			if ( batchId === 'parents' ) {
 				additionalData.target_parent =
 					window.videopack_config?.options?.thumb_parent || 'post';
 			}
-			const response = await startBatchProcess(batchId, additionalData);
-			if (response.browser && BROWSER_TRIGGER_EVENTS[batchId]) {
+			const response = await startBatchProcess( batchId, additionalData );
+			if ( response.browser && BROWSER_TRIGGER_EVENTS[ batchId ] ) {
 				window.dispatchEvent(
-					new CustomEvent(BROWSER_TRIGGER_EVENTS[batchId])
+					new CustomEvent( BROWSER_TRIGGER_EVENTS[ batchId ] )
 				);
-				setMessage({
+				setMessage( {
 					type: 'success',
 					text: __(
 						'In-browser generation has been initiated. Please keep this browser window open until the process completes.',
 						'video-embed-thumbnail-generator'
 					),
-				});
+				} );
 			} else {
-				setMessage({
+				setMessage( {
 					type: 'success',
 					text:
 						response.message ||
@@ -299,12 +299,12 @@ const EncodeQueue = () => {
 							'Batch process started successfully.',
 							'video-embed-thumbnail-generator'
 						),
-				});
+				} );
 			}
 			fetchQueue();
-		} catch (error) {
-			console.error(`Error starting batch ${batchId}:`, error);
-			setMessage({
+		} catch ( error ) {
+			console.error( `Error starting batch ${ batchId }:`, error );
+			setMessage( {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
@@ -314,9 +314,12 @@ const EncodeQueue = () => {
 					),
 					error.message || error.code
 				),
-			});
+			} );
 		} finally {
-			setIsRunningBatch((prev) => ({ ...prev, [batchId]: false }));
+			setIsRunningBatch( ( prev ) => ( {
+				...prev,
+				[ batchId ]: false,
+			} ) );
 		}
 	};
 
@@ -324,7 +327,7 @@ const EncodeQueue = () => {
 		window.videopack?.isMultisite ||
 		window.videopack?.encodeQueueData?.isNetwork;
 
-	const [view, setView] = useState({
+	const [ view, setView ] = useState( {
 		type: 'table',
 		perPage: 10,
 		page: 1,
@@ -340,21 +343,21 @@ const EncodeQueue = () => {
 			'video_title',
 			'format_name',
 			'status',
-		].filter((field) => (field === 'blog_name' ? isMultisite : true)),
+		].filter( ( field ) => ( field === 'blog_name' ? isMultisite : true ) ),
 		layout: defaultLayouts.table.layout,
-	});
+	} );
 
 	// Handle real-time progress updates from browser encoder via CustomEvents
-	useEffect(() => {
-		const handleBrowserProgress = (event) => {
+	useEffect( () => {
+		const handleBrowserProgress = ( event ) => {
 			const { job_id, percent, fps, speed, elapsed, remaining } =
 				event.detail;
-			setQueueData((prevData) => {
-				if (!prevData || !Array.isArray(prevData)) {
+			setQueueData( ( prevData ) => {
+				if ( ! prevData || ! Array.isArray( prevData ) ) {
 					return prevData;
 				}
-				return prevData.map((item) => {
-					if (Number(item.id) === Number(job_id)) {
+				return prevData.map( ( item ) => {
+					if ( Number( item.id ) === Number( job_id ) ) {
 						return {
 							...item,
 							status: 'browser_encoding',
@@ -363,9 +366,9 @@ const EncodeQueue = () => {
 								'video-embed-thumbnail-generator'
 							),
 							progress: {
-								...(typeof item.progress === 'object'
+								...( typeof item.progress === 'object'
 									? item.progress
-									: {}),
+									: {} ),
 								percent,
 								fps,
 								speed,
@@ -376,8 +379,8 @@ const EncodeQueue = () => {
 						};
 					}
 					return item;
-				});
-			});
+				} );
+			} );
 		};
 
 		window.addEventListener(
@@ -390,45 +393,49 @@ const EncodeQueue = () => {
 				handleBrowserProgress
 			);
 		};
-	}, []);
+	}, [] );
 
 	// Auto-clear success messages after 30 seconds.
-	useEffect(() => {
-		if (message && message.type === 'success') {
-			const timer = setTimeout(() => {
-				setMessage(null);
-			}, 30000);
-			return () => clearTimeout(timer);
+	useEffect( () => {
+		if ( message && message.type === 'success' ) {
+			const timer = setTimeout( () => {
+				setMessage( null );
+			}, 30000 );
+			return () => clearTimeout( timer );
 		}
-	}, [message]);
+	}, [ message ] );
 
-	useEffect(() => {
-		if (bulkMessage && bulkMessage.type === 'success') {
-			const timer = setTimeout(() => {
-				setBulkMessage(null);
-			}, 30000);
-			return () => clearTimeout(timer);
+	useEffect( () => {
+		if ( bulkMessage && bulkMessage.type === 'success' ) {
+			const timer = setTimeout( () => {
+				setBulkMessage( null );
+			}, 30000 );
+			return () => clearTimeout( timer );
 		}
-	}, [bulkMessage]);
+	}, [ bulkMessage ] );
 	const fetchQueue = async () => {
 		try {
 			const newData = await getQueue();
-			setQueueData((prevData) => {
-				if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
+			setQueueData( ( prevData ) => {
+				if (
+					JSON.stringify( prevData ) !== JSON.stringify( newData )
+				) {
 					return newData;
 				}
 				return prevData;
-			});
+			} );
 
-			const progressData = await getBatchProgress('all');
-			setBatchProgress(progressData);
+			const progressData = await getBatchProgress( 'all' );
+			setBatchProgress( progressData );
 			initialLoadSucceeded.current = true;
 			// Clear any previous FETCHING error messages if we successfully fetched data.
-			setMessage((prev) => (prev && prev.isFetchingError ? null : prev));
-		} catch (error) {
-			console.error('Error fetching queue:', error);
-			if (!initialLoadSucceeded.current) {
-				setMessage({
+			setMessage( ( prev ) =>
+				prev && prev.isFetchingError ? null : prev
+			);
+		} catch ( error ) {
+			console.error( 'Error fetching queue:', error );
+			if ( ! initialLoadSucceeded.current ) {
+				setMessage( {
 					type: 'error',
 					isFetchingError: true,
 					text: sprintf(
@@ -439,43 +446,43 @@ const EncodeQueue = () => {
 						),
 						error.message || error.code
 					),
-				});
+				} );
 			}
 		} finally {
-			setIsLoading(false);
+			setIsLoading( false );
 		}
 	};
 
-	useEffect(() => {
+	useEffect( () => {
 		fetchQueue();
-		const interval = setInterval(fetchQueue, 15000); // Poll every 15 seconds
-		return () => clearInterval(interval);
-	}, []);
+		const interval = setInterval( fetchQueue, 15000 ); // Poll every 15 seconds
+		return () => clearInterval( interval );
+	}, [] );
 
 	const handleToggleQueue = async () => {
-		setIsTogglingQueue(true);
+		setIsTogglingQueue( true );
 		const action = isQueuePaused ? 'play' : 'pause';
 		try {
-			const response = await toggleQueue(action);
-			setIsQueuePaused(response.queue_state === 'pause');
+			const response = await toggleQueue( action );
+			setIsQueuePaused( response.queue_state === 'pause' );
 			const defaultMessage =
 				action === 'play'
 					? __(
 							'Encoding queue resumed.',
 							'video-embed-thumbnail-generator'
-						)
+					  )
 					: __(
 							'Encoding queue paused.',
 							'video-embed-thumbnail-generator'
-						);
-			setMessage({
+					  );
+			setMessage( {
 				type: 'success',
 				text: response.message || defaultMessage,
-			});
+			} );
 			fetchQueue(); // Refresh queue data after state change
-		} catch (error) {
-			console.error('Error toggling queue:', error);
-			setMessage({
+		} catch ( error ) {
+			console.error( 'Error toggling queue:', error );
+			setMessage( {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
@@ -485,56 +492,59 @@ const EncodeQueue = () => {
 					),
 					error.message || error.code
 				),
-			});
+			} );
 		} finally {
-			setIsTogglingQueue(false);
+			setIsTogglingQueue( false );
 		}
 	};
 
-	const openConfirmDialog = (action, details) => {
-		setItemToActOn({ action, ...details });
-		setIsConfirmOpen(true);
+	const openConfirmDialog = ( action, details ) => {
+		setItemToActOn( { action, ...details } );
+		setIsConfirmOpen( true );
 	};
 
 	const handleConfirm = () => {
-		if (!itemToActOn) {
+		if ( ! itemToActOn ) {
 			return;
 		}
 
-		if (itemToActOn.action === 'clear') {
-			handleClearQueue(itemToActOn.type);
-		} else if (itemToActOn.action === 'cancel') {
-			handleDeleteJobs(itemToActOn.jobIds, 'cancel');
-		} else if (itemToActOn.action === 'remove') {
-			handleRemoveJobs(itemToActOn.jobIds);
-		} else if (itemToActOn.action === 'delete_permanently') {
-			handleDeleteJobs(itemToActOn.jobIds, 'delete_permanently');
-		} else if (itemToActOn.action === 'run_batch') {
-			handleRunBatch(itemToActOn.batchId);
+		if ( itemToActOn.action === 'clear' ) {
+			handleClearQueue( itemToActOn.type );
+		} else if ( itemToActOn.action === 'cancel' ) {
+			handleDeleteJobs( itemToActOn.jobIds, 'cancel' );
+		} else if ( itemToActOn.action === 'remove' ) {
+			handleRemoveJobs( itemToActOn.jobIds );
+		} else if ( itemToActOn.action === 'delete_permanently' ) {
+			handleDeleteJobs( itemToActOn.jobIds, 'delete_permanently' );
+		} else if ( itemToActOn.action === 'run_batch' ) {
+			handleRunBatch( itemToActOn.batchId );
 		}
-		setIsConfirmOpen(false);
-		setItemToActOn(null);
+		setIsConfirmOpen( false );
+		setItemToActOn( null );
 	};
 
-	const handleClearQueue = async (type) => {
-		setIsClearing(true);
+	const handleClearQueue = async ( type ) => {
+		setIsClearing( true );
 		try {
-			const response = await clearQueue(type);
+			const response = await clearQueue( type );
 			const defaultMessage =
 				type === 'all'
-					? __('All jobs cleared.', 'video-embed-thumbnail-generator')
+					? __(
+							'All jobs cleared.',
+							'video-embed-thumbnail-generator'
+					  )
 					: __(
 							'Completed jobs cleared.',
 							'video-embed-thumbnail-generator'
-						);
-			setMessage({
+					  );
+			setMessage( {
 				type: 'success',
 				text: response.message || defaultMessage,
-			});
+			} );
 			fetchQueue(); // Refresh queue data
-		} catch (error) {
-			console.error('Error clearing queue:', error);
-			setMessage({
+		} catch ( error ) {
+			console.error( 'Error clearing queue:', error );
+			setMessage( {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
@@ -544,28 +554,28 @@ const EncodeQueue = () => {
 					),
 					error.message || error.code
 				),
-			});
+			} );
 		} finally {
-			setIsClearing(false);
+			setIsClearing( false );
 		}
 	};
 
-	const handleDeleteJobs = async (jobIds, action = 'cancel') => {
-		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
-		setActingJobIds((prev) => [...prev, ...ids]);
+	const handleDeleteJobs = async ( jobIds, action = 'cancel' ) => {
+		const ids = Array.isArray( jobIds ) ? jobIds : [ jobIds ];
+		setActingJobIds( ( prev ) => [ ...prev, ...ids ] );
 		try {
-			for (const jobId of ids) {
-				await deleteJob(jobId);
+			for ( const jobId of ids ) {
+				await deleteJob( jobId );
 				window.dispatchEvent(
-					new CustomEvent('videopack_job_deleted', {
+					new CustomEvent( 'videopack_job_deleted', {
 						detail: { job_id: jobId },
-					})
+					} )
 				);
 			}
 			const isDeletePermanently = action === 'delete_permanently';
 			let text = '';
-			if (ids.length === 1) {
-				if (isDeletePermanently) {
+			if ( ids.length === 1 ) {
+				if ( isDeletePermanently ) {
 					text = __(
 						'Attachment deleted.',
 						'video-embed-thumbnail-generator'
@@ -576,7 +586,7 @@ const EncodeQueue = () => {
 						'video-embed-thumbnail-generator'
 					);
 				}
-			} else if (isDeletePermanently) {
+			} else if ( isDeletePermanently ) {
 				text = sprintf(
 					/* translators: %d: number of attachments deleted */
 					__(
@@ -588,19 +598,22 @@ const EncodeQueue = () => {
 			} else {
 				text = sprintf(
 					/* translators: %d: number of jobs canceled */
-					__('%d jobs canceled.', 'video-embed-thumbnail-generator'),
+					__(
+						'%d jobs canceled.',
+						'video-embed-thumbnail-generator'
+					),
 					ids.length
 				);
 			}
 
-			setMessage({
+			setMessage( {
 				type: 'success',
 				text,
-			});
+			} );
 			fetchQueue();
-		} catch (error) {
-			console.error('Error deleting job(s):', error);
-			setMessage({
+		} catch ( error ) {
+			console.error( 'Error deleting job(s):', error );
+			setMessage( {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
@@ -608,29 +621,31 @@ const EncodeQueue = () => {
 						'Error deleting job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
-					stripHtml(error.message)
+					stripHtml( error.message )
 				),
-			});
+			} );
 		} finally {
-			setActingJobIds((prev) => prev.filter((id) => !ids.includes(id)));
+			setActingJobIds( ( prev ) =>
+				prev.filter( ( id ) => ! ids.includes( id ) )
+			);
 		}
 	};
 
-	const handleRemoveJobs = async (jobIds) => {
-		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
-		setActingJobIds((prev) => [...prev, ...ids]);
+	const handleRemoveJobs = async ( jobIds ) => {
+		const ids = Array.isArray( jobIds ) ? jobIds : [ jobIds ];
+		setActingJobIds( ( prev ) => [ ...prev, ...ids ] );
 		try {
-			for (const jobId of ids) {
-				await removeJob(jobId);
+			for ( const jobId of ids ) {
+				await removeJob( jobId );
 			}
-			setMessage({
+			setMessage( {
 				type: 'success',
 				text:
 					ids.length === 1
 						? __(
 								'Job removed from queue.',
 								'video-embed-thumbnail-generator'
-							)
+						  )
 						: sprintf(
 								/* translators: %d: number of jobs removed */
 								__(
@@ -638,12 +653,12 @@ const EncodeQueue = () => {
 									'video-embed-thumbnail-generator'
 								),
 								ids.length
-							),
-			});
+						  ),
+			} );
 			fetchQueue();
-		} catch (error) {
-			console.error('Error removing job(s):', error);
-			setMessage({
+		} catch ( error ) {
+			console.error( 'Error removing job(s):', error );
+			setMessage( {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
@@ -651,29 +666,31 @@ const EncodeQueue = () => {
 						'Error removing job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
-					stripHtml(error.message)
+					stripHtml( error.message )
 				),
-			});
+			} );
 		} finally {
-			setActingJobIds((prev) => prev.filter((id) => !ids.includes(id)));
+			setActingJobIds( ( prev ) =>
+				prev.filter( ( id ) => ! ids.includes( id ) )
+			);
 		}
 	};
 
-	const handleResetJobs = useCallback(async (jobIds) => {
-		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
-		setActingJobIds((prev) => [...prev, ...ids]);
+	const handleResetJobs = useCallback( async ( jobIds ) => {
+		const ids = Array.isArray( jobIds ) ? jobIds : [ jobIds ];
+		setActingJobIds( ( prev ) => [ ...prev, ...ids ] );
 		try {
-			for (const jobId of ids) {
-				await resetJob(jobId);
+			for ( const jobId of ids ) {
+				await resetJob( jobId );
 			}
-			setMessage({
+			setMessage( {
 				type: 'success',
 				text:
 					ids.length === 1
 						? __(
 								'Job status reset.',
 								'video-embed-thumbnail-generator'
-							)
+						  )
 						: sprintf(
 								/* translators: %d: number of jobs reset */
 								__(
@@ -681,12 +698,12 @@ const EncodeQueue = () => {
 									'video-embed-thumbnail-generator'
 								),
 								ids.length
-							),
-			});
+						  ),
+			} );
 			fetchQueue();
-		} catch (error) {
-			console.error('Error resetting job(s):', error);
-			setMessage({
+		} catch ( error ) {
+			console.error( 'Error resetting job(s):', error );
+			setMessage( {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
@@ -694,29 +711,31 @@ const EncodeQueue = () => {
 						'Error resetting job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
-					stripHtml(error.message || error.code)
+					stripHtml( error.message || error.code )
 				),
-			});
+			} );
 		} finally {
-			setActingJobIds((prev) => prev.filter((id) => !ids.includes(id)));
+			setActingJobIds( ( prev ) =>
+				prev.filter( ( id ) => ! ids.includes( id ) )
+			);
 		}
-	}, []);
+	}, [] );
 
-	const handleRetryJobs = useCallback(async (jobIds) => {
-		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
-		setActingJobIds((prev) => [...prev, ...ids]);
+	const handleRetryJobs = useCallback( async ( jobIds ) => {
+		const ids = Array.isArray( jobIds ) ? jobIds : [ jobIds ];
+		setActingJobIds( ( prev ) => [ ...prev, ...ids ] );
 		try {
-			for (const jobId of ids) {
-				await retryJob(jobId);
+			for ( const jobId of ids ) {
+				await retryJob( jobId );
 			}
-			setMessage({
+			setMessage( {
 				type: 'success',
 				text:
 					ids.length === 1
 						? __(
 								'Job re-queued.',
 								'video-embed-thumbnail-generator'
-							)
+						  )
 						: sprintf(
 								/* translators: %d: number of jobs re-queued */
 								__(
@@ -724,13 +743,13 @@ const EncodeQueue = () => {
 									'video-embed-thumbnail-generator'
 								),
 								ids.length
-							),
-			});
-			window.dispatchEvent(new CustomEvent('videopack_check_jobs'));
+						  ),
+			} );
+			window.dispatchEvent( new CustomEvent( 'videopack_check_jobs' ) );
 			fetchQueue();
-		} catch (error) {
-			console.error('Error retrying job(s):', error);
-			setMessage({
+		} catch ( error ) {
+			console.error( 'Error retrying job(s):', error );
+			setMessage( {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
@@ -738,33 +757,35 @@ const EncodeQueue = () => {
 						'Error retrying job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
-					stripHtml(error.message)
+					stripHtml( error.message )
 				),
-			});
+			} );
 		} finally {
-			setActingJobIds((prev) => prev.filter((id) => !ids.includes(id)));
+			setActingJobIds( ( prev ) =>
+				prev.filter( ( id ) => ! ids.includes( id ) )
+			);
 		}
-	}, []);
+	}, [] );
 
 	const fields = useMemo(
 		() =>
 			[
 				{
 					id: 'queue_order',
-					label: __('#', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) => item.queue_order,
+					label: __( '#', 'video-embed-thumbnail-generator' ),
+					getValue: ( { item } ) => item.queue_order,
 					enableSorting: true,
 					type: 'integer',
 				},
 				{
 					id: 'poster',
-					label: __('Thumbnail', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) => item.poster_url,
-					render: ({ item }) =>
+					label: __( 'Thumbnail', 'video-embed-thumbnail-generator' ),
+					getValue: ( { item } ) => item.poster_url,
+					render: ( { item } ) =>
 						item.poster_url ? (
 							<img
-								src={item.poster_url}
-								alt={item.video_title}
+								src={ item.poster_url }
+								alt={ item.video_title }
 								className="videopack-queue-attachment-poster"
 							/>
 						) : (
@@ -775,76 +796,82 @@ const EncodeQueue = () => {
 				},
 				{
 					id: 'blog_name',
-					label: __('Site', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) => item.blog_name,
+					label: __( 'Site', 'video-embed-thumbnail-generator' ),
+					getValue: ( { item } ) => item.blog_name,
 					enableSorting: isMultisite,
 				},
 				{
 					id: 'user_name',
-					label: __('User', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) =>
+					label: __( 'User', 'video-embed-thumbnail-generator' ),
+					getValue: ( { item } ) =>
 						item.user_name ||
-						__('N/A', 'video-embed-thumbnail-generator'),
+						__( 'N/A', 'video-embed-thumbnail-generator' ),
 					enableSorting: true,
 				},
 				{
 					id: 'video_title',
-					label: __('File', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) => item.video_title,
-					render: ({ item }) =>
+					label: __( 'File', 'video-embed-thumbnail-generator' ),
+					getValue: ( { item } ) => item.video_title,
+					render: ( { item } ) =>
 						item.attachment_link ? (
-							<a href={decodeEntities(item.attachment_link)}>
-								{decodeEntities(item.video_title)}
+							<a href={ decodeEntities( item.attachment_link ) }>
+								{ decodeEntities( item.video_title ) }
 							</a>
 						) : (
-							decodeEntities(item.video_title)
+							decodeEntities( item.video_title )
 						),
 					enableSorting: true,
 				},
 				{
 					id: 'parent_post',
-					label: __('Parent Post', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) =>
+					label: __(
+						'Parent Post',
+						'video-embed-thumbnail-generator'
+					),
+					getValue: ( { item } ) =>
 						item.parent_title ||
-						__('Unattached', 'video-embed-thumbnail-generator'),
-					render: ({ item }) =>
+						__( 'Unattached', 'video-embed-thumbnail-generator' ),
+					render: ( { item } ) =>
 						item.parent_edit_link ? (
-							<a href={item.parent_edit_link}>
-								{decodeEntities(item.parent_title)}
+							<a href={ item.parent_edit_link }>
+								{ decodeEntities( item.parent_title ) }
 							</a>
 						) : (
-							__('Unattached', 'video-embed-thumbnail-generator')
+							__(
+								'Unattached',
+								'video-embed-thumbnail-generator'
+							)
 						),
 					enableSorting: true,
 				},
 				{
 					id: 'format_name',
-					label: __('Format', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) => item.format_name,
+					label: __( 'Format', 'video-embed-thumbnail-generator' ),
+					getValue: ( { item } ) => item.format_name,
 					enableSorting: true,
 				},
 				{
 					id: 'status',
-					label: __('Status', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) => item.status_l10n,
-					render: ({ item }) => (
+					label: __( 'Status', 'video-embed-thumbnail-generator' ),
+					getValue: ( { item } ) => item.status_l10n,
+					render: ( { item } ) => (
 						<div
-							className={`videopack-status-cell ${
+							className={ `videopack-status-cell ${
 								[
 									'encoding',
 									'processing',
 									'needs_insert',
 									'pending_replacement',
 									'browser_encoding',
-								].includes(item.status)
+								].includes( item.status )
 									? 'videopack-job-running'
 									: ''
-							}`}
+							}` }
 						>
 							<ul className="videopack-format-list">
 								<EncodeFormatStatus
-									formatId={item.preset || item.format_id}
-									formatData={{
+									formatId={ item.preset || item.format_id }
+									formatData={ {
 										...item,
 										encoding_now: [
 											'encoding',
@@ -852,22 +879,22 @@ const EncodeQueue = () => {
 											'needs_insert',
 											'pending_replacement',
 											'browser_encoding',
-										].includes(item.status),
+										].includes( item.status ),
 										job_id: item.id,
 										label: item.status_l10n,
-									}}
-									onCancelJob={() =>
-										openConfirmDialog('cancel', {
-											jobIds: [item.id],
-										})
+									} }
+									onCancelJob={ () =>
+										openConfirmDialog( 'cancel', {
+											jobIds: [ item.id ],
+										} )
 									}
-									deleteInProgress={actingJobIds.includes(
+									deleteInProgress={ actingJobIds.includes(
 										item.id
-									)}
-									onRefresh={() => fetchQueue()}
-									showLabel={false}
-									hideCancel={true}
-									hideButtons={true}
+									) }
+									onRefresh={ () => fetchQueue() }
+									showLabel={ false }
+									hideCancel={ true }
+									hideButtons={ true }
 								/>
 							</ul>
 						</div>
@@ -876,68 +903,68 @@ const EncodeQueue = () => {
 				},
 				{
 					id: 'created_at',
-					label: __('Created', 'video-embed-thumbnail-generator'),
-					getValue: ({ item }) =>
+					label: __( 'Created', 'video-embed-thumbnail-generator' ),
+					getValue: ( { item } ) =>
 						item.created_at ||
-						(item.started
-							? new Date(item.started * 1000).toISOString()
-							: ''),
-					render: ({ item }) => {
+						( item.started
+							? new Date( item.started * 1000 ).toISOString()
+							: '' ),
+					render: ( { item } ) => {
 						let date = null;
-						if (item.created_at) {
-							date = new Date(item.created_at);
-						} else if (item.started) {
-							date = new Date(item.started * 1000);
+						if ( item.created_at ) {
+							date = new Date( item.created_at );
+						} else if ( item.started ) {
+							date = new Date( item.started * 1000 );
 						}
 						return date ? date.toLocaleString() : '';
 					},
 					enableSorting: true,
 				},
-			].filter((field) =>
+			].filter( ( field ) =>
 				field.id === 'blog_name' ? isMultisite : true
 			),
-		[actingJobIds, isMultisite]
+		[ actingJobIds, isMultisite ]
 	);
 
 	const actions = useMemo(
 		() => [
 			{
 				id: 'clear',
-				label: __('Clear', 'video-embed-thumbnail-generator'),
+				label: __( 'Clear', 'video-embed-thumbnail-generator' ),
 				isDestructive: true,
 				isPrimary: true,
 				supportsBulk: true,
-				isEligible: (item) =>
+				isEligible: ( item ) =>
 					[
 						'completed',
 						'failed',
 						'canceled',
 						'queued',
 						'deleted',
-					].includes(item.status),
-				callback: (items) => {
-					const eligibleItems = items.filter((item) =>
+					].includes( item.status ),
+				callback: ( items ) => {
+					const eligibleItems = items.filter( ( item ) =>
 						[
 							'completed',
 							'failed',
 							'canceled',
 							'queued',
 							'deleted',
-						].includes(item.status)
+						].includes( item.status )
 					);
-					if (eligibleItems.length > 0) {
-						openConfirmDialog('remove', {
-							jobIds: eligibleItems.map((i) => i.id),
-						});
+					if ( eligibleItems.length > 0 ) {
+						openConfirmDialog( 'remove', {
+							jobIds: eligibleItems.map( ( i ) => i.id ),
+						} );
 					}
 				},
 			},
 			{
 				id: 'cancel',
-				label: __('Cancel', 'video-embed-thumbnail-generator'),
+				label: __( 'Cancel', 'video-embed-thumbnail-generator' ),
 				isDestructive: true,
 				supportsBulk: true,
-				isEligible: (item) =>
+				isEligible: ( item ) =>
 					[
 						'queued',
 						'encoding',
@@ -946,9 +973,9 @@ const EncodeQueue = () => {
 						'pending_replacement',
 						'browser_pending',
 						'browser_encoding',
-					].includes(item.status),
-				callback: (items) => {
-					const eligibleItems = items.filter((item) =>
+					].includes( item.status ),
+				callback: ( items ) => {
+					const eligibleItems = items.filter( ( item ) =>
 						[
 							'queued',
 							'encoding',
@@ -957,31 +984,31 @@ const EncodeQueue = () => {
 							'pending_replacement',
 							'browser_pending',
 							'browser_encoding',
-						].includes(item.status)
+						].includes( item.status )
 					);
-					if (eligibleItems.length > 0) {
-						openConfirmDialog('cancel', {
-							jobIds: eligibleItems.map((i) => i.id),
-						});
+					if ( eligibleItems.length > 0 ) {
+						openConfirmDialog( 'cancel', {
+							jobIds: eligibleItems.map( ( i ) => i.id ),
+						} );
 					}
 				},
 			},
 			{
 				id: 'retry',
-				label: __('Retry', 'video-embed-thumbnail-generator'),
+				label: __( 'Retry', 'video-embed-thumbnail-generator' ),
 				supportsBulk: true,
-				isEligible: (item) =>
-					['failed', 'canceled', 'deleted', 'error'].includes(
+				isEligible: ( item ) =>
+					[ 'failed', 'canceled', 'deleted', 'error' ].includes(
 						item.status
 					),
-				callback: (items) => {
-					const eligibleItems = items.filter((item) =>
-						['failed', 'canceled', 'deleted', 'error'].includes(
+				callback: ( items ) => {
+					const eligibleItems = items.filter( ( item ) =>
+						[ 'failed', 'canceled', 'deleted', 'error' ].includes(
 							item.status
 						)
 					);
-					if (eligibleItems.length > 0) {
-						handleRetryJobs(eligibleItems.map((i) => i.id));
+					if ( eligibleItems.length > 0 ) {
+						handleRetryJobs( eligibleItems.map( ( i ) => i.id ) );
 					}
 				},
 			},
@@ -993,8 +1020,8 @@ const EncodeQueue = () => {
 				),
 				isDestructive: true,
 				supportsBulk: true,
-				isEligible: (item) =>
-					![
+				isEligible: ( item ) =>
+					! [
 						'encoding',
 						'processing',
 						'needs_insert',
@@ -1002,11 +1029,11 @@ const EncodeQueue = () => {
 						'browser_pending',
 						'browser_encoding',
 						'deleted',
-					].includes(item.status) && !!item.id,
-				callback: (items) => {
+					].includes( item.status ) && !! item.id,
+				callback: ( items ) => {
 					const eligibleItems = items.filter(
-						(item) =>
-							![
+						( item ) =>
+							! [
 								'encoding',
 								'processing',
 								'needs_insert',
@@ -1014,27 +1041,29 @@ const EncodeQueue = () => {
 								'browser_pending',
 								'browser_encoding',
 								'deleted',
-							].includes(item.status) && !!item.id
+							].includes( item.status ) && !! item.id
 					);
-					if (eligibleItems.length > 0) {
-						openConfirmDialog('delete_permanently', {
-							jobIds: eligibleItems.map((i) => i.id),
-						});
+					if ( eligibleItems.length > 0 ) {
+						openConfirmDialog( 'delete_permanently', {
+							jobIds: eligibleItems.map( ( i ) => i.id ),
+						} );
 					}
 				},
 			},
 			{
 				id: 'reset',
-				label: __('Reset Status', 'video-embed-thumbnail-generator'),
+				label: __( 'Reset Status', 'video-embed-thumbnail-generator' ),
 				supportsBulk: true,
-				isEligible: (item) => {
+				isEligible: ( item ) => {
 					if (
-						!['encoding', 'browser_encoding'].includes(item.status)
+						! [ 'encoding', 'browser_encoding' ].includes(
+							item.status
+						)
 					) {
 						return false;
 					}
 					// Only allow reset if it's "stuck" (not updated in the last minute)
-					if (!item.updated_at) {
+					if ( ! item.updated_at ) {
 						return true;
 					} // If no timestamp, assume stuck
 					const updatedAt = new Date(
@@ -1043,16 +1072,16 @@ const EncodeQueue = () => {
 					const now = new Date().getTime();
 					return now - updatedAt > 60000; // 1 minute
 				},
-				callback: (items) => {
-					const eligibleItems = items.filter((item) => {
+				callback: ( items ) => {
+					const eligibleItems = items.filter( ( item ) => {
 						if (
-							!['encoding', 'browser_encoding'].includes(
+							! [ 'encoding', 'browser_encoding' ].includes(
 								item.status
 							)
 						) {
 							return false;
 						}
-						if (!item.updated_at) {
+						if ( ! item.updated_at ) {
 							return true;
 						}
 						const updatedAt = new Date(
@@ -1060,45 +1089,48 @@ const EncodeQueue = () => {
 						).getTime();
 						const now = new Date().getTime();
 						return now - updatedAt > 60000;
-					});
-					if (eligibleItems.length > 0) {
-						handleResetJobs(eligibleItems.map((i) => i.id));
+					} );
+					if ( eligibleItems.length > 0 ) {
+						handleResetJobs( eligibleItems.map( ( i ) => i.id ) );
 					}
 				},
 			},
 		],
-		[handleRetryJobs, handleResetJobs]
+		[ handleRetryJobs, handleResetJobs ]
 	);
 
 	// "processedData" and "paginationInfo" definition
-	const { data: processedData, paginationInfo } = useMemo(() => {
-		return filterSortAndPaginate(queueData, view, fields);
-	}, [queueData, view, fields]);
+	const { data: processedData, paginationInfo } = useMemo( () => {
+		return filterSortAndPaginate( queueData, view, fields );
+	}, [ queueData, view, fields ] );
 
 	return (
 		<div className="wrap videopack-encode-queue">
 			<h1>
 				<Icon
 					className="videopack-settings-icon"
-					icon={videopack}
-					size={40}
+					icon={ videopack }
+					size={ 40 }
 				/>
-				{__('Videopack Processing', 'video-embed-thumbnail-generator')}
+				{ __(
+					'Videopack Processing',
+					'video-embed-thumbnail-generator'
+				) }
 			</h1>
 
-			{applyFilters('videopack.queue.after_title', null)}
+			{ applyFilters( 'videopack.queue.after_title', null ) }
 
-			{isConfirmOpen && (
+			{ isConfirmOpen && (
 				<ConfirmDialog
-					isOpen={isConfirmOpen}
-					title={(() => {
-						if (itemToActOn?.action === 'delete_permanently') {
+					isOpen={ isConfirmOpen }
+					title={ ( () => {
+						if ( itemToActOn?.action === 'delete_permanently' ) {
 							return __(
 								'Delete Attachment?',
 								'video-embed-thumbnail-generator'
 							);
 						}
-						if (itemToActOn?.action === 'run_batch') {
+						if ( itemToActOn?.action === 'run_batch' ) {
 							return __(
 								'Start Batch Process?',
 								'video-embed-thumbnail-generator'
@@ -1108,28 +1140,31 @@ const EncodeQueue = () => {
 							'Confirm Action',
 							'video-embed-thumbnail-generator'
 						);
-					})()}
-					confirmButtonText={(() => {
-						if (itemToActOn?.action === 'delete_permanently') {
+					} )() }
+					confirmButtonText={ ( () => {
+						if ( itemToActOn?.action === 'delete_permanently' ) {
 							return __(
 								'Delete',
 								'video-embed-thumbnail-generator'
 							);
 						}
-						if (itemToActOn?.action === 'run_batch') {
+						if ( itemToActOn?.action === 'run_batch' ) {
 							return __(
 								'Start',
 								'video-embed-thumbnail-generator'
 							);
 						}
-						return __('Confirm', 'video-embed-thumbnail-generator');
-					})()}
-					onConfirm={handleConfirm}
-					onCancel={() => setIsConfirmOpen(false)}
+						return __(
+							'Confirm',
+							'video-embed-thumbnail-generator'
+						);
+					} )() }
+					onConfirm={ handleConfirm }
+					onCancel={ () => setIsConfirmOpen( false ) }
 				>
-					{(() => {
+					{ ( () => {
 						const count = itemToActOn?.jobIds?.length || 0;
-						if (itemToActOn?.action === 'delete_permanently') {
+						if ( itemToActOn?.action === 'delete_permanently' ) {
 							return count > 1
 								? sprintf(
 										/* translators: %d: number of items */
@@ -1138,13 +1173,13 @@ const EncodeQueue = () => {
 											'video-embed-thumbnail-generator'
 										),
 										count
-									)
+								  )
 								: __(
 										'Are you sure you want to permanently delete this attachment? This action cannot be undone.',
 										'video-embed-thumbnail-generator'
-									);
+								  );
 						}
-						if (itemToActOn?.action === 'remove') {
+						if ( itemToActOn?.action === 'remove' ) {
 							return count > 1
 								? sprintf(
 										/* translators: %d: number of items */
@@ -1153,13 +1188,13 @@ const EncodeQueue = () => {
 											'video-embed-thumbnail-generator'
 										),
 										count
-									)
+								  )
 								: __(
 										'Are you sure you want to remove this job? This will not delete any files.',
 										'video-embed-thumbnail-generator'
-									);
+								  );
 						}
-						if (itemToActOn?.action === 'cancel') {
+						if ( itemToActOn?.action === 'cancel' ) {
 							return count > 1
 								? sprintf(
 										/* translators: %d: number of items */
@@ -1168,13 +1203,13 @@ const EncodeQueue = () => {
 											'video-embed-thumbnail-generator'
 										),
 										count
-									)
+								  )
 								: __(
 										'Are you sure you want to cancel this job?',
 										'video-embed-thumbnail-generator'
-									);
+								  );
 						}
-						if (itemToActOn?.action === 'clear') {
+						if ( itemToActOn?.action === 'clear' ) {
 							return sprintf(
 								/* translators: %s: jobs type ('completed' or 'all') */
 								__(
@@ -1184,7 +1219,7 @@ const EncodeQueue = () => {
 								itemToActOn.type
 							);
 						}
-						if (itemToActOn?.action === 'run_batch') {
+						if ( itemToActOn?.action === 'run_batch' ) {
 							return sprintf(
 								/* translators: %s: name of batch process */
 								__(
@@ -1198,33 +1233,33 @@ const EncodeQueue = () => {
 							'Are you sure you want to perform this action?',
 							'video-embed-thumbnail-generator'
 						);
-					})()}
+					} )() }
 				</ConfirmDialog>
-			)}
+			) }
 
 			<Panel>
-				{message && (
+				{ message && (
 					<Notice
-						status={message.type}
-						onRemove={() => setMessage(null)}
+						status={ message.type }
+						onRemove={ () => setMessage( null ) }
 					>
-						{message.text}
+						{ message.text }
 					</Notice>
-				)}
+				) }
 
-				{hasEncodingCapability && (
+				{ hasEncodingCapability && (
 					<PanelBody
-						title={__(
+						title={ __(
 							'Encoding Queue',
 							'video-embed-thumbnail-generator'
-						)}
-						initialOpen={true}
+						) }
+						initialOpen={ true }
 					>
 						<div className="videopack-queue-controls">
 							<Button
 								variant="primary"
-								onClick={handleToggleQueue}
-								isBusy={isTogglingQueue}
+								onClick={ handleToggleQueue }
+								isBusy={ isTogglingQueue }
 							>
 								<Icon
 									icon={
@@ -1233,61 +1268,63 @@ const EncodeQueue = () => {
 											: 'controls-pause'
 									}
 								/>
-								{isQueuePaused
+								{ isQueuePaused
 									? __(
 											'Play Queue',
 											'video-embed-thumbnail-generator'
-										)
+									  )
 									: __(
 											'Pause Queue',
 											'video-embed-thumbnail-generator'
-										)}
+									  ) }
 							</Button>
 							<Button
 								variant="secondary"
-								onClick={() =>
-									openConfirmDialog('clear', {
+								onClick={ () =>
+									openConfirmDialog( 'clear', {
 										type: 'completed',
-									})
+									} )
 								}
-								isBusy={isClearing}
+								isBusy={ isClearing }
 							>
-								{__(
+								{ __(
 									'Clear Completed',
 									'video-embed-thumbnail-generator'
-								)}
+								) }
 							</Button>
 							<Button
 								variant="tertiary"
 								isDestructive
-								onClick={() =>
-									openConfirmDialog('clear', { type: 'all' })
+								onClick={ () =>
+									openConfirmDialog( 'clear', {
+										type: 'all',
+									} )
 								}
-								isBusy={isClearing}
+								isBusy={ isClearing }
 							>
-								{__(
+								{ __(
 									'Clear All',
 									'video-embed-thumbnail-generator'
-								)}
+								) }
 							</Button>
-							{isLoading && <Spinner />}
+							{ isLoading && <Spinner /> }
 						</div>
 						<Divider />
 						<div className="videopack-dataviews-container">
 							<DataViews
-								data={processedData}
-								fields={fields}
-								view={view}
-								onChangeView={setView}
-								defaultLayouts={defaultLayouts}
-								actions={actions}
-								paginationInfo={paginationInfo}
+								data={ processedData }
+								fields={ fields }
+								view={ view }
+								onChangeView={ setView }
+								defaultLayouts={ defaultLayouts }
+								actions={ actions }
+								paginationInfo={ paginationInfo }
 							/>
 						</div>
 					</PanelBody>
-				)}
+				) }
 
-				{(() => {
+				{ ( () => {
 					// Merge thumbs and browser progress statistics into a single 'thumbs' block
 					// so that browser-side and server-side thumbnail generation share the same panel.
 					const active_encoder =
@@ -1300,7 +1337,7 @@ const EncodeQueue = () => {
 						fallback_encoder === 'browser';
 
 					const normalizedProgress = { ...batchProgress };
-					if (normalizedProgress.browser) {
+					if ( normalizedProgress.browser ) {
 						const browserPending =
 							normalizedProgress.browser.pending || 0;
 						const browserComplete =
@@ -1310,7 +1347,7 @@ const EncodeQueue = () => {
 						const browserTotal =
 							browserPending + browserComplete + browserFailed;
 
-						if (browserTotal > 0) {
+						if ( browserTotal > 0 ) {
 							// complete/failed intentionally use only the
 							// browser-tracked counts, not
 							// normalizedProgress.thumbs's -- those come from
@@ -1326,8 +1363,8 @@ const EncodeQueue = () => {
 							// meaningfully "still pending" right now.
 							normalizedProgress.thumbs = {
 								pending:
-									(normalizedProgress.thumbs?.pending || 0) +
-									browserPending,
+									( normalizedProgress.thumbs?.pending ||
+										0 ) + browserPending,
 								'in-progress':
 									normalizedProgress.thumbs?.[
 										'in-progress'
@@ -1335,14 +1372,14 @@ const EncodeQueue = () => {
 								complete: browserComplete,
 								failed: browserFailed,
 								total:
-									(normalizedProgress.thumbs?.total || 0) +
+									( normalizedProgress.thumbs?.total || 0 ) +
 									browserTotal,
 							};
 						}
 						delete normalizedProgress.browser;
 					}
 
-					if (normalizedProgress.browser_sprites) {
+					if ( normalizedProgress.browser_sprites ) {
 						const spritesBrowserPending =
 							normalizedProgress.browser_sprites.pending || 0;
 						const spritesBrowserComplete =
@@ -1354,14 +1391,14 @@ const EncodeQueue = () => {
 							spritesBrowserComplete +
 							spritesBrowserFailed;
 
-						if (spritesBrowserTotal > 0) {
+						if ( spritesBrowserTotal > 0 ) {
 							// Mirrors the thumbs/browser merge above -- see
 							// that block's comment for why complete/failed
 							// use only the browser-tracked counts.
 							normalizedProgress.sprites = {
 								pending:
-									(normalizedProgress.sprites?.pending || 0) +
-									spritesBrowserPending,
+									( normalizedProgress.sprites?.pending ||
+										0 ) + spritesBrowserPending,
 								'in-progress':
 									normalizedProgress.sprites?.[
 										'in-progress'
@@ -1369,15 +1406,15 @@ const EncodeQueue = () => {
 								complete: spritesBrowserComplete,
 								failed: spritesBrowserFailed,
 								total:
-									(normalizedProgress.sprites?.total || 0) +
+									( normalizedProgress.sprites?.total || 0 ) +
 									spritesBrowserTotal,
 							};
 						}
 						delete normalizedProgress.browser_sprites;
 					}
 
-					return Object.entries(normalizedProgress).map(
-						([type, progress]) => {
+					return Object.entries( normalizedProgress ).map(
+						( [ type, progress ] ) => {
 							// 'thumbs' also needs to stay visible once
 							// pending/in-progress hit 0 if the browser merge
 							// above left a nonzero failed count -- otherwise
@@ -1392,13 +1429,14 @@ const EncodeQueue = () => {
 							// and would otherwise keep this panel pinned
 							// open indefinitely after any past failure.
 							if (
-								!progress ||
-								(progress.pending === 0 &&
-									progress['in-progress'] === 0 &&
-									!(
-										['thumbs', 'sprites'].includes(type) &&
-										progress.failed > 0
-									))
+								! progress ||
+								( progress.pending === 0 &&
+									progress[ 'in-progress' ] === 0 &&
+									! (
+										[ 'thumbs', 'sprites' ].includes(
+											type
+										) && progress.failed > 0
+									) )
 							) {
 								return null;
 							}
@@ -1436,53 +1474,54 @@ const EncodeQueue = () => {
 								defaultLabels
 							);
 
-							const label = filteredLabels[type] || type;
+							const label = filteredLabels[ type ] || type;
 
 							return (
 								<PanelBody
-									key={type}
-									title={label}
-									initialOpen={true}
+									key={ type }
+									title={ label }
+									initialOpen={ true }
 									className="videopack-batch-progress-panel"
 								>
 									<div className="videopack-batch-progress-content">
-										{(type === 'thumbs' ||
-											type === 'sprites') &&
+										{ ( type === 'thumbs' ||
+											type === 'sprites' ) &&
 											isBrowserActive && (
 												<div
 													className="notice notice-info videopack-browser-queue-warning"
-													style={{
+													style={ {
 														margin: '0 0 15px 0',
-													}}
+													} }
 												>
 													<p
-														style={{
+														style={ {
 															margin: '0.5em 0',
-														}}
+														} }
 													>
-														{__(
+														{ __(
 															'Browser-side thumbnail generation is active. You MUST keep this tab open and active to process the queue.',
 															'video-embed-thumbnail-generator'
-														)}
+														) }
 													</p>
 												</div>
-											)}
+											) }
 										<div className="videopack-batch-stats">
 											<span>
-												{sprintf(
+												{ sprintf(
 													/* translators: %d: number of pending items */
 													__(
 														'Pending: %d',
 														'video-embed-thumbnail-generator'
 													),
 													progress.pending
-												)}
+												) }
 											</span>
-											{progress['in-progress'] !==
+											{ progress[ 'in-progress' ] !==
 												undefined &&
-												progress['in-progress'] > 0 && (
+												progress[ 'in-progress' ] >
+													0 && (
 													<span>
-														{sprintf(
+														{ sprintf(
 															/* translators: %d: number of in-progress items */
 															__(
 																'In-Progress: %d',
@@ -1491,171 +1530,180 @@ const EncodeQueue = () => {
 															progress[
 																'in-progress'
 															]
-														)}
+														) }
 													</span>
-												)}
-											{progress.complete !== undefined &&
+												) }
+											{ progress.complete !== undefined &&
 												progress.complete > 0 && (
 													<span>
-														{sprintf(
+														{ sprintf(
 															/* translators: %d: number of completed items */
 															__(
 																'Completed: %d',
 																'video-embed-thumbnail-generator'
 															),
 															progress.complete
-														)}
+														) }
 													</span>
-												)}
-											{progress.failed > 0 && (
+												) }
+											{ progress.failed > 0 && (
 												<span className="videopack-failed-count">
-													{sprintf(
+													{ sprintf(
 														/* translators: %d: number of failed items */
 														__(
 															'Failed: %d',
 															'video-embed-thumbnail-generator'
 														),
 														progress.failed
-													)}
+													) }
 												</span>
-											)}
+											) }
 										</div>
-										{progress.total > 0 && (
+										{ progress.total > 0 && (
 											<div className="videopack-meter">
 												<div
 													className="videopack-meter-bar"
-													style={{
-														width: `${Math.round(
-															(((progress.complete ||
-																0) +
-																(progress.failed ||
-																	0)) /
-																progress.total) *
+													style={ {
+														width: `${ Math.round(
+															( ( ( progress.complete ||
+																0 ) +
+																( progress.failed ||
+																	0 ) ) /
+																progress.total ) *
 																100
-														)}%`,
-													}}
+														) }%`,
+													} }
 												></div>
 											</div>
-										)}
+										) }
 									</div>
 								</PanelBody>
 							);
 						}
 					);
-				})()}
+				} )() }
 
 				<PanelBody
-					title={__(
+					title={ __(
 						'Bulk Video Processing',
 						'video-embed-thumbnail-generator'
-					)}
-					initialOpen={true}
+					) }
+					initialOpen={ true }
 					className="videopack-bulk-processing-panel"
 				>
 					<div className="videopack-bulk-description">
-						{__(
+						{ __(
 							'Select the items you would like to generate for all videos in your media library (will not overwrite existing files):',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					</div>
 					<div className="videopack-bulk-options-list">
-						{bulkOptions.map((option) => (
+						{ bulkOptions.map( ( option ) => (
 							<div
-								key={option.id}
+								key={ option.id }
 								className="videopack-bulk-option-item"
 							>
 								<label
 									className="videopack-bulk-option-label"
-									htmlFor={`bulk-option-${option.id}`}
+									htmlFor={ `bulk-option-${ option.id }` }
 								>
 									<input
-										id={`bulk-option-${option.id}`}
+										id={ `bulk-option-${ option.id }` }
 										type="checkbox"
-										checked={!!checkedBulkIds[option.id]}
-										onChange={() =>
-											handleToggleBulkOption(option.id)
+										checked={
+											!! checkedBulkIds[ option.id ]
+										}
+										onChange={ () =>
+											handleToggleBulkOption( option.id )
 										}
 									/>
 									<span className="videopack-bulk-option-title">
-										{option.label}
+										{ option.label }
 									</span>
 								</label>
 								<p className="videopack-bulk-option-desc">
-									{option.description}
+									{ option.description }
 								</p>
 							</div>
-						))}
+						) ) }
 					</div>
 					<div className="videopack-bulk-action-container">
 						<Button
 							variant="primary"
-							onClick={handleRunSelectedBulk}
-							isBusy={isQueueingBulk}
+							onClick={ handleRunSelectedBulk }
+							isBusy={ isQueueingBulk }
 							disabled={
 								isQueueingBulk ||
-								Object.values(checkedBulkIds).filter(Boolean)
-									.length === 0
+								Object.values( checkedBulkIds ).filter(
+									Boolean
+								).length === 0
 							}
 						>
-							{__(
+							{ __(
 								'Generate Selected',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						</Button>
 					</div>
-					{bulkMessage && (
+					{ bulkMessage && (
 						<Notice
-							status={bulkMessage.type}
-							onRemove={() => setBulkMessage(null)}
+							status={ bulkMessage.type }
+							onRemove={ () => setBulkMessage( null ) }
 						>
-							{bulkMessage.text}
+							{ bulkMessage.text }
 						</Notice>
-					)}
+					) }
 				</PanelBody>
 				<PanelBody
-					title={__(
+					title={ __(
 						'Batch Utilities',
 						'video-embed-thumbnail-generator'
-					)}
-					initialOpen={false}
+					) }
+					initialOpen={ false }
 					className="videopack-centralized-batch-panel"
 				>
 					<div className="videopack-batch-list">
-						{batchProcesses.map((process, index) => (
-							<div key={process.id}>
+						{ batchProcesses.map( ( process, index ) => (
+							<div key={ process.id }>
 								<div className="videopack-batch-item">
 									<div className="videopack-batch-info">
 										<h3 className="videopack-batch-title">
-											{process.title}
+											{ process.title }
 										</h3>
 										<p className="videopack-batch-description">
-											{process.description}
+											{ process.description }
 										</p>
 									</div>
 									<div className="videopack-batch-action">
 										<Button
 											variant="secondary"
-											onClick={() =>
-												openConfirmDialog('run_batch', {
-													batchId: process.id,
-													batchTitle: process.title,
-												})
+											onClick={ () =>
+												openConfirmDialog(
+													'run_batch',
+													{
+														batchId: process.id,
+														batchTitle:
+															process.title,
+													}
+												)
 											}
-											isBusy={isRunningBatch[process.id]}
-											disabled={process.disabled}
+											isBusy={
+												isRunningBatch[ process.id ]
+											}
+											disabled={ process.disabled }
 										>
-											{__(
+											{ __(
 												'Run Utility',
 												'video-embed-thumbnail-generator'
-											)}
+											) }
 										</Button>
 									</div>
 								</div>
-								{index < batchProcesses.length - 1 && (
+								{ index < batchProcesses.length - 1 && (
 									<Divider />
-								)}
+								) }
 							</div>
-						))}
+						) ) }
 					</div>
 				</PanelBody>
 			</Panel>
@@ -1663,12 +1711,12 @@ const EncodeQueue = () => {
 	);
 };
 // Render the component
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener( 'DOMContentLoaded', function () {
 	const rootElement =
-		document.getElementById('videopack-queue-root') ||
-		document.getElementById('videopack-network-queue-root');
-	if (rootElement) {
-		const root = createRoot(rootElement);
-		root.render(<EncodeQueue />);
+		document.getElementById( 'videopack-queue-root' ) ||
+		document.getElementById( 'videopack-network-queue-root' );
+	if ( rootElement ) {
+		const root = createRoot( rootElement );
+		root.render( <EncodeQueue /> );
 	}
-});
+} );

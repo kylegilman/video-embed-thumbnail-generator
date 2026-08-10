@@ -34,25 +34,25 @@ export default function useVideoQuery(
 		collection_video_limit = 6,
 	} = attributes;
 
-	const [searchString, setSearchString] = useState('');
-	const debouncedSetSearchString = useDebounce(setSearchString, 500);
+	const [ searchString, setSearchString ] = useState( '' );
+	const debouncedSetSearchString = useDebounce( setSearchString, 500 );
 
 	// These four are only for InspectorControls' gallery-source dropdown UI
 	// (category/tag/custom-gallery pickers) — never used to render the grid
 	// itself. useBlockPreview sets isPreviewMode on the block-editor store's
 	// own settings for every one of our disabled/read-only preview surfaces,
 	// where no Inspector ever renders, so skip them there.
-	const postTypes = useSelect((select) => {
-		if (select('core/block-editor').getSettings()?.isPreviewMode) {
+	const postTypes = useSelect( ( select ) => {
+		if ( select( 'core/block-editor' ).getSettings()?.isPreviewMode ) {
 			return [];
 		}
-		const core = select('core');
-		return core ? core.getPostTypes({ per_page: -1 }) : [];
-	}, []);
+		const core = select( 'core' );
+		return core ? core.getPostTypes( { per_page: -1 } ) : [];
+	}, [] );
 
-	const { isSaving, isAutosaving } = useSelect((select) => {
-		const editorStore = select('core/editor');
-		if (!editorStore) {
+	const { isSaving, isAutosaving } = useSelect( ( select ) => {
+		const editorStore = select( 'core/editor' );
+		if ( ! editorStore ) {
 			return { isSaving: false, isAutosaving: false };
 		}
 		const { isSavingPost, isAutosavingPost } = editorStore;
@@ -60,87 +60,89 @@ export default function useVideoQuery(
 			isSaving: isSavingPost ? isSavingPost() : false,
 			isAutosaving: isAutosavingPost ? isAutosavingPost() : false,
 		};
-	}, []);
+	}, [] );
 
-	const [videoResults, setVideoResults] = useState([]);
-	const [totalResults, setTotalResults] = useState(0);
-	const [maxNumPages, setMaxNumPages] = useState(1);
-	const [isResolvingVideos, setIsResolvingVideos] = useState(false);
+	const [ videoResults, setVideoResults ] = useState( [] );
+	const [ totalResults, setTotalResults ] = useState( 0 );
+	const [ maxNumPages, setMaxNumPages ] = useState( 1 );
+	const [ isResolvingVideos, setIsResolvingVideos ] = useState( false );
 
-	const [searchResults, setSearchResults] = useState([]);
-	const [isResolvingSearch, setIsResolvingSearch] = useState(false);
+	const [ searchResults, setSearchResults ] = useState( [] );
+	const [ isResolvingSearch, setIsResolvingSearch ] = useState( false );
 
-	const viewablePostTypes = useMemo(() => {
-		return (postTypes || [])
-			.filter((type) => type.viewable && type.slug !== 'attachment')
-			.map((type) => type.slug);
-	}, [postTypes]);
+	const viewablePostTypes = useMemo( () => {
+		return ( postTypes || [] )
+			.filter( ( type ) => type.viewable && type.slug !== 'attachment' )
+			.map( ( type ) => type.slug );
+	}, [ postTypes ] );
 
-	useEffect(() => {
-		if (!searchString) {
-			setSearchResults([]);
-			setIsResolvingSearch(false);
+	useEffect( () => {
+		if ( ! searchString ) {
+			setSearchResults( [] );
+			setIsResolvingSearch( false );
 			return;
 		}
 
-		setIsResolvingSearch(true);
-		const path = `/wp/v2/search?search=${encodeURIComponent(
+		setIsResolvingSearch( true );
+		const path = `/wp/v2/search?search=${ encodeURIComponent(
 			searchString
-		)}&type=post&subtype=${encodeURIComponent(
-			viewablePostTypes.join(',')
-		)}&per_page=20`;
+		) }&type=post&subtype=${ encodeURIComponent(
+			viewablePostTypes.join( ',' )
+		) }&per_page=20`;
 
 		const abortController = new window.AbortController();
 
-		import('@wordpress/api-fetch').then(({ default: apiFetch }) => {
-			apiFetch({ path, signal: abortController.signal })
-				.then((results) => {
+		import( '@wordpress/api-fetch' ).then( ( { default: apiFetch } ) => {
+			apiFetch( { path, signal: abortController.signal } )
+				.then( ( results ) => {
 					setSearchResults(
-						results.map((res) => ({
+						results.map( ( res ) => ( {
 							id: res.id,
 							title: {
 								rendered:
 									res.title?.rendered || res.title || '',
 							},
-						}))
+						} ) )
 					);
-				})
-				.catch((error) => {
-					if (error.name !== 'AbortError') {
-						console.error('Post Search Error:', error);
+				} )
+				.catch( ( error ) => {
+					if ( error.name !== 'AbortError' ) {
+						console.error( 'Post Search Error:', error );
 					}
-				})
-				.finally(() => {
-					setIsResolvingSearch(false);
-				});
-		});
+				} )
+				.finally( () => {
+					setIsResolvingSearch( false );
+				} );
+		} );
 
 		return () => abortController.abort();
-	}, [searchString, viewablePostTypes]);
+	}, [ searchString, viewablePostTypes ] );
 
-	useEffect(() => {
-		if (isSaving || isAutosaving) {
+	const hasInputAttributes = !! inputAttributes;
+
+	useEffect( () => {
+		if ( isSaving || isAutosaving ) {
 			return;
 		}
 
 		let resolvedGalleryId;
-		if (gallery_source === 'custom') {
-			if (gallery_id) {
-				resolvedGalleryId = parseInt(gallery_id, 10);
+		if ( gallery_source === 'custom' ) {
+			if ( gallery_id ) {
+				resolvedGalleryId = parseInt( gallery_id, 10 );
 			}
-		} else if (gallery_source === 'current') {
-			if (gallery_id) {
-				resolvedGalleryId = parseInt(gallery_id, 10);
-			} else if (previewPostId) {
-				resolvedGalleryId = parseInt(previewPostId, 10);
+		} else if ( gallery_source === 'current' ) {
+			if ( gallery_id ) {
+				resolvedGalleryId = parseInt( gallery_id, 10 );
+			} else if ( previewPostId ) {
+				resolvedGalleryId = parseInt( previewPostId, 10 );
 			}
 		}
 
 		const args = {
 			gallery_orderby: gallery_orderby || 'post_date',
 			gallery_order: gallery_order || 'DESC',
-			gallery_per_page: parseInt(gallery_per_page, 10) || 6,
-			page_number: parseInt(page_number, 10) || 1,
+			gallery_per_page: parseInt( gallery_per_page, 10 ) || 6,
+			page_number: parseInt( page_number, 10 ) || 1,
 			gallery_id: resolvedGalleryId,
 			gallery_exclude: gallery_exclude || '',
 			gallery_source: gallery_source || 'current',
@@ -158,48 +160,48 @@ export default function useVideoQuery(
 		};
 
 		// Skip query if required parameters for the source are missing
-		const isMissingCustomId = gallery_source === 'custom' && !gallery_id;
+		const isMissingCustomId = gallery_source === 'custom' && ! gallery_id;
 		const isMissingCategoryId =
-			gallery_source === 'category' && !gallery_category;
-		const isMissingTagId = gallery_source === 'tag' && !gallery_tag;
+			gallery_source === 'category' && ! gallery_category;
+		const isMissingTagId = gallery_source === 'tag' && ! gallery_tag;
 		const isMissingCurrentId =
-			gallery_source === 'current' && !gallery_id && !previewPostId;
+			gallery_source === 'current' && ! gallery_id && ! previewPostId;
 		const isMissingManualInclude =
-			gallery_source === 'manual' && !gallery_include;
+			gallery_source === 'manual' && ! gallery_include;
 
 		const canQuery =
-			!!inputAttributes &&
-			(['recent', 'all'].includes(gallery_source) ||
-				(gallery_source &&
-					!isMissingCustomId &&
-					!isMissingCategoryId &&
-					!isMissingTagId &&
-					!isMissingCurrentId &&
-					!isMissingManualInclude));
+			hasInputAttributes &&
+			( [ 'recent', 'all' ].includes( gallery_source ) ||
+				( gallery_source &&
+					! isMissingCustomId &&
+					! isMissingCategoryId &&
+					! isMissingTagId &&
+					! isMissingCurrentId &&
+					! isMissingManualInclude ) );
 
-		if (!canQuery) {
-			setVideoResults([]);
-			setTotalResults(0);
-			setMaxNumPages(1);
-			setIsResolvingVideos(false);
+		if ( ! canQuery ) {
+			setVideoResults( [] );
+			setTotalResults( 0 );
+			setMaxNumPages( 1 );
+			setIsResolvingVideos( false );
 			return;
 		}
 
-		setIsResolvingVideos(true);
-		getVideoGallery(args)
-			.then((response) => {
-				setVideoResults(response.videos || []);
+		setIsResolvingVideos( true );
+		getVideoGallery( args )
+			.then( ( response ) => {
+				setVideoResults( response.videos || [] );
 				setTotalResults(
 					response.total_count || response.videos?.length || 0
 				);
-				setMaxNumPages(response.max_num_pages || 1);
-			})
-			.catch((error) => {
-				console.error('Video Query Error:', error);
-			})
-			.finally(() => {
-				setIsResolvingVideos(false);
-			});
+				setMaxNumPages( response.max_num_pages || 1 );
+			} )
+			.catch( ( error ) => {
+				console.error( 'Video Query Error:', error );
+			} )
+			.finally( () => {
+				setIsResolvingVideos( false );
+			} );
 	}, [
 		gallery_id,
 		gallery_source,
@@ -218,51 +220,55 @@ export default function useVideoQuery(
 		attributes.prioritizePostData,
 		isSaving,
 		isAutosaving,
-		!!inputAttributes,
+		hasInputAttributes,
 		refreshToken,
-	]);
+	] );
 
-	const categories = useSelect((select) => {
-		if (select('core/block-editor').getSettings()?.isPreviewMode) {
+	const categories = useSelect( ( select ) => {
+		if ( select( 'core/block-editor' ).getSettings()?.isPreviewMode ) {
 			return [];
 		}
-		const { getEntityRecords } = select('core');
-		return getEntityRecords('taxonomy', 'category', { per_page: -1 });
-	}, []);
+		const { getEntityRecords } = select( 'core' );
+		return getEntityRecords( 'taxonomy', 'category', { per_page: -1 } );
+	}, [] );
 
-	const tags = useSelect((select) => {
-		if (select('core/block-editor').getSettings()?.isPreviewMode) {
+	const tags = useSelect( ( select ) => {
+		if ( select( 'core/block-editor' ).getSettings()?.isPreviewMode ) {
 			return [];
 		}
-		const { getEntityRecords } = select('core');
-		return getEntityRecords('taxonomy', 'post_tag', { per_page: -1 });
-	}, []);
+		const { getEntityRecords } = select( 'core' );
+		return getEntityRecords( 'taxonomy', 'post_tag', { per_page: -1 } );
+	}, [] );
 
 	const manualVideos = useSelect(
-		(select) => {
-			if (gallery_source !== 'manual' || !gallery_include) {
+		( select ) => {
+			if ( gallery_source !== 'manual' || ! gallery_include ) {
 				return [];
 			}
-			const { getEntityRecords } = select('core');
-			return getEntityRecords('postType', 'attachment', {
+			const { getEntityRecords } = select( 'core' );
+			return getEntityRecords( 'postType', 'attachment', {
 				include: gallery_include,
 				per_page: -1,
-			});
+			} );
 		},
-		[gallery_source, gallery_include]
+		[ gallery_source, gallery_include ]
 	);
 
-	const { customGalleries } = useSelect((select) => {
-		if (select('core/block-editor').getSettings()?.isPreviewMode) {
+	const { customGalleries } = useSelect( ( select ) => {
+		if ( select( 'core/block-editor' ).getSettings()?.isPreviewMode ) {
 			return { customGalleries: [] };
 		}
-		const { getEntityRecords } = select('core');
+		const { getEntityRecords } = select( 'core' );
 		return {
-			customGalleries: getEntityRecords('postType', 'videopack_gallery', {
-				per_page: -1,
-			}),
+			customGalleries: getEntityRecords(
+				'postType',
+				'videopack_gallery',
+				{
+					per_page: -1,
+				}
+			),
 		};
-	}, []);
+	}, [] );
 
 	return {
 		isResolving: isResolvingVideos,

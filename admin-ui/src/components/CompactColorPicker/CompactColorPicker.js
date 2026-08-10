@@ -17,113 +17,113 @@ import { __ } from '@wordpress/i18n';
 // "Inherit Text"/"Inherit Background" read awkwardly next to each other,
 // where "Theme Default" reads fine for either.
 export const INHERIT = 'inherit';
-const INHERIT_LABEL = __('Theme Default', 'video-embed-thumbnail-generator');
+const INHERIT_LABEL = __( 'Theme Default', 'video-embed-thumbnail-generator' );
 
 /**
  * A compact color picker using a dropdown and color palette.
  *
- * @param {Object}   props               Component props.
- * @param {string}   props.label         Label for the color picker.
- * @param {string}   props.value         Current color value.
- * @param {Function} props.onChange      Callback for color change.
- * @param {Array}    props.colors        Available color palette.
- * @param {string}   props.fallbackValue Default color to show when value is empty.
+ * @param {Object}   props                Component props.
+ * @param {string}   props.label          Label for the color picker.
+ * @param {string}   props.value          Current color value.
+ * @param {Function} props.onChange       Callback for color change.
+ * @param {Array}    props.colors         Available color palette.
+ * @param {string}   props.fallbackValue  Default color to show when value is empty.
  * @param {boolean}  [props.allowInherit] Whether to offer the "Inherit" option.
  * @return {Element} The rendered component.
  */
-const CompactColorPicker = ({
+const CompactColorPicker = ( {
 	label,
 	value,
 	onChange,
 	colors,
 	fallbackValue,
 	allowInherit = true,
-}) => {
+} ) => {
 	const isInherit = value === INHERIT;
 
-	const resolveValueToHex = (val) => {
+	const resolveValueToHex = ( val ) => {
 		if (
 			typeof val === 'string' &&
-			val.startsWith('var(--wp--preset--color--')
+			val.startsWith( 'var(--wp--preset--color--' )
 		) {
 			const slug = val
-				.replace('var(--wp--preset--color--', '')
-				.replace(')', '');
-			const matched = colors?.find((c) => c.slug === slug);
-			if (matched) {
+				.replace( 'var(--wp--preset--color--', '' )
+				.replace( ')', '' );
+			const matched = colors?.find( ( c ) => c.slug === slug );
+			if ( matched ) {
 				return matched.color;
 			}
 		}
 		return val;
 	};
 
-	const hexValue = isInherit ? '' : resolveValueToHex(value);
+	const hexValue = isInherit ? '' : resolveValueToHex( value );
 	const displayColor =
-		hexValue || resolveValueToHex(fallbackValue) || 'transparent';
+		hexValue || resolveValueToHex( fallbackValue ) || 'transparent';
 
-	const handleOnChange = (val) => {
-		if (val === undefined) {
-			onChange('');
+	const handleOnChange = ( val ) => {
+		if ( val === undefined ) {
+			onChange( '' );
 			return;
 		}
-		const matched = colors?.find((c) => c.color === val);
-		if (matched && matched.slug) {
-			onChange(`var(--wp--preset--color--${matched.slug})`);
+		const matched = colors?.find( ( c ) => c.color === val );
+		if ( matched && matched.slug ) {
+			onChange( `var(--wp--preset--color--${ matched.slug })` );
 		} else {
-			onChange(val);
+			onChange( val );
 		}
 	};
 
 	return (
 		<div className="videopack-color-picker-container">
-			<span className="videopack-color-picker-label">{label}</span>
+			<span className="videopack-color-picker-label">{ label }</span>
 			<Dropdown
 				className="videopack-color-dropdown"
 				contentClassName="videopack-color-dropdown-content"
-				renderToggle={({ isOpen, onToggle }) => (
+				renderToggle={ ( { isOpen, onToggle } ) => (
 					<Button
-						onClick={onToggle}
-						aria-expanded={isOpen}
+						onClick={ onToggle }
+						aria-expanded={ isOpen }
 						variant="secondary"
-						label={isInherit ? INHERIT_LABEL : undefined}
-						className={`videopack-color-picker-button ${
+						label={ isInherit ? INHERIT_LABEL : undefined }
+						className={ `videopack-color-picker-button ${
 							isInherit ? 'is-inherit' : ''
-						}`}
+						}` }
 					>
-						{isInherit ? (
+						{ isInherit ? (
 							<span className="videopack-color-inherit-indicator" />
 						) : (
-							<ColorIndicator colorValue={displayColor} />
-						)}
+							<ColorIndicator colorValue={ displayColor } />
+						) }
 					</Button>
-				)}
-				renderContent={() => (
+				) }
+				renderContent={ () => (
 					<div className="videopack-color-picker-palette-wrapper">
 						<ColorPalette
-							colors={colors}
+							colors={ colors }
 							value={
-								!isInherit && hexValue !== ''
+								! isInherit && hexValue !== ''
 									? hexValue
 									: undefined
 							}
-							onChange={handleOnChange}
-							disableCustomColors={false}
-							clearable={true}
+							onChange={ handleOnChange }
+							disableCustomColors={ false }
+							clearable={ true }
 						/>
-						{allowInherit && (
+						{ allowInherit && (
 							<Button
 								className="videopack-color-inherit-button"
 								variant="tertiary"
-								isPressed={isInherit}
-								onClick={() =>
-									onChange(isInherit ? '' : INHERIT)
+								isPressed={ isInherit }
+								onClick={ () =>
+									onChange( isInherit ? '' : INHERIT )
 								}
 							>
-								{INHERIT_LABEL}
+								{ INHERIT_LABEL }
 							</Button>
-						)}
+						) }
 					</div>
-				)}
+				) }
 			/>
 		</div>
 	);

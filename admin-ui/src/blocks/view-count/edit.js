@@ -21,7 +21,7 @@ import useShowBackground from '../../hooks/useShowBackground';
 
 // View-count shares "badge" title/background colors with Title/Duration —
 // see the $badge-selectors comment in VideoDuration.js.
-const CLASS_KEYS = ['title_color', 'title_background_color'];
+const CLASS_KEYS = [ 'title_color', 'title_background_color' ];
 
 /**
  * Edit component for the Videopack View Count block.
@@ -32,16 +32,17 @@ const CLASS_KEYS = ['title_color', 'title_background_color'];
  * @param {Object}   root0.context       Block context.
  * @return {Element}                     The rendered component.
  */
-export default function Edit({ attributes, setAttributes, context }) {
-	const vpContext = useVideopackContext(attributes, context, {
+export default function Edit( { attributes, setAttributes, context } ) {
+	const vpContext = useVideopackContext( attributes, context, {
 		classKeys: CLASS_KEYS,
-	});
+	} );
 	const { iconType, showText, textAlign } = attributes;
 
-	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
-	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
+	const isInsideThumbnail = !! context[ 'videopack/isInsideThumbnail' ];
+	const isInsidePlayerOverlay =
+		!! context[ 'videopack/isInsidePlayerOverlay' ];
 	const isInsidePlayerContainer =
-		!!context['videopack/isInsidePlayerContainer'];
+		!! context[ 'videopack/isInsidePlayerContainer' ];
 	const isOverlay = isInsideThumbnail || isInsidePlayerOverlay;
 	const finalShowBackground = useShowBackground(
 		attributes,
@@ -49,134 +50,146 @@ export default function Edit({ attributes, setAttributes, context }) {
 		isOverlay
 	);
 
-	const defaultAlign = useMemo(() => {
-		if (isInsideThumbnail) {
+	const defaultAlign = useMemo( () => {
+		if ( isInsideThumbnail ) {
 			return 'right';
 		}
 		return isInsidePlayerOverlay || isInsidePlayerContainer
 			? 'right'
 			: 'left';
-	}, [isInsideThumbnail, isInsidePlayerOverlay, isInsidePlayerContainer]);
+	}, [ isInsideThumbnail, isInsidePlayerOverlay, isInsidePlayerContainer ] );
 	const finalTextAlign =
-		textAlign || context['videopack/textAlign'] || defaultAlign;
+		textAlign || context[ 'videopack/textAlign' ] || defaultAlign;
 
 	const position =
-		attributes.position || context['videopack/position'] || 'top';
+		attributes.position || context[ 'videopack/position' ] || 'top';
 
-	const blockProps = useBlockProps({
-		className: `videopack-view-count videopack-view-count-block ${vpContext.classes} ${
-			isOverlay ? 'is-overlay is-badge' : ''
-		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
-			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${isOverlay && !finalShowBackground ? 'has-no-background' : ''} ${!vpContext.resolved.attachmentId ? 'no-title' : ''} position-${position} has-text-align-${finalTextAlign}`,
+	const blockProps = useBlockProps( {
+		className: `videopack-view-count videopack-view-count-block ${
+			vpContext.classes
+		} ${ isOverlay ? 'is-overlay is-badge' : '' } ${
+			isInsideThumbnail ? 'is-inside-thumbnail' : ''
+		} ${ isInsidePlayerOverlay ? 'is-inside-player' : '' } ${
+			isOverlay && ! finalShowBackground ? 'has-no-background' : ''
+		} ${
+			! vpContext.resolved.attachmentId ? 'no-title' : ''
+		} position-${ position } has-text-align-${ finalTextAlign }`,
 		style: vpContext.style,
-	});
+	} );
 
 	return (
 		<>
 			<BlockControls>
-				{isOverlay && (
+				{ isOverlay && (
 					<BlockVerticalAlignmentControl
-						value={position}
-						onChange={(nextPosition) => {
-							setAttributes({
+						value={ position }
+						onChange={ ( nextPosition ) => {
+							setAttributes( {
 								position: nextPosition || undefined,
-							});
-						}}
+							} );
+						} }
 					/>
-				)}
+				) }
 				<AlignmentControl
-					value={finalTextAlign}
-					onChange={(nextAlign) => {
-						setAttributes({ textAlign: nextAlign });
-					}}
+					value={ finalTextAlign }
+					onChange={ ( nextAlign ) => {
+						setAttributes( { textAlign: nextAlign } );
+					} }
 				/>
 				<ToolbarGroup
-					label={__('Icon Type', 'video-embed-thumbnail-generator')}
+					label={ __(
+						'Icon Type',
+						'video-embed-thumbnail-generator'
+					) }
 				>
 					<ToolbarButton
-						icon={noneIcon}
-						label={__('No Icon', 'video-embed-thumbnail-generator')}
-						onClick={() => setAttributes({ iconType: 'none' })}
-						isPressed={iconType === 'none'}
+						icon={ noneIcon }
+						label={ __(
+							'No Icon',
+							'video-embed-thumbnail-generator'
+						) }
+						onClick={ () => setAttributes( { iconType: 'none' } ) }
+						isPressed={ iconType === 'none' }
 					/>
 					<ToolbarButton
-						icon={seen}
-						label={__(
+						icon={ seen }
+						label={ __(
 							'Eye Icon',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ iconType: 'eye' })}
-						isPressed={iconType === 'eye'}
+						) }
+						onClick={ () => setAttributes( { iconType: 'eye' } ) }
+						isPressed={ iconType === 'eye' }
 					/>
 					<ToolbarButton
-						icon={playIcon}
-						label={__(
+						icon={ playIcon }
+						label={ __(
 							'Play Icon (Filled)',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ iconType: 'play' })}
-						isPressed={iconType === 'play'}
+						) }
+						onClick={ () => setAttributes( { iconType: 'play' } ) }
+						isPressed={ iconType === 'play' }
 					/>
 					<ToolbarButton
-						icon={playOutlineIcon}
-						label={__(
+						icon={ playOutlineIcon }
+						label={ __(
 							'Play Icon (Outline)',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() =>
-							setAttributes({ iconType: 'playOutline' })
+						) }
+						onClick={ () =>
+							setAttributes( { iconType: 'playOutline' } )
 						}
-						isPressed={iconType === 'playOutline'}
+						isPressed={ iconType === 'playOutline' }
 					/>
 				</ToolbarGroup>
 				<ToolbarGroup
-					label={__(
+					label={ __(
 						'Display Options',
 						'video-embed-thumbnail-generator'
-					)}
+					) }
 				>
 					<ToolbarButton
-						icon={mediaAndText}
+						icon={ mediaAndText }
 						label={
 							showText
 								? __(
 										'Hide "views" text',
 										'video-embed-thumbnail-generator'
-									)
+								  )
 								: __(
 										'Show "views" text',
 										'video-embed-thumbnail-generator'
-									)
+								  )
 						}
-						onClick={() => setAttributes({ showText: !showText })}
-						isPressed={showText}
+						onClick={ () =>
+							setAttributes( { showText: ! showText } )
+						}
+						isPressed={ showText }
 					/>
 				</ToolbarGroup>
-				{isOverlay && (
+				{ isOverlay && (
 					<ToolbarGroup>
 						<BackgroundToggleButton
-							showBackground={finalShowBackground}
-							onChange={(value) =>
-								setAttributes({ showBackground: value })
+							showBackground={ finalShowBackground }
+							onChange={ ( value ) =>
+								setAttributes( { showBackground: value } )
 							}
 						/>
 					</ToolbarGroup>
-				)}
+				) }
 			</BlockControls>
 			<InspectorControls>
 				<TitleColorPanel
-					attributes={attributes}
-					setAttributes={setAttributes}
-					resolved={vpContext.resolved}
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+					resolved={ vpContext.resolved }
 				/>
 			</InspectorControls>
 			<ViewCount
-				blockProps={blockProps}
-				iconType={iconType}
-				showText={showText}
-				context={context}
-				attributes={attributes}
+				blockProps={ blockProps }
+				iconType={ iconType }
+				showText={ showText }
+				context={ context }
+				attributes={ attributes }
 			/>
 		</>
 	);

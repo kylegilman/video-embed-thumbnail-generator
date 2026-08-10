@@ -8,7 +8,7 @@ import {
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useVideopackData from '../../hooks/useVideopackData';
 
-const CLASS_KEYS = ['title_color', 'title_background_color'];
+const CLASS_KEYS = [ 'title_color', 'title_background_color' ];
 
 /**
  * A internal component to display the view count with correct styling and data.
@@ -22,45 +22,49 @@ const CLASS_KEYS = ['title_color', 'title_background_color'];
  * @param {Object}  root0.context    Block context.
  * @return {Element}                 The rendered component.
  */
-export default function ViewCount({
+export default function ViewCount( {
 	blockProps,
 	iconType = 'none',
 	showText = true,
 	count,
 	attributes = {},
 	context = {},
-}) {
-	const vpContext = useVideopackContext(attributes, context, {
+} ) {
+	const vpContext = useVideopackContext( attributes, context, {
 		classKeys: CLASS_KEYS,
-	});
-	const { data: views, isResolving } = useVideopackData('views', context);
+	} );
+	const { data: views, isResolving } = useVideopackData( 'views', context );
 	const attachmentId = vpContext.resolved.attachmentId;
 
-	if (vpContext.resolved.isDiscovering && !attachmentId) {
+	if ( vpContext.resolved.isDiscovering && ! attachmentId ) {
 		return (
-			<div {...blockProps}>
+			<div { ...blockProps }>
 				<Spinner />
 			</div>
 		);
 	}
 
-	if (!attachmentId && count === undefined && !vpContext.resolved.isPreview) {
+	if (
+		! attachmentId &&
+		count === undefined &&
+		! vpContext.resolved.isPreview
+	) {
 		return null;
 	}
 
-	if (isResolving) {
+	if ( isResolving ) {
 		return (
-			<div {...blockProps}>
+			<div { ...blockProps }>
 				<Spinner />
 			</div>
 		);
 	}
 
 	let safeViews = 0;
-	if (count !== undefined) {
-		safeViews = Number(count);
-	} else if (views !== undefined && views !== null) {
-		safeViews = Number(views);
+	if ( count !== undefined ) {
+		safeViews = Number( count );
+	} else if ( views !== undefined && views !== null ) {
+		safeViews = Number( views );
 	}
 
 	const displayValue = showText
@@ -73,28 +77,31 @@ export default function ViewCount({
 					'video-embed-thumbnail-generator'
 				),
 				safeViews.toLocaleString()
-			)
+		  )
 		: safeViews.toLocaleString();
 
 	const renderIcon = () => {
-		switch (iconType) {
+		switch ( iconType ) {
 			case 'eye':
 				return (
-					<Icon icon={seen} className="videopack-icon-left-margin" />
+					<Icon
+						icon={ seen }
+						className="videopack-icon-left-margin"
+					/>
 				);
 			case 'play':
 				return (
 					<Icon
-						icon={playIcon}
-						size={16}
+						icon={ playIcon }
+						size={ 16 }
 						className="videopack-icon-left-margin"
 					/>
 				);
 			case 'playOutline':
 				return (
 					<Icon
-						icon={playOutlineIcon}
-						size={16}
+						icon={ playOutlineIcon }
+						size={ 16 }
 						className="videopack-icon-left-margin"
 					/>
 				);
@@ -104,9 +111,9 @@ export default function ViewCount({
 	};
 
 	return (
-		<div {...blockProps}>
-			{renderIcon()}
-			{displayValue}
+		<div { ...blockProps }>
+			{ renderIcon() }
+			{ displayValue }
 		</div>
 	);
 }

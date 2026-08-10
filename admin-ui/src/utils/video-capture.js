@@ -14,13 +14,13 @@ import { __ } from '@wordpress/i18n';
  * @param {Object}                  watermarkOptions Watermark settings.
  * @return {Promise<HTMLCanvasElement>} The canvas with the captured frame.
  */
-export const captureVideoFrame = (source, time, watermarkOptions = null) => {
-	return new Promise((resolve, reject) => {
+export const captureVideoFrame = ( source, time, watermarkOptions = null ) => {
+	return new Promise( ( resolve, reject ) => {
 		let video;
 		let isTempVideo = false;
 
-		if (typeof source === 'string') {
-			video = document.createElement('video');
+		if ( typeof source === 'string' ) {
+			video = document.createElement( 'video' );
 			video.crossOrigin = 'anonymous';
 			video.src = source;
 			video.muted = true;
@@ -37,111 +37,111 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
 		// hangs forever with no rejection ever surfacing, silently blocking
 		// any caller (e.g. captureFramesWithFallback) instead of letting it
 		// move on to a fallback strategy.
-		const timeoutId = setTimeout(() => {
-			video.removeEventListener('seeked', onFrameReady);
-			if (isTempVideo) {
-				video.removeEventListener('error', onError);
+		const timeoutId = setTimeout( () => {
+			video.removeEventListener( 'seeked', onFrameReady );
+			if ( isTempVideo ) {
+				video.removeEventListener( 'error', onError );
 				video.src = '';
 				video.load();
 			}
-			reject(new Error('Video frame capture timed out'));
-		}, 15000);
+			reject( new Error( 'Video frame capture timed out' ) );
+		}, 15000 );
 
 		const processFrame = async () => {
-			const canvas = document.createElement('canvas');
+			const canvas = document.createElement( 'canvas' );
 			canvas.width = video.videoWidth;
 			canvas.height = video.videoHeight;
-			const ctx = canvas.getContext('2d');
+			const ctx = canvas.getContext( '2d' );
 
 			// Use VideoFrame if supported for slightly better performance/memory
-			if (window.VideoFrame) {
+			if ( window.VideoFrame ) {
 				try {
-					const frame = new window.VideoFrame(video);
-					ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+					const frame = new window.VideoFrame( video );
+					ctx.drawImage( frame, 0, 0, canvas.width, canvas.height );
 					frame.close();
 				} catch {
 					// Fallback to direct video drawing if VideoFrame fails
-					ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+					ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
 				}
 			} else {
-				ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+				ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
 			}
 
-			if (watermarkOptions && watermarkOptions.url) {
+			if ( watermarkOptions && watermarkOptions.url ) {
 				try {
-					await drawWatermark(canvas, watermarkOptions);
-				} catch (e) {
-					console.error('Watermark failed', e);
+					await drawWatermark( canvas, watermarkOptions );
+				} catch ( e ) {
+					console.error( 'Watermark failed', e );
 				}
 			}
 
-			resolve(canvas);
+			resolve( canvas );
 
-			if (isTempVideo) {
+			if ( isTempVideo ) {
 				video.src = '';
 				video.load();
 			}
 		};
 
 		const onFrameReady = () => {
-			clearTimeout(timeoutId);
+			clearTimeout( timeoutId );
 			// Clean up listeners if we added them
-			if (isTempVideo) {
-				video.removeEventListener('seeked', onFrameReady);
-				video.removeEventListener('error', onError);
+			if ( isTempVideo ) {
+				video.removeEventListener( 'seeked', onFrameReady );
+				video.removeEventListener( 'error', onError );
 			} else {
-				video.removeEventListener('seeked', onFrameReady);
+				video.removeEventListener( 'seeked', onFrameReady );
 			}
 			processFrame();
 		};
 
-		const onError = (e) => {
-			clearTimeout(timeoutId);
-			if (isTempVideo) {
-				video.removeEventListener('seeked', onFrameReady);
-				video.removeEventListener('error', onError);
+		const onError = ( e ) => {
+			clearTimeout( timeoutId );
+			if ( isTempVideo ) {
+				video.removeEventListener( 'seeked', onFrameReady );
+				video.removeEventListener( 'error', onError );
 			}
-			reject(e);
+			reject( e );
 		};
 
 		const onLoadedMetadata = () => {
 			let seekTime = time;
-			if (video.duration < seekTime) {
+			if ( video.duration < seekTime ) {
 				seekTime = video.duration / 2;
 			}
 
 			// Use requestVideoFrameCallback if available for frame-accurate capture
-			if ('requestVideoFrameCallback' in video) {
-				video.requestVideoFrameCallback(() => {
+			if ( 'requestVideoFrameCallback' in video ) {
+				video.requestVideoFrameCallback( () => {
 					onFrameReady();
-				});
+				} );
 			} else {
 				// Fallback to legacy seeked event
-				video.addEventListener('seeked', onFrameReady);
+				video.addEventListener( 'seeked', onFrameReady );
 			}
 
 			video.currentTime = seekTime;
 		};
 
-		if (isTempVideo) {
-			video.addEventListener('error', onError);
-			video.addEventListener('loadedmetadata', onLoadedMetadata);
+		if ( isTempVideo ) {
+			video.addEventListener( 'error', onError );
+			video.addEventListener( 'loadedmetadata', onLoadedMetadata );
 			video.load();
 		} else {
 			// For existing video element -- routed through the same
 			// onFrameReady used above so the timeout is cleared and
 			// listeners are torn down consistently regardless of which
 			// branch (temp vs existing element) actually ran.
-			if ('requestVideoFrameCallback' in video) {
-				video.requestVideoFrameCallback(() => {
+			if ( 'requestVideoFrameCallback' in video ) {
+				video.requestVideoFrameCallback( () => {
 					onFrameReady();
-				});
+				} );
 			} else {
-				video.addEventListener('seeked', onFrameReady);
+				video.addEventListener( 'seeked', onFrameReady );
 			}
 			video.currentTime = time;
 		}
-	});
+	} );
 };
 
 /**
@@ -151,10 +151,10 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
  * @param {Object}            options Watermark options (url, scale, align, x, valign, y).
  * @return {Promise<HTMLCanvasElement>} The canvas with the captured frame.
  */
-export const drawWatermark = (canvas, options) => {
-	return new Promise((resolve, reject) => {
+export const drawWatermark = ( canvas, options ) => {
+	return new Promise( ( resolve, reject ) => {
 		const { url, scale, align, x, valign, y } = options;
-		const ctx = canvas.getContext('2d');
+		const ctx = canvas.getContext( '2d' );
 		const img = new Image();
 		img.crossOrigin = 'Anonymous';
 		img.src = url;
@@ -162,22 +162,22 @@ export const drawWatermark = (canvas, options) => {
 		img.onload = () => {
 			const canvasWidth = canvas.width;
 			const canvasHeight = canvas.height;
-			const watermarkHeight = (canvasHeight * scale) / 100;
+			const watermarkHeight = ( canvasHeight * scale ) / 100;
 			const aspectRatio = img.width / img.height;
 			const watermarkWidth = watermarkHeight * aspectRatio;
 
-			const horizontalOffset = (canvasWidth * x) / 100;
-			const verticalOffset = (canvasHeight * y) / 100;
+			const horizontalOffset = ( canvasWidth * x ) / 100;
+			const verticalOffset = ( canvasHeight * y ) / 100;
 
 			let xPos, yPos;
 
-			switch (align) {
+			switch ( align ) {
 				case 'left':
 					xPos = horizontalOffset;
 					break;
 				case 'center':
 					xPos =
-						(canvasWidth - watermarkWidth) / 2 - horizontalOffset;
+						( canvasWidth - watermarkWidth ) / 2 - horizontalOffset;
 					break;
 				case 'right':
 					xPos = canvasWidth - watermarkWidth - horizontalOffset;
@@ -186,13 +186,13 @@ export const drawWatermark = (canvas, options) => {
 					xPos = horizontalOffset;
 			}
 
-			switch (valign) {
+			switch ( valign ) {
 				case 'top':
 					yPos = verticalOffset;
 					break;
 				case 'center':
 					yPos =
-						(canvasHeight - watermarkHeight) / 2 - verticalOffset;
+						( canvasHeight - watermarkHeight ) / 2 - verticalOffset;
 					break;
 				case 'bottom':
 					yPos = canvasHeight - watermarkHeight - verticalOffset;
@@ -201,8 +201,8 @@ export const drawWatermark = (canvas, options) => {
 					yPos = verticalOffset;
 			}
 
-			ctx.drawImage(img, xPos, yPos, watermarkWidth, watermarkHeight);
-			resolve(canvas);
+			ctx.drawImage( img, xPos, yPos, watermarkWidth, watermarkHeight );
+			resolve( canvas );
 		};
 
 		img.onerror = () =>
@@ -214,7 +214,7 @@ export const drawWatermark = (canvas, options) => {
 					)
 				)
 			);
-	});
+	} );
 };
 
 /**
@@ -224,9 +224,9 @@ export const drawWatermark = (canvas, options) => {
  * @param {AbortSignal} signal Optional AbortSignal to cancel the request.
  * @return {Promise<Object>} Object containing video metadata (width, height, duration).
  */
-export const getVideoMetadata = (source, signal = null) => {
-	return new Promise((resolve, reject) => {
-		const video = document.createElement('video');
+export const getVideoMetadata = ( source, signal = null ) => {
+	return new Promise( ( resolve, reject ) => {
+		const video = document.createElement( 'video' );
 		video.preload = 'metadata';
 		// We don't set crossOrigin here because video dimensions and duration
 		// are accessible even for cross-origin videos without CORS headers.
@@ -234,28 +234,28 @@ export const getVideoMetadata = (source, signal = null) => {
 		video.src = source;
 		video.muted = true;
 
-		const timeout = setTimeout(() => {
-			reject(new Error('Video load timeout'));
-		}, 30000);
+		const timeout = setTimeout( () => {
+			reject( new Error( 'Video load timeout' ) );
+		}, 30000 );
 
 		const cleanup = () => {
-			clearTimeout(timeout);
+			clearTimeout( timeout );
 			video.onloadedmetadata = null;
 			video.onerror = null;
 			video.src = '';
 			// We don't call video.load() here as it can trigger unnecessary errors in some browsers when src is empty.
 		};
 
-		if (signal) {
-			if (signal.aborted) {
+		if ( signal ) {
+			if ( signal.aborted ) {
 				cleanup();
-				reject(new Error('AbortError'));
+				reject( new Error( 'AbortError' ) );
 				return;
 			}
-			signal.addEventListener('abort', () => {
+			signal.addEventListener( 'abort', () => {
 				cleanup();
-				reject(new Error('AbortError'));
-			});
+				reject( new Error( 'AbortError' ) );
+			} );
 		}
 
 		video.onloadedmetadata = () => {
@@ -265,15 +265,15 @@ export const getVideoMetadata = (source, signal = null) => {
 				duration: video.duration,
 			};
 			cleanup();
-			resolve(metadata);
+			resolve( metadata );
 		};
 
-		video.onerror = (e) => {
+		video.onerror = ( e ) => {
 			const error = video.error;
 			cleanup();
-			reject(error || e);
+			reject( error || e );
 		};
-	});
+	} );
 };
 
 /**
@@ -283,21 +283,21 @@ export const getVideoMetadata = (source, signal = null) => {
  * @param {AbortSignal} signal Optional AbortSignal to cancel the check.
  * @return {Promise<boolean>} True if tainted (cannot export), false if clean.
  */
-export const checkCanvasTaint = (source, signal = null) => {
-	return new Promise((resolve) => {
-		const video = document.createElement('video');
+export const checkCanvasTaint = ( source, signal = null ) => {
+	return new Promise( ( resolve ) => {
+		const video = document.createElement( 'video' );
 		video.crossOrigin = 'anonymous';
 		video.preload = 'metadata';
 		video.src = source;
 		video.muted = true;
 
-		const timeout = setTimeout(() => {
+		const timeout = setTimeout( () => {
 			cleanup();
-			resolve(true); // Assume tainted if it times out
-		}, 10000);
+			resolve( true ); // Assume tainted if it times out
+		}, 10000 );
 
 		const cleanup = () => {
-			clearTimeout(timeout);
+			clearTimeout( timeout );
 			video.onloadedmetadata = null;
 			video.onseeked = null;
 			video.onerror = null;
@@ -305,32 +305,32 @@ export const checkCanvasTaint = (source, signal = null) => {
 			video.load();
 		};
 
-		if (signal) {
-			signal.addEventListener('abort', () => {
+		if ( signal ) {
+			signal.addEventListener( 'abort', () => {
 				cleanup();
-				resolve(true); // Treat as tainted if aborted
-			});
+				resolve( true ); // Treat as tainted if aborted
+			} );
 		}
 
 		const onSeeked = () => {
-			const canvas = document.createElement('canvas');
+			const canvas = document.createElement( 'canvas' );
 			canvas.width = 1;
 			canvas.height = 1;
-			const ctx = canvas.getContext('2d');
+			const ctx = canvas.getContext( '2d' );
 			try {
-				ctx.drawImage(video, 0, 0, 1, 1);
+				ctx.drawImage( video, 0, 0, 1, 1 );
 				canvas.toDataURL(); // This throws SecurityError if tainted
 				cleanup();
-				resolve(false);
+				resolve( false );
 			} catch {
 				cleanup();
-				resolve(true);
+				resolve( true );
 			}
 		};
 
 		const onError = () => {
 			cleanup();
-			resolve(true);
+			resolve( true );
 		};
 
 		video.onloadedmetadata = () => {
@@ -338,7 +338,7 @@ export const checkCanvasTaint = (source, signal = null) => {
 		};
 		video.onseeked = onSeeked;
 		video.onerror = onError;
-	});
+	} );
 };
 
 /**
@@ -349,22 +349,22 @@ export const checkCanvasTaint = (source, signal = null) => {
  * @param {Object} options  Options { position: number (0-100), random: boolean }.
  * @return {number[]} Array of timecodes.
  */
-export const calculateTimecodes = (duration, count, options = {}) => {
+export const calculateTimecodes = ( duration, count, options = {} ) => {
 	const timecodes = [];
 	const { position = 50, random = false } = options;
 
-	if (count === 1 && !random) {
-		timecodes.push(duration * (position / 100));
+	if ( count === 1 && ! random ) {
+		timecodes.push( duration * ( position / 100 ) );
 	} else {
-		for (let i = 0; i < count; i++) {
-			let time = ((i + 1) / (count + 1)) * duration;
-			if (random) {
+		for ( let i = 0; i < count; i++ ) {
+			let time = ( ( i + 1 ) / ( count + 1 ) ) * duration;
+			if ( random ) {
 				const randomOffset = Math.floor(
-					Math.random() * (duration / count)
+					Math.random() * ( duration / count )
 				);
-				time = Math.max(time - randomOffset, 0);
+				time = Math.max( time - randomOffset, 0 );
 			}
-			timecodes.push(time);
+			timecodes.push( time );
 		}
 	}
 	return timecodes;
@@ -386,23 +386,23 @@ export const captureFramesWithFallback = async (
 	strategies,
 	{ onProgress }
 ) => {
-	for (let index = 0; index < timecodes.length; index++) {
-		const time = timecodes[index];
+	for ( let index = 0; index < timecodes.length; index++ ) {
+		const time = timecodes[ index ];
 		let result = null;
 		let strategyIndex = -1;
 		let error = null;
 
-		for (let i = 0; i < strategies.length; i++) {
+		for ( let i = 0; i < strategies.length; i++ ) {
 			try {
-				result = await strategies[i](time, index);
+				result = await strategies[ i ]( time, index );
 				strategyIndex = i;
 				error = null;
 				break;
-			} catch (e) {
+			} catch ( e ) {
 				error = e;
 			}
 		}
 
-		await onProgress({ time, index, result, strategyIndex, error });
+		await onProgress( { time, index, result, strategyIndex, error } );
 	}
 };

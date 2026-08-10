@@ -23,34 +23,34 @@ export const createThumbnailFromCanvas = (
 	featured = null,
 	extraData = {}
 ) => {
-	return new Promise((resolve, reject) => {
-		canvas.toBlob(async (blob) => {
-			if (!blob) {
-				reject(new Error('Canvas is empty'));
+	return new Promise( ( resolve, reject ) => {
+		canvas.toBlob( async ( blob ) => {
+			if ( ! blob ) {
+				reject( new Error( 'Canvas is empty' ) );
 				return;
 			}
 			try {
 				const formData = new FormData();
-				formData.append('file', blob, 'thumbnail.jpg');
-				formData.append('attachment_id', attachmentId);
-				formData.append('parent_id', Number(parentId) || 0);
-				formData.append('url', videoSrc);
-				formData.append('post_name', getFilename(videoSrc));
-				if (featured !== null) {
-					formData.append('featured', featured);
+				formData.append( 'file', blob, 'thumbnail.jpg' );
+				formData.append( 'attachment_id', attachmentId );
+				formData.append( 'parent_id', Number( parentId ) || 0 );
+				formData.append( 'url', videoSrc );
+				formData.append( 'post_name', getFilename( videoSrc ) );
+				if ( featured !== null ) {
+					formData.append( 'featured', featured );
 				}
 
-				Object.keys(extraData).forEach((key) => {
-					formData.append(key, extraData[key]);
-				});
+				Object.keys( extraData ).forEach( ( key ) => {
+					formData.append( key, extraData[ key ] );
+				} );
 
-				const response = await uploadThumbnail(formData);
-				resolve(response);
-			} catch (error) {
-				reject(error);
+				const response = await uploadThumbnail( formData );
+				resolve( response );
+			} catch ( error ) {
+				reject( error );
 			}
-		}, 'image/jpeg');
-	});
+		}, 'image/jpeg' );
+	} );
 };
 
 /**
@@ -58,15 +58,15 @@ export const createThumbnailFromCanvas = (
  *
  * @param {FormData} formData The form data containing the file and metadata.
  */
-export const uploadThumbnail = async (formData) => {
+export const uploadThumbnail = async ( formData ) => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/thumbs/upload',
 			method: 'POST',
 			body: formData,
-		});
-	} catch (error) {
-		console.error('Error uploading thumbnail:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error uploading thumbnail:', error );
 		throw error;
 	}
 };
@@ -88,19 +88,19 @@ export const saveAllThumbnails = async (
 	featured = null
 ) => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/thumbs',
 			method: 'PUT',
 			data: {
 				attachment_id,
 				thumb_urls,
-				parent_id: Number(parent_id) || 0,
+				parent_id: Number( parent_id ) || 0,
 				url,
 				featured,
 			},
-		});
-	} catch (error) {
-		console.error('Error saving all thumbnails:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error saving all thumbnails:', error );
 		throw error;
 	}
 };
@@ -122,20 +122,20 @@ export const setPosterImage = async (
 	featured = null
 ) => {
 	try {
-		const response = await apiFetch({
+		const response = await apiFetch( {
 			path: '/videopack/v1/thumbs',
 			method: 'PUT',
 			data: {
 				attachment_id,
-				thumb_urls: [thumb_url],
-				parent_id: Number(parent_id) || 0,
+				thumb_urls: [ thumb_url ],
+				parent_id: Number( parent_id ) || 0,
 				url,
 				featured,
 			},
-		});
-		return response?.[0];
-	} catch (error) {
-		console.error('Error setting poster image:', error);
+		} );
+		return response?.[ 0 ];
+	} catch ( error ) {
+		console.error( 'Error setting poster image:', error );
 		throw error;
 	}
 };
@@ -169,19 +169,19 @@ export const generateThumbnail = async (
 			thumbnail_index,
 			attachment_id,
 			generate_button,
-			parent_id: Number(parent_id) || 0,
+			parent_id: Number( parent_id ) || 0,
 			featured,
 		};
 
-		if (time !== null && time !== '' && !isNaN(time)) {
-			query.time = Number(time);
+		if ( time !== null && time !== '' && ! isNaN( time ) ) {
+			query.time = Number( time );
 		}
 
-		const path = addQueryArgs('/videopack/v1/thumbs', query);
+		const path = addQueryArgs( '/videopack/v1/thumbs', query );
 
-		return await apiFetch({ path, parse: false });
-	} catch (error) {
-		console.error('Error generating thumbnail:', error);
+		return await apiFetch( { path, parse: false } );
+	} catch ( error ) {
+		console.error( 'Error generating thumbnail:', error );
 		throw error;
 	}
 };

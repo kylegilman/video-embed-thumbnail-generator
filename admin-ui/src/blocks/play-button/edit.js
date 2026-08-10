@@ -17,33 +17,34 @@ import './editor.scss';
  * @param {Object}   root0.context       Block context.
  * @return {Element} Play Button edit component.
  */
-export default function Edit({ attributes, setAttributes, context }) {
+export default function Edit( { attributes, setAttributes, context } ) {
 	const { play_button_color, play_button_secondary_color } = attributes;
-	const isInsideThumbnail = !!context?.['videopack/isInsideThumbnail'];
+	const isInsideThumbnail = !! context?.[ 'videopack/isInsideThumbnail' ];
 	const isInsidePlayerOverlay =
-		!!context?.['videopack/isInsidePlayerOverlay'];
+		!! context?.[ 'videopack/isInsidePlayerOverlay' ];
 
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const embed_method =
-		(typeof config !== 'undefined' ? config.options?.embed_method : null) ||
-		'Video.js';
+		( typeof config !== 'undefined'
+			? config.options?.embed_method
+			: null ) || 'Video.js';
 	const THEME_COLORS = config?.themeColors;
 
-	const { resolved } = useVideopackContext(attributes, context);
+	const { resolved } = useVideopackContext( attributes, context );
 
 	const colorFallbacks = useMemo(
 		() =>
-			getColorFallbacks({
+			getColorFallbacks( {
 				play_button_color: resolved.play_button_color,
 				play_button_secondary_color:
 					resolved.play_button_secondary_color,
-			}),
-		[resolved.play_button_color, resolved.play_button_secondary_color]
+			} ),
+		[ resolved.play_button_color, resolved.play_button_secondary_color ]
 	);
 
 	const overlayStyles = {};
-	if (isInsidePlayerOverlay || isInsideThumbnail || resolved.isPreview) {
+	if ( isInsidePlayerOverlay || isInsideThumbnail || resolved.isPreview ) {
 		overlayStyles.position = 'absolute';
 		overlayStyles.top = 0;
 		overlayStyles.left = 0;
@@ -53,17 +54,19 @@ export default function Edit({ attributes, setAttributes, context }) {
 		overlayStyles.minHeight = '100px'; // Ensure it's visible in inserter
 	}
 
-	const blockProps = useBlockProps({
-		className: `videopack-play-button-block ${isInsidePlayerOverlay ? 'is-overlay' : ''}`,
+	const blockProps = useBlockProps( {
+		className: `videopack-play-button-block ${
+			isInsidePlayerOverlay ? 'is-overlay' : ''
+		}`,
 		style: overlayStyles,
-	});
+	} );
 
 	return (
 		<>
 			<InspectorControls>
 				<PanelBody
-					title={__('Colors', 'video-embed-thumbnail-generator')}
-					initialOpen={true}
+					title={ __( 'Colors', 'video-embed-thumbnail-generator' ) }
+					initialOpen={ true }
 				>
 					<div className="videopack-color-section">
 						<div className="videopack-color-flex-row">
@@ -74,19 +77,19 @@ export default function Edit({ attributes, setAttributes, context }) {
 											? __(
 													'Color',
 													'video-embed-thumbnail-generator'
-												)
+											  )
 											: __(
 													'Icon',
 													'video-embed-thumbnail-generator'
-												)
+											  )
 									}
-									value={play_button_color}
-									onChange={(value) =>
-										setAttributes({
+									value={ play_button_color }
+									onChange={ ( value ) =>
+										setAttributes( {
 											play_button_color: value,
-										})
+										} )
 									}
-									colors={THEME_COLORS}
+									colors={ THEME_COLORS }
 									fallbackValue={
 										colorFallbacks.play_button_color
 									}
@@ -99,19 +102,19 @@ export default function Edit({ attributes, setAttributes, context }) {
 											? __(
 													'Hover',
 													'video-embed-thumbnail-generator'
-												)
+											  )
 											: __(
 													'Accent',
 													'video-embed-thumbnail-generator'
-												)
+											  )
 									}
-									value={play_button_secondary_color}
-									onChange={(value) =>
-										setAttributes({
+									value={ play_button_secondary_color }
+									onChange={ ( value ) =>
+										setAttributes( {
 											play_button_secondary_color: value,
-										})
+										} )
 									}
-									colors={THEME_COLORS}
+									colors={ THEME_COLORS }
 									fallbackValue={
 										colorFallbacks.play_button_secondary_color
 									}
@@ -121,8 +124,8 @@ export default function Edit({ attributes, setAttributes, context }) {
 					</div>
 				</PanelBody>
 			</InspectorControls>
-			<div {...blockProps}>
-				<PlayButton attributes={attributes} context={context} />
+			<div { ...blockProps }>
+				<PlayButton attributes={ attributes } context={ context } />
 			</div>
 		</>
 	);

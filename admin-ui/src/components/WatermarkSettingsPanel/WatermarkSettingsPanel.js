@@ -12,7 +12,7 @@ import { captureVideoFrame } from '../../utils/video-capture';
 import SelectFromLibrary from '../../features/settings/components/SelectFromLibrary';
 import WatermarkPositioner from '../WatermarkPositioner/WatermarkPositioner';
 
-const WatermarkSettingsPanel = ({
+const WatermarkSettingsPanel = ( {
 	watermarkSettings,
 	onChange,
 	title,
@@ -20,59 +20,59 @@ const WatermarkSettingsPanel = ({
 	opened,
 	children,
 	disabled = false,
-}) => {
-	const [baseFrame, setBaseFrame] = useState(null);
-	const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
-	const prevWatermarkUrl = useRef(watermarkSettings?.url);
+} ) => {
+	const [ baseFrame, setBaseFrame ] = useState( null );
+	const [ settingsPanelOpen, setSettingsPanelOpen ] = useState( false );
+	const prevWatermarkUrl = useRef( watermarkSettings?.url );
 
-	useEffect(() => {
+	useEffect( () => {
 		if (
 			watermarkSettings?.url &&
 			watermarkSettings.url !== prevWatermarkUrl.current
 		) {
-			setSettingsPanelOpen(true);
+			setSettingsPanelOpen( true );
 		}
 		prevWatermarkUrl.current = watermarkSettings?.url;
-	}, [watermarkSettings?.url]);
+	}, [ watermarkSettings?.url ] );
 
-	useEffect(() => {
-		if (watermarkSettings?.url && !baseFrame) {
+	useEffect( () => {
+		if ( watermarkSettings?.url && ! baseFrame ) {
 			const videoUrl =
 				videopack_config.url + '/src/images/Adobestock_469037984.mp4';
 			const videoOffset = Math.random() * 1.9;
-			captureVideoFrame(videoUrl, videoOffset)
-				.then((canvas) => {
-					setBaseFrame(canvas);
-				})
-				.catch((e) => console.error(e));
+			captureVideoFrame( videoUrl, videoOffset )
+				.then( ( canvas ) => {
+					setBaseFrame( canvas );
+				} )
+				.catch( ( e ) => console.error( e ) );
 		}
-	}, [watermarkSettings?.url, baseFrame]);
+	}, [ watermarkSettings?.url, baseFrame ] );
 
-	const updateSetting = (key, value) => {
+	const updateSetting = ( key, value ) => {
 		const newSettings = {
 			...watermarkSettings,
-			[key]: value,
+			[ key ]: value,
 		};
-		onChange(newSettings);
+		onChange( newSettings );
 	};
 
 	const panelProps = { title };
-	if (opened !== undefined) {
+	if ( opened !== undefined ) {
 		panelProps.opened = opened;
 	} else {
 		panelProps.initialOpen = initialOpen;
 	}
 
 	return (
-		<PanelBody {...panelProps}>
+		<PanelBody { ...panelProps }>
 			<SelectFromLibrary
-				label={__(
+				label={ __(
 					'Watermark image URL',
 					'video-embed-thumbnail-generator'
-				)}
+				) }
 				type="url"
-				value={watermarkSettings?.url}
-				onChange={(url) =>
+				value={ watermarkSettings?.url }
+				onChange={ ( url ) =>
 					onChange(
 						typeof watermarkSettings === 'object' &&
 							watermarkSettings !== null
@@ -80,61 +80,67 @@ const WatermarkSettingsPanel = ({
 							: { url }
 					)
 				}
-				disabled={disabled}
+				disabled={ disabled }
 			/>
-			{children}
-			{watermarkSettings?.url && (
+			{ children }
+			{ watermarkSettings?.url && (
 				<PanelBody
-					title={__(
+					title={ __(
 						'Watermark Settings',
 						'video-embed-thumbnail-generator'
-					)}
-					opened={settingsPanelOpen}
-					onToggle={() => setSettingsPanelOpen(!settingsPanelOpen)}
+					) }
+					opened={ settingsPanelOpen }
+					onToggle={ () =>
+						setSettingsPanelOpen( ! settingsPanelOpen )
+					}
 				>
 					<div className="videopack-watermark-settings">
-						{baseFrame && (
+						{ baseFrame && (
 							<WatermarkPositioner
-								containerDimensions={{
+								containerDimensions={ {
 									width: baseFrame.width,
 									height: baseFrame.height,
-								}}
-								settings={watermarkSettings}
-								onChange={onChange}
-								isSelected={true}
-								showBackground={true}
-								backgroundDataUrl={baseFrame.toDataURL()}
+								} }
+								settings={ watermarkSettings }
+								onChange={ onChange }
+								isSelected={ true }
+								showBackground={ true }
+								backgroundDataUrl={ baseFrame.toDataURL() }
 							/>
-						)}
+						) }
 						<RangeControl
-							label={__(
+							label={ __(
 								'Scale (%)',
 								'video-embed-thumbnail-generator'
-							)}
-							value={Number(watermarkSettings.scale || 50)}
-							onChange={(value) => updateSetting('scale', value)}
-							min={1}
-							max={100}
-							step={0.01}
+							) }
+							value={ Number( watermarkSettings.scale || 50 ) }
+							onChange={ ( value ) =>
+								updateSetting( 'scale', value )
+							}
+							min={ 1 }
+							max={ 100 }
+							step={ 0.01 }
 							__nextHasNoMarginBottom
-							disabled={disabled}
+							disabled={ disabled }
 						/>
 						<Flex
-							gap={4}
+							gap={ 4 }
 							align="flex-end"
 							justify="flex-start"
-							style={{ marginBottom: '10px' }}
+							style={ { marginBottom: '10px' } }
 							className="videopack-watermark-row"
 						>
 							<FlexItem className="videopack-alignment-control">
 								<SelectControl
 									__next40pxDefaultSize
-									label={__(
+									label={ __(
 										'Horizontal Alignment',
 										'video-embed-thumbnail-generator'
-									)}
-									value={watermarkSettings.align || 'center'}
-									options={[
+									) }
+									value={
+										watermarkSettings.align || 'center'
+									}
+									options={ [
 										{
 											label: __(
 												'Left',
@@ -156,34 +162,34 @@ const WatermarkSettingsPanel = ({
 											),
 											value: 'right',
 										},
-									]}
-									onChange={(value) =>
-										updateSetting('align', value)
+									] }
+									onChange={ ( value ) =>
+										updateSetting( 'align', value )
 									}
 									__nextHasNoMarginBottom
-									disabled={disabled}
+									disabled={ disabled }
 								/>
 							</FlexItem>
 							<FlexItem className="videopack-offset-control">
 								<RangeControl
-									label={__(
+									label={ __(
 										'Horizontal Offset (%)',
 										'video-embed-thumbnail-generator'
-									)}
-									value={Number(watermarkSettings.x || 0)}
-									onChange={(value) =>
-										updateSetting('x', value)
+									) }
+									value={ Number( watermarkSettings.x || 0 ) }
+									onChange={ ( value ) =>
+										updateSetting( 'x', value )
 									}
-									min={0}
-									max={100}
-									step={0.01}
+									min={ 0 }
+									max={ 100 }
+									step={ 0.01 }
 									__nextHasNoMarginBottom
-									disabled={disabled}
+									disabled={ disabled }
 								/>
 							</FlexItem>
 						</Flex>
 						<Flex
-							gap={4}
+							gap={ 4 }
 							align="flex-end"
 							justify="flex-start"
 							className="videopack-watermark-row"
@@ -191,12 +197,14 @@ const WatermarkSettingsPanel = ({
 							<FlexItem className="videopack-alignment-control">
 								<SelectControl
 									__next40pxDefaultSize
-									label={__(
+									label={ __(
 										'Vertical Alignment',
 										'video-embed-thumbnail-generator'
-									)}
-									value={watermarkSettings.valign || 'center'}
-									options={[
+									) }
+									value={
+										watermarkSettings.valign || 'center'
+									}
+									options={ [
 										{
 											label: __(
 												'Top',
@@ -218,35 +226,35 @@ const WatermarkSettingsPanel = ({
 											),
 											value: 'bottom',
 										},
-									]}
-									onChange={(value) =>
-										updateSetting('valign', value)
+									] }
+									onChange={ ( value ) =>
+										updateSetting( 'valign', value )
 									}
 									__nextHasNoMarginBottom
-									disabled={disabled}
+									disabled={ disabled }
 								/>
 							</FlexItem>
 							<FlexItem className="videopack-offset-control">
 								<RangeControl
-									label={__(
+									label={ __(
 										'Vertical Offset (%)',
 										'video-embed-thumbnail-generator'
-									)}
-									value={Number(watermarkSettings.y || 0)}
-									onChange={(value) =>
-										updateSetting('y', value)
+									) }
+									value={ Number( watermarkSettings.y || 0 ) }
+									onChange={ ( value ) =>
+										updateSetting( 'y', value )
 									}
-									min={0}
-									max={100}
-									step={0.01}
+									min={ 0 }
+									max={ 100 }
+									step={ 0.01 }
 									__nextHasNoMarginBottom
-									disabled={disabled}
+									disabled={ disabled }
 								/>
 							</FlexItem>
 						</Flex>
 					</div>
 				</PanelBody>
-			)}
+			) }
 		</PanelBody>
 	);
 };

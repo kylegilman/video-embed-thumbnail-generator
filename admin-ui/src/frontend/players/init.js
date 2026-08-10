@@ -12,6 +12,8 @@
  * finished loading.
  */
 
+/* global ResizeObserver */
+
 import { setupMetaBar } from '../meta-bar';
 import { setupVideoTitle } from '../video-title';
 import { resizeVideo } from '../resolution';
@@ -71,9 +73,13 @@ export function initModularBlocks( container = document ) {
 	// both of the above — there is no need for such a call now, this loop on
 	// its own already reaches every share/download wrapper regardless of
 	// ancestor.
-	container.querySelectorAll( '.videopack-download-wrapper, .videopack-share-wrapper' ).forEach( ( element ) => {
-		setupMetaBar( element );
-	} );
+	container
+		.querySelectorAll(
+			'.videopack-download-wrapper, .videopack-share-wrapper'
+		)
+		.forEach( ( element ) => {
+			setupMetaBar( element );
+		} );
 }
 
 /**
@@ -110,7 +116,10 @@ export function initPlayer( playerWrapper ) {
 		// for why it doesn't rely on WordPress's own wp-mediaelement.js
 		// auto-init) -- no need to wait and check for one showing up first.
 		const videoElement = playerWrapper.querySelector( 'video' );
-		if ( ! videoElement || typeof window.MediaElementPlayer === 'undefined' ) {
+		if (
+			! videoElement ||
+			typeof window.MediaElementPlayer === 'undefined'
+		) {
 			return;
 		}
 		const settings = Object.assign( {}, videoVars.mejs_settings || {} );
@@ -142,7 +151,7 @@ export function onMejsSuccess( mediaElement, domObject ) {
  * Common setup for any player type after initialization.
  *
  * @param {HTMLElement} playerWrapper The player wrapper element.
- * @param {object}      videoVars     The video variables.
+ * @param {Object}      videoVars     The video variables.
  */
 export function setupVideo( playerWrapper, videoVars ) {
 	if ( playerWrapper.dataset.videopackInitialized ) {
@@ -152,7 +161,9 @@ export function setupVideo( playerWrapper, videoVars ) {
 	const playerId = playerWrapper.dataset.id;
 
 	// Move watermark and meta into the player.
-	const watermark = document.getElementById( `video_${ playerId }_watermark` );
+	const watermark = document.getElementById(
+		`video_${ playerId }_watermark`
+	);
 	if ( watermark ) {
 		playerWrapper.prepend( watermark );
 		watermark.style.display = 'block';
@@ -171,10 +182,12 @@ export function setupVideo( playerWrapper, videoVars ) {
 		// Clear the initialization from the meta bar and let the player handle it.
 		delete metaBar.dataset.videopackMetaInitialized;
 	}
-	setupMetaBar( playerWrapper, videoVars );
+	setupMetaBar( playerWrapper );
 
 	if ( true !== videoVars.right_click ) {
-		playerWrapper.addEventListener( 'contextmenu', ( e ) => e.preventDefault() );
+		playerWrapper.addEventListener( 'contextmenu', ( e ) =>
+			e.preventDefault()
+		);
 	}
 
 	if ( 'vertical' === videoVars.fixed_aspect ) {
@@ -183,27 +196,40 @@ export function setupVideo( playerWrapper, videoVars ) {
 			const checkVertical = () => {
 				let isVertical = false;
 
-				if ( videoElement.videoWidth > 0 && videoElement.videoHeight > 0 ) {
+				if (
+					videoElement.videoWidth > 0 &&
+					videoElement.videoHeight > 0
+				) {
 					// Filter out the 100x100 placeholder browsers sometimes report before metadata is ready.
-					if ( videoElement.videoWidth === 100 && videoElement.videoHeight === 100 && videoElement.readyState < 1 ) {
+					if (
+						videoElement.videoWidth === 100 &&
+						videoElement.videoHeight === 100 &&
+						videoElement.readyState < 1
+					) {
 						return;
 					}
-					isVertical = videoElement.videoHeight > videoElement.videoWidth;
+					isVertical =
+						videoElement.videoHeight > videoElement.videoWidth;
 				} else {
 					// Fallback to database metadata or rotation data.
 					isVertical =
-						Number( videoVars.height ) > Number( videoVars.width ) ||
+						Number( videoVars.height ) >
+							Number( videoVars.width ) ||
 						[ 90, 270 ].includes( Number( videoVars.rotate ) );
 				}
 
 				if ( isVertical ) {
-					const ratio = videoVars.default_ratio ? videoVars.default_ratio.replace( ':', ' / ' ) : '16 / 9';
+					const ratio = videoVars.default_ratio
+						? videoVars.default_ratio.replace( ':', ' / ' )
+						: '16 / 9';
 
 					playerWrapper.classList.add( 'videopack-fixed-aspect' );
 					playerWrapper.style.aspectRatio = ratio;
 
 					// Important: Apply directly to the video container so MEJS respects the constraint.
-					const mejsContainer = playerWrapper.querySelector( '.wp-video-container' );
+					const mejsContainer = playerWrapper.querySelector(
+						'.wp-video-container'
+					);
 					if ( mejsContainer ) {
 						mejsContainer.style.aspectRatio = ratio;
 					}
@@ -213,7 +239,11 @@ export function setupVideo( playerWrapper, videoVars ) {
 			// Check immediately with fallbacks, then re-check when metadata arrives.
 			checkVertical();
 			if ( videoElement.readyState < 1 ) {
-				videoElement.addEventListener( 'loadedmetadata', checkVertical, { once: true } );
+				videoElement.addEventListener(
+					'loadedmetadata',
+					checkVertical,
+					{ once: true }
+				);
 			}
 		}
 	}
@@ -230,7 +260,11 @@ export function setupVideo( playerWrapper, videoVars ) {
 	}
 
 	// Resize logic.
-	if ( ( videoVars.legacy_dimensions && true === videoVars.resize ) || 'automatic' === videoVars.auto_res || window.location.search.includes( 'videopack[enable]=true' ) ) {
+	if (
+		( videoVars.legacy_dimensions && true === videoVars.resize ) ||
+		'automatic' === videoVars.auto_res ||
+		window.location.search.includes( 'videopack[enable]=true' )
+	) {
 		resizeVideo( playerId );
 
 		const target = playerWrapper.parentElement;

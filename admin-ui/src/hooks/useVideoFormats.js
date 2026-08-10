@@ -12,38 +12,38 @@ import { getVideoSources } from '../api/gallery';
  * @param {string} src The video source URL.
  * @return {Object} Video sources data and loading state.
  */
-export const useVideoFormats = (id, src) => {
-	const [sources, setSources] = useState(null);
-	const [isLoading, setIsLoading] = useState(false);
+export const useVideoFormats = ( id, src ) => {
+	const [ sources, setSources ] = useState( null );
+	const [ isLoading, setIsLoading ] = useState( false );
 
 	const fetchSources = useCallback(
-		async (signal = null) => {
-			if (!id && !src) {
+		async ( signal = null ) => {
+			if ( ! id && ! src ) {
 				return;
 			}
-			setIsLoading(true);
+			setIsLoading( true );
 			try {
-				const data = await getVideoSources(id, src, signal);
-				setSources(data);
-			} catch (error) {
-				if (error.name !== 'AbortError') {
+				const data = await getVideoSources( id, src, signal );
+				setSources( data );
+			} catch ( error ) {
+				if ( error.name !== 'AbortError' ) {
 					console.error(
 						'Videopack: Error fetching video sources:',
 						error
 					);
 				}
 			} finally {
-				setIsLoading(false);
+				setIsLoading( false );
 			}
 		},
-		[id, src]
+		[ id, src ]
 	);
 
-	useEffect(() => {
+	useEffect( () => {
 		const controller = new AbortController();
-		fetchSources(controller.signal);
+		fetchSources( controller.signal );
 		return () => controller.abort();
-	}, [fetchSources]);
+	}, [ fetchSources ] );
 
 	return { formats: sources, isLoading, refetch: fetchSources };
 };

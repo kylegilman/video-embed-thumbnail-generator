@@ -6,7 +6,7 @@ import { getColorFallbacks } from '../../utils/colors';
 
 /* global videopack_config */
 
-export default function CollectionColorSettings({
+export default function CollectionColorSettings( {
 	attributes,
 	setAttributes,
 	options = {},
@@ -15,7 +15,7 @@ export default function CollectionColorSettings({
 	showTitleSettings = true,
 	showPlayerSettings = true,
 	showSkinSettings = true,
-}) {
+} ) {
 	const {
 		skin,
 		title_color,
@@ -31,13 +31,13 @@ export default function CollectionColorSettings({
 	} = attributes;
 
 	const effectiveValues = useMemo(
-		() => ({ ...options, ...attributes }),
-		[options, attributes]
+		() => ( { ...options, ...attributes } ),
+		[ options, attributes ]
 	);
 
 	const colorFallbacks = useMemo(
-		() => getColorFallbacks(effectiveValues),
-		[effectiveValues]
+		() => getColorFallbacks( effectiveValues ),
+		[ effectiveValues ]
 	);
 
 	const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
@@ -47,18 +47,18 @@ export default function CollectionColorSettings({
 
 	return (
 		<>
-			{isGalleryOrList && showSkinSettings && (
+			{ isGalleryOrList && showSkinSettings && (
 				<div
 					className="videopack-skin-section"
-					style={{ marginBottom: '16px' }}
+					style={ { marginBottom: '16px' } }
 				>
 					<SelectControl
-						label={__(
+						label={ __(
 							'Player Skin',
 							'video-embed-thumbnail-generator'
-						)}
-						value={skin || options.skin || ''}
-						options={[
+						) }
+						value={ skin || options.skin || '' }
+						options={ [
 							{
 								label: __(
 									'Videopack',
@@ -108,45 +108,47 @@ export default function CollectionColorSettings({
 								),
 								value: 'vjs-theme-sea',
 							},
-						]}
-						onChange={(value) => setAttributes({ skin: value })}
+						] }
+						onChange={ ( value ) =>
+							setAttributes( { skin: value } )
+						}
 					/>
 				</div>
-			)}
+			) }
 
-			{isGalleryOrList && showTitleSettings && (
+			{ isGalleryOrList && showTitleSettings && (
 				<div className="videopack-color-section">
 					<p className="videopack-settings-section-title">
-						{__('Titles', 'video-embed-thumbnail-generator')}
+						{ __( 'Titles', 'video-embed-thumbnail-generator' ) }
 					</p>
 					<div className="videopack-color-flex-row">
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Text',
 									'video-embed-thumbnail-generator'
-								)}
-								value={title_color}
-								onChange={(value) =>
-									setAttributes({ title_color: value })
+								) }
+								value={ title_color }
+								onChange={ ( value ) =>
+									setAttributes( { title_color: value } )
 								}
-								colors={THEME_COLORS}
-								fallbackValue={colorFallbacks.title_color}
+								colors={ THEME_COLORS }
+								fallbackValue={ colorFallbacks.title_color }
 							/>
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Background',
 									'video-embed-thumbnail-generator'
-								)}
-								value={title_background_color}
-								onChange={(value) =>
-									setAttributes({
+								) }
+								value={ title_background_color }
+								onChange={ ( value ) =>
+									setAttributes( {
 										title_background_color: value,
-									})
+									} )
 								}
-								colors={THEME_COLORS}
+								colors={ THEME_COLORS }
 								fallbackValue={
 									colorFallbacks.title_background_color
 								}
@@ -154,41 +156,45 @@ export default function CollectionColorSettings({
 						</div>
 					</div>
 				</div>
-			)}
+			) }
 
-			{isGalleryOrList && showPlayerSettings && (
+			{ isGalleryOrList && showPlayerSettings && (
 				<div className="videopack-color-section">
 					<p className="videopack-settings-section-title">
-						{__('Player', 'video-embed-thumbnail-generator')}
+						{ __( 'Player', 'video-embed-thumbnail-generator' ) }
 					</p>
 					<div className="videopack-color-flex-row">
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Play Button Icon',
 									'video-embed-thumbnail-generator'
-								)}
-								value={play_button_color}
-								onChange={(value) =>
-									setAttributes({ play_button_color: value })
+								) }
+								value={ play_button_color }
+								onChange={ ( value ) =>
+									setAttributes( {
+										play_button_color: value,
+									} )
 								}
-								colors={THEME_COLORS}
-								fallbackValue={colorFallbacks.play_button_color}
+								colors={ THEME_COLORS }
+								fallbackValue={
+									colorFallbacks.play_button_color
+								}
 							/>
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Play Button Accent',
 									'video-embed-thumbnail-generator'
-								)}
-								value={play_button_secondary_color}
-								onChange={(value) =>
-									setAttributes({
+								) }
+								value={ play_button_secondary_color }
+								onChange={ ( value ) =>
+									setAttributes( {
 										play_button_secondary_color: value,
-									})
+									} )
 								}
-								colors={THEME_COLORS}
+								colors={ THEME_COLORS }
 								fallbackValue={
 									colorFallbacks.play_button_secondary_color
 								}
@@ -196,17 +202,17 @@ export default function CollectionColorSettings({
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Control Bar Background',
 									'video-embed-thumbnail-generator'
-								)}
-								value={control_bar_bg_color}
-								onChange={(value) =>
-									setAttributes({
+								) }
+								value={ control_bar_bg_color }
+								onChange={ ( value ) =>
+									setAttributes( {
 										control_bar_bg_color: value,
-									})
+									} )
 								}
-								colors={THEME_COLORS}
+								colors={ THEME_COLORS }
 								fallbackValue={
 									colorFallbacks.control_bar_bg_color
 								}
@@ -214,55 +220,64 @@ export default function CollectionColorSettings({
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Control Bar Icons',
 									'video-embed-thumbnail-generator'
-								)}
-								value={control_bar_color}
-								onChange={(value) =>
-									setAttributes({ control_bar_color: value })
+								) }
+								value={ control_bar_color }
+								onChange={ ( value ) =>
+									setAttributes( {
+										control_bar_color: value,
+									} )
 								}
-								colors={THEME_COLORS}
-								fallbackValue={colorFallbacks.control_bar_color}
+								colors={ THEME_COLORS }
+								fallbackValue={
+									colorFallbacks.control_bar_color
+								}
 							/>
 						</div>
 					</div>
 				</div>
-			)}
+			) }
 
-			{showPaginationSettings && (
+			{ showPaginationSettings && (
 				<div className="videopack-color-section">
 					<p className="videopack-settings-section-title">
-						{__('Pagination', 'video-embed-thumbnail-generator')}
+						{ __(
+							'Pagination',
+							'video-embed-thumbnail-generator'
+						) }
 					</p>
 					<div className="videopack-color-flex-row is-pagination">
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Outline/Text',
 									'video-embed-thumbnail-generator'
-								)}
-								value={pagination_color}
-								onChange={(value) =>
-									setAttributes({ pagination_color: value })
+								) }
+								value={ pagination_color }
+								onChange={ ( value ) =>
+									setAttributes( { pagination_color: value } )
 								}
-								colors={THEME_COLORS}
-								fallbackValue={colorFallbacks.pagination_color}
+								colors={ THEME_COLORS }
+								fallbackValue={
+									colorFallbacks.pagination_color
+								}
 							/>
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Background',
 									'video-embed-thumbnail-generator'
-								)}
-								value={pagination_background_color}
-								onChange={(value) =>
-									setAttributes({
+								) }
+								value={ pagination_background_color }
+								onChange={ ( value ) =>
+									setAttributes( {
 										pagination_background_color: value,
-									})
+									} )
 								}
-								colors={THEME_COLORS}
+								colors={ THEME_COLORS }
 								fallbackValue={
 									colorFallbacks.pagination_background_color
 								}
@@ -270,17 +285,17 @@ export default function CollectionColorSettings({
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Active Background',
 									'video-embed-thumbnail-generator'
-								)}
-								value={pagination_active_bg_color}
-								onChange={(value) =>
-									setAttributes({
+								) }
+								value={ pagination_active_bg_color }
+								onChange={ ( value ) =>
+									setAttributes( {
 										pagination_active_bg_color: value,
-									})
+									} )
 								}
-								colors={THEME_COLORS}
+								colors={ THEME_COLORS }
 								fallbackValue={
 									colorFallbacks.pagination_active_bg_color
 								}
@@ -288,17 +303,17 @@ export default function CollectionColorSettings({
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Active Text',
 									'video-embed-thumbnail-generator'
-								)}
-								value={pagination_active_color}
-								onChange={(value) =>
-									setAttributes({
+								) }
+								value={ pagination_active_color }
+								onChange={ ( value ) =>
+									setAttributes( {
 										pagination_active_color: value,
-									})
+									} )
 								}
-								colors={THEME_COLORS}
+								colors={ THEME_COLORS }
 								fallbackValue={
 									colorFallbacks.pagination_active_color
 								}
@@ -306,7 +321,7 @@ export default function CollectionColorSettings({
 						</div>
 					</div>
 				</div>
-			)}
+			) }
 		</>
 	);
 }

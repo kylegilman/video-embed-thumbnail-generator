@@ -36,7 +36,7 @@ import buildItemContext from './buildItemContext';
  * @param {boolean}       root0.isPreview         Whether it's in preview mode.
  * @param {Element}       root0.children          Child elements.
  */
-function SortableItem({
+function SortableItem( {
 	id,
 	isActive,
 	isHoveringGallery,
@@ -45,7 +45,7 @@ function SortableItem({
 	onAddVideo,
 	isPreview,
 	children,
-}) {
+} ) {
 	const {
 		attributes: sortableAttributes,
 		listeners,
@@ -53,66 +53,72 @@ function SortableItem({
 		transform,
 		transition,
 		isDragging,
-	} = useSortable({ id });
+	} = useSortable( { id } );
 
 	const style = {
-		transform: CSS.Transform.toString(transform),
+		transform: CSS.Transform.toString( transform ),
 		transition,
 		zIndex: isDragging ? 200 : undefined,
 	};
 
 	return (
 		<figure
-			ref={setNodeRef}
-			style={style}
-			{...sortableAttributes}
-			className={`videopack-collection-item videopack-hover-trigger ${
-				isActive && !isPreview ? 'is-editable' : 'is-preview'
-			} ${isDragging ? 'is-dragging' : ''}`}
+			ref={ setNodeRef }
+			style={ style }
+			{ ...sortableAttributes }
+			className={ `videopack-collection-item videopack-hover-trigger ${
+				isActive && ! isPreview ? 'is-editable' : 'is-preview'
+			} ${ isDragging ? 'is-dragging' : '' }` }
 		>
-			{children}
+			{ children }
 			<button
 				className="videopack-drag-handle"
-				{...listeners}
-				title={__('Drag to reorder', 'video-embed-thumbnail-generator')}
+				{ ...listeners }
+				title={ __(
+					'Drag to reorder',
+					'video-embed-thumbnail-generator'
+				) }
 			>
-				<Icon icon={dragHandle} />
+				<Icon icon={ dragHandle } />
 			</button>
 			<div className="gallery-item-edit">
 				<button
 					type="button"
 					className="videopack-edit-item"
-					onClick={(e) => {
+					onClick={ ( e ) => {
 						e.stopPropagation();
-						onEdit(id);
-					}}
-					title={__('Edit', 'video-embed-thumbnail-generator')}
+						onEdit( id );
+					} }
+					title={ __( 'Edit', 'video-embed-thumbnail-generator' ) }
 				>
-					<Icon icon={pencil} />
+					<Icon icon={ pencil } />
 				</button>
 			</div>
 			<div className="gallery-item-remove">
 				<button
 					type="button"
 					className="videopack-remove-item"
-					onClick={(e) => {
+					onClick={ ( e ) => {
 						e.stopPropagation();
-						onRemove(id);
-					}}
-					title={__('Remove', 'video-embed-thumbnail-generator')}
+						onRemove( id );
+					} }
+					title={ __( 'Remove', 'video-embed-thumbnail-generator' ) }
 				>
-					<Icon icon={close} />
+					<Icon icon={ close } />
 				</button>
 			</div>
-			{!isActive && isHoveringGallery && (
+			{ ! isActive && isHoveringGallery && (
 				<button
 					className="gallery-add-button"
-					onClick={onAddVideo}
-					title={__('Add video', 'video-embed-thumbnail-generator')}
+					onClick={ onAddVideo }
+					title={ __(
+						'Add video',
+						'video-embed-thumbnail-generator'
+					) }
 				>
-					<Icon icon={create} />
+					<Icon icon={ create } />
 				</button>
-			)}
+			) }
 		</figure>
 	);
 }
@@ -126,29 +132,29 @@ function SortableItem({
  * Attachment Details) — see edit.js's canEdit branch for the static grid
  * used instead in those contexts.
  *
- * @param {Object}   root0                     Component props.
- * @param {Array}    root0.videos              Video records to render.
- * @param {string}   root0.effectiveActiveKey  The currently-active video's key.
- * @param {Function} root0.setActiveVideoKey   Marks a video as active (shows real InnerBlocks).
- * @param {Object}   root0.context             This Loop instance's inherited block context.
- * @param {Object}   root0.vpContext           This Loop instance's resolved videopack context.
- * @param {Array}    root0.templateBlocks      Loop's own inner block template.
- * @param {string}   root0.resolvedDuotoneClass Duotone class shared across all items.
- * @param {number}   root0.totalPagesCount     Total pages (for item context).
- * @param {number}   root0.totalResultsCount   Total results (for item context).
- * @param {boolean}  root0.showLoopAppender    Whether to show the "add block" appender.
- * @param {Function} root0.handleRemoveItem    Removes a video from the collection.
- * @param {Function} root0.handleEditItem      Opens the media frame to replace a video.
- * @param {Function} root0.handleAddVideo      Opens the media frame to add videos.
- * @param {Object}   root0.queryAttributes     Loop's resolved query attributes.
- * @param {string}   root0.parentClientId      The parent Collection block's clientId.
+ * @param {Object}   root0                       Component props.
+ * @param {Array}    root0.videos                Video records to render.
+ * @param {string}   root0.effectiveActiveKey    The currently-active video's key.
+ * @param {Function} root0.setActiveVideoKey     Marks a video as active (shows real InnerBlocks).
+ * @param {Object}   root0.context               This Loop instance's inherited block context.
+ * @param {Object}   root0.vpContext             This Loop instance's resolved videopack context.
+ * @param {Array}    root0.templateBlocks        Loop's own inner block template.
+ * @param {string}   root0.resolvedDuotoneClass  Duotone class shared across all items.
+ * @param {number}   root0.totalPagesCount       Total pages (for item context).
+ * @param {number}   root0.totalResultsCount     Total results (for item context).
+ * @param {boolean}  root0.showLoopAppender      Whether to show the "add block" appender.
+ * @param {Function} root0.handleRemoveItem      Removes a video from the collection.
+ * @param {Function} root0.handleEditItem        Opens the media frame to replace a video.
+ * @param {Function} root0.handleAddVideo        Opens the media frame to add videos.
+ * @param {Object}   root0.queryAttributes       Loop's resolved query attributes.
+ * @param {string}   root0.parentClientId        The parent Collection block's clientId.
  * @param {Function} root0.updateBlockAttributes Dispatch action to update a block's attributes.
- * @param {number}   root0.previewPostId       The current post's ID (for gallery_id fallback).
- * @param {Function} root0.onReorderStart      Called synchronously the instant a drag completes,
- *                                             before the persisted-order fetch even starts — lets
- *                                             the Inspector show "Manual"/"Manually Sorted" right away.
+ * @param {number}   root0.previewPostId         The current post's ID (for gallery_id fallback).
+ * @param {Function} root0.onReorderStart        Called synchronously the instant a drag completes,
+ *                                               before the persisted-order fetch even starts — lets
+ *                                               the Inspector show "Manual"/"Manually Sorted" right away.
  */
-export default function SortableGrid({
+export default function SortableGrid( {
 	videos,
 	effectiveActiveKey,
 	setActiveVideoKey,
@@ -167,12 +173,12 @@ export default function SortableGrid({
 	updateBlockAttributes,
 	previewPostId,
 	onReorderStart,
-}) {
+} ) {
 	const sensors = useSensors(
-		useSensor(PointerSensor),
-		useSensor(KeyboardSensor, {
+		useSensor( PointerSensor ),
+		useSensor( KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
-		})
+		} )
 	);
 
 	// Reordering persists via updateBlockAttributes below, which changes the
@@ -184,27 +190,27 @@ export default function SortableGrid({
 	// copy immediately on drop (before the fetch even starts) shows the
 	// result instantly instead; once fresh data arrives reflecting the same
 	// order, this defers back to it with no visible change.
-	const [optimisticVideos, setOptimisticVideos] = useState(null);
+	const [ optimisticVideos, setOptimisticVideos ] = useState( null );
 
-	useEffect(() => {
-		setOptimisticVideos(null);
-	}, [videos]);
+	useEffect( () => {
+		setOptimisticVideos( null );
+	}, [ videos ] );
 
 	const displayVideos = optimisticVideos || videos;
 
 	const handleDragEnd = useCallback(
-		async (event) => {
+		async ( event ) => {
 			const { active, over } = event;
-			if (active && over && active.id !== over.id) {
+			if ( active && over && active.id !== over.id ) {
 				const displayOldIndex = videos.findIndex(
-					(v) => (v.attachment_id || v.id) === active.id
+					( v ) => ( v.attachment_id || v.id ) === active.id
 				);
 				const displayNewIndex = videos.findIndex(
-					(v) => (v.attachment_id || v.id) === over.id
+					( v ) => ( v.attachment_id || v.id ) === over.id
 				);
-				if (displayOldIndex !== -1 && displayNewIndex !== -1) {
+				if ( displayOldIndex !== -1 && displayNewIndex !== -1 ) {
 					setOptimisticVideos(
-						arrayMove(videos, displayOldIndex, displayNewIndex)
+						arrayMove( videos, displayOldIndex, displayNewIndex )
 					);
 					onReorderStart?.();
 				}
@@ -215,44 +221,45 @@ export default function SortableGrid({
 					queryAttributes.gallery_include
 				) {
 					fullIds = queryAttributes.gallery_include
-						.split(',')
-						.map((id) => id.trim());
+						.split( ',' )
+						.map( ( id ) => id.trim() );
 				} else {
 					try {
-						const response = await getVideoGallery({
+						const response = await getVideoGallery( {
 							...queryAttributes,
-							gallery_id: queryAttributes.gallery_id || previewPostId,
+							gallery_id:
+								queryAttributes.gallery_id || previewPostId,
 							gallery_per_page: -1,
 							page_number: undefined,
 							gallery_pagination: false,
 							skip_html: true,
-						});
-						fullIds = (response.videos || []).map((v) =>
+						} );
+						fullIds = ( response.videos || [] ).map( ( v ) =>
 							v.attachment_id.toString()
 						);
 					} catch {
-						fullIds = (videos || []).map((v) =>
+						fullIds = ( videos || [] ).map( ( v ) =>
 							v.attachment_id.toString()
 						);
 					}
 				}
 
 				const oldIndex = fullIds.findIndex(
-					(id) => parseInt(id, 10) === active.id
+					( id ) => parseInt( id, 10 ) === active.id
 				);
 				const newIndex = fullIds.findIndex(
-					(id) => parseInt(id, 10) === over.id
+					( id ) => parseInt( id, 10 ) === over.id
 				);
 
-				if (oldIndex !== -1 && newIndex !== -1) {
-					const newIds = arrayMove(fullIds, oldIndex, newIndex);
-					const newInclude = newIds.join(',');
+				if ( oldIndex !== -1 && newIndex !== -1 ) {
+					const newIds = arrayMove( fullIds, oldIndex, newIndex );
+					const newInclude = newIds.join( ',' );
 
-					updateBlockAttributes(parentClientId, {
+					updateBlockAttributes( parentClientId, {
 						gallery_include: newInclude,
 						gallery_orderby: 'include',
 						gallery_source: 'manual',
-					});
+					} );
 				}
 			}
 		},
@@ -268,64 +275,64 @@ export default function SortableGrid({
 
 	return (
 		<DndContext
-			sensors={sensors}
-			collisionDetection={closestCenter}
-			onDragEnd={handleDragEnd}
+			sensors={ sensors }
+			collisionDetection={ closestCenter }
+			onDragEnd={ handleDragEnd }
 		>
 			<SortableContext
-				items={displayVideos.map(
-					(v, i) => v.attachment_id || `temp-${i}`
-				)}
-				strategy={rectSortingStrategy}
+				items={ displayVideos.map(
+					( v, i ) => v.attachment_id || `temp-${ i }`
+				) }
+				strategy={ rectSortingStrategy }
 			>
 				<div className="videopack-collection-grid">
-					{displayVideos.map((video) => {
+					{ displayVideos.map( ( video ) => {
 						const videoKey = video.attachment_id || video.id;
 						const isActive = videoKey === effectiveActiveKey;
 
-						const itemContext = buildItemContext(video, {
+						const itemContext = buildItemContext( video, {
 							context,
 							vpContext,
 							resolvedDuotoneClass,
 							totalPagesCount,
 							totalResultsCount,
-						});
+						} );
 
 						return (
 							<SortableItem
-								key={video.attachment_id || video.id}
-								id={video.attachment_id || video.id}
-								isActive={isActive}
-								isPreview={false}
-								onRemove={handleRemoveItem}
-								onEdit={handleEditItem}
-								onAddVideo={handleAddVideo}
-								isHoveringGallery={false}
+								key={ video.attachment_id || video.id }
+								id={ video.attachment_id || video.id }
+								isActive={ isActive }
+								isPreview={ false }
+								onRemove={ handleRemoveItem }
+								onEdit={ handleEditItem }
+								onAddVideo={ handleAddVideo }
+								isHoveringGallery={ false }
 							>
-								<BlockContextProvider value={itemContext}>
-									<div className={resolvedDuotoneClass}>
-										{isActive && (
+								<BlockContextProvider value={ itemContext }>
+									<div className={ resolvedDuotoneClass }>
+										{ isActive && (
 											<InnerBlocks
-												templateLock={false}
+												templateLock={ false }
 												renderAppender={
 													showLoopAppender
 														? InnerBlocks.ButtonBlockAppender
 														: false
 												}
 											/>
-										)}
+										) }
 										<LoopItemPreview
-											blocks={templateBlocks}
-											isHidden={isActive}
-											onActivate={() =>
-												setActiveVideoKey(videoKey)
+											blocks={ templateBlocks }
+											isHidden={ isActive }
+											onActivate={ () =>
+												setActiveVideoKey( videoKey )
 											}
 										/>
 									</div>
 								</BlockContextProvider>
 							</SortableItem>
 						);
-					})}
+					} ) }
 				</div>
 			</SortableContext>
 		</DndContext>

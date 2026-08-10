@@ -1,4 +1,8 @@
-import { pickTargetResolution, computeResizeWidth, registerResolutionHandler } from './resolution';
+import {
+	pickTargetResolution,
+	computeResizeWidth,
+	registerResolutionHandler,
+} from './resolution';
 
 describe( 'pickTargetResolution', () => {
 	const resolutionGroups = [
@@ -8,35 +12,81 @@ describe( 'pickTargetResolution', () => {
 	];
 
 	it( 'returns null when there is nothing to switch between', () => {
-		expect( pickTargetResolution( { containerWidth: 640, aspectRatio: 9 / 16, pixelRatio: false, devicePixelRatio: 1, resolutionGroups: [] } ) ).toBeNull();
-		expect( pickTargetResolution( { containerWidth: 640, aspectRatio: 9 / 16, pixelRatio: false, devicePixelRatio: 1, resolutionGroups: [ resolutionGroups[ 0 ] ] } ) ).toBeNull();
+		expect(
+			pickTargetResolution( {
+				containerWidth: 640,
+				aspectRatio: 9 / 16,
+				pixelRatio: false,
+				devicePixelRatio: 1,
+				resolutionGroups: [],
+			} )
+		).toBeNull();
+		expect(
+			pickTargetResolution( {
+				containerWidth: 640,
+				aspectRatio: 9 / 16,
+				pixelRatio: false,
+				devicePixelRatio: 1,
+				resolutionGroups: [ resolutionGroups[ 0 ] ],
+			} )
+		).toBeNull();
 	} );
 
 	it( 'picks the smallest resolution that still meets the target height', () => {
 		// 640 * (9/16) = 360 -> smallest res >= 360 is 480.
-		const target = pickTargetResolution( { containerWidth: 640, aspectRatio: 9 / 16, pixelRatio: false, devicePixelRatio: 1, resolutionGroups } );
+		const target = pickTargetResolution( {
+			containerWidth: 640,
+			aspectRatio: 9 / 16,
+			pixelRatio: false,
+			devicePixelRatio: 1,
+			resolutionGroups,
+		} );
 		expect( target ).toBe( '480' );
 	} );
 
 	it( 'falls back to the largest available resolution when the target exceeds all of them', () => {
 		// A huge container needs more than 1080p is available -> falls back to the largest (1080).
-		const target = pickTargetResolution( { containerWidth: 3000, aspectRatio: 9 / 16, pixelRatio: false, devicePixelRatio: 1, resolutionGroups } );
+		const target = pickTargetResolution( {
+			containerWidth: 3000,
+			aspectRatio: 9 / 16,
+			pixelRatio: false,
+			devicePixelRatio: 1,
+			resolutionGroups,
+		} );
 		expect( target ).toBe( '1080' );
 	} );
 
 	it( 'falls back to the smallest available resolution when the target is smaller than all of them', () => {
-		const target = pickTargetResolution( { containerWidth: 100, aspectRatio: 9 / 16, pixelRatio: false, devicePixelRatio: 1, resolutionGroups } );
+		const target = pickTargetResolution( {
+			containerWidth: 100,
+			aspectRatio: 9 / 16,
+			pixelRatio: false,
+			devicePixelRatio: 1,
+			resolutionGroups,
+		} );
 		expect( target ).toBe( '480' );
 	} );
 
 	it( 'scales the target width by devicePixelRatio when pixelRatio is enabled', () => {
 		// Without pixel ratio: 400 * (9/16) = 225 -> 480 is enough.
-		const withoutPixelRatio = pickTargetResolution( { containerWidth: 400, aspectRatio: 9 / 16, pixelRatio: false, devicePixelRatio: 2, resolutionGroups } );
+		const withoutPixelRatio = pickTargetResolution( {
+			containerWidth: 400,
+			aspectRatio: 9 / 16,
+			pixelRatio: false,
+			devicePixelRatio: 2,
+			resolutionGroups,
+		} );
 		expect( withoutPixelRatio ).toBe( '480' );
 
 		// With pixel ratio at 2x: (400*2) * (9/16) = 450 -> still 480, so bump width further to prove the branch is exercised.
 		// (400*3) * (9/16) = 675 -> needs 720.
-		const withPixelRatio = pickTargetResolution( { containerWidth: 400, aspectRatio: 9 / 16, pixelRatio: true, devicePixelRatio: 3, resolutionGroups } );
+		const withPixelRatio = pickTargetResolution( {
+			containerWidth: 400,
+			aspectRatio: 9 / 16,
+			pixelRatio: true,
+			devicePixelRatio: 3,
+			resolutionGroups,
+		} );
 		expect( withPixelRatio ).toBe( '720' );
 	} );
 
@@ -44,7 +94,13 @@ describe( 'pickTargetResolution', () => {
 		// This is the bug from earlier in this project's history: v10 wasn't
 		// respecting the pixel_ratio setting at all. Confirm a high-DPI
 		// device with pixelRatio explicitly OFF doesn't scale the target.
-		const target = pickTargetResolution( { containerWidth: 400, aspectRatio: 9 / 16, pixelRatio: false, devicePixelRatio: 3, resolutionGroups } );
+		const target = pickTargetResolution( {
+			containerWidth: 400,
+			aspectRatio: 9 / 16,
+			pixelRatio: false,
+			devicePixelRatio: 3,
+			resolutionGroups,
+		} );
 		expect( target ).toBe( '480' );
 	} );
 } );
@@ -117,6 +173,8 @@ describe( 'computeResizeWidth', () => {
 
 describe( 'registerResolutionHandler', () => {
 	it( 'registers without throwing', () => {
-		expect( () => registerResolutionHandler( 'Video.js v10 Beta', () => {} ) ).not.toThrow();
+		expect( () =>
+			registerResolutionHandler( 'Video.js v10 Beta', () => {} )
+		).not.toThrow();
 	} );
 } );

@@ -4,9 +4,9 @@ import Edit from './edit';
 import save from './save';
 import { videopackLoop as icon } from '../../assets/icon';
 
-registerBlockType(metadata.name, {
+registerBlockType( metadata.name, {
 	...metadata,
 	icon,
 	edit: Edit,
 	save,
-});
+} );

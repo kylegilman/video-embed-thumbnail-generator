@@ -18,8 +18,12 @@ import {
 import VideopackTooltip from './VideopackTooltip';
 import { getEffectiveFfmpegExists } from '../../../utils/ffmpegCapability';
 
-const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
-	const [bitrates, setBitrates] = useState([]);
+const PerCodecQualitySettings = ( {
+	codec,
+	settings,
+	changeHandlerFactory,
+} ) => {
+	const [ bitrates, setBitrates ] = useState( [] );
 	const { resolutions } = videopack_config;
 	const {
 		h264_profile,
@@ -47,22 +51,22 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		'encode',
 		active_encoder
 	);
-	const currentEncode = settings[encodeKey] || {};
-	const codecEncodeSettings = currentEncode[codec.id] || {};
+	const currentEncode = settings[ encodeKey ] || {};
+	const codecEncodeSettings = currentEncode[ codec.id ] || {};
 	const {
-		rate_control: currentRateControl = codec.supported_rate_controls[0],
+		rate_control: currentRateControl = codec.supported_rate_controls[ 0 ],
 		crf: currentCrf = codec.rate_control.crf.default,
 		vbr: currentVbr = codec.rate_control.vbr.default,
 	} = codecEncodeSettings;
 
-	const [localCrf, setLocalCrf] = useState(currentCrf);
-	const [localVbr, setLocalVbr] = useState(currentVbr);
+	const [ localCrf, setLocalCrf ] = useState( currentCrf );
+	const [ localVbr, setLocalVbr ] = useState( currentVbr );
 
 	const h264ProfileOptions = useMemo(
 		() => [
 			{
 				value: 'none',
-				label: __('None', 'video-embed-thumbnail-generator'),
+				label: __( 'None', 'video-embed-thumbnail-generator' ),
 			},
 			{ value: 'baseline', label: 'baseline' },
 			{ value: 'main', label: 'main' },
@@ -78,7 +82,7 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		() => [
 			{
 				value: 'none',
-				label: __('None', 'video-embed-thumbnail-generator'),
+				label: __( 'None', 'video-embed-thumbnail-generator' ),
 			},
 			{ value: 'main', label: 'main' },
 			{ value: 'main10', label: 'main10' },
@@ -90,7 +94,7 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		() => [
 			{
 				value: 'none',
-				label: __('None', 'video-embed-thumbnail-generator'),
+				label: __( 'None', 'video-embed-thumbnail-generator' ),
 			},
 			{ value: '1', label: '1' },
 			{ value: '2', label: '2' },
@@ -113,7 +117,7 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 		() => [
 			{
 				value: 'none',
-				label: __('None', 'video-embed-thumbnail-generator'),
+				label: __( 'None', 'video-embed-thumbnail-generator' ),
 			},
 			{ value: '1', label: '1' },
 			{ value: '1.1', label: '1.1' },
@@ -139,13 +143,13 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 	);
 
 	const generateMarks = useCallback(
-		(type) => {
-			const rateControl = codec.rate_control[type];
-			if (!rateControl) {
+		( type ) => {
+			const rateControl = codec.rate_control[ type ];
+			if ( ! rateControl ) {
 				return [];
 			}
 
-			if (type === 'vbr') {
+			if ( type === 'vbr' ) {
 				const marks = [
 					{
 						value: 0.1,
@@ -163,39 +167,39 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 					},
 				];
 
-				if (rateControl.default) {
+				if ( rateControl.default ) {
 					const existingMark = marks.find(
-						(m) => m.value === rateControl.default
+						( m ) => m.value === rateControl.default
 					);
 					const defaultLabel = sprintf(
 						/* translators: %s: VBR value. */
-						__('%s: default', 'video-embed-thumbnail-generator'),
+						__( '%s: default', 'video-embed-thumbnail-generator' ),
 						rateControl.default
 					);
 
-					if (existingMark) {
+					if ( existingMark ) {
 						existingMark.label = defaultLabel;
 					} else {
-						marks.push({
+						marks.push( {
 							value: rateControl.default,
 							label: defaultLabel,
-						});
+						} );
 					}
 				}
 
-				for (let i = 5; i < 50; i += 5) {
-					if (marks.find((m) => m.value === i)) {
+				for ( let i = 5; i < 50; i += 5 ) {
+					if ( marks.find( ( m ) => m.value === i ) ) {
 						continue;
 					}
-					if (rateControl.default) {
-						if (Math.abs(i - rateControl.default) <= 2) {
+					if ( rateControl.default ) {
+						if ( Math.abs( i - rateControl.default ) <= 2 ) {
 							continue;
 						}
 					}
-					marks.push({ value: i, label: String(i) });
+					marks.push( { value: i, label: String( i ) } );
 				}
 
-				marks.sort((a, b) => a.value - b.value);
+				marks.sort( ( a, b ) => a.value - b.value );
 				return marks;
 			}
 
@@ -208,47 +212,47 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 			const labels = { ...originalLabels }; // create a mutable copy
 
 			// Add the 'Default' label if there isn't already a label for the default value
-			if (defaultValue !== undefined && !labels[defaultValue]) {
-				labels[defaultValue] = sprintf(
+			if ( defaultValue !== undefined && ! labels[ defaultValue ] ) {
+				labels[ defaultValue ] = sprintf(
 					/* translators: %d: CRF value. */
-					__('%d: default', 'video-embed-thumbnail-generator'),
+					__( '%d: default', 'video-embed-thumbnail-generator' ),
 					defaultValue
 				);
 			}
 
-			labels[min] = sprintf(
+			labels[ min ] = sprintf(
 				/* translators: %d: CRF value. */
-				__('%d: higher quality', 'video-embed-thumbnail-generator'),
+				__( '%d: higher quality', 'video-embed-thumbnail-generator' ),
 				min
 			);
 
-			labels[max] = sprintf(
+			labels[ max ] = sprintf(
 				/* translators: %d: CRF value. */
-				__('%d: lower quality', 'video-embed-thumbnail-generator'),
+				__( '%d: lower quality', 'video-embed-thumbnail-generator' ),
 				max
 			);
 
 			const marks = [];
 
-			for (let i = min; i <= max; i++) {
-				if (labels && labels[i]) {
-					marks.push({ value: i, label: labels[i] });
-				} else if (i % 5 === 0) {
-					const labelExistsNearby = Object.keys(labels).some(
-						(label) => {
-							const distance = Math.abs(i - label);
+			for ( let i = min; i <= max; i++ ) {
+				if ( labels && labels[ i ] ) {
+					marks.push( { value: i, label: labels[ i ] } );
+				} else if ( i % 5 === 0 ) {
+					const labelExistsNearby = Object.keys( labels ).some(
+						( label ) => {
+							const distance = Math.abs( i - label );
 							return distance > 0 && distance < 5;
 						}
 					);
-					if (!labelExistsNearby) {
-						marks.push({ value: i, label: String(i) });
+					if ( ! labelExistsNearby ) {
+						marks.push( { value: i, label: String( i ) } );
 					}
 				}
 			}
 
 			return marks;
 		},
-		[codec]
+		[ codec ]
 	);
 
 	const marks = applyFilters(
@@ -285,88 +289,88 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 				currentRateControl === 'crf' ? codec.rate_control.crf.min : 0.1,
 			max: currentRateControl === 'crf' ? codec.rate_control.crf.max : 50,
 			step: currentRateControl === 'crf' ? 1 : 0.5,
-			marks: marks || generateMarks(currentRateControl),
+			marks: marks || generateMarks( currentRateControl ),
 		},
 		{ codec, active_encoder, rateControl: currentRateControl }
 	);
 
-	useEffect(() => setLocalCrf(currentCrf), [currentCrf]);
-	useEffect(() => setLocalVbr(currentVbr), [currentVbr]);
+	useEffect( () => setLocalCrf( currentCrf ), [ currentCrf ] );
+	useEffect( () => setLocalVbr( currentVbr ), [ currentVbr ] );
 
-	const settingsRef = useRef(settings);
-	const changeHandlerFactoryRef = useRef(changeHandlerFactory);
+	const settingsRef = useRef( settings );
+	const changeHandlerFactoryRef = useRef( changeHandlerFactory );
 
-	useEffect(() => {
+	useEffect( () => {
 		settingsRef.current = settings;
 		changeHandlerFactoryRef.current = changeHandlerFactory;
-	}, [settings, changeHandlerFactory]);
+	}, [ settings, changeHandlerFactory ] );
 
 	const performUpdate = useCallback(
-		(key, value) => {
-			const encodeData = settingsRef.current[encodeKey] || {};
-			changeHandlerFactoryRef.current[encodeKey]({
+		( key, value ) => {
+			const encodeData = settingsRef.current[ encodeKey ] || {};
+			changeHandlerFactoryRef.current[ encodeKey ]( {
 				...encodeData,
-				[codec.id]: {
-					...encodeData[codec.id],
-					[key]: value,
+				[ codec.id ]: {
+					...encodeData[ codec.id ],
+					[ key ]: value,
 				},
-			});
+			} );
 		},
-		[codec.id, encodeKey]
+		[ codec.id, encodeKey ]
 	);
 
-	const debouncedUpdate = useDebounce(performUpdate, 500);
+	const debouncedUpdate = useDebounce( performUpdate, 500 );
 
-	const handleSettingChange = (key, value) => {
-		if (key === 'rate_control') {
+	const handleSettingChange = ( key, value ) => {
+		if ( key === 'rate_control' ) {
 			// Immediate update for radio buttons
-			const encodeData = settings[encodeKey] || {};
-			changeHandlerFactory[encodeKey]({
+			const encodeData = settings[ encodeKey ] || {};
+			changeHandlerFactory[ encodeKey ]( {
 				...encodeData,
-				[codec.id]: {
-					...encodeData[codec.id],
-					[key]: value,
+				[ codec.id ]: {
+					...encodeData[ codec.id ],
+					[ key ]: value,
 				},
-			});
+			} );
 			return;
 		}
 
-		if (key === 'crf') {
-			setLocalCrf(value);
-		} else if (key === 'vbr') {
-			setLocalVbr(value);
+		if ( key === 'crf' ) {
+			setLocalCrf( value );
+		} else if ( key === 'vbr' ) {
+			setLocalVbr( value );
 		}
-		debouncedUpdate(key, value);
+		debouncedUpdate( key, value );
 	};
 
-	useEffect(() => {
+	useEffect( () => {
 		const newBitrates = [];
 		const vbrSettings = codec.rate_control.vbr;
 
-		resolutions.forEach((res) => {
+		resolutions.forEach( ( res ) => {
 			let width = res.width;
 			let height = res.height;
 
-			if (!width || !height) {
-				const parsedHeight = parseInt(res.id, 10);
-				if (!isNaN(parsedHeight)) {
+			if ( ! width || ! height ) {
+				const parsedHeight = parseInt( res.id, 10 );
+				if ( ! isNaN( parsedHeight ) ) {
 					height = parsedHeight;
-					width = Math.ceil((height * 16) / 9);
+					width = Math.ceil( ( height * 16 ) / 9 );
 				}
 			}
 
-			if (width && height) {
+			if ( width && height ) {
 				const bitrate = Math.round(
 					localVbr * 0.0001 * width * height + vbrSettings.constant
 				);
-				newBitrates.push({
-					label: `${height}`,
-					value: `${bitrate}`,
-				});
+				newBitrates.push( {
+					label: `${ height }`,
+					value: `${ bitrate }`,
+				} );
 			}
-		});
-		setBitrates(newBitrates);
-	}, [localVbr, codec, resolutions]);
+		} );
+		setBitrates( newBitrates );
+	}, [ localVbr, codec, resolutions ] );
 
 	const rateControlOptions = applyFilters(
 		/**
@@ -398,135 +402,142 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 	);
 
 	return (
-		<div key={codec.id} className="videopack-per-codec-quality-settings">
-			{rateControlOptions.length > 1 && (
+		<div key={ codec.id } className="videopack-per-codec-quality-settings">
+			{ rateControlOptions.length > 1 && (
 				<RadioControl
 					label={
 						<span className="videopack-label-with-tooltip">
-							{__(
+							{ __(
 								'Primary rate control:',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							<VideopackTooltip
-								text={__(
+								text={ __(
 									'CRF prioritizes a consistent level of quality over consistent file sizes. Lower numbers are better quality. ABR prioritizes consistent file sizes. If you choose ABR, Videopack will automatically calculate bitrates for different resolutions based on the relative quality you select.',
 									'video-embed-thumbnail-generator'
-								)}
+								) }
 							/>
 						</span>
 					}
-					selected={currentRateControl}
-					onChange={(value) =>
-						handleSettingChange('rate_control', value)
+					selected={ currentRateControl }
+					onChange={ ( value ) =>
+						handleSettingChange( 'rate_control', value )
 					}
-					options={rateControlOptions}
-					disabled={effectiveFfmpegExists !== true}
+					options={ rateControlOptions }
+					disabled={ effectiveFfmpegExists !== true }
 				/>
-			)}
+			) }
 
-			{currentRateControl === 'crf' && (
+			{ currentRateControl === 'crf' && (
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('CRF:', 'video-embed-thumbnail-generator')}
-					value={localCrf}
+					label={ __( 'CRF:', 'video-embed-thumbnail-generator' ) }
+					value={ localCrf }
 					className="videopack-crf-slider"
-					onChange={(value) => handleSettingChange('crf', value)}
-					min={qualityScale.min}
-					max={qualityScale.max}
-					step={qualityScale.step}
-					marks={qualityScale.marks}
-					disabled={effectiveFfmpegExists !== true}
+					onChange={ ( value ) =>
+						handleSettingChange( 'crf', value )
+					}
+					min={ qualityScale.min }
+					max={ qualityScale.max }
+					step={ qualityScale.step }
+					marks={ qualityScale.marks }
+					disabled={ effectiveFfmpegExists !== true }
 				/>
-			)}
+			) }
 
-			{currentRateControl === 'vbr' && (
+			{ currentRateControl === 'vbr' && (
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Quality:', 'video-embed-thumbnail-generator')}
-					value={localVbr}
+					label={ __(
+						'Quality:',
+						'video-embed-thumbnail-generator'
+					) }
+					value={ localVbr }
 					className="videopack-abr-slider"
-					onChange={(value) => handleSettingChange('vbr', value)}
-					min={qualityScale.min}
-					max={qualityScale.max}
-					step={qualityScale.step}
-					marks={qualityScale.marks}
-					disabled={effectiveFfmpegExists !== true}
+					onChange={ ( value ) =>
+						handleSettingChange( 'vbr', value )
+					}
+					min={ qualityScale.min }
+					max={ qualityScale.max }
+					step={ qualityScale.step }
+					marks={ qualityScale.marks }
+					disabled={ effectiveFfmpegExists !== true }
 					help={
 						<span className="videopack-bitrate-grid">
-							{bitrates.map((item, index) => (
-								<span key={index}>
-									{item.label}p ={' '}
-									<strong>{item.value}</strong> kbps
+							{ bitrates.map( ( item, index ) => (
+								<span key={ index }>
+									{ item.label }p ={ ' ' }
+									<strong>{ item.value }</strong> kbps
 								</span>
-							))}
+							) ) }
 						</span>
 					}
 				/>
-			)}
+			) }
+			<>
+				<div className="videopack-grid-row-align">
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={ __(
+							'H.264 profile',
+							'video-embed-thumbnail-generator'
+						) }
+						value={ h264_profile }
+						onChange={ changeHandlerFactory.h264_profile }
+						options={ h264ProfileOptions }
+						disabled={ effectiveFfmpegExists !== true }
+					/>
+				</div>
+				<div className="videopack-grid-row-align">
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={ __(
+							'H.264 level',
+							'video-embed-thumbnail-generator'
+						) }
+						value={ h264_level }
+						onChange={ changeHandlerFactory.h264_level }
+						options={ h264LevelOptions }
+						disabled={ effectiveFfmpegExists !== true }
+					/>
+				</div>
+			</>
+			{ codec.id === 'h265' && (
 				<>
 					<div className="videopack-grid-row-align">
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
-								'H.264 profile',
-								'video-embed-thumbnail-generator'
-							)}
-							value={h264_profile}
-							onChange={changeHandlerFactory.h264_profile}
-							options={h264ProfileOptions}
-							disabled={effectiveFfmpegExists !== true}
-						/>
-					</div>
-					<div className="videopack-grid-row-align">
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={__(
-								'H.264 level',
-								'video-embed-thumbnail-generator'
-							)}
-							value={h264_level}
-							onChange={changeHandlerFactory.h264_level}
-							options={h264LevelOptions}
-							disabled={effectiveFfmpegExists !== true}
-						/>
-					</div>
-				</>
-			{codec.id === 'h265' && (
-				<>
-					<div className="videopack-grid-row-align">
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'H.265 profile',
 								'video-embed-thumbnail-generator'
-							)}
-							value={h265_profile}
-							onChange={changeHandlerFactory.h265_profile}
-							options={h265ProfileOptions}
-							disabled={effectiveFfmpegExists !== true}
+							) }
+							value={ h265_profile }
+							onChange={ changeHandlerFactory.h265_profile }
+							options={ h265ProfileOptions }
+							disabled={ effectiveFfmpegExists !== true }
 						/>
 					</div>
 					<div className="videopack-grid-row-align">
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'H.265 level',
 								'video-embed-thumbnail-generator'
-							)}
-							value={h265_level}
-							onChange={changeHandlerFactory.h265_level}
-							options={h265LevelOptions}
-							disabled={effectiveFfmpegExists !== true}
+							) }
+							value={ h265_level }
+							onChange={ changeHandlerFactory.h265_level }
+							options={ h265LevelOptions }
+							disabled={ effectiveFfmpegExists !== true }
 						/>
 					</div>
 				</>
-			)}
+			) }
 		</div>
 	);
 };

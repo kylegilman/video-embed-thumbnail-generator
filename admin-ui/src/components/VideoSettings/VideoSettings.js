@@ -23,27 +23,27 @@ import TextTracks from '../TextTracks/TextTracks.js';
 import { normalizeOptions } from '../../utils/helpers';
 import { getColorFallbacks } from '../../utils/colors';
 
-const VideoSettings = ({
+const VideoSettings = ( {
 	attributes,
 	setAttributes,
 	options = {},
 	initialOpen = false,
 	isBlockEditor = false,
-}) => {
+} ) => {
 	const { handleSettingChange, preloadOptions } = useVideoSettings(
 		attributes,
 		setAttributes,
 		options
 	);
 
-	const displayAttributes = useMemo(() => {
+	const displayAttributes = useMemo( () => {
 		const merged = { ...options, ...attributes };
-		return normalizeOptions(merged);
-	}, [options, attributes]);
+		return normalizeOptions( merged );
+	}, [ options, attributes ] );
 
 	const PLAYER_COLOR_FALLBACKS = useMemo(
-		() => getColorFallbacks(displayAttributes),
-		[displayAttributes]
+		() => getColorFallbacks( displayAttributes ),
+		[ displayAttributes ]
 	);
 
 	const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
@@ -69,68 +69,71 @@ const VideoSettings = ({
 
 	return (
 		<div className="videopack-video-settings">
-			{!isBlockEditor && (
+			{ ! isBlockEditor && (
 				<PanelBody
-					title={__('Metadata', 'video-embed-thumbnail-generator')}
-					initialOpen={initialOpen}
+					title={ __(
+						'Metadata',
+						'video-embed-thumbnail-generator'
+					) }
+					initialOpen={ initialOpen }
 				>
 					<PanelRow>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__(
+							label={ __(
 								'Overlay title',
 								'video-embed-thumbnail-generator'
-							)}
-							onChange={(value) =>
-								handleSettingChange('overlay_title', value)
+							) }
+							onChange={ ( value ) =>
+								handleSettingChange( 'overlay_title', value )
 							}
-							checked={!!displayAttributes.overlay_title}
+							checked={ !! displayAttributes.overlay_title }
 						/>
 					</PanelRow>
-					{displayAttributes.overlay_title && (
+					{ displayAttributes.overlay_title && (
 						<div className="videopack-video-settings-input-wrapper">
 							<TextControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								label={__(
+								label={ __(
 									'Title',
 									'video-embed-thumbnail-generator'
-								)}
-								value={displayAttributes.title || ''}
-								onChange={(value) =>
-									handleSettingChange('title', value)
+								) }
+								value={ displayAttributes.title || '' }
+								onChange={ ( value ) =>
+									handleSettingChange( 'title', value )
 								}
 							/>
 						</div>
-					)}
+					) }
 					<div className="videopack-video-settings-input-wrapper">
 						<TextControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'Caption',
 								'video-embed-thumbnail-generator'
-							)}
-							value={displayAttributes.caption || ''}
-							onChange={(value) =>
-								handleSettingChange('caption', value)
+							) }
+							value={ displayAttributes.caption || '' }
+							onChange={ ( value ) =>
+								handleSettingChange( 'caption', value )
 							}
 						/>
 					</div>
 					<PanelRow>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__(
+							label={ __(
 								'View count',
 								'video-embed-thumbnail-generator'
-							)}
-							onChange={(value) =>
-								handleSettingChange('view_count', value)
+							) }
+							onChange={ ( value ) =>
+								handleSettingChange( 'view_count', value )
 							}
-							checked={!!displayAttributes.view_count}
+							checked={ !! displayAttributes.view_count }
 						/>
 					</PanelRow>
-					{(() => {
+					{ ( () => {
 						const availableStats = [
 							{
 								key: 'starts',
@@ -163,9 +166,9 @@ const VideoSettings = ({
 								),
 								val: displayAttributes.completeviews,
 							},
-						].filter((s) => s.val > 0);
+						].filter( ( s ) => s.val > 0 );
 
-						if (availableStats.length === 0) {
+						if ( availableStats.length === 0 ) {
 							return null;
 						}
 
@@ -173,263 +176,276 @@ const VideoSettings = ({
 
 						return (
 							<div
-								className={`videopack-video-stats-${
+								className={ `videopack-video-stats-${
 									isSingleStat ? 'simple' : 'funnel'
-								}`}
+								}` }
 							>
 								<p className="videopack-settings-section-title">
-									{__(
+									{ __(
 										'Views',
 										'video-embed-thumbnail-generator'
-									)}
+									) }
 								</p>
-								{isSingleStat ? (
+								{ isSingleStat ? (
 									<div className="videopack-stat-simple-row">
 										<span className="videopack-stat-label">
-											{availableStats[0].label}:
+											{ availableStats[ 0 ].label }:
 										</span>
 										<span className="videopack-stat-value">
-											{availableStats[0].val.toLocaleString()}
+											{ availableStats[ 0 ].val.toLocaleString() }
 										</span>
 									</div>
 								) : (
 									<div className="videopack-funnel-track">
-										{availableStats.map(
-											(stat, idx, arr) => {
+										{ availableStats.map(
+											( stat, idx, arr ) => {
 												const retention =
 													stat.key !== 'starts' &&
 													displayAttributes.starts > 0
 														? Math.round(
-																(stat.val /
-																	displayAttributes.starts) *
+																( stat.val /
+																	displayAttributes.starts ) *
 																	100
-															) + '%'
+														  ) + '%'
 														: null;
 
 												return (
 													<div
-														key={stat.key}
+														key={ stat.key }
 														className="videopack-funnel-item"
 													>
 														<div className="videopack-funnel-marker">
-															{idx <
+															{ idx <
 																arr.length -
 																	1 && (
 																<div className="videopack-funnel-connector" />
-															)}
+															) }
 														</div>
 														<div className="videopack-funnel-label">
-															{stat.label}
+															{ stat.label }
 														</div>
 														<div className="videopack-funnel-value">
-															{stat.val.toLocaleString()}
+															{ stat.val.toLocaleString() }
 														</div>
-														{retention && (
+														{ retention && (
 															<div className="videopack-funnel-retention">
-																{retention}
+																{ retention }
 															</div>
-														)}
+														) }
 													</div>
 												);
 											}
-										)}
+										) }
 									</div>
-								)}
+								) }
 							</div>
 						);
-					})()}
+					} )() }
 				</PanelBody>
-			)}
+			) }
 
 			<PanelBody
-				title={__('Player Settings', 'video-embed-thumbnail-generator')}
-				initialOpen={initialOpen}
+				title={ __(
+					'Player Settings',
+					'video-embed-thumbnail-generator'
+				) }
+				initialOpen={ initialOpen }
 			>
-				{!displayAttributes.gifmode && (
+				{ ! displayAttributes.gifmode && (
 					<>
 						<Flex
 							align-items="flex-start"
-							expanded={false}
-							gap={20}
+							expanded={ false }
+							gap={ 20 }
 							justify="flex-start"
 							className="videopack-player-settings-flex"
 						>
 							<FlexItem>
 								<ToggleControl
 									__nextHasNoMarginBottom
-									label={__(
+									label={ __(
 										'Autoplay',
 										'video-embed-thumbnail-generator'
-									)}
-									onChange={(value) =>
-										handleSettingChange('autoplay', value)
+									) }
+									onChange={ ( value ) =>
+										handleSettingChange( 'autoplay', value )
 									}
-									checked={!!displayAttributes.autoplay}
+									checked={ !! displayAttributes.autoplay }
 									help={
 										displayAttributes.autoplay &&
-										!displayAttributes.muted
+										! displayAttributes.muted
 											? __(
 													'Autoplay is disabled while editing unless muted.'
-												)
+											  )
 											: null
 									}
 								/>
 								<ToggleControl
 									__nextHasNoMarginBottom
-									label={__(
+									label={ __(
 										'Loop',
 										'video-embed-thumbnail-generator'
-									)}
-									onChange={(value) =>
-										handleSettingChange('loop', value)
+									) }
+									onChange={ ( value ) =>
+										handleSettingChange( 'loop', value )
 									}
-									checked={!!displayAttributes.loop}
+									checked={ !! displayAttributes.loop }
 								/>
 								<ToggleControl
 									__nextHasNoMarginBottom
-									label={__(
+									label={ __(
 										'Muted',
 										'video-embed-thumbnail-generator'
-									)}
-									onChange={(value) =>
-										handleSettingChange('muted', value)
+									) }
+									onChange={ ( value ) =>
+										handleSettingChange( 'muted', value )
 									}
-									checked={!!displayAttributes.muted}
+									checked={ !! displayAttributes.muted }
 								/>
-								{!displayAttributes.muted && (
+								{ ! displayAttributes.muted && (
 									<RangeControl
 										__nextHasNoMarginBottom
 										__next40pxDefaultSize
-										label={__(
+										label={ __(
 											'Volume',
 											'video-embed-thumbnail-generator'
-										)}
-										value={displayAttributes.volume}
-										beforeIcon={volumeDown}
-										afterIcon={volumeUp}
-										initialPosition={1}
-										withInputField={false}
-										onChange={(value) =>
-											handleSettingChange('volume', value)
+										) }
+										value={ displayAttributes.volume }
+										beforeIcon={ volumeDown }
+										afterIcon={ volumeUp }
+										initialPosition={ 1 }
+										withInputField={ false }
+										onChange={ ( value ) =>
+											handleSettingChange(
+												'volume',
+												value
+											)
 										}
-										min={0}
-										max={1}
-										step={0.05}
+										min={ 0 }
+										max={ 1 }
+										step={ 0.05 }
 									/>
-								)}
+								) }
 							</FlexItem>
 							<FlexItem>
 								<ToggleControl
 									__nextHasNoMarginBottom
-									label={__(
+									label={ __(
 										'Controls',
 										'video-embed-thumbnail-generator'
-									)}
-									onChange={(value) =>
-										handleSettingChange('controls', value)
+									) }
+									onChange={ ( value ) =>
+										handleSettingChange( 'controls', value )
 									}
-									checked={!!displayAttributes.controls}
+									checked={ !! displayAttributes.controls }
 								/>
 								<ToggleControl
 									__nextHasNoMarginBottom
-									label={__(
+									label={ __(
 										'Variable speeds',
 										'video-embed-thumbnail-generator'
-									)}
-									onChange={(value) =>
+									) }
+									onChange={ ( value ) =>
 										handleSettingChange(
 											'playback_rate',
 											value
 										)
 									}
-									checked={!!displayAttributes.playback_rate}
+									checked={
+										!! displayAttributes.playback_rate
+									}
 								/>
-								{showSkipButtons && (
+								{ showSkipButtons && (
 									<ToggleControl
 										__nextHasNoMarginBottom
-										label={__(
+										label={ __(
 											'Skip buttons',
 											'video-embed-thumbnail-generator'
-										)}
-										onChange={(value) =>
+										) }
+										onChange={ ( value ) =>
 											handleSettingChange(
 												'skip_buttons',
 												value
 											)
 										}
 										checked={
-											!!displayAttributes.skip_buttons
+											!! displayAttributes.skip_buttons
 										}
 									/>
-								)}
+								) }
 								<ToggleControl
 									__nextHasNoMarginBottom
-									label={__(
+									label={ __(
 										'Play inline on iPhones',
 										'video-embed-thumbnail-generator'
-									)}
-									onChange={(value) =>
+									) }
+									onChange={ ( value ) =>
 										handleSettingChange(
 											'playsinline',
 											value
 										)
 									}
-									checked={!!displayAttributes.playsinline}
+									checked={ !! displayAttributes.playsinline }
 								/>
 								<SelectControl
 									__nextHasNoMarginBottom
 									__next40pxDefaultSize
-									label={__(
+									label={ __(
 										'Preload',
 										'video-embed-thumbnail-generator'
-									)}
-									value={displayAttributes.preload}
-									onChange={(value) =>
-										handleSettingChange('preload', value)
+									) }
+									value={ displayAttributes.preload }
+									onChange={ ( value ) =>
+										handleSettingChange( 'preload', value )
 									}
-									options={preloadOptions}
+									options={ preloadOptions }
 								/>
 							</FlexItem>
 						</Flex>
 					</>
-				)}
+				) }
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('GIF mode', 'video-embed-thumbnail-generator')}
-					onChange={(value) => handleSettingChange('gifmode', value)}
-					checked={!!displayAttributes.gifmode}
-					help={__(
+					label={ __(
+						'GIF mode',
+						'video-embed-thumbnail-generator'
+					) }
+					onChange={ ( value ) =>
+						handleSettingChange( 'gifmode', value )
+					}
+					checked={ !! displayAttributes.gifmode }
+					help={ __(
 						'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.'
-					)}
+					) }
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__(
+					label={ __(
 						'Allow right-click on video',
 						'video-embed-thumbnail-generator'
-					)}
-					onChange={(value) =>
-						handleSettingChange('right_click', value)
+					) }
+					onChange={ ( value ) =>
+						handleSettingChange( 'right_click', value )
 					}
-					checked={!!displayAttributes.right_click}
+					checked={ !! displayAttributes.right_click }
 				/>
 			</PanelBody>
 
 			<PanelBody
-				title={__('Colors', 'video-embed-thumbnail-generator')}
-				initialOpen={false}
+				title={ __( 'Colors', 'video-embed-thumbnail-generator' ) }
+				initialOpen={ false }
 			>
 				<div
 					className="videopack-skin-section"
-					style={{ marginBottom: '16px' }}
+					style={ { marginBottom: '16px' } }
 				>
 					<SelectControl
-						label={__(
+						label={ __(
 							'Player Skin',
 							'video-embed-thumbnail-generator'
-						)}
-						value={attributes.skin || options.skin || ''}
-						options={[
+						) }
+						value={ attributes.skin || options.skin || '' }
+						options={ [
 							{
 								label: __(
 									'Videopack',
@@ -479,34 +495,36 @@ const VideoSettings = ({
 								),
 								value: 'vjs-theme-sea',
 							},
-						]}
-						onChange={(value) => handleSettingChange('skin', value)}
+						] }
+						onChange={ ( value ) =>
+							handleSettingChange( 'skin', value )
+						}
 					/>
 				</div>
 
-				{!isBlockEditor && (
+				{ ! isBlockEditor && (
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
-							{__(
+							{ __(
 								'Title overlay',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						</p>
 						<div className="videopack-color-flex-row">
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
+									label={ __(
 										'Text',
 										'video-embed-thumbnail-generator'
-									)}
-									value={displayAttributes.title_color}
-									onChange={(value) =>
+									) }
+									value={ displayAttributes.title_color }
+									onChange={ ( value ) =>
 										handleSettingChange(
 											'title_color',
 											value
 										)
 									}
-									colors={THEME_COLORS}
+									colors={ THEME_COLORS }
 									fallbackValue={
 										PLAYER_COLOR_FALLBACKS.title_color
 									}
@@ -514,20 +532,20 @@ const VideoSettings = ({
 							</div>
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
+									label={ __(
 										'Background',
 										'video-embed-thumbnail-generator'
-									)}
+									) }
 									value={
 										displayAttributes.title_background_color
 									}
-									onChange={(value) =>
+									onChange={ ( value ) =>
 										handleSettingChange(
 											'title_background_color',
 											value
 										)
 									}
-									colors={THEME_COLORS}
+									colors={ THEME_COLORS }
 									fallbackValue={
 										PLAYER_COLOR_FALLBACKS.title_background_color
 									}
@@ -535,14 +553,14 @@ const VideoSettings = ({
 							</div>
 						</div>
 					</div>
-				)}
+				) }
 
 				<div className="videopack-color-section">
 					<p className="videopack-settings-section-title">
-						{__('Player', 'video-embed-thumbnail-generator')}
+						{ __( 'Player', 'video-embed-thumbnail-generator' ) }
 					</p>
 					<div className="videopack-color-flex-row">
-						{showPlayButtonColors && (
+						{ showPlayButtonColors && (
 							<>
 								<div className="videopack-color-flex-item">
 									<CompactColorPicker
@@ -552,20 +570,22 @@ const VideoSettings = ({
 												? __(
 														'Play Button Color',
 														'video-embed-thumbnail-generator'
-													)
+												  )
 												: __(
 														'Play Button Icon',
 														'video-embed-thumbnail-generator'
-													)
+												  )
 										}
-										value={displayAttributes.play_button_color}
-										onChange={(value) =>
+										value={
+											displayAttributes.play_button_color
+										}
+										onChange={ ( value ) =>
 											handleSettingChange(
 												'play_button_color',
 												value
 											)
 										}
-										colors={THEME_COLORS}
+										colors={ THEME_COLORS }
 										fallbackValue={
 											PLAYER_COLOR_FALLBACKS.play_button_color
 										}
@@ -579,43 +599,43 @@ const VideoSettings = ({
 												? __(
 														'Play Button Hover',
 														'video-embed-thumbnail-generator'
-													)
+												  )
 												: __(
 														'Play Button Accent',
 														'video-embed-thumbnail-generator'
-													)
+												  )
 										}
 										value={
 											displayAttributes.play_button_secondary_color
 										}
-										onChange={(value) =>
+										onChange={ ( value ) =>
 											handleSettingChange(
 												'play_button_secondary_color',
 												value
 											)
 										}
-										colors={THEME_COLORS}
+										colors={ THEME_COLORS }
 										fallbackValue={
 											PLAYER_COLOR_FALLBACKS.play_button_secondary_color
 										}
 									/>
 								</div>
 							</>
-						)}
+						) }
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Control Bar Background',
 									'video-embed-thumbnail-generator'
-								)}
-								value={displayAttributes.control_bar_bg_color}
-								onChange={(value) =>
+								) }
+								value={ displayAttributes.control_bar_bg_color }
+								onChange={ ( value ) =>
 									handleSettingChange(
 										'control_bar_bg_color',
 										value
 									)
 								}
-								colors={THEME_COLORS}
+								colors={ THEME_COLORS }
 								fallbackValue={
 									PLAYER_COLOR_FALLBACKS.control_bar_bg_color
 								}
@@ -623,18 +643,18 @@ const VideoSettings = ({
 						</div>
 						<div className="videopack-color-flex-item">
 							<CompactColorPicker
-								label={__(
+								label={ __(
 									'Control Bar Icons',
 									'video-embed-thumbnail-generator'
-								)}
-								value={displayAttributes.control_bar_color}
-								onChange={(value) =>
+								) }
+								value={ displayAttributes.control_bar_color }
+								onChange={ ( value ) =>
 									handleSettingChange(
 										'control_bar_color',
 										value
 									)
 								}
-								colors={THEME_COLORS}
+								colors={ THEME_COLORS }
 								fallbackValue={
 									PLAYER_COLOR_FALLBACKS.control_bar_color
 								}
@@ -645,24 +665,24 @@ const VideoSettings = ({
 			</PanelBody>
 
 			<PanelBody
-				title={__('Dimensions', 'video-embed-thumbnail-generator')}
-				initialOpen={false}
+				title={ __( 'Dimensions', 'video-embed-thumbnail-generator' ) }
+				initialOpen={ false }
 			>
-				{!isBlockEditor && (
+				{ ! isBlockEditor && (
 					<PanelRow>
 						<div className="videopack-video-settings-full-width">
 							<SelectControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								label={__(
+								label={ __(
 									'Align / Width',
 									'video-embed-thumbnail-generator'
-								)}
-								value={displayAttributes.align || ''}
-								onChange={(value) =>
-									handleSettingChange('align', value)
+								) }
+								value={ displayAttributes.align || '' }
+								onChange={ ( value ) =>
+									handleSettingChange( 'align', value )
 								}
-								options={[
+								options={ [
 									{
 										value: '',
 										label: videopack_config.contentSize
@@ -673,11 +693,11 @@ const VideoSettings = ({
 														'video-embed-thumbnail-generator'
 													),
 													videopack_config.contentSize
-												)
+											  )
 											: __(
 													"None (use theme's default width)",
 													'video-embed-thumbnail-generator'
-												),
+											  ),
 									},
 									{
 										value: 'wide',
@@ -689,11 +709,11 @@ const VideoSettings = ({
 														'video-embed-thumbnail-generator'
 													),
 													videopack_config.wideSize
-												)
+											  )
 											: __(
 													"Wide (use theme's wide width)",
 													'video-embed-thumbnail-generator'
-												),
+											  ),
 									},
 									{
 										value: 'full',
@@ -723,22 +743,22 @@ const VideoSettings = ({
 											'video-embed-thumbnail-generator'
 										),
 									},
-								]}
+								] }
 							/>
 						</div>
 					</PanelRow>
-				)}
+				) }
 				<PanelRow>
 					<RadioControl
-						label={__(
+						label={ __(
 							'Constrain to default aspect ratio',
 							'video-embed-thumbnail-generator'
-						)}
-						selected={displayAttributes.fixed_aspect}
-						onChange={(value) =>
-							handleSettingChange('fixed_aspect', value)
+						) }
+						selected={ displayAttributes.fixed_aspect }
+						onChange={ ( value ) =>
+							handleSettingChange( 'fixed_aspect', value )
 						}
-						options={[
+						options={ [
 							{
 								value: 'false',
 								label: __(
@@ -760,41 +780,46 @@ const VideoSettings = ({
 									'video-embed-thumbnail-generator'
 								),
 							},
-						]}
+						] }
 					/>
 				</PanelRow>
-				{!isBlockEditor && (
+				{ ! isBlockEditor && (
 					<>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__(
+								label={ __(
 									'Legacy dimension settings',
 									'video-embed-thumbnail-generator'
-								)}
-								onChange={(value) =>
+								) }
+								onChange={ ( value ) =>
 									handleSettingChange(
 										'legacy_dimensions',
 										value
 									)
 								}
-								checked={!!displayAttributes.legacy_dimensions}
+								checked={
+									!! displayAttributes.legacy_dimensions
+								}
 							/>
 						</PanelRow>
-						{displayAttributes.legacy_dimensions && (
+						{ displayAttributes.legacy_dimensions && (
 							<>
 								<PanelRow>
 									<TextControl
 										__nextHasNoMarginBottom
 										__next40pxDefaultSize
-										label={__(
+										label={ __(
 											'Width',
 											'video-embed-thumbnail-generator'
-										)}
+										) }
 										type="number"
-										value={displayAttributes.width}
-										onChange={(value) =>
-											handleSettingChange('width', value)
+										value={ displayAttributes.width }
+										onChange={ ( value ) =>
+											handleSettingChange(
+												'width',
+												value
+											)
 										}
 									/>
 								</PanelRow>
@@ -802,88 +827,96 @@ const VideoSettings = ({
 									<TextControl
 										__nextHasNoMarginBottom
 										__next40pxDefaultSize
-										label={__(
+										label={ __(
 											'Height',
 											'video-embed-thumbnail-generator'
-										)}
+										) }
 										type="number"
-										value={displayAttributes.height}
-										onChange={(value) =>
-											handleSettingChange('height', value)
+										value={ displayAttributes.height }
+										onChange={ ( value ) =>
+											handleSettingChange(
+												'height',
+												value
+											)
 										}
 									/>
 								</PanelRow>
 								<PanelRow>
 									<ToggleControl
 										__nextHasNoMarginBottom
-										label={__(
+										label={ __(
 											'Shrink to fit',
 											'video-embed-thumbnail-generator'
-										)}
-										onChange={(value) =>
-											handleSettingChange('resize', value)
+										) }
+										onChange={ ( value ) =>
+											handleSettingChange(
+												'resize',
+												value
+											)
 										}
-										checked={!!displayAttributes.resize}
+										checked={ !! displayAttributes.resize }
 									/>
 								</PanelRow>
 								<PanelRow>
 									<ToggleControl
 										__nextHasNoMarginBottom
-										label={__(
+										label={ __(
 											'Expand to full width',
 											'video-embed-thumbnail-generator'
-										)}
-										onChange={(value) =>
+										) }
+										onChange={ ( value ) =>
 											handleSettingChange(
 												'fullwidth',
 												value
 											)
 										}
-										checked={!!displayAttributes.fullwidth}
+										checked={
+											!! displayAttributes.fullwidth
+										}
 									/>
 								</PanelRow>
 							</>
-						)}
+						) }
 					</>
-				)}
+				) }
 			</PanelBody>
-			{!isBlockEditor && (
+			{ ! isBlockEditor && (
 				<WatermarkSettingsPanel
-					title={__(
+					title={ __(
 						'Watermark Overlay',
 						'video-embed-thumbnail-generator'
-					)}
-					watermarkSettings={{
+					) }
+					watermarkSettings={ {
 						url: displayAttributes.watermark,
 						...displayAttributes.watermark_styles,
-					}}
-					onChange={(newSettings) => {
+					} }
+					onChange={ ( newSettings ) => {
 						const { url, ...styles } = newSettings;
-						handleSettingChange('watermark', url);
-						handleSettingChange('watermark_styles', styles);
-					}}
-					initialOpen={false}
+						handleSettingChange( 'watermark', url );
+						handleSettingChange( 'watermark_styles', styles );
+					} }
+					initialOpen={ false }
 				>
-					{displayAttributes.watermark && (
+					{ displayAttributes.watermark && (
 						<PanelRow>
 							<SelectControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								label={__(
+								label={ __(
 									'Link to',
 									'video-embed-thumbnail-generator'
-								)}
+								) }
 								value={
 									displayAttributes.watermark_link_to ||
 									'false'
 								}
-								onChange={(value) =>
+								onChange={ ( value ) =>
 									handleSettingChange(
 										'watermark_link_to',
 										value
 									)
 								}
-								options={[
+								options={ [
 									{
 										value: 'false',
 										label: __(
@@ -905,24 +938,24 @@ const VideoSettings = ({
 											'video-embed-thumbnail-generator'
 										),
 									},
-								]}
+								] }
 							/>
 						</PanelRow>
-					)}
-					{displayAttributes.watermark &&
+					) }
+					{ displayAttributes.watermark &&
 						displayAttributes.watermark_link_to === 'custom' && (
 							<PanelRow>
 								<TextControl
 									__nextHasNoMarginBottom
 									__next40pxDefaultSize
-									label={__(
+									label={ __(
 										'Watermark URL',
 										'video-embed-thumbnail-generator'
-									)}
+									) }
 									value={
 										displayAttributes.watermark_url || ''
 									}
-									onChange={(value) =>
+									onChange={ ( value ) =>
 										handleSettingChange(
 											'watermark_url',
 											value
@@ -930,16 +963,16 @@ const VideoSettings = ({
 									}
 								/>
 							</PanelRow>
-						)}
+						) }
 				</WatermarkSettingsPanel>
-			)}
+			) }
 			<TextTracks
-				tracks={displayAttributes.text_tracks || []}
-				onChange={(newTracks) =>
-					handleSettingChange('text_tracks', newTracks)
+				tracks={ displayAttributes.text_tracks || [] }
+				onChange={ ( newTracks ) =>
+					handleSettingChange( 'text_tracks', newTracks )
 				}
 			/>
-			{applyFilters(
+			{ applyFilters(
 				/**
 				 * Filters the extra custom panels appended to the block sidebar/settings.
 				 *
@@ -958,50 +991,50 @@ const VideoSettings = ({
 					handleSettingChange,
 					isBlockEditor,
 				}
-			)}
+			) }
 			<PanelBody
-				title={__('Sharing', 'video-embed-thumbnail-generator')}
-				initialOpen={false}
+				title={ __( 'Sharing', 'video-embed-thumbnail-generator' ) }
+				initialOpen={ false }
 			>
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Allow embedding / Show embed code',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={(value) =>
-							handleSettingChange('embedcode', value)
+						) }
+						onChange={ ( value ) =>
+							handleSettingChange( 'embedcode', value )
 						}
-						checked={!!displayAttributes.embedcode}
+						checked={ !! displayAttributes.embedcode }
 					/>
 				</PanelRow>
-				{displayAttributes.embedcode && (
+				{ displayAttributes.embedcode && (
 					<>
-						{!isBlockEditor && (
+						{ ! isBlockEditor && (
 							<>
 								<PanelRow>
 									<ToggleControl
 										__nextHasNoMarginBottom
-										label={__(
+										label={ __(
 											'Download link',
 											'video-embed-thumbnail-generator'
-										)}
-										onChange={(value) =>
+										) }
+										onChange={ ( value ) =>
 											handleSettingChange(
 												'downloadlink',
 												value
 											)
 										}
 										checked={
-											!!displayAttributes.downloadlink
+											!! displayAttributes.downloadlink
 										}
 									/>
 								</PanelRow>
 							</>
-						)}
+						) }
 					</>
-				)}
+				) }
 			</PanelBody>
 		</div>
 	);

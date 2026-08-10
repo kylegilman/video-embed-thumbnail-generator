@@ -10,24 +10,24 @@ import { getTitleInnerTemplate } from './titleDownloadBlock';
  * @param {Object} options Plugin or block options.
  * @return {Array} The block template.
  */
-export const getGridTemplate = (options) => {
+export const getGridTemplate = ( options ) => {
 	const loopChildren = [
 		[
 			'videopack/thumbnail',
 			{ linkTo: 'lightbox' },
 			[
-				['videopack/play-button', {}],
+				[ 'videopack/play-button', {} ],
 				options?.overlay_title !== false
-					? ['videopack/title', {}]
+					? [ 'videopack/title', {} ]
 					: null,
-			].filter(Boolean),
+			].filter( Boolean ),
 		],
 	];
 
-	const template = [['videopack/loop', {}, loopChildren]];
+	const template = [ [ 'videopack/loop', {}, loopChildren ] ];
 
-	if (options?.gallery_pagination) {
-		template.push(['videopack/pagination', {}]);
+	if ( options?.gallery_pagination ) {
+		template.push( [ 'videopack/pagination', {} ] );
 	}
 	return template;
 };
@@ -38,26 +38,26 @@ export const getGridTemplate = (options) => {
  * @param {Object} options Plugin or block options.
  * @return {Array} The block template.
  */
-export const getListTemplate = (options) => {
-	const showTitleBar = !!(
+export const getListTemplate = ( options ) => {
+	const showTitleBar = !! (
 		options?.overlay_title ||
 		options?.downloadlink ||
 		options?.embedcode
 	);
 
 	const engineChildren = [];
-	if (showTitleBar) {
-		engineChildren.push([
+	if ( showTitleBar ) {
+		engineChildren.push( [
 			'videopack/title',
 			{},
 			getTitleInnerTemplate(
-				!!options?.downloadlink,
-				!!options?.embedcode
+				!! options?.downloadlink,
+				!! options?.embedcode
 			),
-		]);
+		] );
 	}
-	if (options?.watermark) {
-		engineChildren.push(['videopack/watermark', {}]);
+	if ( options?.watermark ) {
+		engineChildren.push( [ 'videopack/watermark', {} ] );
 	}
 
 	const videoChildren = [
@@ -68,16 +68,18 @@ export const getListTemplate = (options) => {
 		],
 	];
 
-	if (options?.view_count) {
-		videoChildren.push(['videopack/view-count', {}]);
+	if ( options?.view_count ) {
+		videoChildren.push( [ 'videopack/view-count', {} ] );
 	}
 
-	const loopChildren = [['videopack/player-container', {}, videoChildren]];
+	const loopChildren = [
+		[ 'videopack/player-container', {}, videoChildren ],
+	];
 
-	const template = [['videopack/loop', {}, loopChildren]];
+	const template = [ [ 'videopack/loop', {}, loopChildren ] ];
 
-	if (options?.gallery_pagination) {
-		template.push(['videopack/pagination', {}]);
+	if ( options?.gallery_pagination ) {
+		template.push( [ 'videopack/pagination', {} ] );
 	}
 
 	return template;
@@ -88,16 +90,14 @@ export const getListTemplate = (options) => {
  * @param {Object} options Plugin or block options.
  * @return {Array} The block template.
  */
-export const getFeedTemplate = (options) => {
+export const getFeedTemplate = ( options ) => {
 	const loopChildren = [
 		[
 			'videopack/thumbnail',
 			{ linkTo: 'parent' },
-			[
-				['videopack/duration', { position: 'bottom' }],
-			],
+			[ [ 'videopack/duration', { position: 'bottom' } ] ],
 		],
-		['videopack/title', {}],
+		[ 'videopack/title', {} ],
 		[
 			'core/post-date',
 			{
@@ -119,13 +119,13 @@ export const getFeedTemplate = (options) => {
 				},
 			},
 		],
-		['videopack/view-count', { iconType: 'playOutline' }],
+		[ 'videopack/view-count', { iconType: 'playOutline' } ],
 	];
 
-	const template = [['videopack/loop', {}, loopChildren]];
+	const template = [ [ 'videopack/loop', {}, loopChildren ] ];
 
-	if (options?.gallery_pagination) {
-		template.push(['videopack/pagination', {}]);
+	if ( options?.gallery_pagination ) {
+		template.push( [ 'videopack/pagination', {} ] );
 	}
 
 	return template;

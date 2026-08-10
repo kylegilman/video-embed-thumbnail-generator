@@ -9,11 +9,29 @@ import { __ } from '@wordpress/i18n';
 // shape decide," which needs a different (grid-based) layout, not just a
 // different ratio value.
 export const ASPECT_RATIO_PRESETS = [
-	{ value: '16/9', label: __('16:9 (widescreen)', 'video-embed-thumbnail-generator') },
-	{ value: '4/3', label: __('4:3 (standard)', 'video-embed-thumbnail-generator') },
-	{ value: '1/1', label: __('1:1 (square)', 'video-embed-thumbnail-generator') },
-	{ value: '9/16', label: __('9:16 (vertical)', 'video-embed-thumbnail-generator') },
-	{ value: 'auto', label: __('Native (image’s own shape)', 'video-embed-thumbnail-generator') },
+	{
+		value: '16/9',
+		label: __( '16:9 (widescreen)', 'video-embed-thumbnail-generator' ),
+	},
+	{
+		value: '4/3',
+		label: __( '4:3 (standard)', 'video-embed-thumbnail-generator' ),
+	},
+	{
+		value: '1/1',
+		label: __( '1:1 (square)', 'video-embed-thumbnail-generator' ),
+	},
+	{
+		value: '9/16',
+		label: __( '9:16 (vertical)', 'video-embed-thumbnail-generator' ),
+	},
+	{
+		value: 'auto',
+		label: __(
+			'Native (image’s own shape)',
+			'video-embed-thumbnail-generator'
+		),
+	},
 ];
 
 export const ASPECT_RATIO_CUSTOM_VALUE = 'custom';
@@ -27,8 +45,8 @@ export const ASPECT_RATIO_DEFAULT = '16/9';
  * @param {string} value Raw stored value.
  * @return {boolean} Whether it's a valid W/H ratio (not "auto", not empty).
  */
-export const isCustomRatioValue = (value) =>
-	!!value && /^\s*\d+(\.\d+)?\s*\/\s*\d+(\.\d+)?\s*$/.test(value);
+export const isCustomRatioValue = ( value ) =>
+	!! value && /^\s*\d+(\.\d+)?\s*\/\s*\d+(\.\d+)?\s*$/.test( value );
 
 /**
  * Resolves the SelectControl's own value: one of the preset values, or the
@@ -38,8 +56,8 @@ export const isCustomRatioValue = (value) =>
  * @param {string} value Raw stored aspect-ratio value.
  * @return {string} A preset value, or ASPECT_RATIO_CUSTOM_VALUE.
  */
-export const getAspectRatioSelectValue = (value) => {
-	if (ASPECT_RATIO_PRESETS.some((preset) => preset.value === value)) {
+export const getAspectRatioSelectValue = ( value ) => {
+	if ( ASPECT_RATIO_PRESETS.some( ( preset ) => preset.value === value ) ) {
 		return value;
 	}
 	return ASPECT_RATIO_CUSTOM_VALUE;
@@ -49,7 +67,7 @@ export const getAspectRatioSelectOptions = () => [
 	...ASPECT_RATIO_PRESETS,
 	{
 		value: ASPECT_RATIO_CUSTOM_VALUE,
-		label: __('Custom…', 'video-embed-thumbnail-generator'),
+		label: __( 'Custom…', 'video-embed-thumbnail-generator' ),
 	},
 ];
 
@@ -70,11 +88,13 @@ export const DEFAULT_CUSTOM_RATIO = { width: 16, height: 9 };
  * @param {string} value Raw stored aspect-ratio value.
  * @return {{width: number, height: number}} The two ratio numbers.
  */
-export const parseRatioValue = (value) => {
-	if (!isCustomRatioValue(value)) {
+export const parseRatioValue = ( value ) => {
+	if ( ! isCustomRatioValue( value ) ) {
 		return { ...DEFAULT_CUSTOM_RATIO };
 	}
-	const [width, height] = value.split('/').map((n) => parseFloat(n.trim()));
+	const [ width, height ] = value
+		.split( '/' )
+		.map( ( n ) => parseFloat( n.trim() ) );
 	return { width, height };
 };
 
@@ -86,5 +106,4 @@ export const parseRatioValue = (value) => {
  * @param {number|string} height Ratio height.
  * @return {string} A "W/H" ratio string.
  */
-export const formatRatioValue = (width, height) =>
-	`${width}/${height}`;
+export const formatRatioValue = ( width, height ) => `${ width }/${ height }`;

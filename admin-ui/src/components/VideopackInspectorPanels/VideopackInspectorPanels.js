@@ -18,7 +18,7 @@ import AdditionalFormats from '../../components/AdditionalFormats/AdditionalForm
  * @param {boolean}  props.isDiscovering   Whether formats are being discovered.
  * @return {Object} The rendered component.
  */
-export default function VideopackInspectorPanels({
+export default function VideopackInspectorPanels( {
 	attributes,
 	setAttributes,
 	options,
@@ -27,23 +27,23 @@ export default function VideopackInspectorPanels({
 	fallbackTitle,
 	fallbackCaption,
 	isDiscovering,
-}) {
+} ) {
 	const effectiveId = attributes.id;
 
 	// Use the central data store to get the full attachment record.
 	// This takes advantage of Gutenberg's built-in caching.
 	const record = useSelect(
-		(select) => {
-			if (!effectiveId) {
+		( select ) => {
+			if ( ! effectiveId ) {
 				return null;
 			}
-			return select('core').getEntityRecord(
+			return select( 'core' ).getEntityRecord(
 				'postType',
 				'attachment',
 				effectiveId
 			);
 		},
-		[effectiveId]
+		[ effectiveId ]
 	);
 
 	// Some extensions might need to write to the record, but in the block editor
@@ -52,72 +52,72 @@ export default function VideopackInspectorPanels({
 	const setRecord = () => {};
 
 	// Create videoData to pass down to standard components like Thumbnails
-	const hasResolved = !!record || (!effectiveId && !attributes.src);
+	const hasResolved = !! record || ( ! effectiveId && ! attributes.src );
 	const videoData = useMemo(
-		() => ({
+		() => ( {
 			record,
 			setRecord,
 			hasResolved,
-		}),
-		[record, hasResolved]
+		} ),
+		[ record, hasResolved ]
 	);
 
 	return (
 		<div className="videopack-inspector-controls">
-			{(window.videopackAttachmentDetailsExtensions || []).map(
-				(Extension, idx) => (
+			{ ( window.videopackAttachmentDetailsExtensions || [] ).map(
+				( Extension, idx ) => (
 					<Extension
-						key={`ext-top-${idx}`}
-						attachmentId={effectiveId}
-						model={null}
-						attributes={attributes}
-						setAttributes={setAttributes}
-						options={options}
-						record={record}
-						setRecord={setRecord}
+						key={ `ext-top-${ idx }` }
+						attachmentId={ effectiveId }
+						model={ null }
+						attributes={ attributes }
+						setAttributes={ setAttributes }
+						options={ options }
+						record={ record }
+						setRecord={ setRecord }
 					/>
 				)
-			)}
+			) }
 			<Thumbnails
-				setAttributes={setAttributes}
-				attributes={attributes}
-				videoData={videoData}
-				options={options}
-				parentId={record?.post || 0}
-				isProbing={isProbing}
-				probedMetadata={probedMetadata}
+				setAttributes={ setAttributes }
+				attributes={ attributes }
+				videoData={ videoData }
+				options={ options }
+				parentId={ record?.post || 0 }
+				isProbing={ isProbing }
+				probedMetadata={ probedMetadata }
 			/>
-			{(
+			{ (
 				window.videopackAttachmentDetailsExtensionsBelowThumbnails || []
-			).map((Extension, idx) => (
+			).map( ( Extension, idx ) => (
 				<Extension
-					key={`ext-bottom-${idx}`}
-					attachmentId={effectiveId}
-					model={null}
-					attributes={attributes}
-					setAttributes={setAttributes}
-					options={options}
-					record={record}
-					setRecord={setRecord}
+					key={ `ext-bottom-${ idx }` }
+					attachmentId={ effectiveId }
+					model={ null }
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+					options={ options }
+					record={ record }
+					setRecord={ setRecord }
 				/>
-			))}
+			) ) }
 			<VideoSettings
-				setAttributes={setAttributes}
-				attributes={attributes}
-				options={options}
-				isProbing={isProbing}
-				probedMetadata={probedMetadata}
-				fallbackTitle={fallbackTitle}
-				fallbackCaption={fallbackCaption}
-				isBlockEditor={true}
+				setAttributes={ setAttributes }
+				attributes={ attributes }
+				options={ options }
+				isProbing={ isProbing }
+				probedMetadata={ probedMetadata }
+				fallbackTitle={ fallbackTitle }
+				fallbackCaption={ fallbackCaption }
+				isBlockEditor={ true }
 			/>
 			<AdditionalFormats
-				key={attributes.id || attributes.src}
-				attributes={attributes}
-				options={options}
-				isProbing={isProbing}
-				probedMetadata={probedMetadata}
-				isDiscovering={isDiscovering}
+				key={ attributes.id || attributes.src }
+				attributes={ attributes }
+				options={ options }
+				isProbing={ isProbing }
+				probedMetadata={ probedMetadata }
+				isDiscovering={ isDiscovering }
 			/>
 		</div>
 	);

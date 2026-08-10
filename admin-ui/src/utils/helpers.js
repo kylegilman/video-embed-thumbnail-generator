@@ -7,7 +7,7 @@
  *
  * @param {Object} options The raw options to normalize.
  */
-export const normalizeOptions = (options) => {
+export const normalizeOptions = ( options ) => {
 	const normalized = { ...options };
 
 	// Boolean conversions
@@ -28,17 +28,17 @@ export const normalizeOptions = (options) => {
 		'auto_res',
 	];
 
-	booleans.forEach((key) => {
-		if (Object.prototype.hasOwnProperty.call(normalized, key)) {
-			const val = normalized[key];
-			normalized[key] =
+	booleans.forEach( ( key ) => {
+		if ( Object.prototype.hasOwnProperty.call( normalized, key ) ) {
+			const val = normalized[ key ];
+			normalized[ key ] =
 				val === 'true' ||
 				val === true ||
 				val === '1' ||
 				val === 1 ||
 				val === 'on';
 		}
-	});
+	} );
 
 	// Number conversions
 	const numbers = [
@@ -47,11 +47,11 @@ export const normalizeOptions = (options) => {
 		'auto_thumb_number',
 		'auto_thumb_position',
 	];
-	numbers.forEach((key) => {
-		if (Object.prototype.hasOwnProperty.call(normalized, key)) {
-			normalized[key] = Number(normalized[key]);
+	numbers.forEach( ( key ) => {
+		if ( Object.prototype.hasOwnProperty.call( normalized, key ) ) {
+			normalized[ key ] = Number( normalized[ key ] );
 		}
-	});
+	} );
 
 	return normalized;
 };
@@ -63,17 +63,17 @@ export const normalizeOptions = (options) => {
  * @param {Object} attributes The attributes for the shortcode.
  * @param {string} content    Optional. The content enclosed by the shortcode.
  */
-export const generateShortcode = (tag, attributes, content = '') => {
-	let shortcode = `[${tag}`;
+export const generateShortcode = ( tag, attributes, content = '' ) => {
+	let shortcode = `[${ tag }`;
 
-	Object.keys(attributes).forEach((key) => {
-		const val = attributes[key];
-		if (val !== undefined && val !== null && val !== '') {
-			shortcode += ` ${key}="${val}"`;
+	Object.keys( attributes ).forEach( ( key ) => {
+		const val = attributes[ key ];
+		if ( val !== undefined && val !== null && val !== '' ) {
+			shortcode += ` ${ key }="${ val }"`;
 		}
-	});
+	} );
 
-	shortcode += `]${content}[/${tag}]`;
+	shortcode += `]${ content }[/${ tag }]`;
 
 	return shortcode;
 };
@@ -83,21 +83,21 @@ export const generateShortcode = (tag, attributes, content = '') => {
  *
  * @param {string} shortcode The shortcode string to parse.
  */
-export const parseShortcode = (shortcode) => {
+export const parseShortcode = ( shortcode ) => {
 	const regex = /\[(\w+)\s+([^\]]+)\]/g;
-	const match = regex.exec(shortcode);
-	if (!match) {
+	const match = regex.exec( shortcode );
+	if ( ! match ) {
 		return null;
 	}
 
-	const tag = match[1];
-	const attrString = match[2];
+	const tag = match[ 1 ];
+	const attrString = match[ 2 ];
 	const attributes = {};
 
 	const attrRegex = /(\w+)="([^"]*)"/g;
 	let attrMatch;
-	while ((attrMatch = attrRegex.exec(attrString)) !== null) {
-		attributes[attrMatch[1]] = attrMatch[2];
+	while ( ( attrMatch = attrRegex.exec( attrString ) ) !== null ) {
+		attributes[ attrMatch[ 1 ] ] = attrMatch[ 2 ];
 	}
 
 	return { tag, attributes };
@@ -109,13 +109,13 @@ export const parseShortcode = (shortcode) => {
  * @param {string} html The string to strip.
  * @return {string} The stripped string.
  */
-export const stripHtml = (html) => {
-	if (typeof html !== 'string') {
+export const stripHtml = ( html ) => {
+	if ( typeof html !== 'string' ) {
 		return html;
 	}
 
 	// Create a temporary DOM element to parse HTML
-	const tempDiv = document.createElement('div');
+	const tempDiv = document.createElement( 'div' );
 	tempDiv.innerHTML = html;
 	return tempDiv.textContent || tempDiv.innerText || '';
 };

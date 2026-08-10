@@ -17,9 +17,9 @@ import { useRef, useEffect } from '@wordpress/element';
  * @param {Function} props.onReady          Callback fired once the player is ready.
  * @param {Function} props.onMetadataLoaded Callback fired when metadata is loaded.
  */
-export const VideoJS = (props) => {
-	const videoRef = useRef(null);
-	const playerRef = useRef(null);
+export const VideoJS = ( props ) => {
+	const videoRef = useRef( null );
+	const playerRef = useRef( null );
 	const {
 		options,
 		skin,
@@ -29,10 +29,10 @@ export const VideoJS = (props) => {
 		onMetadataLoaded,
 		onEnded,
 	} = props;
-	const previousSkinRef = useRef(skin);
-	const previousPluginsRef = useRef(options?.plugins);
+	const previousSkinRef = useRef( skin );
+	const previousPluginsRef = useRef( options?.plugins );
 
-	useEffect(() => {
+	useEffect( () => {
 		let initTimer;
 		const player = playerRef.current;
 		// When plugins change (e.g. resolution selector added after entity
@@ -41,9 +41,9 @@ export const VideoJS = (props) => {
 		// but by then the container is disconnected from the iframe.
 		if (
 			player &&
-			!player.isDisposed() &&
-			JSON.stringify(previousPluginsRef.current) !==
-				JSON.stringify(options.plugins)
+			! player.isDisposed() &&
+			JSON.stringify( previousPluginsRef.current ) !==
+				JSON.stringify( options.plugins )
 		) {
 			previousPluginsRef.current = options.plugins;
 
@@ -53,17 +53,17 @@ export const VideoJS = (props) => {
 			) {
 				try {
 					// Update sources first so the plugin sees all resolutions.
-					if (options.sources && options.sources.length > 0) {
+					if ( options.sources && options.sources.length > 0 ) {
 						const currentSrc = player.currentSrc();
-						const newSrc = options.sources[0].src;
-						if (currentSrc !== newSrc) {
-							player.src(options.sources);
+						const newSrc = options.sources[ 0 ].src;
+						if ( currentSrc !== newSrc ) {
+							player.src( options.sources );
 						}
 					}
 					player.resolutionSelector(
 						options.plugins.resolutionSelector
 					);
-				} catch (e) {
+				} catch ( e ) {
 					console.error(
 						'Videopack: Video.js plugin update error:',
 						e
@@ -73,26 +73,26 @@ export const VideoJS = (props) => {
 		}
 
 		// On initial render (or after dispose), wait for sources to be available before initializing.
-		if (!player) {
+		if ( ! player ) {
 			// Wrap initialization in a timeout to handle React Strict Mode double-mounts.
 			// This ensures we don't init a player if the component is immediately unmounted.
 			// We use a short delay (100ms) to allow layouts (like the WordPress Media Library modal)
-			initTimer = setTimeout(() => {
+			initTimer = setTimeout( () => {
 				if (
-					!options ||
-					!options.sources ||
+					! options ||
+					! options.sources ||
 					options.sources.length === 0
 				) {
 					return; // Don't initialize until sources are ready.
 				}
 
-				if (!videoRef.current) {
+				if ( ! videoRef.current ) {
 					return;
 				}
 
 				// Ensure the container is empty before creating a new player.
-				while (videoRef.current.firstChild) {
-					videoRef.current.removeChild(videoRef.current.firstChild);
+				while ( videoRef.current.firstChild ) {
+					videoRef.current.removeChild( videoRef.current.firstChild );
 				}
 
 				const doc = videoRef.current
@@ -101,17 +101,19 @@ export const VideoJS = (props) => {
 				const win = doc.defaultView || window;
 				const vjs = win.videojs || videojs;
 
-				const videoElement = doc.createElement('video');
-				videoElement.className = `video-js ${skin || ''} vjs-big-play-centered`;
-				videoElement.setAttribute('playsinline', '');
-				if (options.crossorigin) {
+				const videoElement = doc.createElement( 'video' );
+				videoElement.className = `video-js ${
+					skin || ''
+				} vjs-big-play-centered`;
+				videoElement.setAttribute( 'playsinline', '' );
+				if ( options.crossorigin ) {
 					videoElement.setAttribute(
 						'crossorigin',
 						options.crossorigin
 					);
 				}
 
-				videoRef.current.appendChild(videoElement);
+				videoRef.current.appendChild( videoElement );
 
 				const playerOptions = {
 					...options,
@@ -123,7 +125,7 @@ export const VideoJS = (props) => {
 					playerOptions.plugins &&
 					playerOptions.plugins.resolutionSelector &&
 					typeof vjs.getPlugin !== 'undefined' &&
-					!vjs.getPlugin('resolutionSelector')
+					! vjs.getPlugin( 'resolutionSelector' )
 				) {
 					delete playerOptions.plugins.resolutionSelector;
 				}
@@ -132,56 +134,56 @@ export const VideoJS = (props) => {
 					videoElement,
 					playerOptions,
 					function () {
-						if (onReady) {
-							onReady(this);
+						if ( onReady ) {
+							onReady( this );
 						}
-						this.on('play', onPlay);
-						this.on('pause', onPause);
-						this.on('ended', onEnded);
-						this.on('loadedmetadata', function () {
-							if (typeof onMetadataLoaded === 'function') {
-								onMetadataLoaded({
+						this.on( 'play', onPlay );
+						this.on( 'pause', onPause );
+						this.on( 'ended', onEnded );
+						this.on( 'loadedmetadata', function () {
+							if ( typeof onMetadataLoaded === 'function' ) {
+								onMetadataLoaded( {
 									width: this.videoWidth(),
 									height: this.videoHeight(),
-								});
+								} );
 							}
-						});
+						} );
 					}
 				);
-			}, 250);
-		} else if (player && !player.isDisposed()) {
-			player.ready(function () {
+			}, 250 );
+		} else if ( player && ! player.isDisposed() ) {
+			player.ready( function () {
 				// Safeguard against missing tech (e.g. failed to load source)
-				if (!player.tech(true)) {
+				if ( ! player.tech( true ) ) {
 					return;
 				}
 
 				// Update existing player options
-				player.autoplay(options.autoplay);
-				player.loop(options.loop);
-				player.muted(options.muted);
-				player.volume(options.volume);
-				player.poster(options.poster);
-				player.controls(options.controls);
-				player.playbackRates(options.playbackRates || []);
-				player.preload(options.preload);
+				player.autoplay( options.autoplay );
+				player.loop( options.loop );
+				player.muted( options.muted );
+				player.volume( options.volume );
+				player.poster( options.poster );
+				player.controls( options.controls );
+				player.playbackRates( options.playbackRates || [] );
+				player.preload( options.preload );
 
-				if (previousSkinRef.current !== skin) {
-					if (previousSkinRef.current) {
-						player.removeClass(previousSkinRef.current);
+				if ( previousSkinRef.current !== skin ) {
+					if ( previousSkinRef.current ) {
+						player.removeClass( previousSkinRef.current );
 					}
-					if (skin) {
-						player.addClass(skin);
+					if ( skin ) {
+						player.addClass( skin );
 					}
 					previousSkinRef.current = skin;
 				}
 
 				// Only update src if it has actually changed to prevent reloading
-				if (options.sources && options.sources.length > 0) {
+				if ( options.sources && options.sources.length > 0 ) {
 					const currentSrc = player.currentSrc();
-					const newSrc = options.sources[0].src;
-					if (currentSrc !== newSrc) {
-						player.src(options.sources);
+					const newSrc = options.sources[ 0 ].src;
+					if ( currentSrc !== newSrc ) {
+						player.src( options.sources );
 					}
 				}
 
@@ -190,90 +192,90 @@ export const VideoJS = (props) => {
 					options.aspectRatio &&
 					options.aspectRatio !== player.aspectRatio()
 				) {
-					player.aspectRatio(options.aspectRatio);
+					player.aspectRatio( options.aspectRatio );
 				}
 
 				// Update tracks if they changed
-				if (options.tracks) {
+				if ( options.tracks ) {
 					const remoteTracks = player.remoteTextTracks();
 					const currentTracks = [];
-					for (let i = 0; i < remoteTracks.length; i++) {
-						currentTracks.push({
-							src: remoteTracks[i].src,
-							kind: remoteTracks[i].kind,
-							srclang: remoteTracks[i].language,
-							label: remoteTracks[i].label,
-							default: remoteTracks[i].default,
-						});
+					for ( let i = 0; i < remoteTracks.length; i++ ) {
+						currentTracks.push( {
+							src: remoteTracks[ i ].src,
+							kind: remoteTracks[ i ].kind,
+							srclang: remoteTracks[ i ].language,
+							label: remoteTracks[ i ].label,
+							default: remoteTracks[ i ].default,
+						} );
 					}
 
 					if (
-						JSON.stringify(currentTracks) !==
-						JSON.stringify(options.tracks)
+						JSON.stringify( currentTracks ) !==
+						JSON.stringify( options.tracks )
 					) {
 						// Remove old remote tracks
-						for (let i = remoteTracks.length - 1; i >= 0; i--) {
-							player.removeRemoteTextTrack(remoteTracks[i]);
+						for ( let i = remoteTracks.length - 1; i >= 0; i-- ) {
+							player.removeRemoteTextTrack( remoteTracks[ i ] );
 						}
 						// Add new ones
-						options.tracks.forEach((track) => {
-							player.addRemoteTextTrack(track, false);
-						});
+						options.tracks.forEach( ( track ) => {
+							player.addRemoteTextTrack( track, false );
+						} );
 					}
 				}
-			});
+			} );
 		}
 
 		return () => {
-			clearTimeout(initTimer);
+			clearTimeout( initTimer );
 		};
-	}, [options, skin, onPlay, onPause, onReady, onMetadataLoaded, onEnded]);
+	}, [ options, skin, onPlay, onPause, onReady, onMetadataLoaded, onEnded ] );
 
 	// Dispose the player when the component unmounts
-	useEffect(() => {
+	useEffect( () => {
 		return () => {
-			if (playerRef.current && !playerRef.current.isDisposed()) {
-				playerRef.current.off('play', onPlay);
-				playerRef.current.off('pause', onPause);
+			if ( playerRef.current && ! playerRef.current.isDisposed() ) {
+				playerRef.current.off( 'play', onPlay );
+				playerRef.current.off( 'pause', onPause );
 				playerRef.current.dispose();
 				playerRef.current = null;
 			}
 		};
-	}, [onPause, onPlay]);
+	}, [ onPause, onPlay ] );
 
 	// Trigger a resize event on the player when the container's dimensions change.
-	useEffect(() => {
+	useEffect( () => {
 		const container = videoRef.current;
-		if (!container || typeof ResizeObserver === 'undefined') {
+		if ( ! container || typeof ResizeObserver === 'undefined' ) {
 			return;
 		}
 
-		const resizeObserver = new ResizeObserver(() => {
-			if (playerRef.current && !playerRef.current.isDisposed()) {
-				playerRef.current.trigger('resize');
+		const resizeObserver = new ResizeObserver( () => {
+			if ( playerRef.current && ! playerRef.current.isDisposed() ) {
+				playerRef.current.trigger( 'resize' );
 			}
-		});
+		} );
 
-		resizeObserver.observe(container);
+		resizeObserver.observe( container );
 
 		return () => {
 			resizeObserver.disconnect();
 		};
-	}, []);
+	}, [] );
 
 	// Normalize aspect ratio from options (e.g. '16:9' -> '16 / 9') or fallback to width/height.
 	let ratio = '16 / 9';
-	if (options.aspectRatio) {
-		ratio = options.aspectRatio.replace(':', ' / ');
-	} else if (options.width && options.height) {
-		ratio = `${options.width} / ${options.height}`;
+	if ( options.aspectRatio ) {
+		ratio = options.aspectRatio.replace( ':', ' / ' );
+	} else if ( options.width && options.height ) {
+		ratio = `${ options.width } / ${ options.height }`;
 	}
 
 	return (
 		<div
 			data-vjs-player
-			ref={videoRef}
-			style={{ width: '100%', aspectRatio: ratio, overflow: 'hidden' }}
+			ref={ videoRef }
+			style={ { width: '100%', aspectRatio: ratio, overflow: 'hidden' } }
 		/>
 	);
 };

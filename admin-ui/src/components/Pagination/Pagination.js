@@ -12,15 +12,15 @@ import useVideopackContext from '../../hooks/useVideopackContext';
  * @param {Object}   props.context      Optional. Block context for color resolution.
  * @param {Object}   props.style        Optional. Additional styles.
  */
-export default function Pagination({
+export default function Pagination( {
 	currentPage: propCurrentPage,
 	totalPages: propTotalPages,
 	onPageChange: propOnPageChange,
 	attributes = {},
 	context = {},
 	style: propStyle,
-}) {
-	const vpContext = useVideopackContext(attributes, context);
+} ) {
+	const vpContext = useVideopackContext( attributes, context );
 	const {
 		pagination_color,
 		pagination_background_color,
@@ -33,9 +33,9 @@ export default function Pagination({
 
 	const current = propCurrentPage ?? contextPage ?? 1;
 	const total = propTotalPages ?? contextTotal ?? 1;
-	const onChange = propOnPageChange ?? contextOnChange ?? (() => {});
+	const onChange = propOnPageChange ?? contextOnChange ?? ( () => {} );
 
-	if (total <= 1) {
+	if ( total <= 1 ) {
 		return null;
 	}
 
@@ -51,39 +51,39 @@ export default function Pagination({
 		const pages = [];
 		const showMax = 5; // Max number of page buttons to show around current page
 
-		if (total <= showMax + 2) {
+		if ( total <= showMax + 2 ) {
 			// Show all pages if total is small
-			for (let i = 1; i <= total; i++) {
-				pages.push(i);
+			for ( let i = 1; i <= total; i++ ) {
+				pages.push( i );
 			}
 		} else {
 			// Always show page 1
-			pages.push(1);
+			pages.push( 1 );
 
-			let start = Math.max(2, current - 1);
-			let end = Math.min(total - 1, current + 1);
+			let start = Math.max( 2, current - 1 );
+			let end = Math.min( total - 1, current + 1 );
 
 			// Adjust start/end to always show 3 numbers in the middle if possible
-			if (current <= 3) {
+			if ( current <= 3 ) {
 				end = 4;
-			} else if (current >= total - 2) {
+			} else if ( current >= total - 2 ) {
 				start = total - 3;
 			}
 
-			if (start > 2) {
-				pages.push('...');
+			if ( start > 2 ) {
+				pages.push( '...' );
 			}
 
-			for (let i = start; i <= end; i++) {
-				pages.push(i);
+			for ( let i = start; i <= end; i++ ) {
+				pages.push( i );
 			}
 
-			if (end < total - 1) {
-				pages.push('...');
+			if ( end < total - 1 ) {
+				pages.push( '...' );
 			}
 
 			// Always show last page
-			pages.push(total);
+			pages.push( total );
 		}
 
 		return pages;
@@ -94,57 +94,59 @@ export default function Pagination({
 	return (
 		<nav
 			className="videopack-pagination"
-			aria-label={__('Pagination', 'video-embed-thumbnail-generator')}
-			style={style}
+			aria-label={ __( 'Pagination', 'video-embed-thumbnail-generator' ) }
+			style={ style }
 		>
 			<ul className="videopack-pagination-list">
 				<li className="videopack-pagination-item">
 					<button
-						className={`videopack-pagination-button prev page-numbers ${
+						className={ `videopack-pagination-button prev page-numbers ${
 							current <= 1 ? 'is-hidden videopack-hidden' : ''
-						}`}
-						onClick={() => current > 1 && onChange(current - 1)}
-						aria-label={__(
+						}` }
+						onClick={ () => current > 1 && onChange( current - 1 ) }
+						aria-label={ __(
 							'Previous Page',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					>
 						<span className="videopack-pagination-arrow">&lt;</span>
 					</button>
 				</li>
 
-				{pages.map((page, index) => (
-					<li key={index} className="videopack-pagination-item">
-						{page === '...' ? (
-							<span className="page-numbers dots">{page}</span>
+				{ pages.map( ( page, index ) => (
+					<li key={ index } className="videopack-pagination-item">
+						{ page === '...' ? (
+							<span className="page-numbers dots">{ page }</span>
 						) : (
 							<button
-								className={`videopack-pagination-button page-numbers ${
+								className={ `videopack-pagination-button page-numbers ${
 									page === current ? 'is-active current' : ''
-								}`}
-								onClick={() =>
-									typeof page === 'number' && onChange(page)
+								}` }
+								onClick={ () =>
+									typeof page === 'number' && onChange( page )
 								}
 								aria-current={
 									page === current ? 'page' : undefined
 								}
 							>
-								{page}
+								{ page }
 							</button>
-						)}
+						) }
 					</li>
-				))}
+				) ) }
 
 				<li className="videopack-pagination-item">
 					<button
-						className={`videopack-pagination-button next page-numbers ${
+						className={ `videopack-pagination-button next page-numbers ${
 							current >= total ? 'is-hidden videopack-hidden' : ''
-						}`}
-						onClick={() => current < total && onChange(current + 1)}
-						aria-label={__(
+						}` }
+						onClick={ () =>
+							current < total && onChange( current + 1 )
+						}
+						aria-label={ __(
 							'Next Page',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					>
 						<span className="videopack-pagination-arrow">&gt;</span>
 					</button>

@@ -12,17 +12,17 @@ import { applyFilters } from '@wordpress/hooks';
  *
  * @param {AbortSignal} signal Optional. Abort signal.
  */
-export const getPresets = async (signal = null) => {
+export const getPresets = async ( signal = null ) => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/presets',
 			signal,
-		});
-	} catch (error) {
-		if (error.name === 'AbortError') {
+		} );
+	} catch ( error ) {
+		if ( error.name === 'AbortError' ) {
 			throw error;
 		}
-		console.error('Error fetching presets:', error);
+		console.error( 'Error fetching presets:', error );
 		throw error;
 	}
 };
@@ -44,15 +44,15 @@ export const getVideoSources = async (
 			attachment_id: attachmentId,
 			url,
 		};
-		return await apiFetch({
-			path: addQueryArgs('/videopack/v1/sources', query),
+		return await apiFetch( {
+			path: addQueryArgs( '/videopack/v1/sources', query ),
 			signal,
-		});
-	} catch (error) {
-		if (error.name === 'AbortError') {
+		} );
+	} catch ( error ) {
+		if ( error.name === 'AbortError' ) {
 			throw error;
 		}
-		console.error('Error fetching video sources:', error);
+		console.error( 'Error fetching video sources:', error );
 		throw error;
 	}
 };
@@ -73,32 +73,32 @@ export const getVideoFormats = async (
 ) => {
 	try {
 		const query = {};
-		if (url) {
+		if ( url ) {
 			query.url = url;
 		}
-		if (probedMetadata) {
-			if (probedMetadata.width) {
+		if ( probedMetadata ) {
+			if ( probedMetadata.width ) {
 				query.width = probedMetadata.width;
 			}
-			if (probedMetadata.height) {
+			if ( probedMetadata.height ) {
 				query.height = probedMetadata.height;
 			}
-			if (probedMetadata.duration) {
+			if ( probedMetadata.duration ) {
 				query.duration = probedMetadata.duration;
 			}
 		}
 
-		const presets = await apiFetch({
+		const presets = await apiFetch( {
 			path: addQueryArgs(
-				`/videopack/v1/attachment/${attachmentId}/formats`,
+				`/videopack/v1/attachment/${ attachmentId }/formats`,
 				query
 			),
 			signal,
-		});
+		} );
 
 		const merged = {};
-		presets.forEach((preset) => {
-			merged[preset.id] = {
+		presets.forEach( ( preset ) => {
+			merged[ preset.id ] = {
 				...preset,
 				format_id: preset.id,
 				status: preset.status
@@ -106,14 +106,14 @@ export const getVideoFormats = async (
 					: 'not_encoded',
 				id: preset.attachment_id || null,
 			};
-		});
+		} );
 
 		return merged;
-	} catch (error) {
-		if (error.name === 'AbortError') {
+	} catch ( error ) {
+		if ( error.name === 'AbortError' ) {
 			throw error;
 		}
-		console.error('Error fetching video formats:', error);
+		console.error( 'Error fetching video formats:', error );
 		throw error;
 	}
 };
@@ -123,7 +123,7 @@ export const getVideoFormats = async (
  *
  * @param {Object} args The query arguments for the gallery.
  */
-export const getVideoGallery = async (args) => {
+export const getVideoGallery = async ( args ) => {
 	/**
 	 * Filters the video gallery query. Returning a non-undefined value bypasses the REST API call.
 	 *
@@ -137,14 +137,14 @@ export const getVideoGallery = async (args) => {
 		undefined,
 		args
 	);
-	if (typeof pre !== 'undefined') {
+	if ( typeof pre !== 'undefined' ) {
 		return pre;
 	}
 	try {
-		const response = await apiFetch({
-			path: addQueryArgs('/videopack/v1/video_gallery', args),
+		const response = await apiFetch( {
+			path: addQueryArgs( '/videopack/v1/video_gallery', args ),
 			method: 'GET',
-		});
+		} );
 		/**
 		 * Filters the list of media items returned for the video gallery.
 		 *
@@ -153,9 +153,13 @@ export const getVideoGallery = async (args) => {
 		 * @param {Object} response REST API response containing video list.
 		 * @param {Object} args     Query parameters used for fetching.
 		 */
-		return applyFilters('videopack.utils.getVideoGallery', response, args);
-	} catch (error) {
-		console.error('Error fetching video gallery:', error);
+		return applyFilters(
+			'videopack.utils.getVideoGallery',
+			response,
+			args
+		);
+	} catch ( error ) {
+		console.error( 'Error fetching video gallery:', error );
 		throw error;
 	}
 };
@@ -165,14 +169,14 @@ export const getVideoGallery = async (args) => {
  *
  * @param {string} capability The capability to check for.
  */
-export const getUsersWithCapability = async (capability) => {
+export const getUsersWithCapability = async ( capability ) => {
 	try {
-		return await apiFetch({
-			path: `/wp/v2/users?capability=${capability}`,
+		return await apiFetch( {
+			path: `/wp/v2/users?capability=${ capability }`,
 			method: 'GET',
-		});
-	} catch (error) {
-		console.error('Error fetching users:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error fetching users:', error );
 		throw error;
 	}
 };
@@ -182,20 +186,20 @@ export const getUsersWithCapability = async (capability) => {
  *
  * @param {string} page The Freemius page identifier.
  */
-export const getFreemiusPage = async (page) => {
+export const getFreemiusPage = async ( page ) => {
 	try {
-		let path = `/videopack/v1/freemius/${page}`;
+		let path = `/videopack/v1/freemius/${ page }`;
 		if (
 			videopack_config.isNetworkAdmin ||
 			videopack_config.isNetworkActive
 		) {
 			path += '?_fs_network_admin=true';
 		}
-		return await apiFetch({
+		return await apiFetch( {
 			path,
-		});
-	} catch (error) {
-		console.error(`Error fetching Freemius page '${page}':`, error);
+		} );
+	} catch ( error ) {
+		console.error( `Error fetching Freemius page '${ page }':`, error );
 		throw error;
 	}
 };
@@ -206,7 +210,7 @@ export const getFreemiusPage = async (page) => {
  * @param {string} codec      The codec to test.
  * @param {string} resolution The resolution to test.
  */
-export const testEncodeCommand = async (codec, resolution) => {
+export const testEncodeCommand = async ( codec, resolution ) => {
 	/**
 	 * Filters the FFmpeg test command test response. Bypasses the REST API call if a non-undefined value is returned.
 	 *
@@ -222,15 +226,15 @@ export const testEncodeCommand = async (codec, resolution) => {
 		codec,
 		resolution
 	);
-	if (typeof pre !== 'undefined') {
+	if ( typeof pre !== 'undefined' ) {
 		return pre;
 	}
 	try {
-		return await apiFetch({
-			path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}`,
-		});
-	} catch (error) {
-		console.error('Error testing encode command:', error);
+		return await apiFetch( {
+			path: `/videopack/v1/ffmpeg-test/?codec=${ codec }&resolution=${ resolution }`,
+		} );
+	} catch ( error ) {
+		console.error( 'Error testing encode command:', error );
 		throw error;
 	}
 };

@@ -65,22 +65,22 @@ import '../../blocks/collection';
  * @return {Object} The rendered component.
  */
 const VideopackSettingsPage = () => {
-	const [settings, setSettings] = useState({});
-	const [ffmpegTest, setFfmpegTest] = useState({});
-	const [isSettingsChanged, setIsSettingsChanged] = useState(false);
-	const defaultTab = window.location.hash.substring(1) || 'player';
-	const [activeTab, setActiveTab] = useState(defaultTab);
-	const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-	const settingsRef = useRef(settings);
+	const [ settings, setSettings ] = useState( {} );
+	const [ ffmpegTest, setFfmpegTest ] = useState( {} );
+	const [ isSettingsChanged, setIsSettingsChanged ] = useState( false );
+	const defaultTab = window.location.hash.substring( 1 ) || 'player';
+	const [ activeTab, setActiveTab ] = useState( defaultTab );
+	const [ isResetModalOpen, setIsResetModalOpen ] = useState( false );
+	const settingsRef = useRef( settings );
 
-	useEffect(() => {
+	useEffect( () => {
 		settingsRef.current = settings;
-	}, [settings]);
+	}, [ settings ] );
 
 	const testFfmpeg = useCallback(
-		(codec, resolution) => {
-			if (activeTab === 'encoding') {
-				setFfmpegTest({
+		( codec, resolution ) => {
+			if ( activeTab === 'encoding' ) {
+				setFfmpegTest( {
 					command: __(
 						'Running test…',
 						'video-embed-thumbnail-generator'
@@ -89,108 +89,109 @@ const VideopackSettingsPage = () => {
 						'Running test…',
 						'video-embed-thumbnail-generator'
 					),
-				});
-				testEncodeCommand(codec, resolution)
-					.then((response) => {
-						setFfmpegTest(response);
-					})
-					.catch((error) => {
-						console.error(error);
-					});
+				} );
+				testEncodeCommand( codec, resolution )
+					.then( ( response ) => {
+						setFfmpegTest( response );
+					} )
+					.catch( ( error ) => {
+						console.error( error );
+					} );
 			}
 		},
-		[activeTab]
+		[ activeTab ]
 	);
 
-	useEffect(() => {
+	useEffect( () => {
 		if (
-			!isSettingsChanged &&
+			! isSettingsChanged &&
 			activeTab === 'encoding' &&
 			settings.sample_codec &&
 			settings.sample_resolution &&
 			settings.ffmpeg_exists === 'available' &&
-			(settings.active_encoder === 'ffmpeg' || !settings.active_encoder)
+			( settings.active_encoder === 'ffmpeg' ||
+				! settings.active_encoder )
 		) {
-			testFfmpeg(settings.sample_codec, settings.sample_resolution);
+			testFfmpeg( settings.sample_codec, settings.sample_resolution );
 		}
-	}, [settings, activeTab, isSettingsChanged, testFfmpeg]);
+	}, [ settings, activeTab, isSettingsChanged, testFfmpeg ] );
 
-	useEffect(() => {
+	useEffect( () => {
 		getSettings()
-			.then((response) => {
-				setSettings(response);
-			})
-			.catch((error) => {
-				console.error(error);
-			});
+			.then( ( response ) => {
+				setSettings( response );
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
 
 		const handleHashChange = () => {
-			setActiveTab(window.location.hash.substring(1) || 'player');
+			setActiveTab( window.location.hash.substring( 1 ) || 'player' );
 		};
-		window.addEventListener('hashchange', handleHashChange);
+		window.addEventListener( 'hashchange', handleHashChange );
 		return () => {
-			window.removeEventListener('hashchange', handleHashChange);
+			window.removeEventListener( 'hashchange', handleHashChange );
 		};
-	}, []);
+	}, [] );
 
-	const debouncedSaveSettings = useDebounce((newSettings) => {
+	const debouncedSaveSettings = useDebounce( ( newSettings ) => {
 		// Prepare settings for saving. Standalone options like videopack_cloud_secret_key
 		// are stored alongside the main videopack_options object.
-		saveWPSettings(newSettings)
-			.then((response) => {
+		saveWPSettings( newSettings )
+			.then( ( response ) => {
 				const currentSettings = settingsRef.current;
 				const nextSettings = { ...response };
 				let hasLocalChanges = false;
-				Object.keys(currentSettings).forEach((key) => {
-					if (currentSettings[key] !== newSettings[key]) {
-						nextSettings[key] = currentSettings[key];
+				Object.keys( currentSettings ).forEach( ( key ) => {
+					if ( currentSettings[ key ] !== newSettings[ key ] ) {
+						nextSettings[ key ] = currentSettings[ key ];
 						hasLocalChanges = true;
 					}
-				});
-				setSettings(nextSettings);
-				if (!hasLocalChanges) {
-					setIsSettingsChanged(false);
+				} );
+				setSettings( nextSettings );
+				if ( ! hasLocalChanges ) {
+					setIsSettingsChanged( false );
 				}
-			})
-			.catch((error) => {
-				console.error('Error updating settings:', error);
-			});
-	}, 1000);
+			} )
+			.catch( ( error ) => {
+				console.error( 'Error updating settings:', error );
+			} );
+	}, 1000 );
 
-	useEffect(() => {
-		if (isSettingsChanged) {
-			debouncedSaveSettings(settings);
+	useEffect( () => {
+		if ( isSettingsChanged ) {
+			debouncedSaveSettings( settings );
 		}
-	}, [isSettingsChanged, debouncedSaveSettings, settings]);
+	}, [ isSettingsChanged, debouncedSaveSettings, settings ] );
 
-	const changeHandlerFactory = useMemo(() => {
-		if (!settings || typeof settings !== 'object') {
+	const changeHandlerFactory = useMemo( () => {
+		if ( ! settings || typeof settings !== 'object' ) {
 			return {};
 		}
-		const handlers = Object.keys(settings).reduce((acc, setting) => {
-			acc[setting] = (newValue) => {
-				setSettings((prevSettings) => ({
+		const handlers = Object.keys( settings ).reduce( ( acc, setting ) => {
+			acc[ setting ] = ( newValue ) => {
+				setSettings( ( prevSettings ) => ( {
 					...prevSettings,
-					[setting]: newValue,
-				}));
-				setIsSettingsChanged(true);
+					[ setting ]: newValue,
+				} ) );
+				setIsSettingsChanged( true );
 			};
 			return acc;
-		}, {});
+		}, {} );
 
 		return handlers;
-	}, [settings]);
+	}, [ settings ] );
 
-	const tabs = useMemo(() => {
+	const tabs = useMemo( () => {
 		const defaultTabs = [
 			{
 				name: 'player',
-				title: __('Video Player', 'video-embed-thumbnail-generator'),
+				title: __( 'Video Player', 'video-embed-thumbnail-generator' ),
 				component: PlayerSettings,
 			},
 			{
 				name: 'thumbnails',
-				title: __('Thumbnails', 'video-embed-thumbnail-generator'),
+				title: __( 'Thumbnails', 'video-embed-thumbnail-generator' ),
 				component: ThumbnailSettings,
 			},
 			{
@@ -204,23 +205,23 @@ const VideopackSettingsPage = () => {
 		];
 
 		if (
-			!videopack_config.isFfmpegOverridden ||
+			! videopack_config.isFfmpegOverridden ||
 			videopack_config.isSuperAdmin
 		) {
-			defaultTabs.push({
+			defaultTabs.push( {
 				name: 'encoding',
-				title: __('Encoding', 'video-embed-thumbnail-generator'),
+				title: __( 'Encoding', 'video-embed-thumbnail-generator' ),
 				component: EncodingSettings,
-			});
+			} );
 		}
 
-		defaultTabs.push({
+		defaultTabs.push( {
 			name: 'admin',
-			title: __('Admin', 'video-embed-thumbnail-generator'),
+			title: __( 'Admin', 'video-embed-thumbnail-generator' ),
 			component: AdminSettings,
-		});
+		} );
 
-		if (videopack_config.freemiusEnabled) {
+		if ( videopack_config.freemiusEnabled ) {
 			defaultTabs.push(
 				{
 					name: 'account',
@@ -233,7 +234,7 @@ const VideopackSettingsPage = () => {
 				},
 				{
 					name: 'add-ons',
-					title: __('Add-ons', 'video-embed-thumbnail-generator'),
+					title: __( 'Add-ons', 'video-embed-thumbnail-generator' ),
 					className: 'videopack-freemius-tab',
 					component: () => <FreemiusPage page="add-ons" />,
 				}
@@ -247,24 +248,24 @@ const VideopackSettingsPage = () => {
 		 *
 		 * @param {Array} defaultTabs Array of tab objects.
 		 */
-		return applyFilters('videopack.settings.tabs', defaultTabs);
-	}, []);
+		return applyFilters( 'videopack.settings.tabs', defaultTabs );
+	}, [] );
 
-	const onTabSelect = (tabName) => {
-		setActiveTab(tabName);
-		window.history.pushState(null, '', `#${tabName}`);
+	const onTabSelect = ( tabName ) => {
+		setActiveTab( tabName );
+		window.history.pushState( null, '', `#${ tabName }` );
 	};
 
-	const renderTab = (tab) => {
-		if (settings && settings.hasOwnProperty('embed_method')) {
-			if (tab.component) {
+	const renderTab = ( tab ) => {
+		if ( settings && settings.hasOwnProperty( 'embed_method' ) ) {
+			if ( tab.component ) {
 				const TabComponent = tab.component;
 				return (
 					<TabComponent
-						settings={settings}
-						setSettings={setSettings}
-						changeHandlerFactory={changeHandlerFactory}
-						ffmpegTest={ffmpegTest}
+						settings={ settings }
+						setSettings={ setSettings }
+						changeHandlerFactory={ changeHandlerFactory }
+						ffmpegTest={ ffmpegTest }
 					/>
 				);
 			}
@@ -274,21 +275,21 @@ const VideopackSettingsPage = () => {
 	};
 
 	const resetSettings = () => {
-		setIsResetModalOpen(true);
+		setIsResetModalOpen( true );
 	};
 
 	const handleConfirmReset = () => {
 		resetVideopackSettings()
-			.then((response) => {
-				setSettings(response);
-				setIsSettingsChanged(true);
-			})
-			.catch((error) => {
-				console.error(error);
-			})
-			.finally(() => {
-				setIsResetModalOpen(false);
-			});
+			.then( ( response ) => {
+				setSettings( response );
+				setIsSettingsChanged( true );
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} )
+			.finally( () => {
+				setIsResetModalOpen( false );
+			} );
 	};
 
 	return (
@@ -296,67 +297,73 @@ const VideopackSettingsPage = () => {
 			<h1>
 				<Icon
 					className="videopack-settings-icon"
-					icon={videopack}
-					size={40}
+					icon={ videopack }
+					size={ 40 }
 				/>
-				{__('Videopack Settings', 'video-embed-thumbnail-generator')}
-				{isSettingsChanged && (
+				{ __(
+					'Videopack Settings',
+					'video-embed-thumbnail-generator'
+				) }
+				{ isSettingsChanged && (
 					<span className="videopack-settings-saving">
 						<Spinner />
-						{__('Saving…', 'video-embed-thumbnail-generator')}
+						{ __( 'Saving…', 'video-embed-thumbnail-generator' ) }
 					</span>
-				)}
+				) }
 			</h1>
 			<Panel>
 				<TabPanel
-					key={activeTab}
-					tabs={tabs}
-					initialTabName={activeTab}
-					onSelect={onTabSelect}
+					key={ activeTab }
+					tabs={ tabs }
+					initialTabName={ activeTab }
+					onSelect={ onTabSelect }
 				>
-					{(tab) => {
-						return renderTab(tab);
-					}}
+					{ ( tab ) => {
+						return renderTab( tab );
+					} }
 				</TabPanel>
 				<PanelRow>
 					<Button
 						__next40pxDefaultSize
 						variant="primary"
-						onClick={resetSettings}
-						className={'videopack-settings-reset'}
+						onClick={ resetSettings }
+						className={ 'videopack-settings-reset' }
 					>
-						{__(
+						{ __(
 							'Reset Settings',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					</Button>
 				</PanelRow>
 			</Panel>
 			<ConfirmDialog
-				isOpen={isResetModalOpen}
-				title={__('Reset Settings?', 'video-embed-thumbnail-generator')}
-				onConfirm={handleConfirmReset}
-				onCancel={() => setIsResetModalOpen(false)}
-				confirmButtonText={__(
+				isOpen={ isResetModalOpen }
+				title={ __(
+					'Reset Settings?',
+					'video-embed-thumbnail-generator'
+				) }
+				onConfirm={ handleConfirmReset }
+				onCancel={ () => setIsResetModalOpen( false ) }
+				confirmButtonText={ __(
 					'Reset Settings',
 					'video-embed-thumbnail-generator'
-				)}
-				cancelButtonText={__(
+				) }
+				cancelButtonText={ __(
 					'Cancel',
 					'video-embed-thumbnail-generator'
-				)}
+				) }
 			>
-				{__(
+				{ __(
 					'Are you sure you want to reset all settings to their defaults? This action cannot be undone.',
 					'video-embed-thumbnail-generator'
-				)}
+				) }
 			</ConfirmDialog>
 		</div>
 	);
 };
 
-const el = document.getElementById('videopack-settings-root');
-if (el) {
-	const root = createRoot(el);
-	root.render(<VideopackSettingsPage />);
+const el = document.getElementById( 'videopack-settings-root' );
+if ( el ) {
+	const root = createRoot( el );
+	root.render( <VideopackSettingsPage /> );
 }

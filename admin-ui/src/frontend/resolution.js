@@ -45,7 +45,7 @@ export function registerResolutionHandler( embedMethod, handler ) {
  * the target height, or the smallest available if none do. Returns null
  * when there's nothing to switch between (zero or one resolution).
  *
- * @param {object} args
+ * @param {Object}  args
  * @param {number}  args.containerWidth   The current width of the player's container.
  * @param {number}  args.aspectRatio      The video's aspect ratio (height / width).
  * @param {boolean} args.pixelRatio       Whether pixel-ratio-aware sizing is enabled for this video.
@@ -53,7 +53,13 @@ export function registerResolutionHandler( embedMethod, handler ) {
  * @param {Array}   args.resolutionGroups Output of groupSourcesByResolution().
  * @return {string|null} The target resolution, or null.
  */
-export function pickTargetResolution( { containerWidth, aspectRatio, pixelRatio, devicePixelRatio, resolutionGroups } ) {
+export function pickTargetResolution( {
+	containerWidth,
+	aspectRatio,
+	pixelRatio,
+	devicePixelRatio,
+	resolutionGroups,
+} ) {
 	let targetWidth = containerWidth;
 	if ( pixelRatio && devicePixelRatio ) {
 		targetWidth *= devicePixelRatio;
@@ -70,7 +76,9 @@ export function pickTargetResolution( { containerWidth, aspectRatio, pixelRatio,
 	// smallest one that still meets the target height, else fall back to
 	// the smallest available.
 	const ascending = [ ...resolutionGroups ].reverse();
-	const bestGroup = ascending.find( ( g ) => parseInt( g.res, 10 ) >= targetHeight ) || ascending[ ascending.length - 1 ];
+	const bestGroup =
+		ascending.find( ( g ) => parseInt( g.res, 10 ) >= targetHeight ) ||
+		ascending[ ascending.length - 1 ];
 	return String( bestGroup.res );
 }
 
@@ -86,7 +94,7 @@ export function pickTargetResolution( { containerWidth, aspectRatio, pixelRatio,
  * specific player is the one currently fullscreen (or is embedded
  * directly in <body>, e.g. a standalone embedded video).
  *
- * @param {object}  args
+ * @param {Object}  args
  * @param {number}  args.configuredWidth   The video's configured width.
  * @param {boolean} args.fullwidth         Whether the player is set to fill its container.
  * @param {boolean} args.isFullscreen      Whether this player is the one currently fullscreen.
@@ -95,7 +103,14 @@ export function pickTargetResolution( { containerWidth, aspectRatio, pixelRatio,
  * @param {number}  args.viewportWidth     window.innerWidth.
  * @return {number} The width to use.
  */
-export function computeResizeWidth( { configuredWidth, fullwidth, isFullscreen, parentIsBody, parentOffsetWidth, viewportWidth } ) {
+export function computeResizeWidth( {
+	configuredWidth,
+	fullwidth,
+	isFullscreen,
+	parentIsBody,
+	parentOffsetWidth,
+	viewportWidth,
+} ) {
 	let setWidth = configuredWidth;
 	let parentWidth;
 
@@ -122,7 +137,9 @@ export function computeResizeWidth( { configuredWidth, fullwidth, isFullscreen, 
  * @param {number} playerId The player ID.
  */
 export function resizeVideo( playerId ) {
-	const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
+	const playerWrapper = document.querySelector(
+		`.videopack-player[data-id="${ playerId }"]`
+	);
 	if ( ! playerWrapper ) {
 		return;
 	}
@@ -131,10 +148,13 @@ export function resizeVideo( playerId ) {
 		return;
 	}
 
-	const aspectRatio = Math.round( ( videoVars.height / videoVars.width ) * 1000 ) / 1000;
+	const aspectRatio =
+		Math.round( ( videoVars.height / videoVars.width ) * 1000 ) / 1000;
 
-	const fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
-	const isThisPlayerFullscreen = !! fullscreenEl && playerWrapper.contains( fullscreenEl );
+	const fullscreenEl =
+		document.fullscreenElement || document.webkitFullscreenElement;
+	const isThisPlayerFullscreen =
+		!! fullscreenEl && playerWrapper.contains( fullscreenEl );
 
 	const setWidth = computeResizeWidth( {
 		configuredWidth: videoVars.width,
@@ -160,15 +180,21 @@ export function resizeVideo( playerId ) {
  * @param {number} aspectRatio  The aspect ratio of the video.
  */
 export function setAutomaticResolution( playerId, currentWidth, aspectRatio ) {
-	const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
-	const videoVars = playerWrapper && window.videopack.getPlayerVars( playerWrapper );
+	const playerWrapper = document.querySelector(
+		`.videopack-player[data-id="${ playerId }"]`
+	);
+	const videoVars =
+		playerWrapper && window.videopack.getPlayerVars( playerWrapper );
 	if ( ! videoVars ) {
 		return;
 	}
 
 	let player = null;
 
-	if ( videoVars.embed_method === 'Video.js' && typeof videojs !== 'undefined' ) {
+	if (
+		videoVars.embed_method === 'Video.js' &&
+		typeof videojs !== 'undefined'
+	) {
 		player = videojs.getPlayer( `videopack_video_${ playerId }` );
 		if ( player ) {
 			if ( player.manualResolutionSelected ) {
@@ -176,15 +202,23 @@ export function setAutomaticResolution( playerId, currentWidth, aspectRatio ) {
 			}
 
 			const options = player.options();
-			const rsOptions = options.plugins && options.plugins.resolutionSelector;
+			const rsOptions =
+				options.plugins && options.plugins.resolutionSelector;
 			const default_res = rsOptions ? rsOptions.default_res : undefined;
 
-			if ( default_res && ! player.dataset.videopackInitialResSet && typeof player.changeRes === 'function' ) {
+			if (
+				default_res &&
+				! player.dataset.videopackInitialResSet &&
+				typeof player.changeRes === 'function'
+			) {
 				player.dataset.videopackInitialResSet = 'true';
 				player.changeRes( default_res );
 			}
 		}
-	} else if ( videoVars.embed_method === 'WordPress Default' && typeof window.mejs !== 'undefined' ) {
+	} else if (
+		videoVars.embed_method === 'WordPress Default' &&
+		typeof window.mejs !== 'undefined'
+	) {
 		const mejsContainer = playerWrapper.querySelector( '.mejs-container' );
 		if ( mejsContainer && mejs.players[ mejsContainer.id ] ) {
 			player = mejs.players[ mejsContainer.id ];
@@ -214,8 +248,13 @@ export function setAutomaticResolution( playerId, currentWidth, aspectRatio ) {
 	// quality selection is resolution-only; codec compatibility is
 	// resolved automatically by each player's own native <source> fallback.
 	let availableSources = [];
-	if ( videoVars.source_groups && Object.keys( videoVars.source_groups ).length > 0 ) {
-		availableSources = Object.values( videoVars.source_groups ).flatMap( ( g ) => g.sources || [] );
+	if (
+		videoVars.source_groups &&
+		Object.keys( videoVars.source_groups ).length > 0
+	) {
+		availableSources = Object.values( videoVars.source_groups ).flatMap(
+			( g ) => g.sources || []
+		);
 	} else if ( videoVars.sources ) {
 		availableSources = videoVars.sources;
 	}
@@ -246,7 +285,10 @@ export function setAutomaticResolution( playerId, currentWidth, aspectRatio ) {
 		if ( player.getCurrentRes() !== targetRes ) {
 			player.changeRes( targetRes );
 		}
-	} else if ( videoVars.embed_method === 'WordPress Default' && player.changeRes ) {
+	} else if (
+		videoVars.embed_method === 'WordPress Default' &&
+		player.changeRes
+	) {
 		if ( ! player.getCurrentRes || player.getCurrentRes() !== targetRes ) {
 			player.changeRes( targetRes );
 		}
@@ -264,7 +306,8 @@ export function setAutomaticResolution( playerId, currentWidth, aspectRatio ) {
  */
 export function initFullscreenResizeListener() {
 	const handleFullscreenChange = () => {
-		const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+		const fsEl =
+			document.fullscreenElement || document.webkitFullscreenElement;
 		if ( fsEl ) {
 			const wrapper = fsEl.closest( '.videopack-player' );
 			if ( wrapper && wrapper.dataset.id ) {
@@ -275,10 +318,15 @@ export function initFullscreenResizeListener() {
 		// Exiting fullscreen: re-check every initialized player rather than
 		// tracking which one was fullscreen — resizeVideo() is cheap and
 		// no-ops when nothing actually changed.
-		document.querySelectorAll( '.videopack-player[data-id]' ).forEach( ( wrapper ) => {
-			resizeVideo( wrapper.dataset.id );
-		} );
+		document
+			.querySelectorAll( '.videopack-player[data-id]' )
+			.forEach( ( wrapper ) => {
+				resizeVideo( wrapper.dataset.id );
+			} );
 	};
 	document.addEventListener( 'fullscreenchange', handleFullscreenChange );
-	document.addEventListener( 'webkitfullscreenchange', handleFullscreenChange );
+	document.addEventListener(
+		'webkitfullscreenchange',
+		handleFullscreenChange
+	);
 }

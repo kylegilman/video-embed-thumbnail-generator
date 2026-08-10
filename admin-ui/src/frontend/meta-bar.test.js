@@ -7,31 +7,50 @@ import {
 } from './meta-bar';
 
 function mockRect( overrides ) {
-	return { top: 0, left: 0, right: 100, bottom: 100, width: 100, height: 100, ...overrides };
+	return {
+		top: 0,
+		left: 0,
+		right: 100,
+		bottom: 100,
+		width: 100,
+		height: 100,
+		...overrides,
+	};
 }
 
 describe( 'getDownloadPlayerRect', () => {
 	it( 'returns the bounding rect of the closest player container', () => {
-		document.body.innerHTML = '<div class="videopack-wrapper"><div class="inner"></div></div>';
+		document.body.innerHTML =
+			'<div class="videopack-wrapper"><div class="inner"></div></div>';
 		const inner = document.querySelector( '.inner' );
 		const rect = mockRect( { right: 640 } );
-		document.querySelector( '.videopack-wrapper' ).getBoundingClientRect = () => rect;
+		document.querySelector( '.videopack-wrapper' ).getBoundingClientRect =
+			() => rect;
 		expect( getDownloadPlayerRect( inner ) ).toBe( rect );
 	} );
 
 	it( 'returns null when no player container is found', () => {
 		document.body.innerHTML = '<div class="inner"></div>';
-		expect( getDownloadPlayerRect( document.querySelector( '.inner' ) ) ).toBeNull();
+		expect(
+			getDownloadPlayerRect( document.querySelector( '.inner' ) )
+		).toBeNull();
 	} );
 } );
 
 describe( 'alignDownloadDropdownMenu', () => {
 	it( 'adds align-right when the menu overflows the right edge', () => {
-		document.body.innerHTML = '<div class="menu"></div><div class="trigger"></div>';
+		document.body.innerHTML =
+			'<div class="menu"></div><div class="trigger"></div>';
 		const menu = document.querySelector( '.menu' );
 		const trigger = document.querySelector( '.trigger' );
-		menu.getBoundingClientRect = () => mockRect( { right: 700, left: 500, top: 10, bottom: 50 } );
-		const playerRect = mockRect( { left: 0, right: 640, top: 0, bottom: 400 } );
+		menu.getBoundingClientRect = () =>
+			mockRect( { right: 700, left: 500, top: 10, bottom: 50 } );
+		const playerRect = mockRect( {
+			left: 0,
+			right: 640,
+			top: 0,
+			bottom: 400,
+		} );
 
 		alignDownloadDropdownMenu( menu, trigger, playerRect );
 
@@ -40,11 +59,18 @@ describe( 'alignDownloadDropdownMenu', () => {
 	} );
 
 	it( 'adds opens-above when the menu overflows the bottom edge, unless that pushes it above the top', () => {
-		document.body.innerHTML = '<div class="menu"></div><div class="trigger"></div>';
+		document.body.innerHTML =
+			'<div class="menu"></div><div class="trigger"></div>';
 		const menu = document.querySelector( '.menu' );
 		const trigger = document.querySelector( '.trigger' );
-		menu.getBoundingClientRect = () => mockRect( { top: 350, bottom: 450, left: 10, right: 100 } );
-		const playerRect = mockRect( { left: 0, right: 640, top: 0, bottom: 400 } );
+		menu.getBoundingClientRect = () =>
+			mockRect( { top: 350, bottom: 450, left: 10, right: 100 } );
+		const playerRect = mockRect( {
+			left: 0,
+			right: 640,
+			top: 0,
+			bottom: 400,
+		} );
 
 		alignDownloadDropdownMenu( menu, trigger, playerRect );
 
@@ -52,17 +78,24 @@ describe( 'alignDownloadDropdownMenu', () => {
 	} );
 
 	it( 'does nothing when any argument is missing', () => {
-		expect( () => alignDownloadDropdownMenu( null, null, null ) ).not.toThrow();
+		expect( () =>
+			alignDownloadDropdownMenu( null, null, null )
+		).not.toThrow();
 	} );
 } );
 
 describe( 'alignDownloadSubmenu', () => {
 	it( 'opens right when there is more room on the right', () => {
-		document.body.innerHTML = '<div class="submenu"></div><div class="trigger"></div>';
+		document.body.innerHTML =
+			'<div class="submenu"></div><div class="trigger"></div>';
 		const submenu = document.querySelector( '.submenu' );
 		const trigger = document.querySelector( '.trigger' );
-		Object.defineProperty( submenu, 'offsetWidth', { value: 150, configurable: true } );
-		trigger.getBoundingClientRect = () => mockRect( { left: 50, right: 100 } );
+		Object.defineProperty( submenu, 'offsetWidth', {
+			value: 150,
+			configurable: true,
+		} );
+		trigger.getBoundingClientRect = () =>
+			mockRect( { left: 50, right: 100 } );
 		const playerRect = mockRect( { left: 0, right: 640 } );
 
 		alignDownloadSubmenu( submenu, trigger, playerRect );
@@ -72,11 +105,16 @@ describe( 'alignDownloadSubmenu', () => {
 	} );
 
 	it( 'flips to opens-left when the submenu is inside a title-meta area and there is more room on the left', () => {
-		document.body.innerHTML = '<div class="is-inside-title-meta"><div class="submenu"></div><div class="trigger"></div></div>';
+		document.body.innerHTML =
+			'<div class="is-inside-title-meta"><div class="submenu"></div><div class="trigger"></div></div>';
 		const submenu = document.querySelector( '.submenu' );
 		const trigger = document.querySelector( '.trigger' );
-		Object.defineProperty( submenu, 'offsetWidth', { value: 50, configurable: true } );
-		trigger.getBoundingClientRect = () => mockRect( { left: 500, right: 550 } );
+		Object.defineProperty( submenu, 'offsetWidth', {
+			value: 50,
+			configurable: true,
+		} );
+		trigger.getBoundingClientRect = () =>
+			mockRect( { left: 500, right: 550 } );
 		const playerRect = mockRect( { left: 0, right: 640 } );
 
 		alignDownloadSubmenu( submenu, trigger, playerRect );
@@ -169,6 +207,8 @@ describe( 'changeStartAt', () => {
 				</div>
 			</div>
 		`;
-		expect( () => changeStartAt( document.querySelector( '.wrapper' ) ) ).not.toThrow();
+		expect( () =>
+			changeStartAt( document.querySelector( '.wrapper' ) )
+		).not.toThrow();
 	} );
 } );

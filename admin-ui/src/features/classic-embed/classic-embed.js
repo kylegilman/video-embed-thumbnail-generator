@@ -7,15 +7,15 @@ import ClassicEmbed from './components/ClassicEmbed';
 import './classic-embed.scss';
 
 const initClassicEmbed = () => {
-	const container = document.getElementById('videopack-classic-embed-root');
-	if (container) {
+	const container = document.getElementById( 'videopack-classic-embed-root' );
+	if ( container ) {
 		const config = window.videopack_classic_editor_config || {};
-		const root = createRoot(container);
+		const root = createRoot( container );
 		root.render(
 			<ClassicEmbed
-				options={config.options || {}}
-				postId={config.postId}
-				activeTab={config.activeTab}
+				options={ config.options || {} }
+				postId={ config.postId }
+				activeTab={ config.activeTab }
 			/>
 		);
 	}
@@ -27,5 +27,5 @@ if (
 ) {
 	initClassicEmbed();
 } else {
-	document.addEventListener('DOMContentLoaded', initClassicEmbed);
+	document.addEventListener( 'DOMContentLoaded', initClassicEmbed );
 }

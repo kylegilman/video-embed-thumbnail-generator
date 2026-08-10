@@ -44,7 +44,7 @@ import {
 } from '../../utils/aspectRatioOptions';
 import './editor.scss';
 
-const ALLOWED_MEDIA_TYPES = ['video'];
+const ALLOWED_MEDIA_TYPES = [ 'video' ];
 
 // Blocks actually designed to render inside a Thumbnail overlay (each reads
 // context['videopack/isInsideThumbnail']). Restricting to this list prevents
@@ -72,14 +72,14 @@ const ALLOWED_BLOCKS = [
  * @param {boolean}  root0.isSelected    Whether this block is currently selected
  * @return {Element} Thumbnail edit component
  */
-export default function Edit({
+export default function Edit( {
 	attributes,
 	setAttributes,
 	context,
 	clientId,
 	isSelected,
-}) {
-	const vpContext = useVideopackContext(attributes, context);
+} ) {
+	const vpContext = useVideopackContext( attributes, context );
 	const attachmentId = vpContext.resolved.attachmentId;
 	const isDiscovering = vpContext.resolved.isDiscovering;
 	const { linkTo, id, aspect_ratio: aspectRatio } = attributes;
@@ -98,7 +98,7 @@ export default function Edit({
 	// that in-between moment; once the attribute holds a real non-preset
 	// ratio, getAspectRatioSelectValue() already reports "custom" on its
 	// own and this flag becomes redundant (harmless to leave true).
-	const [isPickingCustom, setIsPickingCustom] = useState(false);
+	const [ isPickingCustom, setIsPickingCustom ] = useState( false );
 
 	// The picker otherwise reflects the *resolved* ratio (so an unset
 	// attribute shows whatever it currently inherits, e.g. the global
@@ -107,29 +107,27 @@ export default function Edit({
 	// block's own attribute.
 	const aspectRatioSelectValue = isPickingCustom
 		? ASPECT_RATIO_CUSTOM_VALUE
-		: getAspectRatioSelectValue(resolvedAspectRatio);
+		: getAspectRatioSelectValue( resolvedAspectRatio );
 
-	const blockProps = useBlockProps({
+	const blockProps = useBlockProps( {
 		style: isNativeAspectRatio
 			? undefined
 			: { '--videopack-aspect-ratio': resolvedAspectRatio },
-	});
+	} );
 	const { latestVideoId, hasSelectedInnerBlock, hasInnerBlocks } = useSelect(
-		(select) => {
-			const {
-				hasSelectedInnerBlock: hasSelectedInner,
-				getBlockCount,
-			} = select('core/block-editor');
+		( select ) => {
+			const { hasSelectedInnerBlock: hasSelectedInner, getBlockCount } =
+				select( 'core/block-editor' );
 			const result = {
 				latestVideoId: null,
-				hasSelectedInnerBlock: hasSelectedInner(clientId, true),
-				hasInnerBlocks: getBlockCount(clientId) > 0,
+				hasSelectedInnerBlock: hasSelectedInner( clientId, true ),
+				hasInnerBlocks: getBlockCount( clientId ) > 0,
 			};
 			// Only discover a fallback video when we don't already have one —
 			// otherwise every grid item in a real gallery preview (each with
 			// its own known attachmentId) fires this query pointlessly.
 			if (
-				!vpContext.resolved.isPreview ||
+				! vpContext.resolved.isPreview ||
 				vpContext.resolved.attachmentId
 			) {
 				return result;
@@ -140,12 +138,12 @@ export default function Edit({
 				per_page: 1,
 				_fields: 'id',
 			};
-			const media = select('core').getEntityRecords(
+			const media = select( 'core' ).getEntityRecords(
 				'postType',
 				'attachment',
 				query
 			);
-			return { ...result, latestVideoId: media?.[0]?.id };
+			return { ...result, latestVideoId: media?.[ 0 ]?.id };
 		},
 		[
 			vpContext.resolved.isPreview,
@@ -168,13 +166,13 @@ export default function Edit({
 	// using the loop's own query, which is more confusing than helpful.
 	// Standalone is the only case where there's no other mechanism at all
 	// for choosing which video this block shows.
-	const isStandalone = !context['videopack/attachmentId'];
+	const isStandalone = ! context[ 'videopack/attachmentId' ];
 
 	const onSelectVideo = useCallback(
-		(media) => {
-			setAttributes({ id: media?.id });
+		( media ) => {
+			setAttributes( { id: media?.id } );
 		},
-		[setAttributes]
+		[ setAttributes ]
 	);
 
 	// Note: resolvedDuotoneClass is now computed internally by VideoThumbnailPreview
@@ -184,97 +182,104 @@ export default function Edit({
 		<>
 			<BlockControls>
 				<ToolbarGroup
-					label={__('Link To', 'video-embed-thumbnail-generator')}
+					label={ __( 'Link To', 'video-embed-thumbnail-generator' ) }
 				>
 					<ToolbarButton
-						icon={noneIcon}
-						label={__('No Link', 'video-embed-thumbnail-generator')}
-						onClick={() => setAttributes({ linkTo: 'none' })}
-						isPressed={linkTo === 'none'}
+						icon={ noneIcon }
+						label={ __(
+							'No Link',
+							'video-embed-thumbnail-generator'
+						) }
+						onClick={ () => setAttributes( { linkTo: 'none' } ) }
+						isPressed={ linkTo === 'none' }
 					/>
 					<ToolbarButton
-						icon={lightboxIcon}
-						label={__(
+						icon={ lightboxIcon }
+						label={ __(
 							'Open in Pop-up Player',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ linkTo: 'lightbox' })}
-						isPressed={linkTo === 'lightbox'}
+						) }
+						onClick={ () =>
+							setAttributes( { linkTo: 'lightbox' } )
+						}
+						isPressed={ linkTo === 'lightbox' }
 					/>
 					<ToolbarButton
-						icon={parentIcon}
-						label={__(
+						icon={ parentIcon }
+						label={ __(
 							'Link to Parent Post',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ linkTo: 'parent' })}
-						isPressed={linkTo === 'parent'}
+						) }
+						onClick={ () => setAttributes( { linkTo: 'parent' } ) }
+						isPressed={ linkTo === 'parent' }
 					/>
 					<ToolbarButton
-						icon={videoIcon}
-						label={__(
+						icon={ videoIcon }
+						label={ __(
 							'Link to Video File',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ linkTo: 'file' })}
-						isPressed={linkTo === 'file'}
+						) }
+						onClick={ () => setAttributes( { linkTo: 'file' } ) }
+						isPressed={ linkTo === 'file' }
 					/>
 					<ToolbarButton
-						icon={postIcon}
-						label={__(
+						icon={ postIcon }
+						label={ __(
 							'Link to Attachment Page',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ linkTo: 'post' })}
-						isPressed={linkTo === 'post'}
+						) }
+						onClick={ () => setAttributes( { linkTo: 'post' } ) }
+						isPressed={ linkTo === 'post' }
 					/>
 				</ToolbarGroup>
-				{isStandalone && effectiveAttachmentId && (
+				{ isStandalone && effectiveAttachmentId && (
 					<MediaReplaceFlow
-						mediaId={id || effectiveAttachmentId}
-						allowedTypes={ALLOWED_MEDIA_TYPES}
+						mediaId={ id || effectiveAttachmentId }
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
 						accept="video/*"
-						onSelect={onSelectVideo}
+						onSelect={ onSelectVideo }
 					/>
-				)}
+				) }
 			</BlockControls>
 			<InspectorControls>
 				<PanelBody
-					title={__('Layout', 'video-embed-thumbnail-generator')}
-					initialOpen={true}
+					title={ __( 'Layout', 'video-embed-thumbnail-generator' ) }
+					initialOpen={ true }
 				>
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__(
+						label={ __(
 							'Aspect Ratio',
 							'video-embed-thumbnail-generator'
-						)}
-						value={aspectRatioSelectValue}
-						onChange={(value) => {
-							if (ASPECT_RATIO_CUSTOM_VALUE === value) {
-								setIsPickingCustom(true);
+						) }
+						value={ aspectRatioSelectValue }
+						onChange={ ( value ) => {
+							if ( ASPECT_RATIO_CUSTOM_VALUE === value ) {
+								setIsPickingCustom( true );
 								// Seed the custom field with whatever ratio is
 								// currently in effect (already a custom value
 								// if that's why "Custom…" was reachable at
 								// all otherwise the resolved preset/default)
 								// so switching to Custom doesn't blank it out.
-								if (!isCustomRatioValue(resolvedAspectRatio)) {
-									setAttributes({
+								if (
+									! isCustomRatioValue( resolvedAspectRatio )
+								) {
+									setAttributes( {
 										aspect_ratio: ASPECT_RATIO_DEFAULT,
-									});
+									} );
 								}
 								return;
 							}
-							setIsPickingCustom(false);
-							setAttributes({ aspect_ratio: value });
-						}}
-						options={getAspectRatioSelectOptions()}
+							setIsPickingCustom( false );
+							setAttributes( { aspect_ratio: value } );
+						} }
+						options={ getAspectRatioSelectOptions() }
 					/>
-					{ASPECT_RATIO_CUSTOM_VALUE === aspectRatioSelectValue &&
-						(() => {
+					{ ASPECT_RATIO_CUSTOM_VALUE === aspectRatioSelectValue &&
+						( () => {
 							const { width, height } = parseRatioValue(
-								isCustomRatioValue(aspectRatio)
+								isCustomRatioValue( aspectRatio )
 									? aspectRatio
 									: resolvedAspectRatio
 							);
@@ -285,20 +290,20 @@ export default function Edit({
 											__nextHasNoMarginBottom
 											__next40pxDefaultSize
 											type="number"
-											min={1}
-											label={__(
+											min={ 1 }
+											label={ __(
 												'Width',
 												'video-embed-thumbnail-generator'
-											)}
-											value={width}
-											onChange={(value) =>
-												setAttributes({
+											) }
+											value={ width }
+											onChange={ ( value ) =>
+												setAttributes( {
 													aspect_ratio:
 														formatRatioValue(
 															value,
 															height
 														),
-												})
+												} )
 											}
 										/>
 									</FlexItem>
@@ -307,46 +312,46 @@ export default function Edit({
 											__nextHasNoMarginBottom
 											__next40pxDefaultSize
 											type="number"
-											min={1}
-											label={__(
+											min={ 1 }
+											label={ __(
 												'Height',
 												'video-embed-thumbnail-generator'
-											)}
-											value={height}
-											onChange={(value) =>
-												setAttributes({
+											) }
+											value={ height }
+											onChange={ ( value ) =>
+												setAttributes( {
 													aspect_ratio:
 														formatRatioValue(
 															width,
 															value
 														),
-												})
+												} )
 											}
 										/>
 									</FlexItem>
 								</Flex>
 							);
-						})()}
+						} )() }
 				</PanelBody>
 			</InspectorControls>
 			<div
-				{...blockProps}
+				{ ...blockProps }
 				className={
-					(blockProps.className || '') +
+					( blockProps.className || '' ) +
 					' videopack-thumbnail-block' +
-					(isNativeAspectRatio ? ' has-native-aspect-ratio' : '')
+					( isNativeAspectRatio ? ' has-native-aspect-ratio' : '' )
 				}
 			>
-				{(() => {
-					if (isDiscovering && !attachmentId) {
+				{ ( () => {
+					if ( isDiscovering && ! attachmentId ) {
 						return (
 							<div className="videopack-thumbnail-discovery-loading">
 								<Spinner />
 								<p>
-									{__(
+									{ __(
 										'Searching for attached video…',
 										'video-embed-thumbnail-generator'
-									)}
+									) }
 								</p>
 							</div>
 						);
@@ -366,15 +371,15 @@ export default function Edit({
 					// common case for a fresh standalone block before a
 					// source is picked).
 					if (
-						!attachmentId &&
-						!vpContext.resolved.isPreview &&
-						!hasInnerBlocks
+						! attachmentId &&
+						! vpContext.resolved.isPreview &&
+						! hasInnerBlocks
 					) {
-						if (isStandalone) {
+						if ( isStandalone ) {
 							return (
 								<MediaPlaceholder
-									icon={placeholderIcon}
-									labels={{
+									icon={ placeholderIcon }
+									labels={ {
 										title: __(
 											'Video Thumbnail',
 											'video-embed-thumbnail-generator'
@@ -383,60 +388,60 @@ export default function Edit({
 											'Select the video this thumbnail should represent.',
 											'video-embed-thumbnail-generator'
 										),
-									}}
-									onSelect={onSelectVideo}
+									} }
+									onSelect={ onSelectVideo }
 									accept="video/*"
-									allowedTypes={ALLOWED_MEDIA_TYPES}
+									allowedTypes={ ALLOWED_MEDIA_TYPES }
 								/>
 							);
 						}
 						return (
 							<Placeholder
-								icon={placeholderIcon}
-								label={__(
+								icon={ placeholderIcon }
+								label={ __(
 									'Video Thumbnail',
 									'video-embed-thumbnail-generator'
-								)}
-								instructions={__(
+								) }
+								instructions={ __(
 									'This block displays a video thumbnail. Place it inside a Videopack Collection or a post with attached videos.',
 									'video-embed-thumbnail-generator'
-								)}
+								) }
 							/>
 						);
 					}
 
 					return (
 						<VideoThumbnailPreview
-							postId={effectiveAttachmentId}
+							postId={ effectiveAttachmentId }
 							video={
 								vpContext.resolved.isPreview &&
-								!effectiveAttachmentId
+								! effectiveAttachmentId
 									? {
 											poster_url:
 												videopack_config.url +
 												'/src/images/Adobestock_469037984_thumb1.jpg',
-										}
+									  }
 									: {}
 							}
-							linkTo={linkTo}
-							context={context}
-							attributes={attributes}
+							linkTo={ linkTo }
+							context={ context }
+							attributes={ attributes }
 							className="videopack-thumbnail-preview"
-							resolvedDuotoneClass={undefined}
-							clientId={clientId}
+							resolvedDuotoneClass={ undefined }
+							clientId={ clientId }
 						>
 							<BlockContextProvider
-								value={{
+								value={ {
 									...context,
 									'videopack/isInsideThumbnail': true,
 									'videopack/attachmentId': attachmentId,
 									'videopack/downloadlink': false,
 									'videopack/embedcode': false,
-								}}
+								} }
 							>
 								<InnerBlocks
-									templateLock={false}
-									allowedBlocks={ALLOWED_BLOCKS}
+									templateLock={ false }
+									allowedBlocks={ ALLOWED_BLOCKS }
 									renderAppender={
 										showThumbnailAppender
 											? InnerBlocks.ButtonBlockAppender
@@ -446,7 +451,7 @@ export default function Edit({
 							</BlockContextProvider>
 						</VideoThumbnailPreview>
 					);
-				})()}
+				} )() }
 			</div>
 		</>
 	);

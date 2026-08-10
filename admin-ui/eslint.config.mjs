@@ -10,6 +10,10 @@ export default [
 		],
 	},
 	...wordpress.configs.recommended,
+	...wordpress.configs[ 'test-unit' ].map( ( config ) => ( {
+		...config,
+		files: [ '**/*.test.js' ],
+	} ) ),
 	{
 		rules: {
 			camelcase: 'off',

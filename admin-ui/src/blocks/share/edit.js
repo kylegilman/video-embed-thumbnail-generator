@@ -39,7 +39,7 @@ import TitleColorPanel from '../../components/TitleColorPanel/TitleColorPanel';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import useShowBackground from '../../hooks/useShowBackground';
 
-const CLASS_KEYS = ['title_color', 'title_background_color'];
+const CLASS_KEYS = [ 'title_color', 'title_background_color' ];
 
 /**
  * Edit component for the Videopack Video Share block.
@@ -51,15 +51,15 @@ const CLASS_KEYS = ['title_color', 'title_background_color'];
  * @param {boolean}  root0.isSelected    Whether the block is selected.
  * @return {Element}                     The rendered component.
  */
-export default function Edit({
+export default function Edit( {
 	attributes,
 	setAttributes,
 	context,
 	isSelected,
-}) {
-	const vpContext = useVideopackContext(attributes, context, {
+} ) {
+	const vpContext = useVideopackContext( attributes, context, {
 		classKeys: CLASS_KEYS,
-	});
+	} );
 
 	const {
 		iconType = 'share',
@@ -74,11 +74,12 @@ export default function Edit({
 		shareEmail = true,
 	} = attributes;
 
-	const isInsideThumbnail = !!context['videopack/isInsideThumbnail'];
-	const isInsidePlayerOverlay = !!context['videopack/isInsidePlayerOverlay'];
-	const isInsideTitleMeta = !!context['videopack/isInsideTitleMeta'];
+	const isInsideThumbnail = !! context[ 'videopack/isInsideThumbnail' ];
+	const isInsidePlayerOverlay =
+		!! context[ 'videopack/isInsidePlayerOverlay' ];
+	const isInsideTitleMeta = !! context[ 'videopack/isInsideTitleMeta' ];
 	const isOverlay =
-		isInsideThumbnail || (isInsidePlayerOverlay && !isInsideTitleMeta);
+		isInsideThumbnail || ( isInsidePlayerOverlay && ! isInsideTitleMeta );
 	const shouldPortal =
 		isInsideThumbnail || isInsidePlayerOverlay || isInsideTitleMeta;
 	const finalShowBackground = useShowBackground(
@@ -87,36 +88,38 @@ export default function Edit({
 		isOverlay
 	);
 
-	const defaultAlign = useMemo(() => {
-		if (isInsideThumbnail) {
+	const defaultAlign = useMemo( () => {
+		if ( isInsideThumbnail ) {
 			return 'center';
 		}
 		return 'left';
-	}, [isInsideThumbnail]);
+	}, [ isInsideThumbnail ] );
 
 	const finalTextAlign =
-		textAlign || context['videopack/textAlign'] || defaultAlign;
+		textAlign || context[ 'videopack/textAlign' ] || defaultAlign;
 	const position =
-		attributes.position || context['videopack/position'] || 'top';
+		attributes.position || context[ 'videopack/position' ] || 'top';
 
-	const [isOpen, setIsOpen] = useState(false);
+	const [ isOpen, setIsOpen ] = useState( false );
 
-	const blockProps = useBlockProps({
-		className: `videopack-share-block videopack-share-wrapper ${vpContext.classes} ${
-			isOverlay ? `is-overlay position-${position}` : ''
-		} ${isInsideThumbnail ? 'is-inside-thumbnail' : ''} ${
-			isInsidePlayerOverlay ? 'is-inside-player' : ''
-		} ${isInsideTitleMeta ? 'is-inside-title-meta' : ''} ${
-			isOverlay && !finalShowBackground ? 'has-no-background' : ''
-		} ${isOpen ? 'is-open' : ''} has-text-align-${finalTextAlign}`,
+	const blockProps = useBlockProps( {
+		className: `videopack-share-block videopack-share-wrapper ${
+			vpContext.classes
+		} ${ isOverlay ? `is-overlay position-${ position }` : '' } ${
+			isInsideThumbnail ? 'is-inside-thumbnail' : ''
+		} ${ isInsidePlayerOverlay ? 'is-inside-player' : '' } ${
+			isInsideTitleMeta ? 'is-inside-title-meta' : ''
+		} ${ isOverlay && ! finalShowBackground ? 'has-no-background' : '' } ${
+			isOpen ? 'is-open' : ''
+		} has-text-align-${ finalTextAlign }`,
 		style: {
 			...vpContext.style,
 			display: 'inline-flex',
 			alignItems: 'center',
 		},
-	});
-	const menuContainerRef = useRef(null);
-	const [portalTarget, setPortalTarget] = useState(null);
+	} );
+	const menuContainerRef = useRef( null );
+	const [ portalTarget, setPortalTarget ] = useState( null );
 	// Gutenberg selects a block on mousedown, which fires (and re-renders
 	// with isSelected=true) before our button's click handler ever runs —
 	// checking the isSelected *prop* inside onClick always sees the
@@ -125,10 +128,10 @@ export default function Edit({
 	// Snapshotting it here on mousedown (which fires before Gutenberg's own
 	// ancestor mousedown handler, since ours is the deeper/target element)
 	// captures the true pre-click state instead.
-	const wasSelectedOnMouseDownRef = useRef(isSelected);
+	const wasSelectedOnMouseDownRef = useRef( isSelected );
 
-	useEffect(() => {
-		if (shouldPortal && menuContainerRef.current) {
+	useEffect( () => {
+		if ( shouldPortal && menuContainerRef.current ) {
 			const target =
 				menuContainerRef.current.closest(
 					'.wp-block-videopack-player'
@@ -136,7 +139,7 @@ export default function Edit({
 				menuContainerRef.current.closest(
 					'.wp-block-videopack-player-container'
 				) ||
-				menuContainerRef.current.closest('.videopack-player') ||
+				menuContainerRef.current.closest( '.videopack-player' ) ||
 				menuContainerRef.current.closest(
 					'.videopack-player-relative-wrapper'
 				) ||
@@ -150,91 +153,91 @@ export default function Edit({
 					'.videopack-collection-item'
 				) ||
 				menuContainerRef.current.parentElement;
-			setPortalTarget(target);
+			setPortalTarget( target );
 		}
-	}, [shouldPortal, isOpen]);
+	}, [ shouldPortal, isOpen ] );
 
-	const combinedRef = (node) => {
+	const combinedRef = ( node ) => {
 		menuContainerRef.current = node;
-		if (blockProps.ref) {
-			if (typeof blockProps.ref === 'function') {
-				blockProps.ref(node);
-			} else if (typeof blockProps.ref === 'object') {
+		if ( blockProps.ref ) {
+			if ( typeof blockProps.ref === 'function' ) {
+				blockProps.ref( node );
+			} else if ( typeof blockProps.ref === 'object' ) {
 				blockProps.ref.current = node;
 			}
 		}
 	};
 
-	useEffect(() => {
-		if (!isOpen) {
+	useEffect( () => {
+		if ( ! isOpen ) {
 			return undefined;
 		}
-		const handleOutside = (event) => {
+		const handleOutside = ( event ) => {
 			if (
 				menuContainerRef.current &&
-				!menuContainerRef.current.contains(event.target)
+				! menuContainerRef.current.contains( event.target )
 			) {
-				setIsOpen(false);
+				setIsOpen( false );
 			}
 		};
-		document.addEventListener('mousedown', handleOutside);
-		return () => document.removeEventListener('mousedown', handleOutside);
-	}, [isOpen]);
+		document.addEventListener( 'mousedown', handleOutside );
+		return () => document.removeEventListener( 'mousedown', handleOutside );
+	}, [ isOpen ] );
 
-	useEffect(() => {
-		if (!isSelected) {
-			setIsOpen(false);
+	useEffect( () => {
+		if ( ! isSelected ) {
+			setIsOpen( false );
 		}
-	}, [isSelected]);
+	}, [ isSelected ] );
 
 	const getActiveShareIcon = () => {
-		if (iconType === 'external') {
+		if ( iconType === 'external' ) {
 			return shareAlt2;
 		}
-		if (iconType === 'iosShare') {
+		if ( iconType === 'iosShare' ) {
 			return shareAlt1;
 		}
-		if (iconType === 'curveShare') {
+		if ( iconType === 'curveShare' ) {
 			return shareAlt3;
 		}
 		return shareIcon;
 	};
 
 	const renderIcon = () => {
-		if (iconType === 'share') {
+		if ( iconType === 'share' ) {
 			return (
 				<Icon
-					icon={isOpen ? closeIcon : shareIcon}
+					icon={ isOpen ? closeIcon : shareIcon }
 					className="videopack-icon-svg"
 				/>
 			);
 		}
-		if (iconType === 'external') {
-			return <Icon icon={shareAlt2} className="videopack-icon-svg" />;
+		if ( iconType === 'external' ) {
+			return <Icon icon={ shareAlt2 } className="videopack-icon-svg" />;
 		}
-		if (iconType === 'iosShare') {
-			return <Icon icon={shareAlt1} className="videopack-icon-svg" />;
+		if ( iconType === 'iosShare' ) {
+			return <Icon icon={ shareAlt1 } className="videopack-icon-svg" />;
 		}
-		if (iconType === 'curveShare') {
-			return <Icon icon={shareAlt3} className="videopack-icon-svg" />;
+		if ( iconType === 'curveShare' ) {
+			return <Icon icon={ shareAlt3 } className="videopack-icon-svg" />;
 		}
 		return null;
 	};
 
 	const renderTriggerContent = () => (
 		<>
-			{iconType !== 'none' && renderIcon()}
-			{(showText || iconType === 'none') && (
+			{ iconType !== 'none' && renderIcon() }
+			{ ( showText || iconType === 'none' ) && (
 				<span
 					className="videopack-share-text-label"
-					style={{ marginLeft: iconType !== 'none' ? '4px' : '0' }}
+					style={ { marginLeft: iconType !== 'none' ? '4px' : '0' } }
 				>
-					{__('Share', 'video-embed-thumbnail-generator')}
+					{ __( 'Share', 'video-embed-thumbnail-generator' ) }
 				</span>
-			)}
-			{!isOverlay && !isInsideTitleMeta && (
+			) }
+			{ ! isOverlay && ! isInsideTitleMeta && (
 				<span className="videopack-caret">▼</span>
-			)}
+			) }
 		</>
 	);
 
@@ -242,122 +245,126 @@ export default function Edit({
 
 	const shareContainerContent = (
 		<div
-			className={`videopack-share-container${isOpen ? ' is-visible' : ''}`}
-			onClick={(e) => e.stopPropagation()}
-			onKeyDown={(e) => e.stopPropagation()}
+			className={ `videopack-share-container${
+				isOpen ? ' is-visible' : ''
+			}` }
+			onClick={ ( e ) => e.stopPropagation() }
+			onKeyDown={ ( e ) => e.stopPropagation() }
 			role="presentation"
 		>
-			{(shareCopyLink ||
+			{ ( shareCopyLink ||
 				shareNativeShare ||
 				shareBluesky ||
 				shareThreads ||
 				shareFacebook ||
 				shareReddit ||
-				shareEmail) && (
+				shareEmail ) && (
 				<div className="videopack-share-services-grid">
-					{shareCopyLink && (
+					{ shareCopyLink && (
 						<button
 							type="button"
 							className="videopack-share-btn videopack-btn-copylink"
-							title={__(
+							title={ __(
 								'Copy Link',
 								'video-embed-thumbnail-generator'
-							)}
-							onClick={(e) => e.preventDefault()}
+							) }
+							onClick={ ( e ) => e.preventDefault() }
 						>
-							<Icon icon={copyLink} />
+							<Icon icon={ copyLink } />
 						</button>
-					)}
-					{shareNativeShare && (
+					) }
+					{ shareNativeShare && (
 						<button
 							type="button"
 							className="videopack-share-btn videopack-btn-nativeshare"
-							title={__(
+							title={ __(
 								'Share via Device',
 								'video-embed-thumbnail-generator'
-							)}
-							onClick={(e) => e.preventDefault()}
+							) }
+							onClick={ ( e ) => e.preventDefault() }
 						>
-							<Icon icon={getActiveShareIcon()} />
+							<Icon icon={ getActiveShareIcon() } />
 						</button>
-					)}
-					{shareBluesky && (
+					) }
+					{ shareBluesky && (
 						<button
 							type="button"
 							className="videopack-share-btn videopack-btn-bluesky"
-							title={__(
+							title={ __(
 								'Share on Bluesky',
 								'video-embed-thumbnail-generator'
-							)}
-							onClick={(e) => e.preventDefault()}
+							) }
+							onClick={ ( e ) => e.preventDefault() }
 						>
-							<Icon icon={bluesky} />
+							<Icon icon={ bluesky } />
 						</button>
-					)}
-					{shareThreads && (
+					) }
+					{ shareThreads && (
 						<button
 							type="button"
 							className="videopack-share-btn videopack-btn-threads"
-							title={__(
+							title={ __(
 								'Share on Threads',
 								'video-embed-thumbnail-generator'
-							)}
-							onClick={(e) => e.preventDefault()}
+							) }
+							onClick={ ( e ) => e.preventDefault() }
 						>
-							<Icon icon={threads} />
+							<Icon icon={ threads } />
 						</button>
-					)}
-					{shareFacebook && (
+					) }
+					{ shareFacebook && (
 						<button
 							type="button"
 							className="videopack-share-btn videopack-btn-facebook"
-							title={__(
+							title={ __(
 								'Share on Facebook',
 								'video-embed-thumbnail-generator'
-							)}
-							onClick={(e) => e.preventDefault()}
+							) }
+							onClick={ ( e ) => e.preventDefault() }
 						>
-							<Icon icon={facebook} />
+							<Icon icon={ facebook } />
 						</button>
-					)}
-					{shareReddit && (
+					) }
+					{ shareReddit && (
 						<button
 							type="button"
 							className="videopack-share-btn videopack-btn-reddit"
-							title={__(
+							title={ __(
 								'Share on Reddit',
 								'video-embed-thumbnail-generator'
-							)}
-							onClick={(e) => e.preventDefault()}
+							) }
+							onClick={ ( e ) => e.preventDefault() }
 						>
-							<Icon icon={reddit} />
+							<Icon icon={ reddit } />
 						</button>
-					)}
-					{shareEmail && (
+					) }
+					{ shareEmail && (
 						<button
 							type="button"
 							className="videopack-share-btn videopack-btn-email"
-							title={__(
+							title={ __(
 								'Share via Email',
 								'video-embed-thumbnail-generator'
-							)}
-							onClick={(e) => e.preventDefault()}
+							) }
+							onClick={ ( e ) => e.preventDefault() }
 						>
-							<Icon icon={email} />
+							<Icon icon={ email } />
 						</button>
-					)}
+					) }
 				</div>
-			)}
+			) }
 			<span className="videopack-embedcode-container">
 				<span className="videopack-icons embed">
-					<Icon icon={embedIcon} className="videopack-icon-svg" />
+					<Icon icon={ embedIcon } className="videopack-icon-svg" />
 				</span>
-				<span>{__('Embed:', 'video-embed-thumbnail-generator')}</span>
+				<span>
+					{ __( 'Embed:', 'video-embed-thumbnail-generator' ) }
+				</span>
 				<span>
 					<input
 						className="videopack-embed-code"
 						type="text"
-						value={`<iframe src="https://example.com/embed" width="960" height="540" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>`}
+						value={ `<iframe src="https://example.com/embed" width="960" height="540" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>` }
 						readOnly
 					/>
 				</span>
@@ -369,7 +376,7 @@ export default function Edit({
 					id="videopack-start-at-enable-editor"
 				/>
 				<label htmlFor="videopack-start-at-enable-editor">
-					{__('Start at:', 'video-embed-thumbnail-generator')}
+					{ __( 'Start at:', 'video-embed-thumbnail-generator' ) }
 				</label>
 				<input
 					type="text"
@@ -383,185 +390,219 @@ export default function Edit({
 	return (
 		<>
 			<BlockControls>
-				{isOverlay && (
+				{ isOverlay && (
 					<BlockVerticalAlignmentControl
-						value={position}
-						onChange={(nextPosition) => {
-							setAttributes({
+						value={ position }
+						onChange={ ( nextPosition ) => {
+							setAttributes( {
 								position: nextPosition || undefined,
-							});
-						}}
+							} );
+						} }
 					/>
-				)}
+				) }
 				<AlignmentControl
-					value={finalTextAlign}
-					onChange={(nextAlign) => {
-						setAttributes({ textAlign: nextAlign });
-					}}
+					value={ finalTextAlign }
+					onChange={ ( nextAlign ) => {
+						setAttributes( { textAlign: nextAlign } );
+					} }
 				/>
 				<ToolbarGroup
-					label={__('Icon Style', 'video-embed-thumbnail-generator')}
+					label={ __(
+						'Icon Style',
+						'video-embed-thumbnail-generator'
+					) }
 				>
 					<ToolbarButton
-						icon={noneIcon}
-						label={__('No Icon', 'video-embed-thumbnail-generator')}
-						onClick={() => setAttributes({ iconType: 'none' })}
-						isPressed={iconType === 'none'}
+						icon={ noneIcon }
+						label={ __(
+							'No Icon',
+							'video-embed-thumbnail-generator'
+						) }
+						onClick={ () => setAttributes( { iconType: 'none' } ) }
+						isPressed={ iconType === 'none' }
 					/>
 					<ToolbarButton
-						icon={shareIcon}
-						label={__(
+						icon={ shareIcon }
+						label={ __(
 							'Standard Share Icon',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ iconType: 'share' })}
-						isPressed={iconType === 'share'}
+						) }
+						onClick={ () => setAttributes( { iconType: 'share' } ) }
+						isPressed={ iconType === 'share' }
 					/>
 					<ToolbarButton
-						icon={shareAlt2}
-						label={__(
+						icon={ shareAlt2 }
+						label={ __(
 							'External Link Icon',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ iconType: 'external' })}
-						isPressed={iconType === 'external'}
+						) }
+						onClick={ () =>
+							setAttributes( { iconType: 'external' } )
+						}
+						isPressed={ iconType === 'external' }
 					/>
 					<ToolbarButton
-						icon={shareAlt1}
-						label={__(
+						icon={ shareAlt1 }
+						label={ __(
 							'iOS Style Share Icon',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ iconType: 'iosShare' })}
-						isPressed={iconType === 'iosShare'}
+						) }
+						onClick={ () =>
+							setAttributes( { iconType: 'iosShare' } )
+						}
+						isPressed={ iconType === 'iosShare' }
 					/>
 					<ToolbarButton
-						icon={shareAlt3}
-						label={__(
+						icon={ shareAlt3 }
+						label={ __(
 							'Curved Arrow Share Icon',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() =>
-							setAttributes({ iconType: 'curveShare' })
+						) }
+						onClick={ () =>
+							setAttributes( { iconType: 'curveShare' } )
 						}
-						isPressed={iconType === 'curveShare'}
+						isPressed={ iconType === 'curveShare' }
 					/>
 				</ToolbarGroup>
 				<ToolbarGroup
-					label={__(
+					label={ __(
 						'Display Options',
 						'video-embed-thumbnail-generator'
-					)}
+					) }
 				>
 					<ToolbarButton
-						icon={mediaAndText}
-						label={__(
+						icon={ mediaAndText }
+						label={ __(
 							'Toggle Text',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => setAttributes({ showText: !showText })}
-						isPressed={showText}
+						) }
+						onClick={ () =>
+							setAttributes( { showText: ! showText } )
+						}
+						isPressed={ showText }
 					/>
 				</ToolbarGroup>
-				{isOverlay && (
+				{ isOverlay && (
 					<ToolbarGroup>
 						<BackgroundToggleButton
-							showBackground={finalShowBackground}
-							onChange={(value) =>
-								setAttributes({ showBackground: value })
+							showBackground={ finalShowBackground }
+							onChange={ ( value ) =>
+								setAttributes( { showBackground: value } )
 							}
 						/>
 					</ToolbarGroup>
-				)}
+				) }
 			</BlockControls>
 			<InspectorControls>
 				<TitleColorPanel
-					attributes={attributes}
-					setAttributes={setAttributes}
-					resolved={vpContext.resolved}
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+					resolved={ vpContext.resolved }
 				/>
 				<PanelBody
-					title={__(
+					title={ __(
 						'Share Services',
 						'video-embed-thumbnail-generator'
-					)}
-					initialOpen={true}
+					) }
+					initialOpen={ true }
 				>
 					<ToggleControl
-						label={__(
+						label={ __(
 							'Copy Link',
 							'video-embed-thumbnail-generator'
-						)}
-						checked={shareCopyLink}
-						onChange={(val) =>
-							setAttributes({ shareCopyLink: val })
+						) }
+						checked={ shareCopyLink }
+						onChange={ ( val ) =>
+							setAttributes( { shareCopyLink: val } )
 						}
 					/>
 					<ToggleControl
-						label={__(
+						label={ __(
 							'Native Share',
 							'video-embed-thumbnail-generator'
-						)}
-						checked={shareNativeShare}
-						onChange={(val) =>
-							setAttributes({ shareNativeShare: val })
+						) }
+						checked={ shareNativeShare }
+						onChange={ ( val ) =>
+							setAttributes( { shareNativeShare: val } )
 						}
 					/>
 					<ToggleControl
-						label={__('Bluesky', 'video-embed-thumbnail-generator')}
-						checked={shareBluesky}
-						onChange={(val) => setAttributes({ shareBluesky: val })}
+						label={ __(
+							'Bluesky',
+							'video-embed-thumbnail-generator'
+						) }
+						checked={ shareBluesky }
+						onChange={ ( val ) =>
+							setAttributes( { shareBluesky: val } )
+						}
 					/>
 					<ToggleControl
-						label={__('Threads', 'video-embed-thumbnail-generator')}
-						checked={shareThreads}
-						onChange={(val) => setAttributes({ shareThreads: val })}
+						label={ __(
+							'Threads',
+							'video-embed-thumbnail-generator'
+						) }
+						checked={ shareThreads }
+						onChange={ ( val ) =>
+							setAttributes( { shareThreads: val } )
+						}
 					/>
 					<ToggleControl
-						label={__(
+						label={ __(
 							'Facebook',
 							'video-embed-thumbnail-generator'
-						)}
-						checked={shareFacebook}
-						onChange={(val) =>
-							setAttributes({ shareFacebook: val })
+						) }
+						checked={ shareFacebook }
+						onChange={ ( val ) =>
+							setAttributes( { shareFacebook: val } )
 						}
 					/>
 					<ToggleControl
-						label={__('Reddit', 'video-embed-thumbnail-generator')}
-						checked={shareReddit}
-						onChange={(val) => setAttributes({ shareReddit: val })}
+						label={ __(
+							'Reddit',
+							'video-embed-thumbnail-generator'
+						) }
+						checked={ shareReddit }
+						onChange={ ( val ) =>
+							setAttributes( { shareReddit: val } )
+						}
 					/>
 					<ToggleControl
-						label={__('Email', 'video-embed-thumbnail-generator')}
-						checked={shareEmail}
-						onChange={(val) => setAttributes({ shareEmail: val })}
+						label={ __(
+							'Email',
+							'video-embed-thumbnail-generator'
+						) }
+						checked={ shareEmail }
+						onChange={ ( val ) =>
+							setAttributes( { shareEmail: val } )
+						}
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<div {...blockProps} ref={combinedRef}>
+			<div { ...blockProps } ref={ combinedRef }>
 				<button
 					type="button"
-					className={`${linkClassName}${isOpen ? ' is-active' : ''}`}
-					onMouseDown={() => {
+					className={ `${ linkClassName }${
+						isOpen ? ' is-active' : ''
+					}` }
+					onMouseDown={ () => {
 						wasSelectedOnMouseDownRef.current = isSelected;
-					}}
-					onClick={(e) => {
+					} }
+					onClick={ ( e ) => {
 						e.preventDefault();
 						// First click on an unselected block should only
 						// select it (Gutenberg's own click handling does
 						// that already) — not also open the share menu.
-						if (!wasSelectedOnMouseDownRef.current) {
+						if ( ! wasSelectedOnMouseDownRef.current ) {
 							return;
 						}
-						setIsOpen(!isOpen);
-					}}
+						setIsOpen( ! isOpen );
+					} }
 				>
-					{renderTriggerContent()}
+					{ renderTriggerContent() }
 				</button>
-				{shouldPortal && portalTarget
-					? createPortal(shareContainerContent, portalTarget)
-					: shareContainerContent}
+				{ shouldPortal && portalTarget
+					? createPortal( shareContainerContent, portalTarget )
+					: shareContainerContent }
 			</div>
 		</>
 	);

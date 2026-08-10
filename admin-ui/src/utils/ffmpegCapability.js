@@ -9,7 +9,7 @@ import { applyFilters } from '@wordpress/hooks';
  * @param {string} value ffmpeg_exists enum value.
  * @return {boolean} True if ffmpeg is available.
  */
-export function isFfmpegAvailable(value) {
+export function isFfmpegAvailable( value ) {
 	return value === 'available';
 }
 
@@ -24,16 +24,19 @@ export function isFfmpegAvailable(value) {
  * @param {boolean} isTranscodingServiceReady Value of videopack_config.isTranscodingServiceReady.
  * @return {boolean} True if some transcoding-equivalent capability is ready.
  */
-export function getEffectiveFfmpegExists(settings, isTranscodingServiceReady) {
+export function getEffectiveFfmpegExists(
+	settings,
+	isTranscodingServiceReady
+) {
 	const { ffmpeg_exists, active_encoder = 'ffmpeg' } = settings;
 	const activeEncoderReady = applyFilters(
 		'videopack.encoder.is_ready',
-		!!isTranscodingServiceReady,
+		!! isTranscodingServiceReady,
 		active_encoder,
 		settings
 	);
 	return (
-		(active_encoder !== 'ffmpeg' && activeEncoderReady) ||
-		isFfmpegAvailable(ffmpeg_exists)
+		( active_encoder !== 'ffmpeg' && activeEncoderReady ) ||
+		isFfmpegAvailable( ffmpeg_exists )
 	);
 }

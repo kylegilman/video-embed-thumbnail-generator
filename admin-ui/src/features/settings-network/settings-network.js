@@ -23,7 +23,6 @@ import {
 	CheckboxControl,
 	Flex,
 	FlexItem,
-	TextControl,
 } from '@wordpress/components';
 import { useDebounce } from '@wordpress/compose';
 import {
@@ -35,11 +34,10 @@ import {
 } from '@wordpress/element';
 import { videopack } from '../../assets/icon';
 import TextControlOnBlur from '../settings/components/TextControlOnBlur';
-import VideopackTooltip from '../settings/components/VideopackTooltip';
 import './settings-network.scss';
 
-const capitalizeFirstLetter = (string) => {
-	return string.charAt(0).toUpperCase() + string.slice(1);
+const capitalizeFirstLetter = ( string ) => {
+	return string.charAt( 0 ).toUpperCase() + string.slice( 1 );
 };
 
 /**
@@ -48,93 +46,93 @@ const capitalizeFirstLetter = (string) => {
  * @return {Object} The rendered component.
  */
 const NetworkSettingsPage = () => {
-	const [settings, setSettings] = useState(null);
-	const [users, setUsers] = useState(null);
-	const [isSettingsChanged, setIsSettingsChanged] = useState(false);
-	const settingsRef = useRef(settings);
+	const [ settings, setSettings ] = useState( null );
+	const [ users, setUsers ] = useState( null );
+	const [ isSettingsChanged, setIsSettingsChanged ] = useState( false );
+	const settingsRef = useRef( settings );
 
-	useEffect(() => {
+	useEffect( () => {
 		settingsRef.current = settings;
-	}, [settings]);
+	}, [ settings ] );
 
-	useEffect(() => {
+	useEffect( () => {
 		getNetworkSettings()
-			.then((response) => {
-				setSettings(response);
-			})
-			.catch((error) => {
-				console.error('Error fetching network settings:', error);
-			});
+			.then( ( response ) => {
+				setSettings( response );
+			} )
+			.catch( ( error ) => {
+				console.error( 'Error fetching network settings:', error );
+			} );
 
-		getUsersWithCapability('edit_others_video_encodes')
-			.then((response) => {
-				setUsers(response);
-			})
-			.catch((error) => {
-				console.error(error);
-			});
-	}, []);
+		getUsersWithCapability( 'edit_others_video_encodes' )
+			.then( ( response ) => {
+				setUsers( response );
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
+	}, [] );
 
-	const debouncedSaveSettings = useDebounce((newSettings) => {
-		saveNetworkSettings(newSettings)
-			.then((response) => {
+	const debouncedSaveSettings = useDebounce( ( newSettings ) => {
+		saveNetworkSettings( newSettings )
+			.then( ( response ) => {
 				const currentSettings = settingsRef.current;
 				const nextSettings = { ...response };
 				let hasLocalChanges = false;
 
-				Object.keys(currentSettings).forEach((key) => {
-					if (currentSettings[key] !== newSettings[key]) {
-						nextSettings[key] = currentSettings[key];
+				Object.keys( currentSettings ).forEach( ( key ) => {
+					if ( currentSettings[ key ] !== newSettings[ key ] ) {
+						nextSettings[ key ] = currentSettings[ key ];
 						hasLocalChanges = true;
 					}
-				});
-				setSettings(nextSettings);
-				if (!hasLocalChanges) {
-					setIsSettingsChanged(false);
+				} );
+				setSettings( nextSettings );
+				if ( ! hasLocalChanges ) {
+					setIsSettingsChanged( false );
 				}
-			})
-			.catch((error) => {
-				console.error('Error updating network settings:', error);
-			});
-	}, 1000);
+			} )
+			.catch( ( error ) => {
+				console.error( 'Error updating network settings:', error );
+			} );
+	}, 1000 );
 
-	useEffect(() => {
-		if (isSettingsChanged) {
-			debouncedSaveSettings(settings);
+	useEffect( () => {
+		if ( isSettingsChanged ) {
+			debouncedSaveSettings( settings );
 		}
-	}, [isSettingsChanged, debouncedSaveSettings, settings]);
+	}, [ isSettingsChanged, debouncedSaveSettings, settings ] );
 
-	const changeHandlerFactory = useMemo(() => {
-		if (!settings || typeof settings !== 'object') {
+	const changeHandlerFactory = useMemo( () => {
+		if ( ! settings || typeof settings !== 'object' ) {
 			return {};
 		}
-		return Object.keys(settings).reduce((acc, setting) => {
-			acc[setting] = (newValue) => {
-				setSettings((prevSettings) => ({
+		return Object.keys( settings ).reduce( ( acc, setting ) => {
+			acc[ setting ] = ( newValue ) => {
+				setSettings( ( prevSettings ) => ( {
 					...prevSettings,
-					[setting]: newValue,
-				}));
-				setIsSettingsChanged(true);
+					[ setting ]: newValue,
+				} ) );
+				setIsSettingsChanged( true );
 			};
 			return acc;
-		}, {});
-	}, [settings]);
+		}, {} );
+	}, [ settings ] );
 
-	const generateNonCrfMarks = (type) => {
+	const generateNonCrfMarks = ( type ) => {
 		const marks = [];
-		switch (type) {
+		switch ( type ) {
 			case 'simultaneous':
-				for (let i = 1; i <= 10; i++) {
-					marks.push({ value: i, label: String(i) });
+				for ( let i = 1; i <= 10; i++ ) {
+					marks.push( { value: i, label: String( i ) } );
 				}
 				break;
 			case 'threads':
-				marks.push({
+				marks.push( {
 					value: 0,
-					label: __('Auto', 'video-embed-thumbnail-generator'),
-				});
-				for (let i = 2; i <= 16; i += 2) {
-					marks.push({ value: i, label: String(i) });
+					label: __( 'Auto', 'video-embed-thumbnail-generator' ),
+				} );
+				for ( let i = 2; i <= 16; i += 2 ) {
+					marks.push( { value: i, label: String( i ) } );
 				}
 				break;
 		}
@@ -145,7 +143,7 @@ const NetworkSettingsPage = () => {
 		const authorizedUsers = [
 			{
 				value: 'nobody',
-				label: __('Nobody', 'video-embed-thumbnail-generator'),
+				label: __( 'Nobody', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'encoder',
@@ -155,42 +153,42 @@ const NetworkSettingsPage = () => {
 				),
 			},
 		];
-		if (users) {
-			users.forEach((user) => {
-				authorizedUsers.push({
+		if ( users ) {
+			users.forEach( ( user ) => {
+				authorizedUsers.push( {
 					value: user.id,
 					label: user.name,
-				});
-			});
+				} );
+			} );
 		}
 		return authorizedUsers;
 	};
 
 	const resetSettings = () => {
 		resetNetworkSettings()
-			.then((response) => {
-				setSettings(response);
-				setIsSettingsChanged(true);
-			})
-			.catch((error) => {
-				console.error(error);
-			});
+			.then( ( response ) => {
+				setSettings( response );
+				setIsSettingsChanged( true );
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
 	};
 
 	const RolesCheckboxes = () => {
-		const handleCapabilityChange = (roleName, capability, isChecked) => {
+		const handleCapabilityChange = ( roleName, capability, isChecked ) => {
 			const updatedCapabilities = {
 				...settings.default_capabilities,
-				[capability]: {
-					...settings.default_capabilities[capability],
-					[roleName]: isChecked,
+				[ capability ]: {
+					...settings.default_capabilities[ capability ],
+					[ roleName ]: isChecked,
 				},
 			};
 
-			changeHandlerFactory.default_capabilities(updatedCapabilities);
+			changeHandlerFactory.default_capabilities( updatedCapabilities );
 		};
 
-		const getCapabilityLabel = (capabilityKey) => {
+		const getCapabilityLabel = ( capabilityKey ) => {
 			const labels = {
 				make_video_thumbnails: __(
 					'Can make thumbnails',
@@ -211,47 +209,47 @@ const NetworkSettingsPage = () => {
 			};
 
 			return (
-				labels[capabilityKey] ||
-				capitalizeFirstLetter(capabilityKey.replace(/_/g, ' '))
+				labels[ capabilityKey ] ||
+				capitalizeFirstLetter( capabilityKey.replace( /_/g, ' ' ) )
 			);
 		};
 
 		return (
 			<PanelBody
-				title={__(
+				title={ __(
 					'User capabilities for new sites',
 					'video-embed-thumbnail-generator'
-				)}
-				initialOpen={true}
+				) }
+				initialOpen={ true }
 			>
 				<Flex
 					direction="row"
-					gap={20}
+					gap={ 20 }
 					className="videopack-setting-capabilities"
 				>
-					{Object.entries(settings.default_capabilities).map(
-						([capabilityKey, roles]) => {
+					{ Object.entries( settings.default_capabilities ).map(
+						( [ capabilityKey, roles ] ) => {
 							if (
 								capabilityKey === 'view_full_length_video' &&
-								!settings.restrict_playback_by_capability
+								! settings.restrict_playback_by_capability
 							) {
 								return null;
 							}
 							return (
-								<FlexItem key={capabilityKey}>
+								<FlexItem key={ capabilityKey }>
 									<p className="videopack-settings-label">
-										{getCapabilityLabel(capabilityKey)}
+										{ getCapabilityLabel( capabilityKey ) }
 									</p>
-									{Object.entries(roles).map(
-										([roleKey, isEnabled]) => (
+									{ Object.entries( roles ).map(
+										( [ roleKey, isEnabled ] ) => (
 											<CheckboxControl
 												__nextHasNoMarginBottom
-												key={`${roleKey}-${capabilityKey}`}
-												label={capitalizeFirstLetter(
+												key={ `${ roleKey }-${ capabilityKey }` }
+												label={ capitalizeFirstLetter(
 													roleKey
-												)}
-												checked={isEnabled}
-												onChange={(isChecked) =>
+												) }
+												checked={ isEnabled }
+												onChange={ ( isChecked ) =>
 													handleCapabilityChange(
 														roleKey,
 														capabilityKey,
@@ -260,17 +258,17 @@ const NetworkSettingsPage = () => {
 												}
 											/>
 										)
-									)}
+									) }
 								</FlexItem>
 							);
 						}
-					)}
+					) }
 				</Flex>
 			</PanelBody>
 		);
 	};
 
-	if (!settings || Object.keys(settings).length === 0) {
+	if ( ! settings || Object.keys( settings ).length === 0 ) {
 		return <Spinner />;
 	}
 
@@ -279,54 +277,54 @@ const NetworkSettingsPage = () => {
 			<h1>
 				<Icon
 					className="videopack-settings-icon"
-					icon={videopack}
-					size={40}
+					icon={ videopack }
+					size={ 40 }
 				/>
-				{__(
+				{ __(
 					'Videopack Network Settings',
 					'video-embed-thumbnail-generator'
-				)}
+				) }
 			</h1>
 			<Panel>
 				<PanelBody
-					title={__(
+					title={ __(
 						'FFmpeg Settings',
 						'video-embed-thumbnail-generator'
-					)}
+					) }
 				>
 					<PanelRow>
 						<TextControlOnBlur
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'Path to FFmpeg folder on server',
 								'video-embed-thumbnail-generator'
-							)}
-							value={settings.app_path}
-							onChange={changeHandlerFactory.app_path}
-							help={__(
+							) }
+							value={ settings.app_path }
+							onChange={ changeHandlerFactory.app_path }
+							help={ __(
 								'Leave blank if FFmpeg is in your system path.',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						/>
 					</PanelRow>
-					{settings.ffmpeg_exists !== 'available' &&
+					{ settings.ffmpeg_exists !== 'available' &&
 						settings.ffmpeg_error && (
 							<div className="notice notice-error videopack-ffmpeg-notice">
 								<p
-									dangerouslySetInnerHTML={{
+									dangerouslySetInnerHTML={ {
 										__html: settings.ffmpeg_error,
-									}}
+									} }
 								/>
 							</div>
-						)}
+						) }
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Only Super Admins can change FFmpeg Settings',
 							'video-embed-thumbnail-generator'
-						)}
-						checked={!!settings.superadmin_only_ffmpeg_settings}
+						) }
+						checked={ !! settings.superadmin_only_ffmpeg_settings }
 						onChange={
 							changeHandlerFactory.superadmin_only_ffmpeg_settings
 						}
@@ -334,101 +332,109 @@ const NetworkSettingsPage = () => {
 				</PanelBody>
 
 				<PanelBody
-					title={__('Execution', 'video-embed-thumbnail-generator')}
-					opened={settings.ffmpeg_exists === 'available'}
+					title={ __(
+						'Execution',
+						'video-embed-thumbnail-generator'
+					) }
+					opened={ settings.ffmpeg_exists === 'available' }
 				>
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__(
+						label={ __(
 							'Simultaneous encodes',
 							'video-embed-thumbnail-generator'
-						)}
-						value={settings.simultaneous_encodes}
+						) }
+						value={ settings.simultaneous_encodes }
 						className="videopack-settings-slider"
-						onChange={changeHandlerFactory.simultaneous_encodes}
-						min={1}
-						max={10}
-						step={1}
-						marks={generateNonCrfMarks('simultaneous')}
-						disabled={settings.ffmpeg_exists !== 'available'}
+						onChange={ changeHandlerFactory.simultaneous_encodes }
+						min={ 1 }
+						max={ 10 }
+						step={ 1 }
+						marks={ generateNonCrfMarks( 'simultaneous' ) }
+						disabled={ settings.ffmpeg_exists !== 'available' }
 					/>
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Threads', 'video-embed-thumbnail-generator')}
-						value={settings.threads}
+						label={ __(
+							'Threads',
+							'video-embed-thumbnail-generator'
+						) }
+						value={ settings.threads }
 						className="videopack-settings-slider"
-						onChange={changeHandlerFactory.threads}
-						min={0}
-						max={16}
-						step={1}
-						marks={generateNonCrfMarks('threads')}
-						disabled={settings.ffmpeg_exists !== 'available'}
+						onChange={ changeHandlerFactory.threads }
+						min={ 0 }
+						max={ 16 }
+						step={ 1 }
+						marks={ generateNonCrfMarks( 'threads' ) }
+						disabled={ settings.ffmpeg_exists !== 'available' }
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Run nice',
 							'video-embed-thumbnail-generator'
-						)}
-						checked={!!settings.nice}
-						onChange={changeHandlerFactory.nice}
-						disabled={settings.ffmpeg_exists !== 'available'}
+						) }
+						checked={ !! settings.nice }
+						onChange={ changeHandlerFactory.nice }
+						disabled={ settings.ffmpeg_exists !== 'available' }
 					/>
 				</PanelBody>
 
 				<PanelBody
-					title={__(
+					title={ __(
 						'Email Notifications',
 						'video-embed-thumbnail-generator'
-					)}
-					opened={settings.ffmpeg_exists === 'available'}
+					) }
+					opened={ settings.ffmpeg_exists === 'available' }
 				>
 					<div className="videopack-setting-auto-width">
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'Network Error Email',
 								'video-embed-thumbnail-generator'
-							)}
-							value={settings.network_error_email}
-							onChange={changeHandlerFactory.network_error_email}
-							options={errorEmailOptions()}
-							help={__(
+							) }
+							value={ settings.network_error_email }
+							onChange={
+								changeHandlerFactory.network_error_email
+							}
+							options={ errorEmailOptions() }
+							help={ __(
 								'Receive encoding error notifications for all sites in the network.',
 								'video-embed-thumbnail-generator'
-							)}
-							disabled={settings.ffmpeg_exists !== 'available'}
+							) }
+							disabled={ settings.ffmpeg_exists !== 'available' }
 						/>
 					</div>
 				</PanelBody>
-				{settings.default_capabilities && <RolesCheckboxes />}
-				{applyFilters(
+				{ settings.default_capabilities && <RolesCheckboxes /> }
+				{ applyFilters(
 					'videopack.settings.network.panels',
 					[],
 					settings,
 					changeHandlerFactory
-				)}
+				) }
 				<PanelRow>
 					<Button
 						variant="primary"
-						onClick={resetSettings}
-						className={'videopack-settings-reset'}
+						onClick={ resetSettings }
+						className={ 'videopack-settings-reset' }
 					>
-						{__(
+						{ __(
 							'Reset Settings',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					</Button>
 				</PanelRow>
 			</Panel>
 		</div>
 	);
 };
-const el = document.getElementById('videopack-network-settings-root');
-if (el) {
-	const root = createRoot(el);
-	root.render(<NetworkSettingsPage />);
+const el = document.getElementById( 'videopack-network-settings-root' );
+if ( el ) {
+	const root = createRoot( el );
+	root.render( <NetworkSettingsPage /> );
 }

@@ -17,15 +17,15 @@ import { useEffect, useRef } from '@wordpress/element';
  * @param {boolean}  props.playback_rate  Whether to enable playback rate controls.
  * @return {Element} The rendered component.
  */
-const WpMejsPlayer = (props) => {
+const WpMejsPlayer = ( props ) => {
 	const { options, controls, actualAutoplay, aspectRatio, source_groups } =
 		props;
 
-	const playerRef = useRef(null);
-	const containerRef = useRef(null);
-	const propsRef = useRef(props);
-	const reportedSrcRef = useRef(null);
-	const uniqueKey = JSON.stringify({
+	const playerRef = useRef( null );
+	const containerRef = useRef( null );
+	const propsRef = useRef( props );
+	const reportedSrcRef = useRef( null );
+	const uniqueKey = JSON.stringify( {
 		src: options.src,
 		poster: options.poster,
 		sources: options.sources,
@@ -34,16 +34,16 @@ const WpMejsPlayer = (props) => {
 		actualAutoplay,
 		source_groups,
 		option_source_groups: options.source_groups,
-	});
+	} );
 
-	useEffect(() => {
+	useEffect( () => {
 		let isMounted = true;
 		let timeoutId = null;
 
 		const cleanupPlayer = () => {
-			if (playerRef.current) {
+			if ( playerRef.current ) {
 				try {
-					if (typeof playerRef.current.remove === 'function') {
+					if ( typeof playerRef.current.remove === 'function' ) {
 						// Neuter sizing methods before removal to prevent async crashes
 						// during the destruction process (mediaelement-and-player.js:4416).
 						if (
@@ -69,12 +69,12 @@ const WpMejsPlayer = (props) => {
 
 		// Use a delay to handle Strict Mode and iframe context migration.
 		// The 100ms timeout defers to a later tick, allowing DOM shuffling to settle.
-		timeoutId = setTimeout(() => {
+		timeoutId = setTimeout( () => {
 			const container = containerRef.current;
 			if (
-				!isMounted ||
-				!container ||
-				!container.ownerDocument.body.contains(container)
+				! isMounted ||
+				! container ||
+				! container.ownerDocument.body.contains( container )
 			) {
 				return;
 			}
@@ -94,8 +94,8 @@ const WpMejsPlayer = (props) => {
 			} = propsRef.current;
 
 			if (
-				!curOptions ||
-				!curOptions.sources ||
+				! curOptions ||
+				! curOptions.sources ||
 				curOptions.sources.length === 0
 			) {
 				return;
@@ -103,59 +103,62 @@ const WpMejsPlayer = (props) => {
 
 			try {
 				const videoElement =
-					container.ownerDocument.createElement('video');
+					container.ownerDocument.createElement( 'video' );
 				videoElement.className = 'wp-video-shortcode videopack-video';
-				videoElement.setAttribute('playsinline', '');
-				videoElement.setAttribute('width', '100%');
-				videoElement.setAttribute('height', '100%');
+				videoElement.setAttribute( 'playsinline', '' );
+				videoElement.setAttribute( 'width', '100%' );
+				videoElement.setAttribute( 'height', '100%' );
 
-				if (curOptions.poster) {
-					videoElement.setAttribute('poster', curOptions.poster);
+				if ( curOptions.poster ) {
+					videoElement.setAttribute( 'poster', curOptions.poster );
 				}
-				if (curOptions.loop) {
-					videoElement.setAttribute('loop', 'true');
+				if ( curOptions.loop ) {
+					videoElement.setAttribute( 'loop', 'true' );
 				}
-				if (curOptions.preload) {
-					videoElement.setAttribute('preload', curOptions.preload);
+				if ( curOptions.preload ) {
+					videoElement.setAttribute( 'preload', curOptions.preload );
 				}
 
 				const shouldBeMuted =
-					!!curOptions.muted || !!curOptions.actualAutoplay;
-				if (shouldBeMuted) {
-					videoElement.setAttribute('muted', 'muted');
+					!! curOptions.muted || !! curOptions.actualAutoplay;
+				if ( shouldBeMuted ) {
+					videoElement.setAttribute( 'muted', 'muted' );
 					videoElement.muted = true;
 				}
 
-				curOptions.sources.forEach((s) => {
+				curOptions.sources.forEach( ( s ) => {
 					const source =
-						container.ownerDocument.createElement('source');
+						container.ownerDocument.createElement( 'source' );
 					source.src = s.src;
 					source.type = s.type;
-					if (s.resolution) {
-						source.setAttribute('data-res', s.resolution);
+					if ( s.resolution ) {
+						source.setAttribute( 'data-res', s.resolution );
 					}
-					if (s.default_res) {
-						source.setAttribute('data-default_res', s.default_res);
+					if ( s.default_res ) {
+						source.setAttribute(
+							'data-default_res',
+							s.default_res
+						);
 					}
-					videoElement.appendChild(source);
-				});
+					videoElement.appendChild( source );
+				} );
 
-				if (curOptions.tracks) {
-					curOptions.tracks.forEach((t) => {
+				if ( curOptions.tracks ) {
+					curOptions.tracks.forEach( ( t ) => {
 						const track =
-							container.ownerDocument.createElement('track');
+							container.ownerDocument.createElement( 'track' );
 						track.src = t.src;
 						track.kind = t.kind;
 						track.srclang = t.srclang;
 						track.label = t.label;
-						if (t.default) {
-							track.setAttribute('default', 'true');
+						if ( t.default ) {
+							track.setAttribute( 'default', 'true' );
 						}
-						videoElement.appendChild(track);
-					});
+						videoElement.appendChild( track );
+					} );
 				}
 
-				container.appendChild(videoElement);
+				container.appendChild( videoElement );
 
 				const mejsOptions = {
 					pluginPath: '/wp-includes/js/mediaelement/',
@@ -173,15 +176,15 @@ const WpMejsPlayer = (props) => {
 						'playpause',
 						'progress',
 						'tracks',
-						...(curOptions.sources.length > 1
-							? ['sourcechooser']
-							: []),
+						...( curOptions.sources.length > 1
+							? [ 'sourcechooser' ]
+							: [] ),
 						'volume',
 						'fullscreen',
 					],
 				};
 
-				if (!mejsOptions.stretching) {
+				if ( ! mejsOptions.stretching ) {
 					mejsOptions.stretching = 'responsive';
 				}
 				mejsOptions.videoWidth = '100%';
@@ -194,20 +197,21 @@ const WpMejsPlayer = (props) => {
 						: 0.8;
 				mejsOptions.startMuted = shouldBeMuted;
 
-				if (!curControls) {
+				if ( ! curControls ) {
 					mejsOptions.features = [];
 					mejsOptions.controls = false;
 				}
 
-				if (curPlaybackRate) {
+				if ( curPlaybackRate ) {
 					// Insert right after 'volume' (matching the real
 					// frontend's feature order in
 					// Player_WordPress_Default.php) rather than pushing to
 					// the end, which would place it after fullscreen
 					// instead.
-					const volumeIndex = mejsOptions.features.indexOf('volume');
-					if (volumeIndex === -1) {
-						mejsOptions.features.push('speed');
+					const volumeIndex =
+						mejsOptions.features.indexOf( 'volume' );
+					if ( volumeIndex === -1 ) {
+						mejsOptions.features.push( 'speed' );
 					} else {
 						mejsOptions.features.splice(
 							volumeIndex + 1,
@@ -217,24 +221,24 @@ const WpMejsPlayer = (props) => {
 					}
 				}
 
-				const onPlayHandler = (e) => {
-					if (typeof curOnPlay === 'function') {
-						curOnPlay(e);
+				const onPlayHandler = ( e ) => {
+					if ( typeof curOnPlay === 'function' ) {
+						curOnPlay( e );
 					}
 				};
-				const onPauseHandler = (e) => {
-					if (typeof curOnPause === 'function') {
-						curOnPause(e);
+				const onPauseHandler = ( e ) => {
+					if ( typeof curOnPause === 'function' ) {
+						curOnPause( e );
 					}
 				};
-				const onEndedHandler = (e) => {
-					if (typeof curOnEnded === 'function') {
-						curOnEnded(e);
+				const onEndedHandler = ( e ) => {
+					if ( typeof curOnEnded === 'function' ) {
+						curOnEnded( e );
 					}
 				};
 
 				const autoPlayHandler = () => {
-					if (curAutoplay && playerRef.current) {
+					if ( curAutoplay && playerRef.current ) {
 						try {
 							playerRef.current.play();
 						} catch {
@@ -243,31 +247,31 @@ const WpMejsPlayer = (props) => {
 					}
 				};
 
-				mejsOptions.success = (media, domNode, player) => {
-					if (!isMounted) {
+				mejsOptions.success = ( media, domNode, player ) => {
+					if ( ! isMounted ) {
 						return;
 					}
 					playerRef.current = player;
-					media.addEventListener('play', onPlayHandler);
-					media.addEventListener('pause', onPauseHandler);
-					media.addEventListener('ended', onEndedHandler);
+					media.addEventListener( 'play', onPlayHandler );
+					media.addEventListener( 'pause', onPauseHandler );
+					media.addEventListener( 'ended', onEndedHandler );
 
-					if (curOnReady) {
-						if (typeof curOnReady === 'function') {
-							curOnReady(player);
-						} else if (curOnReady.current) {
-							curOnReady.current(player);
+					if ( curOnReady ) {
+						if ( typeof curOnReady === 'function' ) {
+							curOnReady( player );
+						} else if ( curOnReady.current ) {
+							curOnReady.current( player );
 						}
 					}
 
 					// Small delay to allow DOM normalization before sizing.
-					setTimeout(() => {
+					setTimeout( () => {
 						const targetPlayer = playerRef.current;
 
 						if (
-							!targetPlayer ||
-							!targetPlayer.media ||
-							!isMounted
+							! targetPlayer ||
+							! targetPlayer.media ||
+							! isMounted
 						) {
 							return;
 						}
@@ -278,14 +282,14 @@ const WpMejsPlayer = (props) => {
 							targetPlayer.container ||
 							targetPlayer.media?.container;
 
-						if (containerElement && containerElement.get) {
-							containerElement = containerElement.get(0);
+						if ( containerElement && containerElement.get ) {
+							containerElement = containerElement.get( 0 );
 						} else if (
 							containerElement &&
 							containerElement.jquery &&
-							containerElement[0]
+							containerElement[ 0 ]
 						) {
-							containerElement = containerElement[0];
+							containerElement = containerElement[ 0 ];
 						}
 
 						const isAttached =
@@ -307,26 +311,26 @@ const WpMejsPlayer = (props) => {
 							// We check both the renderer wrapper (media) and the native node (domNode).
 							try {
 								const mediaWidth =
-									(media && media.videoWidth) ||
-									(domNode && domNode.videoWidth) ||
-									(media && media.width) ||
-									(domNode && domNode.width) ||
+									( media && media.videoWidth ) ||
+									( domNode && domNode.videoWidth ) ||
+									( media && media.width ) ||
+									( domNode && domNode.width ) ||
 									0;
 
 								const mediaHeight =
-									(media && media.videoHeight) ||
-									(domNode && domNode.videoHeight) ||
-									(media && media.height) ||
-									(domNode && domNode.height) ||
+									( media && media.videoHeight ) ||
+									( domNode && domNode.videoHeight ) ||
+									( media && media.height ) ||
+									( domNode && domNode.height ) ||
 									0;
 
 								const isRealSizing =
 									mediaWidth > 0 &&
-									(mediaWidth !== 100 ||
+									( mediaWidth !== 100 ||
 										mediaHeight !== 100 ||
-										media?.readyState >= 1);
+										media?.readyState >= 1 );
 
-								if (isRealSizing) {
+								if ( isRealSizing ) {
 									try {
 										targetPlayer.setPlayerSize();
 										targetPlayer.setControlsSize();
@@ -344,10 +348,10 @@ const WpMejsPlayer = (props) => {
 										) {
 											reportedSrcRef.current =
 												options.src;
-											curOnMetadataLoaded({
+											curOnMetadataLoaded( {
 												width: mediaWidth,
 												height: mediaHeight,
-											});
+											} );
 										}
 									} catch {
 										targetPlayer.setPlayerSize();
@@ -365,27 +369,29 @@ const WpMejsPlayer = (props) => {
 												const currentWidth =
 													targetPlayer.media
 														.videoWidth ||
-													(domNode &&
-														domNode.videoWidth) ||
+													( domNode &&
+														domNode.videoWidth ) ||
 													targetPlayer.media.width ||
-													(domNode && domNode.width);
+													( domNode &&
+														domNode.width );
 
 												const currentHeight =
 													targetPlayer.media
 														.videoHeight ||
-													(domNode &&
-														domNode.videoHeight) ||
+													( domNode &&
+														domNode.videoHeight ) ||
 													targetPlayer.media.height ||
-													(domNode && domNode.height);
+													( domNode &&
+														domNode.height );
 
 												const isRealMetadataSizing =
 													currentWidth > 0 &&
-													(currentWidth !== 100 ||
+													( currentWidth !== 100 ||
 														currentHeight !== 100 ||
 														targetPlayer.media
-															?.readyState >= 1);
+															?.readyState >= 1 );
 
-												if (isRealMetadataSizing) {
+												if ( isRealMetadataSizing ) {
 													targetPlayer.setPlayerSize();
 													targetPlayer.setControlsSize();
 
@@ -402,10 +408,10 @@ const WpMejsPlayer = (props) => {
 													) {
 														reportedSrcRef.current =
 															options.src;
-														curOnMetadataLoaded({
+														curOnMetadataLoaded( {
 															width: currentWidth,
 															height: currentHeight,
-														});
+														} );
 													}
 												}
 											}
@@ -413,7 +419,7 @@ const WpMejsPlayer = (props) => {
 											// Silence metadata errors
 										}
 
-										if (media) {
+										if ( media ) {
 											media.removeEventListener(
 												'loadedmetadata',
 												sizeOnMetadata
@@ -429,43 +435,43 @@ const WpMejsPlayer = (props) => {
 								// Silence dimension detection errors
 							}
 						}
-					}, 150);
+					}, 150 );
 
-					media.addEventListener('canplay', autoPlayHandler);
+					media.addEventListener( 'canplay', autoPlayHandler );
 				};
 
-				const $videoElement = jQuery(videoElement);
+				const $videoElement = jQuery( videoElement );
 				// Stricter check before init
 				if (
 					isMounted &&
-					container.ownerDocument.body.contains(container)
+					container.ownerDocument.body.contains( container )
 				) {
-					$videoElement.mediaelementplayer(mejsOptions);
+					$videoElement.mediaelementplayer( mejsOptions );
 				}
 			} catch {
 				// Silence init errors
 			}
-		}, 100);
+		}, 100 );
 
 		return () => {
 			isMounted = false;
-			if (timeoutId) {
-				clearTimeout(timeoutId);
+			if ( timeoutId ) {
+				clearTimeout( timeoutId );
 			}
 			cleanupPlayer();
 		};
-	}, [uniqueKey, options.src, options.source_groups, source_groups]);
+	}, [ uniqueKey, options.src, options.source_groups, source_groups ] );
 
 	// Reactive updates for volume and muted without recreating the player.
-	useEffect(() => {
+	useEffect( () => {
 		const media = playerRef.current;
-		const shouldBeMuted = !!options.muted || !!actualAutoplay;
-		if (media && typeof media.setMuted === 'function') {
-			media.setMuted(shouldBeMuted);
+		const shouldBeMuted = !! options.muted || !! actualAutoplay;
+		if ( media && typeof media.setMuted === 'function' ) {
+			media.setMuted( shouldBeMuted );
 		}
-	}, [options.muted, actualAutoplay]);
+	}, [ options.muted, actualAutoplay ] );
 
-	useEffect(() => {
+	useEffect( () => {
 		const media = playerRef.current;
 		if (
 			media &&
@@ -473,9 +479,9 @@ const WpMejsPlayer = (props) => {
 			options.volume !== undefined &&
 			options.volume !== null
 		) {
-			media.setVolume(options.volume);
+			media.setVolume( options.volume );
 		}
-	}, [options.volume]);
+	}, [ options.volume ] );
 
 	// Unlike muted/volume, MEJS's player class doesn't delegate a "loop"
 	// property/method of its own -- confirmed against the vendored library
@@ -485,25 +491,25 @@ const WpMejsPlayer = (props) => {
 	// object itself. So this has to go through player.media.loop, not
 	// player.loop directly -- unlike preload/playback_rate (handled via a
 	// forced remount in VideoPlayer.js instead), it needs no full rebuild.
-	useEffect(() => {
+	useEffect( () => {
 		const media = playerRef.current?.media;
-		if (media) {
-			media.loop = !!options.loop;
+		if ( media ) {
+			media.loop = !! options.loop;
 		}
-	}, [options.loop]);
+	}, [ options.loop ] );
 
 	return (
 		<div
-			className={`wp-video-container${
-				!controls ? ' videopack-no-controls' : ''
-			}`}
-			ref={containerRef}
-			style={{
+			className={ `wp-video-container${
+				! controls ? ' videopack-no-controls' : ''
+			}` }
+			ref={ containerRef }
+			style={ {
 				width: '100%',
 				aspectRatio: aspectRatio
-					? aspectRatio.replace(':', ' / ')
+					? aspectRatio.replace( ':', ' / ' )
 					: undefined,
-			}}
+			} }
 		/>
 	);
 };

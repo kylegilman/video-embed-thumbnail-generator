@@ -22,7 +22,7 @@ import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../components/AdditionalFormats/AdditionalFormats.js';
 import './editor.scss';
 
-const ALLOWED_BLOCKS = ['videopack/watermark', 'videopack/title'];
+const ALLOWED_BLOCKS = [ 'videopack/watermark', 'videopack/title' ];
 
 const PLAYER_CONTEXT_CLASS_KEYS = [
 	'skin',
@@ -39,10 +39,10 @@ const PLAYER_CONTEXT_CLASS_KEYS = [
  * @param {Object} props.context Block context.
  * @return {Object}              The rendered component.
  */
-export default function Edit(props) {
+export default function Edit( props ) {
 	const { context, isSelected, clientId } = props;
-	const [options, setOptions] = useState({});
-	const [restartCount, setRestartCount] = useState(0);
+	const [ options, setOptions ] = useState( {} );
+	const [ restartCount, setRestartCount ] = useState( 0 );
 
 	const {
 		parentClientId,
@@ -51,73 +51,76 @@ export default function Edit(props) {
 		isAnySelected,
 		editorPostId,
 	} = useSelect(
-		(select) => {
+		( select ) => {
 			const {
 				getBlockRootClientId,
 				getBlockAttributes,
 				getBlocks,
 				isBlockSelected,
 				hasSelectedInnerBlock,
-			} = select(blockEditorStore);
-			const rootId = getBlockRootClientId(clientId);
-			const blocks = getBlocks(clientId);
-			const editor = select('core/editor');
+			} = select( blockEditorStore );
+			const rootId = getBlockRootClientId( clientId );
+			const blocks = getBlocks( clientId );
+			const editor = select( 'core/editor' );
 
 			return {
 				parentClientId: rootId,
-				parentAttributes: rootId ? getBlockAttributes(rootId) : {},
+				parentAttributes: rootId ? getBlockAttributes( rootId ) : {},
 				hasTitleBlock: blocks.some(
-					(block) => block.name === 'videopack/title'
+					( block ) => block.name === 'videopack/title'
 				),
 				isAnySelected:
-					isBlockSelected(clientId) ||
-					hasSelectedInnerBlock(clientId, true),
+					isBlockSelected( clientId ) ||
+					hasSelectedInnerBlock( clientId, true ),
 				editorPostId: editor?.getCurrentPostId(),
 			};
 		},
-		[clientId]
+		[ clientId ]
 	);
 
-	const resetPlayer = useCallback(() => {
-		setRestartCount((prev) => prev + 1);
-	}, []);
+	const resetPlayer = useCallback( () => {
+		setRestartCount( ( prev ) => prev + 1 );
+	}, [] );
 
-	useEffect(() => {
-		getSettings().then(setOptions);
-	}, []);
+	useEffect( () => {
+		getSettings().then( setOptions );
+	}, [] );
 
-	const { updateBlockAttributes } = useDispatch(blockEditorStore);
+	const { updateBlockAttributes } = useDispatch( blockEditorStore );
 
 	const setParentAttributes = useCallback(
-		(newAttrs) => {
-			if (parentClientId) {
-				updateBlockAttributes(parentClientId, newAttrs);
+		( newAttrs ) => {
+			if ( parentClientId ) {
+				updateBlockAttributes( parentClientId, newAttrs );
 			}
 		},
-		[parentClientId, updateBlockAttributes]
+		[ parentClientId, updateBlockAttributes ]
 	);
 
-	const filteredAllowedBlocks = useMemo(() => {
-		if (hasTitleBlock) {
-			return ALLOWED_BLOCKS.filter((name) => name !== 'videopack/title');
+	const filteredAllowedBlocks = useMemo( () => {
+		if ( hasTitleBlock ) {
+			return ALLOWED_BLOCKS.filter(
+				( name ) => name !== 'videopack/title'
+			);
 		}
 		return ALLOWED_BLOCKS;
-	}, [hasTitleBlock]);
+	}, [ hasTitleBlock ] );
 
 	// These options would ideally come from the parent via context if we updated videopack-video to provide them,
 	// but for now we'll fetch them or rely on the parent's attributes.
 	const videoData = useMemo(
-		() => ({ record: null, setRecord: () => {}, hasResolved: true }),
+		() => ( { record: null, setRecord: () => {}, hasResolved: true } ),
 		[]
 	);
 
-	const isSiteEditor = useSelect((select) => {
-		const postType = select('core/editor')?.getCurrentPostType();
+	const isSiteEditor = useSelect( ( select ) => {
+		const postType = select( 'core/editor' )?.getCurrentPostType();
 		return postType === 'wp_template' || postType === 'wp_template_part';
-	}, []);
-	const postId = context['videopack/postId'];
+	}, [] );
+	const postId = context[ 'videopack/postId' ];
 	const isContextual =
-		postId && (Number(postId) !== Number(editorPostId) || isSiteEditor);
+		postId &&
+		( Number( postId ) !== Number( editorPostId ) || isSiteEditor );
 	const resolvedPostId = isContextual
 		? postId
 		: parentAttributes.id || undefined;
@@ -127,31 +130,31 @@ export default function Edit(props) {
 		resolved,
 		style: contextStyles,
 		classes: contextClasses,
-	} = useVideopackContext({ ...parentAttributes, restartCount }, context, {
+	} = useVideopackContext( { ...parentAttributes, restartCount }, context, {
 		classKeys: PLAYER_CONTEXT_CLASS_KEYS,
-	});
+	} );
 
 	const { src, skin, isDiscovering } = resolved;
-	useVideoProbe(src);
+	useVideoProbe( src );
 	const hasSources =
-		(parentAttributes.sources && parentAttributes.sources.length > 0) ||
-		(parentAttributes.source_groups &&
-			Object.keys(parentAttributes.source_groups).length > 0);
+		( parentAttributes.sources && parentAttributes.sources.length > 0 ) ||
+		( parentAttributes.source_groups &&
+			Object.keys( parentAttributes.source_groups ).length > 0 );
 
 	// Skip in preview contexts — there's no real attachment behind the
 	// hardcoded bundled sample video, so this can never resolve anything
 	// useful, and previews get rebuilt on every unrelated settings change.
 	const { formats } = useVideoFormats(
-		!hasSources && src && !resolved.isPreview ? resolvedPostId : null,
-		!hasSources && src && !resolved.isPreview ? src : null
+		! hasSources && src && ! resolved.isPreview ? resolvedPostId : null,
+		! hasSources && src && ! resolved.isPreview ? src : null
 	);
 
-	useEffect(() => {
+	useEffect( () => {
 		resetPlayer();
-	}, [skin, resetPlayer]);
+	}, [ skin, resetPlayer ] );
 
 	// Merge parent attributes with global options for mirroring panels
-	const effectiveAttributes = useMemo(() => {
+	const effectiveAttributes = useMemo( () => {
 		const result = {
 			...options,
 			...parentAttributes,
@@ -159,7 +162,7 @@ export default function Edit(props) {
 			id: resolvedPostId,
 		};
 
-		if (resolved.isPreview) {
+		if ( resolved.isPreview ) {
 			result.src =
 				videopack_config.url + '/src/images/Adobestock_469037984.mp4';
 			result.poster =
@@ -168,42 +171,42 @@ export default function Edit(props) {
 		}
 
 		return result;
-	}, [options, parentAttributes, resolved, resolvedPostId]);
+	}, [ options, parentAttributes, resolved, resolvedPostId ] );
 
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const mejsSvgPath =
 		config?.mejs_controls_svg ||
-		(typeof window !== 'undefined'
-			? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
-			: '');
+		( typeof window !== 'undefined'
+			? `${ window.location.origin }/wp-includes/js/mediaelement/mejs-controls.svg`
+			: '' );
 
-	const bridgeOverrides = useMemo(() => {
+	const bridgeOverrides = useMemo( () => {
 		const overrides = {
 			'videopack/isInsidePlayerContainer':
-				context['videopack/isInsidePlayerContainer'],
-			'videopack/isStandalone': context['videopack/isStandalone'],
+				context[ 'videopack/isInsidePlayerContainer' ],
+			'videopack/isStandalone': context[ 'videopack/isStandalone' ],
 			'videopack/attachmentId':
-				context['videopack/attachmentId'] || effectiveAttributes.id,
-			'videopack/postType': context['videopack/isStandalone']
+				context[ 'videopack/attachmentId' ] || effectiveAttributes.id,
+			'videopack/postType': context[ 'videopack/isStandalone' ]
 				? 'attachment'
-				: context['videopack/postType'] || 'post',
+				: context[ 'videopack/postType' ] || 'post',
 			'videopack/isInsidePlayerOverlay': true,
 			'videopack/postId':
-				context['videopack/attachmentId'] || effectiveAttributes.id,
+				context[ 'videopack/attachmentId' ] || effectiveAttributes.id,
 		};
 
 		const sourceGroups =
 			parentAttributes.source_groups ||
-			context['videopack/source_groups'];
+			context[ 'videopack/source_groups' ];
 		const sources =
-			parentAttributes.sources || context['videopack/sources'];
+			parentAttributes.sources || context[ 'videopack/sources' ];
 
-		if (sourceGroups && Object.keys(sourceGroups).length > 0) {
-			overrides['videopack/source_groups'] = sourceGroups;
+		if ( sourceGroups && Object.keys( sourceGroups ).length > 0 ) {
+			overrides[ 'videopack/source_groups' ] = sourceGroups;
 		}
-		if (sources && sources.length > 0) {
-			overrides['videopack/sources'] = sources;
+		if ( sources && sources.length > 0 ) {
+			overrides[ 'videopack/sources' ] = sources;
 		}
 
 		return overrides;
@@ -212,83 +215,83 @@ export default function Edit(props) {
 		effectiveAttributes.id,
 		parentAttributes.source_groups,
 		parentAttributes.sources,
-	]);
+	] );
 
-	const blockProps = useBlockProps({
-		className: `videopack-video-player-engine-block videopack-wrapper ${contextClasses}`,
+	const blockProps = useBlockProps( {
+		className: `videopack-video-player-engine-block videopack-wrapper ${ contextClasses }`,
 		style: {
 			...contextStyles,
 			'--videopack-mejs-controls-svg': mejsSvgPath
-				? `url("${mejsSvgPath}")`
+				? `url("${ mejsSvgPath }")`
 				: undefined,
 		},
-	});
+	} );
 
 	return (
-		<div {...blockProps}>
-			{isSelected && (
+		<div { ...blockProps }>
+			{ isSelected && (
 				<BlockControls group="other">
 					<ToolbarGroup>
 						<ToolbarButton
-							icon={resetIcon}
-							label={__(
+							icon={ resetIcon }
+							label={ __(
 								'Restart Video',
 								'video-embed-thumbnail-generator'
-							)}
-							onClick={resetPlayer}
+							) }
+							onClick={ resetPlayer }
 						/>
 					</ToolbarGroup>
 				</BlockControls>
-			)}
+			) }
 			<InspectorControls>
 				<Thumbnails
-					setAttributes={setParentAttributes}
-					attributes={effectiveAttributes}
-					videoData={videoData}
-					options={options}
-					parentId={editorPostId || 0}
+					setAttributes={ setParentAttributes }
+					attributes={ effectiveAttributes }
+					videoData={ videoData }
+					options={ options }
+					parentId={ editorPostId || 0 }
 				/>
 				<VideoSettings
-					setAttributes={setParentAttributes}
-					attributes={effectiveAttributes}
-					options={options}
-					fallbackTitle={parentAttributes.title || ''}
-					isBlockEditor={true}
+					setAttributes={ setParentAttributes }
+					attributes={ effectiveAttributes }
+					options={ options }
+					fallbackTitle={ parentAttributes.title || '' }
+					isBlockEditor={ true }
 				/>
 				<AdditionalFormats
-					key={parentAttributes.id || parentAttributes.src}
-					attributes={effectiveAttributes}
-					options={options}
-					isDiscovering={isDiscovering}
+					key={ parentAttributes.id || parentAttributes.src }
+					attributes={ effectiveAttributes }
+					options={ options }
+					isDiscovering={ isDiscovering }
 				/>
 			</InspectorControls>
 			<VideoPlayer
-				attributes={{
+				attributes={ {
 					...parentAttributes,
 					restartCount,
-					...(formats && !hasSources
+					...( formats && ! hasSources
 						? { source_groups: formats }
-						: {}),
-				}}
-				context={context}
-				isSelected={isSelected}
-				hideStaticOverlays={true}
-				onReady={() => {}}
+						: {} ),
+				} }
+				context={ context }
+				isSelected={ isSelected }
+				hideStaticOverlays={ true }
+				onReady={ () => {} }
 			>
 				<div
-					className={`videopack-inner-blocks-overlay ${
+					className={ `videopack-inner-blocks-overlay ${
 						hasTitleBlock ? 'videopack-has-title-block' : ''
-					}`}
+					}` }
 				>
 					<VideopackContextBridge
-						key={resolvedPostId}
-						attributes={parentAttributes}
-						context={context}
-						overrides={bridgeOverrides}
+						key={ resolvedPostId }
+						attributes={ parentAttributes }
+						context={ context }
+						overrides={ bridgeOverrides }
 					>
 						<InnerBlocks
-							allowedBlocks={filteredAllowedBlocks}
-							templateLock={false}
+							allowedBlocks={ filteredAllowedBlocks }
+							templateLock={ false }
 							renderAppender={
 								isAnySelected
 									? InnerBlocks.ButtonBlockAppender
@@ -297,7 +300,9 @@ export default function Edit(props) {
 						/>
 					</VideopackContextBridge>
 				</div>
-				{!isAnySelected && <div className="videopack-block-overlay" />}
+				{ ! isAnySelected && (
+					<div className="videopack-block-overlay" />
+				) }
 			</VideoPlayer>
 		</div>
 	);

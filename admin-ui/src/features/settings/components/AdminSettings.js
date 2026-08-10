@@ -22,7 +22,7 @@ import { clearUrlCache } from '../../../api/settings';
  * @param {Object} props.changeHandlerFactory Factory for creating change handlers.
  * @return {Object} The rendered component.
  */
-const AdminSettings = ({ settings, changeHandlerFactory }) => {
+const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 	const {
 		capabilities,
 		embeddable,
@@ -39,18 +39,18 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 		rewrite_attachment_url,
 	} = settings;
 
-	const [isClearingCache, setIsClearingCache] = useState(false);
+	const [ isClearingCache, setIsClearingCache ] = useState( false );
 
 	const handleClearCache = () => {
-		setIsClearingCache(true);
+		setIsClearingCache( true );
 		clearUrlCache()
-			.then(() => {
-				setIsClearingCache(false);
-			})
-			.catch((error) => {
-				console.error(error);
-				setIsClearingCache(false);
-			});
+			.then( () => {
+				setIsClearingCache( false );
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+				setIsClearingCache( false );
+			} );
 	};
 
 	const countViewsOptions = [
@@ -63,37 +63,40 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 		},
 		{
 			value: 'start_complete',
-			label: __('Start and complete', 'video-embed-thumbnail-generator'),
+			label: __(
+				'Start and complete',
+				'video-embed-thumbnail-generator'
+			),
 		},
 		{
 			value: 'start',
-			label: __('Start only', 'video-embed-thumbnail-generator'),
+			label: __( 'Start only', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'false',
-			label: __('None', 'video-embed-thumbnail-generator'),
+			label: __( 'None', 'video-embed-thumbnail-generator' ),
 		},
 	];
 
-	const capitalizeFirstLetter = (string) => {
-		return string.charAt(0).toUpperCase() + string.slice(1);
+	const capitalizeFirstLetter = ( string ) => {
+		return string.charAt( 0 ).toUpperCase() + string.slice( 1 );
 	};
 
 	const RolesCheckboxes = () => {
 		// Define an onChange event handler
-		const handleCapabilityChange = (roleName, capability, isChecked) => {
+		const handleCapabilityChange = ( roleName, capability, isChecked ) => {
 			const updatedCapabilities = {
 				...capabilities,
-				[capability]: {
-					...capabilities[capability],
-					[roleName]: isChecked,
+				[ capability ]: {
+					...capabilities[ capability ],
+					[ roleName ]: isChecked,
 				},
 			};
 
-			changeHandlerFactory.capabilities(updatedCapabilities);
+			changeHandlerFactory.capabilities( updatedCapabilities );
 		};
 
-		const getCapabilityLabel = (capabilityKey) => {
+		const getCapabilityLabel = ( capabilityKey ) => {
 			const labels = {
 				make_video_thumbnails: __(
 					'Can make thumbnails',
@@ -114,45 +117,47 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 			};
 
 			return (
-				labels[capabilityKey] ||
-				capitalizeFirstLetter(capabilityKey.replace(/_/g, ' '))
+				labels[ capabilityKey ] ||
+				capitalizeFirstLetter( capabilityKey.replace( /_/g, ' ' ) )
 			);
 		};
 
 		return (
 			<PanelBody
-				title={__(
+				title={ __(
 					'User capabilities',
 					'video-embed-thumbnail-generator'
-				)}
-				initialOpen={true}
+				) }
+				initialOpen={ true }
 			>
 				<Flex
 					direction="row"
-					gap={20}
+					gap={ 20 }
 					className="videopack-setting-capabilities"
 				>
-					{Object.entries(capabilities).map(
-						([capabilityKey, roles]) => {
+					{ Object.entries( capabilities ).map(
+						( [ capabilityKey, roles ] ) => {
 							if (
 								capabilityKey === 'view_full_length_video' &&
-								!settings.restrict_playback_by_capability
+								! settings.restrict_playback_by_capability
 							) {
 								return null;
 							}
 							return (
-								<FlexItem key={capabilityKey}>
-									<p>{getCapabilityLabel(capabilityKey)}</p>
-									{Object.entries(roles).map(
-										([roleKey, isEnabled]) => (
+								<FlexItem key={ capabilityKey }>
+									<p>
+										{ getCapabilityLabel( capabilityKey ) }
+									</p>
+									{ Object.entries( roles ).map(
+										( [ roleKey, isEnabled ] ) => (
 											<CheckboxControl
 												__nextHasNoMarginBottom
-												key={`${roleKey}-${capabilityKey}`}
-												label={capitalizeFirstLetter(
+												key={ `${ roleKey }-${ capabilityKey }` }
+												label={ capitalizeFirstLetter(
 													roleKey
-												)}
-												checked={isEnabled}
-												onChange={(isChecked) =>
+												) }
+												checked={ isEnabled }
+												onChange={ ( isChecked ) =>
 													handleCapabilityChange(
 														roleKey,
 														capabilityKey,
@@ -161,11 +166,11 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 												}
 											/>
 										)
-									)}
+									) }
 								</FlexItem>
 							);
 						}
-					)}
+					) }
 				</Flex>
 			</PanelBody>
 		);
@@ -174,78 +179,81 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 	return (
 		<>
 			<PanelBody
-				title={__('Structured Data', 'video-embed-thumbnail-generator')}
-				initialOpen={true}
+				title={ __(
+					'Structured Data',
+					'video-embed-thumbnail-generator'
+				) }
+				initialOpen={ true }
 			>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Generate Facebook Open Graph video tags',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.open_graph}
-						checked={!!open_graph}
-						disabled={!embeddable}
+						) }
+						onChange={ changeHandlerFactory.open_graph }
+						checked={ !! open_graph }
+						disabled={ ! embeddable }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							'Facebook and some other social media sites will use these tags to embed the first video in your post. Your video must be served via https in order to be embedded directly in Facebook and playback is handled by the unstyled built-in browser player. No statistics will be recorded for videos embedded this way and Open Graph tags generated by Jetpack will be disabled on pages with videos.',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Generate Schema.org metadata for search engines',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.schema}
-						checked={!!schema}
+						) }
+						onChange={ changeHandlerFactory.schema }
+						checked={ !! schema }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							'Helps your videos appear in search results.',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Change oEmbed to video instead of WordPress default photo/excerpt',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.oembed_provider}
-						checked={!!oembed_provider}
+						) }
+						onChange={ changeHandlerFactory.oembed_provider }
+						checked={ !! oembed_provider }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							'Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites will not show videos through oEmbed unless your link is https.',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 			</PanelBody>
-			<PanelBody title="Performance" initialOpen={true}>
+			<PanelBody title="Performance" initialOpen={ true }>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Always load plugin-related JavaScript and CSS',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.alwaysloadscripts}
-						checked={!!alwaysloadscripts}
+						) }
+						onChange={ changeHandlerFactory.alwaysloadscripts }
+						checked={ !! alwaysloadscripts }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							"Usually Videopack's JavaScript and CSS are only loaded if a video is present on the page. AJAX page loading can cause errors or unstyled players because those assets aren't loaded with the video content. Enabling this option will make sure the JavaScript and CSS are always loaded.",
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<div className="videopack-control-with-tooltip">
@@ -253,143 +261,145 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 						__next40pxDefaultSize
 						className="videopack-clear-button"
 						variant="secondary"
-						onClick={handleClearCache}
-						isBusy={isClearingCache}
-						disabled={isClearingCache}
+						onClick={ handleClearCache }
+						isBusy={ isClearingCache }
+						disabled={ isClearingCache }
 					>
-						{__(
+						{ __(
 							'Clear URL cache',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					</Button>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							"Recommended if your site's URL has changed.",
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<RadioControl
 					className="videopack-setting-radio-group"
 					label={
 						<span className="videopack-label-with-tooltip">
-							{__(
+							{ __(
 								'Record views in the WordPress database',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							<VideopackTooltip
-								text={__(
+								text={ __(
 									'Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it.',
 									'video-embed-thumbnail-generator'
-								)}
+								) }
 							/>
 						</span>
 					}
-					selected={count_views}
-					options={countViewsOptions}
-					onChange={changeHandlerFactory.count_views}
+					selected={ count_views }
+					options={ countViewsOptions }
+					onChange={ changeHandlerFactory.count_views }
 				/>
 			</PanelBody>
 			<PanelBody
-				title={__('Misc', 'video-embed-thumbnail-generator')}
-				initialOpen={true}
+				title={ __( 'Misc', 'video-embed-thumbnail-generator' ) }
+				initialOpen={ true }
 			>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Override any existing "[video]" shortcodes',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.replace_video_shortcode}
-						checked={!!replace_video_shortcode}
+						) }
+						onChange={
+							changeHandlerFactory.replace_video_shortcode
+						}
+						checked={ !! replace_video_shortcode }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							"If you have posts or theme files that make use of the built-in WordPress video shortcode, Videopack can override them with this plugin's embedded video player.",
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Override any existing Video blocks',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.replace_video_block}
-						checked={!!replace_video_block}
+						) }
+						onChange={ changeHandlerFactory.replace_video_block }
+						checked={ !! replace_video_block }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							"If you have posts that make use of the built-in WordPress Video block, Videopack can override them with this plugin's embedded video player on the frontend.",
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Replace media library video preview with Videopack player',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.replace_preview_video}
-						checked={!!replace_preview_video}
+						) }
+						onChange={ changeHandlerFactory.replace_preview_video }
+						checked={ !! replace_preview_video }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							"Enhance the default WordPress video preview in the media library with Videopack's features and player settings.",
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Allow video attachment URL rewriting',
 							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.rewrite_attachment_url}
-						checked={!!rewrite_attachment_url}
+						) }
+						onChange={ changeHandlerFactory.rewrite_attachment_url }
+						checked={ !! rewrite_attachment_url }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							'If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if Videopack is changing your URLs to local files instead of the CDN.',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<Flex direction="column">
 					<FlexItem>
 						<BaseControl
 							__nextHasNoMarginBottom
-							label={__(
+							label={ __(
 								'When deleting videos, also delete associated',
 								'video-embed-thumbnail-generator'
-							)}
-							id={'videopack-delete-options'}
+							) }
+							id={ 'videopack-delete-options' }
 						>
 							<CheckboxControl
 								__nextHasNoMarginBottom
-								label={__(
+								label={ __(
 									'Thumbnails',
 									'video-embed-thumbnail-generator'
-								)}
-								checked={delete_child_thumbnails}
+								) }
+								checked={ delete_child_thumbnails }
 								onChange={
 									changeHandlerFactory.delete_child_thumbnails
 								}
 							/>
 							<CheckboxControl
 								__nextHasNoMarginBottom
-								label={__(
+								label={ __(
 									'Encoded Videos',
 									'video-embed-thumbnail-generator'
-								)}
-								checked={delete_child_encoded}
+								) }
+								checked={ delete_child_encoded }
 								onChange={
 									changeHandlerFactory.delete_child_encoded
 								}
@@ -398,11 +408,15 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					</FlexItem>
 				</Flex>
 			</PanelBody>
-			{capabilities && <RolesCheckboxes />}
-			{applyFilters('videopack.settings.admin.after_capabilities', null, {
-				settings,
-				changeHandlerFactory,
-			})}
+			{ capabilities && <RolesCheckboxes /> }
+			{ applyFilters(
+				'videopack.settings.admin.after_capabilities',
+				null,
+				{
+					settings,
+					changeHandlerFactory,
+				}
+			) }
 		</>
 	);
 };

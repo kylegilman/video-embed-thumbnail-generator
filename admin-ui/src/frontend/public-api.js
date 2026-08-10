@@ -21,7 +21,11 @@
 const KEY_PREFIX = 'videopack_player_';
 
 function getPlayerData( key ) {
-	if ( typeof window === 'undefined' || ! window.videopack || ! window.videopack.player_data ) {
+	if (
+		typeof window === 'undefined' ||
+		! window.videopack ||
+		! window.videopack.player_data
+	) {
 		return undefined;
 	}
 	return window.videopack.player_data[ key ];
@@ -48,7 +52,10 @@ function buildKeyFromId( id ) {
  * @return {object|undefined} The player's metadata, if found.
  */
 function getPlayerDataForWrapper( el ) {
-	const wrapper = el && typeof el.closest === 'function' ? el.closest( '.videopack-player' ) : null;
+	const wrapper =
+		el && typeof el.closest === 'function'
+			? el.closest( '.videopack-player' )
+			: null;
 	if ( ! wrapper || ! wrapper.dataset.id ) {
 		return undefined;
 	}
@@ -70,4 +77,10 @@ function getPlayerDataForTrigger( el ) {
 	return getPlayerData( el.dataset.videopackId );
 }
 
-export { getPlayerData, setPlayerData, buildKeyFromId, getPlayerDataForWrapper, getPlayerDataForTrigger };
+export {
+	getPlayerData,
+	setPlayerData,
+	buildKeyFromId,
+	getPlayerDataForWrapper,
+	getPlayerDataForTrigger,
+};

@@ -17,26 +17,26 @@ import { memo } from '@wordpress/element';
  * @param {boolean}  root0.isHidden   Whether to hide (not unmount) this preview.
  * @param {Function} root0.onActivate Callback to make this item's video active.
  */
-const LoopItemPreview = memo(function LoopItemPreview({
+const LoopItemPreview = memo( function LoopItemPreviewInner( {
 	blocks,
 	isHidden,
 	onActivate,
-}) {
-	const previewProps = useBlockPreview({
+} ) {
+	const previewProps = useBlockPreview( {
 		blocks,
 		props: { className: 'wp-block-videopack-loop__item-preview' },
-	});
+	} );
 
 	return (
 		<div
-			{...previewProps}
-			style={isHidden ? { display: 'none' } : undefined}
-			onClick={onActivate}
-			onKeyPress={onActivate}
+			{ ...previewProps }
+			style={ isHidden ? { display: 'none' } : undefined }
+			onClick={ onActivate }
+			onKeyPress={ onActivate }
 			role="button"
-			tabIndex={0}
+			tabIndex={ 0 }
 		/>
 	);
-});
+} );
 
 export default LoopItemPreview;

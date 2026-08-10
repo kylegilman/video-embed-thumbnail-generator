@@ -20,110 +20,112 @@ import useVideoProbe from '../../../hooks/useVideoProbe.js';
  * @param {Object} props.model        Backbone model for the attachment.
  * @return {Object} The rendered component.
  */
-const AttachmentDetails = ({ attachmentId, model }) => {
-	const [options, setOptions] = useState();
-	const [attributes, setRawAttributes] = useState();
-	const [record, setRecord] = useState(null);
-	const [hasResolved, setHasResolved] = useState(false);
-	const [, forceUpdate] = useState({});
+const AttachmentDetails = ( { attachmentId, model } ) => {
+	const [ options, setOptions ] = useState();
+	const [ attributes, setRawAttributes ] = useState();
+	const [ record, setRecord ] = useState( null );
+	const [ hasResolved, setHasResolved ] = useState( false );
+	const [ , forceUpdate ] = useState( {} );
 
-	const { isProbing, probedMetadata } = useVideoProbe(attributes?.src);
-	const [probedMetadataOverride, setProbedMetadataOverride] = useState(null);
+	const { isProbing, probedMetadata } = useVideoProbe( attributes?.src );
+	const [ probedMetadataOverride, setProbedMetadataOverride ] =
+		useState( null );
 
 	// Sync metadata from attachment records when it loads
-	useEffect(() => {
-		if (record?.media_details && !probedMetadata) {
+	useEffect( () => {
+		if ( record?.media_details && ! probedMetadata ) {
 			const { width, height, duration } = record.media_details;
-			setProbedMetadataOverride({
+			setProbedMetadataOverride( {
 				width,
 				height,
 				duration,
 				isTainted: false, // Internal media is never tainted
-			});
-		} else if (!attributes?.src) {
-			setProbedMetadataOverride(null);
+			} );
+		} else if ( ! attributes?.src ) {
+			setProbedMetadataOverride( null );
 		}
-	}, [record, probedMetadata, attributes?.src]);
+	}, [ record, probedMetadata, attributes?.src ] );
 
 	const effectiveMetadata = probedMetadataOverride || probedMetadata;
 
-	useEffect(() => {
-		if (attributes && hasResolved) {
-			if (model) {
-				model.set('videopack_attributes', attributes);
+	useEffect( () => {
+		if ( attributes && hasResolved ) {
+			if ( model ) {
+				model.set( 'videopack_attributes', attributes );
 			} else {
 				// Standalone page: Update hidden field instead of REST API.
 				const hiddenInput = document.getElementById(
 					'videopack_meta_json'
 				);
-				if (hiddenInput) {
-					const currentMeta = record?.meta?.['_videopack-meta'] || {};
+				if ( hiddenInput ) {
+					const currentMeta =
+						record?.meta?.[ '_videopack-meta' ] || {};
 					const newMeta = { ...currentMeta, ...attributes };
-					hiddenInput.value = JSON.stringify(newMeta);
+					hiddenInput.value = JSON.stringify( newMeta );
 				}
 			}
 		}
-	}, [model, attributes, hasResolved, record]);
+	}, [ model, attributes, hasResolved, record ] );
 
-	useEffect(() => {
-		if (attributes && attributes.id && !model) {
+	useEffect( () => {
+		if ( attributes && attributes.id && ! model ) {
 			window.dispatchEvent(
-				new CustomEvent('videopack_settings_update', {
+				new CustomEvent( 'videopack_settings_update', {
 					detail: attributes,
-				})
+				} )
 			);
 		}
-	}, [attributes, model]);
+	}, [ attributes, model ] );
 
 	// Fetch the full media record from the REST API to get videopack metadata.
-	useEffect(() => {
-		if (!isNaN(attachmentId) && attachmentId > 0) {
-			setHasResolved(false);
-			setRecord(null); // Eagerly reset to prevent stale probes
-			setRawAttributes(null); // Eagerly reset to prevent stale AdditionalFormats fetch
-			apiFetch({ path: `/wp/v2/media/${attachmentId}` })
-				.then((data) => {
-					setRecord(data);
-					setHasResolved(true);
-				})
-				.catch(() => {
-					setRecord(null);
-					setHasResolved(true);
-				});
+	useEffect( () => {
+		if ( ! isNaN( attachmentId ) && attachmentId > 0 ) {
+			setHasResolved( false );
+			setRecord( null ); // Eagerly reset to prevent stale probes
+			setRawAttributes( null ); // Eagerly reset to prevent stale AdditionalFormats fetch
+			apiFetch( { path: `/wp/v2/media/${ attachmentId }` } )
+				.then( ( data ) => {
+					setRecord( data );
+					setHasResolved( true );
+				} )
+				.catch( () => {
+					setRecord( null );
+					setHasResolved( true );
+				} );
 		} else {
-			setRecord(null);
-			setHasResolved(false);
+			setRecord( null );
+			setHasResolved( false );
 		}
-	}, [attachmentId]);
+	}, [ attachmentId ] );
 
 	const attachment = useMemo(
-		() => ({ record, hasResolved }),
-		[record, hasResolved]
+		() => ( { record, hasResolved } ),
+		[ record, hasResolved ]
 	);
 
 	// Fetch global plugin options.
-	useEffect(() => {
-		getSettings().then((response) => {
-			setOptions(response);
-		});
-	}, []);
+	useEffect( () => {
+		getSettings().then( ( response ) => {
+			setOptions( response );
+		} );
+	}, [] );
 
 	// Listen for native title/caption changes on the Backbone model or DOM.
-	useEffect(() => {
+	useEffect( () => {
 		const onNativeChange = () => {
-			forceUpdate({});
+			forceUpdate( {} );
 		};
 
-		if (model) {
-			model.on('change:title change:caption', onNativeChange);
+		if ( model ) {
+			model.on( 'change:title change:caption', onNativeChange );
 			return () => {
-				model.off('change:title change:caption', onNativeChange);
+				model.off( 'change:title change:caption', onNativeChange );
 			};
 		}
 
 		// DOM bridge for standalone page.
 		const onDomChange = () => {
-			forceUpdate({});
+			forceUpdate( {} );
 		};
 		window.addEventListener(
 			'videopack_native_metadata_update',
@@ -135,21 +137,22 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 				onDomChange
 			);
 		};
-	}, [model]);
+	}, [ model ] );
 
 	// Merging wrapper that mirrors the block editor's setAttributes behavior.
 	const mergeAttributes = useCallback(
-		(newAttrs) => {
-			setRawAttributes((prev) => {
+		( newAttrs ) => {
+			setRawAttributes( ( prev ) => {
 				const updated = { ...prev, ...newAttrs };
 
 				// Sync back to the record meta if it exists, to prevent the useEffect from reverting.
-				if (record) {
-					const currentMeta = record.meta?.['_videopack-meta'] || {};
+				if ( record ) {
+					const currentMeta =
+						record.meta?.[ '_videopack-meta' ] || {};
 					const updatedMeta = { ...currentMeta, ...updated };
 
 					// We need to update the record state too so the initialization useEffect doesn't overwrite us.
-					setRecord((prevRecord) => ({
+					setRecord( ( prevRecord ) => ( {
 						...prevRecord,
 						meta: {
 							...prevRecord.meta,
@@ -159,72 +162,74 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 									? updated.poster
 									: prevRecord.meta?.[
 											'_kgflashmediaplayer-poster'
-										],
+									  ],
 							'_kgflashmediaplayer-poster-id':
 								updated.poster_id !== undefined
 									? updated.poster_id
 									: prevRecord.meta?.[
 											'_kgflashmediaplayer-poster-id'
-										],
+									  ],
 						},
-					}));
+					} ) );
 				}
 
 				return updated;
-			});
+			} );
 		},
-		[record]
+		[ record ]
 	);
 
 	// Calculate and initialize the combined attributes object.
-	useEffect(() => {
-		if (attachment.hasResolved && options) {
+	useEffect( () => {
+		if ( attachment.hasResolved && options ) {
 			const recordId = attachment.record?.id;
 			const videopackMeta =
-				attachment.record?.meta?.['_videopack-meta'] || {};
+				attachment.record?.meta?.[ '_videopack-meta' ] || {};
 
 			// Filter out null values so they don't overwrite defaults.
 			const filteredMeta = Object.fromEntries(
-				Object.entries(videopackMeta).filter(
-					([, v]) => v !== null && v !== undefined
+				Object.entries( videopackMeta ).filter(
+					( [ , v ] ) => v !== null && v !== undefined
 				)
 			);
 
 			// Prioritize attributes stored in the Backbone model (e.g., from a shortcode).
 			const modelAttrsRaw = model
-				? model.get('videopack_attributes')
+				? model.get( 'videopack_attributes' )
 				: null;
 			let parsedModelAttrs = {};
 			try {
 				parsedModelAttrs =
 					typeof modelAttrsRaw === 'string'
-						? JSON.parse(modelAttrsRaw || '{}')
+						? JSON.parse( modelAttrsRaw || '{}' )
 						: modelAttrsRaw || {};
-			} catch (e) {
-				console.error('Failed to parse videopack_attributes', e);
+			} catch ( e ) {
+				console.error( 'Failed to parse videopack_attributes', e );
 			}
 
 			// Clean up types for attributes coming from the model/shortcode.
-			Object.keys(parsedModelAttrs).forEach((key) => {
-				let val = parsedModelAttrs[key];
-				if (val === 'true') {
+			Object.keys( parsedModelAttrs ).forEach( ( key ) => {
+				let val = parsedModelAttrs[ key ];
+				if ( val === 'true' ) {
 					val = true;
-				} else if (val === 'false') {
+				} else if ( val === 'false' ) {
 					val = false;
 				} else if (
-					!isNaN(val) &&
+					! isNaN( val ) &&
 					val !== '' &&
 					typeof val === 'string'
 				) {
-					if (!['id', 'poster', 'src', 'title'].includes(key)) {
-						val = Number(val);
+					if (
+						! [ 'id', 'poster', 'src', 'title' ].includes( key )
+					) {
+						val = Number( val );
 					}
 				}
-				parsedModelAttrs[key] = val;
-			});
+				parsedModelAttrs[ key ] = val;
+			} );
 
 			// Resolve caption with native Backbone model as priority.
-			const nativeCaption = model ? model.get('caption') : '';
+			const nativeCaption = model ? model.get( 'caption' ) : '';
 
 			const combinedAttributes = {
 				id: recordId,
@@ -234,24 +239,26 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 				caption: nativeCaption || '',
 				src: attachment.record?.source_url,
 				poster:
-					attachment.record?.meta?.['_kgflashmediaplayer-poster'] ||
-					attachment.record?.meta?.['_videopack-meta']?.poster,
+					attachment.record?.meta?.[ '_kgflashmediaplayer-poster' ] ||
+					attachment.record?.meta?.[ '_videopack-meta' ]?.poster,
 				poster_id:
-					attachment.record?.meta?.['_kgflashmediaplayer-poster-id'],
+					attachment.record?.meta?.[
+						'_kgflashmediaplayer-poster-id'
+					],
 				sources:
 					attachment.record?.videopack?.sources ||
-					(attachment.record?.source_url
-						? [{ src: attachment.record.source_url }]
-						: []),
+					( attachment.record?.source_url
+						? [ { src: attachment.record.source_url } ]
+						: [] ),
 				source_groups:
 					attachment.record?.videopack?.source_groups || {},
 				...filteredMeta,
 				...parsedModelAttrs,
 			};
 
-			setRawAttributes(combinedAttributes);
+			setRawAttributes( combinedAttributes );
 		}
-	}, [options, attachment, record, model]); // attachment.record is specifically watched
+	}, [ options, attachment, record, model ] ); // attachment.record is specifically watched
 
 	const { handleSettingChange } = useVideoSettings(
 		attributes || {},
@@ -260,41 +267,43 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 		{ autoSave: true }
 	);
 
-	if (attributes && attachment.hasResolved && options) {
+	if ( attributes && attachment.hasResolved && options ) {
 		// Hide Videopack controls if editing a generated format.
-		if (attachment.record?.meta?.['_kgflashmediaplayer-format']) {
+		if ( attachment.record?.meta?.[ '_kgflashmediaplayer-format' ] ) {
 			return null;
 		}
 
 		return (
 			<div className="videopack-attachment-details">
-				{(window.videopackAttachmentDetailsExtensions || []).map(
-					(Extension, idx) => (
+				{ ( window.videopackAttachmentDetailsExtensions || [] ).map(
+					( Extension, idx ) => (
 						<Extension
-							key={idx}
-							attachmentId={attachmentId}
-							model={model}
-							attributes={attributes}
-							setAttributes={mergeAttributes}
-							options={options}
-							record={record}
-							setRecord={setRecord}
+							key={ idx }
+							attachmentId={ attachmentId }
+							model={ model }
+							attributes={ attributes }
+							setAttributes={ mergeAttributes }
+							options={ options }
+							record={ record }
+							setRecord={ setRecord }
 						/>
 					)
-				)}
+				) }
 				<Thumbnails
-					setAttributes={handleSettingChange}
-					attributes={attributes}
-					videoData={{
+					setAttributes={ handleSettingChange }
+					attributes={ attributes }
+					videoData={ {
 						...attachment,
-						edit: (data) => {
-							if (data.meta?.['_videopack-meta']) {
-								mergeAttributes(data.meta['_videopack-meta']);
+						edit: ( data ) => {
+							if ( data.meta?.[ '_videopack-meta' ] ) {
+								mergeAttributes(
+									data.meta[ '_videopack-meta' ]
+								);
 							}
-							if (data.featured_media !== undefined) {
-								mergeAttributes({
+							if ( data.featured_media !== undefined ) {
+								mergeAttributes( {
 									poster_id: data.featured_media,
-								});
+								} );
 							}
 						},
 						save: async () => {
@@ -302,46 +311,48 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 							// so we don't need to do anything here as it's already debounced/saving.
 							return attachment.record;
 						},
-					}}
-					options={options}
-					parentId={attachment.record?.post || 0}
-					isProbing={isProbing}
-					probedMetadata={effectiveMetadata}
+					} }
+					options={ options }
+					parentId={ attachment.record?.post || 0 }
+					isProbing={ isProbing }
+					probedMetadata={ effectiveMetadata }
 				/>
-				{(
+				{ (
 					window.videopackAttachmentDetailsExtensionsBelowThumbnails ||
 					[]
-				).map((Extension, idx) => (
+				).map( ( Extension, idx ) => (
 					<Extension
-						key={`below-${idx}`}
-						attachmentId={attachmentId}
-						model={model}
-						attributes={attributes}
-						setAttributes={mergeAttributes}
-						options={options}
-						record={record}
-						setRecord={setRecord}
+						key={ `below-${ idx }` }
+						attachmentId={ attachmentId }
+						model={ model }
+						attributes={ attributes }
+						setAttributes={ mergeAttributes }
+						options={ options }
+						record={ record }
+						setRecord={ setRecord }
 					/>
-				))}
+				) ) }
 				<VideoSettings
-					setAttributes={handleSettingChange}
-					attributes={attributes}
-					options={options}
-					isProbing={isProbing}
-					probedMetadata={effectiveMetadata}
+					setAttributes={ handleSettingChange }
+					attributes={ attributes }
+					options={ options }
+					isProbing={ isProbing }
+					probedMetadata={ effectiveMetadata }
 					fallbackTitle={
-						(model ? model.get('title') : '') ||
+						( model ? model.get( 'title' ) : '' ) ||
 						attachment.record?.title?.rendered ||
 						''
 					}
-					fallbackCaption={(model ? model.get('caption') : '') || ''}
+					fallbackCaption={
+						( model ? model.get( 'caption' ) : '' ) || ''
+					}
 				/>
 				<AdditionalFormats
-					key={attributes.id || attributes.src}
-					attributes={attributes}
-					options={options}
-					isProbing={isProbing}
-					probedMetadata={effectiveMetadata}
+					key={ attributes.id || attributes.src }
+					attributes={ attributes }
+					options={ options }
+					isProbing={ isProbing }
+					probedMetadata={ effectiveMetadata }
 				/>
 			</div>
 		);

@@ -27,7 +27,10 @@
  *                           method choice that getColorFallbacks accounts for.
  * @return {Object} Flat design attributes, omitting unset values.
  */
-export default function getSharedDesignAttributes(source = {}, fallbacks = {}) {
+export default function getSharedDesignAttributes(
+	source = {},
+	fallbacks = {}
+) {
 	const attrs = {
 		skin: source.skin,
 		title_color: source.title_color || fallbacks.title_color,
@@ -65,6 +68,6 @@ export default function getSharedDesignAttributes(source = {}, fallbacks = {}) {
 	};
 
 	return Object.fromEntries(
-		Object.entries(attrs).filter(([, value]) => value !== undefined)
+		Object.entries( attrs ).filter( ( [ , value ] ) => value !== undefined )
 	);
 }

@@ -109,7 +109,7 @@ export const VIDEOPACK_CONTEXT_KEYS =
 	 *
 	 * @param {Array} contextKeys List of context key strings.
 	 */
-	applyFilters('videopack.contextKeys', DEFAULT_CONTEXT_KEYS);
+	applyFilters( 'videopack.contextKeys', DEFAULT_CONTEXT_KEYS );
 
 /**
  * Hook to resolve Videopack design context and generate styles/classes.
@@ -119,7 +119,11 @@ export const VIDEOPACK_CONTEXT_KEYS =
  * @param {Object} options    Optional configuration.
  * @return {Object} Resolved values, styles, and classes.
  */
-export default function useVideopackContext(attributes, context, options = {}) {
+export default function useVideopackContext(
+	attributes,
+	context,
+	options = {}
+) {
 	const {
 		excludeHoverTrigger: optionsExclude = false,
 		excludeKeys = EMPTY_EXCLUDE_KEYS,
@@ -135,85 +139,92 @@ export default function useVideopackContext(attributes, context, options = {}) {
 		optionsExclude || attributes.exclude_hover_trigger || false;
 
 	// 1. Initial Synchronous Resolution
-	const initial = useMemo(() => {
+	const initial = useMemo( () => {
 		const resolved = {};
 		const style = {};
 		const classes = [];
 
-		VIDEOPACK_CONTEXT_KEYS.forEach((key) => {
-			if (excludeKeys.includes(key)) {
+		VIDEOPACK_CONTEXT_KEYS.forEach( ( key ) => {
+			if ( excludeKeys.includes( key ) ) {
 				return;
 			}
-			const value = getEffectiveValue(key, attributes, context);
-			resolved[key] = value;
+			const value = getEffectiveValue( key, attributes, context );
+			resolved[ key ] = value;
 
-			if (value && (classKeys === null || classKeys.includes(key))) {
-				const cssKey = key.replace(/_/g, '-');
-				if (typeof value === 'string' || typeof value === 'number') {
-					const cssVar = `--videopack-${cssKey}`;
-					style[cssVar] = value;
+			if (
+				value &&
+				( classKeys === null || classKeys.includes( key ) )
+			) {
+				const cssKey = key.replace( /_/g, '-' );
+				if ( typeof value === 'string' || typeof value === 'number' ) {
+					const cssVar = `--videopack-${ cssKey }`;
+					style[ cssVar ] = value;
 				}
 
 				// Only add classes for colors/styles that are actually set
-				if (key !== 'skin') {
-					classes.push(`videopack-has-${cssKey}`);
+				if ( key !== 'skin' ) {
+					classes.push( `videopack-has-${ cssKey }` );
 
 					// Add specific class for embed method value
-					if (key === 'embed_method') {
-						const embedClass = `videopack-embed-${String(value)
+					if ( key === 'embed_method' ) {
+						const embedClass = `videopack-embed-${ String( value )
 							.toLowerCase()
-							.replace(/[^a-z0-9]/g, '-')}`;
-						classes.push(embedClass);
+							.replace( /[^a-z0-9]/g, '-' ) }`;
+						classes.push( embedClass );
 					}
 				}
 			}
-		});
+		} );
 
 		// Special handling for skin class
-		if (resolved.skin && resolved.skin !== 'default') {
-			classes.push(resolved.skin);
+		if ( resolved.skin && resolved.skin !== 'default' ) {
+			classes.push( resolved.skin );
 		}
 
 		// Handle Gutenberg "style" attribute (typography, spacing, etc).
-		if (attributes.style && typeof attributes.style === 'object') {
+		if ( attributes.style && typeof attributes.style === 'object' ) {
 			// Typography Support
-			if (attributes.style.typography) {
+			if ( attributes.style.typography ) {
 				const { fontSize, lineHeight, letterSpacing } =
 					attributes.style.typography;
-				if (fontSize) {
-					if (fontSize.startsWith('var:preset|font-size|')) {
-						const slug = fontSize.split('|').pop();
-						style.fontSize = `var(--wp--preset--font-size--${slug})`;
+				if ( fontSize ) {
+					if ( fontSize.startsWith( 'var:preset|font-size|' ) ) {
+						const slug = fontSize.split( '|' ).pop();
+						style.fontSize = `var(--wp--preset--font-size--${ slug })`;
 					} else {
 						style.fontSize = fontSize;
 					}
 				}
-				if (lineHeight) {
+				if ( lineHeight ) {
 					style.lineHeight = lineHeight;
 				}
-				if (letterSpacing) {
+				if ( letterSpacing ) {
 					style.letterSpacing = letterSpacing;
 				}
 			}
 
 			// Spacing Support (Margin/Padding)
-			if (attributes.style.spacing) {
-				Object.entries(attributes.style.spacing).forEach(
-					([type, values]) => {
-						if (values && typeof values === 'object') {
-							Object.entries(values).forEach(([dir, val]) => {
-								let finalVal = val;
-								if (
-									typeof val === 'string' &&
-									val.startsWith('var:preset|spacing|')
-								) {
-									const slug = val.split('|').pop();
-									finalVal = `var(--wp--preset--spacing--${slug})`;
+			if ( attributes.style.spacing ) {
+				Object.entries( attributes.style.spacing ).forEach(
+					( [ type, values ] ) => {
+						if ( values && typeof values === 'object' ) {
+							Object.entries( values ).forEach(
+								( [ dir, val ] ) => {
+									let finalVal = val;
+									if (
+										typeof val === 'string' &&
+										val.startsWith( 'var:preset|spacing|' )
+									) {
+										const slug = val.split( '|' ).pop();
+										finalVal = `var(--wp--preset--spacing--${ slug })`;
+									}
+									style[
+										`${ type }${ dir
+											.charAt( 0 )
+											.toUpperCase() }${ dir.slice( 1 ) }`
+									] = finalVal;
 								}
-								style[
-									`${type}${dir.charAt(0).toUpperCase()}${dir.slice(1)}`
-								] = finalVal;
-							});
+							);
 						}
 					}
 				);
@@ -221,46 +232,50 @@ export default function useVideopackContext(attributes, context, options = {}) {
 		}
 
 		resolved.isEditingAllPages = isTrue(
-			getEffectiveValue('isEditingAllPages', attributes, context)
+			getEffectiveValue( 'isEditingAllPages', attributes, context )
 		);
 		resolved.prioritizePostData = isTrue(
-			getEffectiveValue('prioritizePostData', attributes, context)
+			getEffectiveValue( 'prioritizePostData', attributes, context )
 		);
 		resolved.isStandalone = isTrue(
-			getEffectiveValue('isStandalone', attributes, context)
+			getEffectiveValue( 'isStandalone', attributes, context )
 		);
 		// Core data identification
-		resolved.postId = getEffectiveValue('postId', attributes, context);
+		resolved.postId = getEffectiveValue( 'postId', attributes, context );
 		resolved.attachmentId = getEffectiveValue(
 			'attachmentId',
 			attributes,
 			context
 		);
-		resolved.postType = getEffectiveValue('postType', attributes, context);
+		resolved.postType = getEffectiveValue(
+			'postType',
+			attributes,
+			context
+		);
 
 		// Handle Gutenberg Typography Classes (Presets)
-		if (attributes.fontSize) {
-			classes.push(`has-${attributes.fontSize}-font-size`);
+		if ( attributes.fontSize ) {
+			classes.push( `has-${ attributes.fontSize }-font-size` );
 		}
-		if (attributes.fontFamily) {
-			classes.push(`has-${attributes.fontFamily}-font-family`);
+		if ( attributes.fontFamily ) {
+			classes.push( `has-${ attributes.fontFamily }-font-family` );
 		}
 
-		if (!excludeHoverTrigger) {
-			classes.push('videopack-hover-trigger');
+		if ( ! excludeHoverTrigger ) {
+			classes.push( 'videopack-hover-trigger' );
 		}
 
 		return { resolved, style, classes };
-	}, [attributes, context, excludeHoverTrigger, excludeKeys, classKeys]);
+	}, [ attributes, context, excludeHoverTrigger, excludeKeys, classKeys ] );
 
 	// 2. Automatic Video Discovery
 	// If we have a postId but no attachmentId, try to find the first video attachment.
 	const { discoveredAttachmentId, isDiscovering } = useSelect(
-		(select) => {
+		( select ) => {
 			const { resolved } = initial;
 
 			// If we already have an attachmentId, a manual src, or a saved id, we're not discovering.
-			if (resolved.attachmentId || attributes.src || attributes.id) {
+			if ( resolved.attachmentId || attributes.src || attributes.id ) {
 				return {
 					discoveredAttachmentId:
 						resolved.attachmentId || attributes.id,
@@ -269,41 +284,41 @@ export default function useVideopackContext(attributes, context, options = {}) {
 			}
 
 			// If we don't even have a postId, we can't discover anything.
-			if (!resolved.postId || resolved.postId < 1) {
+			if ( ! resolved.postId || resolved.postId < 1 ) {
 				return { discoveredAttachmentId: null, isDiscovering: false };
 			}
 
 			// Avoid duplicates: Find IDs already used by other blocks
-			const { getBlocks } = select('core/block-editor');
+			const { getBlocks } = select( 'core/block-editor' );
 			const allBlocks = getBlocks();
 
 			const usedIds = new Set();
-			const findUsedIds = (blocks) => {
-				blocks.forEach((block) => {
+			const findUsedIds = ( blocks ) => {
+				blocks.forEach( ( block ) => {
 					if (
 						block.name === 'videopack/player-container' &&
 						block.attributes.id
 					) {
-						usedIds.add(Number(block.attributes.id));
+						usedIds.add( Number( block.attributes.id ) );
 					}
-					if (block.innerBlocks) {
-						findUsedIds(block.innerBlocks);
+					if ( block.innerBlocks ) {
+						findUsedIds( block.innerBlocks );
 					}
-				});
+				} );
 			};
-			findUsedIds(allBlocks);
+			findUsedIds( allBlocks );
 
 			// If the postId itself IS an attachment, then that's our attachmentId.
-			if (resolved.postType === 'attachment') {
-				const id = Number(resolved.postId);
+			if ( resolved.postType === 'attachment' ) {
+				const id = Number( resolved.postId );
 				// Only use it if it's not already taken by another block
-				if (!usedIds.has(id)) {
+				if ( ! usedIds.has( id ) ) {
 					return { discoveredAttachmentId: id, isDiscovering: false };
 				}
 			}
 
 			// Otherwise, try to find a video attachment for this post that isn't already used.
-			const { getEntityRecords } = select('core');
+			const { getEntityRecords } = select( 'core' );
 			const query = {
 				parent: resolved.postId,
 				media_type: 'video',
@@ -315,30 +330,30 @@ export default function useVideopackContext(attributes, context, options = {}) {
 				'attachment',
 				query
 			);
-			const isResolving = select('core/data').isResolving(
+			const isResolving = select( 'core/data' ).isResolving(
 				'core',
 				'getEntityRecords',
-				['postType', 'attachment', query]
+				[ 'postType', 'attachment', query ]
 			);
 
 			// Pick the first one that is a video AND isn't already used
 			const foundId =
 				attachments?.find(
-					(a) =>
-						a.mime_type?.startsWith('video/') &&
-						!usedIds.has(Number(a.id))
+					( a ) =>
+						a.mime_type?.startsWith( 'video/' ) &&
+						! usedIds.has( Number( a.id ) )
 				)?.id || null;
 
 			return {
 				discoveredAttachmentId: foundId,
 				isDiscovering:
-					isResolving || (!foundId && attachments === undefined),
+					isResolving || ( ! foundId && attachments === undefined ),
 			};
 		},
-		[attributes.src, attributes.id, initial]
+		[ attributes.src, attributes.id, initial ]
 	);
 
-	return useMemo(() => {
+	return useMemo( () => {
 		const rawAttachmentId =
 			initial.resolved.attachmentId ||
 			discoveredAttachmentId ||
@@ -351,7 +366,7 @@ export default function useVideopackContext(attributes, context, options = {}) {
 			rawAttachmentId === initial.resolved.postId &&
 			initial.resolved.postType &&
 			initial.resolved.postType !== 'attachment' &&
-			!attributes.id
+			! attributes.id
 				? null
 				: rawAttachmentId;
 
@@ -363,30 +378,30 @@ export default function useVideopackContext(attributes, context, options = {}) {
 
 		// 3. Generate Shared Context Bridge
 		const sharedContext = {};
-		VIDEOPACK_CONTEXT_KEYS.forEach((key) => {
+		VIDEOPACK_CONTEXT_KEYS.forEach( ( key ) => {
 			if (
-				finalResolved[key] !== undefined &&
-				finalResolved[key] !== null
+				finalResolved[ key ] !== undefined &&
+				finalResolved[ key ] !== null
 			) {
-				sharedContext[`videopack/${key}`] = finalResolved[key];
+				sharedContext[ `videopack/${ key }` ] = finalResolved[ key ];
 			}
-		});
+		} );
 
 		// Add core metadata to shared context
-		sharedContext['videopack/postId'] = finalResolved.postId;
-		sharedContext['videopack/attachmentId'] = finalResolved.attachmentId;
-		sharedContext['videopack/postType'] = finalResolved.postType;
-		sharedContext['videopack/isEditingAllPages'] =
+		sharedContext[ 'videopack/postId' ] = finalResolved.postId;
+		sharedContext[ 'videopack/attachmentId' ] = finalResolved.attachmentId;
+		sharedContext[ 'videopack/postType' ] = finalResolved.postType;
+		sharedContext[ 'videopack/isEditingAllPages' ] =
 			finalResolved.isEditingAllPages;
-		sharedContext['videopack/prioritizePostData'] =
+		sharedContext[ 'videopack/prioritizePostData' ] =
 			finalResolved.prioritizePostData;
-		sharedContext['videopack/isStandalone'] = finalResolved.isStandalone;
+		sharedContext[ 'videopack/isStandalone' ] = finalResolved.isStandalone;
 
 		return {
 			resolved: finalResolved,
 			style: initial.style,
-			classes: initial.classes.join(' '),
+			classes: initial.classes.join( ' ' ),
 			sharedContext,
 		};
-	}, [initial, discoveredAttachmentId, isDiscovering, attributes.id]);
+	}, [ initial, discoveredAttachmentId, isDiscovering, attributes.id ] );
 }

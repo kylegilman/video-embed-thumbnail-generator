@@ -42,7 +42,7 @@ import useVideopackContext from '../../hooks/useVideopackContext';
 import { getTitleInnerTemplate } from '../../utils/titleDownloadBlock';
 import './editor.scss';
 
-const ALLOWED_MEDIA_TYPES = ['video', 'image/gif'];
+const ALLOWED_MEDIA_TYPES = [ 'video', 'image/gif' ];
 
 const ALLOWED_BLOCKS = [
 	'videopack/player',
@@ -69,46 +69,47 @@ const PLAYER_CONTEXT_CLASS_KEYS = [
  * @param {string}   root0.clientId      Block client ID.
  * @param {Function} root0.setAttributes Attribute setter.
  * @param {Object}   root0.context       Block context.
+ * @param {boolean}  root0.isSelected    Whether the block is currently selected.
  * @return {Element}                     The rendered component.
  */
-export default function Edit({
+export default function Edit( {
 	attributes,
 	setAttributes,
 	context,
 	clientId,
 	isSelected,
-}) {
+} ) {
 	const { id, src } = attributes;
-	const [temporarySrc, setTemporarySrc] = useState(
-		isBlobURL(src) ? src : null
+	const [ temporarySrc, setTemporarySrc ] = useState(
+		isBlobURL( src ) ? src : null
 	);
 	const effectiveSrc = temporarySrc || src;
-	const [options, setOptions] = useState();
+	const [ options, setOptions ] = useState();
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const mejsSvgPath =
 		config?.mejs_controls_svg ||
-		(typeof window !== 'undefined'
-			? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
-			: '');
+		( typeof window !== 'undefined'
+			? `${ window.location.origin }/wp-includes/js/mediaelement/mejs-controls.svg`
+			: '' );
 
 	const globalOptions = config?.options || {};
 	const effectiveAlign = attributes.align || globalOptions.align || '';
 
-	const blockProps = useBlockProps({
-		className: effectiveAlign ? `align${effectiveAlign}` : '',
+	const blockProps = useBlockProps( {
+		className: effectiveAlign ? `align${ effectiveAlign }` : '',
 		style: {
 			'--videopack-mejs-controls-svg': mejsSvgPath
-				? `url("${mejsSvgPath}")`
+				? `url("${ mejsSvgPath }")`
 				: undefined,
 		},
-	});
-	const hasAttemptedInitialUpload = useRef(false);
-	const { createErrorNotice } = useDispatch(noticesStore);
-	const { insertBlock } = useDispatch(blockEditorStore);
-	const vpContext = useVideopackContext(attributes, context, {
+	} );
+	const hasAttemptedInitialUpload = useRef( false );
+	const { createErrorNotice } = useDispatch( noticesStore );
+	const { insertBlock } = useDispatch( blockEditorStore );
+	const vpContext = useVideopackContext( attributes, context, {
 		classKeys: PLAYER_CONTEXT_CLASS_KEYS,
-	});
+	} );
 	const {
 		resolved: effectiveDesign,
 		style: contextStyle,
@@ -121,7 +122,7 @@ export default function Edit({
 		isDiscovering,
 	} = effectiveDesign;
 
-	const contextAttachmentId = context['videopack/attachmentId'];
+	const contextAttachmentId = context[ 'videopack/attachmentId' ];
 	const {
 		mediaUpload,
 		isSiteEditor,
@@ -131,9 +132,9 @@ export default function Edit({
 		attachmentError,
 		hasSelectedInnerBlock,
 	} = useSelect(
-		(select) => {
-			const editorStore = select(blockEditorStore);
-			const editor = select('core/editor');
+		( select ) => {
+			const editorStore = select( blockEditorStore );
+			const editor = select( 'core/editor' );
 			const postType = editor?.getCurrentPostType();
 			const effectiveId =
 				id || contextAttachmentId || resolvedAttachmentId;
@@ -146,26 +147,26 @@ export default function Edit({
 					postType === 'wp_template' ||
 					postType === 'wp_template_part',
 				editorPostId: editor?.getCurrentPostId(),
-				innerBlocks: editorStore.getBlocks(clientId),
+				innerBlocks: editorStore.getBlocks( clientId ),
 				attachmentFromStore: isAttachmentIdValid
-					? select('core').getEntityRecord(
+					? select( 'core' ).getEntityRecord(
 							'postType',
 							'attachment',
 							effectiveId
-						)
+					  )
 					: null,
 				attachmentError: isAttachmentIdValid
-					? select('core').getResolutionError('getEntityRecord', [
+					? select( 'core' ).getResolutionError( 'getEntityRecord', [
 							'postType',
 							'attachment',
 							effectiveId,
-						])
+					  ] )
 					: null,
 				hasSelectedInnerBlock:
-					editorStore.hasSelectedInnerBlock(clientId),
+					editorStore.hasSelectedInnerBlock( clientId ),
 			};
 		},
-		[clientId, id, contextAttachmentId, resolvedAttachmentId]
+		[ clientId, id, contextAttachmentId, resolvedAttachmentId ]
 	);
 
 	// Only show this block's own "Add block" appender while it (or a child)
@@ -174,28 +175,28 @@ export default function Edit({
 	const showPlayerContainerAppender = isSelected || hasSelectedInnerBlock;
 
 	const isDynamic =
-		(context['videopack/postId'] || context.postId) &&
-		(Number(context['videopack/postId'] || context.postId) !==
-			Number(editorPostId) ||
-			isSiteEditor);
-	const isStandalone = !isDynamic;
+		( context[ 'videopack/postId' ] || context.postId ) &&
+		( Number( context[ 'videopack/postId' ] || context.postId ) !==
+			Number( editorPostId ) ||
+			isSiteEditor );
+	const isStandalone = ! isDynamic;
 	const effectiveId = resolvedAttachmentId;
 
-	const [attachmentOverride, setAttachmentOverride] = useState(null);
+	const [ attachmentOverride, setAttachmentOverride ] = useState( null );
 	const attachment = attachmentOverride || attachmentFromStore;
-	const hasResolved = !!attachment || (!effectiveId && !effectiveSrc);
+	const hasResolved = !! attachment || ( ! effectiveId && ! effectiveSrc );
 
 	const videoData = useMemo(
-		() => ({
+		() => ( {
 			record: attachment,
 			setRecord: setAttachmentOverride,
 			hasResolved,
-		}),
-		[attachment, hasResolved]
+		} ),
+		[ attachment, hasResolved ]
 	);
 
-	const resolvedAttributes = useMemo(() => {
-		if (!attachment) {
+	const resolvedAttributes = useMemo( () => {
+		if ( ! attachment ) {
 			return attributes;
 		}
 
@@ -205,44 +206,42 @@ export default function Edit({
 			id: attachment.id,
 			poster:
 				attachment.videopack?.poster ||
-				attachment.meta?.['_videopack-meta']?.poster ||
+				attachment.meta?.[ '_videopack-meta' ]?.poster ||
 				attributes.poster,
 			total_thumbnails:
-				attachment.meta?.['_videopack-meta']?.total_thumbnails ||
+				attachment.meta?.[ '_videopack-meta' ]?.total_thumbnails ||
 				attributes.total_thumbnails,
 			featured:
-				attachment.meta?.['_videopack-meta']?.featured ||
+				attachment.meta?.[ '_videopack-meta' ]?.featured ||
 				attributes.featured,
 			title:
 				attributes.title ||
-				context['videopack/title'] ||
+				context[ 'videopack/title' ] ||
 				attachment?.title?.rendered ||
 				'',
 			caption:
 				attributes.caption ||
-				context['videopack/caption'] ||
+				context[ 'videopack/caption' ] ||
 				attachment?.caption?.raw ||
 				attachment?.caption?.rendered ||
 				'',
 			views:
 				attachment.videopack?.views ||
 				attachment.meta?.videopack_views ||
-				attachment.meta?.['_videopack-meta']?.starts ||
+				attachment.meta?.[ '_videopack-meta' ]?.starts ||
 				0,
 			duration:
 				attachment.videopack?.duration ||
-				attachment.meta?.['_videopack-meta']?.duration ||
+				attachment.meta?.[ '_videopack-meta' ]?.duration ||
 				attributes.duration ||
 				'',
-			videopack:
-				attachment.videopack ||
-				null,
+			videopack: attachment.videopack || null,
 			starts:
-				attachment.meta?.['_videopack-meta']?.starts ||
+				attachment.meta?.[ '_videopack-meta' ]?.starts ||
 				attributes.starts,
 			text_tracks:
-				attachment.meta?.['_videopack-meta']?.track ||
-				attachment.meta?.['_videopack-meta']?.tracks ||
+				attachment.meta?.[ '_videopack-meta' ]?.track ||
+				attachment.meta?.[ '_videopack-meta' ]?.tracks ||
 				attachment.meta?.track ||
 				attachment.meta?.tracks ||
 				attributes.text_tracks ||
@@ -251,7 +250,7 @@ export default function Edit({
 			height: attachment.media_details?.height || attributes.height,
 			sources:
 				attachment.videopack?.sources ||
-				(attachment.source_url || attachment.url || effectiveSrc
+				( attachment.source_url || attachment.url || effectiveSrc
 					? [
 							{
 								src:
@@ -259,23 +258,23 @@ export default function Edit({
 									attachment.url ||
 									effectiveSrc,
 							},
-						]
-					: attributes.sources || []),
+					  ]
+					: attributes.sources || [] ),
 			source_groups:
-				(attachment.videopack?.source_groups &&
-				Object.keys(attachment.videopack.source_groups).length > 0
+				( attachment.videopack?.source_groups &&
+				Object.keys( attachment.videopack.source_groups ).length > 0
 					? attachment.videopack.source_groups
-					: null) ||
-				(attributes.source_groups &&
-				Object.keys(attributes.source_groups).length > 0
+					: null ) ||
+				( attributes.source_groups &&
+				Object.keys( attributes.source_groups ).length > 0
 					? attributes.source_groups
-					: null) ||
+					: null ) ||
 				{},
 			default_ratio:
-				attachment.meta?.['_kgflashmediaplayer-ratio'] ||
+				attachment.meta?.[ '_kgflashmediaplayer-ratio' ] ||
 				attributes.default_ratio,
 			fixed_aspect:
-				attachment.meta?.['_kgflashmediaplayer-fixedaspect'] ||
+				attachment.meta?.[ '_kgflashmediaplayer-fixedaspect' ] ||
 				attributes.fixed_aspect,
 			fullwidth: attributes.fullwidth,
 			embed_method:
@@ -321,15 +320,15 @@ export default function Edit({
 				attributes.title_background_color ||
 				effectiveDesign.title_background_color,
 			embedlink:
-				context['videopack/embedlink'] ||
+				context[ 'videopack/embedlink' ] ||
 				attachment?.videopack?.embed_url ||
 				attributes.embedlink,
 			showCaption:
 				attributes.showCaption ||
-				!!(
+				!! (
 					attachment?.caption?.raw ||
 					attachment?.caption?.rendered ||
-					context['videopack/caption']
+					context[ 'videopack/caption' ]
 				),
 		};
 	}, [
@@ -340,113 +339,114 @@ export default function Edit({
 		context,
 		effectiveDesign,
 		effectiveSrc,
-	]);
+	] );
 
-	const attributesRef = useRef(attributes);
-	const isMountedRef = useRef(false);
+	const attributesRef = useRef( attributes );
+	const isMountedRef = useRef( false );
 
-	useEffect(() => {
+	useEffect( () => {
 		attributesRef.current = attributes;
-	}, [attributes]);
+	}, [ attributes ] );
 
-	useEffect(() => {
+	useEffect( () => {
 		isMountedRef.current = true;
 		return () => {
 			isMountedRef.current = false;
 		};
-	}, []);
+	}, [] );
 
 	const setAttributesFromMedia = useCallback(
-		(attachmentObject, forcePersist = false) => {
-			if (!isMountedRef.current) {
+		( attachmentObject, forcePersist = false ) => {
+			if ( ! isMountedRef.current ) {
 				return;
 			}
 
 			const media_src =
 				attachmentObject.source_url || attachmentObject.url;
 			const media_attributes = {
-				src: isBlobURL(media_src) ? undefined : media_src,
+				src: isBlobURL( media_src ) ? undefined : media_src,
 				id: attachmentObject.id,
 				poster:
 					attachmentObject.videopack?.poster ||
-					attachmentObject.meta?.['_videopack-meta']?.poster,
+					attachmentObject.meta?.[ '_videopack-meta' ]?.poster,
 				total_thumbnails:
-					attachmentObject.meta?.['_videopack-meta']
+					attachmentObject.meta?.[ '_videopack-meta' ]
 						?.total_thumbnails,
-				featured: attachmentObject.meta?.['_videopack-meta']?.featured,
+				featured:
+					attachmentObject.meta?.[ '_videopack-meta' ]?.featured,
 				title: attachmentObject.title?.rendered,
 				caption: attachmentObject.caption?.rendered,
-				starts: attachmentObject.meta?.['_videopack-meta']?.starts,
+				starts: attachmentObject.meta?.[ '_videopack-meta' ]?.starts,
 				text_tracks:
-					attachmentObject.meta?.['_videopack-meta']?.track ||
-					attachmentObject.meta?.['_videopack-meta']?.tracks ||
+					attachmentObject.meta?.[ '_videopack-meta' ]?.track ||
+					attachmentObject.meta?.[ '_videopack-meta' ]?.tracks ||
 					attachmentObject.meta?.track ||
 					attachmentObject.meta?.tracks ||
 					[],
 				embedlink: attachmentObject.link
 					? attachmentObject.link +
-						(attachmentObject.link.includes('?') ? '&' : '?') +
-						'videopack[enable]=true'
+					  ( attachmentObject.link.includes( '?' ) ? '&' : '?' ) +
+					  'videopack[enable]=true'
 					: undefined,
 				width: attachmentObject.media_details?.width,
 				height: attachmentObject.media_details?.height,
-				showCaption: !!(
+				showCaption: !! (
 					attachmentObject.caption?.raw ??
 					attachmentObject.caption?.rendered
 				),
 			};
 
-			if (isBlobURL(media_src)) {
-				setTemporarySrc(media_src);
+			if ( isBlobURL( media_src ) ) {
+				setTemporarySrc( media_src );
 			} else {
-				setTemporarySrc(null);
+				setTemporarySrc( null );
 			}
 
 			const updatedAttributes = {};
 			const currentAttributes = attributesRef.current;
 
-			Object.keys(media_attributes).forEach((key) => {
-				const newVal = media_attributes[key];
-				const oldVal = currentAttributes[key];
+			Object.keys( media_attributes ).forEach( ( key ) => {
+				const newVal = media_attributes[ key ];
+				const oldVal = currentAttributes[ key ];
 
-				if (newVal === undefined || newVal === null) {
+				if ( newVal === undefined || newVal === null ) {
 					return;
 				}
 
-				const isDifferent = Array.isArray(newVal)
-					? JSON.stringify(newVal) !== JSON.stringify(oldVal)
+				const isDifferent = Array.isArray( newVal )
+					? JSON.stringify( newVal ) !== JSON.stringify( oldVal )
 					: newVal !== oldVal;
 
-				if (isDifferent) {
+				if ( isDifferent ) {
 					// Always persist ID and SRC.
-					if (key === 'id' || key === 'src') {
-						updatedAttributes[key] = newVal;
+					if ( key === 'id' || key === 'src' ) {
+						updatedAttributes[ key ] = newVal;
 						return;
 					}
 
 					// For other attributes, only persist if forcePersist is true
 					// or if we DON'T have an attachment ID (manual URL mode).
-					if (forcePersist || !attachmentObject.id) {
-						updatedAttributes[key] = newVal;
+					if ( forcePersist || ! attachmentObject.id ) {
+						updatedAttributes[ key ] = newVal;
 					}
 				}
-			});
+			} );
 
-			if (Object.keys(updatedAttributes).length > 0) {
-				setAttributes(updatedAttributes);
+			if ( Object.keys( updatedAttributes ).length > 0 ) {
+				setAttributes( updatedAttributes );
 			}
 		},
-		[setAttributes]
+		[ setAttributes ]
 	);
 
-	const processedIds = useRef(new Set());
-	useEffect(() => {
-		if (attachmentFromStore && isStandalone && !attachmentOverride) {
+	const processedIds = useRef( new Set() );
+	useEffect( () => {
+		if ( attachmentFromStore && isStandalone && ! attachmentOverride ) {
 			const attachmentId = attachmentFromStore.id;
 			// Only process each ID once to avoid infinite loops and keep attributes lean.
-			if (!processedIds.current.has(attachmentId) || !id) {
-				setAttributesFromMedia(attachmentFromStore, false);
-				processedIds.current.add(attachmentId);
+			if ( ! processedIds.current.has( attachmentId ) || ! id ) {
+				setAttributesFromMedia( attachmentFromStore, false );
+				processedIds.current.add( attachmentId );
 			}
 		}
 	}, [
@@ -455,23 +455,23 @@ export default function Edit({
 		id,
 		attachmentOverride,
 		setAttributesFromMedia,
-	]);
+	] );
 
-	useEffect(() => {
-		if (attachmentError) {
+	useEffect( () => {
+		if ( attachmentError ) {
 			const status =
 				attachmentError.data?.status || attachmentError.status;
 			if (
 				status === 404 ||
 				attachmentError.code === 'rest_post_invalid_id'
 			) {
-				setAttributes({
+				setAttributes( {
 					id: undefined,
 					src: undefined,
 					poster: undefined,
 					sources: [],
 					source_groups: {},
-				});
+				} );
 				createErrorNotice(
 					__(
 						'The selected video attachment could not be found and may have been deleted. Resetting block.',
@@ -481,60 +481,63 @@ export default function Edit({
 				);
 			}
 		}
-	}, [attachmentError, setAttributes, createErrorNotice]);
+	}, [ attachmentError, setAttributes, createErrorNotice ] );
 
 	const onUploadError = useCallback(
-		(message) => {
-			createErrorNotice(message, { type: 'snackbar' });
+		( message ) => {
+			createErrorNotice( message, { type: 'snackbar' } );
 		},
-		[createErrorNotice]
+		[ createErrorNotice ]
 	);
 
 	const onSelectVideo = useCallback(
-		(video) => {
-			const videoArray = Array.isArray(video) ? video : [video];
+		( video ) => {
+			const videoArray = Array.isArray( video ) ? video : [ video ];
 
 			if (
-				!videoArray ||
-				!videoArray.some((item) => item.hasOwnProperty('url'))
+				! videoArray ||
+				! videoArray.some( ( item ) => item.hasOwnProperty( 'url' ) )
 			) {
-				setAttributes({
+				setAttributes( {
 					src: undefined,
 					id: undefined,
 					poster: undefined,
-				});
+				} );
 				return;
 			}
 
-			if (videoArray.length === 1) {
-				const selectedVideo = videoArray[0];
-				if (isBlobURL(selectedVideo.url)) {
+			if ( videoArray.length === 1 ) {
+				const selectedVideo = videoArray[ 0 ];
+				if ( isBlobURL( selectedVideo.url ) ) {
 					hasAttemptedInitialUpload.current = true;
 				}
 
 				// Hydrate the block from the media object.
 				// We don't force persistence here to keep the block markup lean if an ID is present.
-				setAttributesFromMedia(selectedVideo, false);
+				setAttributesFromMedia( selectedVideo, false );
 			}
 		},
-		[setAttributesFromMedia, setAttributes]
+		[ setAttributesFromMedia, setAttributes ]
 	);
 
 	const onSelectURL = useCallback(
-		(newSrc) => {
-			if (newSrc !== src) {
-				let filename = newSrc.split('?')[0].split('#')[0];
-				filename = filename.split('/').pop();
-				if (filename.includes('.')) {
-					filename = filename.substring(0, filename.lastIndexOf('.'));
+		( newSrc ) => {
+			if ( newSrc !== src ) {
+				let filename = newSrc.split( '?' )[ 0 ].split( '#' )[ 0 ];
+				filename = filename.split( '/' ).pop();
+				if ( filename.includes( '.' ) ) {
+					filename = filename.substring(
+						0,
+						filename.lastIndexOf( '.' )
+					);
 				}
 				try {
-					filename = decodeURIComponent(filename);
+					filename = decodeURIComponent( filename );
 				} catch {
 					// Ignore decoding errors
 				}
 
-				setAttributes({
+				setAttributes( {
 					src: newSrc,
 					id: undefined,
 					title: filename,
@@ -542,29 +545,30 @@ export default function Edit({
 					poster: '',
 					starts: undefined,
 					embedlink: '',
-				});
+				} );
 			}
 		},
-		[src, setAttributes]
+		[ src, setAttributes ]
 	);
 
-	useEffect(() => {
-		getSettings().then((response) => {
-			setOptions(response);
-		});
+	useEffect( () => {
+		getSettings().then( ( response ) => {
+			setOptions( response );
+		} );
 
-		if (!hasAttemptedInitialUpload.current && !id && isBlobURL(src)) {
+		if ( ! hasAttemptedInitialUpload.current && ! id && isBlobURL( src ) ) {
 			hasAttemptedInitialUpload.current = true;
-			const file = getBlobByURL(src);
-			setTemporarySrc(src);
-			setAttributes({ src: undefined });
-			if (file) {
-				mediaUpload({
-					filesList: [file],
-					onFileChange: ([videoFile]) => onSelectVideo(videoFile),
+			const file = getBlobByURL( src );
+			setTemporarySrc( src );
+			setAttributes( { src: undefined } );
+			if ( file ) {
+				mediaUpload( {
+					filesList: [ file ],
+					onFileChange: ( [ videoFile ] ) =>
+						onSelectVideo( videoFile ),
 					onError: onUploadError,
 					allowedTypes: ALLOWED_MEDIA_TYPES,
-				});
+				} );
 			}
 		}
 	}, [
@@ -575,9 +579,9 @@ export default function Edit({
 		onUploadError,
 		setAttributes,
 		isStandalone,
-	]);
+	] );
 
-	useEffect(() => {
+	useEffect( () => {
 		// Skip entirely in preview contexts (Settings/Classic-editor/Attachment
 		// Details previews) — the hardcoded bundled sample asset never has real
 		// transcoded source_groups to discover, and every one of these previews
@@ -585,60 +589,63 @@ export default function Edit({
 		// unresolved 'videopack-preview-video' default) on every unrelated
 		// settings change, which was turning this into a self-perpetuating
 		// resolve → refetch → resolve cascade on every keystroke.
-		if (effectiveDesign.isPreview) {
+		if ( effectiveDesign.isPreview ) {
 			return;
 		}
 
-		if (src === 'videopack-preview-video') {
-			setAttributes({
+		if ( src === 'videopack-preview-video' ) {
+			setAttributes( {
 				src:
 					videopack_config.url +
 					'/src/images/Adobestock_469037984.mp4',
-			});
+			} );
 		} else if (
-			!id &&
+			! id &&
 			src &&
 			src !== 'videopack-preview-video' &&
-			!isBlobURL(src)
+			! isBlobURL( src )
 		) {
-			apiFetch({
-				path: `/videopack/v1/sources?url=${encodeURIComponent(src)}`,
-			})
-				.then((response) => {
-					if (response && Object.keys(response).length > 0) {
-						setAttributes({
+			apiFetch( {
+				path: `/videopack/v1/sources?url=${ encodeURIComponent(
+					src
+				) }`,
+			} )
+				.then( ( response ) => {
+					if ( response && Object.keys( response ).length > 0 ) {
+						setAttributes( {
 							source_groups: response,
-						});
+						} );
 					}
-				})
-				.catch((error) => {
-					console.error('Error fetching video sources:', error);
-				});
+				} )
+				.catch( ( error ) => {
+					console.error( 'Error fetching video sources:', error );
+				} );
 		}
-	}, [id, src, setAttributes, effectiveDesign.isPreview]);
+	}, [ id, src, setAttributes, effectiveDesign.isPreview ] );
 
-	const { isProbing, probedMetadata } = useVideoProbe(effectiveSrc);
-	const [probedMetadataOverride, setProbedMetadataOverride] = useState(null);
+	const { isProbing, probedMetadata } = useVideoProbe( effectiveSrc );
+	const [ probedMetadataOverride, setProbedMetadataOverride ] =
+		useState( null );
 
-	useEffect(() => {
-		if (attachment?.media_details && !probedMetadata) {
+	useEffect( () => {
+		if ( attachment?.media_details && ! probedMetadata ) {
 			const { width, height, duration } = attachment.media_details;
-			setProbedMetadataOverride({
+			setProbedMetadataOverride( {
 				width,
 				height,
 				duration,
 				isTainted: false,
-			});
-		} else if (!effectiveSrc) {
-			setProbedMetadataOverride(null);
+			} );
+		} else if ( ! effectiveSrc ) {
+			setProbedMetadataOverride( null );
 		}
-	}, [attachment, probedMetadata, effectiveSrc]);
+	}, [ attachment, probedMetadata, effectiveSrc ] );
 
 	const effectiveMetadata = probedMetadataOverride || probedMetadata;
 
-	const template = useMemo(() => {
+	const template = useMemo( () => {
 		const globalOpts = videopack_config?.options || {};
-		const showTitleBar = !!(
+		const showTitleBar = !! (
 			globalOpts.overlay_title ||
 			globalOpts.downloadlink ||
 			globalOpts.embedcode
@@ -646,19 +653,19 @@ export default function Edit({
 
 		const engine_inner_blocks = [];
 
-		if (showTitleBar) {
-			engine_inner_blocks.push([
+		if ( showTitleBar ) {
+			engine_inner_blocks.push( [
 				'videopack/title',
 				{},
 				getTitleInnerTemplate(
-					!!globalOpts.downloadlink,
-					!!globalOpts.embedcode
+					!! globalOpts.downloadlink,
+					!! globalOpts.embedcode
 				),
-			]);
+			] );
 		}
 
-		if (globalOpts.watermark) {
-			engine_inner_blocks.push(['videopack/watermark', {}]);
+		if ( globalOpts.watermark ) {
+			engine_inner_blocks.push( [ 'videopack/watermark', {} ] );
 		}
 
 		return [
@@ -667,88 +674,94 @@ export default function Edit({
 				{ lock: { remove: true, move: false } },
 				engine_inner_blocks,
 			],
-			['videopack/view-count', {}],
+			[ 'videopack/view-count', {} ],
 		];
-	}, []);
+	}, [] );
 
-	const bridgeOverrides = useMemo(() => {
+	const bridgeOverrides = useMemo( () => {
 		return {
 			'videopack/isInsidePlayerContainer': true,
 			'videopack/isStandalone': isStandalone,
 			'videopack/attachmentId': effectiveId,
 			'videopack/postType': isStandalone
 				? 'attachment'
-				: context['videopack/postType'] || context.postType || 'post',
+				: context[ 'videopack/postType' ] || context.postType || 'post',
 		};
-	}, [context, isStandalone, effectiveId]);
+	}, [ context, isStandalone, effectiveId ] );
 
-	const placeholder = (content) => {
+	const placeholder = ( content ) => {
 		return (
 			<Placeholder
 				className="block-editor-media-placeholder"
-				withIllustration={true}
-				icon={icon}
-				label={__('Videopack Video', 'video-embed-thumbnail-generator')}
-				instructions={__(
+				withIllustration={ true }
+				icon={ icon }
+				label={ __(
+					'Videopack Video',
+					'video-embed-thumbnail-generator'
+				) }
+				instructions={ __(
 					'Upload a video file, pick one from your media library, or add one with a URL.',
 					'video-embed-thumbnail-generator'
-				)}
+				) }
 			>
-				{content}
+				{ content }
 			</Placeholder>
 		);
 	};
 
 	let blockContent;
 
-	if (isDiscovering && !effectiveId) {
+	if ( isDiscovering && ! effectiveId ) {
 		blockContent = (
 			<div className="videopack-video-discovery-loading">
 				<Placeholder
-					icon={<BlockIcon icon={icon} />}
-					label={__(
+					icon={ <BlockIcon icon={ icon } /> }
+					label={ __(
 						'Videopack Video',
 						'video-embed-thumbnail-generator'
-					)}
+					) }
 				>
 					<Spinner />
 					<p>
-						{__(
+						{ __(
 							'Searching for attached video…',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					</p>
 				</Placeholder>
 			</div>
 		);
-	} else if (!effectiveSrc && !effectiveId) {
+	} else if ( ! effectiveSrc && ! effectiveId ) {
 		blockContent = (
 			<MediaPlaceholder
-				icon={<BlockIcon icon={icon} />}
-				onSelect={onSelectVideo}
-				onSelectURL={onSelectURL}
+				icon={ <BlockIcon icon={ icon } /> }
+				onSelect={ onSelectVideo }
+				onSelectURL={ onSelectURL }
 				accept="video/*,image/gif"
-				allowedTypes={ALLOWED_MEDIA_TYPES}
-				value={attributes}
-				onError={onUploadError}
-				placeholder={placeholder}
-				query={{ videopack_filter: 'select_video_source' }}
+				allowedTypes={ ALLOWED_MEDIA_TYPES }
+				value={ attributes }
+				onError={ onUploadError }
+				placeholder={ placeholder }
+				query={ { videopack_filter: 'select_video_source' } }
 			/>
 		);
-	} else if (!id && effectiveSrc && isBlobURL(effectiveSrc)) {
+	} else if ( ! id && effectiveSrc && isBlobURL( effectiveSrc ) ) {
 		blockContent = (
 			<div className="components-placeholder block-editor-media-placeholder is-large has-illustration">
 				<div className="components-placeholder__label">
-					<BlockIcon icon={icon} />
-					{__('Videopack Video', 'video-embed-thumbnail-generator')}
+					<BlockIcon icon={ icon } />
+					{ __(
+						'Videopack Video',
+						'video-embed-thumbnail-generator'
+					) }
 				</div>
 				<div className="components-placeholder__fieldset">
 					<div className="videopack-uploading-overlay-content">
 						<p>
-							{__(
+							{ __(
 								'Uploading…',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						</p>
 						<div className="videopack-progress-bar-container">
 							<ProgressBar />
@@ -762,73 +775,73 @@ export default function Edit({
 			<>
 				<BlockControls group="other">
 					<MediaReplaceFlow
-						mediaId={id}
-						mediaURL={effectiveSrc}
-						allowedTypes={ALLOWED_MEDIA_TYPES}
+						mediaId={ id }
+						mediaURL={ effectiveSrc }
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
 						accept="video/*,image/gif"
-						onSelect={onSelectVideo}
-						onSelectURL={onSelectURL}
-						onError={onUploadError}
-						query={{ videopack_filter: 'select_video_source' }}
+						onSelect={ onSelectVideo }
+						onSelectURL={ onSelectURL }
+						onError={ onUploadError }
+						query={ { videopack_filter: 'select_video_source' } }
 					/>
 					<ToolbarButton
-						icon={resetIcon}
-						label={__(
+						icon={ resetIcon }
+						label={ __(
 							'Restart Video',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() =>
-							setAttributes({
+						) }
+						onClick={ () =>
+							setAttributes( {
 								restartCount:
-									(attributes.restartCount || 0) + 1,
-							})
+									( attributes.restartCount || 0 ) + 1,
+							} )
 						}
 					/>
 				</BlockControls>
 				<BlockControls>
 					<ToolbarButton
-						icon={captionIcon}
-						label={__(
+						icon={ captionIcon }
+						label={ __(
 							'Add caption',
 							'video-embed-thumbnail-generator'
-						)}
-						onClick={() => {
+						) }
+						onClick={ () => {
 							const hasCaption = innerBlocks.some(
-								(block) => block.name === 'videopack/caption'
+								( block ) => block.name === 'videopack/caption'
 							);
-							if (!hasCaption) {
+							if ( ! hasCaption ) {
 								insertBlock(
-									createBlock('videopack/caption', {
+									createBlock( 'videopack/caption', {
 										caption: attributes.caption || '',
-									}),
+									} ),
 									innerBlocks.length,
 									clientId
 								);
 							}
-						}}
+						} }
 					/>
 				</BlockControls>
 
 				<figure
-					style={{
+					style={ {
 						...contextStyle,
 						display: effectiveSrc || effectiveId ? 'block' : 'none',
-					}}
-					aria-hidden={!(effectiveSrc || effectiveId)}
-					className={`videopack-video-block-container videopack-wrapper ${contextClasses}${
+					} }
+					aria-hidden={ ! ( effectiveSrc || effectiveId ) }
+					className={ `videopack-video-block-container videopack-wrapper ${ contextClasses }${
 						effectiveDesign.isPreview ? ' is-preview' : ''
-					}`}
+					}` }
 				>
 					<VideopackContextBridge
-						key={effectiveId || resolvedPostIdFromContext}
-						attributes={resolvedAttributes}
-						context={context}
-						overrides={bridgeOverrides}
+						key={ effectiveId || resolvedPostIdFromContext }
+						attributes={ resolvedAttributes }
+						context={ context }
+						overrides={ bridgeOverrides }
 					>
 						<InnerBlocks
-							template={template}
-							templateLock={false}
-							allowedBlocks={ALLOWED_BLOCKS}
+							template={ template }
+							templateLock={ false }
+							allowedBlocks={ ALLOWED_BLOCKS }
 							renderAppender={
 								showPlayerContainerAppender
 									? InnerBlocks.ButtonBlockAppender
@@ -845,24 +858,20 @@ export default function Edit({
 		<>
 			<InspectorControls>
 				<Thumbnails
-					setAttributes={setAttributes}
-					attributes={attributes}
-					videoData={videoData}
-					options={options}
-					parentId={
-						resolvedPostIdFromContext ||
-						editorPostId ||
-						0
-					}
-					isProbing={isProbing}
-					probedMetadata={effectiveMetadata}
+					setAttributes={ setAttributes }
+					attributes={ attributes }
+					videoData={ videoData }
+					options={ options }
+					parentId={ resolvedPostIdFromContext || editorPostId || 0 }
+					isProbing={ isProbing }
+					probedMetadata={ effectiveMetadata }
 				/>
 				<VideoSettings
-					setAttributes={setAttributes}
-					attributes={attributes}
-					options={options}
-					isProbing={isProbing}
-					probedMetadata={effectiveMetadata}
+					setAttributes={ setAttributes }
+					attributes={ attributes }
+					options={ options }
+					isProbing={ isProbing }
+					probedMetadata={ effectiveMetadata }
 					fallbackTitle={
 						attachment?.title?.rendered ||
 						attachment?.title?.raw ||
@@ -875,18 +884,18 @@ export default function Edit({
 						resolvedAttributes.caption ||
 						''
 					}
-					isBlockEditor={true}
+					isBlockEditor={ true }
 				/>
 				<AdditionalFormats
-					key={attributes.id || effectiveSrc}
-					attributes={attributes}
-					options={options}
-					isProbing={isProbing}
-					probedMetadata={effectiveMetadata}
-					isDiscovering={isDiscovering}
+					key={ attributes.id || effectiveSrc }
+					attributes={ attributes }
+					options={ options }
+					isProbing={ isProbing }
+					probedMetadata={ effectiveMetadata }
+					isDiscovering={ isDiscovering }
 				/>
 			</InspectorControls>
-			<figure {...blockProps}>{blockContent}</figure>
+			<figure { ...blockProps }>{ blockContent }</figure>
 		</>
 	);
 }

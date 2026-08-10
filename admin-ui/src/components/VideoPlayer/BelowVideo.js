@@ -14,21 +14,21 @@ import { RichText } from '@wordpress/block-editor';
  * @param {boolean}  props.isSelected    Whether the block is selected.
  * @return {Element|null} The rendered component.
  */
-const BelowVideo = ({ attributes, setAttributes, isSelected }) => {
+const BelowVideo = ( { attributes, setAttributes, isSelected } ) => {
 	const { views, caption } = attributes;
 	const isEditing = isSelected; // Usually driven by selection in the block editor
 
 	let viewStarts = 0;
-	if ((attributes?.starts && views) || caption) {
-		if (attributes?.starts) {
-			viewStarts = Number(attributes?.starts);
+	if ( ( attributes?.starts && views ) || caption ) {
+		if ( attributes?.starts ) {
+			viewStarts = Number( attributes?.starts );
 		}
 		return (
 			<>
 				<div className="videopack-below-video">
-					{views && viewStarts > 0 && (
+					{ views && viewStarts > 0 && (
 						<div className="videopack-viewcount">
-							{sprintf(
+							{ sprintf(
 								/* translators: %d is number of views */
 								_n(
 									'%d view',
@@ -37,24 +37,24 @@ const BelowVideo = ({ attributes, setAttributes, isSelected }) => {
 									'video-embed-thumbnail-generator'
 								),
 								viewStarts
-							)}
+							) }
 						</div>
-					)}
-					{(caption || isEditing) && (
+					) }
+					{ ( caption || isEditing ) && (
 						<RichText
 							tagName="div"
 							className="wp-element-caption"
-							value={caption}
-							onChange={(value) =>
-								setAttributes({ caption: value })
+							value={ caption }
+							onChange={ ( value ) =>
+								setAttributes( { caption: value } )
 							}
-							placeholder={__(
+							placeholder={ __(
 								'Write caption…',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							inlineToolbar
 						/>
-					)}
+					) }
 				</div>
 			</>
 		);

@@ -23,67 +23,67 @@ import { getTitleInnerTemplate } from '../../../utils/titleDownloadBlock';
  * @param {Object} props.model        Backbone model for the attachment.
  * @return {Object} The rendered component.
  */
-const AttachmentPreview = ({ attachmentId, model }) => {
-	const [options, setOptions] = useState();
-	const [record, setRecord] = useState(null);
-	const [attributes, setAttributes] = useState(null);
-	const [hasResolved, setHasResolved] = useState(false);
+const AttachmentPreview = ( { attachmentId, model } ) => {
+	const [ options, setOptions ] = useState();
+	const [ record, setRecord ] = useState( null );
+	const [ attributes, setAttributes ] = useState( null );
+	const [ hasResolved, setHasResolved ] = useState( false );
 
-	const [nativeMetadata, setNativeMetadata] = useState({
-		title: model ? model.get('title') : '',
-		caption: model ? model.get('caption') : '',
-	});
+	const [ nativeMetadata, setNativeMetadata ] = useState( {
+		title: model ? model.get( 'title' ) : '',
+		caption: model ? model.get( 'caption' ) : '',
+	} );
 
 	// Fetch the full media record from the REST API.
-	useEffect(() => {
-		if (!isNaN(attachmentId) && attachmentId > 0) {
-			setHasResolved(false);
-			apiFetch({ path: `/wp/v2/media/${attachmentId}` })
-				.then((data) => {
-					setRecord(data);
-					setHasResolved(true);
-				})
-				.catch(() => {
-					setRecord(null);
-					setHasResolved(true);
-				});
+	useEffect( () => {
+		if ( ! isNaN( attachmentId ) && attachmentId > 0 ) {
+			setHasResolved( false );
+			apiFetch( { path: `/wp/v2/media/${ attachmentId }` } )
+				.then( ( data ) => {
+					setRecord( data );
+					setHasResolved( true );
+				} )
+				.catch( () => {
+					setRecord( null );
+					setHasResolved( true );
+				} );
 		} else {
-			setRecord(null);
-			setHasResolved(false);
+			setRecord( null );
+			setHasResolved( false );
 		}
-	}, [attachmentId]);
+	}, [ attachmentId ] );
 
 	// Fetch global plugin options.
-	useEffect(() => {
-		getSettings().then((response) => {
-			setOptions(response);
-		});
-	}, []);
+	useEffect( () => {
+		getSettings().then( ( response ) => {
+			setOptions( response );
+		} );
+	}, [] );
 
 	// Listen for native title/caption changes on the Backbone model or DOM.
-	useEffect(() => {
+	useEffect( () => {
 		const onNativeChange = () => {
-			if (model) {
-				setNativeMetadata({
-					title: model.get('title'),
-					caption: model.get('caption'),
-				});
+			if ( model ) {
+				setNativeMetadata( {
+					title: model.get( 'title' ),
+					caption: model.get( 'caption' ),
+				} );
 			}
 		};
 
-		if (model) {
-			model.on('change:title change:caption', onNativeChange);
+		if ( model ) {
+			model.on( 'change:title change:caption', onNativeChange );
 			return () => {
-				model.off('change:title change:caption', onNativeChange);
+				model.off( 'change:title change:caption', onNativeChange );
 			};
 		}
 
 		// DOM bridge for standalone page.
-		const onDomUpdate = (event) => {
-			setNativeMetadata((prev) => ({
+		const onDomUpdate = ( event ) => {
+			setNativeMetadata( ( prev ) => ( {
 				...prev,
 				...event.detail,
-			}));
+			} ) );
 		};
 		window.addEventListener(
 			'videopack_native_metadata_update',
@@ -91,17 +91,22 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 		);
 
 		// Listen for settings updates from the sidebar (React root bridge).
-		const onSettingsUpdate = (event) => {
+		const onSettingsUpdate = ( event ) => {
 			// Filter out undefined values to prevent overwriting valid preview state.
 			const updates = Object.fromEntries(
-				Object.entries(event.detail).filter(([, v]) => v !== undefined)
+				Object.entries( event.detail ).filter(
+					( [ , v ] ) => v !== undefined
+				)
 			);
-			setAttributes((prev) => ({
+			setAttributes( ( prev ) => ( {
 				...prev,
 				...updates,
-			}));
+			} ) );
 		};
-		window.addEventListener('videopack_settings_update', onSettingsUpdate);
+		window.addEventListener(
+			'videopack_settings_update',
+			onSettingsUpdate
+		);
 
 		return () => {
 			window.removeEventListener(
@@ -113,12 +118,12 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 				onSettingsUpdate
 			);
 		};
-	}, [model]);
+	}, [ model ] );
 
 	// Calculate initial attributes based on the record and options.
-	const initialAttributes = useMemo(() => {
-		if (hasResolved && record && options) {
-			const videopackMeta = record.meta?.['_videopack-meta'] || {};
+	const initialAttributes = useMemo( () => {
+		if ( hasResolved && record && options ) {
+			const videopackMeta = record.meta?.[ '_videopack-meta' ] || {};
 			const sources = record.videopack?.sources || [
 				{ src: record.source_url },
 			];
@@ -136,8 +141,8 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 				currentNativeTitle || fallbackTitle
 			);
 			const filteredMeta = Object.fromEntries(
-				Object.entries(videopackMeta).filter(
-					([, v]) => v !== null && v !== undefined
+				Object.entries( videopackMeta ).filter(
+					( [ , v ] ) => v !== null && v !== undefined
 				)
 			);
 			return {
@@ -148,7 +153,7 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 				caption: videopackMeta.caption || nativeMetadata.caption || '',
 				src: record.source_url,
 				poster:
-					record.meta?.['_kgflashmediaplayer-poster'] ||
+					record.meta?.[ '_kgflashmediaplayer-poster' ] ||
 					record.media_details?.sizes?.full?.source_url ||
 					record.image?.src,
 				sources,
@@ -158,125 +163,128 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 			};
 		}
 		return null;
-	}, [record, options, hasResolved, attachmentId, nativeMetadata]);
+	}, [ record, options, hasResolved, attachmentId, nativeMetadata ] );
 
 	// Helper to merge local attributes with Backbone model attributes safely.
 	const getMergedAttributes = useCallback(
-		(baseAttrs) => {
-			if (!baseAttrs) {
+		( baseAttrs ) => {
+			if ( ! baseAttrs ) {
 				return null;
 			}
 			const modelAttrsRaw = model
-				? model.get('videopack_attributes')
+				? model.get( 'videopack_attributes' )
 				: null;
 			let parsedModelAttrs = {};
 			try {
 				parsedModelAttrs =
 					typeof modelAttrsRaw === 'string'
-						? JSON.parse(modelAttrsRaw || '{}')
+						? JSON.parse( modelAttrsRaw || '{}' )
 						: modelAttrsRaw || {};
-			} catch (e) {
-				console.error('Failed to parse videopack_attributes', e);
+			} catch ( e ) {
+				console.error( 'Failed to parse videopack_attributes', e );
 			}
 
 			// Clean up types (boolean/numbers) from model/shortcode.
-			Object.keys(parsedModelAttrs).forEach((key) => {
-				let val = parsedModelAttrs[key];
-				if (val === 'true') {
+			Object.keys( parsedModelAttrs ).forEach( ( key ) => {
+				let val = parsedModelAttrs[ key ];
+				if ( val === 'true' ) {
 					val = true;
-				} else if (val === 'false') {
+				} else if ( val === 'false' ) {
 					val = false;
 				} else if (
-					!isNaN(val) &&
+					! isNaN( val ) &&
 					val !== '' &&
 					typeof val === 'string'
 				) {
-					if (!['id', 'poster', 'src', 'title'].includes(key)) {
-						val = Number(val);
+					if (
+						! [ 'id', 'poster', 'src', 'title' ].includes( key )
+					) {
+						val = Number( val );
 					}
 				}
-				parsedModelAttrs[key] = val;
-			});
+				parsedModelAttrs[ key ] = val;
+			} );
 
 			const merged = {
 				...baseAttrs,
 				...parsedModelAttrs,
 			};
 
-			if (!merged.title) {
+			if ( ! merged.title ) {
 				merged.title = baseAttrs.title;
 			}
 
 			return merged;
 		},
-		[model]
+		[ model ]
 	);
 
 	// Update active attributes whenever initialAttributes change.
-	useEffect(() => {
-		if (initialAttributes) {
-			const merged = getMergedAttributes(initialAttributes);
-			setAttributes(merged);
+	useEffect( () => {
+		if ( initialAttributes ) {
+			const merged = getMergedAttributes( initialAttributes );
+			setAttributes( merged );
 		}
-	}, [initialAttributes, getMergedAttributes]);
+	}, [ initialAttributes, getMergedAttributes ] );
 
 	// Listen for subsequent changes from the sidebar via the Backbone model.
-	useEffect(() => {
-		if (!model || !initialAttributes) {
+	useEffect( () => {
+		if ( ! model || ! initialAttributes ) {
 			return;
 		}
 
 		const handleModelChange = () => {
-			const merged = getMergedAttributes(initialAttributes);
-			setAttributes(merged);
+			const merged = getMergedAttributes( initialAttributes );
+			setAttributes( merged );
 		};
 
-		model.on('change:videopack_attributes', handleModelChange);
+		model.on( 'change:videopack_attributes', handleModelChange );
 		return () => {
-			model.off('change:videopack_attributes', handleModelChange);
+			model.off( 'change:videopack_attributes', handleModelChange );
 		};
-	}, [model, initialAttributes, getMergedAttributes]);
+	}, [ model, initialAttributes, getMergedAttributes ] );
 
 	const videopackConfig = window.videopack_config || {};
-	const containerStyle = useMemo(() => {
+	const containerStyle = useMemo( () => {
 		const styles = {};
-		if (videopackConfig.contentSize) {
-			styles['--wp--style--global--content-size'] =
+		if ( videopackConfig.contentSize ) {
+			styles[ '--wp--style--global--content-size' ] =
 				videopackConfig.contentSize;
 		}
-		if (videopackConfig.wideSize) {
-			styles['--wp--style--global--wide-size'] = videopackConfig.wideSize;
+		if ( videopackConfig.wideSize ) {
+			styles[ '--wp--style--global--wide-size' ] =
+				videopackConfig.wideSize;
 		}
 		return styles;
-	}, [videopackConfig.contentSize, videopackConfig.wideSize]);
+	}, [ videopackConfig.contentSize, videopackConfig.wideSize ] );
 
 	// Base context, shared by everything rendered here — the view-count block
 	// (a sibling of VideoPlayer, not inside its overlay) uses this directly.
-	const previewContext = useMemo(() => {
-		if (!attributes) {
+	const previewContext = useMemo( () => {
+		if ( ! attributes ) {
 			return {};
 		}
 		const ctx = {};
-		Object.keys(attributes).forEach((key) => {
-			ctx[`videopack/${key}`] = attributes[key];
-		});
-		ctx['videopack/postId'] = attachmentId;
-		ctx['videopack/attachmentId'] = attachmentId;
-		ctx['videopack/isPreview'] = true;
+		Object.keys( attributes ).forEach( ( key ) => {
+			ctx[ `videopack/${ key }` ] = attributes[ key ];
+		} );
+		ctx[ 'videopack/postId' ] = attachmentId;
+		ctx[ 'videopack/attachmentId' ] = attachmentId;
+		ctx[ 'videopack/isPreview' ] = true;
 		return ctx;
-	}, [attributes, attachmentId]);
+	}, [ attributes, attachmentId ] );
 
 	// Title/Watermark render inside VideoPlayer's overlay chrome, so they need
 	// the extra isInsidePlayerOverlay/isInsidePlayerContainer context that
 	// their real edit.js components check for — view-count deliberately
 	// doesn't get these (it's outside the player, left-aligned by default).
 	const playerOverlayContext = useMemo(
-		() => ({
+		() => ( {
 			...previewContext,
 			'videopack/isInsidePlayerOverlay': true,
 			'videopack/isInsidePlayerContainer': true,
-		}),
-		[previewContext]
+		} ),
+		[ previewContext ]
 	);
 
 	// These four determine the preview's block *structure* (which blocks/
@@ -294,29 +302,29 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 	const watermarkAttr = attributes?.watermark;
 	const viewsAttr = attributes?.view_count;
 
-	const showTitleBar = !!(
+	const showTitleBar = !! (
 		overlayTitleAttr ||
 		downloadlinkAttr ||
-		(embeddableAttr && embedcodeAttr)
+		( embeddableAttr && embedcodeAttr )
 	);
 
-	const overlayTemplate = useMemo(() => {
+	const overlayTemplate = useMemo( () => {
 		const template = [];
-		if (showTitleBar) {
-			template.push([
+		if ( showTitleBar ) {
+			template.push( [
 				'videopack/title',
 				{
-					overlay_title: !!overlayTitleAttr,
+					overlay_title: !! overlayTitleAttr,
 					showBackground: true,
 				},
 				getTitleInnerTemplate(
-					!!downloadlinkAttr,
-					!!(embeddableAttr && embedcodeAttr)
+					!! downloadlinkAttr,
+					!! ( embeddableAttr && embedcodeAttr )
 				),
-			]);
+			] );
 		}
-		if (watermarkAttr) {
-			template.push(['videopack/watermark', {}]);
+		if ( watermarkAttr ) {
+			template.push( [ 'videopack/watermark', {} ] );
 		}
 		return template;
 	}, [
@@ -326,45 +334,50 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 		embeddableAttr,
 		embedcodeAttr,
 		watermarkAttr,
-	]);
-	const overlayBlocks = useStablePreviewBlocks(overlayTemplate);
+	] );
+	const overlayBlocks = useStablePreviewBlocks( overlayTemplate );
 
-	const viewCountTemplate = useMemo(() => {
-		if (!viewsAttr) {
+	const viewCountTemplate = useMemo( () => {
+		if ( ! viewsAttr ) {
 			return [];
 		}
-		return [['videopack/view-count', { iconType: 'none', showText: true }]];
-	}, [viewsAttr]);
-	const viewCountBlocks = useStablePreviewBlocks(viewCountTemplate);
+		return [
+			[ 'videopack/view-count', { iconType: 'none', showText: true } ],
+		];
+	}, [ viewsAttr ] );
+	const viewCountBlocks = useStablePreviewBlocks( viewCountTemplate );
 
 	// Only render once we have resolved the record and calculated initial attributes.
-	if (!hasResolved || !options || !attributes) {
+	if ( ! hasResolved || ! options || ! attributes ) {
 		return <Spinner />;
 	}
 
 	return (
 		<PreviewIframe
-			title={__('Attachment Preview', 'video-embed-thumbnail-generator')}
-			resizeDependencies={[attributes.align]}
+			title={ __(
+				'Attachment Preview',
+				'video-embed-thumbnail-generator'
+			) }
+			resizeDependencies={ [ attributes.align ] }
 		>
 			<div
-				className={`wp-block-videopack-videopack-video${
-					attributes.align ? ` align${attributes.align}` : ''
-				}`}
-				style={containerStyle}
+				className={ `wp-block-videopack-videopack-video${
+					attributes.align ? ` align${ attributes.align }` : ''
+				}` }
+				style={ containerStyle }
 			>
-				<VideoPlayer attributes={attributes}>
-					{overlayBlocks.length > 0 && (
-						<BlockContextProvider value={playerOverlayContext}>
-							<RealBlockPreview blocks={overlayBlocks} />
+				<VideoPlayer attributes={ attributes }>
+					{ overlayBlocks.length > 0 && (
+						<BlockContextProvider value={ playerOverlayContext }>
+							<RealBlockPreview blocks={ overlayBlocks } />
 						</BlockContextProvider>
-					)}
+					) }
 				</VideoPlayer>
-				{viewCountBlocks.length > 0 && (
-					<BlockContextProvider value={previewContext}>
-						<RealBlockPreview blocks={viewCountBlocks} />
+				{ viewCountBlocks.length > 0 && (
+					<BlockContextProvider value={ previewContext }>
+						<RealBlockPreview blocks={ viewCountBlocks } />
 					</BlockContextProvider>
-				)}
+				) }
 			</div>
 		</PreviewIframe>
 	);

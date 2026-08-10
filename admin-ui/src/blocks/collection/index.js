@@ -9,7 +9,7 @@ import {
 } from '../../assets/icon';
 import { designAttributes } from '../shared/design-context';
 
-registerBlockType(metadata.name, {
+registerBlockType( metadata.name, {
 	...metadata,
 	icon,
 	attributes: {
@@ -18,9 +18,9 @@ registerBlockType(metadata.name, {
 	},
 	edit: Edit,
 	save,
-});
+} );
 
-registerBlockVariation(metadata.name, [
+registerBlockVariation( metadata.name, [
 	{
 		name: 'gallery',
 		title: 'Videopack Gallery',
@@ -30,7 +30,7 @@ registerBlockVariation(metadata.name, [
 			layout: 'grid',
 			variation: 'gallery',
 		},
-		scope: ['inserter', 'transform'],
+		scope: [ 'inserter', 'transform' ],
 		example: {
 			attributes: {
 				layout: 'grid',
@@ -40,7 +40,8 @@ registerBlockVariation(metadata.name, [
 				isPreview: true,
 			},
 		},
-		isActive: (blockAttributes) => blockAttributes.variation === 'gallery',
+		isActive: ( blockAttributes ) =>
+			blockAttributes.variation === 'gallery',
 	},
 	{
 		name: 'list',
@@ -51,7 +52,7 @@ registerBlockVariation(metadata.name, [
 			layout: 'list',
 			variation: 'list',
 		},
-		scope: ['inserter', 'transform'],
+		scope: [ 'inserter', 'transform' ],
 		example: {
 			attributes: {
 				layout: 'list',
@@ -60,6 +61,6 @@ registerBlockVariation(metadata.name, [
 				isPreview: true,
 			},
 		},
-		isActive: (blockAttributes) => blockAttributes.variation === 'list',
+		isActive: ( blockAttributes ) => blockAttributes.variation === 'list',
 	},
-]);
+] );

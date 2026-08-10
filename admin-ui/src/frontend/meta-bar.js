@@ -13,7 +13,12 @@
 
 /* global videojs */
 
-import { convertToTimecode, convertFromTimecode, stripTimeParams, addStartTimeParam } from './utils';
+import {
+	convertToTimecode,
+	convertFromTimecode,
+	stripTimeParams,
+	addStartTimeParam,
+} from './utils';
 
 /**
  * Resolves the player container's bounding rect, used to decide whether a
@@ -95,7 +100,11 @@ export function openPopup( url, name ) {
 	const height = 400;
 	const left = ( window.innerWidth - width ) / 2 + window.screenX;
 	const top = ( window.innerHeight - height ) / 2 + window.screenY;
-	window.open( url, name, `width=${ width },height=${ height },left=${ left },top=${ top },location=no,menubar=no,status=no,toolbar=no` );
+	window.open(
+		url,
+		name,
+		`width=${ width },height=${ height },left=${ left },top=${ top },location=no,menubar=no,status=no,toolbar=no`
+	);
 }
 
 /**
@@ -119,11 +128,13 @@ export async function checkDownloadLink( downloadLink ) {
 		document.body.appendChild( link );
 		link.click();
 		document.body.removeChild( link );
-	} catch ( error ) {
+	} catch {
 		if ( altUrl ) {
 			window.location.href = altUrl;
 		} else {
-			console.error( 'Download failed and no alternative link available.' );
+			console.error(
+				'Download failed and no alternative link available.'
+			);
 		}
 	}
 }
@@ -137,11 +148,17 @@ export async function checkDownloadLink( downloadLink ) {
 export function getShareUrl( wrapper ) {
 	let url = stripTimeParams( window.location.href );
 
-	const embedWrapper = wrapper._shareContainer || wrapper.querySelector( '.videopack-share-container' );
+	const embedWrapper =
+		wrapper._shareContainer ||
+		wrapper.querySelector( '.videopack-share-container' );
 	if ( embedWrapper ) {
-		const checkbox = embedWrapper.querySelector( '.videopack-start-at-enable' );
+		const checkbox = embedWrapper.querySelector(
+			'.videopack-start-at-enable'
+		);
 		if ( checkbox && checkbox.checked ) {
-			const timecode = embedWrapper.querySelector( '.videopack-start-at' ).value;
+			const timecode = embedWrapper.querySelector(
+				'.videopack-start-at'
+			).value;
 			const seconds = Math.floor( convertFromTimecode( timecode ) );
 			url = addStartTimeParam( url, seconds );
 		}
@@ -156,8 +173,12 @@ export function getShareUrl( wrapper ) {
  * @param {HTMLElement} shareWrapper  The share block wrapper element.
  */
 export function changeStartAt( playerWrapper, shareWrapper = null ) {
-	const embedWrapper = ( shareWrapper && shareWrapper._shareContainer ) || playerWrapper.querySelector( '.videopack-share-container' );
-	const embedCodeTextarea = embedWrapper.querySelector( '.videopack-embed-code' );
+	const embedWrapper =
+		( shareWrapper && shareWrapper._shareContainer ) ||
+		playerWrapper.querySelector( '.videopack-share-container' );
+	const embedCodeTextarea = embedWrapper.querySelector(
+		'.videopack-embed-code'
+	);
 	const embedCode = embedCodeTextarea.value;
 
 	const tempDiv = document.createElement( 'div' );
@@ -176,10 +197,14 @@ export function changeStartAt( playerWrapper, shareWrapper = null ) {
 	src = src.replace( /\?&/, '?' ).replace( /\?$/, '' );
 
 	if ( embedWrapper.querySelector( '.videopack-start-at-enable' ).checked ) {
-		const startTime = embedWrapper.querySelector( '.videopack-start-at' ).value;
+		const startTime = embedWrapper.querySelector(
+			'.videopack-start-at'
+		).value;
 		if ( startTime ) {
 			const separator = src.includes( '?' ) ? '&' : '?';
-			src += `${ separator }videopack[start]=${ encodeURIComponent( startTime ) }`;
+			src += `${ separator }videopack[start]=${ encodeURIComponent(
+				startTime
+			) }`;
 		}
 	}
 
@@ -194,12 +219,18 @@ export function changeStartAt( playerWrapper, shareWrapper = null ) {
  * @param {HTMLElement} shareWrapper  Optional share block wrapper element.
  */
 export function setStartAt( playerWrapper, shareWrapper = null ) {
-	const embedWrapper = ( shareWrapper && shareWrapper._shareContainer ) || playerWrapper.querySelector( '.videopack-share-container' );
+	const embedWrapper =
+		( shareWrapper && shareWrapper._shareContainer ) ||
+		playerWrapper.querySelector( '.videopack-share-container' );
 	if ( ! embedWrapper ) {
 		return;
 	}
 	const checkbox = embedWrapper.querySelector( '.videopack-start-at-enable' );
-	if ( checkbox && checkbox.checked && embedWrapper.classList.contains( 'is-visible' ) ) {
+	if (
+		checkbox &&
+		checkbox.checked &&
+		embedWrapper.classList.contains( 'is-visible' )
+	) {
 		const videoVars = window.videopack.getPlayerVars( playerWrapper ) || {};
 		let currentTime = 0;
 
@@ -216,7 +247,8 @@ export function setStartAt( playerWrapper, shareWrapper = null ) {
 			}
 		}
 
-		embedWrapper.querySelector( '.videopack-start-at' ).value = convertToTimecode( Math.floor( currentTime ) );
+		embedWrapper.querySelector( '.videopack-start-at' ).value =
+			convertToTimecode( Math.floor( currentTime ) );
 	}
 
 	if ( embedWrapper.classList.contains( 'is-visible' ) ) {
@@ -230,7 +262,8 @@ export function setStartAt( playerWrapper, shareWrapper = null ) {
  * @param {HTMLElement} playerWrapper The player wrapper element.
  */
 export function toggleShare( playerWrapper ) {
-	const playerContainer = playerWrapper.closest( '.videopack-player' ) ||
+	const playerContainer =
+		playerWrapper.closest( '.videopack-player' ) ||
 		playerWrapper.closest( '.videopack-player-relative-wrapper' ) ||
 		playerWrapper.closest( '.videopack-thumbnail-wrapper' ) ||
 		playerWrapper.closest( '.videopack-wrapper' ) ||
@@ -239,8 +272,13 @@ export function toggleShare( playerWrapper ) {
 		playerWrapper;
 
 	const videoVars = window.videopack.getPlayerVars( playerWrapper ) || {};
-	const shareIcon = playerWrapper.querySelector( '.videopack-icons.share, .videopack-icons.close' );
-	const embedWrapper = playerWrapper._shareContainer || playerContainer.querySelector( '.videopack-share-container' ) || playerWrapper.querySelector( '.videopack-share-container' );
+	const shareIcon = playerWrapper.querySelector(
+		'.videopack-icons.share, .videopack-icons.close'
+	);
+	const embedWrapper =
+		playerWrapper._shareContainer ||
+		playerContainer.querySelector( '.videopack-share-container' ) ||
+		playerWrapper.querySelector( '.videopack-share-container' );
 
 	if ( ! shareIcon || ! embedWrapper ) {
 		return;
@@ -264,11 +302,16 @@ export function toggleShare( playerWrapper ) {
 	}
 
 	if ( videoVars.embed_method === 'Video.js' ) {
-		const activePlayerId = playerWrapper.dataset.id || playerContainer.dataset.id;
-		const player = videojs.getPlayer( `videopack_video_${ activePlayerId }` );
+		const activePlayerId =
+			playerWrapper.dataset.id || playerContainer.dataset.id;
+		const player = videojs.getPlayer(
+			`videopack_video_${ activePlayerId }`
+		);
 		if ( player ) {
 			player.pause();
-			const controls = player.hasStarted() ? player.controlBar.el() : player.bigPlayButton.el();
+			const controls = player.hasStarted()
+				? player.controlBar.el()
+				: player.bigPlayButton.el();
 			if ( isShareActive ) {
 				controls.style.display = '';
 			} else {
@@ -280,9 +323,12 @@ export function toggleShare( playerWrapper ) {
 		if ( video ) {
 			video.pause();
 		}
-		const overlayButton = playerWrapper.querySelector( '.mejs-overlay-button' );
+		const overlayButton = playerWrapper.querySelector(
+			'.mejs-overlay-button'
+		);
 		if ( overlayButton ) {
-			overlayButton.style.display = overlayButton.style.display === 'none' ? '' : 'none';
+			overlayButton.style.display =
+				overlayButton.style.display === 'none' ? '' : 'none';
 		}
 	}
 }
@@ -291,10 +337,9 @@ export function toggleShare( playerWrapper ) {
  * Sets up the meta bar (share toggle, download dropdown menus, embed code
  * copying, etc.) for a given wrapper.
  *
- * @param {HTMLElement} wrapper   The wrapper containing the icons.
- * @param {object}      videoVars Optional video variables (currently unused directly here).
+ * @param {HTMLElement} wrapper The wrapper containing the icons.
  */
-export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-unused-vars
+export function setupMetaBar( wrapper ) {
 	if ( wrapper.dataset.videopackMetaInitialized ) {
 		return;
 	}
@@ -315,7 +360,9 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 		// trap element that used to sit behind this container at the exact
 		// same size/position -- it could never actually receive a click,
 		// since this container was always on top of it.
-		const shareContainerForClose = wrapper.querySelector( '.videopack-share-container' );
+		const shareContainerForClose = wrapper.querySelector(
+			'.videopack-share-container'
+		);
 		if ( shareContainerForClose ) {
 			shareContainerForClose.addEventListener( 'click', ( e ) => {
 				if ( e.target === e.currentTarget ) {
@@ -326,51 +373,73 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 	}
 
 	const isDownloadDropdownMenu = ( menu ) => {
-		return menu && (
-			menu.classList.contains( 'videopack-download-dropdown-menu' ) ||
-			menu.classList.contains( 'videopack-dropdown-menu' ) ||
-			menu.classList.contains( 'videopack-download-menu' )
+		return (
+			menu &&
+			( menu.classList.contains( 'videopack-download-dropdown-menu' ) ||
+				menu.classList.contains( 'videopack-dropdown-menu' ) ||
+				menu.classList.contains( 'videopack-download-menu' ) )
 		);
 	};
 
 	const closeAllDownloadDropdowns = ( exceptTrigger = null ) => {
-		document.querySelectorAll( '.videopack-download-trigger[aria-expanded="true"], .videopack-dropdown-trigger[aria-expanded="true"]' ).forEach( ( openTrigger ) => {
-			if ( openTrigger === exceptTrigger ) {
-				return;
-			}
-			openTrigger.setAttribute( 'aria-expanded', 'false' );
-			openTrigger.classList.remove( 'is-active' );
-			const menu = openTrigger.closest( '.videopack-download-menu-container' )?.querySelector( '.videopack-download-dropdown-menu' )
-				|| openTrigger.nextElementSibling;
-			if ( menu ) {
-				menu.classList.remove( 'is-visible' );
-			}
-		} );
-		document.querySelectorAll( '.videopack-download-submenu-trigger[aria-expanded="true"]' ).forEach( ( subTrigger ) => {
-			subTrigger.setAttribute( 'aria-expanded', 'false' );
-			const submenu = subTrigger.nextElementSibling;
-			if ( submenu ) {
-				submenu.classList.remove( 'is-visible' );
-			}
-			subTrigger.closest( '.videopack-has-submenu' )?.classList.remove( 'is-open' );
-		} );
+		document
+			.querySelectorAll(
+				'.videopack-download-trigger[aria-expanded="true"], .videopack-dropdown-trigger[aria-expanded="true"]'
+			)
+			.forEach( ( openTrigger ) => {
+				if ( openTrigger === exceptTrigger ) {
+					return;
+				}
+				openTrigger.setAttribute( 'aria-expanded', 'false' );
+				openTrigger.classList.remove( 'is-active' );
+				const menu =
+					openTrigger
+						.closest( '.videopack-download-menu-container' )
+						?.querySelector(
+							'.videopack-download-dropdown-menu'
+						) || openTrigger.nextElementSibling;
+				if ( menu ) {
+					menu.classList.remove( 'is-visible' );
+				}
+			} );
+		document
+			.querySelectorAll(
+				'.videopack-download-submenu-trigger[aria-expanded="true"]'
+			)
+			.forEach( ( subTrigger ) => {
+				subTrigger.setAttribute( 'aria-expanded', 'false' );
+				const submenu = subTrigger.nextElementSibling;
+				if ( submenu ) {
+					submenu.classList.remove( 'is-visible' );
+				}
+				subTrigger
+					.closest( '.videopack-has-submenu' )
+					?.classList.remove( 'is-open' );
+			} );
 	};
 
 	// Setup generic dropdown interactions
-	const dropdownTriggers = wrapper.querySelectorAll( '.videopack-download-trigger, .videopack-dropdown-trigger' );
+	const dropdownTriggers = wrapper.querySelectorAll(
+		'.videopack-download-trigger, .videopack-dropdown-trigger'
+	);
 	dropdownTriggers.forEach( ( trigger ) => {
 		if ( ! trigger.dataset.videopackDropdownInitialized ) {
 			trigger.addEventListener( 'click', ( e ) => {
 				e.preventDefault();
 				e.stopPropagation();
-				const menuContainer = trigger.closest( '.videopack-download-menu-container' );
+				const menuContainer = trigger.closest(
+					'.videopack-download-menu-container'
+				);
 				const dropdownMenu = menuContainer
-					? menuContainer.querySelector( '.videopack-download-dropdown-menu' )
+					? menuContainer.querySelector(
+							'.videopack-download-dropdown-menu'
+					  )
 					: trigger.nextElementSibling;
 				if ( ! isDownloadDropdownMenu( dropdownMenu ) ) {
 					return;
 				}
-				const isExpanded = trigger.getAttribute( 'aria-expanded' ) === 'true';
+				const isExpanded =
+					trigger.getAttribute( 'aria-expanded' ) === 'true';
 
 				closeAllDownloadDropdowns( trigger );
 
@@ -381,7 +450,11 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 					const playerRect = getDownloadPlayerRect( wrapper );
 					if ( playerRect ) {
 						window.requestAnimationFrame( () => {
-							alignDownloadDropdownMenu( dropdownMenu, trigger, playerRect );
+							alignDownloadDropdownMenu(
+								dropdownMenu,
+								trigger,
+								playerRect
+							);
 						} );
 					}
 				} else {
@@ -398,24 +471,34 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 			return;
 		}
 		const submenu = menuItem.querySelector( '.videopack-download-submenu' );
-		const subTrigger = menuItem.querySelector( '.videopack-download-submenu-trigger' );
+		const subTrigger = menuItem.querySelector(
+			'.videopack-download-submenu-trigger'
+		);
 		if ( ! submenu || ! subTrigger ) {
 			return;
 		}
 
 		const closeSiblingSubmenus = () => {
-			const dropdownMenu = menuItem.closest( '.videopack-download-dropdown-menu' );
+			const dropdownMenu = menuItem.closest(
+				'.videopack-download-dropdown-menu'
+			);
 			if ( ! dropdownMenu ) {
 				return;
 			}
-			dropdownMenu.querySelectorAll( '.videopack-has-submenu.is-open' ).forEach( ( openItem ) => {
-				if ( openItem === menuItem ) {
-					return;
-				}
-				openItem.classList.remove( 'is-open' );
-				openItem.querySelector( '.videopack-download-submenu' )?.classList.remove( 'is-visible' );
-				openItem.querySelector( '.videopack-download-submenu-trigger' )?.setAttribute( 'aria-expanded', 'false' );
-			} );
+			dropdownMenu
+				.querySelectorAll( '.videopack-has-submenu.is-open' )
+				.forEach( ( openItem ) => {
+					if ( openItem === menuItem ) {
+						return;
+					}
+					openItem.classList.remove( 'is-open' );
+					openItem
+						.querySelector( '.videopack-download-submenu' )
+						?.classList.remove( 'is-visible' );
+					openItem
+						.querySelector( '.videopack-download-submenu-trigger' )
+						?.setAttribute( 'aria-expanded', 'false' );
+				} );
 		};
 
 		menuItem.addEventListener( 'mouseenter', () => {
@@ -443,82 +526,125 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 		menuItem.dataset.videopackSubmenuHoverInitialized = 'true';
 	};
 
-	wrapper.querySelectorAll( '.is-inside-title-meta .videopack-has-submenu' ).forEach( setupTitleMetaSubmenuHover );
+	wrapper
+		.querySelectorAll( '.is-inside-title-meta .videopack-has-submenu' )
+		.forEach( setupTitleMetaSubmenuHover );
 
-	wrapper.querySelectorAll( '.videopack-download-submenu-trigger' ).forEach( ( subTrigger ) => {
-		if ( subTrigger.closest( '.is-inside-title-meta' ) ) {
-			return;
-		}
-		if ( subTrigger.dataset.videopackSubmenuInitialized ) {
-			return;
-		}
-		subTrigger.addEventListener( 'click', ( e ) => {
-			e.preventDefault();
-			e.stopPropagation();
-			const submenu = subTrigger.nextElementSibling;
-			if ( ! submenu || ! submenu.classList.contains( 'videopack-download-submenu' ) ) {
+	wrapper
+		.querySelectorAll( '.videopack-download-submenu-trigger' )
+		.forEach( ( subTrigger ) => {
+			if ( subTrigger.closest( '.is-inside-title-meta' ) ) {
 				return;
 			}
-			const isExpanded = subTrigger.getAttribute( 'aria-expanded' ) === 'true';
-			wrapper.querySelectorAll( '.videopack-download-submenu-trigger[aria-expanded="true"]' ).forEach( ( openSub ) => {
-				if ( openSub !== subTrigger ) {
-					openSub.setAttribute( 'aria-expanded', 'false' );
-					openSub.nextElementSibling?.classList.remove( 'is-visible' );
-					openSub.closest( '.videopack-has-submenu' )?.classList.remove( 'is-open' );
+			if ( subTrigger.dataset.videopackSubmenuInitialized ) {
+				return;
+			}
+			subTrigger.addEventListener( 'click', ( e ) => {
+				e.preventDefault();
+				e.stopPropagation();
+				const submenu = subTrigger.nextElementSibling;
+				if (
+					! submenu ||
+					! submenu.classList.contains( 'videopack-download-submenu' )
+				) {
+					return;
+				}
+				const isExpanded =
+					subTrigger.getAttribute( 'aria-expanded' ) === 'true';
+				wrapper
+					.querySelectorAll(
+						'.videopack-download-submenu-trigger[aria-expanded="true"]'
+					)
+					.forEach( ( openSub ) => {
+						if ( openSub !== subTrigger ) {
+							openSub.setAttribute( 'aria-expanded', 'false' );
+							openSub.nextElementSibling?.classList.remove(
+								'is-visible'
+							);
+							openSub
+								.closest( '.videopack-has-submenu' )
+								?.classList.remove( 'is-open' );
+						}
+					} );
+				subTrigger.setAttribute(
+					'aria-expanded',
+					String( ! isExpanded )
+				);
+				subTrigger
+					.closest( '.videopack-has-submenu' )
+					?.classList.toggle( 'is-open', ! isExpanded );
+				if ( ! isExpanded ) {
+					submenu.classList.add( 'is-visible' );
+					const playerRect = getDownloadPlayerRect( wrapper );
+					if ( playerRect ) {
+						window.requestAnimationFrame( () => {
+							alignDownloadSubmenu(
+								submenu,
+								subTrigger,
+								playerRect
+							);
+						} );
+					}
+				} else {
+					submenu.classList.remove( 'is-visible' );
 				}
 			} );
-			subTrigger.setAttribute( 'aria-expanded', String( ! isExpanded ) );
-			subTrigger.closest( '.videopack-has-submenu' )?.classList.toggle( 'is-open', ! isExpanded );
-			if ( ! isExpanded ) {
-				submenu.classList.add( 'is-visible' );
+			subTrigger.addEventListener( 'mouseenter', () => {
+				const hoverSubmenu = subTrigger.nextElementSibling;
+				if (
+					! hoverSubmenu ||
+					! hoverSubmenu.classList.contains(
+						'videopack-download-submenu'
+					)
+				) {
+					return;
+				}
 				const playerRect = getDownloadPlayerRect( wrapper );
 				if ( playerRect ) {
+					window.requestAnimationFrame( () => {
+						alignDownloadSubmenu(
+							hoverSubmenu,
+							subTrigger,
+							playerRect
+						);
+					} );
+				}
+			} );
+			subTrigger.dataset.videopackSubmenuInitialized = 'true';
+		} );
+
+	wrapper
+		.querySelectorAll( '.videopack-has-submenu' )
+		.forEach( ( menuItem ) => {
+			if ( menuItem.closest( '.is-inside-title-meta' ) ) {
+				return;
+			}
+			if ( menuItem.dataset.videopackSubmenuHoverInitialized ) {
+				return;
+			}
+			menuItem.addEventListener( 'mouseenter', () => {
+				const submenu = menuItem.querySelector(
+					'.videopack-download-submenu'
+				);
+				const subTrigger = menuItem.querySelector(
+					'.videopack-download-submenu-trigger'
+				);
+				const playerRect = getDownloadPlayerRect( wrapper );
+				if ( submenu && subTrigger && playerRect ) {
 					window.requestAnimationFrame( () => {
 						alignDownloadSubmenu( submenu, subTrigger, playerRect );
 					} );
 				}
-			} else {
-				submenu.classList.remove( 'is-visible' );
-			}
+			} );
+			menuItem.dataset.videopackSubmenuHoverInitialized = 'true';
 		} );
-		subTrigger.addEventListener( 'mouseenter', () => {
-			const hoverSubmenu = subTrigger.nextElementSibling;
-			if ( ! hoverSubmenu || ! hoverSubmenu.classList.contains( 'videopack-download-submenu' ) ) {
-				return;
-			}
-			const playerRect = getDownloadPlayerRect( wrapper );
-			if ( playerRect ) {
-				window.requestAnimationFrame( () => {
-					alignDownloadSubmenu( hoverSubmenu, subTrigger, playerRect );
-				} );
-			}
-		} );
-		subTrigger.dataset.videopackSubmenuInitialized = 'true';
-	} );
-
-	wrapper.querySelectorAll( '.videopack-has-submenu' ).forEach( ( menuItem ) => {
-		if ( menuItem.closest( '.is-inside-title-meta' ) ) {
-			return;
-		}
-		if ( menuItem.dataset.videopackSubmenuHoverInitialized ) {
-			return;
-		}
-		menuItem.addEventListener( 'mouseenter', () => {
-			const submenu = menuItem.querySelector( '.videopack-download-submenu' );
-			const subTrigger = menuItem.querySelector( '.videopack-download-submenu-trigger' );
-			const playerRect = getDownloadPlayerRect( wrapper );
-			if ( submenu && subTrigger && playerRect ) {
-				window.requestAnimationFrame( () => {
-					alignDownloadSubmenu( submenu, subTrigger, playerRect );
-				} );
-			}
-		} );
-		menuItem.dataset.videopackSubmenuHoverInitialized = 'true';
-	} );
 
 	if ( ! window.videopackDropdownOutsideClickInitialized ) {
 		document.addEventListener( 'click', ( e ) => {
-			if ( ! e.target.closest( '.videopack-dropdown-wrapper' ) && ! e.target.closest( '.videopack-download-wrapper' ) ) {
+			if (
+				! e.target.closest( '.videopack-dropdown-wrapper' ) &&
+				! e.target.closest( '.videopack-download-wrapper' )
+			) {
 				closeAllDownloadDropdowns();
 			}
 		} );
@@ -527,25 +653,41 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 
 	if ( ! window.videopackShareOutsideClickInitialized ) {
 		document.addEventListener( 'click', ( e ) => {
-			if ( ! e.target.closest( '.videopack-share-wrapper' ) && ! e.target.closest( '.videopack-share-container' ) ) {
-				document.querySelectorAll( '.videopack-share-wrapper' ).forEach( ( shareWrapper ) => {
-					const shareIcon = shareWrapper.querySelector( '.videopack-icons.close' );
-					const embedWrapper = shareWrapper._shareContainer || shareWrapper.querySelector( '.videopack-share-container' );
-					if ( shareIcon && embedWrapper && embedWrapper.classList.contains( 'is-visible' ) ) {
-						shareIcon.classList.remove( 'close' );
-						shareIcon.classList.add( 'share' );
-						shareIcon.classList.remove( 'is-active' );
-						shareWrapper.classList.remove( 'is-open' );
-						embedWrapper.classList.remove( 'is-visible' );
-					}
-				} );
+			if (
+				! e.target.closest( '.videopack-share-wrapper' ) &&
+				! e.target.closest( '.videopack-share-container' )
+			) {
+				document
+					.querySelectorAll( '.videopack-share-wrapper' )
+					.forEach( ( shareWrapper ) => {
+						const shareIcon = shareWrapper.querySelector(
+							'.videopack-icons.close'
+						);
+						const embedWrapper =
+							shareWrapper._shareContainer ||
+							shareWrapper.querySelector(
+								'.videopack-share-container'
+							);
+						if (
+							shareIcon &&
+							embedWrapper &&
+							embedWrapper.classList.contains( 'is-visible' )
+						) {
+							shareIcon.classList.remove( 'close' );
+							shareIcon.classList.add( 'share' );
+							shareIcon.classList.remove( 'is-active' );
+							shareWrapper.classList.remove( 'is-open' );
+							embedWrapper.classList.remove( 'is-visible' );
+						}
+					} );
 			}
 		} );
 		window.videopackShareOutsideClickInitialized = true;
 	}
 
 	// Resolve the parent player container for portal relocations
-	const playerContainer = wrapper.closest( '.videopack-player' ) ||
+	const playerContainer =
+		wrapper.closest( '.videopack-player' ) ||
 		wrapper.closest( '.videopack-player-relative-wrapper' ) ||
 		wrapper.closest( '.videopack-thumbnail-wrapper' ) ||
 		wrapper.closest( '.videopack-wrapper' ) ||
@@ -556,21 +698,33 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 	// Setup "start at" functionality.
 	const embedWrapper = wrapper.querySelector( '.videopack-share-container' );
 	if ( embedWrapper ) {
-		const startAtEnable = embedWrapper.querySelector( '.videopack-start-at-enable' );
+		const startAtEnable = embedWrapper.querySelector(
+			'.videopack-start-at-enable'
+		);
 		if ( startAtEnable ) {
-			startAtEnable.addEventListener( 'change', () => setStartAt( portalTarget, wrapper ) );
+			startAtEnable.addEventListener( 'change', () =>
+				setStartAt( portalTarget, wrapper )
+			);
 		}
-		const startAtInput = embedWrapper.querySelector( '.videopack-start-at' );
+		const startAtInput = embedWrapper.querySelector(
+			'.videopack-start-at'
+		);
 		if ( startAtInput ) {
-			startAtInput.addEventListener( 'change', () => changeStartAt( portalTarget, wrapper ) );
+			startAtInput.addEventListener( 'change', () =>
+				changeStartAt( portalTarget, wrapper )
+			);
 		}
-		const embedInput = embedWrapper.querySelector( '.videopack-embed-code' );
+		const embedInput = embedWrapper.querySelector(
+			'.videopack-embed-code'
+		);
 		if ( embedInput ) {
 			embedInput.addEventListener( 'click', () => embedInput.select() );
 		}
 
 		// Wire up sharing service buttons inside the dropdown
-		const nativeBtn = embedWrapper.querySelector( '.videopack-btn-nativeshare' );
+		const nativeBtn = embedWrapper.querySelector(
+			'.videopack-btn-nativeshare'
+		);
 		if ( nativeBtn ) {
 			if ( ! navigator.share ) {
 				nativeBtn.style.display = 'none';
@@ -578,10 +732,14 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 				nativeBtn.addEventListener( 'click', ( e ) => {
 					e.preventDefault();
 					const shareUrl = getShareUrl( wrapper );
-					navigator.share( {
-						title: document.title,
-						url: shareUrl,
-					} ).catch( ( err ) => console.log( 'Share failed:', err ) );
+					navigator
+						.share( {
+							title: document.title,
+							url: shareUrl,
+						} )
+						.catch( ( err ) =>
+							console.log( 'Share failed:', err )
+						);
 				} );
 			}
 		}
@@ -594,7 +752,10 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 				if ( navigator.clipboard && navigator.clipboard.writeText ) {
 					navigator.clipboard.writeText( shareUrl ).then( () => {
 						copyBtn.classList.add( 'copied' );
-						setTimeout( () => copyBtn.classList.remove( 'copied' ), 1500 );
+						setTimeout(
+							() => copyBtn.classList.remove( 'copied' ),
+							1500
+						);
 					} );
 				} else {
 					// Fallback
@@ -605,7 +766,10 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 					document.execCommand( 'copy' );
 					document.body.removeChild( tempInput );
 					copyBtn.classList.add( 'copied' );
-					setTimeout( () => copyBtn.classList.remove( 'copied' ), 1500 );
+					setTimeout(
+						() => copyBtn.classList.remove( 'copied' ),
+						1500
+					);
 				}
 			} );
 		}
@@ -616,17 +780,29 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 				e.preventDefault();
 				const shareUrl = getShareUrl( wrapper );
 				const text = `${ document.title } ${ shareUrl }`;
-				openPopup( `https://bsky.app/intent/compose?text=${ encodeURIComponent( text ) }`, 'share_bluesky' );
+				openPopup(
+					`https://bsky.app/intent/compose?text=${ encodeURIComponent(
+						text
+					) }`,
+					'share_bluesky'
+				);
 			} );
 		}
 
-		const threadsBtn = embedWrapper.querySelector( '.videopack-btn-threads' );
+		const threadsBtn = embedWrapper.querySelector(
+			'.videopack-btn-threads'
+		);
 		if ( threadsBtn ) {
 			threadsBtn.addEventListener( 'click', ( e ) => {
 				e.preventDefault();
 				const shareUrl = getShareUrl( wrapper );
 				const text = `${ document.title } ${ shareUrl }`;
-				openPopup( `https://www.threads.net/intent/post?text=${ encodeURIComponent( text ) }`, 'share_threads' );
+				openPopup(
+					`https://www.threads.net/intent/post?text=${ encodeURIComponent(
+						text
+					) }`,
+					'share_threads'
+				);
 			} );
 		}
 
@@ -635,7 +811,12 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 			fbBtn.addEventListener( 'click', ( e ) => {
 				e.preventDefault();
 				const shareUrl = getShareUrl( wrapper );
-				openPopup( `https://www.facebook.com/sharer/sharer.php?u=${ encodeURIComponent( shareUrl ) }`, 'share_facebook' );
+				openPopup(
+					`https://www.facebook.com/sharer/sharer.php?u=${ encodeURIComponent(
+						shareUrl
+					) }`,
+					'share_facebook'
+				);
 			} );
 		}
 
@@ -644,7 +825,12 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 			redditBtn.addEventListener( 'click', ( e ) => {
 				e.preventDefault();
 				const shareUrl = getShareUrl( wrapper );
-				openPopup( `https://www.reddit.com/submit?url=${ encodeURIComponent( shareUrl ) }&title=${ encodeURIComponent( document.title ) }`, 'share_reddit' );
+				openPopup(
+					`https://www.reddit.com/submit?url=${ encodeURIComponent(
+						shareUrl
+					) }&title=${ encodeURIComponent( document.title ) }`,
+					'share_reddit'
+				);
 			} );
 		}
 
@@ -653,37 +839,50 @@ export function setupMetaBar( wrapper, videoVars ) { // eslint-disable-line no-u
 			emailBtn.addEventListener( 'click', ( e ) => {
 				e.preventDefault();
 				const shareUrl = getShareUrl( wrapper );
-				window.location.href = `mailto:?subject=${ encodeURIComponent( document.title ) }&body=${ encodeURIComponent( shareUrl ) }`;
+				window.location.href = `mailto:?subject=${ encodeURIComponent(
+					document.title
+				) }&body=${ encodeURIComponent( shareUrl ) }`;
 			} );
 		}
 	}
 
-	wrapper.querySelectorAll( '.videopack-download-link[download]' ).forEach( ( downloadLink ) => {
-		if ( downloadLink.dataset.videopackDownloadInitialized ) {
-			return;
-		}
-		if ( downloadLink.dataset.alt_link ) {
-			downloadLink.addEventListener( 'click', ( e ) => {
-				e.preventDefault();
-				checkDownloadLink( downloadLink );
-			} );
-		}
-		downloadLink.dataset.videopackDownloadInitialized = 'true';
-	} );
+	wrapper
+		.querySelectorAll( '.videopack-download-link[download]' )
+		.forEach( ( downloadLink ) => {
+			if ( downloadLink.dataset.videopackDownloadInitialized ) {
+				return;
+			}
+			if ( downloadLink.dataset.alt_link ) {
+				downloadLink.addEventListener( 'click', ( e ) => {
+					e.preventDefault();
+					checkDownloadLink( downloadLink );
+				} );
+			}
+			downloadLink.dataset.videopackDownloadInitialized = 'true';
+		} );
 
 	// Portal fix: Lift the share overlay container to the player container root
 	// so it is not trapped by inner layout/position bounds of the share block.
-	const isInsideTitleMeta = wrapper.classList.contains( 'is-inside-title-meta' );
+	const isInsideTitleMeta = wrapper.classList.contains(
+		'is-inside-title-meta'
+	);
 	const isOverlay = wrapper.classList.contains( 'is-overlay' );
-	const isInsideThumbnail = wrapper.classList.contains( 'is-inside-thumbnail' );
+	const isInsideThumbnail = wrapper.classList.contains(
+		'is-inside-thumbnail'
+	);
 	const shouldPortal = isInsideTitleMeta || isOverlay || isInsideThumbnail;
 
-	const shareContainer = wrapper.querySelector( '.videopack-share-container' );
+	const shareContainer = wrapper.querySelector(
+		'.videopack-share-container'
+	);
 
 	wrapper._shareContainer = shareContainer;
 
 	if ( shouldPortal && playerContainer ) {
-		if ( shareContainer && shareContainer.parentElement !== playerContainer ) {
+		if (
+			shareContainer &&
+			shareContainer.parentElement !== playerContainer
+		) {
 			playerContainer.appendChild( shareContainer );
 		}
 	}

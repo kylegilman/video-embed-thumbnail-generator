@@ -11,7 +11,7 @@ import { createBlock } from '@wordpress/blocks';
 import { sortAscending, sortDescending } from '../../assets/icon';
 import QuerySettingsPanel from './QuerySettings';
 
-export default function CollectionQuerySettings({
+export default function CollectionQuerySettings( {
 	attributes,
 	setAttributes,
 	queryData,
@@ -20,8 +20,8 @@ export default function CollectionQuerySettings({
 	isSiteEditor = false,
 	hasPaginationBlock = true,
 	clientId,
-}) {
-	const { insertBlock } = useDispatch('core/block-editor');
+} ) {
+	const { insertBlock } = useDispatch( 'core/block-editor' );
 	const {
 		gallery_source,
 		gallery_include,
@@ -37,30 +37,30 @@ export default function CollectionQuerySettings({
 		() => [
 			{
 				value: 'post_date',
-				label: __('Date', 'video-embed-thumbnail-generator'),
+				label: __( 'Date', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'menu_order',
-				label: __('Default', 'video-embed-thumbnail-generator'),
+				label: __( 'Default', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'title',
-				label: __('Title', 'video-embed-thumbnail-generator'),
+				label: __( 'Title', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'rand',
-				label: __('Random', 'video-embed-thumbnail-generator'),
+				label: __( 'Random', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'ID',
-				label: __('Video ID', 'video-embed-thumbnail-generator'),
+				label: __( 'Video ID', 'video-embed-thumbnail-generator' ),
 			},
 		],
 		[]
 	);
 
-	const orderbyOptions = useMemo(() => {
-		if (gallery_include) {
+	const orderbyOptions = useMemo( () => {
+		if ( gallery_include ) {
 			return [
 				...baseGalleryOrderbyOptions,
 				{
@@ -73,46 +73,50 @@ export default function CollectionQuerySettings({
 			];
 		}
 		return baseGalleryOrderbyOptions;
-	}, [gallery_include, baseGalleryOrderbyOptions]);
+	}, [ gallery_include, baseGalleryOrderbyOptions ] );
 
-	const updateNumericAttribute = (name, value) => {
-		const parsedValue = parseInt(value, 10);
-		setAttributes({ [name]: isNaN(parsedValue) ? undefined : parsedValue });
+	const updateNumericAttribute = ( name, value ) => {
+		const parsedValue = parseInt( value, 10 );
+		setAttributes( {
+			[ name ]: isNaN( parsedValue ) ? undefined : parsedValue,
+		} );
 	};
 
 	return (
 		<>
 			<QuerySettingsPanel
-				attributes={attributes}
-				setAttributes={setAttributes}
-				queryData={queryData}
-				showArchiveSource={isSiteEditor}
-				showManualSource={showManualSource}
+				attributes={ attributes }
+				setAttributes={ setAttributes }
+				queryData={ queryData }
+				showArchiveSource={ isSiteEditor }
+				showManualSource={ showManualSource }
 			/>
 
-			{gallery_source === 'archive' && (
+			{ gallery_source === 'archive' && (
 				<ToggleControl
-					label={__(
+					label={ __(
 						'Prioritize Post Data',
 						'video-embed-thumbnail-generator'
-					)}
-					help={__(
+					) }
+					help={ __(
 						'Use the title and date from the original post instead of the video attachment.',
 						'video-embed-thumbnail-generator'
-					)}
-					checked={!!attributes.prioritizePostData}
-					onChange={(val) =>
-						setAttributes({ prioritizePostData: val })
+					) }
+					checked={ !! attributes.prioritizePostData }
+					onChange={ ( val ) =>
+						setAttributes( { prioritizePostData: val } )
 					}
 				/>
-			)}
+			) }
 
 			<div className="videopack-sort-control-wrapper">
 				<SelectControl
-					label={__('Sort by', 'video-embed-thumbnail-generator')}
-					value={gallery_orderby}
-					onChange={(val) => setAttributes({ gallery_orderby: val })}
-					options={orderbyOptions}
+					label={ __( 'Sort by', 'video-embed-thumbnail-generator' ) }
+					value={ gallery_orderby }
+					onChange={ ( val ) =>
+						setAttributes( { gallery_orderby: val } )
+					}
+					options={ orderbyOptions }
 				/>
 				<Button
 					icon={
@@ -120,118 +124,123 @@ export default function CollectionQuerySettings({
 					}
 					label={
 						gallery_order === 'asc'
-							? __('Ascending', 'video-embed-thumbnail-generator')
+							? __(
+									'Ascending',
+									'video-embed-thumbnail-generator'
+							  )
 							: __(
 									'Descending',
 									'video-embed-thumbnail-generator'
-								)
+							  )
 					}
-					onClick={() =>
-						setAttributes({
+					onClick={ () =>
+						setAttributes( {
 							gallery_order:
 								gallery_order === 'asc' ? 'desc' : 'asc',
-						})
+						} )
 					}
 					showTooltip
 				/>
 			</div>
 
-			{!!gallery_pagination || !!hasPaginationBlock ? (
+			{ !! gallery_pagination || !! hasPaginationBlock ? (
 				<TextControl
-					label={__(
+					label={ __(
 						'Number of videos per page',
 						'video-embed-thumbnail-generator'
-					)}
+					) }
 					type="number"
-					value={gallery_per_page ?? ''}
-					placeholder={options.gallery_per_page}
-					onChange={(val) =>
-						updateNumericAttribute('gallery_per_page', val)
+					value={ gallery_per_page ?? '' }
+					placeholder={ options.gallery_per_page }
+					onChange={ ( val ) =>
+						updateNumericAttribute( 'gallery_per_page', val )
 					}
 				/>
 			) : (
 				<>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__(
+						label={ __(
 							'Limit number of videos',
 							'video-embed-thumbnail-generator'
-						)}
-						checked={!!enable_collection_video_limit}
-						onChange={(val) => {
+						) }
+						checked={ !! enable_collection_video_limit }
+						onChange={ ( val ) => {
 							const updates = {
 								enable_collection_video_limit: val,
 							};
-							if (!val) {
+							if ( ! val ) {
 								updates.collection_video_limit = -1;
-							} else if (Number(collection_video_limit) === -1) {
+							} else if (
+								Number( collection_video_limit ) === -1
+							) {
 								updates.collection_video_limit = 12;
 							}
-							setAttributes(updates);
-						}}
+							setAttributes( updates );
+						} }
 					/>
-					{!!enable_collection_video_limit && (
+					{ !! enable_collection_video_limit && (
 						<TextControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'Video Limit',
 								'video-embed-thumbnail-generator'
-							)}
-							help={__(
+							) }
+							help={ __(
 								'Maximum number of videos to show when pagination is disabled.',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							type="number"
 							value={
-								Number(collection_video_limit) === -1
+								Number( collection_video_limit ) === -1
 									? 12
-									: (collection_video_limit ?? '')
+									: collection_video_limit ?? ''
 							}
-							onChange={(val) =>
+							onChange={ ( val ) =>
 								updateNumericAttribute(
 									'collection_video_limit',
 									val
 								)
 							}
 						/>
-					)}
+					) }
 				</>
-			)}
+			) }
 
-			{!hasPaginationBlock && (
+			{ ! hasPaginationBlock && (
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__(
+					label={ __(
 						'Enable Pagination',
 						'video-embed-thumbnail-generator'
-					)}
+					) }
 					help={
 						clientId
 							? __(
 									'Adds a Pagination block to the collection.',
 									'video-embed-thumbnail-generator'
-								)
+							  )
 							: undefined
 					}
-					checked={!!gallery_pagination}
-					onChange={(val) => {
-						setAttributes({ gallery_pagination: val });
+					checked={ !! gallery_pagination }
+					onChange={ ( val ) => {
+						setAttributes( { gallery_pagination: val } );
 						// In the block editor, pagination display is driven by
 						// an actual videopack/pagination child block, not just
 						// this attribute — insert one so the toggle produces
 						// visible controls. Classic Embed has no block tree
 						// (no clientId), so it keeps the attribute-only behavior.
-						if (val && clientId) {
+						if ( val && clientId ) {
 							insertBlock(
-								createBlock('videopack/pagination'),
+								createBlock( 'videopack/pagination' ),
 								undefined,
 								clientId
 							);
 						}
-					}}
+					} }
 				/>
-			)}
+			) }
 		</>
 	);
 }

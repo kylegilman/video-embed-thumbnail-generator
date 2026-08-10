@@ -10,57 +10,57 @@ import {
 import { MediaUpload } from '@wordpress/media-utils';
 import { plus, close } from '@wordpress/icons';
 
-const TextTracks = ({ tracks = [], onChange }) => {
-	const updateTrack = (index, newValues) => {
-		const newTracks = [...tracks];
-		newTracks[index] = { ...newTracks[index], ...newValues };
-		onChange(newTracks);
+const TextTracks = ( { tracks = [], onChange } ) => {
+	const updateTrack = ( index, newValues ) => {
+		const newTracks = [ ...tracks ];
+		newTracks[ index ] = { ...newTracks[ index ], ...newValues };
+		onChange( newTracks );
 	};
 
-	const removeTrack = (index) => {
-		const newTracks = tracks.filter((_, i) => i !== index);
-		onChange(newTracks);
+	const removeTrack = ( index ) => {
+		const newTracks = tracks.filter( ( _, i ) => i !== index );
+		onChange( newTracks );
 	};
 
-	const addTrack = (track) => {
-		const newTracks = [...tracks, track];
-		onChange(newTracks);
+	const addTrack = ( track ) => {
+		const newTracks = [ ...tracks, track ];
+		onChange( newTracks );
 	};
 
-	const handleMediaSelect = (media) => {
-		addTrack({
+	const handleMediaSelect = ( media ) => {
+		addTrack( {
 			src: media.url,
 			kind: 'subtitles',
 			srclang: '',
 			label: media.title || '',
 			default: false,
-		});
+		} );
 	};
 
 	return (
 		<PanelBody
-			title={__('Text Tracks', 'video-embed-thumbnail-generator')}
-			initialOpen={false}
+			title={ __( 'Text Tracks', 'video-embed-thumbnail-generator' ) }
+			initialOpen={ false }
 		>
 			<div className="videopack-text-tracks-list">
-				{tracks.map((track, index) => (
-					<div key={index} className="videopack-text-track-item">
+				{ tracks.map( ( track, index ) => (
+					<div key={ index } className="videopack-text-track-item">
 						<div className="videopack-text-track-header">
 							<span className="videopack-text-track-label">
-								{track.label ||
-									track.src.split('/').pop() ||
+								{ track.label ||
+									track.src.split( '/' ).pop() ||
 									__(
 										'Untitled Track',
 										'video-embed-thumbnail-generator'
-									)}
+									) }
 							</span>
 							<Button
-								icon={close}
-								label={__(
+								icon={ close }
+								label={ __(
 									'Remove Track',
 									'video-embed-thumbnail-generator'
-								)}
-								onClick={() => removeTrack(index)}
+								) }
+								onClick={ () => removeTrack( index ) }
 								isDestructive
 								className="videopack-remove-track"
 							/>
@@ -68,25 +68,25 @@ const TextTracks = ({ tracks = [], onChange }) => {
 						<div className="videopack-text-track-settings">
 							<div className="videopack-text-track-settings-row">
 								<TextControl
-									label={__(
+									label={ __(
 										'Source URL',
 										'video-embed-thumbnail-generator'
-									)}
-									value={track.src}
-									onChange={(value) =>
-										updateTrack(index, { src: value })
+									) }
+									value={ track.src }
+									onChange={ ( value ) =>
+										updateTrack( index, { src: value } )
 									}
 									__nextHasNoMarginBottom
 								/>
 							</div>
 							<div className="videopack-text-track-settings-row videopack-text-track-settings-row-split">
 								<SelectControl
-									label={__(
+									label={ __(
 										'Kind',
 										'video-embed-thumbnail-generator'
-									)}
-									value={track.kind}
-									options={[
+									) }
+									value={ track.kind }
+									options={ [
 										{
 											label: __(
 												'Subtitles',
@@ -122,20 +122,20 @@ const TextTracks = ({ tracks = [], onChange }) => {
 											),
 											value: 'metadata',
 										},
-									]}
-									onChange={(value) =>
-										updateTrack(index, { kind: value })
+									] }
+									onChange={ ( value ) =>
+										updateTrack( index, { kind: value } )
 									}
 									__nextHasNoMarginBottom
 								/>
 								<TextControl
-									label={__(
+									label={ __(
 										'Language',
 										'video-embed-thumbnail-generator'
-									)}
-									value={track.srclang}
-									onChange={(value) =>
-										updateTrack(index, { srclang: value })
+									) }
+									value={ track.srclang }
+									onChange={ ( value ) =>
+										updateTrack( index, { srclang: value } )
 									}
 									placeholder="en"
 									__nextHasNoMarginBottom
@@ -143,73 +143,81 @@ const TextTracks = ({ tracks = [], onChange }) => {
 							</div>
 							<div className="videopack-text-track-settings-row">
 								<TextControl
-									label={__(
+									label={ __(
 										'Label',
 										'video-embed-thumbnail-generator'
-									)}
-									value={track.label}
-									onChange={(value) =>
-										updateTrack(index, { label: value })
+									) }
+									value={ track.label }
+									onChange={ ( value ) =>
+										updateTrack( index, { label: value } )
 									}
-									placeholder={__(
+									placeholder={ __(
 										'e.g. English Subtitles',
 										'video-embed-thumbnail-generator'
-									)}
+									) }
 									__nextHasNoMarginBottom
 								/>
 							</div>
 							<PanelRow>
 								<ToggleControl
-									label={__(
+									label={ __(
 										'Default',
 										'video-embed-thumbnail-generator'
-									)}
-									checked={track.default}
-									onChange={(value) => {
+									) }
+									checked={ track.default }
+									onChange={ ( value ) => {
 										// If setting to true, uncheck others (only one default per track set)
 										const newTracks = tracks.map(
-											(t, i) => ({
+											( t, i ) => ( {
 												...t,
 												default:
 													i === index ? value : false,
-											})
+											} )
 										);
-										onChange(newTracks);
-									}}
+										onChange( newTracks );
+									} }
 									__nextHasNoMarginBottom
 								/>
 							</PanelRow>
 						</div>
 					</div>
-				))}
+				) ) }
 			</div>
 
 			<div className="videopack-text-tracks-actions">
 				<MediaUpload
-					onSelect={handleMediaSelect}
-					allowedTypes={['text/vtt', 'application/vtt', 'text/plain']} // VTT files often detected as text/plain
-					render={({ open }) => (
-						<Button variant="secondary" icon={plus} onClick={open}>
-							{__(
+					onSelect={ handleMediaSelect }
+					allowedTypes={ [
+						'text/vtt',
+						'application/vtt',
+						'text/plain',
+					] } // VTT files often detected as text/plain
+					render={ ( { open } ) => (
+						<Button
+							variant="secondary"
+							icon={ plus }
+							onClick={ open }
+						>
+							{ __(
 								'Add from Library',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						</Button>
-					)}
+					) }
 				/>
 				<Button
 					variant="tertiary"
-					onClick={() =>
-						addTrack({
+					onClick={ () =>
+						addTrack( {
 							src: '',
 							kind: 'subtitles',
 							srclang: '',
 							label: '',
 							default: false,
-						})
+						} )
 					}
 				>
-					{__('Add URL', 'video-embed-thumbnail-generator')}
+					{ __( 'Add URL', 'video-embed-thumbnail-generator' ) }
 				</Button>
 			</div>
 		</PanelBody>

@@ -17,8 +17,8 @@ export const getQueue = async () => {
 	 *
 	 * @param {undefined} pre Defaults to undefined. If a non-undefined value is returned, fetching is bypassed.
 	 */
-	const pre = applyFilters('videopack.utils.pre_getQueue', undefined);
-	if (typeof pre !== 'undefined') {
+	const pre = applyFilters( 'videopack.utils.pre_getQueue', undefined );
+	if ( typeof pre !== 'undefined' ) {
 		return pre;
 	}
 	try {
@@ -30,9 +30,9 @@ export const getQueue = async () => {
 		 *
 		 * @param {Array} response Array of job objects.
 		 */
-		return applyFilters('videopack.utils.getQueue', response || []);
-	} catch (error) {
-		console.error('Error fetching queue:', error);
+		return applyFilters( 'videopack.utils.getQueue', response || [] );
+	} catch ( error ) {
+		console.error( 'Error fetching queue:', error );
 		throw error;
 	}
 };
@@ -42,15 +42,15 @@ export const getQueue = async () => {
  *
  * @param {string} action The action to perform (play/pause).
  */
-export const toggleQueue = async (action) => {
+export const toggleQueue = async ( action ) => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/jobs/control',
 			method: 'POST',
 			data: { action },
-		});
-	} catch (error) {
-		console.error('Error toggling queue:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error toggling queue:', error );
 		throw error;
 	}
 };
@@ -60,15 +60,15 @@ export const toggleQueue = async (action) => {
  *
  * @param {string} type The type of jobs to clear.
  */
-export const clearQueue = async (type) => {
+export const clearQueue = async ( type ) => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/jobs/clear',
 			method: 'DELETE',
 			data: { type },
-		});
-	} catch (error) {
-		console.error('Error clearing queue:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error clearing queue:', error );
 		throw error;
 	}
 };
@@ -78,14 +78,16 @@ export const clearQueue = async (type) => {
  *
  * @param {number|string} jobId The ID of the job to delete.
  */
-export const deleteJob = async (jobId) => {
+export const deleteJob = async ( jobId ) => {
 	try {
-		return await apiFetch({
-			path: addQueryArgs(`/videopack/v1/jobs/${jobId}`, { force: true }),
+		return await apiFetch( {
+			path: addQueryArgs( `/videopack/v1/jobs/${ jobId }`, {
+				force: true,
+			} ),
 			method: 'DELETE',
-		});
-	} catch (error) {
-		console.error('Error deleting job:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error deleting job:', error );
 		throw error;
 	}
 };
@@ -95,14 +97,14 @@ export const deleteJob = async (jobId) => {
  *
  * @param {number|string} jobId The ID of the job to retry.
  */
-export const retryJob = async (jobId) => {
+export const retryJob = async ( jobId ) => {
 	try {
-		return await apiFetch({
-			path: `/videopack/v1/jobs/${jobId}`,
+		return await apiFetch( {
+			path: `/videopack/v1/jobs/${ jobId }`,
 			method: 'POST',
-		});
-	} catch (error) {
-		console.error('Error retrying job:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error retrying job:', error );
 		throw error;
 	}
 };
@@ -112,14 +114,16 @@ export const retryJob = async (jobId) => {
  *
  * @param {number|string} jobId The ID of the job to remove.
  */
-export const removeJob = async (jobId) => {
+export const removeJob = async ( jobId ) => {
 	try {
-		return await apiFetch({
-			path: addQueryArgs(`/videopack/v1/jobs/${jobId}`, { force: false }),
+		return await apiFetch( {
+			path: addQueryArgs( `/videopack/v1/jobs/${ jobId }`, {
+				force: false,
+			} ),
 			method: 'DELETE',
-		});
-	} catch (error) {
-		console.error('Error removing job:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error removing job:', error );
 		throw error;
 	}
 };
@@ -131,19 +135,19 @@ export const removeJob = async (jobId) => {
  * @param {Array}         outputs  Array of output format IDs.
  * @param {number}        parentId Optional. The parent post ID.
  */
-export const createJob = async (input, outputs, parentId = 0) => {
+export const createJob = async ( input, outputs, parentId = 0 ) => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/jobs',
 			method: 'POST',
 			data: {
 				input,
 				outputs,
-				parent_id: Number(parentId) || 0,
+				parent_id: Number( parentId ) || 0,
 			},
-		});
-	} catch (error) {
-		console.error('Error creating job:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error creating job:', error );
 		throw error;
 	}
 };
@@ -153,14 +157,14 @@ export const createJob = async (input, outputs, parentId = 0) => {
  *
  * @param {number|string} input Optional. The input attachment ID or URL to filter by.
  */
-export const listJobs = async (input = null) => {
+export const listJobs = async ( input = null ) => {
 	try {
 		const path = input
-			? addQueryArgs('/videopack/v1/jobs', { input })
+			? addQueryArgs( '/videopack/v1/jobs', { input } )
 			: '/videopack/v1/jobs';
-		return await apiFetch({ path });
-	} catch (error) {
-		console.error('Error listing jobs:', error);
+		return await apiFetch( { path } );
+	} catch ( error ) {
+		console.error( 'Error listing jobs:', error );
 		throw error;
 	}
 };
@@ -173,20 +177,25 @@ export const listJobs = async (input = null) => {
  * @param {Object}        formats      Object where keys are format IDs and values are booleans.
  * @param {number}        parentId     Optional. The parent post ID.
  */
-export const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
-	const outputIds = Object.keys(formats).filter((id) => formats[id]);
+export const enqueueJob = async (
+	attachmentId,
+	src,
+	formats,
+	parentId = 0
+) => {
+	const outputIds = Object.keys( formats ).filter( ( id ) => formats[ id ] );
 	try {
 		const response = await createJob(
 			attachmentId || src,
 			outputIds,
-			Number(parentId) || 0
+			Number( parentId ) || 0
 		);
 		return {
 			...response,
 			attachment_id: attachmentId,
 		};
-	} catch (error) {
-		console.error('Error enqueuing job:', error);
+	} catch ( error ) {
+		console.error( 'Error enqueuing job:', error );
 		throw error;
 	}
 };
@@ -196,14 +205,14 @@ export const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
  *
  * @param {number|string} jobId The ID of the job to reset.
  */
-export const resetJob = async (jobId) => {
+export const resetJob = async ( jobId ) => {
 	try {
-		return await apiFetch({
-			path: `/videopack/v1/browser-queue/job/${jobId}/reset`,
+		return await apiFetch( {
+			path: `/videopack/v1/browser-queue/job/${ jobId }/reset`,
 			method: 'POST',
-		});
-	} catch (error) {
-		console.error('Error resetting job:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error resetting job:', error );
 		throw error;
 	}
 };

@@ -22,12 +22,17 @@
  */
 export function sendGoogleAnalytics( event, label ) {
 	if ( typeof window !== 'undefined' && typeof window.gtag === 'function' ) {
-		window.gtag( 'event', event, { event_category: 'Videos', event_label: label } );
+		window.gtag( 'event', event, {
+			event_category: 'Videos',
+			event_label: label,
+		} );
 	}
 
 	if ( typeof document !== 'undefined' ) {
 		document.dispatchEvent(
-			new CustomEvent( 'videopack:analytics', { detail: { event, label } } )
+			new CustomEvent( 'videopack:analytics', {
+				detail: { event, label },
+			} )
 		);
 	}
 }
@@ -51,7 +56,9 @@ export function sendGoogleAnalytics( event, label ) {
  * @param {string} event    The video event (play, pause, seek, end, or a quarter percentage).
  */
 export function videoCounter( playerId, event ) {
-	const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
+	const playerWrapper = document.querySelector(
+		`.videopack-player[data-id="${ playerId }"]`
+	);
 	if ( ! playerWrapper ) {
 		return;
 	}
@@ -62,19 +69,23 @@ export function videoCounter( playerId, event ) {
 	}
 
 	const viewCountWrapper = playerWrapper.closest( '.videopack-wrapper' );
-	const viewCountElement = viewCountWrapper ? viewCountWrapper.querySelector( '.videopack-view-count' ) : null;
+	const viewCountElement = viewCountWrapper
+		? viewCountWrapper.querySelector( '.videopack-view-count' )
+		: null;
 
 	let changed = false;
 	const played = playerWrapper.dataset.played || 'not played';
 
 	if ( 'play' === event ) {
-		if ( 'not played' === played ) { // Play start
+		if ( 'not played' === played ) {
+			// Play start
 			if ( videoVars.countable ) {
 				changed = true;
 			}
 			playerWrapper.dataset.played = 'played';
 			sendGoogleAnalytics( videopack_l10n.playstart, videoVars.title );
-		} else { // Resume
+		} else {
+			// Resume
 			sendGoogleAnalytics( videopack_l10n.resume, videoVars.title );
 		}
 	} else if ( [ 'seek', 'pause', 'end' ].includes( event ) ) {
@@ -82,7 +93,8 @@ export function videoCounter( playerId, event ) {
 			changed = true;
 		}
 		sendGoogleAnalytics( videopack_l10n[ event ], videoVars.title );
-	} else if ( ! isNaN( event ) ) { // Quarter-play
+	} else if ( ! isNaN( event ) ) {
+		// Quarter-play
 		if ( videoVars.countable ) {
 			changed = true;
 		}
@@ -90,8 +102,10 @@ export function videoCounter( playerId, event ) {
 	}
 
 	if ( changed && false !== videoVars.count_views ) {
-		const countCondition = videoVars.count_views === 'quarters' ||
-			( videoVars.count_views === 'start_complete' && ( 'play' === event || 'end' === event ) ) ||
+		const countCondition =
+			videoVars.count_views === 'quarters' ||
+			( videoVars.count_views === 'start_complete' &&
+				( 'play' === event || 'end' === event ) ) ||
 			( videoVars.count_views === 'start' && 'play' === event );
 
 		if ( countCondition ) {
@@ -101,13 +115,22 @@ export function videoCounter( playerId, event ) {
 			// Only for 'play', matching the one place the real response
 			// updates this element.
 			if ( 'play' === event && viewCountElement ) {
-				const optimisticSpan = viewCountElement.tagName === 'SPAN' ? viewCountElement : viewCountElement.querySelector( 'span' );
+				const optimisticSpan =
+					viewCountElement.tagName === 'SPAN'
+						? viewCountElement
+						: viewCountElement.querySelector( 'span' );
 				const optimisticTarget = optimisticSpan || viewCountElement;
 				const match = optimisticTarget.textContent.match( /[\d,.]+/ );
 				const digitsOnly = match ? match[ 0 ].replace( /\D/g, '' ) : '';
 				if ( digitsOnly ) {
-					const incremented = String( parseInt( digitsOnly, 10 ) + 1 ).replace( /\B(?=(\d{3})+(?!\d))/g, ',' );
-					optimisticTarget.textContent = optimisticTarget.textContent.replace( match[ 0 ], incremented );
+					const incremented = String(
+						parseInt( digitsOnly, 10 ) + 1
+					).replace( /\B(?=(\d{3})+(?!\d))/g, ',' );
+					optimisticTarget.textContent =
+						optimisticTarget.textContent.replace(
+							match[ 0 ],
+							incremented
+						);
 				}
 			}
 
@@ -141,8 +164,18 @@ export function videoCounter( playerId, event ) {
 			} )
 				.then( ( response ) => response.json() )
 				.then( ( data ) => {
-					if ( 'play' === event && data && data.success && data.data && data.data.views && viewCountElement ) {
-						const span = viewCountElement.tagName === 'SPAN' ? viewCountElement : viewCountElement.querySelector( 'span' );
+					if (
+						'play' === event &&
+						data &&
+						data.success &&
+						data.data &&
+						data.data.views &&
+						viewCountElement
+					) {
+						const span =
+							viewCountElement.tagName === 'SPAN'
+								? viewCountElement
+								: viewCountElement.querySelector( 'span' );
 						if ( span ) {
 							span.innerHTML = data.data.views;
 						} else {

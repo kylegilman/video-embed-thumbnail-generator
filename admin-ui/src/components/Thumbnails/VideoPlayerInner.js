@@ -4,7 +4,7 @@ import { __ } from '@wordpress/i18n';
 import { external } from '@wordpress/icons';
 import { play, pause } from '../../assets/icon';
 
-const VideoPlayerInner = ({
+const VideoPlayerInner = ( {
 	videoRef,
 	panelRef,
 	src,
@@ -19,101 +19,111 @@ const VideoPlayerInner = ({
 	isModal = false,
 	disabled = false,
 	onLoadedData,
-}) => {
+} ) => {
 	const localPanelRef = useRef();
 	const containerRef = panelRef || localPanelRef;
-	const [duration, setDuration] = useState(videoRef.current?.duration || 0);
+	const [ duration, setDuration ] = useState(
+		videoRef.current?.duration || 0
+	);
 
-	const onLoadedMetadata = (event) => {
-		setDuration(event.target.duration);
+	const onLoadedMetadata = ( event ) => {
+		setDuration( event.target.duration );
 	};
 
-	useEffect(() => {
-		if (videoRef.current?.duration) {
-			setDuration(videoRef.current.duration);
+	useEffect( () => {
+		if ( videoRef.current?.duration ) {
+			setDuration( videoRef.current.duration );
 		}
-	}, [videoRef]);
+	}, [ videoRef ] );
 
-	useEffect(() => {
-		if ((isModal || containerRef === panelRef) && containerRef?.current) {
+	useEffect( () => {
+		if (
+			( isModal || containerRef === panelRef ) &&
+			containerRef?.current
+		) {
 			// Trigger a small delay to ensure the panel is visible/ready before focusing
-			const timer = setTimeout(() => {
+			const timer = setTimeout( () => {
 				containerRef.current?.focus();
-			}, 100);
-			return () => clearTimeout(timer);
+			}, 100 );
+			return () => clearTimeout( timer );
 		}
-	}, [isModal, panelRef, containerRef]);
+	}, [ isModal, panelRef, containerRef ] );
 
 	return (
 		<div
-			className={`videopack-thumb-video-panel spinner-container${
+			className={ `videopack-thumb-video-panel spinner-container${
 				isSaving ? ' saving' : ''
-			} ${isModal ? 'is-modal' : ''} ${disabled ? 'disabled' : ''}`}
-			tabIndex={0}
-			ref={containerRef}
-			onKeyDown={onKeyDown}
+			} ${ isModal ? 'is-modal' : '' } ${ disabled ? 'disabled' : '' }` }
+			tabIndex={ 0 }
+			ref={ containerRef }
+			onKeyDown={ onKeyDown }
 			role="button"
-			aria-label={__('Video Player', 'video-embed-thumbnail-generator')}
+			aria-label={ __(
+				'Video Player',
+				'video-embed-thumbnail-generator'
+			) }
 		>
 			<video
-				src={src}
-				ref={videoRef}
-				muted={true}
+				src={ src }
+				ref={ videoRef }
+				muted={ true }
 				preload="metadata"
-				onClick={() => togglePlayback(videoRef)}
-				onLoadedMetadata={onLoadedMetadata}
-				onLoadedData={onLoadedData}
+				onClick={ () => togglePlayback( videoRef ) }
+				onLoadedMetadata={ onLoadedMetadata }
+				onLoadedData={ onLoadedData }
 				role="button"
-				aria-label={__(
+				aria-label={ __(
 					'Toggle Playback',
 					'video-embed-thumbnail-generator'
-				)}
+				) }
 				tabIndex="-1"
 			/>
 			<div className="videopack-thumb-video-controls">
 				<Button
 					className="videopack-play-pause"
-					onClick={() => togglePlayback(videoRef)}
-					disabled={disabled}
+					onClick={ () => togglePlayback( videoRef ) }
+					disabled={ disabled }
 				>
-					<Icon icon={isPlaying ? pause : play} />
+					<Icon icon={ isPlaying ? pause : play } />
 				</Button>
-				{duration > 0 && (
+				{ duration > 0 && (
 					<RangeControl
 						__nextHasNoMarginBottom
-						min={0}
-						max={duration}
+						min={ 0 }
+						max={ duration }
 						step="any"
-						initialPosition={0}
-						value={currentTime || 0}
-						onChange={(val) => handleSliderChange(val, videoRef)}
+						initialPosition={ 0 }
+						value={ currentTime || 0 }
+						onChange={ ( val ) =>
+							handleSliderChange( val, videoRef )
+						}
 						className="videopack-thumbvideo-slider"
 						type="slider"
 					/>
-				)}
-				{!isModal && onPopOut && (
+				) }
+				{ ! isModal && onPopOut && (
 					<Button
 						className="videopack-popout"
-						onClick={onPopOut}
-						icon={external}
-						label={__(
+						onClick={ onPopOut }
+						icon={ external }
+						label={ __(
 							'Open in larger window',
 							'video-embed-thumbnail-generator'
-						)}
-						showTooltip={true}
-						disabled={disabled}
+						) }
+						showTooltip={ true }
+						disabled={ disabled }
 					/>
-				)}
+				) }
 			</div>
 			<Button
 				variant="secondary"
-				onClick={() => handleUseThisFrame(videoRef)}
+				onClick={ () => handleUseThisFrame( videoRef ) }
 				className="videopack-use-this-frame"
-				disabled={isSaving || disabled}
+				disabled={ isSaving || disabled }
 			>
-				{__('Use this frame', 'video-embed-thumbnail-generator')}
+				{ __( 'Use this frame', 'video-embed-thumbnail-generator' ) }
 			</Button>
-			{isSaving && <Spinner />}
+			{ isSaving && <Spinner /> }
 		</div>
 	);
 };

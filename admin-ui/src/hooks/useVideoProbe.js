@@ -7,20 +7,20 @@ import { getVideoMetadata, checkCanvasTaint } from '../utils/video-capture';
  * @param {string} videoUrl The URL of the video to probe.
  * @return {Object} An object containing { isProbing, probedMetadata }.
  */
-export default function useVideoProbe(videoUrl) {
-	const [state, setState] = useState({
+export default function useVideoProbe( videoUrl ) {
+	const [ state, setState ] = useState( {
 		url: null,
 		isProbing: false,
 		probedMetadata: null,
-	});
+	} );
 
 	// Derived state: Sync isProbing/metadata synchronously when the URL changes.
 	// This prevents race conditions where effects in dependent components start
 	// fetching before the probe actually sets isProbing to true.
-	if (videoUrl !== state.url) {
-		const isValidUrl = (url) => {
+	if ( videoUrl !== state.url ) {
+		const isValidUrl = ( url ) => {
 			try {
-				const parsed = new URL(url);
+				const parsed = new URL( url );
 				return (
 					parsed.protocol === 'http:' || parsed.protocol === 'https:'
 				);
@@ -29,17 +29,17 @@ export default function useVideoProbe(videoUrl) {
 			}
 		};
 
-		setState({
+		setState( {
 			url: videoUrl,
-			isProbing: !!videoUrl && isValidUrl(videoUrl),
+			isProbing: !! videoUrl && isValidUrl( videoUrl ),
 			probedMetadata: null,
-		});
+		} );
 	}
 
 	const { isProbing, probedMetadata } = state;
 
-	useEffect(() => {
-		if (!isProbing || !videoUrl) {
+	useEffect( () => {
+		if ( ! isProbing || ! videoUrl ) {
 			return;
 		}
 
@@ -48,26 +48,26 @@ export default function useVideoProbe(videoUrl) {
 		const metadataPromise = getVideoMetadata(
 			videoUrl,
 			controller.signal
-		).catch(() => null);
+		).catch( () => null );
 
 		const taintPromise = checkCanvasTaint(
 			videoUrl,
 			controller.signal
-		).catch(() => true);
+		).catch( () => true );
 
-		const timeout = setTimeout(() => {
+		const timeout = setTimeout( () => {
 			controller.abort();
-		}, 10000);
+		}, 10000 );
 
-		Promise.all([metadataPromise, taintPromise])
-			.then(([metadata, isTainted]) => {
-				clearTimeout(timeout);
-				if (controller.signal.aborted) {
+		Promise.all( [ metadataPromise, taintPromise ] )
+			.then( ( [ metadata, isTainted ] ) => {
+				clearTimeout( timeout );
+				if ( controller.signal.aborted ) {
 					return;
 				}
-				setState((prev) => {
+				setState( ( prev ) => {
 					// Only update if URL still matches
-					if (prev.url !== videoUrl) {
+					if ( prev.url !== videoUrl ) {
 						return prev;
 					}
 					return {
@@ -77,17 +77,17 @@ export default function useVideoProbe(videoUrl) {
 							? { ...metadata, isTainted }
 							: null,
 					};
-				});
-			})
-			.finally(() => {
+				} );
+			} )
+			.finally( () => {
 				// No additional state update here; handled in .then
-			});
+			} );
 
 		return () => {
-			clearTimeout(timeout);
+			clearTimeout( timeout );
 			controller.abort();
 		};
-	}, [videoUrl, isProbing]);
+	}, [ videoUrl, isProbing ] );
 
 	return { isProbing, probedMetadata };
 }

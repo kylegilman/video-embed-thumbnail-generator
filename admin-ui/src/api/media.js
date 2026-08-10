@@ -12,10 +12,10 @@ import { addQueryArgs } from '@wordpress/url';
  * @param {string}        formatId The format identifier.
  * @param {number|string} parentId The ID of the parent video attachment.
  */
-export const assignFormat = async (mediaId, formatId, parentId) => {
+export const assignFormat = async ( mediaId, formatId, parentId ) => {
 	try {
-		return await apiFetch({
-			path: `/wp/v2/media/${mediaId}`,
+		return await apiFetch( {
+			path: `/wp/v2/media/${ mediaId }`,
 			method: 'POST',
 			data: {
 				meta: {
@@ -23,9 +23,9 @@ export const assignFormat = async (mediaId, formatId, parentId) => {
 					'_kgflashmediaplayer-parent': parentId,
 				},
 			},
-		});
-	} catch (error) {
-		console.error('Error assigning format:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error assigning format:', error );
 		throw error;
 	}
 };
@@ -35,10 +35,10 @@ export const assignFormat = async (mediaId, formatId, parentId) => {
  *
  * @param {number|string} mediaId The ID of the media attachment to unassign.
  */
-export const unassignFormat = async (mediaId) => {
+export const unassignFormat = async ( mediaId ) => {
 	try {
-		return await apiFetch({
-			path: `/wp/v2/media/${mediaId}`,
+		return await apiFetch( {
+			path: `/wp/v2/media/${ mediaId }`,
 			method: 'POST',
 			data: {
 				meta: {
@@ -46,9 +46,9 @@ export const unassignFormat = async (mediaId) => {
 					'_kgflashmediaplayer-parent': 0,
 				},
 			},
-		});
-	} catch (error) {
-		console.error('Error unassigning format:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error unassigning format:', error );
 		throw error;
 	}
 };
@@ -58,14 +58,14 @@ export const unassignFormat = async (mediaId) => {
  *
  * @param {number|string} attachmentId The ID of the attachment to delete.
  */
-export const deleteFile = async (attachmentId) => {
+export const deleteFile = async ( attachmentId ) => {
 	try {
-		return await apiFetch({
-			path: `/wp/v2/media/${attachmentId}?force=true`,
+		return await apiFetch( {
+			path: `/wp/v2/media/${ attachmentId }?force=true`,
 			method: 'DELETE',
-		});
-	} catch (error) {
-		console.error('Error deleting file:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error deleting file:', error );
 		throw error;
 	}
 };
@@ -76,14 +76,14 @@ export const deleteFile = async (attachmentId) => {
  * @param {number|string} attachmentId The ID of the parent attachment.
  * @param {string}        formatId     The format identifier.
  */
-export const deleteFormat = async (attachmentId, formatId) => {
+export const deleteFormat = async ( attachmentId, formatId ) => {
 	try {
-		return await apiFetch({
-			path: `/videopack/v1/attachment/${attachmentId}/format/${formatId}`,
+		return await apiFetch( {
+			path: `/videopack/v1/attachment/${ attachmentId }/format/${ formatId }`,
 			method: 'DELETE',
-		});
-	} catch (error) {
-		console.error('Error deleting format:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error deleting format:', error );
 		throw error;
 	}
 };
@@ -94,15 +94,15 @@ export const deleteFormat = async (attachmentId, formatId) => {
  * @param {string} type           The type of batch process to start.
  * @param {Object} additionalData Optional. Extra data for the process.
  */
-export const startBatchProcess = async (type, additionalData = {}) => {
+export const startBatchProcess = async ( type, additionalData = {} ) => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/batch/process',
 			method: 'POST',
 			data: { type, ...additionalData },
-		});
-	} catch (error) {
-		console.error(`Error starting ${type} batch processing:`, error);
+		} );
+	} catch ( error ) {
+		console.error( `Error starting ${ type } batch processing:`, error );
 		throw error;
 	}
 };
@@ -112,13 +112,13 @@ export const startBatchProcess = async (type, additionalData = {}) => {
  *
  * @param {string} type The type of batch process to check.
  */
-export const getBatchProgress = async (type) => {
+export const getBatchProgress = async ( type ) => {
 	try {
-		return await apiFetch({
-			path: addQueryArgs('/videopack/v1/batch/progress', { type }),
-		});
-	} catch (error) {
-		console.error(`Error fetching ${type} batch progress:`, error);
+		return await apiFetch( {
+			path: addQueryArgs( '/videopack/v1/batch/progress', { type } ),
+		} );
+	} catch ( error ) {
+		console.error( `Error fetching ${ type } batch progress:`, error );
 		throw error;
 	}
 };

@@ -14,8 +14,8 @@ import { __ } from '@wordpress/i18n';
  * @param {boolean} isExternal Whether the video is from an external source.
  * @return {Object} Video data including poster, total thumbnails, and loading state.
  */
-export const useVideoData = (id, src, isExternal) => {
-	const [videoData, setVideoData] = useState({
+export const useVideoData = ( id, src, isExternal ) => {
+	const [ videoData, setVideoData ] = useState( {
 		poster: undefined,
 		poster_id: undefined,
 		title: undefined,
@@ -24,30 +24,33 @@ export const useVideoData = (id, src, isExternal) => {
 		attachment: undefined,
 		error: null,
 		isLoading: true,
-	});
+	} );
 
 	const { attachment, isResolving } = useSelect(
-		(select) => {
-			if (!id || isExternal) {
+		( select ) => {
+			if ( ! id || isExternal ) {
 				return { attachment: null, isResolving: false };
 			}
-			const coreSelector = select('core');
+			const coreSelector = select( 'core' );
 			return {
-				attachment: coreSelector.getMedia(id),
-				isResolving: coreSelector.isResolving('getMedia', [id]),
+				attachment: coreSelector.getMedia( id ),
+				isResolving: coreSelector.isResolving( 'getMedia', [ id ] ),
 			};
 		},
-		[id, isExternal]
+		[ id, isExternal ]
 	);
 
-	useEffect(() => {
-		if (isResolving) {
-			setVideoData((prevData) => ({ ...prevData, isLoading: true }));
+	useEffect( () => {
+		if ( isResolving ) {
+			setVideoData( ( prevData ) => ( {
+				...prevData,
+				isLoading: true,
+			} ) );
 			return;
 		}
 
-		if (id && !isExternal && !attachment) {
-			setVideoData({
+		if ( id && ! isExternal && ! attachment ) {
+			setVideoData( {
 				poster: undefined,
 				total_thumbnails: undefined,
 				attachment: null,
@@ -56,23 +59,23 @@ export const useVideoData = (id, src, isExternal) => {
 					'video-embed-thumbnail-generator'
 				),
 				isLoading: false,
-			});
+			} );
 			return;
 		}
 
-		if (attachment) {
-			setVideoData({
-				poster: attachment?.meta?.['_videopack-meta']?.poster,
-				poster_id: attachment?.meta?.['_videopack-meta']?.poster_id,
+		if ( attachment ) {
+			setVideoData( {
+				poster: attachment?.meta?.[ '_videopack-meta' ]?.poster,
+				poster_id: attachment?.meta?.[ '_videopack-meta' ]?.poster_id,
 				title:
-					attachment?.meta?.['_videopack-meta']?.title ||
+					attachment?.meta?.[ '_videopack-meta' ]?.title ||
 					attachment?.title?.rendered ||
 					attachment?.title ||
 					'',
-				caption: (() => {
+				caption: ( () => {
 					const metaCaption =
-						attachment?.meta?.['_videopack-meta']?.caption;
-					if (metaCaption) {
+						attachment?.meta?.[ '_videopack-meta' ]?.caption;
+					if ( metaCaption ) {
 						return metaCaption;
 					}
 					const rendered =
@@ -80,27 +83,27 @@ export const useVideoData = (id, src, isExternal) => {
 						attachment?.caption ||
 						'';
 					const externalUrl =
-						attachment?.meta?.['_kgflashmediaplayer-externalurl'];
+						attachment?.meta?.[ '_kgflashmediaplayer-externalurl' ];
 					if (
 						externalUrl &&
 						rendered
 							.trim()
-							.replace(/<\/?[^>]+(>|$)/g, '')
+							.replace( /<\/?[^>]+(>|$)/g, '' )
 							.trim() === externalUrl.trim()
 					) {
 						return '';
 					}
 					return rendered;
-				})(),
+				} )(),
 				total_thumbnails:
-					attachment?.meta?.['_videopack-meta']?.total_thumbnails,
+					attachment?.meta?.[ '_videopack-meta' ]?.total_thumbnails,
 				attachment,
 				error: null,
 				isLoading: false,
-			});
+			} );
 		} else {
 			// This will handle external URLs and cases with no ID
-			setVideoData({
+			setVideoData( {
 				poster: undefined,
 				poster_id: undefined,
 				title: undefined,
@@ -109,9 +112,9 @@ export const useVideoData = (id, src, isExternal) => {
 				attachment: null,
 				error: null,
 				isLoading: false,
-			});
+			} );
 		}
-	}, [attachment, isResolving, id, isExternal, src]);
+	}, [ attachment, isResolving, id, isExternal, src ] );
 
 	return videoData;
 };

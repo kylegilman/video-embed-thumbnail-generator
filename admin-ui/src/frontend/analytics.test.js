@@ -15,7 +15,9 @@ describe( 'sendGoogleAnalytics', () => {
 	} );
 
 	it( 'does not throw when gtag is absent', () => {
-		expect( () => sendGoogleAnalytics( 'Play Start', 'My Video' ) ).not.toThrow();
+		expect( () =>
+			sendGoogleAnalytics( 'Play Start', 'My Video' )
+		).not.toThrow();
 	} );
 
 	it( 'always dispatches a generic videopack:analytics DOM event', () => {
@@ -23,7 +25,10 @@ describe( 'sendGoogleAnalytics', () => {
 		document.addEventListener( 'videopack:analytics', handler );
 		sendGoogleAnalytics( 'Pause', 'My Video' );
 		expect( handler ).toHaveBeenCalledTimes( 1 );
-		expect( handler.mock.calls[ 0 ][ 0 ].detail ).toEqual( { event: 'Pause', label: 'My Video' } );
+		expect( handler.mock.calls[ 0 ][ 0 ].detail ).toEqual( {
+			event: 'Pause',
+			label: 'My Video',
+		} );
 		document.removeEventListener( 'videopack:analytics', handler );
 	} );
 } );
@@ -53,7 +58,11 @@ describe( 'videoCounter', () => {
 
 		fetchMock = jest.fn( () =>
 			Promise.resolve( {
-				json: () => Promise.resolve( { success: true, data: { views: '4 views' } } ),
+				json: () =>
+					Promise.resolve( {
+						success: true,
+						data: { views: '4 views' },
+					} ),
 			} )
 		);
 		global.fetch = fetchMock;

@@ -21,7 +21,7 @@ import CollectionSettingsPanel from './CollectionSettingsPanel';
  * @param {boolean}  root0.hasPaginationBlock Whether the block has pagination.
  * @param {boolean}  root0.isEditingAllPages  Whether all pages are being edited.
  */
-export default function CollectionInspectorControls({
+export default function CollectionInspectorControls( {
 	clientId, // The collection block's clientId
 	attributes,
 	setAttributes,
@@ -29,7 +29,7 @@ export default function CollectionInspectorControls({
 	options,
 	hasPaginationBlock,
 	isEditingAllPages,
-}) {
+} ) {
 	const { layout = 'grid', columns = 3 } = attributes;
 
 	const {
@@ -38,21 +38,21 @@ export default function CollectionInspectorControls({
 		showPlayerSettings,
 		showSkinSettings,
 	} = useSelect(
-		(select) => {
-			const { getBlocks } = select('core/block-editor');
-			const blocks = getBlocks(clientId) || [];
+		( select ) => {
+			const { getBlocks } = select( 'core/block-editor' );
+			const blocks = getBlocks( clientId ) || [];
 
-			const findBlockRecursive = (blockList, name) => {
-				for (const block of blockList) {
-					if (block.name === name) {
+			const findBlockRecursive = ( blockList, name ) => {
+				for ( const block of blockList ) {
+					if ( block.name === name ) {
 						return block;
 					}
-					if (block.innerBlocks && block.innerBlocks.length > 0) {
+					if ( block.innerBlocks && block.innerBlocks.length > 0 ) {
 						const found = findBlockRecursive(
 							block.innerBlocks,
 							name
 						);
-						if (found) {
+						if ( found ) {
 							return found;
 						}
 					}
@@ -61,7 +61,7 @@ export default function CollectionInspectorControls({
 			};
 
 			const hasPagination = blocks.some(
-				(b) => b.name === 'videopack/pagination'
+				( b ) => b.name === 'videopack/pagination'
 			);
 			const thumbnailBlock = findBlockRecursive(
 				blocks,
@@ -72,12 +72,12 @@ export default function CollectionInspectorControls({
 
 			// Check if specific blocks are INSIDE the thumbnail block
 			const hasOverlayBlockInsideThumbnail =
-				thumbnailBlock?.innerBlocks?.some((b) =>
+				thumbnailBlock?.innerBlocks?.some( ( b ) =>
 					[
 						'videopack/title',
 						'videopack/duration',
 						'videopack/view-count',
-					].includes(b.name)
+					].includes( b.name )
 				) || false;
 
 			const canShowTitle = isLightbox || hasOverlayBlockInsideThumbnail;
@@ -92,51 +92,54 @@ export default function CollectionInspectorControls({
 					canShowTitle || canShowPlayer || canShowPagination,
 			};
 		},
-		[clientId]
+		[ clientId ]
 	);
 
 	return (
 		<div className="videopack-inspector-controls">
 			<PanelBody
-				title={__('Layout Settings', 'video-embed-thumbnail-generator')}
+				title={ __(
+					'Layout Settings',
+					'video-embed-thumbnail-generator'
+				) }
 			>
-				{attributes.gallery_source === 'manual' &&
+				{ attributes.gallery_source === 'manual' &&
 					hasPaginationBlock && (
 						<ToggleControl
-							label={__(
+							label={ __(
 								'Edit All Pages',
 								'video-embed-thumbnail-generator'
-							)}
-							help={__(
+							) }
+							help={ __(
 								'Show all videos in the collection at once for easier reordering.',
 								'video-embed-thumbnail-generator'
-							)}
-							checked={isEditingAllPages}
-							onChange={(value) =>
-								setAttributes({ isEditingAllPages: value })
+							) }
+							checked={ isEditingAllPages }
+							onChange={ ( value ) =>
+								setAttributes( { isEditingAllPages: value } )
 							}
 							__nextHasNoMarginBottom
 						/>
-					)}
+					) }
 				<ToggleControl
-					label={__(
+					label={ __(
 						'Prioritize Attached Post Data',
 						'video-embed-thumbnail-generator'
-					)}
-					help={__(
+					) }
+					help={ __(
 						'When enabled, some blocks use the data from the post a video is attached to, instead of the video itself.',
 						'video-embed-thumbnail-generator'
-					)}
-					checked={!!attributes.prioritizePostData}
-					onChange={(value) =>
-						setAttributes({ prioritizePostData: value })
+					) }
+					checked={ !! attributes.prioritizePostData }
+					onChange={ ( value ) =>
+						setAttributes( { prioritizePostData: value } )
 					}
 					__nextHasNoMarginBottom
 				/>
 				<SelectControl
-					label={__('Layout', 'video-embed-thumbnail-generator')}
-					value={layout}
-					options={[
+					label={ __( 'Layout', 'video-embed-thumbnail-generator' ) }
+					value={ layout }
+					options={ [
 						{
 							label: __(
 								'Grid',
@@ -151,33 +154,38 @@ export default function CollectionInspectorControls({
 							),
 							value: 'list',
 						},
-					]}
-					onChange={(value) => setAttributes({ layout: value })}
+					] }
+					onChange={ ( value ) => setAttributes( { layout: value } ) }
 				/>
-				{layout === 'grid' && (
+				{ layout === 'grid' && (
 					<RangeControl
-						label={__('Columns', 'video-embed-thumbnail-generator')}
-						value={columns}
-						onChange={(value) => setAttributes({ columns: value })}
-						min={1}
-						max={6}
+						label={ __(
+							'Columns',
+							'video-embed-thumbnail-generator'
+						) }
+						value={ columns }
+						onChange={ ( value ) =>
+							setAttributes( { columns: value } )
+						}
+						min={ 1 }
+						max={ 6 }
 					/>
-				)}
+				) }
 			</PanelBody>
 			<CollectionSettingsPanel
-				attributes={attributes}
-				setAttributes={setAttributes}
-				queryData={queryData}
-				options={options}
-				showGalleryOptions={true}
-				showPaginationToggle={false}
-				showLayoutSettings={false}
-				showPaginationSettings={showPaginationSettings}
-				showTitleSettings={showTitleSettings}
-				showPlayerSettings={showPlayerSettings}
-				showSkinSettings={showSkinSettings}
-				hasPaginationBlock={hasPaginationBlock}
-				clientId={clientId}
+				attributes={ attributes }
+				setAttributes={ setAttributes }
+				queryData={ queryData }
+				options={ options }
+				showGalleryOptions={ true }
+				showPaginationToggle={ false }
+				showLayoutSettings={ false }
+				showPaginationSettings={ showPaginationSettings }
+				showTitleSettings={ showTitleSettings }
+				showPlayerSettings={ showPlayerSettings }
+				showSkinSettings={ showSkinSettings }
+				hasPaginationBlock={ hasPaginationBlock }
+				clientId={ clientId }
 			/>
 		</div>
 	);

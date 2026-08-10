@@ -9,33 +9,38 @@ import {
 	useCallback,
 } from '@wordpress/element';
 
-const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
-	const containerRef = useRef(null);
-	const watermarkRef = useRef(null);
-	const [watermarkImage, setWatermarkImage] = useState(null);
-	const [isDragging, setIsDragging] = useState(false);
-	const [isResizing, setIsResizing] = useState(false);
-	const [transientScale, setTransientScale] = useState(null);
-	const [transientPosition, setTransientPosition] = useState(null); // { left, top } in pixels
-	const [isFocused, setIsFocused] = useState(true);
+const WatermarkPositioner = ( { baseFrame, settings, onChange } ) => {
+	const containerRef = useRef( null );
+	const watermarkRef = useRef( null );
+	const [ watermarkImage, setWatermarkImage ] = useState( null );
+	const [ isDragging, setIsDragging ] = useState( false );
+	const [ isResizing, setIsResizing ] = useState( false );
+	const [ transientScale, setTransientScale ] = useState( null );
+	const [ transientPosition, setTransientPosition ] = useState( null ); // { left, top } in pixels
+	const [ isFocused, setIsFocused ] = useState( true );
 
-	const dragStartRef = useRef({ x: 0, y: 0, initialLeft: 0, initialTop: 0 });
+	const dragStartRef = useRef( {
+		x: 0,
+		y: 0,
+		initialLeft: 0,
+		initialTop: 0,
+	} );
 
-	useEffect(() => {
-		if (settings.url) {
+	useEffect( () => {
+		if ( settings.url ) {
 			const img = new Image();
-			img.onload = () => setWatermarkImage(img);
+			img.onload = () => setWatermarkImage( img );
 			img.src = settings.url;
 		}
-	}, [settings.url]);
+	}, [ settings.url ] );
 
 	const {
 		left: propLeft,
 		top: propTop,
 		width: wmWidth,
 		height: wmHeight,
-	} = useMemo(() => {
-		if (!baseFrame || !watermarkImage) {
+	} = useMemo( () => {
+		if ( ! baseFrame || ! watermarkImage ) {
 			return { left: 0, top: 0, width: 0, height: 0, aspectRatio: 1 };
 		}
 
@@ -46,21 +51,21 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		const scale =
 			transientScale !== null
 				? transientScale
-				: Number(settings.scale || 50);
-		const w = (containerWidth * scale) / 100;
+				: Number( settings.scale || 50 );
+		const w = ( containerWidth * scale ) / 100;
 		const aspectRatio = watermarkImage.width / watermarkImage.height;
 		const h = w / aspectRatio;
 
-		const xOffset = Number(settings.x || 0);
-		const yOffset = Number(settings.y || 0);
+		const xOffset = Number( settings.x || 0 );
+		const yOffset = Number( settings.y || 0 );
 
-		const hOffsetPx = (containerWidth * xOffset) / 100;
-		const vOffsetPx = (containerHeight * yOffset) / 100;
+		const hOffsetPx = ( containerWidth * xOffset ) / 100;
+		const vOffsetPx = ( containerHeight * yOffset ) / 100;
 
 		let l = 0;
 		let t = 0;
 
-		switch (settings.align) {
+		switch ( settings.align ) {
 			case 'left':
 				l = hOffsetPx;
 				break;
@@ -69,11 +74,11 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 				break;
 			case 'center':
 			default:
-				l = (containerWidth - w) / 2 - hOffsetPx;
+				l = ( containerWidth - w ) / 2 - hOffsetPx;
 				break;
 		}
 
-		switch (settings.valign) {
+		switch ( settings.valign ) {
 			case 'top':
 				t = vOffsetPx;
 				break;
@@ -82,20 +87,20 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 				break;
 			case 'center':
 			default:
-				t = (containerHeight - h) / 2 - vOffsetPx;
+				t = ( containerHeight - h ) / 2 - vOffsetPx;
 				break;
 		}
 		return { left: l, top: t, width: w, height: h, aspectRatio };
-	}, [baseFrame, watermarkImage, settings, transientScale]);
+	}, [ baseFrame, watermarkImage, settings, transientScale ] );
 
-	const handleMouseDown = (e) => {
+	const handleMouseDown = ( e ) => {
 		e.preventDefault();
-		if (watermarkRef.current) {
+		if ( watermarkRef.current ) {
 			watermarkRef.current.focus();
 		}
-		setIsDragging(true);
+		setIsDragging( true );
 		// Initialize transient position with the current position derived from props
-		setTransientPosition({ left: propLeft, top: propTop });
+		setTransientPosition( { left: propLeft, top: propTop } );
 		dragStartRef.current = {
 			x: e.clientX,
 			y: e.clientY,
@@ -104,20 +109,20 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		};
 	};
 
-	const handleResizeStart = (e, handle) => {
+	const handleResizeStart = ( e, handle ) => {
 		e.preventDefault();
 		e.stopPropagation();
-		if (watermarkRef.current) {
+		if ( watermarkRef.current ) {
 			watermarkRef.current.focus();
 		}
-		setIsResizing(true);
+		setIsResizing( true );
 
 		const currentScale =
 			transientScale !== null
 				? transientScale
-				: Number(settings.scale || 50);
-		setTransientScale(currentScale);
-		setTransientPosition({ left: propLeft, top: propTop });
+				: Number( settings.scale || 50 );
+		setTransientScale( currentScale );
+		setTransientPosition( { left: propLeft, top: propTop } );
 
 		dragStartRef.current = {
 			x: e.clientX,
@@ -130,22 +135,22 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		};
 	};
 
-	const finalizeInteraction = useCallback(() => {
-		if (!isDragging && !isResizing) {
+	const finalizeInteraction = useCallback( () => {
+		if ( ! isDragging && ! isResizing ) {
 			return;
 		}
 		const wasResizing = isResizing;
 
 		// The transient state is not set until a drag/resize starts.
 		// If the user just clicks without moving, there's nothing to finalize.
-		if (!baseFrame || !watermarkImage || !transientPosition) {
-			setTransientPosition(null);
-			setTransientScale(null);
+		if ( ! baseFrame || ! watermarkImage || ! transientPosition ) {
+			setTransientPosition( null );
+			setTransientScale( null );
 			return;
 		}
 
-		setIsDragging(false);
-		setIsResizing(false);
+		setIsDragging( false );
+		setIsResizing( false );
 
 		const finalLeft = transientPosition.left;
 		const finalTop = transientPosition.top;
@@ -154,64 +159,66 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		const finalScale =
 			wasResizing && transientScale !== null
 				? transientScale
-				: Number(settings.scale || 50);
+				: Number( settings.scale || 50 );
 
 		// Recalculate dimensions based on finalScale for alignment logic
-		const w = (containerWidth * finalScale) / 100;
+		const w = ( containerWidth * finalScale ) / 100;
 		const aspectRatio = watermarkImage.width / watermarkImage.height;
 		const h = w / aspectRatio;
 
 		// Determine Horizontal Alignment and Offset
 		let newAlign = 'center';
 		let newX = 0;
-		const centerPosH = (containerWidth - w) / 2;
+		const centerPosH = ( containerWidth - w ) / 2;
 
-		if (finalLeft > centerPosH) {
+		if ( finalLeft > centerPosH ) {
 			newAlign = 'right';
-			newX = ((containerWidth - w - finalLeft) / containerWidth) * 100;
+			newX =
+				( ( containerWidth - w - finalLeft ) / containerWidth ) * 100;
 		} else {
 			const distToLeft = finalLeft;
 			const distToCenter = centerPosH - finalLeft;
-			if (distToLeft < distToCenter) {
+			if ( distToLeft < distToCenter ) {
 				newAlign = 'left';
-				newX = (finalLeft / containerWidth) * 100;
+				newX = ( finalLeft / containerWidth ) * 100;
 			} else {
 				newAlign = 'center';
-				newX = (distToCenter / containerWidth) * 100;
+				newX = ( distToCenter / containerWidth ) * 100;
 			}
 		}
 
 		// Determine Vertical Alignment and Offset
 		let newValign = 'center';
 		let newY = 0;
-		const centerPosV = (containerHeight - h) / 2;
+		const centerPosV = ( containerHeight - h ) / 2;
 
-		if (finalTop > centerPosV) {
+		if ( finalTop > centerPosV ) {
 			newValign = 'bottom';
-			newY = ((containerHeight - h - finalTop) / containerHeight) * 100;
+			newY =
+				( ( containerHeight - h - finalTop ) / containerHeight ) * 100;
 		} else {
 			const distToTop = finalTop;
 			const distToCenter = centerPosV - finalTop;
-			if (distToTop < distToCenter) {
+			if ( distToTop < distToCenter ) {
 				newValign = 'top';
-				newY = (finalTop / containerHeight) * 100;
+				newY = ( finalTop / containerHeight ) * 100;
 			} else {
 				newValign = 'center';
-				newY = (distToCenter / containerHeight) * 100;
+				newY = ( distToCenter / containerHeight ) * 100;
 			}
 		}
 
-		onChange({
+		onChange( {
 			...settings,
-			scale: Math.round(finalScale * 100) / 100,
+			scale: Math.round( finalScale * 100 ) / 100,
 			align: newAlign,
 			valign: newValign,
-			x: Math.round(newX * 100) / 100,
-			y: Math.round(newY * 100) / 100,
-		});
+			x: Math.round( newX * 100 ) / 100,
+			y: Math.round( newY * 100 ) / 100,
+		} );
 
-		setTransientPosition(null);
-		setTransientScale(null);
+		setTransientPosition( null );
+		setTransientScale( null );
 	}, [
 		isDragging,
 		isResizing,
@@ -221,26 +228,28 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		transientScale,
 		settings,
 		onChange,
-	]);
+	] );
 
-	const handleFocus = useCallback(() => {
-		setIsFocused(true);
-	}, []);
+	const handleFocus = useCallback( () => {
+		setIsFocused( true );
+	}, [] );
 
 	const handleBlur = useCallback(
-		(e) => {
-			if (e.currentTarget.contains(e.relatedTarget)) {
+		( e ) => {
+			if ( e.currentTarget.contains( e.relatedTarget ) ) {
 				return;
 			}
-			setIsFocused(false);
+			setIsFocused( false );
 			finalizeInteraction();
 		},
-		[finalizeInteraction]
+		[ finalizeInteraction ]
 	);
 
-	const handleDragKeyDown = (e) => {
+	const handleDragKeyDown = ( e ) => {
 		if (
-			!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+			! [ 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight' ].includes(
+				e.key
+			)
 		) {
 			return;
 		}
@@ -255,7 +264,7 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		let newTop = currentTop;
 		const step = e.shiftKey ? 10 : 1; // Pixel-based step
 
-		switch (e.key) {
+		switch ( e.key ) {
 			case 'ArrowUp':
 				newTop -= step;
 				break;
@@ -273,15 +282,17 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		// Constrain
 		const containerWidth = baseFrame.width;
 		const containerHeight = baseFrame.height;
-		newLeft = Math.max(0, Math.min(newLeft, containerWidth - wmWidth));
-		newTop = Math.max(0, Math.min(newTop, containerHeight - wmHeight));
+		newLeft = Math.max( 0, Math.min( newLeft, containerWidth - wmWidth ) );
+		newTop = Math.max( 0, Math.min( newTop, containerHeight - wmHeight ) );
 
-		setTransientPosition({ left: newLeft, top: newTop });
+		setTransientPosition( { left: newLeft, top: newTop } );
 	};
 
-	const handleResizeKeyDown = (e, handle) => {
+	const handleResizeKeyDown = ( e, handle ) => {
 		if (
-			!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+			! [ 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight' ].includes(
+				e.key
+			)
 		) {
 			return;
 		}
@@ -291,7 +302,7 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		const currentScale =
 			transientScale !== null
 				? transientScale
-				: Number(settings.scale || 50);
+				: Number( settings.scale || 50 );
 		const { left: currentLeft, top: currentTop } = transientPosition || {
 			left: propLeft,
 			top: propTop,
@@ -302,55 +313,55 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 		const containerWidth = baseFrame.width;
 
 		// For SE and NW handles, right/down increases size.
-		if (handle === 'se' || handle === 'nw') {
-			if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+		if ( handle === 'se' || handle === 'nw' ) {
+			if ( e.key === 'ArrowRight' || e.key === 'ArrowDown' ) {
 				scaleDelta = handle === 'se' ? step : -step;
-			} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+			} else if ( e.key === 'ArrowLeft' || e.key === 'ArrowUp' ) {
 				scaleDelta = -step;
 			}
 		}
 		// For SW and NE handles, right/up increases size.
-		else if (handle === 'sw' || handle === 'ne') {
-			if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+		else if ( handle === 'sw' || handle === 'ne' ) {
+			if ( e.key === 'ArrowRight' || e.key === 'ArrowUp' ) {
 				scaleDelta = step;
-			} else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+			} else if ( e.key === 'ArrowLeft' || e.key === 'ArrowDown' ) {
 				scaleDelta = -step;
 			}
 		}
 
 		let newScale = currentScale + scaleDelta;
-		newScale = Math.round(newScale * 100) / 100;
-		newScale = Math.max(1, Math.min(100, newScale));
+		newScale = Math.round( newScale * 100 ) / 100;
+		newScale = Math.max( 1, Math.min( 100, newScale ) );
 
-		if (newScale === currentScale) {
+		if ( newScale === currentScale ) {
 			return;
 		}
 
 		const aspectRatio = wmWidth / wmHeight;
-		const oldWidth = (containerWidth * currentScale) / 100;
+		const oldWidth = ( containerWidth * currentScale ) / 100;
 		const oldHeight = oldWidth / aspectRatio;
-		const newWidth = (containerWidth * newScale) / 100;
+		const newWidth = ( containerWidth * newScale ) / 100;
 		const newHeight = newWidth / aspectRatio;
 
 		let newLeft = currentLeft;
 		let newTop = currentTop;
 
-		if (handle === 'sw' || handle === 'nw') {
-			newLeft = currentLeft + (oldWidth - newWidth);
+		if ( handle === 'sw' || handle === 'nw' ) {
+			newLeft = currentLeft + ( oldWidth - newWidth );
 		}
-		if (handle === 'ne' || handle === 'nw') {
-			newTop = currentTop + (oldHeight - newHeight);
+		if ( handle === 'ne' || handle === 'nw' ) {
+			newTop = currentTop + ( oldHeight - newHeight );
 		}
-		setTransientScale(newScale);
-		setTransientPosition({ left: newLeft, top: newTop });
+		setTransientScale( newScale );
+		setTransientPosition( { left: newLeft, top: newTop } );
 	};
 
 	const handleMouseMove = useCallback(
-		(e) => {
+		( e ) => {
 			if (
-				(!isDragging && !isResizing) ||
-				!baseFrame ||
-				!containerRef.current
+				( ! isDragging && ! isResizing ) ||
+				! baseFrame ||
+				! containerRef.current
 			) {
 				return;
 			}
@@ -365,25 +376,25 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 			const scaleX = containerWidth / rect.width;
 			const scaleY = containerHeight / rect.height;
 
-			const dxCanvas = (e.clientX - dragStart.x) * scaleX;
-			const dyCanvas = (e.clientY - dragStart.y) * scaleY;
+			const dxCanvas = ( e.clientX - dragStart.x ) * scaleX;
+			const dyCanvas = ( e.clientY - dragStart.y ) * scaleY;
 
-			if (isDragging) {
+			if ( isDragging ) {
 				let newLeft = dragStart.initialLeft + dxCanvas;
 				let newTop = dragStart.initialTop + dyCanvas;
 
 				// Constrain to container
 				newLeft = Math.max(
 					0,
-					Math.min(newLeft, containerWidth - wmWidth)
+					Math.min( newLeft, containerWidth - wmWidth )
 				);
 				newTop = Math.max(
 					0,
-					Math.min(newTop, containerHeight - wmHeight)
+					Math.min( newTop, containerHeight - wmHeight )
 				);
 
-				setTransientPosition({ left: newLeft, top: newTop });
-			} else if (isResizing) {
+				setTransientPosition( { left: newLeft, top: newTop } );
+			} else if ( isResizing ) {
 				const {
 					initialScale,
 					initialLeft,
@@ -391,61 +402,61 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 					aspectRatio,
 					handle,
 				} = dragStart;
-				const initialWidth = (containerWidth * initialScale) / 100;
+				const initialWidth = ( containerWidth * initialScale ) / 100;
 				const initialHeight = initialWidth / aspectRatio;
 
 				let newWidth = initialWidth;
-				if (handle === 'se' || handle === 'ne') {
+				if ( handle === 'se' || handle === 'ne' ) {
 					newWidth = initialWidth + dxCanvas;
 				} else {
 					newWidth = initialWidth - dxCanvas;
 				}
 
-				let newScale = (newWidth / containerWidth) * 100;
-				newScale = Math.round(newScale * 100) / 100;
+				let newScale = ( newWidth / containerWidth ) * 100;
+				newScale = Math.round( newScale * 100 ) / 100;
 				// Constrain scale
-				newScale = Math.max(1, Math.min(100, newScale));
+				newScale = Math.max( 1, Math.min( 100, newScale ) );
 
 				// Recalculate dimensions based on constrained scale
-				newWidth = (containerWidth * newScale) / 100;
+				newWidth = ( containerWidth * newScale ) / 100;
 				const newHeight = newWidth / aspectRatio;
 
 				let newLeft = initialLeft;
 				let newTop = initialTop;
 
-				if (handle === 'sw') {
-					newLeft = initialLeft + (initialWidth - newWidth);
-				} else if (handle === 'ne') {
-					newTop = initialTop + (initialHeight - newHeight);
-				} else if (handle === 'nw') {
-					newLeft = initialLeft + (initialWidth - newWidth);
-					newTop = initialTop + (initialHeight - newHeight);
+				if ( handle === 'sw' ) {
+					newLeft = initialLeft + ( initialWidth - newWidth );
+				} else if ( handle === 'ne' ) {
+					newTop = initialTop + ( initialHeight - newHeight );
+				} else if ( handle === 'nw' ) {
+					newLeft = initialLeft + ( initialWidth - newWidth );
+					newTop = initialTop + ( initialHeight - newHeight );
 				}
 
-				setTransientScale(newScale);
-				setTransientPosition({ left: newLeft, top: newTop });
+				setTransientScale( newScale );
+				setTransientPosition( { left: newLeft, top: newTop } );
 			}
 		},
-		[isDragging, isResizing, baseFrame, wmWidth, wmHeight]
+		[ isDragging, isResizing, baseFrame, wmWidth, wmHeight ]
 	);
 
-	useEffect(() => {
-		if (isDragging || isResizing) {
-			window.addEventListener('mousemove', handleMouseMove, {
+	useEffect( () => {
+		if ( isDragging || isResizing ) {
+			window.addEventListener( 'mousemove', handleMouseMove, {
 				passive: true,
-			});
-			window.addEventListener('mouseup', finalizeInteraction, {
+			} );
+			window.addEventListener( 'mouseup', finalizeInteraction, {
 				once: true,
-			});
+			} );
 		}
 
 		return () => {
-			window.removeEventListener('mousemove', handleMouseMove);
-			window.removeEventListener('mouseup', finalizeInteraction);
+			window.removeEventListener( 'mousemove', handleMouseMove );
+			window.removeEventListener( 'mouseup', finalizeInteraction );
 		};
-	}, [isDragging, isResizing, handleMouseMove, finalizeInteraction]);
+	}, [ isDragging, isResizing, handleMouseMove, finalizeInteraction ] );
 
-	if (!baseFrame || !watermarkImage) {
+	if ( ! baseFrame || ! watermarkImage ) {
 		return null;
 	}
 
@@ -458,100 +469,116 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 
 	return (
 		<div
-			ref={containerRef}
-			style={{
+			ref={ containerRef }
+			style={ {
 				position: 'relative',
 				width: '100%',
-				aspectRatio: `${containerWidth} / ${containerHeight}`,
-				backgroundImage: `url(${baseFrame.toDataURL()})`,
+				aspectRatio: `${ containerWidth } / ${ containerHeight }`,
+				backgroundImage: `url(${ baseFrame.toDataURL() })`,
 				backgroundSize: 'contain',
 				backgroundRepeat: 'no-repeat',
 				border: '1px solid #ddd',
 				marginBottom: '1em',
 				overflow: 'hidden',
 				userSelect: 'none',
-			}}
+			} }
 		>
 			<div
-				ref={watermarkRef}
-				style={{
+				ref={ watermarkRef }
+				style={ {
 					position: 'absolute',
-					left: `${(currentLeft / containerWidth) * 100}%`,
-					top: `${(currentTop / containerHeight) * 100}%`,
-					width: `${(wmWidth / containerWidth) * 100}%`,
-					height: `${(wmHeight / containerHeight) * 100}%`,
-				}}
+					left: `${ ( currentLeft / containerWidth ) * 100 }%`,
+					top: `${ ( currentTop / containerHeight ) * 100 }%`,
+					width: `${ ( wmWidth / containerWidth ) * 100 }%`,
+					height: `${ ( wmHeight / containerHeight ) * 100 }%`,
+				} }
 				role="button"
 				tabIndex="0"
-				aria-label={__(
+				aria-label={ __(
 					'Move watermark',
 					'video-embed-thumbnail-generator'
-				)}
-				onMouseDown={handleMouseDown}
-				onKeyDown={handleDragKeyDown}
-				onFocus={handleFocus}
-				onBlur={handleBlur}
+				) }
+				onMouseDown={ handleMouseDown }
+				onKeyDown={ handleDragKeyDown }
+				onFocus={ handleFocus }
+				onBlur={ handleBlur }
 			>
 				<img
-					src={settings.url}
+					src={ settings.url }
 					alt="Watermark"
-					style={{
+					style={ {
 						width: '100%',
 						height: '100%',
 						cursor: isDragging ? 'grabbing' : 'move',
 						userSelect: 'none',
 						display: 'block',
-					}}
-					draggable={false}
+					} }
+					draggable={ false }
 				/>
-				{isFocused && (
+				{ isFocused && (
 					<>
 						<div
 							role="slider"
 							tabIndex="0"
-							aria-label={__(
+							aria-label={ __(
 								'Resize watermark from top left',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							className="videopack-resize-handle nw"
-							onMouseDown={(e) => handleResizeStart(e, 'nw')}
-							onKeyDown={(e) => handleResizeKeyDown(e, 'nw')}
+							onMouseDown={ ( e ) =>
+								handleResizeStart( e, 'nw' )
+							}
+							onKeyDown={ ( e ) =>
+								handleResizeKeyDown( e, 'nw' )
+							}
 						/>
 						<div
 							role="slider"
 							tabIndex="0"
-							aria-label={__(
+							aria-label={ __(
 								'Resize watermark from top right',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							className="videopack-resize-handle ne"
-							onMouseDown={(e) => handleResizeStart(e, 'ne')}
-							onKeyDown={(e) => handleResizeKeyDown(e, 'ne')}
+							onMouseDown={ ( e ) =>
+								handleResizeStart( e, 'ne' )
+							}
+							onKeyDown={ ( e ) =>
+								handleResizeKeyDown( e, 'ne' )
+							}
 						/>
 						<div
 							role="slider"
 							tabIndex="0"
-							aria-label={__(
+							aria-label={ __(
 								'Resize watermark from bottom left',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							className="videopack-resize-handle sw"
-							onMouseDown={(e) => handleResizeStart(e, 'sw')}
-							onKeyDown={(e) => handleResizeKeyDown(e, 'sw')}
+							onMouseDown={ ( e ) =>
+								handleResizeStart( e, 'sw' )
+							}
+							onKeyDown={ ( e ) =>
+								handleResizeKeyDown( e, 'sw' )
+							}
 						/>
 						<div
 							role="slider"
 							tabIndex="0"
-							aria-label={__(
+							aria-label={ __(
 								'Resize watermark from bottom right',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							className="videopack-resize-handle se"
-							onMouseDown={(e) => handleResizeStart(e, 'se')}
-							onKeyDown={(e) => handleResizeKeyDown(e, 'se')}
+							onMouseDown={ ( e ) =>
+								handleResizeStart( e, 'se' )
+							}
+							onKeyDown={ ( e ) =>
+								handleResizeKeyDown( e, 'se' )
+							}
 						/>
 					</>
-				)}
+				) }
 			</div>
 		</div>
 	);

@@ -6,7 +6,7 @@
  * @param {*} val Value to check.
  * @return {boolean} True if truthy.
  */
-export const isTrue = (val) => {
+export const isTrue = ( val ) => {
 	if (
 		val === true ||
 		val === 'true' ||
@@ -29,12 +29,12 @@ export const isTrue = (val) => {
  * @param {Object} context    The inherited block context.
  * @return {*} The resolved value.
  */
-export const getEffectiveValue = (key, attributes = {}, context = {}) => {
-	const contextKey = key.includes('/') ? key : `videopack/${key}`;
-	const attrKey = key.includes('/') ? key.split('/')[1] : key;
+export const getEffectiveValue = ( key, attributes = {}, context = {} ) => {
+	const contextKey = key.includes( '/' ) ? key : `videopack/${ key }`;
+	const attrKey = key.includes( '/' ) ? key.split( '/' )[ 1 ] : key;
 
 	// Helper to check if a value is valid (not undefined, null, or empty string)
-	const isValid = (val) => val !== undefined && val !== null && val !== '';
+	const isValid = ( val ) => val !== undefined && val !== null && val !== '';
 
 	// Mappings for settings that have different names in blocks vs global options
 	const altAttrKey = {
@@ -43,55 +43,55 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		align: 'gallery_align',
 		pagination: 'gallery_pagination',
 		per_page: 'gallery_per_page',
-	}[attrKey];
+	}[ attrKey ];
 
 	// 1. Check local attribute override
-	if (isValid(attributes[attrKey])) {
+	if ( isValid( attributes[ attrKey ] ) ) {
 		// Special case for isPreview: if local is false but context is true, prefer context true
 		if (
 			attrKey === 'isPreview' &&
-			!attributes[attrKey] &&
-			isTrue(context[contextKey])
+			! attributes[ attrKey ] &&
+			isTrue( context[ contextKey ] )
 		) {
 			return true;
 		}
-		return attributes[attrKey];
+		return attributes[ attrKey ];
 	}
 
 	// 1b. Check mapped attribute (e.g. settings object from VideoCollectionSettings)
-	if (altAttrKey && isValid(attributes[altAttrKey])) {
-		return attributes[altAttrKey];
+	if ( altAttrKey && isValid( attributes[ altAttrKey ] ) ) {
+		return attributes[ altAttrKey ];
 	}
 
 	if (
 		attrKey === 'postId' &&
-		isValid(attributes.id) &&
-		!isValid(context[contextKey])
+		isValid( attributes.id ) &&
+		! isValid( context[ contextKey ] )
 	) {
 		return attributes.id;
 	}
-	if (attrKey === 'attachmentId' && isValid(attributes.id)) {
+	if ( attrKey === 'attachmentId' && isValid( attributes.id ) ) {
 		return attributes.id;
 	}
 
 	// 2. Check inherited context (from Collection or Video block)
-	if (isValid(context[contextKey])) {
-		return context[contextKey];
+	if ( isValid( context[ contextKey ] ) ) {
+		return context[ contextKey ];
 	}
 
 	// If we are resolving postType and we have an attachmentId but no explicit postType context,
 	// assume it's an attachment.
-	if (attrKey === 'postType') {
+	if ( attrKey === 'postType' ) {
 		const attachmentId = getEffectiveValue(
 			'attachmentId',
 			attributes,
 			context
 		);
-		const postId = getEffectiveValue('postId', attributes, context);
+		const postId = getEffectiveValue( 'postId', attributes, context );
 		if (
 			attachmentId &&
 			attachmentId === postId &&
-			!isValid(context[contextKey])
+			! isValid( context[ contextKey ] )
 		) {
 			return 'attachment';
 		}
@@ -100,25 +100,25 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	// 2b. Check standard Gutenberg context fallbacks
 	if (
 		attrKey === 'postType' &&
-		isValid(attributes.id) &&
-		!isValid(context[contextKey])
+		isValid( attributes.id ) &&
+		! isValid( context[ contextKey ] )
 	) {
 		return 'attachment';
 	}
 	if (
-		(attrKey === 'postId' || attrKey === 'postType') &&
-		isValid(context[attrKey])
+		( attrKey === 'postId' || attrKey === 'postType' ) &&
+		isValid( context[ attrKey ] )
 	) {
-		return context[attrKey];
+		return context[ attrKey ];
 	}
 
 	// 3. Fallback to global plugin defaults
 	const globalOptions = videopack_config?.options || {};
 	const globalDefaults = videopack_config?.defaults || {};
 
-	if (attrKey === 'skin') {
-		const localValue = attributes[attrKey] || context[contextKey];
-		if (isValid(localValue)) {
+	if ( attrKey === 'skin' ) {
+		const localValue = attributes[ attrKey ] || context[ contextKey ];
+		if ( isValid( localValue ) ) {
 			return localValue;
 		}
 		return (
@@ -129,12 +129,12 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		);
 	}
 
-	if (attrKey === 'layout') {
+	if ( attrKey === 'layout' ) {
 		const localValue =
-			attributes[attrKey] ||
+			attributes[ attrKey ] ||
 			attributes.gallery_layout ||
-			context[contextKey];
-		if (isValid(localValue)) {
+			context[ contextKey ];
+		if ( isValid( localValue ) ) {
 			return localValue;
 		}
 		return (
@@ -146,20 +146,20 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		);
 	}
 
-	if (attrKey === 'align') {
+	if ( attrKey === 'align' ) {
 		const localValue =
-			attributes[attrKey] ||
+			attributes[ attrKey ] ||
 			attributes.gallery_align ||
-			context[contextKey];
-		if (isValid(localValue)) {
+			context[ contextKey ];
+		if ( isValid( localValue ) ) {
 			return localValue;
 		}
 		// Collections use gallery_align as their global default
 		const isCollection =
 			attributes.layout ||
 			attributes.gallery_layout ||
-			context['videopack/layout'];
-		if (isCollection) {
+			context[ 'videopack/layout' ];
+		if ( isCollection ) {
 			return (
 				globalOptions.gallery_align ||
 				globalOptions.align ||
@@ -170,19 +170,19 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		return globalOptions.align || globalDefaults.align || '';
 	}
 
-	if (attrKey === 'columns') {
+	if ( attrKey === 'columns' ) {
 		const localValue =
-			attributes[attrKey] ||
+			attributes[ attrKey ] ||
 			attributes.gallery_columns ||
-			context[contextKey];
-		if (isValid(localValue)) {
+			context[ contextKey ];
+		if ( isValid( localValue ) ) {
 			return localValue;
 		}
 		const isCollection =
 			attributes.layout ||
 			attributes.gallery_layout ||
-			context['videopack/layout'];
-		if (isCollection) {
+			context[ 'videopack/layout' ];
+		if ( isCollection ) {
 			return (
 				globalOptions.gallery_columns ||
 				globalDefaults.gallery_columns ||
@@ -192,11 +192,11 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 		return globalOptions.columns || globalDefaults.columns || 3;
 	}
 
-	if (attrKey === 'title_position') {
+	if ( attrKey === 'title_position' ) {
 		// Priority logic for title_position is now partially handled in the component
 		// to allow for context-aware defaults (like bottom for thumbnails).
-		const localValue = attributes[attrKey] || context[contextKey];
-		if (isValid(localValue)) {
+		const localValue = attributes[ attrKey ] || context[ contextKey ];
+		if ( isValid( localValue ) ) {
 			return localValue;
 		}
 		return (
@@ -207,10 +207,10 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
 	}
 
 	const globalValue =
-		globalOptions[attrKey] ??
-		globalDefaults[attrKey] ??
-		videopack_config?.[attrKey];
-	const finalValue = isValid(globalValue) ? globalValue : undefined;
+		globalOptions[ attrKey ] ??
+		globalDefaults[ attrKey ] ??
+		videopack_config?.[ attrKey ];
+	const finalValue = isValid( globalValue ) ? globalValue : undefined;
 
 	return finalValue;
 };
@@ -221,8 +221,8 @@ export const getEffectiveValue = (key, attributes = {}, context = {}) => {
  * @param {Object} videoSources Grouped sources returned from the API.
  * @return {Object} Grouped sources.
  */
-export const normalizeSourceGroups = (videoSources) => {
-	if (!videoSources || typeof videoSources !== 'object') {
+export const normalizeSourceGroups = ( videoSources ) => {
+	if ( ! videoSources || typeof videoSources !== 'object' ) {
 		return {};
 	}
 

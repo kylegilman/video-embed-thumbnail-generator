@@ -21,51 +21,60 @@ import { getColorFallbacks } from '../../utils/colors';
  *                                       color is explicitly chosen.
  * @return {Element} The rendered inspector panel.
  */
-export default function TitleColorPanel({ attributes, setAttributes, resolved }) {
+export default function TitleColorPanel( {
+	attributes,
+	setAttributes,
+	resolved,
+} ) {
 	const { title_color, title_background_color } = attributes;
 	const THEME_COLORS = videopack_config?.themeColors;
 
 	const colorFallbacks = useMemo(
 		() =>
-			getColorFallbacks({
+			getColorFallbacks( {
 				title_color: resolved.title_color,
 				title_background_color: resolved.title_background_color,
-			}),
-		[resolved.title_color, resolved.title_background_color]
+			} ),
+		[ resolved.title_color, resolved.title_background_color ]
 	);
 
 	return (
 		<PanelBody
-			title={__('Colors', 'video-embed-thumbnail-generator')}
-			initialOpen={true}
+			title={ __( 'Colors', 'video-embed-thumbnail-generator' ) }
+			initialOpen={ true }
 		>
 			<div className="videopack-color-section">
 				<div className="videopack-color-flex-row">
 					<div className="videopack-color-flex-item">
 						<CompactColorPicker
-							label={__('Text', 'video-embed-thumbnail-generator')}
-							value={title_color}
-							onChange={(value) =>
-								setAttributes({ title_color: value })
+							label={ __(
+								'Text',
+								'video-embed-thumbnail-generator'
+							) }
+							value={ title_color }
+							onChange={ ( value ) =>
+								setAttributes( { title_color: value } )
 							}
-							colors={THEME_COLORS}
-							fallbackValue={colorFallbacks.title_color}
+							colors={ THEME_COLORS }
+							fallbackValue={ colorFallbacks.title_color }
 						/>
 					</div>
 					<div className="videopack-color-flex-item">
 						<CompactColorPicker
-							label={__(
+							label={ __(
 								'Background',
 								'video-embed-thumbnail-generator'
-							)}
-							value={title_background_color}
-							onChange={(value) =>
-								setAttributes({
+							) }
+							value={ title_background_color }
+							onChange={ ( value ) =>
+								setAttributes( {
 									title_background_color: value,
-								})
+								} )
 							}
-							colors={THEME_COLORS}
-							fallbackValue={colorFallbacks.title_background_color}
+							colors={ THEME_COLORS }
+							fallbackValue={
+								colorFallbacks.title_background_color
+							}
 						/>
 					</div>
 				</div>

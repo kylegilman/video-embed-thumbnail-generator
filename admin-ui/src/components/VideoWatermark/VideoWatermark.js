@@ -11,13 +11,13 @@ import useVideopackContext from '../../hooks/useVideopackContext';
  * @param {Function} root0.onDimensions  Callback for dimension detection.
  * @return {Element}                     The rendered component.
  */
-export default function VideoWatermark({
+export default function VideoWatermark( {
 	attributes = {},
 	context = {},
 	isBlockEditor = false,
 	onDimensions = null,
-}) {
-	const { resolved } = useVideopackContext(attributes, context);
+} ) {
+	const { resolved } = useVideopackContext( attributes, context );
 
 	const {
 		watermark: effectiveUrl,
@@ -41,35 +41,35 @@ export default function VideoWatermark({
 
 	const style = {
 		position: isBlockEditor ? 'relative' : 'absolute',
-		width: effectiveUrl ? `${actualScale}%` : '260px',
+		width: effectiveUrl ? `${ actualScale }%` : '260px',
 		height: 'auto',
 		pointerEvents: 'auto',
 		transform: '',
 	};
 
 	// X Positioning
-	if (actualAlign === 'center') {
+	if ( actualAlign === 'center' ) {
 		style.left = '50%';
 		style.transform += 'translateX(-50%) ';
-		style.marginLeft = `${-actualX}%`;
+		style.marginLeft = `${ -actualX }%`;
 	} else {
-		style[actualAlign] = `${actualX}%`;
+		style[ actualAlign ] = `${ actualX }%`;
 	}
 
 	// Y Positioning
-	if (actualValign === 'center') {
+	if ( actualValign === 'center' ) {
 		style.top = '50%';
 		style.transform += 'translateY(-50%) ';
-		style.marginTop = `${-actualY}%`;
+		style.marginTop = `${ -actualY }%`;
 	} else {
-		style[actualValign] = `${actualY}%`;
+		style[ actualValign ] = `${ actualY }%`;
 	}
 
-	if (!style.transform || isBlockEditor) {
+	if ( ! style.transform || isBlockEditor ) {
 		delete style.transform;
 	}
 
-	if (isBlockEditor) {
+	if ( isBlockEditor ) {
 		delete style.left;
 		delete style.right;
 		delete style.top;
@@ -79,17 +79,20 @@ export default function VideoWatermark({
 		style.width = '100%'; // Inner container fills the outer block
 	}
 
-	if (!effectiveUrl) {
+	if ( ! effectiveUrl ) {
 		return null;
 	}
 
 	return (
-		<div className={`videopack-video-watermark ${skin}`} style={style}>
+		<div
+			className={ `videopack-video-watermark ${ skin }` }
+			style={ style }
+		>
 			<img
-				src={effectiveUrl}
-				alt={__('Watermark', 'video-embed-thumbnail-generator')}
-				style={{ display: 'block', width: '100%', height: 'auto' }}
-				onLoad={(e) => {
+				src={ effectiveUrl }
+				alt={ __( 'Watermark', 'video-embed-thumbnail-generator' ) }
+				style={ { display: 'block', width: '100%', height: 'auto' } }
+				onLoad={ ( e ) => {
 					if (
 						onDimensions &&
 						e.target.naturalWidth &&
@@ -97,9 +100,9 @@ export default function VideoWatermark({
 					) {
 						const ratio =
 							e.target.naturalWidth / e.target.naturalHeight;
-						onDimensions(ratio);
+						onDimensions( ratio );
 					}
-				}}
+				} }
 			/>
 		</div>
 	);

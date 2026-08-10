@@ -20,11 +20,11 @@ import { buildStablePreviewBlocks } from '../utils/buildPreviewBlocks';
  * @return {Array} Block instances, with clientIds stable across renders
  *                 where possible.
  */
-export default function useStablePreviewBlocks(template) {
-	const prevBlocksRef = useRef([]);
+export default function useStablePreviewBlocks( template ) {
+	const prevBlocksRef = useRef( [] );
 	const prevTemplateRef = useRef();
 
-	if (prevTemplateRef.current !== template) {
+	if ( prevTemplateRef.current !== template ) {
 		prevBlocksRef.current = buildStablePreviewBlocks(
 			template,
 			prevBlocksRef.current

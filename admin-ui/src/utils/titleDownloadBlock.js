@@ -19,13 +19,13 @@ export const TITLE_SHARE_BLOCK_ATTRS = {
  * @param {boolean} includeShare    Whether to include the share block.
  * @return {Array} Block template array.
  */
-export const getTitleInnerTemplate = (includeDownload, includeShare) => {
+export const getTitleInnerTemplate = ( includeDownload, includeShare ) => {
 	const template = [];
-	if (includeDownload) {
-		template.push(['videopack/download', TITLE_DOWNLOAD_BLOCK_ATTRS]);
+	if ( includeDownload ) {
+		template.push( [ 'videopack/download', TITLE_DOWNLOAD_BLOCK_ATTRS ] );
 	}
-	if (includeShare) {
-		template.push(['videopack/share', TITLE_SHARE_BLOCK_ATTRS]);
+	if ( includeShare ) {
+		template.push( [ 'videopack/share', TITLE_SHARE_BLOCK_ATTRS ] );
 	}
 	return template;
 };

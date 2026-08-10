@@ -27,13 +27,19 @@ describe( 'setupVideoTitle', () => {
 		setupVideoTitle( playerWrapper, player, { embed_method: 'Video.js' } );
 
 		player.trigger( 'play' );
-		expect( title.classList.contains( 'videopack-video-title-visible' ) ).toBe( false );
+		expect(
+			title.classList.contains( 'videopack-video-title-visible' )
+		).toBe( false );
 
 		player.trigger( 'pause' );
-		expect( title.classList.contains( 'videopack-video-title-visible' ) ).toBe( true );
+		expect(
+			title.classList.contains( 'videopack-video-title-visible' )
+		).toBe( true );
 
 		player.trigger( 'ended' );
-		expect( title.classList.contains( 'videopack-video-title-visible' ) ).toBe( true );
+		expect(
+			title.classList.contains( 'videopack-video-title-visible' )
+		).toBe( true );
 	} );
 
 	it( 'hides the title on play and shows it on pause, for a MediaElement.js player (player.media)', () => {
@@ -48,13 +54,19 @@ describe( 'setupVideoTitle', () => {
 		const title = document.querySelector( '.videopack-video-title' );
 		const player = { media: video };
 
-		setupVideoTitle( playerWrapper, player, { embed_method: 'WordPress Default' } );
+		setupVideoTitle( playerWrapper, player, {
+			embed_method: 'WordPress Default',
+		} );
 
 		video.dispatchEvent( new Event( 'play' ) );
-		expect( title.classList.contains( 'videopack-video-title-visible' ) ).toBe( false );
+		expect(
+			title.classList.contains( 'videopack-video-title-visible' )
+		).toBe( false );
 
 		video.dispatchEvent( new Event( 'pause' ) );
-		expect( title.classList.contains( 'videopack-video-title-visible' ) ).toBe( true );
+		expect(
+			title.classList.contains( 'videopack-video-title-visible' )
+		).toBe( true );
 	} );
 
 	it( 'also toggles a .videopack-meta-wrapper found in the parent .videopack-wrapper', () => {
@@ -71,8 +83,12 @@ describe( 'setupVideoTitle', () => {
 		setupVideoTitle( playerWrapper, player, { embed_method: 'Video.js' } );
 
 		player.trigger( 'play' );
-		expect( meta.classList.contains( 'videopack-video-title-visible' ) ).toBe( false );
+		expect(
+			meta.classList.contains( 'videopack-video-title-visible' )
+		).toBe( false );
 		player.trigger( 'pause' );
-		expect( meta.classList.contains( 'videopack-video-title-visible' ) ).toBe( true );
+		expect(
+			meta.classList.contains( 'videopack-video-title-visible' )
+		).toBe( true );
 	} );
 } );

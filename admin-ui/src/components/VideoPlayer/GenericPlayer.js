@@ -43,35 +43,35 @@ const GenericPlayer = forwardRef(
 		ref
 	) => (
 		<video
-			onPlay={onPlay}
-			onPause={onPause}
-			onEnded={onEnded}
-			poster={poster}
-			loop={loop}
-			autoPlay={autoPlay}
-			preload={preload}
-			controls={controls ? true : undefined}
-			muted={muted}
-			playsInline={playsInline}
+			onPlay={ onPlay }
+			onPause={ onPause }
+			onEnded={ onEnded }
+			poster={ poster }
+			loop={ loop }
+			autoPlay={ autoPlay }
+			preload={ preload }
+			controls={ controls ? true : undefined }
+			muted={ muted }
+			playsInline={ playsInline }
 			width="100%"
 			height="100%"
-			className={className}
-			ref={ref}
+			className={ className }
+			ref={ ref }
 		>
-			{sources.map((source, index) => (
-				<source key={index} src={source.src} type={source.type} />
-			))}
-			{tracks.map((track, index) => (
+			{ sources.map( ( source, index ) => (
+				<source key={ index } src={ source.src } type={ source.type } />
+			) ) }
+			{ tracks.map( ( track, index ) => (
 				<track
-					key={index}
-					src={track.src}
-					kind={track.kind}
-					srcLang={track.srclang}
-					label={track.label}
-					default={track.default}
+					key={ index }
+					src={ track.src }
+					kind={ track.kind }
+					srcLang={ track.srclang }
+					label={ track.label }
+					default={ track.default }
 				/>
-			))}
-			<a href={src}>{src}</a>
+			) ) }
+			<a href={ src }>{ src }</a>
 		</video>
 	)
 );

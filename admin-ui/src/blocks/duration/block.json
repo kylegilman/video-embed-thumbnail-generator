@@ -12,7 +12,7 @@
 		"videopack/player",
 		"videopack/thumbnail"
 	],
-	"usesContext": ["postId", "postType"],
+	"usesContext": [ "postId", "postType" ],
 	"attributes": {
 		"position": {
 			"type": "string"

@@ -1,30 +1,30 @@
 import { TextControl } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
 
-const TextControlOnBlur = ({ value, onChange, ...props }) => {
-	const [innerValue, setInnerValue] = useState(value);
+const TextControlOnBlur = ( { value, onChange, ...props } ) => {
+	const [ innerValue, setInnerValue ] = useState( value );
 
-	useEffect(() => {
-		setInnerValue(value);
-	}, [value]);
+	useEffect( () => {
+		setInnerValue( value );
+	}, [ value ] );
 
-	const handleOnChange = (newValue) => {
-		setInnerValue(newValue);
+	const handleOnChange = ( newValue ) => {
+		setInnerValue( newValue );
 	};
 
-	const handleOnBlur = (event) => {
-		onChange(innerValue);
-		if (props.onBlur) {
-			props.onBlur(event);
+	const handleOnBlur = ( event ) => {
+		onChange( innerValue );
+		if ( props.onBlur ) {
+			props.onBlur( event );
 		}
 	};
 
 	return (
 		<TextControl
-			{...props}
-			value={innerValue}
-			onChange={handleOnChange}
-			onBlur={handleOnBlur}
+			{ ...props }
+			value={ innerValue }
+			onChange={ handleOnChange }
+			onBlur={ handleOnBlur }
 			type="search"
 		/>
 	);

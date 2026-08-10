@@ -16,7 +16,7 @@ import { videopackVideo as icon } from '../../assets/icon';
 const { usesContext: _localUsesContext, ...metadataWithoutUsesContext } =
 	metadata;
 
-registerBlockType(metadata.name, {
+registerBlockType( metadata.name, {
 	...metadataWithoutUsesContext,
 	icon,
 	attributes: {
@@ -32,4 +32,4 @@ registerBlockType(metadata.name, {
 	 * @see ./save.js
 	 */
 	save,
-});
+} );

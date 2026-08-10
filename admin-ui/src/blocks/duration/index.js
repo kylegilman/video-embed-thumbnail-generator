@@ -4,8 +4,8 @@ import save from './save';
 import metadata from './block.json';
 import { videopackDuration as icon } from '../../assets/icon';
 
-registerBlockType(metadata.name, {
+registerBlockType( metadata.name, {
 	icon,
 	edit: Edit,
 	save,
-});
+} );

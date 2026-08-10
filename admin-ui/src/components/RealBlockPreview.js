@@ -16,13 +16,13 @@ import { memo } from '@wordpress/element';
  * @param {Array}  root0.blocks      The real block instances to preview (see utils/buildPreviewBlocks.js).
  * @param {string} [root0.className] Optional extra class name for the preview wrapper.
  */
-function RealBlockPreview({ blocks, className }) {
-	const previewProps = useBlockPreview({
+function RealBlockPreview( { blocks, className } ) {
+	const previewProps = useBlockPreview( {
 		blocks,
 		props: { className },
-	});
+	} );
 
-	return <div {...previewProps} />;
+	return <div { ...previewProps } />;
 }
 
-export default memo(RealBlockPreview);
+export default memo( RealBlockPreview );

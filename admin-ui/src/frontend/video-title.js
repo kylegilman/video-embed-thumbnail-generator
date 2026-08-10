@@ -6,16 +6,24 @@
  * Sets up video title visibility and hover behavior for a given player.
  *
  * @param {HTMLElement} playerWrapper The player wrapper element.
- * @param {object}      player        The player instance (Video.js, a native <video>, or MEJS).
- * @param {object}      videoVars     The video variables.
+ * @param {Object}      player        The player instance (Video.js, a native <video>, or MEJS).
+ * @param {Object}      videoVars     The video variables.
  */
 export function setupVideoTitle( playerWrapper, player, videoVars ) {
 	const getMetaElements = () => {
 		// Search both inside the player and in the immediate parent (for cases where they aren't moved yet)
-		const elements = Array.from( playerWrapper.querySelectorAll( '.videopack-video-title, .videopack-meta-wrapper' ) );
+		const elements = Array.from(
+			playerWrapper.querySelectorAll(
+				'.videopack-video-title, .videopack-meta-wrapper'
+			)
+		);
 		const parent = playerWrapper.closest( '.videopack-wrapper' );
 		if ( parent ) {
-			Array.from( parent.querySelectorAll( '.videopack-video-title, .videopack-meta-wrapper' ) ).forEach( ( el ) => {
+			Array.from(
+				parent.querySelectorAll(
+					'.videopack-video-title, .videopack-meta-wrapper'
+				)
+			).forEach( ( el ) => {
 				if ( ! elements.includes( el ) ) {
 					elements.push( el );
 				}
@@ -25,13 +33,26 @@ export function setupVideoTitle( playerWrapper, player, videoVars ) {
 	};
 
 	const isMejs = 'WordPress Default' === videoVars.embed_method;
-	const video = isMejs ? player.media : ( player.tagName === 'VIDEO' ? player : ( player.el ? player.el().querySelector( 'video' ) : null ) );
+	let video;
+	if ( isMejs ) {
+		video = player.media;
+	} else if ( player.tagName === 'VIDEO' ) {
+		video = player;
+	} else if ( player.el ) {
+		video = player.el().querySelector( 'video' );
+	} else {
+		video = null;
+	}
 
 	const showMeta = () => {
-		getMetaElements().forEach( ( el ) => el.classList.add( 'videopack-video-title-visible' ) );
+		getMetaElements().forEach( ( el ) =>
+			el.classList.add( 'videopack-video-title-visible' )
+		);
 	};
 	const hideMeta = () => {
-		getMetaElements().forEach( ( el ) => el.classList.remove( 'videopack-video-title-visible' ) );
+		getMetaElements().forEach( ( el ) =>
+			el.classList.remove( 'videopack-video-title-visible' )
+		);
 	};
 
 	if ( isMejs && video ) {

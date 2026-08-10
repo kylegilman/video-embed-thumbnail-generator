@@ -19,21 +19,21 @@ export const getSettings = async () => {
 	 *
 	 * @param {undefined} pre Defaults to undefined.
 	 */
-	const pre = applyFilters('videopack.utils.pre_getSettings', undefined);
-	if (typeof pre !== 'undefined') {
+	const pre = applyFilters( 'videopack.utils.pre_getSettings', undefined );
+	if ( typeof pre !== 'undefined' ) {
 		return pre;
 	}
 
-	if (cachedSettings) {
+	if ( cachedSettings ) {
 		return cachedSettings;
 	}
 
-	if (settingsPromise) {
+	if ( settingsPromise ) {
 		return settingsPromise;
 	}
 
-	settingsPromise = apiFetch({ path: '/wp/v2/settings' })
-		.then((allSettings) => {
+	settingsPromise = apiFetch( { path: '/wp/v2/settings' } )
+		.then( ( allSettings ) => {
 			const result = allSettings.videopack_options || {};
 			cachedSettings = result;
 			settingsPromise = null;
@@ -44,13 +44,16 @@ export const getSettings = async () => {
 			 *
 			 * @param {Object} settings Global settings options.
 			 */
-			return applyFilters('videopack.utils.getSettings', cachedSettings);
-		})
-		.catch((error) => {
+			return applyFilters(
+				'videopack.utils.getSettings',
+				cachedSettings
+			);
+		} )
+		.catch( ( error ) => {
 			settingsPromise = null;
-			console.error('Error fetching settings:', error);
+			console.error( 'Error fetching settings:', error );
 			throw error;
-		});
+		} );
 
 	return settingsPromise;
 };
@@ -60,23 +63,23 @@ export const getSettings = async () => {
  *
  * @param {Object} newSettings The settings object to save.
  */
-export const saveWPSettings = async (newSettings) => {
+export const saveWPSettings = async ( newSettings ) => {
 	try {
 		const data = {
 			videopack_options: newSettings,
 		};
 
-		const response = await apiFetch({
+		const response = await apiFetch( {
 			path: '/wp/v2/settings',
 			method: 'POST',
 			data,
-		});
+		} );
 
 		const result = response.videopack_options || {};
 		cachedSettings = result;
 		return cachedSettings;
-	} catch (error) {
-		console.error('Error saving WP settings:', error);
+	} catch ( error ) {
+		console.error( 'Error saving WP settings:', error );
 		throw error;
 	}
 };
@@ -86,9 +89,9 @@ export const saveWPSettings = async (newSettings) => {
  */
 export const getNetworkSettings = async () => {
 	try {
-		return await apiFetch({ path: '/videopack/v1/network/settings' });
-	} catch (error) {
-		console.error('Error fetching network settings:', error);
+		return await apiFetch( { path: '/videopack/v1/network/settings' } );
+	} catch ( error ) {
+		console.error( 'Error fetching network settings:', error );
 		throw error;
 	}
 };
@@ -98,15 +101,15 @@ export const getNetworkSettings = async () => {
  *
  * @param {Object} newSettings The settings object to save.
  */
-export const saveNetworkSettings = async (newSettings) => {
+export const saveNetworkSettings = async ( newSettings ) => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/network/settings',
 			method: 'POST',
 			data: newSettings,
-		});
-	} catch (error) {
-		console.error('Error saving network settings:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error saving network settings:', error );
 		throw error;
 	}
 };
@@ -116,11 +119,11 @@ export const saveNetworkSettings = async (newSettings) => {
  */
 export const resetNetworkSettings = async () => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/network/settings/defaults',
-		});
-	} catch (error) {
-		console.error('Error resetting network settings:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error resetting network settings:', error );
 		throw error;
 	}
 };
@@ -130,11 +133,11 @@ export const resetNetworkSettings = async () => {
  */
 export const resetVideopackSettings = async () => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/settings/defaults',
-		});
-	} catch (error) {
-		console.error('Error resetting Videopack settings:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error resetting Videopack settings:', error );
 		throw error;
 	}
 };
@@ -144,12 +147,12 @@ export const resetVideopackSettings = async () => {
  */
 export const clearUrlCache = async () => {
 	try {
-		return await apiFetch({
+		return await apiFetch( {
 			path: '/videopack/v1/settings/cache',
 			method: 'DELETE',
-		});
-	} catch (error) {
-		console.error('Error clearing URL cache:', error);
+		} );
+	} catch ( error ) {
+		console.error( 'Error clearing URL cache:', error );
 		throw error;
 	}
 };

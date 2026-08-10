@@ -10,8 +10,8 @@ import useVideopackData from '../../hooks/useVideopackData';
 import VideopackContextBridge from '../VideopackContextBridge';
 
 const TITLE_CONTEXT_OPTS = {
-	excludeKeys: ['downloadlink'],
-	classKeys: ['skin', 'title_color', 'title_background_color'],
+	excludeKeys: [ 'downloadlink' ],
+	classKeys: [ 'skin', 'title_color', 'title_background_color' ],
 };
 
 /**
@@ -37,7 +37,7 @@ const TITLE_CONTEXT_OPTS = {
  * @param {boolean}  root0.linkToPost            Whether to link to parent post.
  * @return {Element}                             The rendered component.
  */
-export default function VideoTitle({
+export default function VideoTitle( {
 	blockProps,
 	postId: propPostId,
 	title: manualTitle,
@@ -55,8 +55,12 @@ export default function VideoTitle({
 	usePostTitle,
 	linkToPost = false,
 	children,
-}) {
-	const vpContext = useVideopackContext(attributes, context, TITLE_CONTEXT_OPTS);
+} ) {
+	const vpContext = useVideopackContext(
+		attributes,
+		context,
+		TITLE_CONTEXT_OPTS
+	);
 	const {
 		postId: resolvedPostId,
 		attachmentId: resolvedAttachmentId,
@@ -66,14 +70,14 @@ export default function VideoTitle({
 	// Undefined (never explicitly set on this block) inherits the
 	// Collection/Loop's prioritizePostData setting; an explicit true/false
 	// always wins over it, in either direction.
-	const usePostData = usePostTitle ?? !!prioritizePostData;
+	const usePostData = usePostTitle ?? !! prioritizePostData;
 
 	// context's parentPostId is the video's real attached-post id, set
 	// unconditionally whenever one exists -- unlike resolvedPostId, it isn't
 	// gated by the Loop's prioritizePostData toggle, so this block's own
 	// usePostTitle override works even when the Loop-level setting disagrees.
 	const postId = usePostData
-		? context['videopack/parentPostId'] || resolvedPostId || propPostId
+		? context[ 'videopack/parentPostId' ] || resolvedPostId || propPostId
 		: resolvedAttachmentId || resolvedPostId || propPostId;
 
 	const titleKey = usePostData ? 'parentTitle' : 'title';
@@ -81,16 +85,16 @@ export default function VideoTitle({
 		titleKey,
 		context
 	);
-	const displayTitle = decodeEntities(manualTitle || resolvedTitle || '');
+	const displayTitle = decodeEntities( manualTitle || resolvedTitle || '' );
 	const isLoadingTitle =
-		isResolving && !displayTitle && !vpContext.resolved.isPreview;
+		isResolving && ! displayTitle && ! vpContext.resolved.isPreview;
 
 	const position =
 		attrPosition ||
-		(isInsideThumbnail ? 'bottom' : vpContext.resolved.title_position) ||
+		( isInsideThumbnail ? 'bottom' : vpContext.resolved.title_position ) ||
 		'top';
 	let defaultAlign = 'left';
-	if (isInsideThumbnail) {
+	if ( isInsideThumbnail ) {
 		defaultAlign = 'center';
 	}
 	const finalTextAlign = textAlign || defaultAlign;
@@ -98,23 +102,23 @@ export default function VideoTitle({
 	const globalOptions = videopack_config?.options || {};
 
 	let finalOverlayTitle = true;
-	if (overlay_title !== undefined) {
-		finalOverlayTitle = !!overlay_title;
-	} else if (globalOptions.overlay_title !== undefined) {
-		finalOverlayTitle = !!globalOptions.overlay_title;
+	if ( overlay_title !== undefined ) {
+		finalOverlayTitle = !! overlay_title;
+	} else if ( globalOptions.overlay_title !== undefined ) {
+		finalOverlayTitle = !! globalOptions.overlay_title;
 	}
 
-	let placeholder = __('Video Title', 'video-embed-thumbnail-generator');
-	if (postId) {
+	let placeholder = __( 'Video Title', 'video-embed-thumbnail-generator' );
+	if ( postId ) {
 		placeholder = resolvedTitle
-			? __('(Untitled Video)', 'video-embed-thumbnail-generator')
+			? __( '(Untitled Video)', 'video-embed-thumbnail-generator' )
 			: '';
 	}
 
 	let titleClass = 'videopack-video-title';
-	if (isInsideThumbnail) {
+	if ( isInsideThumbnail ) {
 		titleClass = 'videopack-thumbnail-title-text';
-	} else if (isOverlay) {
+	} else if ( isOverlay ) {
 		titleClass = 'videopack-title';
 	}
 	const iconsClass = 'videopack-meta-icons';
@@ -125,45 +129,48 @@ export default function VideoTitle({
 	// this on is_overlay either). has-title-background is the standalone
 	// (non-overlay) case specifically -- it only ever gets added when a
 	// real custom color is present, since its CSS has no fallback color.
-	const hasCustomBackgroundColor = !!vpContext.resolved.title_background_color;
+	const hasCustomBackgroundColor =
+		!! vpContext.resolved.title_background_color;
 	const barClass = `videopack-video-title videopack-video-title-visible ${
 		isOverlay ? 'is-overlay' : ''
-	} ${!showBackground ? 'has-no-background' : ''} ${
-		showBackground && !isOverlay && hasCustomBackgroundColor
+	} ${ ! showBackground ? 'has-no-background' : '' } ${
+		showBackground && ! isOverlay && hasCustomBackgroundColor
 			? 'has-title-background'
 			: ''
-	} ${isInsideThumbnail ? 'videopack-thumbnail-title' : ''} ${
-		isInsidePlayerOverlay || isOverlay ? `position-${position}` : ''
+	} ${ isInsideThumbnail ? 'videopack-thumbnail-title' : '' } ${
+		isInsidePlayerOverlay || isOverlay ? `position-${ position }` : ''
 	}`.trim();
 
 	return (
-		<div {...blockProps}>
-			<div className={`${barClass} has-text-align-${finalTextAlign}`}>
-				{isLoadingTitle ? (
+		<div { ...blockProps }>
+			<div
+				className={ `${ barClass } has-text-align-${ finalTextAlign }` }
+			>
+				{ isLoadingTitle ? (
 					<Spinner />
 				) : (
 					finalOverlayTitle &&
-					(() => {
+					( () => {
 						const richText = (
 							<RichText
-								tagName={Tag}
-								className={`${titleClass} has-text-align-${finalTextAlign} ${vpContext.classes}`}
-								style={vpContext.style}
-								value={displayTitle}
-								onChange={onTitleChange}
-								placeholder={placeholder}
-								allowedFormats={[
+								tagName={ Tag }
+								className={ `${ titleClass } has-text-align-${ finalTextAlign } ${ vpContext.classes }` }
+								style={ vpContext.style }
+								value={ displayTitle }
+								onChange={ onTitleChange }
+								placeholder={ placeholder }
+								allowedFormats={ [
 									'core/bold',
 									'core/italic',
 									'core/strikethrough',
-								]}
+								] }
 								// Only the real Edit component passes onTitleChange (it wires up
 								// setAttributes). Everywhere else this renders — Loop's templated
 								// preview items, the settings-page preview, the classic-editor
 								// preview — has nowhere to persist an edit, so RichText must not
 								// accept one; an editable field that silently discards changes
 								// just looks broken to a user.
-								readOnly={!onTitleChange}
+								readOnly={ ! onTitleChange }
 							/>
 						);
 
@@ -176,56 +183,58 @@ export default function VideoTitle({
 						// tag stays nested inside so it's still announced as a
 						// heading, matching <h3><a>Title</a></h3> semantics.
 						return linkToPost ? (
+							// eslint-disable-next-line jsx-a11y/anchor-is-valid -- inert by design, see comment above.
 							<a
 								href="#"
 								className="videopack-title-link"
-								onClick={(e) => e.preventDefault()}
+								onClick={ ( e ) => e.preventDefault() }
 							>
-								{richText}
+								{ richText }
 							</a>
 						) : (
 							richText
 						);
-					})()
-				)}
-				{!isLoadingTitle && isOverlay && (
-					<div className={iconsClass}>
+					} )()
+				) }
+				{ ! isLoadingTitle && isOverlay && (
+					<div className={ iconsClass }>
 						<VideopackContextBridge
-							attributes={attributes}
-							context={context}
-							overrides={{
+							attributes={ attributes }
+							context={ context }
+							overrides={ {
 								'videopack/isInsideTitleMeta': true,
-								...(context['videopack/source_groups'] &&
-								Object.keys(context['videopack/source_groups'])
-									.length > 0
+								...( context[ 'videopack/source_groups' ] &&
+								Object.keys(
+									context[ 'videopack/source_groups' ]
+								).length > 0
 									? {
 											'videopack/source_groups':
 												context[
 													'videopack/source_groups'
 												],
-										}
-									: {}),
-								...(context['videopack/sources']?.length > 0
+									  }
+									: {} ),
+								...( context[ 'videopack/sources' ]?.length > 0
 									? {
 											'videopack/sources':
-												context['videopack/sources'],
-										}
-									: {}),
-							}}
+												context[ 'videopack/sources' ],
+									  }
+									: {} ),
+							} }
 						>
-							{children || (
+							{ children || (
 								<InnerBlocks
-									allowedBlocks={[
+									allowedBlocks={ [
 										'videopack/download',
 										'videopack/share',
-									]}
-									template={[]}
-									templateLock={false}
+									] }
+									template={ [] }
+									templateLock={ false }
 								/>
-							)}
+							) }
 						</VideopackContextBridge>
 					</div>
-				)}
+				) }
 			</div>
 		</div>
 	);

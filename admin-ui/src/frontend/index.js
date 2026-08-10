@@ -6,14 +6,16 @@
  * the sibling modules in this directory incrementally; this file is not the
  * final shape.
  *
- * @package Video-Embed-Thumbnail-Generator
+ * @package
  */
-
-/* global videojs, mejs, videopack_l10n */
 
 import { initFullscreenResizeListener } from './resolution';
 import { initPlayers, initModularBlocks, onMejsSuccess } from './players/init';
-import { initCollection, handleGlobalLightboxClick, handleGlobalPaginationClick } from './gallery';
+import {
+	initCollection,
+	handleGlobalLightboxClick,
+	handleGlobalPaginationClick,
+} from './gallery';
 import * as publicApi from './public-api';
 // Namespace imports of the modules split out of this file so far, purely to
 // re-expose their exports on window.videopack below — every function that's
@@ -31,7 +33,7 @@ import * as videoJsPlayer from './players/video-js';
 import * as mejsPlayer from './players/mejs';
 import * as gallery from './gallery';
 
-(function () {
+( function () {
 	'use strict';
 
 	/**
@@ -40,58 +42,74 @@ import * as gallery from './gallery';
 	 * @since 5.0.0
 	 */
 	const videopack_obj = {
-
 		/**
 		 * Initialize video players.
 		 *
 		 * @since 5.0.0
 		 */
-		init: function () {
+		init() {
 			initPlayers();
 			initModularBlocks();
 
 			// Initialize collections (Gallery, Grid, List) with pagination
-			document.querySelectorAll('.videopack-collection-wrapper').forEach((element) => {
-				initCollection(element);
-			});
+			document
+				.querySelectorAll( '.videopack-collection-wrapper' )
+				.forEach( ( element ) => {
+					initCollection( element );
+				} );
 
 			// Global lightbox listener for modular blocks
-			document.addEventListener('click', (e) => {
-				const lightboxTrigger = e.target.closest('[data-videopack-lightbox="true"]');
-				if (lightboxTrigger) {
-					handleGlobalLightboxClick(e, lightboxTrigger);
+			document.addEventListener( 'click', ( e ) => {
+				const lightboxTrigger = e.target.closest(
+					'[data-videopack-lightbox="true"]'
+				);
+				if ( lightboxTrigger ) {
+					handleGlobalLightboxClick( e, lightboxTrigger );
 				}
 
-				const pageLink = e.target.closest('.videopack-pagination .page-numbers, .videopack-pagination-button');
-				if (pageLink && !pageLink.classList.contains('current') && !pageLink.disabled) {
-					handleGlobalPaginationClick(e, pageLink);
+				const pageLink = e.target.closest(
+					'.videopack-pagination .page-numbers, .videopack-pagination-button'
+				);
+				if (
+					pageLink &&
+					! pageLink.classList.contains( 'current' ) &&
+					! pageLink.disabled
+				) {
+					handleGlobalPaginationClick( e, pageLink );
 				}
-			});
+			} );
 
 			// Re-check automatic resolution on entering/exiting fullscreen
 			// (see resolution.js for why this needs to be generic/document-level).
 			initFullscreenResizeListener();
 
-
 			// Fallback for MediaElement.js players initialized by other plugins/themes.
-			if (typeof window.mejs !== 'undefined') {
+			if ( typeof window.mejs !== 'undefined' ) {
 				// This is a bit of a hack to catch MEJS players initialized after our script runs.
 				const originalSuccess = window.mejs.MepDefaults.success;
-				window.mejs.MepDefaults.success = (mediaElement, domObject, player) => {
-					if (typeof originalSuccess === 'function') {
-						originalSuccess(mediaElement, domObject, player);
+				window.mejs.MepDefaults.success = (
+					mediaElement,
+					domObject,
+					player
+				) => {
+					if ( typeof originalSuccess === 'function' ) {
+						originalSuccess( mediaElement, domObject, player );
 					}
-					onMejsSuccess(mediaElement, domObject, player);
+					onMejsSuccess( mediaElement, domObject, player );
 				};
 
 				// WordPress specific settings hook
 				window._wpmejsSettings = window._wpmejsSettings || {};
 				const originalWpSuccess = window._wpmejsSettings.success;
-				window._wpmejsSettings.success = (mediaElement, domObject, player) => {
-					if (typeof originalWpSuccess === 'function') {
-						originalWpSuccess(mediaElement, domObject, player);
+				window._wpmejsSettings.success = (
+					mediaElement,
+					domObject,
+					player
+				) => {
+					if ( typeof originalWpSuccess === 'function' ) {
+						originalWpSuccess( mediaElement, domObject, player );
 					}
-					onMejsSuccess(mediaElement, domObject, player);
+					onMejsSuccess( mediaElement, domObject, player );
 				};
 			}
 		},
@@ -114,7 +132,6 @@ import * as gallery from './gallery';
 		// navigateGalleryPopup/handleGlobalLightboxClick/handleCollectionPaginationClick/
 		// handleGlobalPaginationClick/handleGalleryPaginationClick/loadCollectionPage/
 		// loadGalleryPage/renderGalleryPagination moved to gallery.js.
-
 	};
 
 	// Expose the videopack object to the global scope, merging with any existing properties (like player_data).
@@ -123,9 +140,28 @@ import * as gallery from './gallery';
 	// this one can't clobber the other's contribution. utils/analytics/meta-bar
 	// are spread in directly (not nested) to match where these functions have
 	// always lived on window.videopack, now that they're split into modules.
-	window.videopack = Object.assign(window.videopack || {}, utils, analytics, metaBar, videoTitle, resolution, playerInit, videoJsPlayer, mejsPlayer, gallery, videopack_obj, {
-		api: Object.assign({}, window.videopack && window.videopack.api, publicApi),
-	});
+	window.videopack = Object.assign(
+		window.videopack || {},
+		utils,
+		analytics,
+		metaBar,
+		videoTitle,
+		resolution,
+		playerInit,
+		videoJsPlayer,
+		mejsPlayer,
+		gallery,
+		videopack_obj,
+		{
+			api: Object.assign(
+				{},
+				window.videopack && window.videopack.api,
+				publicApi
+			),
+		}
+	);
 
-	document.addEventListener('DOMContentLoaded', () => window.videopack.init());
-}());
+	document.addEventListener( 'DOMContentLoaded', () =>
+		window.videopack.init()
+	);
+} )();

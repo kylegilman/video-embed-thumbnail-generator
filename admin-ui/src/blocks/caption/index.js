@@ -4,7 +4,7 @@ import save from './save';
 import metadata from './block.json';
 import { videopackCaption as icon } from '../../assets/icon';
 
-registerBlockType(metadata.name, {
+registerBlockType( metadata.name, {
 	icon,
 	/**
 	 * @see ./edit.js
@@ -15,4 +15,4 @@ registerBlockType(metadata.name, {
 	 * @see ./save.js
 	 */
 	save,
-});
+} );

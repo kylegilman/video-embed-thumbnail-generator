@@ -33,10 +33,10 @@ import VideopackTooltip from './VideopackTooltip';
 
 // Color fallbacks are now handled by getColorFallbacks utility.
 
-const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
+const VideoCollectionSettings = ( { settings, changeHandlerFactory } ) => {
 	const colorFallbacks = useMemo(
-		() => getColorFallbacks(settings),
-		[settings]
+		() => getColorFallbacks( settings ),
+		[ settings ]
 	);
 
 	const {
@@ -68,16 +68,16 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 	// value is a real preset (e.g. "16/9") needs to stay on "Custom…" long
 	// enough to show the text field, rather than instantly re-matching that
 	// same preset and snapping back.
-	const [isPickingCustom, setIsPickingCustom] = useState(false);
+	const [ isPickingCustom, setIsPickingCustom ] = useState( false );
 	const aspectRatioSelectValue = isPickingCustom
 		? ASPECT_RATIO_CUSTOM_VALUE
-		: getAspectRatioSelectValue(aspect_ratio || '');
+		: getAspectRatioSelectValue( aspect_ratio || '' );
 
-	const skinOptions = useMemo(() => {
+	const skinOptions = useMemo( () => {
 		const options = [
 			{
 				value: 'vjs-theme-videopack',
-				label: __('Videopack', 'video-embed-thumbnail-generator'),
+				label: __( 'Videopack', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'kg-video-js-skin',
@@ -95,19 +95,19 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			},
 			{
 				value: 'vjs-theme-city',
-				label: __('City', 'video-embed-thumbnail-generator'),
+				label: __( 'City', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'vjs-theme-fantasy',
-				label: __('Fantasy', 'video-embed-thumbnail-generator'),
+				label: __( 'Fantasy', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'vjs-theme-forest',
-				label: __('Forest', 'video-embed-thumbnail-generator'),
+				label: __( 'Forest', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'vjs-theme-sea',
-				label: __('Sea', 'video-embed-thumbnail-generator'),
+				label: __( 'Sea', 'video-embed-thumbnail-generator' ),
 			},
 		];
 
@@ -117,7 +117,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			options,
 			embed_method
 		);
-	}, [embed_method]);
+	}, [ embed_method ] );
 
 	// videopack/collection always runs its own useVideoQuery internally
 	// (using its own attributes) and re-provides its own VideopackProvider to
@@ -133,14 +133,14 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 	// from collection's own attributes too, never from previewContext below.
 	// That does mean a color/skin change rebuilds the block tree the same
 	// way a structural setting does — a brief flash, but colors actually apply.
-	const collectionAttributes = useMemo(() => {
+	const collectionAttributes = useMemo( () => {
 		const isPaginationEnabled =
 			gallery_pagination === true ||
 			gallery_pagination === 1 ||
 			gallery_pagination === '1';
 
 		const attrs = {
-			...getSharedDesignAttributes(settings, colorFallbacks),
+			...getSharedDesignAttributes( settings, colorFallbacks ),
 			gallery_source: 'recent', // Pull videos from the whole site for the preview
 			gallery_orderby,
 			gallery_order,
@@ -151,7 +151,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		};
 
 		// Safety restriction for the preview: if pagination is disabled, force a limit of 12
-		if (!isPaginationEnabled) {
+		if ( ! isPaginationEnabled ) {
 			attrs.enable_collection_video_limit = true;
 			attrs.collection_video_limit = 12;
 		}
@@ -166,23 +166,23 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		gallery_pagination,
 		gallery_columns,
 		gallery_title,
-	]);
+	] );
 
 	// Sync total pages from the query results
-	const handlers = useMemo(() => {
+	const handlers = useMemo( () => {
 		const h = { ...changeHandlerFactory };
-		['gallery_columns', 'gallery_per_page'].forEach((key) => {
-			if (h[key]) {
-				const original = h[key];
-				h[key] = (val) => original(parseInt(val, 10) || 0);
+		[ 'gallery_columns', 'gallery_per_page' ].forEach( ( key ) => {
+			if ( h[ key ] ) {
+				const original = h[ key ];
+				h[ key ] = ( val ) => original( parseInt( val, 10 ) || 0 );
 			}
-		});
+		} );
 		return h;
-	}, [changeHandlerFactory]);
+	}, [ changeHandlerFactory ] );
 
 	// This is now derived directly in previewContext from maxNumPages
 
-	const galleryTemplate = useMemo(() => {
+	const galleryTemplate = useMemo( () => {
 		const template = [
 			[
 				'videopack/loop',
@@ -204,7 +204,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						'videopack/thumbnail',
 						{ linkTo: 'none' },
 						[
-							['videopack/play-button', {}],
+							[ 'videopack/play-button', {} ],
 							gallery_title
 								? [
 										'videopack/title',
@@ -212,24 +212,24 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 											isOverlay: true,
 											showBackground: true,
 										},
-									]
+								  ]
 								: null,
-						].filter(Boolean),
+						].filter( Boolean ),
 					],
 				],
 			],
 		];
 
-		if (gallery_pagination) {
-			template.push(['videopack/pagination', {}]);
+		if ( gallery_pagination ) {
+			template.push( [ 'videopack/pagination', {} ] );
 		}
 
-		return [['videopack/collection', collectionAttributes, template]];
-	}, [gallery_title, gallery_pagination, collectionAttributes]);
+		return [ [ 'videopack/collection', collectionAttributes, template ] ];
+	}, [ gallery_title, gallery_pagination, collectionAttributes ] );
 
-	const previewBlocks = useStablePreviewBlocks(galleryTemplate);
+	const previewBlocks = useStablePreviewBlocks( galleryTemplate );
 
-	const previewContext = useMemo(() => {
+	const previewContext = useMemo( () => {
 		// Gallery query/structure attributes (source, per_page, columns, etc.)
 		// live directly on the videopack/collection block itself now (see
 		// collectionAttributes) — this context only needs to carry design
@@ -238,30 +238,30 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		const ctx = {};
 
 		// Pass all global settings into the context bridge for child blocks
-		Object.keys(settings).forEach((key) => {
-			ctx[`videopack/${key}`] = settings[key];
-		});
+		Object.keys( settings ).forEach( ( key ) => {
+			ctx[ `videopack/${ key }` ] = settings[ key ];
+		} );
 
 		// Ensure specific color fallbacks are applied for the preview bridge
-		ctx['videopack/play_button_color'] =
+		ctx[ 'videopack/play_button_color' ] =
 			play_button_color || colorFallbacks.play_button_color;
-		ctx['videopack/play_button_secondary_color'] =
+		ctx[ 'videopack/play_button_secondary_color' ] =
 			play_button_secondary_color ||
 			colorFallbacks.play_button_secondary_color;
-		ctx['videopack/title_color'] =
+		ctx[ 'videopack/title_color' ] =
 			title_color || colorFallbacks.title_color;
-		ctx['videopack/title_background_color'] =
+		ctx[ 'videopack/title_background_color' ] =
 			title_background_color || colorFallbacks.title_background_color;
 
-		ctx['videopack/pagination_color'] =
+		ctx[ 'videopack/pagination_color' ] =
 			pagination_color || colorFallbacks.pagination_color;
-		ctx['videopack/pagination_background_color'] =
+		ctx[ 'videopack/pagination_background_color' ] =
 			pagination_background_color ||
 			colorFallbacks.pagination_background_color;
-		ctx['videopack/pagination_active_bg_color'] =
+		ctx[ 'videopack/pagination_active_bg_color' ] =
 			pagination_active_bg_color ||
 			colorFallbacks.pagination_active_bg_color;
-		ctx['videopack/pagination_active_color'] =
+		ctx[ 'videopack/pagination_active_color' ] =
 			pagination_active_color || colorFallbacks.pagination_active_color;
 
 		return ctx;
@@ -276,7 +276,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		pagination_background_color,
 		pagination_active_bg_color,
 		pagination_active_color,
-	]);
+	] );
 
 	const galleryEndOptions = [
 		{
@@ -288,34 +288,40 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		},
 		{
 			value: 'next',
-			label: __('Autoplay next video', 'video-embed-thumbnail-generator'),
+			label: __(
+				'Autoplay next video',
+				'video-embed-thumbnail-generator'
+			),
 		},
 		{
 			value: 'close',
-			label: __('Close popup window', 'video-embed-thumbnail-generator'),
+			label: __(
+				'Close popup window',
+				'video-embed-thumbnail-generator'
+			),
 		},
 	];
 
 	const baseGalleryOrderbyOptions = [
 		{
 			value: 'menu_order',
-			label: __('Default', 'video-embed-thumbnail-generator'),
+			label: __( 'Default', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'title',
-			label: __('Title', 'video-embed-thumbnail-generator'),
+			label: __( 'Title', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'post_date',
-			label: __('Date', 'video-embed-thumbnail-generator'),
+			label: __( 'Date', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'rand',
-			label: __('Random', 'video-embed-thumbnail-generator'),
+			label: __( 'Random', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'ID',
-			label: __('Video ID', 'video-embed-thumbnail-generator'),
+			label: __( 'Video ID', 'video-embed-thumbnail-generator' ),
 		},
 	];
 
@@ -330,11 +336,11 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							'video-embed-thumbnail-generator'
 						),
 						videopack_config.contentSize
-					)
+				  )
 				: __(
 						"None (use theme's default width)",
 						'video-embed-thumbnail-generator'
-					),
+				  ),
 		},
 		{
 			value: 'wide',
@@ -346,116 +352,119 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							'video-embed-thumbnail-generator'
 						),
 						videopack_config.wideSize
-					)
+				  )
 				: __(
 						"Wide (use theme's wide width)",
 						'video-embed-thumbnail-generator'
-					),
+				  ),
 		},
 		{
 			value: 'full',
-			label: __('Full width', 'video-embed-thumbnail-generator'),
+			label: __( 'Full width', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'left',
-			label: __('Left', 'video-embed-thumbnail-generator'),
+			label: __( 'Left', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'center',
-			label: __('Center', 'video-embed-thumbnail-generator'),
+			label: __( 'Center', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'right',
-			label: __('Right', 'video-embed-thumbnail-generator'),
+			label: __( 'Right', 'video-embed-thumbnail-generator' ),
 		},
 	];
 
 	return (
 		<>
 			<PanelBody
-				title={__(
+				title={ __(
 					'Pagination & Sorting',
 					'video-embed-thumbnail-generator'
-				)}
-				initialOpen={true}
+				) }
+				initialOpen={ true }
 			>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Paginate', 'video-embed-thumbnail-generator')}
-					onChange={handlers.gallery_pagination}
-					checked={!!gallery_pagination}
+					label={ __(
+						'Paginate',
+						'video-embed-thumbnail-generator'
+					) }
+					onChange={ handlers.gallery_pagination }
+					checked={ !! gallery_pagination }
 				/>
-				{gallery_pagination && (
+				{ gallery_pagination && (
 					<div className="videopack-setting-auto-width">
 						<TextControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'Videos per page',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 							type="number"
-							value={gallery_per_page}
-							onChange={handlers.gallery_per_page}
+							value={ gallery_per_page }
+							onChange={ handlers.gallery_per_page }
 						/>
 					</div>
-				)}
-				{!gallery_pagination && (
+				) }
+				{ ! gallery_pagination && (
 					<>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__(
+							label={ __(
 								'Limit number of videos',
 								'video-embed-thumbnail-generator'
-							)}
-							onChange={(val) => {
-								handlers.enable_collection_video_limit(val);
-								if (!val) {
-									handlers.collection_video_limit(-1);
+							) }
+							onChange={ ( val ) => {
+								handlers.enable_collection_video_limit( val );
+								if ( ! val ) {
+									handlers.collection_video_limit( -1 );
 								} else if (
-									Number(collection_video_limit) === -1
+									Number( collection_video_limit ) === -1
 								) {
-									handlers.collection_video_limit(12);
+									handlers.collection_video_limit( 12 );
 								}
-							}}
-							checked={!!enable_collection_video_limit}
+							} }
+							checked={ !! enable_collection_video_limit }
 						/>
-						{!!enable_collection_video_limit && (
+						{ !! enable_collection_video_limit && (
 							<div className="videopack-setting-auto-width">
 								<TextControl
 									__nextHasNoMarginBottom
 									__next40pxDefaultSize
-									label={__(
+									label={ __(
 										'Video Limit',
 										'video-embed-thumbnail-generator'
-									)}
-									help={__(
+									) }
+									help={ __(
 										'Maximum number of videos to show in a gallery or list when pagination is disabled.',
 										'video-embed-thumbnail-generator'
-									)}
+									) }
 									type="number"
 									value={
-										Number(collection_video_limit) === -1
+										Number( collection_video_limit ) === -1
 											? 12
 											: collection_video_limit
 									}
-									onChange={handlers.collection_video_limit}
+									onChange={ handlers.collection_video_limit }
 								/>
 							</div>
-						)}
+						) }
 					</>
-				)}
+				) }
 				<div className="videopack-sort-settings">
 					<Flex align="flex-end" className="videopack-sort-controls">
 						<FlexItem>
 							<SelectControl
-								label={__(
+								label={ __(
 									'Sort by',
 									'video-embed-thumbnail-generator'
-								)}
-								value={gallery_orderby}
-								onChange={handlers.gallery_orderby}
-								options={baseGalleryOrderbyOptions}
+								) }
+								value={ gallery_orderby }
+								onChange={ handlers.gallery_orderby }
+								options={ baseGalleryOrderbyOptions }
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 							/>
@@ -472,13 +481,13 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 										? __(
 												'Ascending',
 												'video-embed-thumbnail-generator'
-											)
+										  )
 										: __(
 												'Descending',
 												'video-embed-thumbnail-generator'
-											)
+										  )
 								}
-								onClick={() =>
+								onClick={ () =>
 									handlers.gallery_order(
 										gallery_order === 'asc' ? 'desc' : 'asc'
 									)
@@ -492,108 +501,110 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 				</div>
 			</PanelBody>
 			<PanelBody
-				title={__('Galleries', 'video-embed-thumbnail-generator')}
-				initialOpen={true}
+				title={ __( 'Galleries', 'video-embed-thumbnail-generator' ) }
+				initialOpen={ true }
 			>
 				<div className="videopack-grid-row-align">
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__(
+						label={ __(
 							'Alignment / Width',
 							'video-embed-thumbnail-generator'
-						)}
-						value={gallery_align}
-						onChange={handlers.gallery_align}
-						options={alignOptions}
+						) }
+						value={ gallery_align }
+						onChange={ handlers.gallery_align }
+						options={ alignOptions }
 					/>
 				</div>
 				<div className="videopack-grid-row-align videopack-narrow-input">
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__(
+						label={ __(
 							'Max Columns',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 						type="number"
-						value={gallery_columns}
-						onChange={handlers.gallery_columns}
+						value={ gallery_columns }
+						onChange={ handlers.gallery_columns }
 					/>
 					<VideopackTooltip
-						text={__(
+						text={ __(
 							'The actual number of columns displayed may be lower than this value depending on the gallery Alignment / Width setting and the width of the container. Narrower widths will automatically collapse to fewer columns.',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
 				</div>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__(
+					label={ __(
 						'Overlay Title',
 						'video-embed-thumbnail-generator'
-					)}
-					onChange={handlers.gallery_title}
-					checked={!!gallery_title}
+					) }
+					onChange={ handlers.gallery_title }
+					checked={ !! gallery_title }
 				/>
 				<div className="videopack-setting-auto-width videopack-setting-extra-margin">
 					<SelectControl
 						__next40pxDefaultSize
-						label={__(
+						label={ __(
 							'When current video ends',
 							'video-embed-thumbnail-generator'
-						)}
-						value={gallery_end}
-						onChange={handlers.gallery_end}
-						options={galleryEndOptions}
+						) }
+						value={ gallery_end }
+						onChange={ handlers.gallery_end }
+						options={ galleryEndOptions }
 					/>
 				</div>
 				<PanelBody
-					title={__('Design', 'video-embed-thumbnail-generator')}
-					initialOpen={true}
+					title={ __( 'Design', 'video-embed-thumbnail-generator' ) }
+					initialOpen={ true }
 				>
 					<div className="videopack-grid-row-align">
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'Skin',
 								'video-embed-thumbnail-generator'
-							)}
-							value={skin}
-							onChange={handlers.skin}
-							options={skinOptions}
+							) }
+							value={ skin }
+							onChange={ handlers.skin }
+							options={ skinOptions }
 						/>
 					</div>
 					<div className="videopack-grid-row-align">
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__(
+							label={ __(
 								'Thumbnail Aspect Ratio',
 								'video-embed-thumbnail-generator'
-							)}
-							value={aspectRatioSelectValue}
-							onChange={(value) => {
-								if (ASPECT_RATIO_CUSTOM_VALUE === value) {
-									setIsPickingCustom(true);
-									if (!isCustomRatioValue(aspect_ratio)) {
+							) }
+							value={ aspectRatioSelectValue }
+							onChange={ ( value ) => {
+								if ( ASPECT_RATIO_CUSTOM_VALUE === value ) {
+									setIsPickingCustom( true );
+									if (
+										! isCustomRatioValue( aspect_ratio )
+									) {
 										handlers.aspect_ratio(
 											ASPECT_RATIO_DEFAULT
 										);
 									}
 									return;
 								}
-								setIsPickingCustom(false);
-								handlers.aspect_ratio(value);
-							}}
-							options={getAspectRatioSelectOptions()}
+								setIsPickingCustom( false );
+								handlers.aspect_ratio( value );
+							} }
+							options={ getAspectRatioSelectOptions() }
 						/>
 					</div>
-					{ASPECT_RATIO_CUSTOM_VALUE === aspectRatioSelectValue &&
-						(() => {
+					{ ASPECT_RATIO_CUSTOM_VALUE === aspectRatioSelectValue &&
+						( () => {
 							const { width, height } = parseRatioValue(
-								isCustomRatioValue(aspect_ratio)
+								isCustomRatioValue( aspect_ratio )
 									? aspect_ratio
 									: ASPECT_RATIO_DEFAULT
 							);
@@ -605,13 +616,13 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 												__nextHasNoMarginBottom
 												__next40pxDefaultSize
 												type="number"
-												min={1}
-												label={__(
+												min={ 1 }
+												label={ __(
 													'Width',
 													'video-embed-thumbnail-generator'
-												)}
-												value={width}
-												onChange={(value) =>
+												) }
+												value={ width }
+												onChange={ ( value ) =>
 													handlers.aspect_ratio(
 														formatRatioValue(
 															value,
@@ -626,13 +637,13 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 												__nextHasNoMarginBottom
 												__next40pxDefaultSize
 												type="number"
-												min={1}
-												label={__(
+												min={ 1 }
+												label={ __(
 													'Height',
 													'video-embed-thumbnail-generator'
-												)}
-												value={height}
-												onChange={(value) =>
+												) }
+												value={ height }
+												onChange={ ( value ) =>
 													handlers.aspect_ratio(
 														formatRatioValue(
 															width,
@@ -645,33 +656,33 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 									</Flex>
 								</div>
 							);
-						})()}
+						} )() }
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
-							{__('Title', 'video-embed-thumbnail-generator')}
+							{ __( 'Title', 'video-embed-thumbnail-generator' ) }
 						</p>
 						<div className="videopack-color-flex-row">
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
+									label={ __(
 										'Text',
 										'video-embed-thumbnail-generator'
-									)}
-									value={title_color}
-									onChange={handlers.title_color}
-									colors={videopack_config.themeColors}
-									fallbackValue={colorFallbacks.title_color}
+									) }
+									value={ title_color }
+									onChange={ handlers.title_color }
+									colors={ videopack_config.themeColors }
+									fallbackValue={ colorFallbacks.title_color }
 								/>
 							</div>
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
+									label={ __(
 										'Background',
 										'video-embed-thumbnail-generator'
-									)}
-									value={title_background_color}
-									onChange={handlers.title_background_color}
-									colors={videopack_config.themeColors}
+									) }
+									value={ title_background_color }
+									onChange={ handlers.title_background_color }
+									colors={ videopack_config.themeColors }
 									fallbackValue={
 										colorFallbacks.title_background_color
 									}
@@ -682,10 +693,10 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
-							{__(
+							{ __(
 								'Play button',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						</p>
 						<div className="videopack-color-flex-row">
 							<div className="videopack-color-flex-item">
@@ -695,15 +706,15 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 											? __(
 													'Play Button Color',
 													'video-embed-thumbnail-generator'
-												)
+											  )
 											: __(
 													'Play Button Icon',
 													'video-embed-thumbnail-generator'
-												)
+											  )
 									}
-									value={play_button_color}
-									onChange={handlers.play_button_color}
-									colors={videopack_config.themeColors}
+									value={ play_button_color }
+									onChange={ handlers.play_button_color }
+									colors={ videopack_config.themeColors }
 									fallbackValue={
 										colorFallbacks.play_button_color
 									}
@@ -716,17 +727,17 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 											? __(
 													'Play Button Hover',
 													'video-embed-thumbnail-generator'
-												)
+											  )
 											: __(
 													'Play Button Accent',
 													'video-embed-thumbnail-generator'
-												)
+											  )
 									}
-									value={play_button_secondary_color}
+									value={ play_button_secondary_color }
 									onChange={
 										handlers.play_button_secondary_color
 									}
-									colors={videopack_config.themeColors}
+									colors={ videopack_config.themeColors }
 									fallbackValue={
 										colorFallbacks.play_button_secondary_color
 									}
@@ -737,21 +748,21 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">
-							{__(
+							{ __(
 								'Pagination',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						</p>
 						<div className="videopack-color-flex-row is-pagination">
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
+									label={ __(
 										'Outline/Text',
 										'video-embed-thumbnail-generator'
-									)}
-									value={pagination_color}
-									onChange={handlers.pagination_color}
-									colors={videopack_config.themeColors}
+									) }
+									value={ pagination_color }
+									onChange={ handlers.pagination_color }
+									colors={ videopack_config.themeColors }
 									fallbackValue={
 										colorFallbacks.pagination_color
 									}
@@ -759,15 +770,15 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							</div>
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
+									label={ __(
 										'Background',
 										'video-embed-thumbnail-generator'
-									)}
-									value={pagination_background_color}
+									) }
+									value={ pagination_background_color }
 									onChange={
 										handlers.pagination_background_color
 									}
-									colors={videopack_config.themeColors}
+									colors={ videopack_config.themeColors }
 									fallbackValue={
 										colorFallbacks.pagination_background_color
 									}
@@ -775,15 +786,15 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							</div>
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
+									label={ __(
 										'Active Background',
 										'video-embed-thumbnail-generator'
-									)}
-									value={pagination_active_bg_color}
+									) }
+									value={ pagination_active_bg_color }
 									onChange={
 										handlers.pagination_active_bg_color
 									}
-									colors={videopack_config.themeColors}
+									colors={ videopack_config.themeColors }
 									fallbackValue={
 										colorFallbacks.pagination_active_bg_color
 									}
@@ -791,13 +802,15 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							</div>
 							<div className="videopack-color-flex-item">
 								<CompactColorPicker
-									label={__(
+									label={ __(
 										'Active Text',
 										'video-embed-thumbnail-generator'
-									)}
-									value={pagination_active_color}
-									onChange={handlers.pagination_active_color}
-									colors={videopack_config.themeColors}
+									) }
+									value={ pagination_active_color }
+									onChange={
+										handlers.pagination_active_color
+									}
+									colors={ videopack_config.themeColors }
 									fallbackValue={
 										colorFallbacks.pagination_active_color
 									}
@@ -806,46 +819,46 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						</div>
 					</div>
 				</PanelBody>
-				{previewContext && (
+				{ previewContext && (
 					<div className="videopack-sample-gallery">
 						<div
-							className={`videopack-sample-gallery-wrapper align${
+							className={ `videopack-sample-gallery-wrapper align${
 								gallery_align || 'none'
-							}`}
-							style={{
+							}` }
+							style={ {
 								'--wp--style--global--content-size':
 									videopack_config.contentSize || '800px',
 								'--wp--style--global--wide-size':
 									videopack_config.wideSize || '1000px',
-							}}
+							} }
 						>
 							<span className="videopack-settings-label">
-								{__(
+								{ __(
 									'Sample Gallery',
 									'video-embed-thumbnail-generator'
-								)}
+								) }
 							</span>
 							<PreviewIframe
-								title={__(
+								title={ __(
 									'Video Gallery Preview',
 									'video-embed-thumbnail-generator'
-								)}
-								resizeDependencies={[gallery_align]}
-								fullScreen={false}
+								) }
+								resizeDependencies={ [ gallery_align ] }
+								fullScreen={ false }
 							>
 								<div className="videopack-preview-content-container">
 									<BlockContextProvider
-										value={previewContext}
+										value={ previewContext }
 									>
 										<RealBlockPreview
-											blocks={previewBlocks}
+											blocks={ previewBlocks }
 										/>
 									</BlockContextProvider>
 								</div>
 							</PreviewIframe>
 						</div>
 					</div>
-				)}
+				) }
 			</PanelBody>
 		</>
 	);

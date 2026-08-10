@@ -19,25 +19,29 @@ import { useMemo } from '@wordpress/element';
  *                                   as the final fallback default.
  * @return {boolean} Whether the background should show.
  */
-export default function useShowBackground(attributes, context, isOverlay = true) {
+export default function useShowBackground(
+	attributes,
+	context,
+	isOverlay = true
+) {
 	const { showBackground } = attributes;
-	const contextValue = context?.['videopack/showBackground'];
+	const contextValue = context?.[ 'videopack/showBackground' ];
 	const globalOptions = videopack_config?.options || {};
 
-	return useMemo(() => {
-		if (showBackground !== undefined) {
-			return !!showBackground;
+	return useMemo( () => {
+		if ( showBackground !== undefined ) {
+			return !! showBackground;
 		}
-		if (contextValue !== undefined) {
-			return !!contextValue;
+		if ( contextValue !== undefined ) {
+			return !! contextValue;
 		}
 		return globalOptions.showBackground !== undefined
-			? !!globalOptions.showBackground
-			: !!isOverlay;
+			? !! globalOptions.showBackground
+			: !! isOverlay;
 	}, [
 		showBackground,
 		contextValue,
 		globalOptions.showBackground,
 		isOverlay,
-	]);
+	] );
 }

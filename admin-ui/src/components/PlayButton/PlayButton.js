@@ -2,7 +2,7 @@ import { __ } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 import useVideopackContext from '../../hooks/useVideopackContext';
 
-const CLASS_KEYS = ['play_button_color', 'play_button_secondary_color'];
+const CLASS_KEYS = [ 'play_button_color', 'play_button_secondary_color' ];
 
 /**
  * An internal component to display the play button with correct styling.
@@ -12,15 +12,16 @@ const CLASS_KEYS = ['play_button_color', 'play_button_secondary_color'];
  * @param {Object} root0.context    Block context.
  * @return {Element}                Rendered play button.
  */
-export default function PlayButton({ attributes = {}, context = {} }) {
+export default function PlayButton( { attributes = {}, context = {} } ) {
 	const config =
 		typeof window !== 'undefined' ? window.videopack_config : undefined;
 	const embed_method =
-		(typeof config !== 'undefined' ? config.options?.embed_method : null) ||
-		'Video.js';
-	const vpContext = useVideopackContext(attributes, context, {
+		( typeof config !== 'undefined'
+			? config.options?.embed_method
+			: null ) || 'Video.js';
+	const vpContext = useVideopackContext( attributes, context, {
 		classKeys: CLASS_KEYS,
-	});
+	} );
 
 	/**
 	 * Filters the React element used to render the player play button.
@@ -32,18 +33,18 @@ export default function PlayButton({ attributes = {}, context = {} }) {
 	 * @param {Element|null} customButton Custom play button element, defaults to null.
 	 * @param {Object}       context      Context data including attributes, context, vpContext, and embed_method.
 	 */
-	const customButton = applyFilters('videopack.playButtonElement', null, {
+	const customButton = applyFilters( 'videopack.playButtonElement', null, {
 		attributes,
 		context,
 		vpContext,
 		embed_method,
-	});
+	} );
 
-	if (customButton) {
+	if ( customButton ) {
 		return customButton;
 	}
 
-	if ('WordPress Default' === embed_method) {
+	if ( 'WordPress Default' === embed_method ) {
 		const styles = {
 			width: '80px',
 			height: '80px',
@@ -52,31 +53,36 @@ export default function PlayButton({ attributes = {}, context = {} }) {
 
 		const mejsSvgPath =
 			config?.mejs_controls_svg ||
-			(typeof window !== 'undefined'
-				? `${window.location.origin}/wp-includes/js/mediaelement/mejs-controls.svg`
-				: '');
+			( typeof window !== 'undefined'
+				? `${ window.location.origin }/wp-includes/js/mediaelement/mejs-controls.svg`
+				: '' );
 
-		if (mejsSvgPath) {
-			styles['--videopack-mejs-controls-svg'] = `url("${mejsSvgPath}")`;
+		if ( mejsSvgPath ) {
+			styles[
+				'--videopack-mejs-controls-svg'
+			] = `url("${ mejsSvgPath }")`;
 		}
 
 		return (
 			<div
-				className={`videopack-play-button mejs-overlay mejs-layer mejs-overlay-play play-button-container ${vpContext.classes}`}
+				className={ `videopack-play-button mejs-overlay mejs-layer mejs-overlay-play play-button-container ${ vpContext.classes }` }
 			>
 				<div
 					className="mejs-overlay-button"
 					role="button"
 					tabIndex="0"
-					aria-label={__('Play', 'video-embed-thumbnail-generator')}
+					aria-label={ __(
+						'Play',
+						'video-embed-thumbnail-generator'
+					) }
 					aria-pressed="false"
-					style={styles}
+					style={ styles }
 				></div>
 			</div>
 		);
 	}
 
-	if ('None' === embed_method) {
+	if ( 'None' === embed_method ) {
 		return (
 			<div className="play-button-container videopack-none">
 				<svg
@@ -100,18 +106,18 @@ export default function PlayButton({ attributes = {}, context = {} }) {
 
 	return (
 		<div
-			className={`play-button-container video-js ${vpContext.classes} vjs-big-play-centered vjs-paused vjs-controls-enabled`}
-			style={vpContext.style}
+			className={ `play-button-container video-js ${ vpContext.classes } vjs-big-play-centered vjs-paused vjs-controls-enabled` }
+			style={ vpContext.style }
 		>
 			<button
 				className="vjs-big-play-button"
 				type="button"
-				title={__('Play Video', 'video-embed-thumbnail-generator')}
+				title={ __( 'Play Video', 'video-embed-thumbnail-generator' ) }
 				aria-disabled="false"
 			>
 				<span className="vjs-icon-placeholder" aria-hidden="true" />
 				<span className="vjs-control-text" aria-live="polite">
-					{__('Play Video', 'video-embed-thumbnail-generator')}
+					{ __( 'Play Video', 'video-embed-thumbnail-generator' ) }
 				</span>
 			</button>
 		</div>

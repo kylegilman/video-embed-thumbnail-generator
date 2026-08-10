@@ -14,7 +14,7 @@ import { resizeVideo } from '../resolution';
  * Sets up a MediaElement.js player.
  *
  * @param {HTMLElement} playerWrapper The player wrapper element.
- * @param {object}      videoVars     The video variables.
+ * @param {Object}      videoVars     The video variables.
  */
 export function setupMEJSPlayer( playerWrapper, videoVars ) {
 	const playerId = playerWrapper.dataset.id;
@@ -29,7 +29,9 @@ export function setupMEJSPlayer( playerWrapper, videoVars ) {
 	const player = mejs.players[ mejsId ];
 
 	// Move watermark.
-	const watermark = document.getElementById( `video_${ playerId }_watermark` );
+	const watermark = document.getElementById(
+		`video_${ playerId }_watermark`
+	);
 	if ( watermark ) {
 		playerWrapper.querySelector( '.mejs-container' ).append( watermark );
 	}
@@ -38,10 +40,16 @@ export function setupMEJSPlayer( playerWrapper, videoVars ) {
 	if ( 'not played' === played ) {
 		// Default captions.
 		if ( player.tracks && player.tracks.length > 0 ) {
-			const defaultTrack = document.querySelector( `#${ mejsId } track[default]` );
+			const defaultTrack = document.querySelector(
+				`#${ mejsId } track[default]`
+			);
 			if ( defaultTrack ) {
-				const defaultLang = defaultTrack.getAttribute( 'srclang' ).toLowerCase();
-				const trackToSet = player.tracks.find( ( t ) => t.srclang === defaultLang );
+				const defaultLang = defaultTrack
+					.getAttribute( 'srclang' )
+					.toLowerCase();
+				const trackToSet = player.tracks.find(
+					( t ) => t.srclang === defaultLang
+				);
 				if ( trackToSet ) {
 					player.setTrack( trackToSet.trackId );
 				}
@@ -77,14 +85,28 @@ export function setupMEJSPlayer( playerWrapper, videoVars ) {
 		videoCounter( playerId, 'play' );
 
 		video.addEventListener( 'timeupdate', () => {
-			const percent = Math.round( ( video.currentTime / video.duration ) * 100 );
-			if ( ! playerWrapper.dataset[ '25' ] && percent >= 25 && percent < 50 ) {
+			const percent = Math.round(
+				( video.currentTime / video.duration ) * 100
+			);
+			if (
+				! playerWrapper.dataset[ '25' ] &&
+				percent >= 25 &&
+				percent < 50
+			) {
 				playerWrapper.dataset[ '25' ] = true;
 				videoCounter( playerId, '25' );
-			} else if ( ! playerWrapper.dataset[ '50' ] && percent >= 50 && percent < 75 ) {
+			} else if (
+				! playerWrapper.dataset[ '50' ] &&
+				percent >= 50 &&
+				percent < 75
+			) {
 				playerWrapper.dataset[ '50' ] = true;
 				videoCounter( playerId, '50' );
-			} else if ( ! playerWrapper.dataset[ '75' ] && percent >= 75 && percent < 100 ) {
+			} else if (
+				! playerWrapper.dataset[ '75' ] &&
+				percent >= 75 &&
+				percent < 100
+			) {
 				playerWrapper.dataset[ '75' ] = true;
 				videoCounter( playerId, '75' );
 			}
@@ -103,19 +125,27 @@ export function setupMEJSPlayer( playerWrapper, videoVars ) {
 			videoCounter( playerId, 'end' );
 		}
 		if ( videoVars.endofvideooverlay ) {
-			const overlay = playerWrapper.querySelector( '.videopack-end-overlay' );
+			const overlay = playerWrapper.querySelector(
+				'.videopack-end-overlay'
+			);
 			if ( overlay ) {
 				overlay.style.backgroundImage = `url(${ videoVars.endofvideooverlay })`;
 				overlay.classList.add( 'is-visible' );
 			}
-			video.addEventListener( 'seeking', () => {
-				if ( 0 !== video.currentTime ) {
-					const currentOverlay = playerWrapper.querySelector( '.videopack-end-overlay' );
-					if ( currentOverlay ) {
-						currentOverlay.classList.remove( 'is-visible' );
+			video.addEventListener(
+				'seeking',
+				() => {
+					if ( 0 !== video.currentTime ) {
+						const currentOverlay = playerWrapper.querySelector(
+							'.videopack-end-overlay'
+						);
+						if ( currentOverlay ) {
+							currentOverlay.classList.remove( 'is-visible' );
+						}
 					}
-				}
-			}, { once: true } );
+				},
+				{ once: true }
+			);
 		}
 	} );
 

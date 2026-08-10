@@ -6,8 +6,8 @@ import { share as icon } from '../../assets/icon';
 import './index.scss';
 import './editor.scss';
 
-registerBlockType(metadata.name, {
+registerBlockType( metadata.name, {
 	icon,
 	edit: Edit,
 	save,
-});
+} );

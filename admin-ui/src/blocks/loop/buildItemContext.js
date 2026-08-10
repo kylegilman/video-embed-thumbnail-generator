@@ -5,13 +5,13 @@
  * feed identical per-video data to the templated blocks (thumbnail, title,
  * etc) and can never drift apart.
  *
- * @param {Object} video                          A single video record from the query results.
- * @param {Object} root1                           Extra context needed to compute values.
- * @param {Object} root1.context                   This Loop instance's own inherited block context.
- * @param {Object} root1.vpContext                 This Loop instance's resolved videopack context.
- * @param {string} root1.resolvedDuotoneClass       Duotone class shared across all items.
- * @param {number} root1.totalPagesCount            Total pages, for context consumers like Pagination.
- * @param {number} root1.totalResultsCount          Total results, for context consumers like Pagination.
+ * @param {Object} video                      A single video record from the query results.
+ * @param {Object} root1                      Extra context needed to compute values.
+ * @param {Object} root1.context              This Loop instance's own inherited block context.
+ * @param {Object} root1.vpContext            This Loop instance's resolved videopack context.
+ * @param {string} root1.resolvedDuotoneClass Duotone class shared across all items.
+ * @param {number} root1.totalPagesCount      Total pages, for context consumers like Pagination.
+ * @param {number} root1.totalResultsCount    Total results, for context consumers like Pagination.
  * @return {Object} The BlockContextProvider value for this item.
  */
 export default function buildItemContext(
@@ -51,7 +51,7 @@ export default function buildItemContext(
 		// every item regardless of its actual count.
 		'videopack/views': video.player_vars?.starts,
 		'videopack/duration':
-			video.duration || video.meta?.['_videopack-meta']?.duration,
+			video.duration || video.meta?.[ '_videopack-meta' ]?.duration,
 		'videopack/embedlink':
 			video.embed_url || video.player_vars?.full_player_html || '',
 		'videopack/parentPostId': video.parent_id,

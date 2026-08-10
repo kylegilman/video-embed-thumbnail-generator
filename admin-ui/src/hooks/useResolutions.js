@@ -19,46 +19,48 @@ const useResolutions = (
 	custom_resolution,
 	onlyStandard = true
 ) => {
-	return useMemo(() => {
+	return useMemo( () => {
 		// Filter based on whether we want only standard playback resolutions or all video resolutions.
 		let resolutionsList = videopack_config.resolutions.filter(
-			(r) =>
-				!r.is_custom &&
-				(onlyStandard ? r.is_standard !== false : r.is_video !== false)
+			( r ) =>
+				! r.is_custom &&
+				( onlyStandard
+					? r.is_standard !== false
+					: r.is_video !== false )
 		);
 
-		if (enable_custom_resolution) {
-			const height = parseInt(custom_resolution, 10) || 900;
-			const id = String(height);
-			const width = Math.ceil((height * 16) / 9);
+		if ( enable_custom_resolution ) {
+			const height = parseInt( custom_resolution, 10 ) || 900;
+			const id = String( height );
+			const width = Math.ceil( ( height * 16 ) / 9 );
 			const name = sprintf(
 				/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
-				__('Custom (%sp)', 'video-embed-thumbnail-generator'),
+				__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ),
 				height
 			);
 
 			// Remove any existing resolution with the same ID to avoid duplicates.
-			resolutionsList = resolutionsList.filter((r) => r.id !== id);
+			resolutionsList = resolutionsList.filter( ( r ) => r.id !== id );
 
-			resolutionsList.push({
+			resolutionsList.push( {
 				id,
 				name,
 				height,
 				width,
 				is_custom: true,
-			});
+			} );
 		}
 
-		return resolutionsList.sort((a, b) => {
-			if (a.id === 'fullres') {
+		return resolutionsList.sort( ( a, b ) => {
+			if ( a.id === 'fullres' ) {
 				return -1;
 			}
-			if (b.id === 'fullres') {
+			if ( b.id === 'fullres' ) {
 				return 1;
 			}
 			return b.height - a.height;
-		});
-	}, [enable_custom_resolution, custom_resolution, onlyStandard]);
+		} );
+	}, [ enable_custom_resolution, custom_resolution, onlyStandard ] );
 };
 
 export default useResolutions;

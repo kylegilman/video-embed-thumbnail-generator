@@ -35,7 +35,7 @@ import { chevronUp, chevronDown } from '@wordpress/icons';
 
 import VideoPlayerInner from './VideoPlayerInner';
 
-const Thumbnails = ({
+const Thumbnails = ( {
 	setAttributes,
 	attributes,
 	videoData,
@@ -44,11 +44,11 @@ const Thumbnails = ({
 	src: propSrc,
 	isProbing,
 	probedMetadata,
-}) => {
+} ) => {
 	const { id, poster: rawPoster } = attributes;
 	const resolvedPoster =
 		videoData?.record?.videopack?.poster ||
-		videoData?.record?.meta?.['_videopack-meta']?.poster ||
+		videoData?.record?.meta?.[ '_videopack-meta' ]?.poster ||
 		rawPoster;
 	const src = propSrc || attributes.src;
 	const total_thumbnails =
@@ -59,42 +59,42 @@ const Thumbnails = ({
 	const videoRef = useRef();
 	const modalVideoRef = useRef();
 	const posterImageButton = useRef();
-	const [isPlaying, setIsPlaying] = useState(false);
-	const [isOpened, setIsOpened] = useState(false);
-	const [currentTime, setCurrentTime] = useState(false);
-	const [thumbChoices, setThumbChoices] = useState([]);
-	const [isSaving, setIsSaving] = useState(false);
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [activeJobs, setActiveJobs] = useState([]);
-	const [showFailedNotice, setShowFailedNotice] = useState(true);
+	const [ isPlaying, setIsPlaying ] = useState( false );
+	const [ isOpened, setIsOpened ] = useState( false );
+	const [ currentTime, setCurrentTime ] = useState( false );
+	const [ thumbChoices, setThumbChoices ] = useState( [] );
+	const [ isSaving, setIsSaving ] = useState( false );
+	const [ isModalOpen, setIsModalOpen ] = useState( false );
+	const [ activeJobs, setActiveJobs ] = useState( [] );
+	const [ showFailedNotice, setShowFailedNotice ] = useState( true );
 
 	// Poll for active thumbnail jobs if any exist
-	useEffect(() => {
+	useEffect( () => {
 		let pollInterval;
 
 		const checkJobs = async () => {
 			try {
-				const jobs = await listJobs(id);
+				const jobs = await listJobs( id );
 				const activeThumbnailJobs = jobs.filter(
-					(job) =>
+					( job ) =>
 						job.format_id === 'thumbnail' &&
-						['queued', 'processing', 'encoding'].includes(
+						[ 'queued', 'processing', 'encoding' ].includes(
 							job.status
 						)
 				);
-				setActiveJobs(activeThumbnailJobs);
-			} catch (error) {
-				console.error('Error polling jobs:', error);
+				setActiveJobs( activeThumbnailJobs );
+			} catch ( error ) {
+				console.error( 'Error polling jobs:', error );
 			}
 		};
 
-		if (id) {
+		if ( id ) {
 			checkJobs();
-			pollInterval = setInterval(checkJobs, 10000); // Poll every 10 seconds
+			pollInterval = setInterval( checkJobs, 10000 ); // Poll every 10 seconds
 		}
 
-		return () => clearInterval(pollInterval);
-	}, [id]);
+		return () => clearInterval( pollInterval );
+	}, [ id ] );
 	// active_encoder comes from `options` (this block's own settings), but
 	// ffmpeg_exists comes from the global videopack_config, not `options` --
 	// preserving that existing data-source split intentionally.
@@ -105,7 +105,7 @@ const Thumbnails = ({
 		},
 		videopack_config.isTranscodingServiceReady
 	);
-	const { editPost } = useDispatch('core/editor') || {};
+	const { editPost } = useDispatch( 'core/editor' ) || {};
 	// player/edit.js and player-container/edit.js both pass a videoData that
 	// has no real .edit()/.save() (just a read-only record + a purely local
 	// setRecord override), so the save below always takes the raw apiFetch
@@ -116,90 +116,91 @@ const Thumbnails = ({
 	// cached resolution after a successful save tells every mounted
 	// useSelect consumer of this exact attachment to refetch and pick up the
 	// change on its own.
-	const { invalidateResolution } = useDispatch('core');
+	const { invalidateResolution } = useDispatch( 'core' );
 	const isEditingAttachment = useSelect(
-		(select) =>
-			select('core/editor')?.getCurrentPostType() === 'attachment',
+		( select ) =>
+			select( 'core/editor' )?.getCurrentPostType() === 'attachment',
 		[]
 	);
 
-	const featured = (() => {
-		if (attributes.featured !== undefined) {
+	const featured = ( () => {
+		if ( attributes.featured !== undefined ) {
 			return attributes.featured;
 		}
-		if (videoData?.record?.featured !== undefined) {
+		if ( videoData?.record?.featured !== undefined ) {
 			return videoData.record.featured;
 		}
 		if (
-			videoData?.record?.meta?.['_videopack-meta']?.featured !== undefined
+			videoData?.record?.meta?.[ '_videopack-meta' ]?.featured !==
+			undefined
 		) {
-			return videoData.record.meta['_videopack-meta'].featured;
+			return videoData.record.meta[ '_videopack-meta' ].featured;
 		}
 		return options.featured;
-	})();
+	} )();
 
-	const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
+	const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
 
-	useEffect(() => {
-		if (window.mejs && window.mejs.players && resolvedPoster) {
+	useEffect( () => {
+		if ( window.mejs && window.mejs.players && resolvedPoster ) {
 			// Find the MediaElement.js player within the media modal
 			const mejsContainer = document.querySelector(
 				'.media-modal .mejs-container, .wp_attachment_holder .mejs-container'
 			);
-			if (mejsContainer) {
+			if ( mejsContainer ) {
 				const mejsId = mejsContainer.id;
-				if (mejsId && window.mejs.players[mejsId]) {
-					const player = window.mejs.players[mejsId];
-					player.setPoster(resolvedPoster);
+				if ( mejsId && window.mejs.players[ mejsId ] ) {
+					const player = window.mejs.players[ mejsId ];
+					player.setPoster( resolvedPoster );
 				}
 			}
 		}
-	}, [resolvedPoster]);
+	}, [ resolvedPoster ] );
 
-	function onSelectPoster(image) {
-		const cleanUrl = image.url ? image.url.replace(/&amp;/g, '&') : '';
+	function onSelectPoster( image ) {
+		const cleanUrl = image.url ? image.url.replace( /&amp;/g, '&' ) : '';
 		const attachment = videoData?.record;
 		const attachmentPoster =
 			attachment?.videopack?.poster ||
-			attachment?.meta?.['_videopack-meta']?.poster ||
+			attachment?.meta?.[ '_videopack-meta' ]?.poster ||
 			'';
 		const attachmentPosterId =
-			attachment?.meta?.['_videopack-meta']?.poster_id ||
-			attachment?.meta?.['_kgflashmediaplayer-poster-id'] ||
+			attachment?.meta?.[ '_videopack-meta' ]?.poster_id ||
+			attachment?.meta?.[ '_kgflashmediaplayer-poster-id' ] ||
 			0;
 
 		const finalPoster =
 			cleanUrl && cleanUrl !== attachmentPoster ? cleanUrl : undefined;
 		const finalPosterId =
-			image.id && Number(image.id) !== Number(attachmentPosterId)
-				? Number(image.id)
+			image.id && Number( image.id ) !== Number( attachmentPosterId )
+				? Number( image.id )
 				: undefined;
 
-		setAttributes({
+		setAttributes( {
 			...attributes,
 			poster: finalPoster,
 			poster_id: finalPosterId,
-		});
+		} );
 	}
 
 	async function onRemovePoster() {
-		await setPosterData('', '', '');
+		await setPosterData( '', '', '' );
 
 		// Move focus back to the Media Upload button.
 		posterImageButton.current.focus();
 	}
 
-	const handleGenerate = async (type = 'generate') => {
-		setIsSaving(true);
-		setThumbChoices([]);
+	const handleGenerate = async ( type = 'generate' ) => {
+		setIsSaving( true );
+		setThumbChoices( [] );
 		const browserThumbnailsEnabled =
 			videopack_config.options.browser_thumbnails;
 
-		if (!browserThumbnailsEnabled && !!ffmpegExists) {
+		if ( ! browserThumbnailsEnabled && !! ffmpegExists ) {
 			// Browser thumbnails explicitly disabled, use FFmpeg directly
 			const newThumbImages = [];
-			let workingId = Number(id);
-			for (let i = 1; i <= Number(total_thumbnails); i++) {
+			let workingId = Number( id );
+			for ( let i = 1; i <= Number( total_thumbnails ); i++ ) {
 				const response = await generateThumb(
 					i,
 					type,
@@ -207,44 +208,50 @@ const Thumbnails = ({
 					featured
 				);
 
-				if (response?.attachment_id && workingId === 0) {
-					workingId = parseInt(response.attachment_id, 10) || 0;
-					setAttributes({
+				if ( response?.attachment_id && workingId === 0 ) {
+					workingId = parseInt( response.attachment_id, 10 ) || 0;
+					setAttributes( {
 						...attributes,
 						id: workingId,
-					});
+					} );
 				}
 				const thumb = {
 					src: response ? response.real_thumb_url : null,
 					type: 'ffmpeg',
 				};
-				if (thumb.src) {
-					newThumbImages.push(thumb);
-					setThumbChoices([...newThumbImages]); // Update incrementally
+				if ( thumb.src ) {
+					newThumbImages.push( thumb );
+					setThumbChoices( [ ...newThumbImages ] ); // Update incrementally
 				}
 			}
-			setIsSaving(false);
+			setIsSaving( false );
 		} else {
 			// Attempt browser-based generation
-			generateThumbCanvases(type);
+			generateThumbCanvases( type );
 		}
 	};
 
-	const srcIsExternal = (() => {
+	const srcIsExternal = ( () => {
 		try {
-			const url = new URL(src, window.location.origin);
+			const url = new URL( src, window.location.origin );
 			return url.origin !== window.location.origin;
 		} catch {
 			return false;
 		}
-	})();
+	} )();
 
 	const canvasTainted =
 		probedMetadata?.isTainted ||
-		(srcIsExternal && !isProbing && !probedMetadata);
+		( srcIsExternal && ! isProbing && ! probedMetadata );
 
 	const generateThumb = useCallback(
-		async (i, type, forceId = null, forceFeatured = null, time = null) => {
+		async (
+			i,
+			type,
+			forceId = null,
+			forceFeatured = null,
+			time = null
+		) => {
 			try {
 				const response = await generateThumbnail(
 					src,
@@ -259,18 +266,18 @@ const Thumbnails = ({
 
 				const data = await response.json();
 				return data;
-			} catch (error) {
-				console.error(error);
+			} catch ( error ) {
+				console.error( error );
 			}
 		},
-		[src, total_thumbnails, id, parentId, featured]
+		[ src, total_thumbnails, id, parentId, featured ]
 	);
 
 	const generateThumbCanvases = useCallback(
-		async (type) => {
-			const thumbsInt = Number(total_thumbnails);
+		async ( type ) => {
+			const thumbsInt = Number( total_thumbnails );
 			const newThumbCanvases = [];
-			let workingId = parseInt(id, 10) || 0;
+			let workingId = parseInt( id, 10 ) || 0;
 
 			const timePoints = calculateTimecodes(
 				videoRef.current.duration,
@@ -281,8 +288,8 @@ const Thumbnails = ({
 			await captureFramesWithFallback(
 				timePoints,
 				[
-					(time) => {
-						if (canvasTainted) {
+					( time ) => {
+						if ( canvasTainted ) {
 							throw new Error(
 								'Canvas tainted, skipping browser capture.'
 							);
@@ -293,9 +300,9 @@ const Thumbnails = ({
 							options?.ffmpeg_thumb_watermark || {}
 						);
 					},
-					(time, index) => {
-						if (!ffmpegExists) {
-							throw new Error('FFmpeg fallback unavailable.');
+					( time, index ) => {
+						if ( ! ffmpegExists ) {
+							throw new Error( 'FFmpeg fallback unavailable.' );
 						}
 						return generateThumb(
 							index + 1,
@@ -306,34 +313,34 @@ const Thumbnails = ({
 					},
 				],
 				{
-					onProgress: async ({ result, strategyIndex, error }) => {
-						if (strategyIndex === 0) {
+					onProgress: async ( { result, strategyIndex, error } ) => {
+						if ( strategyIndex === 0 ) {
 							const thumb = {
 								src: result.toDataURL(),
 								type: 'canvas',
 								canvasObject: result,
 							};
-							newThumbCanvases.push(thumb);
-							setThumbChoices([...newThumbCanvases]);
+							newThumbCanvases.push( thumb );
+							setThumbChoices( [ ...newThumbCanvases ] );
 							return;
 						}
 
-						if (strategyIndex === 1) {
-							if (result?.attachment_id && workingId === 0) {
+						if ( strategyIndex === 1 ) {
+							if ( result?.attachment_id && workingId === 0 ) {
 								workingId =
-									parseInt(result.attachment_id, 10) || 0;
-								setAttributes({
+									parseInt( result.attachment_id, 10 ) || 0;
+								setAttributes( {
 									...attributes,
 									id: workingId,
-								});
+								} );
 							}
-							if (result?.real_thumb_url) {
+							if ( result?.real_thumb_url ) {
 								const thumb = {
 									src: result.real_thumb_url,
 									type: 'ffmpeg',
 								};
-								newThumbCanvases.push(thumb);
-								setThumbChoices([...newThumbCanvases]);
+								newThumbCanvases.push( thumb );
+								setThumbChoices( [ ...newThumbCanvases ] );
 							}
 							return;
 						}
@@ -342,7 +349,7 @@ const Thumbnails = ({
 						// canvasTainted failures are expected (cross-origin
 						// source, already surfaced via the "CORS ..."
 						// notice), so only log the unexpected case.
-						if (!canvasTainted) {
+						if ( ! canvasTainted ) {
 							console.error(
 								'Error generating canvas thumbnail:',
 								error
@@ -351,7 +358,7 @@ const Thumbnails = ({
 					},
 				}
 			);
-			setIsSaving(false);
+			setIsSaving( false );
 		},
 		[
 			attributes,
@@ -368,73 +375,73 @@ const Thumbnails = ({
 	);
 
 	// function to toggle video playback
-	const togglePlayback = (ref = videoRef) => {
-		if (ref.current?.paused) {
+	const togglePlayback = ( ref = videoRef ) => {
+		if ( ref.current?.paused ) {
 			ref.current.play();
-			setIsPlaying(true);
+			setIsPlaying( true );
 		} else {
 			ref.current?.pause();
-			setIsPlaying(false);
+			setIsPlaying( false );
 		}
 	};
 
-	const pauseVideo = (ref = videoRef) => {
+	const pauseVideo = ( ref = videoRef ) => {
 		ref.current?.pause();
-		setIsPlaying(false);
+		setIsPlaying( false );
 	};
 
-	const playVideo = (ref = videoRef) => {
+	const playVideo = ( ref = videoRef ) => {
 		ref.current?.play();
-		setIsPlaying(true);
+		setIsPlaying( true );
 	};
 
 	// function to handle slider changes
-	const handleSliderChange = (value, ref = videoRef) => {
-		if (ref.current) {
+	const handleSliderChange = ( value, ref = videoRef ) => {
+		if ( ref.current ) {
 			ref.current.currentTime = value;
 		}
-		setCurrentTime(value);
+		setCurrentTime( value );
 	};
 
-	useEffect(() => {
-		const handleTimeUpdate = (event) => {
-			setCurrentTime(event.target.currentTime); // update currentTime state variable
+	useEffect( () => {
+		const handleTimeUpdate = ( event ) => {
+			setCurrentTime( event.target.currentTime ); // update currentTime state variable
 		};
 
 		const mainVideo = videoRef.current;
 		const modalVideo = modalVideoRef.current;
 
-		mainVideo?.addEventListener('timeupdate', handleTimeUpdate);
-		modalVideo?.addEventListener('timeupdate', handleTimeUpdate);
+		mainVideo?.addEventListener( 'timeupdate', handleTimeUpdate );
+		modalVideo?.addEventListener( 'timeupdate', handleTimeUpdate );
 
 		return () => {
-			mainVideo?.removeEventListener('timeupdate', handleTimeUpdate);
-			modalVideo?.removeEventListener('timeupdate', handleTimeUpdate);
+			mainVideo?.removeEventListener( 'timeupdate', handleTimeUpdate );
+			modalVideo?.removeEventListener( 'timeupdate', handleTimeUpdate );
 		};
-	}, [isModalOpen]); // Re-attach when modal state changes to catch modalVideoRef
+	}, [ isModalOpen ] ); // Re-attach when modal state changes to catch modalVideoRef
 
-	useEffect(() => {
-		if (isModalOpen && modalVideoRef.current && videoRef.current) {
+	useEffect( () => {
+		if ( isModalOpen && modalVideoRef.current && videoRef.current ) {
 			modalVideoRef.current.currentTime = videoRef.current.currentTime;
 		}
-	}, [isModalOpen]);
+	}, [ isModalOpen ] );
 
-	const handleSaveThumbnail = (event, thumb) => {
-		event.currentTarget.classList.add('saving');
-		setIsSaving(true);
-		if (thumb.type === 'ffmpeg') {
-			setImgAsPoster(thumb.src);
+	const handleSaveThumbnail = ( event, thumb ) => {
+		event.currentTarget.classList.add( 'saving' );
+		setIsSaving( true );
+		if ( thumb.type === 'ffmpeg' ) {
+			setImgAsPoster( thumb.src );
 		} else {
-			setCanvasAsPoster(thumb.canvasObject);
+			setCanvasAsPoster( thumb.canvasObject );
 		}
 	};
 
 	const handleSaveAllThumbnails = async () => {
-		setIsSaving(true); // Show spinner for the whole operation
-		const firstThumbType = thumbChoices[0]?.type; // Assuming all generated thumbs are of the same type
+		setIsSaving( true ); // Show spinner for the whole operation
+		const firstThumbType = thumbChoices[ 0 ]?.type; // Assuming all generated thumbs are of the same type
 
-		if (firstThumbType === 'canvas') {
-			const uploadPromises = thumbChoices.map((thumb) => {
+		if ( firstThumbType === 'canvas' ) {
+			const uploadPromises = thumbChoices.map( ( thumb ) => {
 				return createThumbnailFromCanvas(
 					thumb.canvasObject,
 					id,
@@ -442,17 +449,17 @@ const Thumbnails = ({
 					parentId,
 					featured
 				);
-			});
+			} );
 
 			try {
-				await Promise.all(uploadPromises);
-			} catch (error) {
-				console.error('Error saving all canvas thumbnails:', error);
+				await Promise.all( uploadPromises );
+			} catch ( error ) {
+				console.error( 'Error saving all canvas thumbnails:', error );
 			}
-			setThumbChoices([]);
-		} else if (firstThumbType === 'ffmpeg') {
+			setThumbChoices( [] );
+		} else if ( firstThumbType === 'ffmpeg' ) {
 			// For FFmpeg thumbnails, send their temporary URLs to the server to be saved
-			const thumbUrls = thumbChoices.map((thumb) => thumb.src);
+			const thumbUrls = thumbChoices.map( ( thumb ) => thumb.src );
 			try {
 				const response = await saveAllThumbnails(
 					id,
@@ -461,23 +468,23 @@ const Thumbnails = ({
 					src,
 					featured
 				);
-				const firstResult = response?.[0];
-				if (firstResult?.attachment_id && Number(id) === 0) {
-					setAttributes({
+				const firstResult = response?.[ 0 ];
+				if ( firstResult?.attachment_id && Number( id ) === 0 ) {
+					setAttributes( {
 						...attributes,
-						id: Number(firstResult.attachment_id),
-					});
+						id: Number( firstResult.attachment_id ),
+					} );
 				}
-				setThumbChoices([]); // Clear choices after saving
-			} catch (error) {
-				console.error('Error saving all FFmpeg thumbnails:', error);
+				setThumbChoices( [] ); // Clear choices after saving
+			} catch ( error ) {
+				console.error( 'Error saving all FFmpeg thumbnails:', error );
 			}
 		}
-		setIsSaving(false); // Hide spinner after all operations complete
+		setIsSaving( false ); // Hide spinner after all operations complete
 	};
 
-	const setCanvasAsPoster = async (canvasObject) => {
-		setIsSaving(true);
+	const setCanvasAsPoster = async ( canvasObject ) => {
+		setIsSaving( true );
 		try {
 			const response = await createThumbnailFromCanvas(
 				canvasObject,
@@ -496,11 +503,11 @@ const Thumbnails = ({
 				response.attachment_id,
 				{ skipServerWrite: true }
 			);
-		} catch (error) {
-			console.error('Error uploading thumbnail:', error);
+		} catch ( error ) {
+			console.error( 'Error uploading thumbnail:', error );
 			throw error;
 		} finally {
-			setIsSaving(false);
+			setIsSaving( false );
 		}
 	};
 
@@ -524,54 +531,55 @@ const Thumbnails = ({
 	) => {
 		try {
 			const cleanPoster = new_poster
-				? new_poster.replace(/&amp;/g, '&')
+				? new_poster.replace( /&amp;/g, '&' )
 				: '';
 
-			if (!skipServerWrite) {
+			if ( ! skipServerWrite ) {
 				const existingMeta =
-					videoData?.record?.meta?.['_videopack-meta'] || {};
+					videoData?.record?.meta?.[ '_videopack-meta' ] || {};
 
 				const metaData = {
 					'_videopack-meta': {
 						...existingMeta,
 						poster: cleanPoster || '',
-						poster_id: new_poster_id ? Number(new_poster_id) : 0,
+						poster_id: new_poster_id ? Number( new_poster_id ) : 0,
 					},
 				};
 
-				if (attributes.featured !== undefined) {
-					metaData['_videopack-meta'].featured = attributes.featured;
+				if ( attributes.featured !== undefined ) {
+					metaData[ '_videopack-meta' ].featured =
+						attributes.featured;
 				}
 
-				if (videoData?.edit) {
-					await videoData.edit({
+				if ( videoData?.edit ) {
+					await videoData.edit( {
 						featured_media: new_poster_id
-							? Number(new_poster_id)
+							? Number( new_poster_id )
 							: null,
 						meta: metaData,
-					});
+					} );
 					await videoData.save();
-				} else if (id && Number(id) > 0) {
+				} else if ( id && Number( id ) > 0 ) {
 					// Fallback for contexts without a core-data entity record (e.g. attachment details pane)
-					await apiFetch({
-						path: `/wp/v2/media/${id}`,
+					await apiFetch( {
+						path: `/wp/v2/media/${ id }`,
 						method: 'POST',
 						data: {
 							featured_media: new_poster_id
-								? Number(new_poster_id)
+								? Number( new_poster_id )
 								: null,
 							meta: metaData,
 						},
-					});
+					} );
 				}
 			}
 
-			if (featured && parentId && editPost && !isEditingAttachment) {
-				editPost({
+			if ( featured && parentId && editPost && ! isEditingAttachment ) {
+				editPost( {
 					featured_media: new_poster_id
-						? Number(new_poster_id)
+						? Number( new_poster_id )
 						: null,
-				});
+				} );
 			}
 
 			// Reflects this save everywhere this attachment is currently
@@ -579,28 +587,28 @@ const Thumbnails = ({
 			// etc) without waiting for a reload — see the comment on
 			// invalidateResolution above for why this is necessary even
 			// though the save itself already succeeded.
-			const savedAttachmentId = Number(new_attachment_id || id);
-			if (savedAttachmentId > 0) {
-				invalidateResolution('getEntityRecord', [
+			const savedAttachmentId = Number( new_attachment_id || id );
+			if ( savedAttachmentId > 0 ) {
+				invalidateResolution( 'getEntityRecord', [
 					'postType',
 					'attachment',
 					savedAttachmentId,
-				]);
+				] );
 			}
 
 			// Refresh the media library grid to show the updated thumbnail.
-			if (wp.media && wp.media.frame) {
+			if ( wp.media && wp.media.frame ) {
 				if (
 					wp.media.frame.content.get() &&
 					wp.media.frame.content.get().collection
 				) {
 					const collection = wp.media.frame.content.get().collection;
-					collection.props.set({ ignore: new Date().getTime() });
-				} else if (wp.media.frame.library) {
+					collection.props.set( { ignore: new Date().getTime() } );
+				} else if ( wp.media.frame.library ) {
 					// Fallback for different states of the media modal.
-					wp.media.frame.library.props.set({
+					wp.media.frame.library.props.set( {
 						ignore: new Date().getTime(),
-					});
+					} );
 				}
 			}
 
@@ -611,20 +619,20 @@ const Thumbnails = ({
 			};
 
 			// If we just created the attachment, ensure the ID is included
-			if (new_attachment_id && (!id || Number(id) === 0)) {
-				finalAttributes.id = Number(new_attachment_id);
+			if ( new_attachment_id && ( ! id || Number( id ) === 0 ) ) {
+				finalAttributes.id = Number( new_attachment_id );
 			}
 
-			setAttributes(finalAttributes);
-			setThumbChoices([]);
-			setIsSaving(false);
-		} catch (error) {
-			console.error('Error updating attachment:', error);
-			setIsSaving(false);
+			setAttributes( finalAttributes );
+			setThumbChoices( [] );
+			setIsSaving( false );
+		} catch ( error ) {
+			console.error( 'Error updating attachment:', error );
+			setIsSaving( false );
 		}
 	};
 
-	const setImgAsPoster = async (thumb_url) => {
+	const setImgAsPoster = async ( thumb_url ) => {
 		try {
 			const response = await setPosterImage(
 				id,
@@ -641,24 +649,24 @@ const Thumbnails = ({
 				response.attachment_id,
 				{ skipServerWrite: true }
 			);
-		} catch (error) {
-			console.error(error);
+		} catch ( error ) {
+			console.error( error );
 		}
 	};
 
-	const handleVideoKeyboardControl = (event, ref = videoRef) => {
-		switch (event.code) {
+	const handleVideoKeyboardControl = ( event, ref = videoRef ) => {
+		switch ( event.code ) {
 			case 'Space': // spacebar
 				event.preventDefault();
 				event.stopPropagation();
-				togglePlayback(ref);
+				togglePlayback( ref );
 				break;
 
 			case 'ArrowLeft': // left
 				event.preventDefault();
 				event.stopPropagation();
-				pauseVideo(ref);
-				if (ref.current) {
+				pauseVideo( ref );
+				if ( ref.current ) {
 					ref.current.currentTime = ref.current.currentTime - 0.042;
 				}
 				break;
@@ -666,8 +674,8 @@ const Thumbnails = ({
 			case 'ArrowRight': // right
 				event.preventDefault();
 				event.stopPropagation();
-				pauseVideo(ref);
-				if (ref.current) {
+				pauseVideo( ref );
+				if ( ref.current ) {
 					ref.current.currentTime = ref.current.currentTime + 0.042;
 				}
 				break;
@@ -675,7 +683,7 @@ const Thumbnails = ({
 			case 'KeyJ': //j
 				event.preventDefault();
 				event.stopPropagation();
-				if (isPlaying && ref.current) {
+				if ( isPlaying && ref.current ) {
 					ref.current.playbackRate = Math.max(
 						0,
 						ref.current.playbackRate - 1
@@ -686,16 +694,16 @@ const Thumbnails = ({
 			case 'KeyK': // k
 				event.preventDefault();
 				event.stopPropagation();
-				pauseVideo(ref);
+				pauseVideo( ref );
 				break;
 
 			case 'KeyL': //l
 				event.preventDefault();
 				event.stopPropagation();
-				if (isPlaying && ref.current) {
+				if ( isPlaying && ref.current ) {
 					ref.current.playbackRate = ref.current.playbackRate + 1;
 				}
-				playVideo(ref);
+				playVideo( ref );
 				break;
 
 			default:
@@ -703,11 +711,11 @@ const Thumbnails = ({
 		}
 	};
 
-	const handleUseThisFrame = async (ref = videoRef) => {
-		setIsSaving(true);
+	const handleUseThisFrame = async ( ref = videoRef ) => {
+		setIsSaving( true );
 
 		const runFfmpegFallback = async () => {
-			if (!!ffmpegExists) {
+			if ( !! ffmpegExists ) {
 				try {
 					const response = await generateThumb(
 						1,
@@ -716,24 +724,24 @@ const Thumbnails = ({
 						null,
 						ref.current.currentTime
 					);
-					if (response?.real_thumb_url) {
-						await setImgAsPoster(response.real_thumb_url);
+					if ( response?.real_thumb_url ) {
+						await setImgAsPoster( response.real_thumb_url );
 					} else {
-						setIsSaving(false);
+						setIsSaving( false );
 					}
 				} catch {
-					console.error('FFmpeg pinpoint capture failed');
-					setIsSaving(false);
+					console.error( 'FFmpeg pinpoint capture failed' );
+					setIsSaving( false );
 				}
 			} else {
-				setIsSaving(false);
+				setIsSaving( false );
 			}
 		};
 
 		const browserThumbnailsEnabled =
 			videopack_config.options.browser_thumbnails;
 
-		if (!browserThumbnailsEnabled || canvasTainted) {
+		if ( ! browserThumbnailsEnabled || canvasTainted ) {
 			await runFfmpegFallback();
 			return;
 		}
@@ -744,8 +752,8 @@ const Thumbnails = ({
 				ref.current.currentTime,
 				options?.ffmpeg_thumb_watermark || {}
 			);
-			await setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
-		} catch (error) {
+			await setCanvasAsPoster( canvas ); // Pass the canvas object directly, index will be null
+		} catch ( error ) {
 			console.warn(
 				'Canvas capture failed, attempting FFmpeg fallback:',
 				error
@@ -754,178 +762,192 @@ const Thumbnails = ({
 		}
 	};
 
-	const handlePopOut = (event) => {
+	const handlePopOut = ( event ) => {
 		event.preventDefault();
-		pauseVideo(videoRef);
-		setIsModalOpen(true);
+		pauseVideo( videoRef );
+		setIsModalOpen( true );
 	};
 
 	const handleCloseModal = () => {
-		if (modalVideoRef.current && videoRef.current) {
+		if ( modalVideoRef.current && videoRef.current ) {
 			videoRef.current.currentTime = modalVideoRef.current.currentTime;
 		}
-		pauseVideo(modalVideoRef);
-		setIsModalOpen(false);
+		pauseVideo( modalVideoRef );
+		setIsModalOpen( false );
 	};
 
-	const handleToggleVideoPlayer = (event) => {
+	const handleToggleVideoPlayer = ( event ) => {
 		event.preventDefault();
-		const next = !isOpened;
-		setIsOpened(next);
-		if (next && thumbVideoPanel.current) {
+		const next = ! isOpened;
+		setIsOpened( next );
+		if ( next && thumbVideoPanel.current ) {
 			// Trigger a small delay to ensure the panel is visible before focusing
-			setTimeout(() => {
+			setTimeout( () => {
 				thumbVideoPanel.current?.focus();
-			}, 50);
+			}, 50 );
 		}
 	};
 
 	return (
 		<div className="videopack-thumbnail-generator">
 			<PanelBody
-				title={__('Thumbnails', 'video-embed-thumbnail-generator')}
+				title={ __( 'Thumbnails', 'video-embed-thumbnail-generator' ) }
 			>
-				{showFailedNotice &&
+				{ showFailedNotice &&
 					Number(
 						videoData?.record?.meta?._videopack_browser_thumb_failed
 					) === 1 && (
 						<Notice
 							status="error"
-							onRemove={() => setShowFailedNotice(false)}
-							isDismissible={true}
+							onRemove={ () => setShowFailedNotice( false ) }
+							isDismissible={ true }
 						>
-							{__(
+							{ __(
 								'Automatic in-browser thumbnail generation failed for this video (possibly due to CORS or canvas limitations). You can try generating thumbnails manually below.',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						</Notice>
-					)}
-				{resolvedPoster && (
+					) }
+				{ resolvedPoster && (
 					<img
 						className="videopack-current-thumbnail"
 						src={
 							resolvedPoster
-								? resolvedPoster.replace(/&amp;/g, '&')
+								? resolvedPoster.replace( /&amp;/g, '&' )
 								: ''
 						}
-						alt={__(
+						alt={ __(
 							'Current Thumbnail',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					/>
-				)}
+				) }
 				<BaseControl className="editor-video-poster-control">
 					<BaseControl.VisualLabel>
-						{__(
+						{ __(
 							'Video Thumbnail',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					</BaseControl.VisualLabel>
 					<MediaUpload
-						title={__(
+						title={ __(
 							'Select video thumbnail',
 							'video-embed-thumbnail-generator'
-						)}
-						onSelect={onSelectPoster}
-						allowedTypes={VIDEO_POSTER_ALLOWED_MEDIA_TYPES}
-						render={({ open }) => (
+						) }
+						onSelect={ onSelectPoster }
+						allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
+						render={ ( { open } ) => (
 							<Button
 								variant="secondary"
-								onClick={open}
-								ref={posterImageButton}
+								onClick={ open }
+								ref={ posterImageButton }
 							>
-								{!resolvedPoster
+								{ ! resolvedPoster
 									? __(
 											'Select',
 											'video-embed-thumbnail-generator'
-										)
+									  )
 									: __(
 											'Replace',
 											'video-embed-thumbnail-generator'
-										)}
+									  ) }
 							</Button>
-						)}
+						) }
 					/>
-					{!!resolvedPoster && (
-						<Button onClick={onRemovePoster} variant="tertiary">
-							{__('Remove', 'video-embed-thumbnail-generator')}
+					{ !! resolvedPoster && (
+						<Button onClick={ onRemovePoster } variant="tertiary">
+							{ __(
+								'Remove',
+								'video-embed-thumbnail-generator'
+							) }
 						</Button>
-					)}
+					) }
 				</BaseControl>
-				{activeJobs.length > 0 && (
+				{ activeJobs.length > 0 && (
 					<div className="videopack-active-jobs">
 						<Spinner />
 						<p>
-							{__(
+							{ __(
 								'Thumbnail generation in progress…',
 								'video-embed-thumbnail-generator'
-							)}
+							) }
 						</p>
 					</div>
-				)}
+				) }
 				<ToggleControl
-					label={__(
+					label={ __(
 						"Set as post's featured image",
 						'video-embed-thumbnail-generator'
-					)}
-					checked={!!featured}
-					onChange={(value) => {
-						setAttributes({
+					) }
+					checked={ !! featured }
+					onChange={ ( value ) => {
+						setAttributes( {
 							...attributes,
 							featured: value,
-						});
-					}}
+						} );
+					} }
 				/>
 				<div className="videopack-generation-controls">
 					<NumberControl
-						value={total_thumbnails}
-						min={1}
-						max={100}
-						onChange={(value) => {
-							if (isNaN(value) || value < 1) {
-								setAttributes({
+						value={ total_thumbnails }
+						min={ 1 }
+						max={ 100 }
+						onChange={ ( value ) => {
+							if ( isNaN( value ) || value < 1 ) {
+								setAttributes( {
 									...attributes,
 									total_thumbnails: 1,
-								});
+								} );
 							} else {
-								setAttributes({
+								setAttributes( {
 									...attributes,
-									total_thumbnails: Number(value),
-								});
+									total_thumbnails: Number( value ),
+								} );
 							}
-						}}
+						} }
 						className="videopack-total-thumbnails"
 						disabled={
 							isSaving ||
-							((canvasTainted || isProbing) && !ffmpegExists)
+							( ( canvasTainted || isProbing ) && ! ffmpegExists )
 						}
-						label={__('Total', 'video-embed-thumbnail-generator')}
+						label={ __(
+							'Total',
+							'video-embed-thumbnail-generator'
+						) }
 						hideLabelFromVision
 					/>
 					<div className="videopack-generation-actions">
 						<Button
 							variant="secondary"
-							onClick={() => handleGenerate('generate')}
+							onClick={ () => handleGenerate( 'generate' ) }
 							className="videopack-generate"
 							disabled={
 								isSaving ||
-								((canvasTainted || isProbing) && !ffmpegExists)
+								( ( canvasTainted || isProbing ) &&
+									! ffmpegExists )
 							}
 						>
-							{__('Generate', 'video-embed-thumbnail-generator')}
+							{ __(
+								'Generate',
+								'video-embed-thumbnail-generator'
+							) }
 						</Button>
 						<Button
 							variant="secondary"
-							onClick={() => handleGenerate('random')}
+							onClick={ () => handleGenerate( 'random' ) }
 							className="videopack-generate"
 							disabled={
 								isSaving ||
-								((canvasTainted || isProbing) && !ffmpegExists)
+								( ( canvasTainted || isProbing ) &&
+									! ffmpegExists )
 							}
 						>
-							{__('Random', 'video-embed-thumbnail-generator')}
+							{ __(
+								'Random',
+								'video-embed-thumbnail-generator'
+							) }
 						</Button>
-						{applyFilters('videopack.thumbnail.actions', null, {
+						{ applyFilters( 'videopack.thumbnail.actions', null, {
 							id,
 							src,
 							parentId,
@@ -935,149 +957,162 @@ const Thumbnails = ({
 							canvasTainted,
 							probedMetadata,
 							options,
-						})}
+						} ) }
 					</div>
 				</div>
 
-				{canvasTainted && !isProbing && !ffmpegExists && (
+				{ canvasTainted && ! isProbing && ! ffmpegExists && (
 					<div className="videopack-security-error-notice">
-						{__(
+						{ __(
 							'Cross-origin resource sharing (CORS) policy on the external server is preventing thumbnail generation.',
 							'video-embed-thumbnail-generator'
-						)}
+						) }
 					</div>
-				)}
+				) }
 
-				{thumbChoices.length > 0 && (
+				{ thumbChoices.length > 0 && (
 					<Button
 						variant="primary"
-						onClick={handleSaveAllThumbnails}
-						disabled={isSaving}
+						onClick={ handleSaveAllThumbnails }
+						disabled={ isSaving }
 					>
-						{__('Save All', 'video-embed-thumbnail-generator')}
+						{ __( 'Save All', 'video-embed-thumbnail-generator' ) }
 					</Button>
-				)}
-				{thumbChoices.length > 0 && (
+				) }
+				{ thumbChoices.length > 0 && (
 					<div
-						className={`videopack-thumbnail-holder${isSaving ? ' disabled' : ''}`}
+						className={ `videopack-thumbnail-holder${
+							isSaving ? ' disabled' : ''
+						}` }
 					>
-						{thumbChoices.map((thumb, index) => (
+						{ thumbChoices.map( ( thumb, index ) => (
 							<button
 								type="button"
 								className={
 									'videopack-thumbnail spinner-container'
 								}
-								key={index}
-								onClick={(event) => {
-									handleSaveThumbnail(event, thumb, index);
-								}}
+								key={ index }
+								onClick={ ( event ) => {
+									handleSaveThumbnail( event, thumb, index );
+								} }
 							>
 								<img
-									src={thumb.src}
-									alt={sprintf(
+									src={ thumb.src }
+									alt={ sprintf(
 										/* translators: %d is the thumbnail index */
 										__(
 											'Thumbnail %d',
 											'video-embed-thumbnail-generator'
 										),
 										index + 1
-									)}
-									title={__(
+									) }
+									title={ __(
 										'Save and set thumbnail',
 										'video-embed-thumbnail-generator'
-									)}
+									) }
 								/>
-								{isSaving && <Spinner />}
+								{ isSaving && <Spinner /> }
 							</button>
-						))}
+						) ) }
 					</div>
-				)}
+				) }
 				<div
-					className={`components-panel__body videopack-thumb-video ${isOpened ? 'is-opened' : ''}`}
+					className={ `components-panel__body videopack-thumb-video ${
+						isOpened ? 'is-opened' : ''
+					}` }
 				>
 					<h2 className="components-panel__body-title">
 						<button
 							className="components-button components-panel__body-toggle"
 							type="button"
-							onClick={handleToggleVideoPlayer}
-							aria-expanded={isOpened}
+							onClick={ handleToggleVideoPlayer }
+							aria-expanded={ isOpened }
 							disabled={
-								(canvasTainted || isProbing) && !ffmpegExists
+								( canvasTainted || isProbing ) && ! ffmpegExists
 							}
 						>
 							<span aria-hidden="true">
 								<Icon
 									className="components-panel__arrow"
-									icon={isOpened ? chevronUp : chevronDown}
+									icon={ isOpened ? chevronUp : chevronDown }
 								/>
 							</span>
-							{__(
+							{ __(
 								'Choose From Video',
 								'video-embed-thumbnail-generator'
-							)}
-							{canvasTainted && !isProbing && !ffmpegExists && (
-								<Icon
-									icon={chevronUp}
-									style={{ display: 'none' }}
-								/>
-							)}
+							) }
+							{ canvasTainted &&
+								! isProbing &&
+								! ffmpegExists && (
+									<Icon
+										icon={ chevronUp }
+										style={ { display: 'none' } }
+									/>
+								) }
 						</button>
 					</h2>
 					<div
-						className={`videopack-thumb-video-container ${isOpened ? 'is-opened' : ''} ${(canvasTainted || isProbing) && !ffmpegExists ? 'disabled' : ''}`}
+						className={ `videopack-thumb-video-container ${
+							isOpened ? 'is-opened' : ''
+						} ${
+							( canvasTainted || isProbing ) && ! ffmpegExists
+								? 'disabled'
+								: ''
+						}` }
 					>
 						<VideoPlayerInner
-							videoRef={videoRef}
-							panelRef={thumbVideoPanel}
-							src={src}
-							isPlaying={isPlaying}
-							currentTime={currentTime}
+							videoRef={ videoRef }
+							panelRef={ thumbVideoPanel }
+							src={ src }
+							isPlaying={ isPlaying }
+							currentTime={ currentTime }
 							isSaving={
 								isSaving ||
-								((canvasTainted || isProbing) && !ffmpegExists)
+								( ( canvasTainted || isProbing ) &&
+									! ffmpegExists )
 							}
-							togglePlayback={togglePlayback}
-							handleSliderChange={handleSliderChange}
-							handleUseThisFrame={handleUseThisFrame}
-							onPopOut={handlePopOut}
-							onKeyDown={(e) =>
-								handleVideoKeyboardControl(e, videoRef)
+							togglePlayback={ togglePlayback }
+							handleSliderChange={ handleSliderChange }
+							handleUseThisFrame={ handleUseThisFrame }
+							onPopOut={ handlePopOut }
+							onKeyDown={ ( e ) =>
+								handleVideoKeyboardControl( e, videoRef )
 							}
 							disabled={
-								(canvasTainted || isProbing) && !ffmpegExists
+								( canvasTainted || isProbing ) && ! ffmpegExists
 							}
 						/>
 					</div>
 				</div>
-				{isModalOpen && (
+				{ isModalOpen && (
 					<Modal
-						title={__(
+						title={ __(
 							'Choose From Video',
 							'video-embed-thumbnail-generator'
-						)}
-						onRequestClose={handleCloseModal}
+						) }
+						onRequestClose={ handleCloseModal }
 						className="videopack-video-modal"
 						overlayClassName="videopack-video-modal-overlay"
 					>
 						<VideoPlayerInner
-							videoRef={modalVideoRef}
-							src={src}
-							isPlaying={isPlaying}
-							currentTime={currentTime}
-							isSaving={isSaving}
-							togglePlayback={togglePlayback}
-							handleSliderChange={handleSliderChange}
-							handleUseThisFrame={handleUseThisFrame}
-							onKeyDown={(e) =>
-								handleVideoKeyboardControl(e, modalVideoRef)
+							videoRef={ modalVideoRef }
+							src={ src }
+							isPlaying={ isPlaying }
+							currentTime={ currentTime }
+							isSaving={ isSaving }
+							togglePlayback={ togglePlayback }
+							handleSliderChange={ handleSliderChange }
+							handleUseThisFrame={ handleUseThisFrame }
+							onKeyDown={ ( e ) =>
+								handleVideoKeyboardControl( e, modalVideoRef )
 							}
 							disabled={
-								(canvasTainted || isProbing) && !ffmpegExists
+								( canvasTainted || isProbing ) && ! ffmpegExists
 							}
-							isModal={true}
+							isModal={ true }
 						/>
 					</Modal>
-				)}
+				) }
 			</PanelBody>
 		</div>
 	);
