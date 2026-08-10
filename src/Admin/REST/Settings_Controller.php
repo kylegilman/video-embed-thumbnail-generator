@@ -20,20 +20,6 @@ class Settings_Controller extends Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/settings',
-			array(
-				array(
-					'methods'             => \WP_REST_Server::EDITABLE,
-					'callback'            => array( $this, 'update_settings' ),
-					'permission_callback' => array( $this, 'can_manage_options' ),
-					'args'                => $this->get_settings_args(),
-				),
-				'schema' => array( $this, 'get_public_item_schema' ),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
 			'/settings/defaults',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -83,21 +69,6 @@ class Settings_Controller extends Controller {
 				),
 			)
 		);
-	}
-
-	/**
-	 * REST callback to update plugin settings.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return \WP_REST_Response The updated settings.
-	 */
-	public function update_settings( \WP_REST_Request $request ) {
-		$params  = $request->get_params();
-		$options = array_merge( $this->options, $params );
-		update_option( 'videopack_options', $options );
-		$this->options = $options;
-
-		return apply_filters( 'videopack_rest_update_settings', new \WP_REST_Response( $this->options, 200 ), $request );
 	}
 
 	/**
@@ -195,14 +166,5 @@ class Settings_Controller extends Controller {
 		}
 
 		return apply_filters( 'videopack_rest_get_freemius_page_html', new \WP_REST_Response( array( 'html' => ob_get_clean() ), 200 ), $request );
-	}
-
-	/**
-	 * Helper to get settings arguments from schema.
-	 *
-	 * @return array
-	 */
-	private function get_settings_args() {
-		return array(); // Placeholder for specific schema if needed.
 	}
 }
