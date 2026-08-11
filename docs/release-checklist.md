@@ -40,6 +40,13 @@ These aren't caught by CI and are easy to let drift:
 
 ## 3. Manual smoke test (things CI genuinely can't cover)
 
+- [ ] **Remove debug logging**: grep for `error_log(`/`Debug_Logger::log(`
+      calls added for active development that were never meant to ship —
+      e.g. `Public_Controller::log_rest_api_errors()`, a `rest_post_dispatch`
+      hook that (even scoped to this plugin's own routes) logs full raw
+      REST request params to the PHP error log on any error response.
+      Remove the method and its `get_filters()` registration, not just
+      disable it.
 - [ ] **Freemius license flow**: on a site *without* `FORCE_PREMIUM_FOR_TESTING`,
       confirm the free plugin works standalone and the upgrade prompts/links
       point somewhere real

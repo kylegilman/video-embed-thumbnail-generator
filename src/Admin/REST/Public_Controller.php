@@ -22,6 +22,8 @@ class Public_Controller extends Controller {
 	public function get_filters(): array {
 		return array(
 			array(
+				// DEBUG LOGGING -- remove this registration (and
+				// log_rest_api_errors() itself, below) before release.
 				'hook'          => 'rest_post_dispatch',
 				'callback'      => 'log_rest_api_errors',
 				'priority'      => 10,
@@ -364,11 +366,27 @@ class Public_Controller extends Controller {
 	/**
 	 * Logs REST API errors.
 	 *
+	 * DEBUG LOGGING -- REMOVE THIS ENTIRE METHOD (and its get_filters()
+	 * registration above) BEFORE RELEASE. rest_post_dispatch fires for
+	 * every REST request on the site, not just this plugin's own routes,
+	 * so even with the namespace check below this logs full raw request
+	 * params for whatever happens to error -- including other plugins'
+	 * endpoints -- into the PHP error log. That's fine for active
+	 * development, not for a shipped release.
+	 *
 	 * @param mixed            $result  The REST response or error.
 	 * @param \WP_REST_Server  $server  The REST server instance.
 	 * @param \WP_REST_Request $request The request object.
 	 */
 	public function log_rest_api_errors( $result, $server, $request ) {
+		// Only this plugin's own routes -- rest_post_dispatch otherwise
+		// fires for every REST request on the site, from any plugin, and
+		// would log their raw params (potentially passwords, tokens, PII)
+		// into the PHP error log whenever they happen to error.
+		if ( 0 !== strpos( (string) $request->get_route(), '/' . $this->namespace ) ) {
+			return $result;
+		}
+
 		$is_error = ( is_wp_error( $result ) || ( $result instanceof \WP_REST_Response && $result->is_error() ) );
 		if ( $is_error ) {
 			$error_details = '';
