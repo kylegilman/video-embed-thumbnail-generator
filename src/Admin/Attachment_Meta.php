@@ -624,13 +624,29 @@ class Attachment_Meta implements Hook_Subscriber {
 	/**
 	 * Sanitizes a meta value based on its key or type.
 	 *
-	 * @param mixed            $value   The value to sanitize.
-	 * @param \WP_REST_Request $request Optional. The REST request object.
-	 * @param string           $param   Optional. The parameter name.
+	 * Used as the sanitize_callback in two different call shapes, each
+	 * putting the actual meta/property key in a different argument
+	 * position:
+	 * - register_post_meta()'s top-level sanitize_callback: WP core's
+	 *   sanitize_meta() invokes it as (value, meta_key, object_type,
+	 *   object_subtype) whenever object_subtype is set (always true for
+	 *   our 'attachment'-scoped registrations here) -- the real key lands
+	 *   in $request's position, as a plain string.
+	 * - REST schema property validation (nested '_videopack-meta' object
+	 *   properties) and this class's own direct calls (see
+	 *   Screens::save_settings()) instead pass (value, WP_REST_Request|null,
+	 *   param_name) -- the real key lands in $param's position.
+	 * $request is only ever a real key string in the first shape (a
+	 * WP_REST_Request object or null in the second), so that's what
+	 * distinguishes them.
+	 *
+	 * @param mixed                        $value   The value to sanitize.
+	 * @param \WP_REST_Request|string|null $request Optional. The REST request object, or (register_post_meta call shape) the meta key.
+	 * @param string                       $param   Optional. The parameter name.
 	 * @return mixed The sanitized value.
 	 */
 	public function sanitize_meta_value( $value, $request = null, $param = null ) {
-		$key = (string) $param;
+		$key = ( is_string( $request ) && '' !== $request ) ? $request : (string) $param;
 
 		if ( empty( $key ) ) {
 			return $value;
