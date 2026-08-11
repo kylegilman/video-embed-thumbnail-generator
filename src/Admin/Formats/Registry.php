@@ -306,11 +306,6 @@ class Registry {
 	 * @return \Videopack\Admin\Formats\Video_Format[] Available video formats.
 	 */
 	public function get_video_formats( $hide_formats = false ) {
-		static $formats_cache = array();
-		$cache_key            = $hide_formats ? 'hidden' : 'all';
-		if ( isset( $formats_cache[ $cache_key ] ) ) {
-			return $formats_cache[ $cache_key ];
-		}
 		$video_formats     = array();
 		$video_resolutions = (array) $this->get_video_resolutions();
 		$video_codecs      = (array) $this->get_video_codecs();
@@ -354,7 +349,6 @@ class Registry {
 		 */
 		$video_formats = (array) apply_filters( 'videopack_video_formats', $video_formats );
 
-		$formats_cache[ $cache_key ] = $video_formats;
 		return $video_formats;
 	}
 }
