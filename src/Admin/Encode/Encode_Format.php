@@ -428,6 +428,43 @@ class Encode_Format {
 	}
 
 	/**
+	 * Checks whether the current user may act on this job -- either they
+	 * own it and hold $own_capability, or they hold $others_capability
+	 * regardless of ownership.
+	 *
+	 * Centralizes a check that used to be hand-rolled at each call site
+	 * (delete_format(), cancel_encoding(), retry_job(), remove_job(),
+	 * clear_completed_queue()) -- duplicating it let remove_job() silently
+	 * drift into requiring encode_videos unconditionally, which made
+	 * removing a job (non-destructive) stricter than deleting one.
+	 *
+	 * @param string $own_capability    Capability required in addition to ownership. Default 'encode_videos'.
+	 * @param string $others_capability Capability that authorizes acting on any job regardless of ownership. Default 'edit_others_video_encodes'.
+	 * @return bool
+	 */
+	public function current_user_can_manage( string $own_capability = 'encode_videos', string $others_capability = 'edit_others_video_encodes' ): bool {
+		return self::user_can_manage( (int) $this->user_id, $own_capability, $others_capability );
+	}
+
+	/**
+	 * Static form of current_user_can_manage() for callers that only have
+	 * an owning user ID on hand rather than a full Encode_Format -- e.g.
+	 * Encode_Attachment::delete_format_by_id()'s "orphan file, no formal
+	 * job record" path, which only has the parent post's post_author.
+	 *
+	 * @param int    $owner_user_id     The user ID that owns the job/resource being acted on.
+	 * @param string $own_capability    Capability required in addition to ownership. Default 'encode_videos'.
+	 * @param string $others_capability Capability that authorizes acting regardless of ownership. Default 'edit_others_video_encodes'.
+	 * @return bool
+	 */
+	public static function user_can_manage( int $owner_user_id, string $own_capability = 'encode_videos', string $others_capability = 'edit_others_video_encodes' ): bool {
+		if ( current_user_can( $others_capability ) ) {
+			return true;
+		}
+		return (int) get_current_user_id() === $owner_user_id && current_user_can( $own_capability );
+	}
+
+	/**
 	 * Get the logfile path.
 	 *
 	 * @return string

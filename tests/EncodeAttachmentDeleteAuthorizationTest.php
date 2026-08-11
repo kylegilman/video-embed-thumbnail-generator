@@ -170,4 +170,35 @@ class EncodeAttachmentDeleteAuthorizationTest extends WP_UnitTestCase {
 		// by the permission check specifically.
 		$this->assertTrue( $encoder->delete_format_by_id( $real_format_id ) );
 	}
+
+	/**
+	 * Unlike the other tests here, 'author' isn't used for the owner --
+	 * that role gets encode_videos by default (it has upload_files, which
+	 * encode_videos maps to), which would mask the bug this test exists to
+	 * catch: this path used to authorize the post's own author regardless
+	 * of whether they had encode_videos at all, unlike
+	 * Encode_Attachment::delete_format()'s equivalent check on a formal
+	 * job record. A subscriber has neither capability nor role-default
+	 * access, so ownership alone must not be enough.
+	 */
+	public function test_delete_format_by_id_blocks_owner_without_encode_videos_capability(): void {
+		$owner_id      = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		$attachment_id = self::factory()->attachment->create_object(
+			array(
+				'file'           => 'video.mp4',
+				'post_mime_type' => 'video/mp4',
+				'post_author'    => $owner_id,
+			)
+		);
+
+		$options  = $this->options();
+		$registry = new Registry( $options );
+		$encoder  = new Encode_Attachment( $options, $registry, $attachment_id );
+
+		$real_format_id = (string) array_key_first( $registry->get_video_formats() );
+
+		wp_set_current_user( $owner_id );
+
+		$this->assertFalse( $encoder->delete_format_by_id( $real_format_id ) );
+	}
 }

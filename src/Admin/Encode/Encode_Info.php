@@ -237,9 +237,13 @@ class Encode_Info {
 				$this->writable   = true;
 				$this->sameserver = true;
 
-				if ( $child->post_author === get_current_user_id()
-					|| current_user_can( 'edit_others_video_encodes' )
-				) {
+				// Matches Encode_Attachment::delete_format()/delete_format_by_id()'s
+				// actual enforcement gate (own post + encode_videos, or
+				// edit_others_video_encodes) -- this used to skip the
+				// encode_videos requirement for the owner case, which could
+				// show a delete control here that the real gate would then
+				// reject.
+				if ( Encode_Format::user_can_manage( (int) $child->post_author ) ) {
 					$this->deletable = true;
 				}
 

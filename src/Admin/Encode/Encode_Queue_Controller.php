@@ -1116,10 +1116,8 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		}
 
 		try {
-			// Permission check: Only allow users who can encode videos to remove jobs.
-			// Also, if it's not their own job, they need 'edit_others_video_encodes' capability.
-			$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
-			if ( ! current_user_can( 'encode_videos' ) || ( ! $is_own_job && ! current_user_can( 'edit_others_video_encodes' ) ) ) {
+			// Permission check.
+			if ( ! Encode_Format::from_array( (array) $job )->current_user_can_manage() ) {
 				return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to remove this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
 			}
 
@@ -1168,7 +1166,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 	 */
 	public function clear_completed_queue( $type, $scope = 'site' ) {
 		global $wpdb;
-		$user_ID         = get_current_user_id();
 		$current_blog_id = get_current_blog_id();
 
 		// Get all queue items. We'll filter them based on type and scope in the loop below.
@@ -1184,7 +1181,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			$job_id      = $job['id'];
 			$job_status  = $job['status'];
 			$job_blog_id = (int) $job['blog_id'];
-			$job_user_id = (int) $job['user_id'];
 
 			$should_delete = false;
 
@@ -1193,10 +1189,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				$can_delete_job = (
 				( ! is_multisite() || $job_blog_id === $current_blog_id ) ||
 				( is_multisite() && is_network_admin() && $scope === 'network' )
-				) && (
-					current_user_can( 'edit_others_video_encodes' ) ||
-					( current_user_can( 'encode_videos' ) && $job_user_id === $user_ID )
-				);
+				) && Encode_Format::from_array( (array) $job )->current_user_can_manage();
 
 				if ( $can_delete_job ) {
 					$should_delete = true;
@@ -1276,8 +1269,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 
 		try {
 			// Permission check.
-			$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
-			if ( ! current_user_can( 'edit_others_video_encodes' ) && ! ( current_user_can( 'encode_videos' ) && $is_own_job ) ) {
+			if ( ! Encode_Format::from_array( (array) $job )->current_user_can_manage() ) {
 				return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to retry this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
 			}
 

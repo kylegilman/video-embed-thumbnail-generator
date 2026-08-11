@@ -626,7 +626,7 @@ class Encode_Attachment {
 				// We check permission against the parent attachment if no child ID is present yet.
 				$attachment_id_to_check = ( ! empty( $format_array['id'] ) && is_numeric( $format_array['id'] ) ) ? (int) $format_array['id'] : (int) $this->id;
 				$attachment_post        = get_post( $attachment_id_to_check );
-				if ( $attachment_post && ( (int) get_current_user_id() === (int) $attachment_post->post_author || current_user_can( 'edit_others_video_encodes' ) ) ) {
+				if ( $attachment_post && Encode_Format::user_can_manage( (int) $attachment_post->post_author ) ) {
 					$format_array['deletable'] = true;
 				}
 			}
@@ -1811,9 +1811,7 @@ class Encode_Attachment {
 			return false;
 		}
 
-		$can_cancel_own_job = ( (int) get_current_user_id() === (int) $encode_format->get_user_id() && current_user_can( 'encode_videos' ) );
-
-		if ( ! ( $can_cancel_own_job || current_user_can( 'edit_others_video_encodes' ) ) ) {
+		if ( ! $encode_format->current_user_can_manage() ) {
 			$encode_format->set_error( (string) __( 'User does not have permission to cancel this encoding job.', 'video-embed-thumbnail-generator' ) );
 			$this->save_format( $encode_format );
 			return false;
@@ -2072,9 +2070,13 @@ class Encode_Attachment {
 			return false;
 		}
 
-		// Security: Check if user can edit the parent video.
+		// Security: Check if user can edit the parent video. Matches
+		// delete_format()'s equivalent check (own post + encode_videos, or
+		// edit_others_video_encodes) via Encode_Format::user_can_manage() --
+		// this "no formal job record" path used to skip the encode_videos
+		// requirement for the owner case entirely.
 		$parent_post = get_post( (int) $this->id );
-		if ( ! $parent_post || ! ( (int) get_current_user_id() === (int) $parent_post->post_author || current_user_can( 'edit_others_video_encodes' ) ) ) {
+		if ( ! $parent_post || ! Encode_Format::user_can_manage( (int) $parent_post->post_author ) ) {
 			return false;
 		}
 
@@ -2102,10 +2104,7 @@ class Encode_Attachment {
 			return false;
 		}
 
-		$can_delete_own_job    = ( (int) get_current_user_id() === (int) $encode_format->get_user_id() && current_user_can( 'encode_videos' ) );
-		$can_delete_others_job = (bool) current_user_can( 'edit_others_video_encodes' );
-
-		if ( ! ( $can_delete_own_job || $can_delete_others_job ) ) {
+		if ( ! $encode_format->current_user_can_manage() ) {
 			$encode_format->set_error( (string) __( 'User does not have permission to delete this encoding job.', 'video-embed-thumbnail-generator' ) );
 			$this->save_format( $encode_format );
 			return false;
