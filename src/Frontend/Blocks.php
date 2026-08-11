@@ -472,11 +472,27 @@ class Blocks implements Hook_Subscriber {
 		}
 		$attributes['gallery_pagination'] = $has_pagination;
 
-		$instance_id   = $attributes['instanceId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
-		$collection_id = $attributes['collectionId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
+		$instance_id           = $attributes['instanceId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
+		$has_saved_collection_id = ! empty( $attributes['collectionId'] );
+		$collection_id          = $attributes['collectionId'] ?? ( 'vp_' . \Videopack\Admin\Ui::$instance_counter++ );
 
-		$attributes['instanceId']                          = $instance_id;
-		$attributes['collectionId']                        = $collection_id;
+		$attributes['instanceId'] = $instance_id;
+		// Deliberately NOT writing a synthesized collectionId back into
+		// $attributes -- $attributes flows into
+		// Modular_Renderer::render_video_container()'s data-settings-cache,
+		// which is echoed to the client and resubmitted on the next
+		// pagination request. Gallery::collection_page() treats a submitted
+		// collectionId as proof this is a real, previously-saved Collection
+		// block instance (see Blocks::locate_collection_inner_blocks()) --
+		// echoing a synthesized one for the [videopack] shortcode's
+		// synthetic markup (which never has a real one) would make its
+		// pagination requests wrongly take that lookup path and 404, since
+		// nothing was ever saved under this ad hoc ID. The local
+		// $collection_id variable below still carries it for this render's
+		// own internal use (loop context, per-item cache keys, etc).
+		if ( $has_saved_collection_id ) {
+			$attributes['collectionId'] = $collection_id;
+		}
 		self::$collection_metadata_cache[ $collection_id ] = array();
 
 		$gallery_handler = new Gallery( $this->options, $this->format_registry );

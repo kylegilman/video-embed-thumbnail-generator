@@ -524,19 +524,26 @@ class Gallery {
 		$query_atts['page_number'] = $page_number;
 		$query_atts['currentPage'] = $page_number;
 
-		// Capture the client-submitted collectionId, if any, BEFORE the
-		// fallback synthesis below overwrites it -- this raw value is the
-		// security-relevant signal: its presence unambiguously proves "this
-		// is a real, previously-saved Collection block instance" (only
+		// Capture the client-submitted collectionId, if any -- this raw value
+		// is the security-relevant signal: its presence unambiguously proves
+		// "this is a real, previously-saved Collection block instance" (only
 		// Blocks::render_collection() ever sets a real one, persisted via
 		// edit.js's setAttributes; the [videopack] shortcode's synthetic
 		// markup never has one, since it's built fresh in memory on every
 		// request rather than saved anywhere). See Blocks::locate_collection_inner_blocks().
+		//
+		// Deliberately no fallback synthesis here when it's absent: $query_atts
+		// gets serialized into the synthetic <!-- wp:videopack/collection -->
+		// markup below and re-enters Blocks::render_collection() via
+		// do_blocks(). If a synthetic ID were written into $query_atts here,
+		// it would come back out in *this response's* rendered HTML (its own
+		// data-settings-cache), get resubmitted on the *next* pagination
+		// request, and 404 there -- since it was never actually saved under
+		// that ad hoc ID. Leaving it unset keeps every hop of a shortcode
+		// gallery's pagination on the same "rebuild from atts" path as the
+		// first page, not just the first hop.
 		$submitted_collection_id = (string) ( $query_atts['collectionId'] ?? '' );
 
-		if ( empty( $query_atts['collectionId'] ) ) {
-			$query_atts['collectionId'] = 'vp_gallery_' . ( $query_atts['gallery_id'] ?? 'default' );
-		}
 		$query_atts['layout'] = ( 'gallery' === $layout || 'grid' === $layout ) ? ( $query_atts['layout'] ?? 'grid' ) : 'list';
 
 		/**
