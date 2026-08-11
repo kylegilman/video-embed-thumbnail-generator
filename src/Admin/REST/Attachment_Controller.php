@@ -129,6 +129,16 @@ class Attachment_Controller extends Controller {
 		$url           = (string) $request->get_param( 'url' );
 		$presets       = array();
 
+		// Video_Metadata (constructed inside Encode_Attachment below) runs
+		// `ffmpeg -i <url>` directly against whichever of these resolves to
+		// the encode input -- reject a playlist/manifest here too, same as
+		// Job_Controller::jobs_create(), since this is a separate path to
+		// the same ffmpeg invocation and gated by the weaker upload_files
+		// capability rather than encode_videos.
+		if ( self::is_playlist_manifest_url( $url ) || self::is_playlist_manifest_url( (string) wp_get_attachment_url( $attachment_id ) ) ) {
+			return new \WP_Error( 'unsupported_input_type', 'Playlist/manifest URLs (HLS, DASH, etc.) are not supported as encode input.', array( 'status' => 400 ) );
+		}
+
 		$browser_metadata = array();
 		if ( $request->get_param( 'width' ) && $request->get_param( 'height' ) ) {
 			$browser_metadata['actualwidth']  = (int) $request->get_param( 'width' );

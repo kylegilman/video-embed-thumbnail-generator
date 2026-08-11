@@ -26,8 +26,12 @@ class EncodeErrorRedactionTest extends WP_UnitTestCase {
 
 	public function set_up() {
 		parent::set_up();
-		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options() );
-		$queue_controller->ensure_table_exists();
+		// add_table() (dbDelta-based, idempotent) rather than
+		// ensure_table_exists() -- the latter caches its existence check in
+		// a method-static variable that persists across test classes within
+		// the same PHPUnit process, so it can short-circuit based on
+		// another class's earlier call.
+		( new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options() ) )->add_table();
 	}
 
 	// -----------------------------------------------------------------

@@ -109,6 +109,38 @@ const AdditionalFormats = ( {
 		return ! attributes.id || isSrcExternal;
 	}, [ attributes.id, src ] );
 
+	// A streaming playlist/manifest (HLS .m3u8, DASH .mpd, etc. -- the core
+	// plugin registers these as allowed upload mimes, and cloud-streaming
+	// generates them as adaptive-streaming output) was never a genuinely
+	// re-encodable single video file, and the REST endpoint this panel
+	// calls now rejects them outright (Controller::is_playlist_manifest_url()
+	// -- ffmpeg's own playlist demuxers are a real, historically-exploited
+	// SSRF vector when fed an attacker-influenceable URL). Mirror that same
+	// extension check here so the panel simply doesn't appear for this kind
+	// of attachment, rather than rendering and then failing.
+	const isStreamingManifest = useMemo( () => {
+		if ( ! src ) {
+			return false;
+		}
+		const manifestExtensions = [
+			'm3u8',
+			'm3u',
+			'mpd',
+			'ism',
+			'isml',
+			'f4m',
+		];
+		let path = src;
+		try {
+			path = new URL( src, window.location.origin ).pathname;
+		} catch {
+			// Fall back to the raw src (minus any query string) below.
+		}
+		const withoutQuery = path.split( '?' )[ 0 ];
+		const extension = withoutQuery.split( '.' ).pop().toLowerCase();
+		return manifestExtensions.includes( extension );
+	}, [ src ] );
+
 	const [ isOpen, setIsOpen ] = useState( false );
 	const [ encodeMessage, setEncodeMessage ] = useState();
 	const [ itemToDelete, setItemToDelete ] = useState( null ); // { type: 'file'/'job', formatId: string, jobId?: int, id?: int, name?: string }
@@ -277,7 +309,7 @@ const AdditionalFormats = ( {
 
 	// Initial fetch
 	useEffect( () => {
-		if ( isProbing || ! isOpen || isDiscovering ) {
+		if ( isStreamingManifest || isProbing || ! isOpen || isDiscovering ) {
 			return;
 		}
 
@@ -289,7 +321,14 @@ const AdditionalFormats = ( {
 		const controller = new AbortController();
 		fetchVideoFormats( controller.signal );
 		return () => controller.abort();
-	}, [ fetchVideoFormats, isProbing, isOpen, isDiscovering, videoFormats ] );
+	}, [
+		fetchVideoFormats,
+		isStreamingManifest,
+		isProbing,
+		isOpen,
+		isDiscovering,
+		videoFormats,
+	] );
 
 	const shouldPoll = ( formats ) => {
 		if ( ! formats ) {
@@ -888,6 +927,10 @@ const AdditionalFormats = ( {
 				videoFormats
 		  )
 		: {};
+
+	if ( isStreamingManifest ) {
+		return null;
+	}
 
 	return (
 		<>

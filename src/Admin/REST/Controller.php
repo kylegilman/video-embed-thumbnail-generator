@@ -131,6 +131,42 @@ abstract class Controller extends \WP_REST_Controller implements Hook_Subscriber
 	}
 
 	/**
+	 * Whether a URL's extension identifies it as a streaming
+	 * playlist/manifest (HLS, DASH, Smooth Streaming, HDS) rather than a
+	 * single discrete video file.
+	 *
+	 * This plugin's encode presets -- and its metadata probing
+	 * (Video_Metadata, which runs `ffmpeg -i <url>` directly against
+	 * whatever URL it's given, reachable via both Job_Controller::
+	 * jobs_create() and Attachment_Controller::formats_get()) -- expect
+	 * one input file. A playlist/manifest is a different kind of thing (a
+	 * reference to multiple segment/quality URLs) that was never a
+	 * genuinely supported input, and is also the specific mechanism that
+	 * lets ffmpeg's HLS/DASH demuxers make secondary, attacker-chosen
+	 * requests embedded in the fetched content (a real,
+	 * historically-exploited class of ffmpeg SSRF -- e.g. CVE-2016-1897,
+	 * CVE-2023-6603). This is a narrow, cheap pre-filter, not a complete
+	 * fix: ffmpeg's own content-sniffing has had bugs (CVE-2023-6601) that
+	 * let a disguised playlist bypass an extension check by pretending to
+	 * be a different file type.
+	 *
+	 * @param string $url The input URL to check.
+	 * @return bool
+	 */
+	protected static function is_playlist_manifest_url( string $url ): bool {
+		if ( '' === $url ) {
+			return false;
+		}
+
+		$playlist_extensions = array( 'm3u8', 'm3u', 'mpd', 'ism', 'isml', 'f4m' );
+
+		$path      = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$extension = strtolower( (string) pathinfo( $path, PATHINFO_EXTENSION ) );
+
+		return in_array( $extension, $playlist_extensions, true );
+	}
+
+	/**
 	 * Permissions callback for public routes.
 	 *
 	 * @param \WP_REST_Request $request The REST request object.

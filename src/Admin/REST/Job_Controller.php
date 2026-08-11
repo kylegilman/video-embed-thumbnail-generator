@@ -125,6 +125,10 @@ class Job_Controller extends Controller {
 			return new \WP_Error( 'invalid_input', 'Invalid input URL or attachment ID.', array( 'status' => 400 ) );
 		}
 
+		if ( self::is_playlist_manifest_url( $input_url ) ) {
+			return new \WP_Error( 'unsupported_input_type', 'Playlist/manifest URLs (HLS, DASH, etc.) are not supported as encode input.', array( 'status' => 400 ) );
+		}
+
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 		$result           = $queue_controller->enqueue_encodes(
 			array(
