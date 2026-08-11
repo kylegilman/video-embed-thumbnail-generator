@@ -207,6 +207,19 @@ class Thumbnail_Controller extends Controller {
 		$attachment_id = (int) $request->get_param( 'attachment_id' );
 		$parent_id     = (int) $request->get_param( 'parent_id' );
 
+		// generate_thumbnail_at_timecode()/generate_single_thumbnail_data()
+		// below construct a Video_Metadata, which runs `ffmpeg -i <url>`
+		// directly against whatever the source resolves to -- reject a
+		// playlist/manifest here too, same as Job_Controller::jobs_create()
+		// and Attachment_Controller::formats_get(), covering both a raw
+		// url param and an attachment whose own resolved URL is a manifest
+		// (m3u8/mpd are allowed upload mimes -- Attachment::add_mime_types()).
+		if ( self::is_playlist_manifest_url( (string) $request->get_param( 'url' ) )
+			|| ( $attachment_id && self::is_playlist_manifest_url( (string) wp_get_attachment_url( $attachment_id ) ) )
+		) {
+			return new \WP_Error( 'unsupported_input_type', 'Playlist/manifest URLs (HLS, DASH, etc.) are not supported as a thumbnail source.', array( 'status' => 400 ) );
+		}
+
 		if ( $attachment_id ) {
 			$can_edit = $this->ensure_can_set_thumbnail( $attachment_id, 0, false );
 			if ( is_wp_error( $can_edit ) ) {
