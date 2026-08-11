@@ -176,6 +176,15 @@ class Public_Controller extends Controller {
 			return new \WP_Error( 'rest_source_not_found', 'Video source could not be found.', array( 'status' => 404 ) );
 		}
 
+		// This is a public, unauthenticated route -- an attachment's own
+		// visibility follows its parent post's status (WP core's own
+		// attachment permalink template already 404s in this case; this
+		// custom route needs the same check, since it doesn't go through
+		// that template at all).
+		if ( $source instanceof \Videopack\Video_Source\Source_Attachment && ! is_post_publicly_viewable( (int) $source->get_id() ) ) {
+			return new \WP_Error( 'rest_source_not_found', 'Video source could not be found.', array( 'status' => 404 ) );
+		}
+
 		// This endpoint is only ever a safety-net fallback — the normal path
 		// pre-embeds a player built by this exact same shared function (see
 		// Blocks::render_collection()/render_thumbnail()), so opening the
@@ -233,6 +242,12 @@ class Public_Controller extends Controller {
 
 		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
 		if ( ! $source || ! $source->exists() ) {
+			return new \WP_Error( 'rest_source_not_found', 'Video source could not be found.', array( 'status' => 404 ) );
+		}
+
+		// Same as video_player() -- a public route, so an attachment's own
+		// visibility needs to follow its parent post's status here too.
+		if ( $source instanceof \Videopack\Video_Source\Source_Attachment && ! is_post_publicly_viewable( (int) $source->get_id() ) ) {
 			return new \WP_Error( 'rest_source_not_found', 'Video source could not be found.', array( 'status' => 404 ) );
 		}
 
