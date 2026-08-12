@@ -841,10 +841,22 @@ abstract class Source {
 				$resolution_object = $formats[ $this->format ]->get_resolution();
 				$this->resolution  = $resolution_object->get_height();
 			}
-		} elseif ( $this->get_height() ) {
-			$resolutions = $this->format_registry->get_video_resolutions();
+		} elseif ( ! empty( $this->metadata['actualheight'] ) ) {
+			// $this->metadata['actualheight'], not get_height() -- get_height()
+			// falls back to the plugin's configured *display* height
+			// (metadata['height'], e.g. 540 by default) whenever the real
+			// video dimensions haven't been detected yet, which is the right
+			// behavior for sizing a <video> element but wrong here: a fresh
+			// upload with no real dimensions yet would otherwise coincidentally
+			// "match" a registered resolution just because it shares the same
+			// number as the layout default, wrongly resolving to a real format
+			// ID instead of 'original' and making is_original() skip
+			// get_child_sources()'s scan for this source's real alternate
+			// encoded files.
+			$actual_height = (int) $this->metadata['actualheight'];
+			$resolutions   = $this->format_registry->get_video_resolutions();
 			foreach ( $resolutions as $resolution ) {
-				if ( $resolution->get_height() === $this->get_height() ) {
+				if ( $resolution->get_height() === $actual_height ) {
 					$this->resolution = $resolution->get_height();
 					break;
 				}

@@ -40,7 +40,12 @@ class SourceFormatResolutionTest extends WP_UnitTestCase {
 
 	protected function url_source_with_dimensions( string $url, int $width, int $height ) {
 		$source = Source_Factory::create( $url, $this->options(), $this->registry() );
-		$source->set_metadata( array( 'width' => $width, 'height' => $height ) );
+		// actualwidth/actualheight specifically -- set_resolution() only
+		// trusts these (real, detected dimensions), not the plain
+		// width/height keys (which for Source_Attachment carry the plugin's
+		// configured *display* default, not a real detected size -- see the
+		// comment on Source::set_resolution()).
+		$source->set_metadata( array( 'actualwidth' => $width, 'actualheight' => $height ) );
 		return $source;
 	}
 
@@ -92,6 +97,32 @@ class SourceFormatResolutionTest extends WP_UnitTestCase {
 
 	public function test_falls_back_to_original_when_the_mime_type_resolves_to_no_codec(): void {
 		$source = $this->url_source_with_dimensions( 'https://videos.example.test/video.xyz', 1280, 720 );
+
+		$this->assertSame( 'original', $source->get_format() );
+		$this->assertTrue( $source->is_original() );
+	}
+
+	/**
+	 * Regression test for a third bug found while adding coverage for
+	 * get_child_sources(): Attachment_Meta's metadata defaults include a
+	 * 'height' key that's the plugin's *configured display height*
+	 * (default 540px, for sizing the <video> element before real
+	 * dimensions are known) -- not a real detected video height, unlike
+	 * 'actualheight' (null until real detection happens). Before this fix,
+	 * set_resolution() read get_height(), which falls back to that display
+	 * default -- so a freshly uploaded, not-yet-probed attachment would
+	 * spuriously "match" whatever registered resolution happened to share
+	 * that default's number (540 is one), resolving to a real format ID
+	 * instead of 'original' and making is_original() wrongly skip
+	 * get_child_sources()'s scan for the attachment's real encoded files.
+	 * A plain 'height' metadata key (no 'actualheight') must never feed
+	 * the format-resolution match.
+	 */
+	public function test_a_plain_height_metadata_key_without_actualheight_does_not_feed_the_lookup(): void {
+		$source = Source_Factory::create( 'https://videos.example.test/video.mp4', $this->options(), $this->registry() );
+		// 540 is a real registered resolution -- proves this isn't ignored
+		// merely because it fails to match anything.
+		$source->set_metadata( array( 'width' => 960, 'height' => 540 ) );
 
 		$this->assertSame( 'original', $source->get_format() );
 		$this->assertTrue( $source->is_original() );
