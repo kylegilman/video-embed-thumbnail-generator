@@ -36,7 +36,17 @@ These aren't caught by CI and are easy to let drift:
       matching WordPress core's own documented floor (wordpress.org/about/requirements/);
       keep them in sync if this ever changes
 - [ ] `Tested up to` reflects a WordPress version you've actually run the
-      E2E suite against recently
+      E2E suite against recently -- and `.wp-env.json`'s `core` pin
+      (`WordPress/WordPress#X.Y`) matches it. CI/local `wp-env` both resolve
+      against that exact tag, so this can't silently drift, but it also
+      won't self-update: bump it by hand when `Tested up to` changes.
+      Deliberately pinned rather than `null` ("latest") -- `wp-env` resolves
+      "latest" via the WordPress.org version-check API and then `git fetch`es
+      that version as a tag from the WordPress git mirror, which can briefly
+      lag a just-published point release (e.g. `7.0.4`) and fail CI with
+      "couldn't find remote ref" until the mirror catches up -- a transient
+      upstream issue, not anything in this repo, but pinning to an
+      already-mirrored version avoids ever hitting it.
 
 ## 3. Manual smoke test (things CI genuinely can't cover)
 
