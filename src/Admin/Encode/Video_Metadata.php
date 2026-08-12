@@ -240,30 +240,7 @@ class Video_Metadata {
 			$movie_duration_seconds = floatval( substr( $duration, -5 ) );
 			$this->duration         = ( $movie_duration_hours * 60 * 60 ) + ( $movie_duration_minutes * 60 ) + $movie_duration_seconds;
 
-			preg_match( '/rotate          : (.*?)\n/', $output, $matches );
-			if ( isset( $matches[1] ) ) {
-				$rotate = $matches[1];
-			} else {
-				$rotate = '0';
-			}
-
-			switch ( $rotate ) {
-				case '90':
-					$this->rotate = 90;
-					break;
-				case '180':
-					$this->rotate = 180;
-					break;
-				case '270':
-					$this->rotate = 270;
-					break;
-				case '-90':
-					$this->rotate = 270;
-					break;
-				default:
-					$this->rotate = '';
-					break;
-			}
+			$this->rotate = self::parse_rotation( $output );
 		} else {
 			$this->worked = false;
 			if ( $this->is_attachment ) {
@@ -313,6 +290,44 @@ class Video_Metadata {
 				$merged_meta['codec'] = $this->codec;
 			}
 			$attachment_meta_instance->save( $merged_meta );
+		}
+	}
+
+	/**
+	 * Parses the display rotation out of `ffmpeg -i` stderr output.
+	 *
+	 * Checks the legacy `rotate` metadata tag first, then falls back to the
+	 * `displaymatrix` side-data line that newer encoders emit instead of (or
+	 * in addition to) the tag.
+	 *
+	 * @param string $output Raw stderr output from `ffmpeg -i`.
+	 * @return int|string Rotation in degrees (90, 180, or 270), or '' if none/unrecognized.
+	 */
+	public static function parse_rotation( string $output ) {
+		preg_match( '/rotate          : (.*?)\n/', $output, $matches );
+		if ( isset( $matches[1] ) ) {
+			$rotate = (int) $matches[1];
+		} elseif ( preg_match( '/displaymatrix: rotation of (-?[0-9.]+) degrees/', $output, $matrix_matches ) ) {
+			// Newer encoders often express rotation only via a display matrix rather
+			// than the legacy `rotate` tag. Its sign convention is the inverse of the
+			// `rotate` tag's, so it has to be negated before normalizing below.
+			$rotate = (int) round( -1 * (float) $matrix_matches[1] );
+		} else {
+			$rotate = 0;
+		}
+
+		// Normalize to a positive 0-359 value so both sources land on the same scale.
+		$rotate = ( ( $rotate % 360 ) + 360 ) % 360;
+
+		switch ( $rotate ) {
+			case 90:
+				return 90;
+			case 180:
+				return 180;
+			case 270:
+				return 270;
+			default:
+				return '';
 		}
 	}
 }
