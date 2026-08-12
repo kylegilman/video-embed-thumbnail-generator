@@ -621,7 +621,14 @@ abstract class Source {
 			$this->mime_type = mime_content_type( $this->get_direct_path() );
 		} else {
 			// For remote files, or local files that don't exist (placeholders).
-			$filetype = wp_check_filetype( $this->get_url() );
+			// wp_check_filetype() matches the extension against the end of
+			// the string, so a query string (signed/tokenized CDN URLs,
+			// cache-busting params -- common for remote sources) would
+			// otherwise make every one of these resolve to no mime type at
+			// all. Attachment_Meta::url_mime_type() already strips it for
+			// the same reason; match that here.
+			$query_stripped_url = (string) strtok( (string) $this->get_url(), '?' );
+			$filetype            = wp_check_filetype( $query_stripped_url );
 			if ( ! empty( $filetype['type'] ) ) {
 				$this->mime_type = $filetype['type'];
 			}
@@ -664,12 +671,23 @@ abstract class Source {
 	 * Sets the Videopack video format ID based on codec and resolution.
 	 */
 	protected function set_format(): void {
-		$codec = $this->get_codec();
+		$codec      = $this->get_codec();
+		// get_resolution(), not the raw $this->resolution property -- the
+		// property is only populated once something has already called
+		// get_resolution() (it's lazily set), so reading it directly here
+		// made this method's success depend on incidental prior calls
+		// elsewhere having already triggered that.
+		$resolution = $this->get_resolution();
 
-		if ( $codec && $this->resolution ) {
+		if ( $codec && $resolution ) {
 			$formats = $this->format_registry->get_video_formats();
 			foreach ( $formats as $format ) {
-				if ( $format->get_codec() === $codec && $format->get_resolution()->get_height() === $this->resolution ) {
+				// Compare codec IDs, not object identity -- Registry::get_video_codecs()
+				// builds a fresh set of Video_Codec objects on every call (including the
+				// one get_video_formats() makes internally to build each Video_Format's
+				// own codec), so $format->get_codec() is never the same instance as
+				// $codec above even when they represent the same codec.
+				if ( $format->get_codec()->get_id() === $codec->get_id() && $format->get_resolution()->get_height() === $resolution ) {
 					$this->format = $format->get_id();
 					break;
 				}
