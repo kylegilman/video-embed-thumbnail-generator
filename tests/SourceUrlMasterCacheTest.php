@@ -128,6 +128,23 @@ class SourceUrlMasterCacheTest extends WP_UnitTestCase {
 		$this->assertFalse( $response->get_data()['url_check_cached'] );
 	}
 
+	public function test_formats_get_rejects_no_id_and_no_url_instead_of_crashing(): void {
+		// Reproduces a real bug found via direct REST calls (not reachable
+		// through AdditionalFormats.js today, which always guards on `src`
+		// before calling -- but the route itself had no such guard):
+		// Encode_Info's constructor calls Source_Factory::create() with no
+		// guard of its own, so an empty id+url pair reached Source_Placeholder,
+		// whose constructor throws on an empty source -- an uncaught
+		// exception, i.e. a 500 error, instead of a clean 400.
+		$request = new WP_REST_Request( 'GET', '/videopack/v1/attachment/0/formats' );
+		$request->set_param( 'id', 0 );
+
+		$response = $this->controller()->formats_get( $request );
+
+		$this->assertWPError( $response );
+		$this->assertSame( 400, $response->get_error_data()['status'] );
+	}
+
 	public function test_source_status_is_never_cached_for_a_real_attachment_id_alone(): void {
 		// Even if this attachment ID's own URL happens to have a cached
 		// check under some other key, resolving by ID alone (no url param)

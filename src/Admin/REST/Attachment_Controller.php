@@ -173,6 +173,13 @@ class Attachment_Controller extends Controller {
 		$url           = (string) $request->get_param( 'url' );
 		$presets       = array();
 
+		// Nothing identifies a source at all -- Encode_Attachment/Encode_Info
+		// would go on to call Source_Factory::create() with an empty value,
+		// which falls through to Source_Placeholder and throws.
+		if ( ! $attachment_id && ! $url ) {
+			return new \WP_Error( 'rest_invalid_param', 'Missing attachment ID or URL.', array( 'status' => 400 ) );
+		}
+
 		// Video_Metadata (constructed inside Encode_Attachment below) runs
 		// `ffmpeg -i <url>` directly against whichever of these resolves to
 		// the encode input -- reject a playlist/manifest here too, same as

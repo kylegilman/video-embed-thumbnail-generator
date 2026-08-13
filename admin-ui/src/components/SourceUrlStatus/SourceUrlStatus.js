@@ -38,6 +38,11 @@ const SourceUrlStatus = ( { attachmentId, src } ) => {
 
 	const fetchStatus = useCallback( async () => {
 		if ( ! src ) {
+			// Nothing to check anymore -- e.g. the source this was showing
+			// a stale answer for got its attributes reset (deleted
+			// attachment, etc). Don't leave a stale "cached" notice (and
+			// its now-stale-props button) showing.
+			setIsCached( false );
 			return;
 		}
 		try {
@@ -55,6 +60,9 @@ const SourceUrlStatus = ( { attachmentId, src } ) => {
 	}, [ fetchStatus ] );
 
 	const handleRefresh = async () => {
+		if ( ! src ) {
+			return;
+		}
 		setIsRefreshing( true );
 		setError( null );
 		try {
