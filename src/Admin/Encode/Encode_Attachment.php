@@ -12,6 +12,7 @@ use Videopack\Common\Debug_Logger;
 use Videopack\Admin\Attachment;
 use Videopack\Admin\Attachment_Meta;
 use Videopack\Admin\Formats\Video_Format;
+use Videopack\Video_Source\Video_Source_Finder;
 
 /**
  * Class Encode_Attachment
@@ -549,6 +550,10 @@ class Encode_Attachment {
 			$job_exists                = isset( $encoded_jobs_map[ $format_id ] );
 
 			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options, $this->format_registry );
+
+			$format_array['checked_url']      = $encode_info->checked_url;
+			$format_array['url_check_cached'] = $encode_info->url_check_cached;
+
 			$file_exists = false;
 			if ( (bool) $encode_info->exists ) {
 				if ( ! empty( $encode_info->path ) && is_file( (string) $encode_info->path ) ) {
@@ -688,6 +693,32 @@ class Encode_Attachment {
 		}
 
 		return (array) $video_formats_data;
+	}
+
+	/**
+	 * Clears any cached remote-URL existence-check results for this
+	 * source's formats -- see get_all_formats_with_status()'s
+	 * 'url_check_cached' field, which is what a "refresh" control in the
+	 * admin UI would show/hide against. Scoped to the whole source (all of
+	 * its formats) rather than one format at a time, since a stale check
+	 * for one format usually means the same remote host was unreachable
+	 * for all of them.
+	 *
+	 * @return int The number of cached checks that were cleared.
+	 */
+	public function clear_cached_url_checks(): int {
+		$cleared              = 0;
+		$all_defined_formats  = (array) $this->format_registry->get_video_formats();
+
+		foreach ( $all_defined_formats as $video_format_obj ) {
+			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options, $this->format_registry );
+			if ( $encode_info->checked_url && $encode_info->url_check_cached ) {
+				Video_Source_Finder::clear_cached_url_check( $encode_info->checked_url );
+				++$cleared;
+			}
+		}
+
+		return $cleared;
 	}
 
 	/**

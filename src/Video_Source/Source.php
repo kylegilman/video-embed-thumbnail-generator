@@ -1154,6 +1154,19 @@ abstract class Source {
 	}
 
 	/**
+	 * Finds a format for a URL-sourced job in the local WP uploads
+	 * directory -- see Video_Source_Finder::find_format_in_uploads_directory()
+	 * for why this is distinct from find_format_in_same_directory().
+	 *
+	 * @param \Videopack\Admin\Formats\Video_Format $format The format to find.
+	 * @return bool True if found, false otherwise.
+	 */
+	protected function find_format_in_uploads_directory( \Videopack\Admin\Formats\Video_Format $format ): bool {
+
+		return Video_Source_Finder::find_format_in_uploads_directory( $format, $this );
+	}
+
+	/**
 	 * Finds the given format alongside this source, resolving via URL rather than filesystem path.
 	 *
 	 * @param \Videopack\Admin\Formats\Video_Format $format The format to find.

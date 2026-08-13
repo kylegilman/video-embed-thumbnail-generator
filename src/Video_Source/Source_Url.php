@@ -86,14 +86,26 @@ class Source_Url extends Source {
 
 	/**
 	 * Sets the child sources.
+	 *
+	 * A Source_Url is, by construction, always a genuinely different host
+	 * from this WordPress install (Source_Factory::determine_source_type()
+	 * converts any same-host URL to a real local path -- Source_File --
+	 * before a Source_Url is ever created), so "same directory as this
+	 * source" only makes sense as a check against that *remote* host
+	 * (find_format_in_same_url_directory()). A separate, distinct scenario
+	 * -- an encoded alternate format for a URL-sourced job, which
+	 * Encode_Attachment writes to the local WP uploads directory since
+	 * there's no local original to sit next to (see Encode_Info's
+	 * set_default_url_and_path() fallback for a source with no attachment
+	 * ID) -- is checked explicitly via find_format_in_uploads_directory(),
+	 * not the generic same-directory check the other Source subclasses use.
 	 */
 	protected function set_child_sources(): void {
 
 		foreach ( $this->video_formats as $format ) {
 
 			if ( $this->options['find_formats'] ) {
-				$same_directory = $this->find_format_in_same_directory( $format );
-				if ( $same_directory ) {
+				if ( $this->find_format_in_uploads_directory( $format ) ) {
 					continue;
 				}
 				$same_url_directory = $this->find_format_in_same_url_directory( $format, $this->get_parent_id() );

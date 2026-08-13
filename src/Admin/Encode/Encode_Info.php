@@ -71,6 +71,25 @@ class Encode_Info {
 	public $deletable = false;
 
 	/**
+	 * The remote URL check_url_exists() checked (or attempted to check)
+	 * for this format, if any. Null when this format's location was found
+	 * some other way (a real local file, or a formal queue job) without
+	 * ever needing a remote existence check.
+	 *
+	 * @var string|null $checked_url
+	 */
+	public $checked_url = null;
+
+	/**
+	 * Whether checked_url currently has a cached (not yet expired)
+	 * existence-check result -- i.e. whether "refresh" would mean
+	 * anything for it right now.
+	 *
+	 * @var bool $url_check_cached
+	 */
+	public $url_check_cached = false;
+
+	/**
 	 * Video width.
 	 *
 	 * @var int|null $width
@@ -311,6 +330,12 @@ class Encode_Info {
 		if ( $clean_url && $clean_original && rawurldecode( $clean_url ) === rawurldecode( $clean_original ) ) {
 			return;
 		}
+
+		$this->checked_url = $url;
+		// Read before url_exists() runs -- that call populates the cache as
+		// a side effect if it wasn't already, so checking after would
+		// always report true.
+		$this->url_check_cached = Video_Source_Finder::has_cached_url_check( $url );
 
 		if ( $this->source->url_exists( $url ) ) {
 			$this->exists = true;

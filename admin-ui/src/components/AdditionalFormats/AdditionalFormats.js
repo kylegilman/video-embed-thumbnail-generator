@@ -21,7 +21,12 @@ import { store as coreStore } from '@wordpress/core-data';
 import EncodeFormatStatus from './EncodeFormatStatus';
 import { getVideoFormats } from '../../api/gallery';
 import { enqueueJob, deleteJob } from '../../api/jobs';
-import { deleteFile, deleteFormat, assignFormat } from '../../api/media';
+import {
+	deleteFile,
+	deleteFormat,
+	assignFormat,
+	clearAttachmentUrlCache,
+} from '../../api/media';
 import { getEffectiveFfmpegExists } from '../../utils/ffmpegCapability';
 
 /**
@@ -150,6 +155,7 @@ const AdditionalFormats = ( {
 	const [ isProcessing, setIsProcessing ] = useState( false );
 	const [ processingId, setProcessingId ] = useState( null );
 	const [ isEncoding, setIsEncoding ] = useState( false );
+	const [ isClearingUrlCache, setIsClearingUrlCache ] = useState( false );
 	const siteSettings = useSelect( ( select ) => {
 		return select( 'core' ).getSite();
 	}, [] );
@@ -281,6 +287,40 @@ const AdditionalFormats = ( {
 			videoFormats,
 		]
 	);
+
+	// Shows a single "refresh" control for the whole source (not per-format)
+	// whenever at least one format has a cached remote-URL existence
+	// check -- e.g. a sibling encoded file was uploaded after the last
+	// check, or a previously-unreachable host is back, and the cached
+	// "no" answer (good for a day) is now stale.
+	const hasAnyCachedUrlCheck = useMemo( () => {
+		return (
+			!! videoFormats &&
+			Object.values( videoFormats ).some(
+				( format ) => format.url_check_cached
+			)
+		);
+	}, [ videoFormats ] );
+
+	const handleClearUrlCache = async () => {
+		setIsClearingUrlCache( true );
+		try {
+			await clearAttachmentUrlCache( attributes.id || 0, src );
+			fetchVideoFormats();
+		} catch ( error ) {
+			console.error( 'Error clearing URL cache:', error );
+			const errorMessage = sanitizeError( error );
+			setEncodeMessage(
+				sprintf(
+					/* translators: %s is an error message */
+					__( 'Error: %s', 'video-embed-thumbnail-generator' ),
+					errorMessage
+				)
+			);
+		} finally {
+			setIsClearingUrlCache( false );
+		}
+	};
 
 	const pollVideoFormats = useCallback(
 		async ( signal = null ) => {
@@ -964,6 +1004,21 @@ const AdditionalFormats = ( {
 									'video-embed-thumbnail-generator'
 								) }
 							</div>
+						) }
+						{ hasAnyCachedUrlCheck && (
+							<PanelRow className="videopack-url-cache-refresh-row">
+								<Button
+									variant="tertiary"
+									size="small"
+									onClick={ handleClearUrlCache }
+									isBusy={ isClearingUrlCache }
+									disabled={ isClearingUrlCache }
+									text={ __(
+										'Re-check for encoded files',
+										'video-embed-thumbnail-generator'
+									) }
+								/>
+							</PanelRow>
 						) }
 						<ul
 							className={ `videopack-formats-list${

@@ -9,6 +9,7 @@
 
 use Videopack\Admin\Formats\Registry;
 use Videopack\Video_Source\Source_Factory;
+use Videopack\Video_Source\Source_File;
 
 class SourcePathAndCompatibilityTest extends WP_UnitTestCase {
 
@@ -18,6 +19,10 @@ class SourcePathAndCompatibilityTest extends WP_UnitTestCase {
 
 	protected function url_source( string $url ) {
 		return Source_Factory::create( $url, $this->options(), new Registry( $this->options() ) );
+	}
+
+	protected function file_source( string $path ) {
+		return new Source_File( $path, $this->options(), new Registry( $this->options() ) );
 	}
 
 	// -----------------------------------------------------------------
@@ -49,6 +54,13 @@ class SourcePathAndCompatibilityTest extends WP_UnitTestCase {
 		$source = $this->url_source( 'https://videos.example.test/uploads/2024/video.mp4' );
 
 		$this->assertSame( '/uploads/2024/video', $source->get_no_extension() );
+	}
+
+	public function test_dirname_reflects_the_files_own_path_for_a_local_file_source(): void {
+		$source = $this->file_source( '/var/www/html/wp-content/uploads/2024/video.mp4' );
+
+		$this->assertSame( '/var/www/html/wp-content/uploads/2024', $source->get_dirname() );
+		$this->assertSame( '/var/www/html/wp-content/uploads/2024/video', $source->get_no_extension() );
 	}
 
 	public function test_filename_and_basename_are_sanitized(): void {

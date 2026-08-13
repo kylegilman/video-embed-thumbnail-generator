@@ -18,6 +18,44 @@ namespace Videopack\Video_Source;
 class Video_Source_Finder {
 
 	/**
+	 * Builds the transient key used to cache a URL's existence check.
+	 *
+	 * @param string $url The URL that was (or would be) checked.
+	 * @return string The transient key.
+	 */
+	protected static function url_exists_transient_key( string $url ): string {
+		return 'videopack_url_exists_' . md5( $url );
+	}
+
+	/**
+	 * Checks whether a cached existence-check result is currently stored
+	 * for a URL, without running a new check. Used to decide whether a
+	 * "refresh" control makes sense to show for a given source at all --
+	 * there's nothing to refresh if nothing was ever cached.
+	 *
+	 * @param string $url The URL to check.
+	 * @return bool True if a (not yet expired) cached result exists.
+	 */
+	public static function has_cached_url_check( string $url ): bool {
+		return false !== get_transient( self::url_exists_transient_key( $url ) );
+	}
+
+	/**
+	 * Clears a single URL's cached existence-check result, so the next
+	 * url_exists() call for it re-checks rather than reusing a stale
+	 * answer. Unlike Cleanup::delete_transients() (which finds transients
+	 * via a direct SQL LIKE query against wp_options), this deletes a
+	 * specific known key via delete_transient() -- correct regardless of
+	 * whether an external object cache is active, since transients only
+	 * live in wp_options when one isn't.
+	 *
+	 * @param string $url The URL whose cached result should be cleared.
+	 */
+	public static function clear_cached_url_check( string $url ): void {
+		delete_transient( self::url_exists_transient_key( $url ) );
+	}
+
+	/**
 	 * Checks if a URL exists.
 	 *
 	 * Uses a transient to cache the result for a day.
@@ -27,7 +65,7 @@ class Video_Source_Finder {
 	 */
 	public static function url_exists( $url ) {
 
-		$transient_key = 'videopack_url_exists_' . md5( $url );
+		$transient_key = self::url_exists_transient_key( $url );
 		$exists        = get_transient( $transient_key );
 
 		if ( false !== $exists ) {
@@ -205,6 +243,52 @@ class Video_Source_Finder {
 	}
 
 	/**
+	 * Finds a video format file for a URL-sourced job in the local WP
+	 * uploads directory.
+	 *
+	 * Distinct from find_format_in_same_directory(): "same directory as
+	 * this source" is meaningless for a Source_Url, since it's by
+	 * construction always a genuinely different host (see
+	 * Source_Factory::determine_source_type() -- a same-host URL becomes a
+	 * Source_File with a real local path instead). Encode_Attachment
+	 * writes encoded output for a URL-sourced job (no backing attachment)
+	 * to the WP uploads root, since there's no local original to sit next
+	 * to (see Encode_Info::set_default_url_and_path()'s fallback for a
+	 * source with no attachment ID) -- so this checks that location
+	 * explicitly, rather than overloading get_no_extension()'s meaning for
+	 * this one source type.
+	 *
+	 * @param \Videopack\Admin\Formats\Video_Format $format The video format to find.
+	 * @param Source                                $source The video source instance.
+	 * @return bool True if found and added, false otherwise.
+	 */
+	public static function find_format_in_uploads_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source ): bool {
+
+		$options = $source->get_options();
+		if ( empty( $options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) ) {
+			return false;
+		}
+
+		$uploads = wp_upload_dir();
+		$file    = untrailingslashit( (string) $uploads['path'] ) . '/' . $source->get_filename() . $format->get_suffix();
+
+		if ( ! file_exists( $file ) ) {
+			return false;
+		}
+
+		$attachment_manager = new \Videopack\Admin\Attachment( $source->get_options(), $source->get_registry(), new \Videopack\Admin\Attachment_Meta( $source->get_options() ) );
+		$attachment_id      = $attachment_manager->url_to_id( $file );
+
+		if ( $attachment_id ) {
+			$source->set_child_source( $format->get_id(), $attachment_id, true, 'attachment' );
+			return true;
+		}
+
+		$source->set_child_source( $format->get_id(), $file, true, 'file' );
+		return true;
+	}
+
+	/**
 	 * Finds a video format URL in the same directory as the source URL.
 	 *
 	 * @param \Videopack\Admin\Formats\Video_Format $format The video format to find.
@@ -215,7 +299,22 @@ class Video_Source_Finder {
 
 		$options = $source->get_options();
 		if ( ! empty( $options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) ) {
-			$potential_url = $source->get_no_extension() . $format->get_suffix();
+			// Sanitize_Url, not get_no_extension() -- for a genuinely
+			// cross-host Source_Url, that's the URL's own path with the
+			// scheme+host stripped (see set_path_parts()), which would
+			// produce a host-relative, non-absolute "URL" here. Sanitize_Url
+			// is also what Encode_Info::check_potential_locations() uses to
+			// build the identical candidate for its own "is this format
+			// already encoded" check -- using it here too, rather than a
+			// second, independently-computed version (e.g. one routed
+			// through Source::get_filename(), which runs the result through
+			// sanitize_file_name() and so can disagree with Sanitize_Url's
+			// unsanitized filename for a URL with spaces or special
+			// characters), keeps both checks -- and their cached
+			// url_exists() results -- looking at the same URL for the same
+			// source.
+			$sanitized_url = new \Videopack\Admin\Sanitize_Url( (string) $source->get_url() );
+			$potential_url = $sanitized_url->noextension . $format->get_suffix();
 
 			if ( self::url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
 				$source->set_child_source(
@@ -228,113 +327,5 @@ class Video_Source_Finder {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Returns a Source instance for a specific format from a list of posts.
-	 *
-	 * @param array                                 $posts           Array of attachment post objects.
-	 * @param \Videopack\Admin\Formats\Video_Format $format          The video format to find.
-	 * @param array                                 $options         Videopack options array.
-	 * @param \Videopack\Admin\Formats\Registry     $format_registry        Videopack video formats registry.
-	 * @param int                                   $parent_id       The parent ID.
-	 * @return Source|null The found Source instance or null.
-	 */
-	public static function get_source_from_posts( $posts, \Videopack\Admin\Formats\Video_Format $format, array $options, \Videopack\Admin\Formats\Registry $format_registry, $parent_id ): ?Source {
-		if ( $posts ) {
-			foreach ( $posts as $post ) {
-				if ( is_a( $post, 'WP_Post' ) ) {
-					$meta_format = get_post_meta( $post->ID, '_kgflashmediaplayer-format', true );
-					if ( $meta_format === $format->get_id() || $meta_format === $format->get_legacy_id() ) {
-						return Source_Factory::create(
-							$post->ID,
-							$options,
-							$format_registry,
-							$format->get_id(),
-							true,
-							$parent_id,
-							'attachment'
-						);
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Returns a Source instance for a specific format found in the same directory as the source.
-	 *
-	 * @param \Videopack\Admin\Formats\Video_Format $format     The video format to find.
-	 * @param Source                                $source_obj The video source instance.
-	 * @return Source|null The found Source instance or null.
-	 */
-	public static function get_source_from_same_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ): ?Source {
-		$options = $source_obj->get_options();
-		if ( $options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
-			$file = $source_obj->get_no_extension() . $format->get_suffix();
-			if ( ! file_exists( $file ) ) {
-				$legacy_file = $source_obj->get_no_extension() . $format->get_legacy_suffix();
-				if ( file_exists( $legacy_file ) ) {
-					$file = $legacy_file;
-				}
-			}
-
-			if ( file_exists( $file ) ) {
-				$attachment_manager = new \Videopack\Admin\Attachment( $source_obj->get_options(), $source_obj->get_registry(), new \Videopack\Admin\Attachment_Meta( $source_obj->get_options() ) );
-				$attachment_id      = $attachment_manager->url_to_id( $file );
-
-				if ( $attachment_id ) {
-					return Source_Factory::create(
-						$attachment_id,
-						$source_obj->get_options(),
-						$source_obj->get_registry(),
-						$format->get_id(),
-						true,
-						$source_obj->get_parent_id(),
-						'attachment'
-					);
-				}
-
-				return Source_Factory::create(
-					$file,
-					$source_obj->get_options(),
-					$source_obj->get_registry(),
-					$format->get_id(),
-					true,
-					$source_obj->get_parent_id(),
-					'file'
-				);
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Returns a Source instance for a specific format found in the same URL directory as the source.
-	 *
-	 * @param \Videopack\Admin\Formats\Video_Format $format     The video format to find.
-	 * @param Source                                $source_obj The video source instance.
-	 * @return Source|null The found Source instance or null.
-	 */
-	public static function get_source_from_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ): ?Source {
-
-		$options = $source_obj->get_options();
-		if ( ! empty( $options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) ) {
-			$potential_url = $source_obj->get_no_extension() . $format->get_suffix();
-
-			if ( self::url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
-				return Source_Factory::create(
-					$potential_url,
-					$source_obj->get_options(),
-					$source_obj->get_registry(),
-					$format->get_id(),
-					true,
-					$source_obj->get_parent_id(),
-					'url'
-				);
-			}
-		}
-		return null;
 	}
 }

@@ -89,6 +89,27 @@ class Attachment_Controller extends Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/attachment/(?P<id>\d+)/cache',
+			array(
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'clear_cache_rest' ),
+				'permission_callback' => array( $this, 'can_encode_videos' ),
+				'args'                => array(
+					'id'  => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+					'url' => array(
+						'type'     => 'string',
+						'required' => false,
+						'format'   => 'uri',
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -170,6 +191,46 @@ class Attachment_Controller extends Controller {
 		 * @param \WP_REST_Request  $request  The REST request.
 		 */
 		return apply_filters( 'videopack_rest_attachment_formats_get', new \WP_REST_Response( $presets, 200 ), $request );
+	}
+
+	/**
+	 * REST callback to clear cached remote-URL existence-check results for
+	 * all of a source's formats -- see Encode_Attachment::clear_cached_url_checks().
+	 * Unlike formats_get(), this never constructs Video_Metadata (no
+	 * ffmpeg invocation), since Encode_Attachment::get_video_metadata() is
+	 * never called on this path -- only the per-format Encode_Info lookups
+	 * clear_cached_url_checks() itself performs.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response
+	 */
+	public function clear_cache_rest( \WP_REST_Request $request ) {
+		$attachment_id = (int) $request->get_param( 'id' );
+		$url           = (string) $request->get_param( 'url' );
+
+		$encoder = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id, $url );
+		$cleared = $encoder->clear_cached_url_checks();
+
+		/**
+		 * Filters the REST response after clearing a source's cached
+		 * remote-URL existence checks.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
+		return apply_filters(
+			'videopack_rest_attachment_clear_cache',
+			new \WP_REST_Response(
+				array(
+					'success' => true,
+					'cleared' => $cleared,
+				),
+				200
+			),
+			$request
+		);
 	}
 
 	/**

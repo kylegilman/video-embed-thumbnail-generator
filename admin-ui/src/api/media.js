@@ -89,6 +89,36 @@ export const deleteFormat = async ( attachmentId, formatId ) => {
 };
 
 /**
+ * Clears cached remote-URL existence-check results for all of a source's
+ * formats (e.g. when a sibling file has since been uploaded, or a
+ * previously-unreachable remote host is back up) and re-checks them.
+ *
+ * @param {number|string} attachmentId The ID of the attachment (0 for a
+ *                                     URL-only source with no backing
+ *                                     attachment).
+ * @param {string}        url          Optional. The source URL, for a
+ *                                     URL-only source.
+ */
+export const clearAttachmentUrlCache = async ( attachmentId, url = '' ) => {
+	try {
+		const query = {};
+		if ( url ) {
+			query.url = url;
+		}
+		return await apiFetch( {
+			path: addQueryArgs(
+				`/videopack/v1/attachment/${ attachmentId }/cache`,
+				query
+			),
+			method: 'DELETE',
+		} );
+	} catch ( error ) {
+		console.error( 'Error clearing URL cache:', error );
+		throw error;
+	}
+};
+
+/**
  * Starts a batch process of a particular type.
  *
  * @param {string} type           The type of batch process to start.
