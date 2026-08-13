@@ -37,6 +37,7 @@ import { videopackVideo as icon } from '../../assets/icon';
 import VideoSettings from '../../components/VideoSettings/VideoSettings.js';
 import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../components/AdditionalFormats/AdditionalFormats.js';
+import SourceUrlStatus from '../../components/SourceUrlStatus/SourceUrlStatus.js';
 import useVideoProbe from '../../hooks/useVideoProbe.js';
 import useVideopackContext from '../../hooks/useVideopackContext';
 import { getTitleInnerTemplate } from '../../utils/titleDownloadBlock';
@@ -857,6 +858,10 @@ export default function Edit( {
 	return (
 		<>
 			<InspectorControls>
+				<SourceUrlStatus
+					attachmentId={ attributes.id }
+					src={ effectiveSrc }
+				/>
 				<Thumbnails
 					setAttributes={ setAttributes }
 					attributes={ attributes }

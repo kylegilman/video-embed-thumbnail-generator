@@ -10,6 +10,7 @@ import VideoSettings from '../../../components/VideoSettings/VideoSettings';
 import CollectionSettingsPanel from '../../../components/InspectorControls/CollectionSettingsPanel';
 import Thumbnails from '../../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalFormats.js';
+import SourceUrlStatus from '../../../components/SourceUrlStatus/SourceUrlStatus.js';
 import useVideoQuery from '../../../hooks/useVideoQuery';
 import { useVideoData } from '../../../hooks/useVideoData';
 import useVideoProbe from '../../../hooks/useVideoProbe';
@@ -451,6 +452,10 @@ export default function ClassicEmbed( { options, postId, activeTab } ) {
 								isValidUrl( debouncedVideoUrl ) &&
 								! isResolving && (
 									<>
+										<SourceUrlStatus
+											attachmentId={ resolvedId }
+											src={ debouncedVideoUrl }
+										/>
 										<Thumbnails
 											attributes={ singleAttributes }
 											src={ debouncedVideoUrl }

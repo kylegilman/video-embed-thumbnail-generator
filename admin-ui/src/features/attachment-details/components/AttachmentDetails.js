@@ -8,6 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
 import VideoSettings from '../../../components/VideoSettings/VideoSettings.js';
 import Thumbnails from '../../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalFormats.js';
+import SourceUrlStatus from '../../../components/SourceUrlStatus/SourceUrlStatus.js';
 import { getSettings } from '../../../api/settings';
 import useVideoSettings from '../../../hooks/useVideoSettings.js';
 import useVideoProbe from '../../../hooks/useVideoProbe.js';
@@ -275,6 +276,10 @@ const AttachmentDetails = ( { attachmentId, model } ) => {
 
 		return (
 			<div className="videopack-attachment-details">
+				<SourceUrlStatus
+					attachmentId={ attributes.id }
+					src={ attributes.src }
+				/>
 				{ ( window.videopackAttachmentDetailsExtensions || [] ).map(
 					( Extension, idx ) => (
 						<Extension

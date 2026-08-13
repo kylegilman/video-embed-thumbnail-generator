@@ -119,6 +119,37 @@ export const clearAttachmentUrlCache = async ( attachmentId, url = '' ) => {
 };
 
 /**
+ * Checks whether a source's own master-URL reachability check (not a
+ * specific encoded format -- see clearAttachmentUrlCache()) currently has
+ * a cached result. Only ever true for a source that resolves to a genuine
+ * remote URL with no backing local attachment; used to decide whether a
+ * "re-check source URL" control is worth showing at all.
+ *
+ * @param {number|string} attachmentId The ID of the attachment (0 for a
+ *                                     URL-only source with no backing
+ *                                     attachment).
+ * @param {string}        url          Optional. The source URL, for a
+ *                                     URL-only source.
+ */
+export const getAttachmentSourceStatus = async ( attachmentId, url = '' ) => {
+	try {
+		const query = {};
+		if ( url ) {
+			query.url = url;
+		}
+		return await apiFetch( {
+			path: addQueryArgs(
+				`/videopack/v1/attachment/${ attachmentId }/source-status`,
+				query
+			),
+		} );
+	} catch ( error ) {
+		console.error( 'Error fetching source status:', error );
+		throw error;
+	}
+};
+
+/**
  * Starts a batch process of a particular type.
  *
  * @param {string} type           The type of batch process to start.

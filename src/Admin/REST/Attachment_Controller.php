@@ -110,6 +110,29 @@ class Attachment_Controller extends Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/attachment/(?P<id>\d+)/source-status',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'source_status_rest' ),
+				'permission_callback' => function () {
+					return current_user_can( 'upload_files' );
+				},
+				'args'                => array(
+					'id'  => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+					'url' => array(
+						'type'     => 'string',
+						'required' => false,
+						'format'   => 'uri',
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -229,6 +252,55 @@ class Attachment_Controller extends Controller {
 				),
 				200
 			),
+			$request
+		);
+	}
+
+	/**
+	 * REST callback to check whether a source's own master-URL
+	 * reachability check (Source_Url::set_exists(), which gates whether
+	 * Player::set_sources() renders a player at all) is currently cached --
+	 * kept separate from formats_get()'s response (which is about encoded
+	 * alternate formats, a different concern) rather than adding a field
+	 * there.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response
+	 */
+	public function source_status_rest( \WP_REST_Request $request ) {
+		$attachment_id = (int) $request->get_param( 'id' );
+		$url           = (string) $request->get_param( 'url' );
+
+		// Nothing identifies a source at all -- Source_Factory::create()
+		// would fall through to Source_Placeholder, whose constructor
+		// throws on an empty source.
+		$cached = false;
+		if ( '' !== $url || $attachment_id > 0 ) {
+			// Mirrors Player::init_source_from_atts()'s own precedence (a
+			// populated URL over an attachment ID), since that's what a real
+			// page load resolves this source to.
+			$source = \Videopack\Video_Source\Source_Factory::create(
+				'' !== $url ? $url : $attachment_id,
+				$this->options,
+				$this->format_registry
+			);
+
+			$cached = $source instanceof \Videopack\Video_Source\Source_Url
+				&& \Videopack\Video_Source\Video_Source_Finder::has_cached_url_check( $source->get_url() );
+		}
+
+		/**
+		 * Filters the REST response reporting a source's cached master-URL
+		 * reachability-check status.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param \WP_REST_Response $response The REST response.
+		 * @param \WP_REST_Request  $request  The REST request.
+		 */
+		return apply_filters(
+			'videopack_rest_attachment_source_status',
+			new \WP_REST_Response( array( 'url_check_cached' => $cached ), 200 ),
 			$request
 		);
 	}

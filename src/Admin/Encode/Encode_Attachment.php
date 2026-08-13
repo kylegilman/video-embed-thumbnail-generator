@@ -697,18 +697,27 @@ class Encode_Attachment {
 
 	/**
 	 * Clears any cached remote-URL existence-check results for this
-	 * source's formats -- see get_all_formats_with_status()'s
-	 * 'url_check_cached' field, which is what a "refresh" control in the
-	 * admin UI would show/hide against. Scoped to the whole source (all of
-	 * its formats) rather than one format at a time, since a stale check
-	 * for one format usually means the same remote host was unreachable
-	 * for all of them.
+	 * source -- both its formats (see get_all_formats_with_status()'s
+	 * 'url_check_cached' field) and, separately, the source's own master
+	 * URL reachability check (Source_Url::set_exists(), which gates
+	 * whether Player::set_sources() renders a player at all). Scoped to
+	 * the whole source rather than one format at a time, since a stale
+	 * check for one format usually means the same remote host was
+	 * unreachable for all of them.
 	 *
 	 * @return int The number of cached checks that were cleared.
 	 */
 	public function clear_cached_url_checks(): int {
-		$cleared              = 0;
-		$all_defined_formats  = (array) $this->format_registry->get_video_formats();
+		$cleared = 0;
+
+		// Nothing identifies a source at all -- Source_Factory::create()
+		// would fall through to Source_Placeholder, whose constructor
+		// throws on an empty source. There's nothing to check or clear.
+		if ( empty( $this->url ) && empty( $this->id ) ) {
+			return $cleared;
+		}
+
+		$all_defined_formats = (array) $this->format_registry->get_video_formats();
 
 		foreach ( $all_defined_formats as $video_format_obj ) {
 			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options, $this->format_registry );
@@ -716,6 +725,23 @@ class Encode_Attachment {
 				Video_Source_Finder::clear_cached_url_check( $encode_info->checked_url );
 				++$cleared;
 			}
+		}
+
+		// The source's own reachability check only exists as a genuine
+		// Source_Url -- Source_Factory::determine_source_type() resolves a
+		// same-host URL to a Source_File, and an attachment ID alone to a
+		// Source_Attachment, neither of which caches a URL check here.
+		// Mirrors Player::init_source_from_atts()'s own precedence (a
+		// populated URL over an attachment ID), since that's what a real
+		// page load resolves this source to.
+		$source = \Videopack\Video_Source\Source_Factory::create(
+			! empty( $this->url ) ? $this->url : $this->id,
+			$this->options,
+			$this->format_registry
+		);
+		if ( $source instanceof \Videopack\Video_Source\Source_Url && Video_Source_Finder::has_cached_url_check( $source->get_url() ) ) {
+			Video_Source_Finder::clear_cached_url_check( $source->get_url() );
+			++$cleared;
 		}
 
 		return $cleared;
