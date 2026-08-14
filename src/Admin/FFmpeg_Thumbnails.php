@@ -498,7 +498,7 @@ class FFmpeg_Thumbnails {
 		// attachment itself, unless thumb_parent=post, in which case prefer
 		// an explicit override or the video's own post_parent.
 		$parent_id = (int) $attachment_id;
-		if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
+		if ( ( $this->options['thumb_parent'] ?? 'video' ) === 'post' ) {
 			if ( ! empty( $force_parent_id ) ) {
 				$parent_id = (int) $force_parent_id;
 			} elseif ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
@@ -775,6 +775,13 @@ class FFmpeg_Thumbnails {
 				set_post_thumbnail( (int) $force_parent_id, (int) $thumb_id );
 			} elseif ( $video instanceof \WP_Post && ! empty( $video->post_parent ) ) {
 				set_post_thumbnail( (int) $video->post_parent, (int) $thumb_id );
+			} else {
+				// The video has no parent post yet -- e.g. its containing
+				// post is still an unsaved draft in the block editor at
+				// the moment of upload. Check back in a minute in case a
+				// parent relationship has shown up by then (see
+				// Attachment_Media_Library::cron_check_post_parent_handler()).
+				wp_schedule_single_event( time() + 60, 'videopack_cron_check_post_parent', array( $video_attachment_id ) );
 			}
 		}
 
@@ -785,7 +792,7 @@ class FFmpeg_Thumbnails {
 		delete_post_meta( $video_attachment_id, '_videopack_needs_browser_thumb' );
 		delete_post_meta( $video_attachment_id, '_videopack_browser_thumb_failed' );
 
-		update_post_meta( (int) $thumb_id, '_videopack-video-id', $video_attachment_id );
+		update_post_meta( (int) $thumb_id, '_kgflashmediaplayer-video-id', $video_attachment_id );
 	}
 
 	/**

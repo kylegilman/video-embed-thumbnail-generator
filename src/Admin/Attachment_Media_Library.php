@@ -108,7 +108,7 @@ class Attachment_Media_Library implements Hook_Subscriber {
 		$post = get_post( (int) $post_id );
 		if ( $post instanceof \WP_Post && 0 === strpos( (string) $post->post_mime_type, 'video/' ) ) {
 			self::$processing_update = true;
-			if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
+			if ( ( $this->options['thumb_parent'] ?? 'video' ) === 'post' ) {
 				$this->change_thumbnail_parent( (int) $post_id, (int) $post->post_parent );
 			}
 
@@ -264,7 +264,7 @@ class Attachment_Media_Library implements Hook_Subscriber {
 	 */
 	public function process_batch_parents( $target_parent = '' ) {
 		if ( empty( $target_parent ) ) {
-			$target_parent = $this->options['thumb_parent'] ?? 'post';
+			$target_parent = $this->options['thumb_parent'] ?? 'video';
 		}
 
 		$args       = array(
