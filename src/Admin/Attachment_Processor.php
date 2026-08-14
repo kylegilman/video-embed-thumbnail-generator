@@ -369,6 +369,17 @@ class Attachment_Processor implements Hook_Subscriber {
 	/**
 	 * Helper to get arguments for finding videos without thumbnails.
 	 *
+	 * Excludes on WP core's own featured-image meta (_thumbnail_id), not
+	 * the legacy _kgflashmediaplayer-poster key: the modern poster-assignment
+	 * path (FFmpeg_Thumbnails::assign_thumbnail_to_video() ->
+	 * Attachment_Meta::set_poster()) only ever writes to _videopack-meta,
+	 * which can't be searched with a plain meta_query, so a check against
+	 * the legacy key would never exclude a video that already has a
+	 * current poster. _thumbnail_id is a safe, always-reliable substitute:
+	 * every poster-setting code path, going back to the plugin's earliest
+	 * releases, has always set it alongside the poster itself (see
+	 * docs/public/docs/migration/v5-upgrade.md for the history).
+	 *
 	 * @return array WP_Query arguments.
 	 */
 	private function get_thumbnail_candidate_args() {
@@ -383,11 +394,11 @@ class Attachment_Processor implements Hook_Subscriber {
 				array(
 					'relation' => 'OR',
 					array(
-						'key'     => '_kgflashmediaplayer-poster',
+						'key'     => '_thumbnail_id',
 						'compare' => 'NOT EXISTS',
 					),
 					array(
-						'key'   => '_kgflashmediaplayer-poster',
+						'key'   => '_thumbnail_id',
 						'value' => '',
 					),
 				),
