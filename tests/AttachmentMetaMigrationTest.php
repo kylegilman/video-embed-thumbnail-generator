@@ -114,14 +114,19 @@ class AttachmentMetaMigrationTest extends WP_UnitTestCase {
 	 * Test that legacy _kgflashmediaplayer-poster* postmeta keys are migrated to _videopack-meta and deleted.
 	 */
 	public function test_legacy_poster_keys_migration_and_filter_interception(): void {
+		// A real attachment ID, not an arbitrary number -- get()'s stale
+		// poster_id self-heal (see test_stale_poster_id_is_cleared_lazily)
+		// would otherwise clear a poster_id that was never a real attachment.
+		$poster_id = self::factory()->attachment->create_object( array( 'file' => 'poster.jpg', 'post_mime_type' => 'image/jpeg' ) );
+
 		update_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster', 'https://example.com/poster.jpg' );
-		update_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster-id', 999 );
+		update_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster-id', $poster_id );
 
 		$meta_handler = new Attachment_Meta( array(), self::$attachment_id );
 		$meta         = $meta_handler->get();
 
 		$this->assertSame( 'https://example.com/poster.jpg', $meta['poster'] );
-		$this->assertSame( 999, $meta['poster_id'] );
+		$this->assertSame( $poster_id, $meta['poster_id'] );
 
 		// Physical DB keys should be deleted
 		$raw_poster_url = get_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster', true );
@@ -134,19 +139,68 @@ class AttachmentMetaMigrationTest extends WP_UnitTestCase {
 		$filtered_poster_id  = get_post_meta( self::$attachment_id, '_kgflashmediaplayer-poster-id', true );
 
 		$this->assertSame( 'https://example.com/poster.jpg', $filtered_poster_url );
-		$this->assertSame( 999, (int) $filtered_poster_id );
+		$this->assertSame( $poster_id, (int) $filtered_poster_id );
+	}
+
+	/**
+	 * A poster_id referencing a deleted attachment must be cleared lazily
+	 * on the next read -- Attachment_Deleter's own delete-time cleanup
+	 * can't reach it, since by the time a poster is actually deleted, its
+	 * reference already lives in _videopack-meta rather than the legacy
+	 * _kgflashmediaplayer-poster-id key that cleanup searches for (see
+	 * AttachmentDeleterTest's docblock for why).
+	 */
+	public function test_stale_poster_id_is_cleared_lazily(): void {
+		$deleted_poster_id = self::$attachment_id + 999999; // Guaranteed not to exist.
+
+		$meta_handler = new Attachment_Meta( array(), self::$attachment_id );
+		$meta_handler->set_poster( 'https://example.com/poster.jpg', $deleted_poster_id );
+
+		// A fresh instance forces a real re-read from postmeta rather than
+		// the process-lifetime cache set_poster() just populated. The
+		// cleared values equal the schema defaults, so save() correctly
+		// omits them from the persisted array entirely rather than writing
+		// out explicit nulls -- these getter calls are what prove the
+		// self-heal took effect, not the raw persisted shape.
+		$fresh_handler = new Attachment_Meta( array(), self::$attachment_id );
+		$this->assertSame( 0, $fresh_handler->get_poster_id() );
+		// 'poster' is cleared alongside poster_id -- every real write path
+		// sets it to that same attachment's own URL, so a stale poster_id
+		// means the URL is just as stale; get_poster_url() would otherwise
+		// keep serving a broken link to the deleted attachment.
+		$this->assertSame( '', $fresh_handler->get_poster_url() );
+	}
+
+	/**
+	 * A poster_id referencing a real, still-existing attachment must
+	 * survive the same self-healing check unchanged.
+	 */
+	public function test_valid_poster_id_is_not_cleared(): void {
+		$real_poster_id = self::factory()->attachment->create_object( array( 'file' => 'poster.jpg', 'post_mime_type' => 'image/jpeg' ) );
+
+		$meta_handler = new Attachment_Meta( array(), self::$attachment_id );
+		$meta_handler->set_poster( 'https://example.com/poster.jpg', $real_poster_id );
+
+		$fresh_handler = new Attachment_Meta( array(), self::$attachment_id );
+		$this->assertSame( $real_poster_id, $fresh_handler->get_poster_id() );
 	}
 
 	/**
 	 * Test get_poster_url(), get_poster_id(), and set_poster() helper methods on Attachment_Meta.
 	 */
 	public function test_poster_helper_methods(): void {
+		// A real attachment ID, not an arbitrary number -- see
+		// test_stale_poster_id_is_cleared_lazily().
+		$poster_id = self::factory()->attachment->create_object( array( 'file' => 'poster.jpg', 'post_mime_type' => 'image/jpeg' ) );
+
 		$meta_handler = new Attachment_Meta( array(), self::$attachment_id );
 
-		// Set poster image
-		$meta_handler->set_poster( 'https://example.com/new-poster.jpg', 555 );
-		$this->assertSame( 'https://example.com/new-poster.jpg', $meta_handler->get_poster_url() );
-		$this->assertSame( 555, $meta_handler->get_poster_id() );
+		// Set poster image. get_poster_url() prioritizes the real
+		// attachment's own URL over the stored 'poster' string once
+		// poster_id resolves to a real attachment.
+		$meta_handler->set_poster( 'https://example.com/new-poster.jpg', $poster_id );
+		$this->assertSame( (string) wp_get_attachment_url( $poster_id ), $meta_handler->get_poster_url() );
+		$this->assertSame( $poster_id, $meta_handler->get_poster_id() );
 
 		// Clear poster image
 		$meta_handler->set_poster( null, null );
