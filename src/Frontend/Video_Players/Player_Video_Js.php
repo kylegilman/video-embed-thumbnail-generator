@@ -177,15 +177,18 @@ class Player_Video_Js extends Player {
 
 		$classes[] = 'video-js';
 		$skin      = $atts['skin'] ?? '';
-		if ( empty( $skin ) ) {
-			$skin = '';
-		}
 
 		// Video.js themes in Videopack usually expect centering by default.
 		$classes[] = 'vjs-big-play-centered';
 
 		// Allow user to set skin for individual videos using the skin="" attribute.
-		$classes[] = $skin;
+		// Callers implode() this array directly into an HTML class
+		// attribute with no further filtering, so an empty skin must be
+		// skipped rather than pushed in as a blank element (which would
+		// leave a stray double space in the output).
+		if ( ! empty( $skin ) ) {
+			$classes[] = $skin;
+		}
 
 		// Note: is_fixed_aspect() check removed here because it's an instance method.
 		// However, fixed aspect handling is already done in Player::get_wrapper_start_html()
