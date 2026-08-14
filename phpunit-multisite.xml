@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Multisite variant of phpunit.xml: same bootstrap and same tests/
+    directory, but installs and runs against a real WordPress multisite
+    network (wp-phpunit's bootstrap reads WP_MULTISITE from the
+    environment to decide this; see vendor/wp-phpunit/wp-phpunit/includes/bootstrap.php).
+
+    Needed because functions like switch_to_blog() and restore_current_blog()
+    are only defined once WordPress core loads its multisite files, which
+    only happens under a real multisite install. Code that depends on
+    them (e.g. Multisite::add_new_blog()) can't be meaningfully exercised
+    under phpunit.xml's single-site environment at all.
+
+    Run with: npm run test:php:multisite
+    (installs into the same dedicated phpunit_test database as the
+    single-site run, reinstalled as multisite for this run.)
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheResult="false">
+    <php>
+        <env name="WP_MULTISITE" value="1"/>
+    </php>
+    <testsuites>
+        <testsuite name="Videopack Test Suite (Multisite)">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

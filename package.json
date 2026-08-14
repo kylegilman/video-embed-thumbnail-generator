@@ -12,7 +12,9 @@
 		"test:e2e:ui": "playwright test --ui",
 		"test:e2e:headed": "playwright test --headed",
 		"pretest:php": "wp-env run cli wp db query \"CREATE DATABASE IF NOT EXISTS phpunit_test\"",
-		"test:php": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit.xml"
+		"test:php": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit.xml",
+		"pretest:php:multisite": "wp-env run cli wp db query \"CREATE DATABASE IF NOT EXISTS phpunit_test\"",
+		"test:php:multisite": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.xml"
 	},
 	"devDependencies": {
 		"@playwright/test": "latest",
