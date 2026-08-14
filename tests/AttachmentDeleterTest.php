@@ -191,6 +191,28 @@ class AttachmentDeleterTest extends WP_UnitTestCase {
 		$this->assertSame( '', get_post_meta( $video_id, '_thumbnail-id', true ) );
 	}
 
+	/**
+	 * The real, always-reachable case: a video whose poster was set through
+	 * the modern path (_thumbnail_id + _videopack-meta's poster_id/poster,
+	 * kept in sync by every real poster-setting code path -- see
+	 * AttachmentProcessorTest and docs/public/docs/migration/v5-upgrade.md).
+	 * This is what the _thumbnail_id-based query exists to catch.
+	 */
+	public function test_deleting_poster_image_clears_modern_meta_on_referencing_post(): void {
+		$options   = $this->options();
+		$poster_id = $this->create_image();
+		$video_id  = $this->create_video();
+
+		set_post_thumbnail( $video_id, $poster_id );
+		( new \Videopack\Admin\Attachment_Meta( array(), $video_id ) )->set_poster( wp_get_attachment_url( $poster_id ), $poster_id );
+
+		$this->deleter( $options )->delete_handler( $poster_id );
+
+		$this->assertFalse( (bool) get_post_thumbnail_id( $video_id ) );
+		$this->assertSame( 0, ( new \Videopack\Admin\Attachment_Meta( array(), $video_id ) )->get_poster_id() );
+		$this->assertSame( '', ( new \Videopack\Admin\Attachment_Meta( array(), $video_id ) )->get_poster_url() );
+	}
+
 	public function test_deleting_unrelated_image_does_not_throw(): void {
 		$options = $this->options();
 		$image_id = $this->create_image();

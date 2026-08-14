@@ -155,6 +155,11 @@ class AttachmentMetaMigrationTest extends WP_UnitTestCase {
 
 		$meta_handler = new Attachment_Meta( array(), self::$attachment_id );
 		$meta_handler->set_poster( 'https://example.com/poster.jpg', $deleted_poster_id );
+		// set_poster() alone doesn't touch WP core's own Featured Image
+		// meta -- only the real callers that pair it with
+		// set_post_thumbnail() do (FFmpeg_Thumbnails, the admin UI). Set
+		// it here to mirror that real pairing.
+		update_post_meta( self::$attachment_id, '_thumbnail_id', $deleted_poster_id );
 
 		// A fresh instance forces a real re-read from postmeta rather than
 		// the process-lifetime cache set_poster() just populated. The
@@ -169,6 +174,29 @@ class AttachmentMetaMigrationTest extends WP_UnitTestCase {
 		// means the URL is just as stale; get_poster_url() would otherwise
 		// keep serving a broken link to the deleted attachment.
 		$this->assertSame( '', $fresh_handler->get_poster_url() );
+		// The real Featured Image meta is cleared too, not just the
+		// _videopack-meta copy -- otherwise has_post_thumbnail() etc. would
+		// keep reporting a thumbnail that points nowhere.
+		$this->assertFalse( (bool) get_post_thumbnail_id( self::$attachment_id ) );
+	}
+
+	/**
+	 * If _thumbnail_id has since been changed to point at something else
+	 * (a different, real, current thumbnail), the self-heal must not
+	 * clobber it just because _videopack-meta's own poster_id is stale.
+	 */
+	public function test_self_heal_does_not_clear_thumbnail_id_pointing_elsewhere(): void {
+		$deleted_poster_id = self::$attachment_id + 999999; // Guaranteed not to exist.
+		$other_thumb_id     = self::factory()->attachment->create_object( array( 'file' => 'other.jpg', 'post_mime_type' => 'image/jpeg' ) );
+
+		$meta_handler = new Attachment_Meta( array(), self::$attachment_id );
+		$meta_handler->set_poster( 'https://example.com/poster.jpg', $deleted_poster_id );
+		update_post_meta( self::$attachment_id, '_thumbnail_id', $other_thumb_id );
+
+		$fresh_handler = new Attachment_Meta( array(), self::$attachment_id );
+		$fresh_handler->get();
+
+		$this->assertSame( $other_thumb_id, (int) get_post_thumbnail_id( self::$attachment_id ) );
 	}
 
 	/**

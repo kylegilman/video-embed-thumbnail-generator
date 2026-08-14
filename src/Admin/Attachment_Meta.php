@@ -409,18 +409,22 @@ class Attachment_Meta implements Hook_Subscriber {
 		}
 
 		// Self-heal a dangling poster_id left behind by a deleted poster
-		// attachment. Attachment_Deleter's own delete-time cleanup can't
-		// reach this: it searches for the legacy _kgflashmediaplayer-poster-id
-		// postmeta row, but that row is already gone by the time anyone
-		// deletes anything -- reading it via get_post_meta() anywhere (this
-		// very migration block included) lazily moves it into
-		// _videopack-meta and deletes the legacy row. So the check has to
-		// live here instead, the next time this post's own meta is read.
-		// 'poster' is cleared alongside it -- every write path (set_poster()
-		// callers throughout the admin UI, FFmpeg_Thumbnails) always sets it
-		// to that same attachment's own URL, never an independent value, so
-		// a stale poster_id means 'poster' is just as stale.
+		// attachment. Attachment_Deleter's own delete-time cleanup handles
+		// the common case proactively (searching by _thumbnail_id), but
+		// can't reach every case -- an attachment deleted outside the
+		// normal delete_attachment hook, or a referencing post its search
+		// didn't find -- so this lazy check on the next read is the
+		// fallback. 'poster' is cleared alongside it -- every write path
+		// (set_poster() callers throughout the admin UI, FFmpeg_Thumbnails)
+		// always sets it to that same attachment's own URL, never an
+		// independent value, so a stale poster_id means 'poster' is just
+		// as stale. The real _thumbnail_id is only cleared if it still
+		// points at this same stale poster_id -- if it's already been
+		// changed to something else since, that's not ours to touch.
 		if ( ! empty( $current_meta['poster_id'] ) && ! get_post( (int) $current_meta['poster_id'] ) ) {
+			if ( (int) get_post_thumbnail_id( (int) $this->post_id ) === (int) $current_meta['poster_id'] ) {
+				delete_post_thumbnail( (int) $this->post_id );
+			}
 			$current_meta['poster_id'] = null;
 			$current_meta['poster']    = null;
 			$migrated                  = true;

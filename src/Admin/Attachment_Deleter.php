@@ -164,10 +164,23 @@ class Attachment_Deleter implements Hook_Subscriber {
 				}
 			}
 		} elseif ( $mime_type && strpos( (string) $mime_type, 'image' ) !== false ) {
+			// Two ways a post can reference this image as its poster:
+			// _thumbnail_id (WP core's own Featured Image meta -- every
+			// poster-setting code path, current and historical back to
+			// v4.0, has always kept this in sync with the poster) catches
+			// virtually every real-world case, while the legacy
+			// _kgflashmediaplayer-poster-id key is kept as a backstop for
+			// genuinely pre-migration data that a meta_query can still
+			// reach directly (see docs/public/docs/migration/v5-upgrade.md).
 			$args  = array(
 				'numberposts' => -1,
 				'post_type'   => 'attachment',
 				'meta_query'  => array(
+					'relation' => 'OR',
+					array(
+						'key'   => '_thumbnail_id',
+						'value' => (int) $video_id,
+					),
 					array(
 						'key'   => '_kgflashmediaplayer-poster-id',
 						'value' => (string) $video_id,
@@ -177,6 +190,7 @@ class Attachment_Deleter implements Hook_Subscriber {
 			$posts = get_posts( $args ); // Find all posts that have this thumbnail ID in their meta.
 			if ( $posts ) {
 				foreach ( $posts as $meta_post ) {
+					delete_post_thumbnail( $meta_post->ID );
 					delete_post_meta( $meta_post->ID, '_kgflashmediaplayer-poster-id' );
 					delete_post_meta( $meta_post->ID, '_thumbnail-id' );
 					delete_post_meta( $meta_post->ID, '_kgflashmediaplayer-poster' );
