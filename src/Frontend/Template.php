@@ -202,8 +202,14 @@ class Template implements Hook_Subscriber {
 				return $content;
 			}
 			$videopack_query_var = get_query_var( 'videopack' ) ? get_query_var( 'videopack' ) : array();
-			$content             = ( new Shortcode( $this->options ) )->generate_attachment_shortcode( $videopack_query_var );
-			$content            .= '<p>' . $post->post_content . '</p>';
+			$video_html          = ( new Shortcode( $this->options ) )->generate_attachment_shortcode( $videopack_query_var );
+			// $content has already been through wpautop/wptexturize etc (this
+			// filter runs after WordPress core's own default the_content
+			// filters, which are registered earlier during bootstrap) -- it
+			// already has its own <p> tags, so it's appended directly rather
+			// than re-wrapped, and the attachment's raw post_content field
+			// isn't re-read here at all.
+			$content = $video_html . $content;
 		}
 		return (string) $content;
 	}
@@ -334,7 +340,11 @@ class Template implements Hook_Subscriber {
 		$chunksize = 1 * ( 1024 * 1024 );
 		$cnt       = 0;
 
-		$handle = fopen( $file, 'r' );
+		// Failure is already handled via the return-value check right
+		// below -- suppress the redundant PHP-level warning for what's an
+		// expected, gracefully-handled failure path (e.g. a since-deleted
+		// file).
+		$handle = @fopen( $file, 'r' );
 		if ( $handle === false ) {
 			return false;
 		}
