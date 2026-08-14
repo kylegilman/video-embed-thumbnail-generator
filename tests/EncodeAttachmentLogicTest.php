@@ -308,4 +308,40 @@ class EncodeAttachmentLogicTest extends WP_UnitTestCase {
 
 		$this->assertSame( 'lowres', $encoder->check_if_can_queue( 'h264_1080' ) );
 	}
+
+	// -----------------------------------------------------------------
+	// get_encode_array() / set_encode_array() -- empty input/output paths
+	// are caught here, before ever reaching FFmpeg_Command (which now
+	// throws on an empty path rather than silently producing a corrupted
+	// command -- see FFmpegCommandTest).
+	// -----------------------------------------------------------------
+
+	public function test_get_encode_array_records_error_when_no_input_source_exists(): void {
+		$attachment_id = $this->attachment_with_metadata( 1920, 1080, 'h264' );
+		// Simulate a broken/orphaned attachment: no attached file on disk
+		// and no external URL meta, so Encode_Attachment can't determine
+		// any input source at all.
+		delete_post_meta( $attachment_id, '_wp_attached_file' );
+
+		$registry      = new Registry( $this->options() );
+		$encoder       = new Encode_Attachment( $this->options(), $registry, $attachment_id );
+		$encode_format = new \Videopack\Admin\Encode\Encode_Format( 'h264_720p' );
+
+		$result = $encoder->get_encode_array( $encode_format );
+
+		$this->assertSame( array(), $result );
+		$this->assertNotEmpty( $encode_format->get_error() );
+	}
+
+	public function test_get_encode_array_records_error_when_output_path_not_set(): void {
+		$attachment_id = $this->attachment_with_metadata( 1920, 1080, 'h264' );
+		$encoder       = $this->encoder( $attachment_id );
+		// A fresh Encode_Format has no output path set.
+		$encode_format = new \Videopack\Admin\Encode\Encode_Format( 'h264_720p' );
+
+		$result = $encoder->get_encode_array( $encode_format );
+
+		$this->assertSame( array(), $result );
+		$this->assertNotEmpty( $encode_format->get_error() );
+	}
 }

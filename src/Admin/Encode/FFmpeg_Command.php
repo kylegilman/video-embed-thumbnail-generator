@@ -117,8 +117,16 @@ class FFmpeg_Command {
 	 * @param string $path    Path or URL to input file.
 	 * @param array  $options Optional array of flags to place before this -i. Can be associative for safe pairing.
 	 * @return $this
+	 * @throws \InvalidArgumentException If $path is empty.
 	 */
 	public function add_input( string $path, array $options = array() ) {
+		if ( '' === trim( $path ) ) {
+			// An empty path here would leave a dangling -i with nothing
+			// after it once trimmed from the final array -- silently
+			// corrupting the command (the next unrelated argument would
+			// get consumed as this -i's path) rather than failing loudly.
+			throw new \InvalidArgumentException( 'FFmpeg_Command::add_input() requires a non-empty path.' );
+		}
 		$this->inputs[] = array(
 			'path'    => $path,
 			'options' => $this->parse_options( $options ),
@@ -132,8 +140,12 @@ class FFmpeg_Command {
 	 * @param string $path    Path to output file.
 	 * @param array  $options Array of flags to place before this output path. Can be associative for safe pairing.
 	 * @return $this
+	 * @throws \InvalidArgumentException If $path is empty.
 	 */
 	public function add_output( string $path, array $options = array() ) {
+		if ( '' === trim( $path ) ) {
+			throw new \InvalidArgumentException( 'FFmpeg_Command::add_output() requires a non-empty path.' );
+		}
 		$this->outputs[] = array(
 			'path'    => $path,
 			'options' => $this->parse_options( $options ),
@@ -301,36 +313,5 @@ class FFmpeg_Command {
 	public function clear_outputs() {
 		$this->outputs = array();
 		return $this;
-	}
-
-	/**
-	 * Convert the command to a string for display or shell execution.
-	 *
-	 * @return string
-	 */
-	public function to_string() {
-		return implode( ' ', array_map( array( $this, 'escape_arg' ), $this->to_array() ) );
-	}
-
-	/**
-	 * Magic method for string conversion.
-	 *
-	 * @return string
-	 */
-	public function __toString() {
-		return $this->to_string();
-	}
-
-	/**
-	 * Escapes a command line argument if it contains spaces or special characters.
-	 *
-	 * @param string $arg The argument to escape.
-	 * @return string The escaped argument.
-	 */
-	private function escape_arg( $arg ) {
-		if ( strpos( $arg, ' ' ) !== false || strpos( $arg, '"' ) !== false || strpos( $arg, '&' ) !== false ) {
-			return '"' . str_replace( '"', '\\"', $arg ) . '"';
-		}
-		return $arg;
 	}
 }

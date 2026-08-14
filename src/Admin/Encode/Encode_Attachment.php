@@ -1086,6 +1086,19 @@ class Encode_Attachment {
 			return array();
 		}
 
+		if ( '' === trim( (string) $this->encode_input ) ) {
+			// FFmpeg_Command::add_input() would throw on an empty path --
+			// catching it here first records a clear, job-visible error
+			// instead of an uncaught exception.
+			$encode_format->set_error( (string) __( 'No input source could be determined for this video -- the attached file may be missing and no external URL is set.', 'video-embed-thumbnail-generator' ) );
+			return array();
+		}
+
+		if ( '' === trim( (string) $encode_format->get_path() ) ) {
+			$encode_format->set_error( (string) __( 'No output path was set for this format.', 'video-embed-thumbnail-generator' ) );
+			return array();
+		}
+
 		$source_for_pathinfo = (string) ( ! empty( $encode_format->get_path() ) ? $encode_format->get_path() : $this->url );
 		$path_parts          = pathinfo( $source_for_pathinfo );
 		$basename            = (string) $path_parts['filename'];
