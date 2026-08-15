@@ -30,6 +30,18 @@ class MultisiteTest extends WP_UnitTestCase {
 	public function tear_down() {
 		delete_site_option( 'videopack_network_options' );
 		delete_site_option( 'kgvid_video_embed_network_options' );
+
+		// factory()->blog->create() installs a new site with its own
+		// permalink_structure option and, in doing so, re-inits the
+		// global $wp_rewrite from that site's DB context. restore_current_blog()
+		// switches the DB context back but doesn't touch $wp_rewrite, so
+		// without this it leaks the new site's (pretty) permalink
+		// structure into every test that runs afterward in this process.
+		global $wp_rewrite;
+		if ( $wp_rewrite instanceof WP_Rewrite ) {
+			$wp_rewrite->init();
+		}
+
 		parent::tear_down();
 	}
 
