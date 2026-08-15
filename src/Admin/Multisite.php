@@ -320,20 +320,42 @@ class Multisite implements Hook_Subscriber {
 
 	/**
 	 * Adds the network queue page to the sidebar.
+	 *
+	 * Shown when either server-side FFmpeg is available network-wide, or a
+	 * network-active add-on (e.g. browser or cloud encoding) reports its own
+	 * capability via the `videopack_network_addon_capabilities` filter --
+	 * server FFmpeg is no longer the only way a network can have active
+	 * encode jobs worth showing this page for.
 	 */
 	public function add_network_queue_page() {
-		if ( $this->is_videopack_active_for_network() && 'available' === ( $this->network_options['ffmpeg_exists'] ?? null ) ) {
-			$page_hook_suffix = (string) add_submenu_page(
-				'settings.php',
-				(string) esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
-				(string) esc_html_x( 'Network Video Encode Queue', 'Title in network admin sidebar', 'video-embed-thumbnail-generator' ),
-				'manage_network',
-				'kgvid_network_video_encoding_queue',
-				array( $this, 'network_queue_page_react_root' )
-			);
-			add_action( 'admin_print_styles-' . $page_hook_suffix, array( $this, 'enqueue_network_queue_assets' ) );
-			add_action( 'admin_print_scripts-' . $page_hook_suffix, array( $this, 'enqueue_network_queue_assets' ) );
+		if ( ! $this->is_videopack_active_for_network() || ! $this->network_queue_page_should_show() ) {
+			return;
 		}
+
+		$page_hook_suffix = (string) add_submenu_page(
+			'settings.php',
+			(string) esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
+			(string) esc_html_x( 'Network Video Encode Queue', 'Title in network admin sidebar', 'video-embed-thumbnail-generator' ),
+			'manage_network',
+			'videopack_network_encoding_queue',
+			array( $this, 'network_queue_page_react_root' )
+		);
+		add_action( 'admin_print_styles-' . $page_hook_suffix, array( $this, 'enqueue_network_queue_assets' ) );
+		add_action( 'admin_print_scripts-' . $page_hook_suffix, array( $this, 'enqueue_network_queue_assets' ) );
+	}
+
+	/**
+	 * Whether the network queue page should be shown: either server-side
+	 * FFmpeg is available network-wide, or a network-active add-on reports
+	 * its own capability via the `videopack_network_addon_capabilities`
+	 * filter.
+	 *
+	 * @return bool
+	 */
+	public function network_queue_page_should_show(): bool {
+		$network_addon_capabilities = (array) apply_filters( 'videopack_network_addon_capabilities', array() );
+
+		return 'available' === ( $this->network_options['ffmpeg_exists'] ?? null ) || ! empty( $network_addon_capabilities );
 	}
 
 	/**
@@ -405,11 +427,39 @@ class Multisite implements Hook_Subscriber {
 	public function enqueue_network_queue_assets() {
 		( new Assets( $this->options ) )->enqueue_network_encode_queue_assets();
 
+		$network_addon_capabilities = (array) apply_filters( 'videopack_network_addon_capabilities', array() );
+
+		/**
+		 * Filters whether the network queue page's Pause/Play controls
+		 * should be hidden.
+		 *
+		 * Core has no concept of browser or cloud encoding on its own, so it
+		 * defaults to never hiding these controls -- `queue_control` always
+		 * meaningfully governs server-side FFmpeg dispatch. An add-on whose
+		 * jobs bypass `queue_control` entirely (e.g. browser/FFmpeg.wasm
+		 * encoding, which is driven client-side with no server-side pause
+		 * check) can hook this to hide a control that would otherwise be
+		 * silently misleading.
+		 *
+		 * @since 5.1.0
+		 *
+		 * @param bool  $hide_pause_controls        Whether to hide the controls. Default false.
+		 * @param array $network_addon_capabilities Capability strings reported via `videopack_network_addon_capabilities`.
+		 * @param array $network_options            The current network-wide options.
+		 */
+		$hide_pause_controls = (bool) apply_filters(
+			'videopack_network_queue_hide_pause_controls',
+			false,
+			$network_addon_capabilities,
+			$this->network_options
+		);
+
 		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.encodeQueueData = ' . (string) wp_json_encode(
 			array(
 				'initialQueueState' => $this->network_options['queue_control'] ?? 'enabled',
 				'ffmpegExists'      => $this->network_options['ffmpeg_exists'] ?? 'unchecked',
 				'isNetwork'         => true,
+				'hidePauseControls' => $hide_pause_controls,
 			)
 		) . ';';
 

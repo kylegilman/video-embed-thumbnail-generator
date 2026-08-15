@@ -52,6 +52,12 @@ class Job_Controller extends Controller {
 							'type'     => array( 'string', 'number' ),
 							'required' => false,
 						),
+						'scope' => array(
+							'type'     => 'string',
+							'enum'     => array( 'site', 'network' ),
+							'required' => false,
+							'default'  => 'site',
+						),
 					),
 				),
 			)
@@ -70,6 +76,12 @@ class Job_Controller extends Controller {
 						'enum'     => array( 'play', 'pause' ),
 						'required' => true,
 					),
+					'scope'  => array(
+						'type'     => 'string',
+						'enum'     => array( 'site', 'network' ),
+						'required' => false,
+						'default'  => 'site',
+					),
 				),
 			)
 		);
@@ -82,10 +94,16 @@ class Job_Controller extends Controller {
 				'callback'            => array( $this, 'jobs_clear' ),
 				'permission_callback' => array( $this, 'can_encode_videos' ),
 				'args'                => array(
-					'type' => array(
+					'type'  => array(
 						'type'     => 'string',
 						'enum'     => array( 'completed', 'all' ),
 						'required' => true,
+					),
+					'scope' => array(
+						'type'     => 'string',
+						'enum'     => array( 'site', 'network' ),
+						'required' => false,
+						'default'  => 'site',
 					),
 				),
 			)
@@ -177,11 +195,17 @@ class Job_Controller extends Controller {
 	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function jobs_list( \WP_REST_Request $request ) {
+		$authorized = $this->require_network_scope_capability( $request );
+		if ( is_wp_error( $authorized ) ) {
+			return $authorized;
+		}
+
 		$input            = $request->get_param( 'input' );
+		$is_network_scope = 'network' === (string) $request->get_param( 'scope' );
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 		$jobs             = array_map(
 			array( $this, 'redact_encode_error_for_response' ),
-			(array) $queue_controller->get_jobs_list_data( (array) $queue_controller->get_queue_items( (int) get_current_blog_id() ), $input )
+			(array) $queue_controller->get_jobs_list_data( (array) $queue_controller->get_queue_items( $is_network_scope ? null : (int) get_current_blog_id() ), $input )
 		);
 				/**
 		 * Filters the REST response listing active/completed transcoding jobs.
@@ -200,13 +224,36 @@ class Job_Controller extends Controller {
 	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function jobs_control( \WP_REST_Request $request ) {
-		$action           = (string) $request->get_param( 'action' );
-		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
+		$authorized = $this->require_network_scope_capability( $request );
+		if ( is_wp_error( $authorized ) ) {
+			return $authorized;
+		}
 
-		if ( 'play' === $action ) {
-			$queue_controller->play();
+		$action = (string) $request->get_param( 'action' );
+
+		if ( 'network' === (string) $request->get_param( 'scope' ) ) {
+			// Network-wide pause/play is a distinct concept from any one
+			// site's own queue_control -- it writes to network_options,
+			// which Options::get_options() already cascades into every
+			// site's effective queue_control (with a site-level pause
+			// always winning over a network-level play). Encode_Queue_
+			// Controller::play()/pause() only ever write the per-site
+			// option, so they'd be the wrong target here.
+			$network_options                  = \Videopack\Admin\Multisite::get_network_options();
+			$network_options['queue_control'] = $action;
+			( new \Videopack\Admin\Multisite( $this->options ) )->save_options( $network_options );
+
+			if ( 'play' === $action ) {
+				( new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry ) )->schedule_immediate_heartbeat();
+			}
 		} else {
-			$queue_controller->pause();
+			$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
+
+			if ( 'play' === $action ) {
+				$queue_controller->play();
+			} else {
+				$queue_controller->pause();
+			}
 		}
 
 				/**
@@ -226,9 +273,15 @@ class Job_Controller extends Controller {
 	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function jobs_clear( \WP_REST_Request $request ) {
+		$authorized = $this->require_network_scope_capability( $request );
+		if ( is_wp_error( $authorized ) ) {
+			return $authorized;
+		}
+
 		$type             = (string) $request->get_param( 'type' );
+		$scope            = 'network' === (string) $request->get_param( 'scope' ) ? 'network' : 'site';
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
-		$queue_controller->clear_completed_queue( 'completed' === $type ? 'completed' : 'all' );
+		$queue_controller->clear_completed_queue( 'completed' === $type ? 'completed' : 'all', $scope );
 
 				/**
 		 * Filters the REST response after clearing completed/all transcoding jobs.

@@ -99,6 +99,28 @@ abstract class Controller extends \WP_REST_Controller implements Hook_Subscriber
 	}
 
 	/**
+	 * Authorizes a request-level `scope=network` argument, used by routes
+	 * that can act across every site in the network instead of just the
+	 * current one (e.g. the network encode queue's list/pause/clear
+	 * actions). Site-scoped requests (the default) rely entirely on the
+	 * route's normal `permission_callback` and need no extra check here.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return true|\WP_Error True if the requested scope is authorized, a WP_Error otherwise.
+	 */
+	protected function require_network_scope_capability( \WP_REST_Request $request ) {
+		if ( 'network' !== (string) $request->get_param( 'scope' ) ) {
+			return true;
+		}
+
+		if ( ! current_user_can( 'manage_network' ) ) {
+			return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to manage the network-wide queue.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+		}
+
+		return true;
+	}
+
+	/**
 	 * Strips detailed FFmpeg error output from a job/format array unless the
 	 * current user has manage_options.
 	 *

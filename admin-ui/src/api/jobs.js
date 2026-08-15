@@ -8,8 +8,12 @@ import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Fetches the current video encoding queue.
+ *
+ * @param {string} scope Optional. 'site' (default) or 'network' -- 'network'
+ *                       requires manage_network and returns jobs from every
+ *                       site, not just the current one.
  */
-export const getQueue = async () => {
+export const getQueue = async ( scope = 'site' ) => {
 	/**
 	 * Filters the queue listing before fetching from the REST API.
 	 *
@@ -22,7 +26,7 @@ export const getQueue = async () => {
 		return pre;
 	}
 	try {
-		const response = await listJobs();
+		const response = await listJobs( null, scope );
 		/**
 		 * Filters the list of encoding queue jobs retrieved from the server.
 		 *
@@ -41,13 +45,14 @@ export const getQueue = async () => {
  * Controls the queue (start, stop, etc.).
  *
  * @param {string} action The action to perform (play/pause).
+ * @param {string} scope  Optional. 'site' (default) or 'network'.
  */
-export const toggleQueue = async ( action ) => {
+export const toggleQueue = async ( action, scope = 'site' ) => {
 	try {
 		return await apiFetch( {
 			path: '/videopack/v1/jobs/control',
 			method: 'POST',
-			data: { action },
+			data: { action, scope },
 		} );
 	} catch ( error ) {
 		console.error( 'Error toggling queue:', error );
@@ -58,14 +63,15 @@ export const toggleQueue = async ( action ) => {
 /**
  * Clears jobs from the queue.
  *
- * @param {string} type The type of jobs to clear.
+ * @param {string} type  The type of jobs to clear.
+ * @param {string} scope Optional. 'site' (default) or 'network'.
  */
-export const clearQueue = async ( type ) => {
+export const clearQueue = async ( type, scope = 'site' ) => {
 	try {
 		return await apiFetch( {
 			path: '/videopack/v1/jobs/clear',
 			method: 'DELETE',
-			data: { type },
+			data: { type, scope },
 		} );
 	} catch ( error ) {
 		console.error( 'Error clearing queue:', error );
@@ -156,12 +162,12 @@ export const createJob = async ( input, outputs, parentId = 0 ) => {
  * Lists jobs, optionally filtered by input.
  *
  * @param {number|string} input Optional. The input attachment ID or URL to filter by.
+ * @param {string}        scope Optional. 'site' (default) or 'network'.
  */
-export const listJobs = async ( input = null ) => {
+export const listJobs = async ( input = null, scope = 'site' ) => {
 	try {
-		const path = input
-			? addQueryArgs( '/videopack/v1/jobs', { input } )
-			: '/videopack/v1/jobs';
+		const args = { ...( input ? { input } : {} ), scope };
+		const path = addQueryArgs( '/videopack/v1/jobs', args );
 		return await apiFetch( { path } );
 	} catch ( error ) {
 		console.error( 'Error listing jobs:', error );

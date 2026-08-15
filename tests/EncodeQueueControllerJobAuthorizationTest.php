@@ -298,4 +298,130 @@ class EncodeQueueControllerJobAuthorizationTest extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 		$this->assertNull( $this->job_row( $job_id ) );
 	}
+
+	// -----------------------------------------------------------------
+	// Multisite: switch_to_blog() happens before the capability check,
+	// so a role/capability on the caller's own blog can't authorize
+	// acting on a job that belongs to a different site.
+	// -----------------------------------------------------------------
+
+	public function test_retry_job_ignores_capability_the_caller_only_has_on_their_own_blog(): void {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Requires real multisite (switch_to_blog() is undefined otherwise); run via npm run test:php:multisite.' );
+		}
+
+		// Administrator on the CALLING blog (has both videopack
+		// capabilities there), but never added to the job's blog at all --
+		// no role, no capabilities once switch_to_blog() moves the check
+		// over there.
+		$caller_id      = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$other_blog_id  = self::factory()->blog->create();
+		$attachment_id  = $this->attachment_with_metadata();
+		$job_id         = $this->insert_job(
+			$attachment_id,
+			array(
+				'status'  => 'failed',
+				'blog_id' => $other_blog_id,
+				'user_id' => 0,
+			)
+		);
+		$original_blog_id = get_current_blog_id();
+
+		wp_set_current_user( $caller_id );
+
+		$result = $this->controller()->retry_job( $job_id );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'videopack_permission_denied', $result->get_error_code() );
+		$this->assertSame( 'failed', $this->job_row( $job_id )->status );
+		$this->assertSame( $original_blog_id, get_current_blog_id(), 'must restore the original blog after switching for the capability check' );
+	}
+
+	public function test_retry_job_allows_capability_granted_specifically_on_jobs_own_blog(): void {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Requires real multisite (switch_to_blog() is undefined otherwise); run via npm run test:php:multisite.' );
+		}
+
+		// Subscriber (no videopack capabilities) on the calling blog, but
+		// made an administrator specifically on the job's own blog --
+		// authorization should follow the job's blog, not the caller's.
+		$caller_id     = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		$other_blog_id = self::factory()->blog->create();
+		add_user_to_blog( $other_blog_id, $caller_id, 'administrator' );
+
+		$attachment_id = $this->attachment_with_metadata();
+		$job_id        = $this->insert_job(
+			$attachment_id,
+			array(
+				'status'      => 'failed',
+				'blog_id'     => $other_blog_id,
+				'user_id'     => 0,
+				'retry_count' => 1,
+			)
+		);
+		$original_blog_id = get_current_blog_id();
+
+		wp_set_current_user( $caller_id );
+
+		$result = $this->controller()->retry_job( $job_id );
+
+		$this->assertTrue( $result );
+		$this->assertSame( 'queued', $this->job_row( $job_id )->status );
+		$this->assertSame( $original_blog_id, get_current_blog_id(), 'must restore the original blog after switching for the capability check' );
+	}
+
+	public function test_remove_job_ignores_capability_the_caller_only_has_on_their_own_blog(): void {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Requires real multisite (switch_to_blog() is undefined otherwise); run via npm run test:php:multisite.' );
+		}
+
+		$caller_id     = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$other_blog_id = self::factory()->blog->create();
+		$attachment_id = $this->attachment_with_metadata();
+		$job_id        = $this->insert_job(
+			$attachment_id,
+			array(
+				'status'  => 'completed',
+				'blog_id' => $other_blog_id,
+				'user_id' => 0,
+			)
+		);
+
+		wp_set_current_user( $caller_id );
+
+		$result = $this->controller()->remove_job( $job_id );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'videopack_permission_denied', $result->get_error_code() );
+		$this->assertNotNull( $this->job_row( $job_id ) );
+	}
+
+	public function test_remove_job_allows_capability_granted_specifically_on_jobs_own_blog(): void {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Requires real multisite (switch_to_blog() is undefined otherwise); run via npm run test:php:multisite.' );
+		}
+
+		$caller_id     = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		$other_blog_id = self::factory()->blog->create();
+		add_user_to_blog( $other_blog_id, $caller_id, 'administrator' );
+
+		$attachment_id = $this->attachment_with_metadata();
+		$job_id        = $this->insert_job(
+			$attachment_id,
+			array(
+				'status'  => 'completed',
+				'blog_id' => $other_blog_id,
+				'user_id' => 0,
+			)
+		);
+		$original_blog_id = get_current_blog_id();
+
+		wp_set_current_user( $caller_id );
+
+		$result = $this->controller()->remove_job( $job_id );
+
+		$this->assertTrue( $result );
+		$this->assertNull( $this->job_row( $job_id ) );
+		$this->assertSame( $original_blog_id, get_current_blog_id(), 'must restore the original blog after switching for the capability check' );
+	}
 }

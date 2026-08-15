@@ -326,6 +326,19 @@ const EncodeQueue = () => {
 	const isMultisite =
 		window.videopack?.isMultisite ||
 		window.videopack?.encodeQueueData?.isNetwork;
+	const queueScope = isMultisite ? 'network' : 'site';
+
+	// Pause/Play only ever governs server-FFmpeg dispatch and cloud job
+	// polling -- browser (FFmpeg.wasm) encoding is driven client-side with
+	// no server-side pause check, so showing a control that silently does
+	// nothing to those jobs would be misleading. On the network page this
+	// is computed server-side (see Multisite::enqueue_network_queue_assets())
+	// since it depends on which add-ons are network-active; on the site
+	// page it only depends on this site's own settings.
+	const hidePauseControls = isMultisite
+		? !! window.videopack?.encodeQueueData?.hidePauseControls
+		: window.videopack_config?.options?.active_encoder === 'browser' &&
+		  ! hasTranscoder;
 
 	const [ view, setView ] = useState( {
 		type: 'table',
@@ -415,7 +428,7 @@ const EncodeQueue = () => {
 	}, [ bulkMessage ] );
 	const fetchQueue = async () => {
 		try {
-			const newData = await getQueue();
+			const newData = await getQueue( queueScope );
 			setQueueData( ( prevData ) => {
 				if (
 					JSON.stringify( prevData ) !== JSON.stringify( newData )
@@ -463,7 +476,7 @@ const EncodeQueue = () => {
 		setIsTogglingQueue( true );
 		const action = isQueuePaused ? 'play' : 'pause';
 		try {
-			const response = await toggleQueue( action );
+			const response = await toggleQueue( action, queueScope );
 			setIsQueuePaused( response.queue_state === 'pause' );
 			const defaultMessage =
 				action === 'play'
@@ -526,7 +539,7 @@ const EncodeQueue = () => {
 	const handleClearQueue = async ( type ) => {
 		setIsClearing( true );
 		try {
-			const response = await clearQueue( type );
+			const response = await clearQueue( type, queueScope );
 			const defaultMessage =
 				type === 'all'
 					? __(
@@ -1256,28 +1269,30 @@ const EncodeQueue = () => {
 						initialOpen={ true }
 					>
 						<div className="videopack-queue-controls">
-							<Button
-								variant="primary"
-								onClick={ handleToggleQueue }
-								isBusy={ isTogglingQueue }
-							>
-								<Icon
-									icon={
-										isQueuePaused
-											? 'controls-play'
-											: 'controls-pause'
-									}
-								/>
-								{ isQueuePaused
-									? __(
-											'Play Queue',
-											'video-embed-thumbnail-generator'
-									  )
-									: __(
-											'Pause Queue',
-											'video-embed-thumbnail-generator'
-									  ) }
-							</Button>
+							{ ! hidePauseControls && (
+								<Button
+									variant="primary"
+									onClick={ handleToggleQueue }
+									isBusy={ isTogglingQueue }
+								>
+									<Icon
+										icon={
+											isQueuePaused
+												? 'controls-play'
+												: 'controls-pause'
+										}
+									/>
+									{ isQueuePaused
+										? __(
+												'Play Queue',
+												'video-embed-thumbnail-generator'
+										  )
+										: __(
+												'Pause Queue',
+												'video-embed-thumbnail-generator'
+										  ) }
+								</Button>
+							) }
 							<Button
 								variant="secondary"
 								onClick={ () =>
@@ -1324,9 +1339,14 @@ const EncodeQueue = () => {
 					</PanelBody>
 				) }
 
-				{ ( () => {
+				{ ! isMultisite && ( () => {
 					// Merge thumbs and browser progress statistics into a single 'thumbs' block
 					// so that browser-side and server-side thumbnail generation share the same panel.
+					// Batch progress (featured images, parents, thumbnails, bulk
+					// encoding) is always a scan of the CURRENT site's own media
+					// library -- meaningless on the network-wide page, where the
+					// Bulk Video Processing / Batch Utilities panels that would
+					// trigger it are hidden anyway.
 					const active_encoder =
 						window.videopack_config?.options?.active_encoder;
 					const fallback_encoder =
@@ -1583,129 +1603,143 @@ const EncodeQueue = () => {
 					);
 				} )() }
 
-				<PanelBody
-					title={ __(
-						'Bulk Video Processing',
-						'video-embed-thumbnail-generator'
-					) }
-					initialOpen={ true }
-					className="videopack-bulk-processing-panel"
-				>
-					<div className="videopack-bulk-description">
-						{ __(
-							'Select the items you would like to generate for all videos in your media library (will not overwrite existing files):',
-							'video-embed-thumbnail-generator'
-						) }
-					</div>
-					<div className="videopack-bulk-options-list">
-						{ bulkOptions.map( ( option ) => (
-							<div
-								key={ option.id }
-								className="videopack-bulk-option-item"
-							>
-								<label
-									className="videopack-bulk-option-label"
-									htmlFor={ `bulk-option-${ option.id }` }
-								>
-									<input
-										id={ `bulk-option-${ option.id }` }
-										type="checkbox"
-										checked={
-											!! checkedBulkIds[ option.id ]
-										}
-										onChange={ () =>
-											handleToggleBulkOption( option.id )
-										}
-									/>
-									<span className="videopack-bulk-option-title">
-										{ option.label }
-									</span>
-								</label>
-								<p className="videopack-bulk-option-desc">
-									{ option.description }
-								</p>
-							</div>
-						) ) }
-					</div>
-					<div className="videopack-bulk-action-container">
-						<Button
-							variant="primary"
-							onClick={ handleRunSelectedBulk }
-							isBusy={ isQueueingBulk }
-							disabled={
-								isQueueingBulk ||
-								Object.values( checkedBulkIds ).filter(
-									Boolean
-								).length === 0
-							}
-						>
-							{ __(
-								'Generate Selected',
+				{ ! isMultisite && (
+					<>
+						<PanelBody
+							title={ __(
+								'Bulk Video Processing',
 								'video-embed-thumbnail-generator'
 							) }
-						</Button>
-					</div>
-					{ bulkMessage && (
-						<Notice
-							status={ bulkMessage.type }
-							onRemove={ () => setBulkMessage( null ) }
+							initialOpen={ true }
+							className="videopack-bulk-processing-panel"
 						>
-							{ bulkMessage.text }
-						</Notice>
-					) }
-				</PanelBody>
-				<PanelBody
-					title={ __(
-						'Batch Utilities',
-						'video-embed-thumbnail-generator'
-					) }
-					initialOpen={ false }
-					className="videopack-centralized-batch-panel"
-				>
-					<div className="videopack-batch-list">
-						{ batchProcesses.map( ( process, index ) => (
-							<div key={ process.id }>
-								<div className="videopack-batch-item">
-									<div className="videopack-batch-info">
-										<h3 className="videopack-batch-title">
-											{ process.title }
-										</h3>
-										<p className="videopack-batch-description">
-											{ process.description }
-										</p>
-									</div>
-									<div className="videopack-batch-action">
-										<Button
-											variant="secondary"
-											onClick={ () =>
-												openConfirmDialog(
-													'run_batch',
-													{
-														batchId: process.id,
-														batchTitle:
-															process.title,
-													}
-												)
-											}
-											isBusy={
-												isRunningBatch[ process.id ]
-											}
-											disabled={ process.disabled }
-										>
-											{ __(
-												'Run Utility',
-												'video-embed-thumbnail-generator'
-											) }
-										</Button>
-									</div>
-								</div>
-								{ index < batchProcesses.length - 1 && (
-									<Divider />
+							<div className="videopack-bulk-description">
+								{ __(
+									'Select the items you would like to generate for all videos in your media library (will not overwrite existing files):',
+									'video-embed-thumbnail-generator'
 								) }
 							</div>
-						) ) }
-					</div>
-				</PanelBody>
+							<div className="videopack-bulk-options-list">
+								{ bulkOptions.map( ( option ) => (
+									<div
+										key={ option.id }
+										className="videopack-bulk-option-item"
+									>
+										<label
+											className="videopack-bulk-option-label"
+											htmlFor={ `bulk-option-${ option.id }` }
+										>
+											<input
+												id={ `bulk-option-${ option.id }` }
+												type="checkbox"
+												checked={
+													!! checkedBulkIds[
+														option.id
+													]
+												}
+												onChange={ () =>
+													handleToggleBulkOption(
+														option.id
+													)
+												}
+											/>
+											<span className="videopack-bulk-option-title">
+												{ option.label }
+											</span>
+										</label>
+										<p className="videopack-bulk-option-desc">
+											{ option.description }
+										</p>
+									</div>
+								) ) }
+							</div>
+							<div className="videopack-bulk-action-container">
+								<Button
+									variant="primary"
+									onClick={ handleRunSelectedBulk }
+									isBusy={ isQueueingBulk }
+									disabled={
+										isQueueingBulk ||
+										Object.values(
+											checkedBulkIds
+										).filter( Boolean ).length === 0
+									}
+								>
+									{ __(
+										'Generate Selected',
+										'video-embed-thumbnail-generator'
+									) }
+								</Button>
+							</div>
+							{ bulkMessage && (
+								<Notice
+									status={ bulkMessage.type }
+									onRemove={ () => setBulkMessage( null ) }
+								>
+									{ bulkMessage.text }
+								</Notice>
+							) }
+						</PanelBody>
+						<PanelBody
+							title={ __(
+								'Batch Utilities',
+								'video-embed-thumbnail-generator'
+							) }
+							initialOpen={ false }
+							className="videopack-centralized-batch-panel"
+						>
+							<div className="videopack-batch-list">
+								{ batchProcesses.map( ( process, index ) => (
+									<div key={ process.id }>
+										<div className="videopack-batch-item">
+											<div className="videopack-batch-info">
+												<h3 className="videopack-batch-title">
+													{ process.title }
+												</h3>
+												<p className="videopack-batch-description">
+													{ process.description }
+												</p>
+											</div>
+											<div className="videopack-batch-action">
+												<Button
+													variant="secondary"
+													onClick={ () =>
+														openConfirmDialog(
+															'run_batch',
+															{
+																batchId:
+																	process.id,
+																batchTitle:
+																	process.title,
+															}
+														)
+													}
+													isBusy={
+														isRunningBatch[
+															process.id
+														]
+													}
+													disabled={
+														process.disabled
+													}
+												>
+													{ __(
+														'Run Utility',
+														'video-embed-thumbnail-generator'
+													) }
+												</Button>
+											</div>
+										</div>
+										{ index <
+											batchProcesses.length - 1 && (
+											<Divider />
+										) }
+									</div>
+								) ) }
+							</div>
+						</PanelBody>
+					</>
+				) }
 			</Panel>
 		</div>
 	);

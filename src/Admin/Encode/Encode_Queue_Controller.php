@@ -1169,8 +1169,13 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$current_blog_id = get_current_blog_id();
 
 		// Get all queue items. We'll filter them based on type and scope in the loop below.
+		// Authorization for 'network' scope (requiring manage_network) is
+		// enforced by the REST layer (Job_Controller::jobs_clear()) before
+		// this is ever called -- $scope is trusted here, not re-derived from
+		// is_network_admin(), which reflects the admin-screen bootstrap and
+		// is never true for a REST request anyway.
 		$all_queue_items = $this->get_queue_items(
-			( $scope === 'network' && is_network_admin() ) ? null : $current_blog_id
+			'network' === $scope ? null : $current_blog_id
 		);
 
 		if ( empty( $all_queue_items ) ) {
@@ -1188,7 +1193,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 				// If clearing 'all', we attempt to delete all jobs that the user has permission to delete.
 				$can_delete_job = (
 				( ! is_multisite() || $job_blog_id === $current_blog_id ) ||
-				( is_multisite() && is_network_admin() && $scope === 'network' )
+				( is_multisite() && 'network' === $scope )
 				) && Encode_Format::from_array( (array) $job )->current_user_can_manage();
 
 				if ( $can_delete_job ) {
@@ -1349,6 +1354,20 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$blog_name       = '';
 		$attachment_link = '';
 
+		// Attachment/post lookups below (poster, edit links, parent title,
+		// duration probing) all resolve against whichever blog's posts/
+		// postmeta tables are currently active. For a job belonging to a
+		// different site than the one this request is executing against
+		// (e.g. a network-wide queue list), that would otherwise silently
+		// resolve against the wrong site's data -- switch over for the
+		// duration of these lookups, mirroring the same pattern already
+		// used by remove_job()/retry_job()/handle_job_action().
+		$original_blog_id = false;
+		if ( is_multisite() && (int) $blog_id !== get_current_blog_id() ) {
+			$original_blog_id = get_current_blog_id();
+			switch_to_blog( (int) $blog_id );
+		}
+
 		if ( $attachment_id ) {
 			$meta_manager    = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
 			$poster_id       = $meta_manager->get_poster_id();
@@ -1381,6 +1400,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 					$job->set_video_duration( $video_duration );
 				}
 			}
+		}
+
+		if ( false !== $original_blog_id ) {
+			restore_current_blog();
 		}
 
 		if ( $user_id ) {
