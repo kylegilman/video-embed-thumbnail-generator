@@ -409,7 +409,7 @@ input[type="text"].kgvid_start_at {
 	text-decoration: none;
 	top: -26px;
 	background-color: transparent;
-    border: none;
+	border: none;
 }
 
 #kgvid-videomodal-container .wp-video, .kgvid_wrapper .wp-video {

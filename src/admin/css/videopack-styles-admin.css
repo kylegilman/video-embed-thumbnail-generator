@@ -391,8 +391,8 @@ font-weight: normal;
 button.kgvid_delete-format, button.kgvid-queue-action {
 	cursor: pointer;
 	display: inline-block;
-  	position: relative;
-  	background-color: transparent;
+	position: relative;
+	background-color: transparent;
 	text-decoration: none;
 	border: none;
 	color: #2271b1;
