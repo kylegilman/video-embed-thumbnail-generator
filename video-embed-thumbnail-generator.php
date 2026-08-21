@@ -16,6 +16,8 @@
  * Author URI: https://www.kylegilman.net/
  * Text Domain: video-embed-thumbnail-generator
  * Domain Path: /languages
+ * License: GPLv2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +41,7 @@
  *    Website: http://justingable.com/2008/10/03/modifying-wordpress-default-method-for-inserting-media/
  * 4) Includes Video-JS Player
  * Website: http://www.videojs.com/
- * License: http://www.gnu.org/licenses/lgpl.html
+ * Licensed under LGPL, see http://www.gnu.org/licenses/lgpl.html
  * 5) Includes code adapted from Kathy Darling's custom solution for saving thumbnails
  * Website: http://www.kathyisawesome.com/
  * 6) Includes Dominic's Video.js Resolution Selector

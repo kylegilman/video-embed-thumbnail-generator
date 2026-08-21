@@ -9,6 +9,10 @@
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	die( "Can't load this file directly" );
+}
+
 function kgvid_ajax_heartbeat( array $response, array $data ) {
 
 	if ( ! empty( $data['kgvid_encode_check'] ) ) {
@@ -33,6 +37,7 @@ add_action( 'wp_ajax_kgvid_sanitize_url', 'kgvid_ajax_sanitize_url' );
 function kgvid_update_child_format() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
 	if ( isset( $_POST['video_id'] ) ) {
 		$video_id = kgvid_sanitize_text_field( wp_unslash( $_POST['video_id'] ) );
 	}
@@ -48,8 +53,21 @@ function kgvid_update_child_format() {
 		$blog_id = false;
 	}
 
+	if ( empty( $video_id ) ) {
+		die();
+	}
+
 	if ( ! empty( $blog_id ) && $blog_id !== 'false' ) {
 		switch_to_blog( $blog_id );
+	}
+
+	if ( ! current_user_can( 'edit_post', $video_id )
+		|| ( ! empty( $parent_id ) && ! current_user_can( 'edit_post', $parent_id ) )
+	) {
+		if ( ! empty( $blog_id ) && $blog_id !== 'false' ) {
+			restore_current_blog();
+		}
+		die();
 	}
 
 	$video_encode_queue = kgvid_get_encode_queue();
@@ -92,6 +110,7 @@ add_action( 'wp_ajax_kgvid_update_child_format', 'kgvid_update_child_format' );
 function kgvid_clear_child_format() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
 	if ( isset( $_POST['video_id'] ) ) {
 			$video_id = kgvid_sanitize_text_field( wp_unslash( $_POST['video_id'] ) );
 	}
@@ -101,8 +120,19 @@ function kgvid_clear_child_format() {
 		$blog_id = false;
 	}
 
+	if ( empty( $video_id ) ) {
+		die();
+	}
+
 	if ( $blog_id ) {
 		switch_to_blog( $blog_id );
+	}
+
+	if ( ! current_user_can( 'edit_post', $video_id ) ) {
+		if ( $blog_id ) {
+			restore_current_blog();
+		}
+		die();
 	}
 
 	delete_post_meta( $video_id, '_kgflashmediaplayer-format' );
@@ -130,6 +160,24 @@ function kgvid_update_encode_queue() {
 	if ( isset( $_POST['page'] ) ) {
 		$page = kgvid_sanitize_text_field( wp_unslash( $_POST['page'] ) );
 	} else {
+		die();
+	}
+
+	if ( isset( $_POST['post_id'] ) ) {
+		$post_id = kgvid_sanitize_text_field( wp_unslash( $_POST['post_id'] ) );
+	} else {
+		$post_id = false;
+	}
+
+	$can_view_full_queue = current_user_can( 'encode_videos' );
+
+	// Users who can only edit one attachment may still poll for that attachment's
+	// own encode status, but never see the rest of the site's/network's queue.
+	if ( 'attachment' === $page ) {
+		if ( empty( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
+			die();
+		}
+	} elseif ( ! $can_view_full_queue ) {
 		die();
 	}
 
@@ -186,9 +234,23 @@ function kgvid_update_encode_queue() {
 		}
 	}//if there's a queue
 
+	if ( 'attachment' === $page && ! $can_view_full_queue ) {
+		// Don't expose other videos' movie URLs, file paths, or status to a user
+		// who can only edit this one attachment.
+		$video_encode_queue = array_values(
+			array_filter(
+				(array) $video_encode_queue,
+				function ( $video_entry ) use ( $post_id ) {
+					return ! empty( $video_entry['attachmentID'] ) && (string) $video_entry['attachmentID'] === (string) $post_id;
+				}
+			)
+		);
+	}
+
 	$arr = array(
 		'queue'         => $video_encode_queue,
 		'queue_control' => esc_html( $options['queue_control'] ),
+		'can_encode'    => $can_view_full_queue,
 	);
 
 	wp_send_json( $arr );
@@ -214,7 +276,20 @@ function kgvid_ajax_generate_encode_checkboxes() {
 		$blog_id = false;
 	}
 
-	if ( isset( $_POST['encodeformats'] ) ) {
+	// The full encode-queue table ('queue') lists every user's videos, so it's
+	// always gated by encode_videos. A single attachment's checkboxes ('attachment')
+	// only need edit_post on that attachment; the "embed a video URL" flow has no
+	// post ID at all, so it falls back to encode_videos too (the embed-url page
+	// itself only shows this UI to users with that capability).
+	if ( 'attachment' === $page && is_numeric( $post_id ) ) {
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			die();
+		}
+	} elseif ( ! current_user_can( 'encode_videos' ) ) {
+		die();
+	}
+
+	if ( isset( $_POST['encodeformats'] ) && current_user_can( 'encode_videos' ) ) {
 		$encode_checked = kgvid_sanitize_text_field( wp_unslash( $_POST['encodeformats'] ) );
 		$kgvid_postmeta = kgvid_get_attachment_meta( $post_id );
 		foreach ( $encode_checked as $format => $checked ) {
@@ -356,6 +431,10 @@ function kgvid_ajax_save_html5_thumb() {
 		$post_id = isset( $_POST['postID'] ) ? kgvid_sanitize_text_field( wp_unslash( $_POST['postID'] ) ) : '';
 		$index   = isset( $_POST['index'] ) ? intval( kgvid_sanitize_text_field( wp_unslash( $_POST['index'] ) ) ) + 1 : 1;
 
+		if ( is_numeric( $post_id ) && ! current_user_can( 'edit_post', $post_id ) ) {
+			wp_send_json( $thumb_info );
+		}
+
 		if ( isset( $_FILES['file'] ) && isset( $_FILES['file']['name'] ) ) {
 
 			add_filter( 'upload_dir', 'kgvid_thumb_tmp_upload_dir' );
@@ -427,6 +506,9 @@ function kgvid_ajax_save_thumb() {
 		}
 
 		if ( is_numeric( $post_id ) ) {
+			if ( ! current_user_can( 'edit_post', $post_id ) ) {
+				wp_send_json( $thumb_info );
+			}
 			$post_name = get_the_title( $post_id );
 		} else {
 			$post_name = str_replace( 'singleurl_', '', $post_id );
@@ -447,6 +529,11 @@ function kgvid_ajax_redraw_thumbnail_box() {
 	if ( isset( $_POST['post_id'] ) ) {
 		$post_id = kgvid_sanitize_text_field( wp_unslash( $_POST['post_id'] ) );
 	}
+
+	if ( empty( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
+		die();
+	}
+
 	$kgvid_postmeta     = kgvid_get_attachment_meta( $post_id );
 	$poster_id          = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
 	$thumbnail_size_url = '';
@@ -470,6 +557,10 @@ add_action( 'wp_ajax_kgvid_redraw_thumbnail_box', 'kgvid_ajax_redraw_thumbnail_b
 function kgvid_test_ffmpeg() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		die();
+	}
 
 	$options       = kgvid_get_options();
 	$uploads       = wp_upload_dir();
@@ -530,6 +621,10 @@ add_action( 'wp_ajax_kgvid_test_ffmpeg', 'kgvid_test_ffmpeg' );
 function kgvid_test_ffmpeg_thumb_watermark() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		die();
+	}
 
 	$random_timecode = wp_rand( 0, 1092 ) / 1000;
 	$thumb           = kgvid_make_thumbs( 'singleurl', plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4', 1, 1, 1, $random_timecode, false, 'generate' );
@@ -598,19 +693,25 @@ function kgvid_callffmpeg() {
 		$action = kgvid_sanitize_text_field( wp_unslash( $_POST['ffmpeg_action'] ) );
 	}
 
+	// A numeric post_id/parent_id refers to a real post the caller must be able to
+	// edit; non-numeric values ('singleurl', 'check', etc.) belong to the "embed a
+	// video URL" flow, which has no post to check and relies on the plugin capability alone.
+	$can_edit_post_id   = ! is_numeric( $post_id ) || current_user_can( 'edit_post', $post_id );
+	$can_edit_parent_id = ! is_numeric( $parent_id ) || current_user_can( 'edit_post', $parent_id );
+
 	if ( $options['ffmpeg_exists'] === 'on' ) {
 
-		if ( $action === 'generate' && current_user_can( 'make_video_thumbnails' ) ) {
+		if ( $action === 'generate' && current_user_can( 'make_video_thumbnails' ) && $can_edit_post_id ) {
 
 			$arr = kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincreaser, $thumbtimecode, $dofirstframe, $generate_button );
 
 		}
-		if ( $action === 'enqueue' && current_user_can( 'encode_videos' ) ) {
+		if ( $action === 'enqueue' && current_user_can( 'encode_videos' ) && $can_edit_post_id && $can_edit_parent_id ) {
 
 			$arr = kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id, $blog_id );
 
 		}
-		if ( $action === 'submit' && current_user_can( 'make_video_thumbnails' ) ) {
+		if ( $action === 'submit' && current_user_can( 'make_video_thumbnails' ) && $can_edit_parent_id ) {
 
 			kgivd_save_singleurl_poster( $parent_id, $poster, $movieurl, $set_featured );
 			$arr = array( 'submit' );
@@ -635,6 +736,11 @@ add_action( 'wp_ajax_kgvid_callffmpeg', 'kgvid_callffmpeg' );
 function kgvid_ajax_encode_videos() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if ( ! current_user_can( 'encode_videos' ) ) {
+		die();
+	}
+
 	$arr = kgvid_encode_videos();
 	wp_send_json( $arr );
 }
@@ -677,11 +783,17 @@ function kgvid_ajax_clear_queue_entry() {
 			$scope = kgvid_sanitize_text_field( wp_unslash( $_POST['scope'] ) );
 		}
 		$video_encode_queue = kgvid_get_encode_queue();
-		if ( is_array( $video_encode_queue ) && array_key_exists( $video_key, $video_encode_queue ) ) {
+		if ( is_array( $video_encode_queue ) && array_key_exists( $video_key, $video_encode_queue )
+			&& ( current_user_can( 'edit_others_video_encodes' )
+				|| ( array_key_exists( 'user_id', $video_encode_queue[ $video_key ] )
+					&& get_current_user_id() == $video_encode_queue[ $video_key ]['user_id']
+				)
+			)
+		) {
 			unset( $video_encode_queue[ $video_key ] );
 			$video_encode_queue = array_merge( $video_encode_queue );
+			kgvid_save_encode_queue( $video_encode_queue );
 		}
-		kgvid_save_encode_queue( $video_encode_queue );
 
 		$table = kgvid_generate_queue_table( $scope );
 
@@ -698,7 +810,7 @@ function kgvid_ajax_cancel_encode() {
 
 	$canceled = false;
 
-	if ( isset( $_POST['video_key'] ) ) {
+	if ( current_user_can( 'encode_videos' ) && isset( $_POST['video_key'] ) ) {
 
 		$video_key = kgvid_sanitize_text_field( wp_unslash( $_POST['video_key'] ) );
 
@@ -780,14 +892,16 @@ function kgvid_ajax_delete_video() {
 			$blog_id = false;
 		}
 
+		if ( $blog_id ) {
+			switch_to_blog( $blog_id );
+		}
+
 		if ( $attachment_id
 			&& $format
 			&& get_post_meta( $attachment_id, '_kgflashmediaplayer-format', true ) === $format
 			&& get_post_status( $attachment_id )
+			&& current_user_can( 'delete_post', $attachment_id )
 		) {
-			if ( $blog_id ) {
-				switch_to_blog( $blog_id );
-			}
 			$filename = get_attached_file( $attachment_id );
 			$deleted  = wp_delete_attachment( $attachment_id, true );
 			if ( ! empty( $deleted ) && ! file_exists( $filename ) ) {
@@ -796,9 +910,10 @@ function kgvid_ajax_delete_video() {
 				wp_delete_file( $filename );
 				$deleted = true;
 			}
-			if ( $blog_id ) {
-				restore_current_blog();
-			}
+		}
+
+		if ( $blog_id ) {
+			restore_current_blog();
 		}
 
 		$transient_name = kgvid_set_transient_name( $movieurl );
@@ -814,6 +929,10 @@ add_action( 'wp_ajax_kgvid_delete_video', 'kgvid_ajax_delete_video' );
 function kgvid_get_set_featured() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		die();
+	}
 
 	$args       = array(
 		'post_type'   => null,
@@ -848,6 +967,11 @@ add_action( 'wp_ajax_kgvid_get_set_featured', 'kgvid_get_set_featured' );
 function kgvid_set_featured() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		die();
+	}
+
 	$queue = get_option( 'kgvid_video_embed_cms_switch' );
 	if ( $queue['set_featured'] ) {
 		foreach ( $queue['set_featured'] as $post_id => $poster_id ) {
@@ -871,6 +995,11 @@ add_action( 'wp_ajax_kgvid_set_featured', 'kgvid_set_featured' );
 function kgvid_get_switch_parents() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		die();
+	}
+
 	$new_parent = 'post';
 	if ( isset( $_POST['parent'] ) ) {
 		$new_parent = kgvid_sanitize_text_field( wp_unslash( $_POST['parent'] ) );
@@ -947,6 +1076,11 @@ add_action( 'wp_ajax_kgvid_get_switch_parents', 'kgvid_get_switch_parents' );
 function kgvid_switch_parents() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		die();
+	}
+
 	$queue = get_option( 'kgvid_video_embed_cms_switch' );
 	if ( is_array( $queue ) && array_key_exists( 'switching_parents', $queue ) && $queue['switching_parents'] ) {
 		$new_parent = 'post';
@@ -1071,7 +1205,11 @@ function kgvid_generating_old() {
 		$type = kgvid_sanitize_text_field( wp_unslash( $_POST['type'] ) );
 	}
 
-	kgvid_generate_old( $type );
+	if ( ( $type === 'thumbs' && current_user_can( 'make_video_thumbnails' ) )
+		|| ( $type === 'encode' && current_user_can( 'encode_videos' ) )
+	) {
+		kgvid_generate_old( $type );
+	}
 
 	echo true;
 	die;
@@ -1091,7 +1229,8 @@ function kgvid_update_cms_progress() {
 	) {
 		$remaining = count( $queue[ $type ] );
 		if ( $remaining > 0
-			&& ( $type === 'thumbs' || $type === 'encode' )
+			&& ( ( $type === 'thumbs' && current_user_can( 'make_video_thumbnails' ) )
+				|| ( $type === 'encode' && current_user_can( 'encode_videos' ) ) )
 		) {
 			kgvid_generate_old( $type );
 		}

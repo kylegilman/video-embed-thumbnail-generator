@@ -8,6 +8,11 @@
  * @subpackage Videopack/admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	die( "Can't load this file directly" );
+}
+
 function kgvid_get_encode_queue() {
 
 	if ( is_videopack_active_for_network() ) {
@@ -3274,7 +3279,10 @@ function kgvid_clear_completed_queue( $type, $scope = 'site' ) {
 
 					if ( $value['status'] == 'encoding' ) { // if it's not completed yet
 
-						if ( $type != 'all' ) {
+						$can_cancel_this_entry = current_user_can( 'edit_others_video_encodes' )
+							|| ( array_key_exists( 'user_id', $queue_entry ) && $user_ID == $queue_entry['user_id'] );
+
+						if ( $type != 'all' || ! $can_cancel_this_entry ) {
 							$keep[ $video_key ] = true;
 						} elseif ( ! is_multisite()
 							|| ( is_network_admin() && $scope === 'network' )
@@ -3305,13 +3313,15 @@ function kgvid_clear_completed_queue( $type, $scope = 'site' ) {
 						}
 					}
 
-					if ( is_multisite() && $type != 'scheduled' && current_user_can( 'encode_videos' ) &&
+					if ( $type != 'scheduled' && current_user_can( 'encode_videos' ) &&
 						(
-							( $scope == 'site' && array_key_exists( 'blog_id', $queue_entry ) && $queue_entry['blog_id'] != get_current_blog_id() )
-							|| ( ! current_user_can( 'edit_others_video_encodes' ) && $user_ID != $queue_entry['user_id'] )
-							|| ( $scope != 'site' && ! current_user_can( 'manage_network' ) )
+							( is_multisite() && $scope == 'site' && array_key_exists( 'blog_id', $queue_entry ) && $queue_entry['blog_id'] != get_current_blog_id() )
+							|| ( ! current_user_can( 'edit_others_video_encodes' )
+								&& ( ! array_key_exists( 'user_id', $queue_entry ) || $user_ID != $queue_entry['user_id'] )
+							)
+							|| ( is_multisite() && $scope != 'site' && ! current_user_can( 'manage_network' ) )
 						)
-					) { // only clear entries from current blog
+					) { // only clear entries the user owns (or, on multisite, from the current blog)
 						$keep[ $video_key ] = true;
 						break;
 					}
@@ -3430,6 +3440,11 @@ function kgvid_cancel_encode( $video_key, $format ) {
 			&& array_key_exists( $video_key, $video_encode_queue )
 			&& array_key_exists( $format, $video_encode_queue[ $video_key ]['encode_formats'] )
 			&& array_key_exists( 'PID', $video_encode_queue[ $video_key ]['encode_formats'][ $format ] )
+			&& ( current_user_can( 'edit_others_video_encodes' )
+				|| ( array_key_exists( 'user_id', $video_encode_queue[ $video_key ] )
+					&& get_current_user_id() == $video_encode_queue[ $video_key ]['user_id']
+				)
+			)
 		) {
 
 			$kgvid_pid = intval( $video_encode_queue[ $video_key ]['encode_formats'][ $format ]['PID'] );

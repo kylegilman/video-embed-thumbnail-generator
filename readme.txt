@@ -2,8 +2,8 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, thumbnail, resolutions
-Requires at least: 5.0
-Tested up to: 7.0
+Requires at least: 5.9
+Tested up to: 7.1
 Requires PHP: 7.2
 Stable tag: 4.10.6
 License: GPLv2 or later
@@ -105,7 +105,11 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.10.6 - June 15, 2026 =
+= 4.10.6 - August 21, 2026 =
+* Security fix: restricted the kgvid_count_play AJAX handler to a play-counter allowlist to prevent unauthenticated overwriting of attachment metadata.
+* Security fix: added missing and stricter capability checks across admin AJAX handlers to prevent lower-privileged or unauthorized users from triggering encoding, thumbnail generation, post reparenting, deletion, or other users' encode jobs.
+* Security hardening: added direct file access protection to several plugin files.
+* Fixed incorrect plugin license header and a few missing/mismatched translation text domains.
 * Fixed bug that caused a fatal error when video posts are duplicated.
 * Fixed bug that triggered _load_textdomain_just_in_time (again).
 * Added 'videopack_save_thumb_location' filter to set thumbnails to save to a custom location.

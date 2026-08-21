@@ -1468,17 +1468,28 @@ function kgvid_update_encode_queue() {
 
 		var queued = false;
 
+		var post_data = { action: "kgvid_update_encode_queue",
+			security: kgflashmediaplayersecurity,
+			page: page
+		};
+
+		if ( page === 'attachment' ) {
+			post_data.post_id = post_id;
+		}
+
 		jQuery.post(
 			ajaxurl,
-			{ action: "kgvid_update_encode_queue",
-				security: kgflashmediaplayersecurity,
-				page: page
-			},
+			post_data,
 			function(data) {
 
 				var check_again = false;
 
 				var time_to_wait = 10000;
+
+				if ( page === 'attachment' && data.can_encode === false ) {
+					container_element.find( '.kgvid_encode_checkbox' ).prop( 'disabled', true );
+					container_element.find( '.videopack-encode-button' ).prop( 'disabled', true );
+				}
 
 				if ( data.queue.length !== 0 && data.queue.length !== undefined ) {
 					jQuery.each(

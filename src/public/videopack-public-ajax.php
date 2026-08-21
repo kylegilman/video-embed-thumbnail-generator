@@ -8,6 +8,11 @@
  * @subpackage Videopack/public
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	die( "Can't load this file directly" );
+}
+
 function kgvid_switch_gallery_page() {
 
 	check_ajax_referer( 'kgvid_frontend_nonce', 'security' );
@@ -50,6 +55,19 @@ function kgvid_count_play() {
 		$event = 'completeviews'; }
 	if ( is_numeric( $event ) ) {
 		$event = 'play_' . $event; }
+
+	// Only allow known play-counter keys to be written; reject anything else
+	// so this handler cannot be used to overwrite arbitrary attachment meta.
+	if ( 'starts' !== $event && 'completeviews' !== $event && ! preg_match( '/^play_\d+$/', $event ) ) {
+		status_header( 400 );
+		die();
+	}
+
+	$post_id = absint( $post_id );
+	if ( ! $post_id || 'attachment' !== get_post_type( $post_id ) ) {
+		status_header( 400 );
+		die();
+	}
 
 	$kgvid_postmeta = kgvid_get_attachment_meta( $post_id );
 	$plays          = $kgvid_postmeta[ $event ];

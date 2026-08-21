@@ -2,6 +2,10 @@
 
 namespace Kylegilman\VideoEmbedThumbnailGenerator;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	die( "Can't load this file directly" );
+}
+
 use Symfony\Component\Process\Process;
 
 class FFMPEG_Process extends Process {
