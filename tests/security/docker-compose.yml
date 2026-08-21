@@ -1,0 +1,51 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: videopack_test_db
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  wordpress:
+    image: wordpress:latest
+    container_name: videopack_test_wp
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DEBUG: 1
+    ports:
+      - "8765:80"
+    volumes:
+      - wp_data:/var/www/html
+      - ../../:/var/www/html/wp-content/plugins/video-embed-thumbnail-generator:ro
+
+  cli:
+    image: wordpress:cli
+    container_name: videopack_test_cli
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    volumes:
+      - wp_data:/var/www/html
+      - ../../:/var/www/html/wp-content/plugins/video-embed-thumbnail-generator:ro
+    entrypoint: ["tail", "-f", "/dev/null"]
+
+volumes:
+  wp_data:

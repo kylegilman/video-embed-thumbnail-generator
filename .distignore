@@ -1,0 +1,11 @@
+.git
+.github
+.gitattributes
+.gitignore
+.distignore
+.wordpress-org
+tests
+phpcs.xml
+composer.lock
+CONTRIBUTING.md
+README.md
