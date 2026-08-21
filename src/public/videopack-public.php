@@ -1198,9 +1198,6 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 						$source_key = $x;
 					}
 
-					if ( strpos( $encodevideo_info[ $format ]['url'], '?' ) === false ) { // if there isn't already a query string in this URL
-						$encodevideo_info[ $format ]['url'] = $encodevideo_info[ $format ]['url'] . '?id=' . $kgvid_video_id;
-					}
 					/**
 					 * Filters a video <source> URL.
 					 * @param string $source_url The video URL.
