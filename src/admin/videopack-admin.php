@@ -19,7 +19,7 @@ function kgvid_default_options_fn() {
 
 	$options = array(
 		'version'                 => '4.10.3',
-		'videojs_version'         => '8.16.1',
+		'videojs_version'         => '8.24.0',
 		'embed_method'            => 'Video.js v8',
 		'template'                => false,
 		'template_gentle'         => 'on',

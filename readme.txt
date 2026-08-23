@@ -105,7 +105,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.10.6 - August 21, 2026 =
+= 4.10.6 - August 23, 2026 =
 * Security fix: restricted the kgvid_count_play AJAX handler to a play-counter allowlist to prevent unauthenticated overwriting of attachment metadata.
 * Security fix: added missing and stricter capability checks across admin AJAX handlers to prevent lower-privileged or unauthorized users from triggering encoding, thumbnail generation, post reparenting, deletion, or other users' encode jobs.
 * Security hardening: added direct file access protection to several plugin files.
@@ -116,7 +116,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 * Fixed bug that caused a fatal error when video posts are duplicated.
 * Fixed bug that triggered _load_textdomain_just_in_time (again).
 * Added 'videopack_save_thumb_location' filter to set thumbnails to save to a custom location.
-* Updated dependencies Freemius SDK and Symfony/Process
+* Updated dependencies Video.js, Freemius SDK, and Symfony/Process
 
 = 4.10.5 - January 24, 2026 =
 * Fixed bug that caused 404 errors when WordPress Default Player is selected.
