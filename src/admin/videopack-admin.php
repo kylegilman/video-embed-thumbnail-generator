@@ -2068,9 +2068,20 @@ function kgvid_error_email_callback() {
 	$authorized_users = array();
 	echo "<div class='kgvid_video_app_required'>";
 
-	if ( is_array( $options['capabilities'] ) && array_key_exists( 'edit_others_video_encodes', $options['capabilities'] ) ) {
-		$roles_with_permission = array_keys( array_filter( $options['capabilities']['edit_others_video_encodes'] ) );
-		$users                 = get_users( array( 'role__in' => $roles_with_permission ) );
+	// Use the roles' actual capability grants rather than the stored
+	// 'capabilities' option, which can drift out of sync with them.
+	$wp_roles = wp_roles();
+	if ( is_object( $wp_roles ) && property_exists( $wp_roles, 'roles' ) ) {
+		$roles_with_permission = array();
+		foreach ( $wp_roles->roles as $role => $role_info ) {
+			if ( is_array( $role_info['capabilities'] )
+				&& array_key_exists( 'edit_others_video_encodes', $role_info['capabilities'] )
+				&& $role_info['capabilities']['edit_others_video_encodes'] == 1
+			) {
+				$roles_with_permission[] = $role;
+			}
+		}
+		$users = $roles_with_permission ? get_users( array( 'role__in' => $roles_with_permission ) ) : array();
 
 		if ( $users ) {
 			$authorized_users = array();
@@ -2972,7 +2983,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta( $post->ID );
 		$created_time   = time() - get_post_time( 'U', true, $post->ID );
 
-		if ( $user_ID === $post->post_author
+		if ( $user_ID == $post->post_author
 			|| current_user_can( 'edit_others_posts' )
 		) {
 			$readonly          = '';

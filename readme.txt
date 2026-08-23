@@ -111,6 +111,8 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 * Security hardening: added direct file access protection to several plugin files.
 * Fixed incorrect plugin license header and a few missing/mismatched translation text domains.
 * Fixed bug that appended an unstable "?id=" query string to video source URLs, which could cause the same video to be indexed by search engines multiple times.
+* Fixed bug that hid the thumbnail generation controls in the Media Library for Authors and other non-Editor roles viewing their own uploaded videos.
+* Fixed bug that could show incorrect users in the error notification email dropdown on the settings page.
 * Fixed bug that caused a fatal error when video posts are duplicated.
 * Fixed bug that triggered _load_textdomain_just_in_time (again).
 * Added 'videopack_save_thumb_location' filter to set thumbnails to save to a custom location.
