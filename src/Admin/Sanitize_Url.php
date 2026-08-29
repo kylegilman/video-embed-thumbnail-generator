@@ -87,7 +87,14 @@ class Sanitize_Url {
 
 		if ( empty( $path_info['extension'] ) ) {
 			$this->noextension = $this->url;
-			$this->basename    = (string) substr( $this->url, -20 );
+			// pathinfo()'s own 'basename' is already just the last path
+			// segment (scheme, host, query string, and any '../' traversal
+			// already excluded by its split on '/') -- sanitize_file_name()
+			// on that, not a raw substring of the whole original URL, keeps
+			// this consistent with the extension-present branch below and
+			// safe to use as a filesystem path component (see Encode_Info,
+			// which builds real file paths from this value).
+			$this->basename = (string) substr( sanitize_file_name( (string) $path_info['basename'] ), -20 );
 			return;
 		}
 
