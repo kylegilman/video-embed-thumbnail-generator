@@ -58,6 +58,15 @@ class Sanitizer {
 					$type = 'number';
 				} elseif ( is_bool( $value ) && in_array( 'boolean', $allowed_types, true ) ) {
 					$type = 'boolean';
+				} elseif ( is_string( $value ) && in_array( 'boolean', $allowed_types, true ) && rest_is_boolean( $value ) ) {
+					// A ['string', 'boolean', ...] union (e.g. Attachment_Meta's
+					// 'downloadlink', 'featured', 'lockaspect', 'showtitle')
+					// means "accept a real boolean or a string representation
+					// of one" -- without this, a string like 'false' fell
+					// through to the plain 'string' case below and was stored
+					// as that literal string, which is truthy in a loose PHP
+					// check (the opposite of what was requested).
+					$type = 'boolean';
 				} elseif ( is_array( $value ) ) {
 					if ( in_array( 'object', $allowed_types, true ) ) {
 						$type = 'object';
