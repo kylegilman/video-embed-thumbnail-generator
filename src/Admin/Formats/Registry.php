@@ -149,7 +149,12 @@ class Registry {
 		);
 
 		if ( ! empty( $this->options['enable_custom_resolution'] ) ) {
-			$custom_height           = (int) ( $this->options['custom_resolution'] ?? 900 );
+			// The setting has no enforced minimum in its schema or the
+			// settings UI -- floor it here so a stray value like 1 (which
+			// Video_Resolution::calculate_bounded_dimensions()'s even-pixel
+			// flooring would otherwise round back up to 2, exceeding the
+			// requested height) can never reach real encode dimensions.
+			$custom_height           = max( 2, (int) ( $this->options['custom_resolution'] ?? 900 ) );
 			$resolution_properties[] = array(
 				'height'         => $custom_height,
 				'name'           => 'Custom',
@@ -283,7 +288,7 @@ class Registry {
 				return (string) esc_html__( 'Ultra Low Def (240p)', 'video-embed-thumbnail-generator' );
 			case 'Custom':
 				if ( ! empty( $this->options['enable_custom_resolution'] ) ) {
-					$custom_height = (int) ( $this->options['custom_resolution'] ?? 900 );
+					$custom_height = max( 2, (int) ( $this->options['custom_resolution'] ?? 900 ) );
 					return sprintf( /* translators: %s: Custom resolution height (e.g. 900). */ (string) esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), (string) $custom_height );
 				}
 				return (string) esc_html__( 'Custom', 'video-embed-thumbnail-generator' );

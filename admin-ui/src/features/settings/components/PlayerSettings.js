@@ -1390,6 +1390,7 @@ const PlayerSettings = ( { settings, setSettings, changeHandlerFactory } ) => {
 								'video-embed-thumbnail-generator'
 							) }
 							type="number"
+							min={ 2 }
 							value={ custom_resolution || '' }
 							onChange={ ( value ) =>
 								changeHandlerFactory.custom_resolution(
