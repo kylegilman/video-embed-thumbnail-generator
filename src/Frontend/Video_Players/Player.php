@@ -739,11 +739,14 @@ class Player {
 		$sources = apply_filters( 'videopack_video_player_html_sources', $this->get_flat_sources(), $this->atts, $this );
 
 		foreach ( $sources as $source ) {
-			$source_elements .= '<source src="' . $source['src'] . '" type="' . $source['type'];
+			$source_elements .= '<source src="' . esc_url( $source['src'] ) . '" type="' . esc_attr( $source['type'] );
 
 			if ( ! empty( $source['codecs'] ) ) {
 				// Use escaped double quotes for the codecs parameter value to comply with MIME standards.
-				$source_elements .= '; codecs=&quot;' . $source['codecs'] . '&quot;';
+				// esc_attr() runs on the raw codecs value itself, not the
+				// combined type="..." string -- escaping after concatenation
+				// would double-encode the literal &quot; delimiters below.
+				$source_elements .= '; codecs=&quot;' . esc_attr( $source['codecs'] ) . '&quot;';
 			}
 			$source_elements .= '"';
 			$source_elements .= $this->get_source_atts( $source );
@@ -762,10 +765,10 @@ class Player {
 	protected function get_source_atts( array $source ): string {
 		$atts = '';
 		if ( ! empty( $source['resolution'] ) ) {
-			$atts .= ' data-res="' . $source['resolution'] . '"';
+			$atts .= ' data-res="' . esc_attr( $source['resolution'] ) . '"';
 		}
 		if ( ! empty( $source['default_res'] ) ) {
-			$atts .= ' data-default_res="' . $source['default_res'] . '"';
+			$atts .= ' data-default_res="' . esc_attr( $source['default_res'] ) . '"';
 		}
 		return apply_filters( 'videopack_video_player_source_attributes', $atts, $source, $this->atts );
 	}
