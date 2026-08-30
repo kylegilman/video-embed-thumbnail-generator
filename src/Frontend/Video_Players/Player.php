@@ -830,16 +830,19 @@ class Player {
 	 * @return int The resolved width.
 	 */
 	protected function get_final_width(): int {
-		$width = (int) ( $this->atts['width'] ?? 0 );
-		if ( $width <= 0 ) {
-			$width = (int) ( $this->options['width'] ?? 960 );
-		}
+		$atts_width    = (int) ( $this->atts['width'] ?? 0 );
+		$width_was_set = $atts_width > 0;
+		$width         = $width_was_set ? $atts_width : (int) ( $this->options['width'] ?? 960 );
 
+		// Only fall through to the source's native width when the caller
+		// didn't explicitly request one -- checking whether $width merely
+		// *equals* the global default (rather than whether atts actually
+		// provided one) would also override an explicit request that
+		// happens to match that default.
 		$source = $this->get_source();
-		if ( $source ) {
+		if ( $source && ! $width_was_set ) {
 			$native_width = (int) $source->get_width();
-			// If the current width is the global default, and the source has real native dimensions, use them.
-			if ( $width === (int) ( $this->options['width'] ?? 960 ) && $native_width > 0 ) {
+			if ( $native_width > 0 ) {
 				$width = $native_width;
 			}
 		}
@@ -853,16 +856,18 @@ class Player {
 	 * @return int The resolved height.
 	 */
 	protected function get_final_height(): int {
-		$height = (int) ( $this->atts['height'] ?? 0 );
-		if ( $height <= 0 ) {
-			$height = (int) ( $this->options['height'] ?? 540 );
-		}
+		$atts_height    = (int) ( $this->atts['height'] ?? 0 );
+		$height_was_set = $atts_height > 0;
+		$height         = $height_was_set ? $atts_height : (int) ( $this->options['height'] ?? 540 );
 
+		// Only fall through to the source's native height when the caller
+		// didn't explicitly request one -- see get_final_width()'s comment
+		// for why value-equality with the global default isn't the right
+		// check here.
 		$source = $this->get_source();
-		if ( $source ) {
+		if ( $source && ! $height_was_set ) {
 			$native_height = (int) $source->get_height();
-			// If the current height is the global default, and the source has real native dimensions, use them.
-			if ( $height === (int) ( $this->options['height'] ?? 540 ) && $native_height > 0 ) {
+			if ( $native_height > 0 ) {
 				$height = $native_height;
 			}
 		}
