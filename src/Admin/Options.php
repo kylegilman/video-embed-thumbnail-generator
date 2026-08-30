@@ -312,7 +312,6 @@ class Options implements Hook_Subscriber {
 			'replace_video_block'           => false,
 			'replace_preview_video'         => true,
 			'default_insert'                => 'Single Video',
-			'rewrite_attachment_url'        => true,
 
 			// Testing & Debug.
 			'sample_codec'                  => 'h264',

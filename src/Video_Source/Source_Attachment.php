@@ -101,53 +101,15 @@ class Source_Attachment extends Source {
 	 */
 	protected function set_url(): void {
 		$attachment_id = is_array( $this->source ) ? $this->source['id'] : $this->source;
-		$original_url  = is_array( $this->source ) ? $this->source['url'] : '';
 
-		// 1. Check for remote attachment URL (hybrid source).
+		// Check for remote attachment URL (hybrid source).
 		$external_url = $this->metadata['url'] ?? null;
 		if ( $external_url ) {
 			$this->url = $external_url;
 			return;
 		}
 
-		// 2. Fallback to standard attachment URL logic.
-		$attachment_url = wp_get_attachment_url( $attachment_id );
-
-		if ( ! empty( $original_url ) ) {
-			$rewrite_url = (bool) $this->options['rewrite_attachment_url'];
-
-			if ( $rewrite_url ) {
-				$exempt_cdns = array(
-					'amazonaws.com',
-					'rackspace.com',
-					'netdna-cdn.com',
-					'nexcess-cdn.net',
-					'limelight.com',
-					'digitaloceanspaces.com',
-				);
-
-				/**
-				 * Filter the list of CDN domains exempt from URL rewriting.
-				 *
-				 * @param array $exempt_cdns Array of CDN domains.
-				 */
-				$exempt_cdns = apply_filters( 'videopack_exempt_cdns', $exempt_cdns );
-
-				foreach ( $exempt_cdns as $exempt_cdn ) {
-					if ( strpos( $original_url, $exempt_cdn ) !== false ) {
-						$rewrite_url = false;
-						break;
-					}
-				}
-			}
-
-			if ( ! $rewrite_url ) {
-				$this->url = $original_url;
-				return;
-			}
-		}
-
-		$this->url = $attachment_url;
+		$this->url = wp_get_attachment_url( $attachment_id );
 	}
 
 	/**

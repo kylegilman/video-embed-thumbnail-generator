@@ -36,7 +36,6 @@ const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 		replace_video_shortcode,
 		replace_video_block,
 		replace_preview_video,
-		rewrite_attachment_url,
 	} = settings;
 
 	const [ isClearingCache, setIsClearingCache ] = useState( false );
@@ -351,23 +350,6 @@ const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 					<VideopackTooltip
 						text={ __(
 							"Enhance the default WordPress video preview in the media library with Videopack's features and player settings.",
-							'video-embed-thumbnail-generator'
-						) }
-					/>
-				</div>
-				<div className="videopack-control-with-tooltip">
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __(
-							'Allow video attachment URL rewriting',
-							'video-embed-thumbnail-generator'
-						) }
-						onChange={ changeHandlerFactory.rewrite_attachment_url }
-						checked={ !! rewrite_attachment_url }
-					/>
-					<VideopackTooltip
-						text={ __(
-							'If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if Videopack is changing your URLs to local files instead of the CDN.',
 							'video-embed-thumbnail-generator'
 						) }
 					/>
