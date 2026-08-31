@@ -125,19 +125,17 @@ class SourcePlaceholderTest extends WP_UnitTestCase {
 
 	/**
 	 * Every sibling Source subclass's set_metadata() uses the passed-in
-	 * $metadata array when one is given (e.g. Source_Url's, used
-	 * throughout SourceFormatResolutionTest to inject real
-	 * actualwidth/actualheight). Source_Placeholder's ignores it entirely
-	 * and always recomputes from the reserved format instead -- consistent
-	 * with there being no real file to describe, but worth documenting
-	 * since it's a real behavioral difference from its siblings.
+	 * $metadata array when one is given (Source_File, Source_Url,
+	 * Source_Attachment all check `if ( $metadata )` first) -- matches that
+	 * shared contract rather than always recomputing from the reserved
+	 * format regardless of what's passed in.
 	 */
-	public function test_set_metadata_ignores_an_explicitly_passed_array(): void {
+	public function test_set_metadata_uses_an_explicitly_passed_array(): void {
 		$source = $this->placeholder( ABSPATH . 'video-720.mp4', 'h264_720' );
 
-		$source->set_metadata( array( 'height' => 999, 'fourcc' => 'ignored' ) );
+		$source->set_metadata( array( 'height' => 999, 'fourcc' => 'injected' ) );
 
-		$this->assertSame( 720, $source->get_metadata()['height'] );
-		$this->assertSame( 'avc1', $source->get_metadata()['fourcc'] );
+		$this->assertSame( 999, $source->get_metadata()['height'] );
+		$this->assertSame( 'injected', $source->get_metadata()['fourcc'] );
 	}
 }

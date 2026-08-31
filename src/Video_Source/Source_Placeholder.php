@@ -51,6 +51,11 @@ class Source_Placeholder extends Source {
 	 * @param array|null $metadata Optional. The metadata array.
 	 */
 	public function set_metadata( array $metadata = null ): void {
+		if ( $metadata ) {
+			$this->metadata = $metadata;
+			return;
+		}
+
 		$this->metadata = array(
 			'height' => $this->get_resolution(),
 			'fourcc' => $this->get_codec() ? $this->get_codec()->get_codecs_att() : '',
