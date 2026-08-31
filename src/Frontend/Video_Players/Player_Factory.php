@@ -30,14 +30,20 @@ class Player_Factory {
 	 */
 	public static function create( string $embed_method, array $options, \Videopack\Admin\Formats\Registry $registry = null ): Player {
 
-		$player = new Player( $options, $registry ); // Default to base Player.
-
 		switch ( $embed_method ) {
 			case 'Video.js':
 				$player = new Player_Video_Js( $options, $registry );
 				break;
 			case 'WordPress Default':
 				$player = new Player_WordPress_Default( $options, $registry );
+				break;
+			default:
+				// Player's constructor increments a static instance counter
+				// used for the player's HTML/JS id -- constructing one here
+				// unconditionally before the switch (and then discarding it
+				// whenever the switch matched) burned an extra id for every
+				// real player created.
+				$player = new Player( $options, $registry );
 				break;
 		}
 
