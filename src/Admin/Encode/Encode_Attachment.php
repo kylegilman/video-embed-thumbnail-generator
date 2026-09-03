@@ -93,13 +93,6 @@ class Encode_Attachment {
 	protected $encode_formats;
 
 	/**
-	 * Log of encoding activities.
-	 *
-	 * @var array $queue_log
-	 */
-	protected $queue_log;
-
-	/**
 	 * Whether the source is a WordPress attachment.
 	 *
 	 * @var bool $is_attachment
@@ -221,7 +214,6 @@ class Encode_Attachment {
 		$this->attachment_manager = new Attachment( $this->options, $format_registry, $attachment_meta );
 		$this->uploads            = (array) wp_upload_dir();
 		$this->video_formats      = (array) $format_registry->get_video_formats();
-		$this->queue_log          = array();
 		$this->set_is_attachment();
 		$this->set_queue_table_name();
 		$this->update_formats_replacement_status();

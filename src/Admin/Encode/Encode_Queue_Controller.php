@@ -42,13 +42,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 	protected $format_registry;
 
 	/**
-	 * Encode queue log instance.
-	 *
-	 * @var Encode_Queue_Log $queue_log
-	 */
-	protected $queue_log;
-
-	/**
 	 * The name of the database table for the encoding queue.
 	 *
 	 * @var string $queue_table_name
@@ -73,7 +66,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
 		$this->options         = (array) $options;
 		$this->format_registry = $format_registry ? $format_registry : new \Videopack\Admin\Formats\Registry( $this->options );
-		$this->queue_log       = new Encode_Queue_Log( $this->format_registry );
 
 		global $wpdb;
 		if ( is_multisite() && \Videopack\Admin\Multisite::is_videopack_active_for_network() ) {
@@ -270,9 +262,8 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		);
 
 		if ( ! $this->required_keys( $args, $required ) || ! is_array( $args['formats'] ) || empty( $args['formats'] ) ) {
-			$this->queue_log->add_to_log( 'error_invalid_args' );
 			return array(
-				'log'     => $this->queue_log->get_log(),
+				'log'     => array( $this->format_log_message( 'error_invalid_args' ) ),
 				'results' => array(),
 			);
 		}
@@ -287,6 +278,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		$encoder                   = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $input_url, array(), $requested_parent_id, (int) $user_id );
 		$formats_to_encode         = (array) $this->resolve_replacement_formats( $args['formats'], $encoder );
 		$results                   = array();
+		$log                       = array();
 		$successfully_queued_items = array();
 		$video_formats_objects     = $this->format_registry->get_video_formats();
 
@@ -294,7 +286,6 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 			$format_id    = is_string( $key ) ? sanitize_text_field( $key ) : sanitize_text_field( $format_to_encode );
 			$meta         = is_array( $format_to_encode ) ? $format_to_encode : array();
 			$queue_result = $encoder->queue_format( $format_id, $user_id, $current_blog_id, $meta );
-			$this->queue_log->add_to_log( $queue_result['reason'] ?? $queue_result['status'], $format_id );
 
 			$results[ $format_id ] = $queue_result;
 			if ( isset( $queue_result['status'] ) && 'success' === $queue_result['status'] ) {
@@ -305,6 +296,10 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 					'id'   => $format_id,
 					'name' => $name,
 				);
+			} else {
+				// Only surface non-success outcomes -- a successfully queued
+				// format doesn't need explaining alongside the summary count.
+				$log[] = $this->format_log_message( $queue_result['reason'] ?? $queue_result['status'], $format_id );
 			}
 		}
 		// After enqueuing, trigger the queue processor with a short delay.
@@ -317,11 +312,56 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
 		wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
 		return array(
-			'log'                => $this->queue_log->get_log(),
+			'log'                => $log,
 			'results'            => $results,
 			'new_queue_position' => $this->get_queue_size(),
 			'encode_list'        => $successfully_queued_items,
 		);
+	}
+
+	/**
+	 * Builds a human-readable message describing the outcome of trying to
+	 * queue a single format, for display in the "Add formats" UI.
+	 *
+	 * @param string      $action    The outcome ('success'/'queued' or a queue_format() failure reason).
+	 * @param string|bool $format_id The ID of the video format, or false if not applicable.
+	 * @return string
+	 */
+	protected function format_log_message( $action, $format_id = false ) {
+		if ( $format_id ) {
+			$video_formats_objects = $this->format_registry->get_video_formats();
+			$name                  = isset( $video_formats_objects[ $format_id ] )
+				? $video_formats_objects[ $format_id ]->get_name()
+				: $format_id;
+		} else {
+			$name = '';
+		}
+
+		switch ( $action ) {
+			case 'success': // Keep 'success' as an alias for 'queued' for robustness.
+			case 'queued':
+				return $name . ' ' . __( 'added to queue', 'video-embed-thumbnail-generator' );
+			case 'already_queued':
+				return $name . ' ' . __( 'already queued', 'video-embed-thumbnail-generator' );
+			case 'already_exists':
+				return $name . ' ' . __( 'already exists', 'video-embed-thumbnail-generator' );
+			case 'permission':
+				return __( 'User does not have permission to encode videos', 'video-embed-thumbnail-generator' );
+			case 'lowres':
+				return $name . ' ' . __( 'is lower resolution than the target and was skipped', 'video-embed-thumbnail-generator' );
+			case 'vcodec_unavailable':
+				return $name . ' ' . __( 'requires a video codec that is not available', 'video-embed-thumbnail-generator' );
+			case 'acodec_unavailable':
+				return $name . ' ' . __( 'requires an audio codec that is not available', 'video-embed-thumbnail-generator' );
+			case 'error_invalid_format_key':
+				return $name . ' ' . __( 'is not a valid format', 'video-embed-thumbnail-generator' );
+			case 'error_db_insert':
+				return $name . ' ' . __( 'could not be added to the database', 'video-embed-thumbnail-generator' );
+			case 'error_scheduling':
+				return $name . ' ' . __( 'could not be scheduled', 'video-embed-thumbnail-generator' );
+			default:
+				return __( 'unexpected error', 'video-embed-thumbnail-generator' );
+		}
 	}
 
 	/**

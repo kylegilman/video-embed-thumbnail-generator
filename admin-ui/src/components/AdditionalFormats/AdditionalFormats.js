@@ -609,19 +609,30 @@ const AdditionalFormats = ( {
 				const effectiveJobCount =
 					( cmafPartsCount > 0 ? 1 : 0 ) + otherJobsCount;
 
+				const skippedNotice =
+					response?.log?.length > 0 ? (
+						<span>
+							<br />
+							{ response.log.join( ' ' ) }
+						</span>
+					) : null;
+
 				let successMsg = (
 					<span>
-						{ sprintf(
-							/* translators: %1$d is the number of jobs. %2$s is the ordinal position (e.g. 1st, 2nd). */
-							_n(
-								'%1$d job added to queue in %2$s position.',
-								'%1$d jobs added to queue starting in %2$s position.',
+						<span>
+							{ sprintf(
+								/* translators: %1$d is the number of jobs. %2$s is the ordinal position (e.g. 1st, 2nd). */
+								_n(
+									'%1$d job added to queue in %2$s position.',
+									'%1$d jobs added to queue starting in %2$s position.',
+									effectiveJobCount,
+									'video-embed-thumbnail-generator'
+								),
 								effectiveJobCount,
-								'video-embed-thumbnail-generator'
-							),
-							effectiveJobCount,
-							ordinalPosition
-						) }
+								ordinalPosition
+							) }
+						</span>
+						{ skippedNotice }
 					</span>
 				);
 
