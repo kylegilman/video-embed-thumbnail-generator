@@ -31,7 +31,10 @@ class Video_Discovery {
 			return null;
 		}
 
-		if ( ! isset( self::$discovery_cache[ $post_id ] ) ) {
+		// array_key_exists(), not isset() -- a "no video found" result is
+		// cached as null, and isset() treats a stored null the same as an
+		// unset key, so the cache never actually short-circuited that case.
+		if ( ! array_key_exists( $post_id, self::$discovery_cache ) ) {
 			$args     = array(
 				'post_type'      => 'attachment',
 				'post_mime_type' => 'video',
