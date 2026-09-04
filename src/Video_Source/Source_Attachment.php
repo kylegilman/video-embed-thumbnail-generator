@@ -274,6 +274,14 @@ class Source_Attachment extends Source {
 
 			$this->create_source_placeholder( $format );
 		}
+
+		// Ogg Theora isn't an encoding target (see Video_Codec_Ogv), so it
+		// isn't among $this->video_formats above -- but a v4-encoded child
+		// or a directly-uploaded .ogv sibling may still exist and should
+		// still be discovered and played back.
+		if ( ! $this->find_legacy_ogv_child( $children ) && $this->options['find_formats'] ) {
+			$this->find_legacy_ogv_file();
+		}
 	}
 
 	/**

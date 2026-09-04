@@ -54,6 +54,7 @@ class Registry {
 			new Codecs\Video_Codec_VP8(),
 			new Codecs\Video_Codec_VP9(),
 			new Codecs\Video_Codec_AV1(),
+			new Codecs\Video_Codec_Ogv(),
 		);
 
 				/**
@@ -74,6 +75,7 @@ class Registry {
 			'vp8'  => 3,
 			'vp9'  => 4,
 			'av1'  => 5,
+			'ogv'  => 6,
 		);
 
 		usort(
@@ -317,6 +319,13 @@ class Registry {
 		$replace_format    = (string) ( $this->options['replace_format'] ?? 'none' );
 
 		foreach ( $video_codecs as $codec ) {
+			if ( ! $codec->is_encodable() ) {
+				// A non-encodable codec (e.g. Ogg Theora) exists only so
+				// already-existing files in it can be recognized and played
+				// back -- it must never enter the codec x resolution matrix
+				// used to offer/manage encoding.
+				continue;
+			}
 			$codec_id = (string) $codec->get_id();
 			if ( $hide_formats && empty( $this->options['encode'][ $codec_id ]['enabled'] ) ) {
 				continue;

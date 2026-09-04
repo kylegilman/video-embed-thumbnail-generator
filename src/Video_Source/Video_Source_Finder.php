@@ -196,6 +196,60 @@ class Video_Source_Finder {
 	}
 
 	/**
+	 * Finds a legacy Ogg Theora child among a source's attachment children
+	 * and adds it as a child source, if present.
+	 *
+	 * Deliberately not resolution-tiered like find_format_in_posts() --
+	 * Videopack v4 only ever produced a single Ogg Theora output per video
+	 * (identified by the flat legacy meta value 'ogg'), not one per
+	 * resolution, so this is checked once rather than once per resolution
+	 * (which would otherwise match the same one legacy file repeatedly
+	 * under several different resolution-specific format ids).
+	 *
+	 * @param array  $posts  Array of attachment post objects.
+	 * @param Source $source The video source instance.
+	 * @return bool True if found and added, false otherwise.
+	 */
+	public static function find_legacy_ogv_child( $posts, Source $source ): bool {
+
+		if ( $posts ) {
+			foreach ( $posts as $post ) {
+				if ( is_a( $post, 'WP_Post' ) && 'ogg' === get_post_meta( $post->ID, '_kgflashmediaplayer-format', true ) ) {
+					$source->set_child_source( 'ogv', $post->ID, true, 'attachment' );
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Finds a legacy Ogg Theora (.ogv) file in the same directory as the
+	 * source and adds it as a child source, if present.
+	 *
+	 * @param Source $source The video source instance.
+	 * @return bool True if found and added, false otherwise.
+	 */
+	public static function find_legacy_ogv_file( Source $source ): bool {
+
+		$file = $source->get_no_extension() . '.ogv';
+		if ( ! file_exists( $file ) ) {
+			return false;
+		}
+
+		$attachment_manager = new \Videopack\Admin\Attachment( $source->get_options(), $source->get_registry(), new \Videopack\Admin\Attachment_Meta( $source->get_options() ) );
+		$attachment_id      = $attachment_manager->url_to_id( $file );
+
+		if ( $attachment_id ) {
+			$source->set_child_source( 'ogv', $attachment_id, true, 'attachment' );
+			return true;
+		}
+
+		$source->set_child_source( 'ogv', $file, true, 'file' );
+		return true;
+	}
+
+	/**
 	 * Finds a video format file in the same directory as the source.
 	 *
 	 * @param \Videopack\Admin\Formats\Video_Format $format The video format to find.

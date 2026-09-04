@@ -1154,6 +1154,27 @@ abstract class Source {
 	}
 
 	/**
+	 * Finds a legacy Ogg Theora child in a list of posts.
+	 *
+	 * @param array $posts The posts to search.
+	 * @return bool True if found, false otherwise.
+	 */
+	protected function find_legacy_ogv_child( $posts ): bool {
+
+		return Video_Source_Finder::find_legacy_ogv_child( $posts, $this );
+	}
+
+	/**
+	 * Finds a legacy Ogg Theora (.ogv) file in the same directory as the source.
+	 *
+	 * @return bool True if found, false otherwise.
+	 */
+	protected function find_legacy_ogv_file(): bool {
+
+		return Video_Source_Finder::find_legacy_ogv_file( $this );
+	}
+
+	/**
 	 * Finds a format for a URL-sourced job in the local WP uploads
 	 * directory -- see Video_Source_Finder::find_format_in_uploads_directory()
 	 * for why this is distinct from find_format_in_same_directory().

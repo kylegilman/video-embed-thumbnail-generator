@@ -472,6 +472,12 @@ class Ui implements Hook_Subscriber {
 		$codec_objects = (array) $this->format_registry->get_video_codecs();
 		$codecs_data   = array();
 		foreach ( $codec_objects as $codec_class ) {
+			if ( ! $codec_class->is_encodable() ) {
+				// This list drives the encoding settings UI (which codecs/
+				// resolutions to encode) -- a codec kept only for playing
+				// back existing files has nothing to configure there.
+				continue;
+			}
 			$codecs_data[] = array_merge( (array) $codec_class->get_properties(), array( 'is_video' => (bool) $codec_class->is_video() ) );
 		}
 

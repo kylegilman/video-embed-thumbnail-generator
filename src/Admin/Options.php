@@ -327,6 +327,9 @@ class Options implements Hook_Subscriber {
 		$video_codecs = (array) $registry->get_video_codecs();
 		$resolutions  = (array) $registry->get_video_resolutions();
 		foreach ( $video_codecs as $codec ) {
+			if ( ! $codec->is_encodable() ) {
+				continue;
+			}
 			$codec_id                                      = (string) $codec->get_id();
 			$default_options['encode'][ $codec_id ]['crf'] = (int) $codec->get_default_crf();
 			$supported_rate_controls                       = (array) $codec->get_supported_rate_controls();

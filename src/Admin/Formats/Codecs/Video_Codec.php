@@ -106,6 +106,20 @@ class Video_Codec {
 	protected $efficiency;
 
 	/**
+	 * Whether Videopack can encode new files in this codec.
+	 *
+	 * False for a codec that only exists so previously-encoded or
+	 * directly-uploaded files in it can still be recognized and played
+	 * back (e.g. Ogg Theora, dropped as an encoding target but still
+	 * playable) -- Registry::get_video_formats() excludes such codecs from
+	 * its codec x resolution matrix so they never appear as something to
+	 * encode.
+	 *
+	 * @var bool
+	 */
+	protected $is_encodable;
+
+	/**
 	 * Constructor for Video_Codec.
 	 *
 	 * @param array $properties Associative array of codec properties and values.
@@ -134,6 +148,7 @@ class Video_Codec {
 		$this->supported_rate_controls = $properties['supported_rate_controls'] ?? array( 'crf', 'vbr' );
 		$this->default_encode          = $properties['default_encode'] ?? false;
 		$this->is_video                = $properties['is_video'] ?? true;
+		$this->is_encodable            = $properties['is_encodable'] ?? true;
 	}
 
 	/**
@@ -143,6 +158,15 @@ class Video_Codec {
 	 */
 	public function is_video() {
 		return $this->is_video;
+	}
+
+	/**
+	 * Returns whether Videopack can encode new files in this codec.
+	 *
+	 * @return bool True if this codec can be used as an encoding target.
+	 */
+	public function is_encodable(): bool {
+		return $this->is_encodable;
 	}
 
 	/**
@@ -163,6 +187,7 @@ class Video_Codec {
 			'rate_control'            => $this->rate_control,
 			'supported_rate_controls' => $this->supported_rate_controls,
 			'default_encode'          => $this->default_encode,
+			'is_encodable'            => $this->is_encodable,
 		);
 	}
 

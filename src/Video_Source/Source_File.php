@@ -106,5 +106,10 @@ class Source_File extends Source {
 
 			$this->create_source_placeholder( $format );
 		}
+
+		// See the matching comment in Source_Attachment::set_child_sources().
+		if ( $this->options['find_formats'] ) {
+			$this->find_legacy_ogv_file();
+		}
 	}
 }
