@@ -973,7 +973,7 @@ abstract class Source {
 	 * Sets the video duration.
 	 */
 	protected function set_duration(): void {
-		$this->duration = $this->metadata['duration'];
+		$this->duration = $this->metadata['duration'] ?? null;
 	}
 
 	/**
