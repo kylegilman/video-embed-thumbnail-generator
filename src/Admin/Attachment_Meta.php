@@ -254,7 +254,14 @@ class Attachment_Meta implements Hook_Subscriber {
 				'gallery_columns'             => (int) ( $this->options['gallery_columns'] ?? 4 ),
 				'gallery_exclude'             => null,
 				'gallery_include'             => null,
-				'gallery_orderby'             => 'menu_order ID',
+				// 'menu_order', not the already-translated 'menu_order ID' --
+				// the ' ID' tiebreaker (menu_order alone ties on 0 for most
+				// attachments, so it's not stable without one) is applied at
+				// query time (Gallery.php/Shortcode.php), matching the
+				// canonical value used everywhere else (Options.php's own
+				// site-wide default, the documented shortcode attribute
+				// values in Screens.php).
+				'gallery_orderby'             => 'menu_order',
 				'gallery_order'               => 'asc',
 				'gallery_id'                  => null,
 				'duration'                    => null,
