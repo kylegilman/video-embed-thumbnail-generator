@@ -55,6 +55,10 @@ class Registry {
 			new Codecs\Video_Codec_VP9(),
 			new Codecs\Video_Codec_AV1(),
 			new Codecs\Video_Codec_Ogv(),
+			new Codecs\Video_Codec_Mov(),
+			new Codecs\Video_Codec_Mkv(),
+			new Codecs\Video_Codec_Hls(),
+			new Codecs\Video_Codec_Dash(),
 		);
 
 				/**
@@ -76,6 +80,10 @@ class Registry {
 			'vp9'  => 4,
 			'av1'  => 5,
 			'ogv'  => 6,
+			'mov'  => 7,
+			'mkv'  => 8,
+			'm3u8' => 9,
+			'mpd'  => 10,
 		);
 
 		usort(
