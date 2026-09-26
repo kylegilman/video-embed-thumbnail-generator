@@ -32,7 +32,7 @@
 	"devDependencies": {
 		"@wordpress/base-styles": "^12.1.0",
 		"@wordpress/eslint-plugin": "^25.9.0",
-		"@wordpress/scripts": "^34.1.0",
+		"@wordpress/scripts": "^34.2.0",
 		"prettier": "npm:wp-prettier@^3.0.3",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1"
