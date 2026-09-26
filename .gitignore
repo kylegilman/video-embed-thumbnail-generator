@@ -16,3 +16,5 @@ test-results/
 tests/e2e/.embed-method
 /.wp-env.override.json
 .claude/
+/phpunit.local.xml
+/phpunit-multisite.local.xml
