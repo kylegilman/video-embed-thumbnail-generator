@@ -33,7 +33,7 @@ class VideoCodecLegacyContainerTest extends WP_UnitTestCase {
 		return array(
 			'mov (QuickTime)' => array( 'mov', 'video/quicktime' ),
 			'mkv (Matroska)'  => array( 'mkv', 'video/x-matroska' ),
-			'm3u8 (HLS)'      => array( 'm3u8', 'application/vnd.apple.mpegurl' ),
+			'm3u8 (HLS)'      => array( 'm3u8', 'application/x-mpegURL' ),
 			'mpd (DASH)'      => array( 'mpd', 'application/dash+xml' ),
 		);
 	}

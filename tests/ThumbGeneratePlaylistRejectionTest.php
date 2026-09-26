@@ -45,7 +45,7 @@ class ThumbGeneratePlaylistRejectionTest extends WP_UnitTestCase {
 		$attachment_id = self::factory()->attachment->create_object(
 			array(
 				'file'           => 'master.m3u8',
-				'post_mime_type' => 'application/vnd.apple.mpegurl',
+				'post_mime_type' => 'application/x-mpegURL',
 			)
 		);
 
