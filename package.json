@@ -22,7 +22,11 @@
 		"pretest:php:fast:local": "wp-env run cli wp db query \"CREATE DATABASE IF NOT EXISTS phpunit_test\" && wp-env run cli php wp-content/plugins/video-embed-thumbnail-generator/tests/generate-local-phpunit-config.php wp-content/plugins/video-embed-thumbnail-generator/phpunit.xml wp-content/plugins/video-embed-thumbnail-generator/phpunit.local.xml",
 		"test:php:fast:local": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit.local.xml --exclude-group slow",
 		"pretest:php:multisite:local": "wp-env run cli wp db query \"CREATE DATABASE IF NOT EXISTS phpunit_test\" && wp-env run cli php wp-content/plugins/video-embed-thumbnail-generator/tests/generate-local-phpunit-config.php wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.xml wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.local.xml",
-		"test:php:multisite:local": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.local.xml"
+		"test:php:multisite:local": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.local.xml",
+		"pretest:php:fast:multisite": "wp-env run cli wp db query \"CREATE DATABASE IF NOT EXISTS phpunit_test\"",
+		"test:php:fast:multisite": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.xml --exclude-group slow",
+		"pretest:php:fast:multisite:local": "wp-env run cli wp db query \"CREATE DATABASE IF NOT EXISTS phpunit_test\" && wp-env run cli php wp-content/plugins/video-embed-thumbnail-generator/tests/generate-local-phpunit-config.php wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.xml wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.local.xml",
+		"test:php:fast:multisite:local": "wp-env run cli wp-content/plugins/video-embed-thumbnail-generator/vendor/bin/phpunit --configuration=wp-content/plugins/video-embed-thumbnail-generator/phpunit-multisite.local.xml --exclude-group slow"
 	},
 	"devDependencies": {
 		"@playwright/test": "latest",
