@@ -30,10 +30,13 @@ class I18n {
 	 */
 	public function load_plugin_textdomain() {
 
+		// The third argument must be relative to WP_PLUGIN_DIR, not absolute --
+		// passing VIDEOPACK_PLUGIN_DIR here silently doubled the path and made
+		// this plugin's own bundled languages/ files unloadable.
 		load_plugin_textdomain(
 			'video-embed-thumbnail-generator',
 			false,
-			(string) ( VIDEOPACK_PLUGIN_DIR . '/languages/' )
+			dirname( VIDEOPACK_BASENAME ) . '/languages'
 		);
 	}
 
