@@ -14,7 +14,11 @@
  * so the first call to any of these methods anywhere in the suite would
  * otherwise permanently freeze the result for every later test. Tests that
  * exercise their real branching logic run with @runInSeparateProcess to get
- * a fresh process (and therefore a fresh static) each time.
+ * a fresh process (and therefore a fresh static) each time -- tagged
+ * `@group slow` since each one re-bootstraps WordPress from scratch; run
+ * `npm run test:php:fast[:local]` to skip them during quick iteration, and
+ * the plain `test:php[:local]` (used before every commit, and in CI) to run
+ * everything.
  */
 
 use Videopack\Admin\Assets;
@@ -111,6 +115,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * Proves the false branch really delegates rather than being hardcoded.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_filter_page_needs_video_assets_delegates_when_false(): void {
@@ -125,6 +130,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * A non-video attachment page should not trigger video assets.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_page_needs_video_assets_is_false_for_a_plain_non_video_attachment_page(): void {
@@ -143,6 +149,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * Embed (oEmbed) responses always need the player.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_page_needs_video_assets_is_true_for_an_embed_request(): void {
@@ -156,6 +163,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * An attachment page for the video itself needs the player.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_page_needs_video_assets_is_true_for_a_video_attachment_page(): void {
@@ -174,6 +182,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * A Videopack block comment is detected independently of has_shortcode().
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_page_needs_video_assets_is_true_for_a_videopack_block_comment(): void {
@@ -187,6 +196,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * The plugin's own shortcode always counts.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_page_needs_video_assets_is_true_for_the_videopack_shortcode(): void {
@@ -201,6 +211,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * it over via the replace_video_shortcode option.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_page_needs_video_assets_ignores_a_plain_video_shortcode_by_default(): void {
@@ -214,6 +225,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * The opt-in counterpart of the test above.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_page_needs_video_assets_counts_the_video_shortcode_when_the_option_is_enabled(): void {
@@ -321,6 +333,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * lean frontend shape.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_admin_enqueue_assets_localizes_the_admin_config_shape(): void {
@@ -339,6 +352,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * the admin settings-UI config.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_register_player_scripts_localizes_the_frontend_config_shape(): void {
@@ -360,6 +374,7 @@ class AssetsTest extends WP_UnitTestCase {
 	 * Attachment Details screen, which core never bootstraps on its own.
 	 *
 	 * @runInSeparateProcess
+	 * @group slow
 	 * @preserveGlobalState disabled
 	 */
 	public function test_enqueue_media_library_assets_attaches_the_block_bootstrap_inline_script(): void {
