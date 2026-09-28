@@ -4,8 +4,12 @@
  * row. Covers set_status()'s allowed-status whitelist, the
  * current_user_can_manage()/user_can_manage() authorization logic,
  * get_progress()'s branching by status, set_error(), the set_queued()/
- * set_encode_start() convenience setters, to_array()'s filter, and
- * from_array()'s DB-row hydration (including malformed extra_meta JSON).
+ * set_encode_start() convenience setters, to_array()'s filter,
+ * from_array()'s DB-row hydration (including malformed extra_meta JSON),
+ * get_status_label()/get_status_label_static()'s status-to-label map,
+ * is_pid_alive(), and set_progress()'s log-file-driven state transitions
+ * (success once 95%+ is reached, "terminated prematurely" below that, the
+ * stale-logfile-plus-dead-process failure path, and its grace period).
  * Previously completely untested.
  */
 
@@ -13,8 +17,43 @@ use Videopack\Admin\Encode\Encode_Format;
 
 class EncodeFormatTest extends WP_UnitTestCase {
 
+	/**
+	 * @var string[] Temp files created during a test, cleaned up in tear_down().
+	 */
+	protected $temp_files = array();
+
+	public function tear_down() {
+		foreach ( $this->temp_files as $file ) {
+			if ( file_exists( $file ) ) {
+				wp_delete_file( $file );
+			}
+		}
+		$this->temp_files = array();
+		parent::tear_down();
+	}
+
 	protected function format( string $format_id = 'h264_720' ): Encode_Format {
 		return new Encode_Format( $format_id );
+	}
+
+	/**
+	 * Writes an FFmpeg `-progress` style log file (same key=value format
+	 * Encode_Progress::from_log_file() parses) and returns its path.
+	 */
+	protected function log_file( array $fields ): string {
+		$defaults = array(
+			'out_time_us' => '0',
+			'progress'    => 'continue',
+		);
+		$fields             = array_merge( $defaults, $fields );
+		$lines              = array();
+		foreach ( $fields as $key => $value ) {
+			$lines[] = "{$key}={$value}";
+		}
+		$file               = (string) tempnam( sys_get_temp_dir(), 'videopack-format-test-' );
+		$this->temp_files[] = $file;
+		file_put_contents( $file, implode( "\n", $lines ) . "\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		return $file;
 	}
 
 	// -----------------------------------------------------------------
@@ -299,5 +338,200 @@ class EncodeFormatTest extends WP_UnitTestCase {
 
 		$this->assertNull( $format->get_pid() );
 		$this->assertNull( $format->get_logfile() );
+	}
+
+	// -----------------------------------------------------------------
+	// get_status_label() / get_status_label_static()
+	// -----------------------------------------------------------------
+
+	public function test_status_label_maps_known_statuses_to_localized_text(): void {
+		$this->assertSame( 'Queued', Encode_Format::get_status_label_static( Encode_Format::STATUS_QUEUED ) );
+		$this->assertSame( 'Completed', Encode_Format::get_status_label_static( Encode_Format::STATUS_COMPLETED ) );
+		$this->assertSame( 'Failed', Encode_Format::get_status_label_static( Encode_Format::STATUS_FAILED ) );
+		$this->assertSame( 'Failed', Encode_Format::get_status_label_static( Encode_Format::STATUS_ERROR ), 'error and failed share the same label' );
+	}
+
+	public function test_status_label_treats_the_legacy_encoded_status_as_completed(): void {
+		$this->assertSame( 'Completed', Encode_Format::get_status_label_static( 'encoded' ) );
+	}
+
+	public function test_status_label_falls_back_to_the_raw_status_string_when_unrecognized(): void {
+		$this->assertSame( 'some_unknown_status', Encode_Format::get_status_label_static( 'some_unknown_status' ) );
+	}
+
+	public function test_status_label_handles_a_null_status(): void {
+		$this->assertSame( '', Encode_Format::get_status_label_static( null ) );
+	}
+
+	public function test_status_label_is_filterable(): void {
+		add_filter(
+			'videopack_status_label',
+			static function ( $label, $status ) {
+				return 'queued' === $status ? 'Custom Queued Label' : $label;
+			},
+			10,
+			2
+		);
+
+		$label = Encode_Format::get_status_label_static( Encode_Format::STATUS_QUEUED );
+		remove_all_filters( 'videopack_status_label' );
+
+		$this->assertSame( 'Custom Queued Label', $label );
+	}
+
+	public function test_instance_status_label_reads_its_own_status_and_is_separately_filterable(): void {
+		$format = $this->format();
+		$format->set_status( Encode_Format::STATUS_ENCODING );
+
+		add_filter(
+			'videopack_encode_format_status_label',
+			static function ( $label, Encode_Format $instance ) {
+				return $label . ' (' . $instance->get_format_id() . ')';
+			},
+			10,
+			2
+		);
+
+		$label = $format->get_status_label();
+		remove_all_filters( 'videopack_encode_format_status_label' );
+
+		$this->assertSame( 'Encoding (h264_720)', $label );
+	}
+
+	// -----------------------------------------------------------------
+	// is_pid_alive()
+	// -----------------------------------------------------------------
+
+	public function test_is_pid_alive_is_false_with_no_pid_set(): void {
+		$this->assertFalse( $this->format()->is_pid_alive() );
+	}
+
+	public function test_is_pid_alive_is_true_for_the_current_process(): void {
+		$format = $this->format();
+		$format->set_pid( getmypid() );
+
+		$this->assertTrue( $format->is_pid_alive() );
+	}
+
+	public function test_is_pid_alive_is_false_for_an_implausible_pid(): void {
+		// Not PHP_INT_MAX: posix_kill() takes a C int, so PHP_INT_MAX wraps
+		// to -1, which is kill()'s special "broadcast to every signalable
+		// process" pid and (as the test-runner's own user) returns true.
+		// 999999 is outside any real PID range without hitting that case.
+		$format = $this->format();
+		$format->set_pid( 999999 );
+
+		$this->assertFalse( $format->is_pid_alive() );
+	}
+
+	// -----------------------------------------------------------------
+	// set_progress() (exercised via get_status()/get_progress(), both of
+	// which call it) -- the log-file-driven status transitions.
+	// -----------------------------------------------------------------
+
+	public function test_reaching_the_end_of_the_log_at_high_percent_marks_the_job_needing_insert(): void {
+		$logfile = $this->log_file(
+			array(
+				'out_time_us' => '9800000',
+				'progress'    => 'end',
+			)
+		);
+		$format = $this->format();
+		$format->set_status( Encode_Format::STATUS_ENCODING );
+		$format->set_logfile( $logfile );
+		$format->set_video_duration( 10000000 ); // 10s; 9.8s/10s = 98%.
+		$format->set_started( time() - 5 );
+
+		$status = $format->get_status();
+
+		$this->assertSame( Encode_Format::STATUS_NEEDS_INSERT, $status );
+		$this->assertSame( filemtime( $logfile ), $format->get_ended() );
+	}
+
+	public function test_reaching_the_end_of_the_log_below_95_percent_is_treated_as_a_premature_failure(): void {
+		$logfile = $this->log_file(
+			array(
+				'out_time_us' => '5000000',
+				'progress'    => 'end',
+			)
+		);
+		$format = $this->format();
+		$format->set_status( Encode_Format::STATUS_ENCODING );
+		$format->set_logfile( $logfile );
+		$format->set_video_duration( 10000000 ); // 10s; 5s/10s = 50%.
+		$format->set_started( time() - 5 );
+
+		$status = $format->get_status();
+
+		$this->assertSame( Encode_Format::STATUS_FAILED, $status );
+		$this->assertSame( 'Encoding process terminated prematurely.', $format->get_error() );
+	}
+
+	public function test_reaching_the_end_of_the_log_with_no_duration_metadata_still_succeeds(): void {
+		$logfile = $this->log_file(
+			array(
+				'out_time_us' => '1000000',
+				'progress'    => 'end',
+			)
+		);
+		$format = $this->format();
+		$format->set_status( Encode_Format::STATUS_ENCODING );
+		$format->set_logfile( $logfile );
+		$format->set_video_duration( 0 ); // No duration metadata at all.
+		$format->set_started( time() - 5 );
+
+		$status = $format->get_status();
+
+		$this->assertSame( Encode_Format::STATUS_NEEDS_INSERT, $status, 'a low percent should not block success when duration is unknown' );
+	}
+
+	public function test_a_stale_logfile_with_a_dead_process_is_marked_failed(): void {
+		$logfile = $this->log_file( array( 'out_time_us' => '2000000' ) ); // 'continue', not 'end'.
+		touch( $logfile, time() - 400 ); // last written 400s ago, past the 300s timeout.
+
+		$format = $this->format();
+		$format->set_status( Encode_Format::STATUS_ENCODING );
+		$format->set_logfile( $logfile );
+		$format->set_video_duration( 10000000 );
+		$format->set_started( time() - 400 );
+		$format->set_pid( 999999 ); // Guaranteed not alive (see note above).
+
+		$status = $format->get_status();
+
+		$this->assertSame( Encode_Format::STATUS_FAILED, $status );
+		$this->assertSame( 'Encoding stopped unexpectedly', $format->get_error() );
+	}
+
+	public function test_a_stale_logfile_is_not_failed_while_the_process_is_still_alive(): void {
+		$logfile = $this->log_file( array( 'out_time_us' => '2000000' ) );
+		touch( $logfile, time() - 400 );
+
+		$format = $this->format();
+		$format->set_status( Encode_Format::STATUS_ENCODING );
+		$format->set_logfile( $logfile );
+		$format->set_video_duration( 10000000 );
+		$format->set_started( time() - 400 );
+		$format->set_pid( getmypid() ); // Alive -- this test process itself.
+
+		$status = $format->get_status();
+
+		$this->assertSame( Encode_Format::STATUS_ENCODING, $status, 'still-running processes should not be failed just for a stale logfile' );
+	}
+
+	public function test_a_brand_new_empty_logfile_is_given_a_grace_period_before_timing_out(): void {
+		$logfile = $this->log_file( array() );
+		file_put_contents( $logfile, '' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- force it empty.
+
+		$format = $this->format();
+		$format->set_status( Encode_Format::STATUS_ENCODING );
+		$format->set_logfile( $logfile );
+		$format->set_video_duration( 10000000 );
+		$format->set_started( time() - 5 ); // Well within the 30s grace period.
+		$format->set_pid( 999999 ); // Would otherwise fail immediately if checked (see note above).
+
+		$status = $format->get_status();
+
+		$this->assertSame( Encode_Format::STATUS_ENCODING, $status, 'an empty, brand-new logfile should not be treated as stale yet' );
+		$this->assertNull( $format->get_error() );
 	}
 }
