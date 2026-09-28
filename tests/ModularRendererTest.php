@@ -1,15 +1,17 @@
 <?php
 /**
  * This file also covers is_true(), get_svg_icon(), render_video_caption(),
- * render_view_count(), and render_pagination() -- previously untested
- * methods on this large (~1500 line), mostly-static-HTML-builder class.
- * The remaining render_*() methods (render_watermark, render_video_title,
- * render_download, render_share, render_player_engine, render_thumbnail,
- * render_play_button, render_standalone_player_assembly, and the private
- * download-menu helpers) are still untested -- this file doesn't attempt
- * to cover the whole class, just adds the methods with real,
- * independently-derivable logic that were easy wins alongside the
- * pre-existing render_video_duration()/render_video_container() coverage.
+ * render_view_count(), render_pagination(), render_watermark(),
+ * format_download_resolution_label(), render_download_menu_list(),
+ * render_download()/render_share()'s null-source guard, render_thumbnail(),
+ * and render_play_button() -- previously untested methods on this large
+ * (~1500 line), mostly-static-HTML-builder class. render_video_title(),
+ * render_player_engine(), render_standalone_player_assembly(), and
+ * get_player_source_groups_for_download() (which constructs a real Player
+ * against a real source) remain untested -- this file doesn't attempt full
+ * coverage of the class, just adds methods with real, independently-derivable
+ * logic alongside the pre-existing render_video_duration()/
+ * render_video_container() coverage.
  */
 
 use Videopack\Frontend\Modular_Renderer;
@@ -18,6 +20,12 @@ use Videopack\Video_Source\Source_Factory;
 use Videopack\Admin\Formats\Registry;
 
 class ModularRendererTest extends WP_UnitTestCase {
+
+	public function tear_down() {
+		Modular_Renderer::$rendered_lightbox_trigger = false;
+		remove_all_filters( 'videopack_play_button_html' );
+		parent::tear_down();
+	}
 
 	/**
 	 * Data provider for testing video duration rendering and formatting.
@@ -340,5 +348,364 @@ class ModularRendererTest extends WP_UnitTestCase {
 
 		$this->assertMatchesRegularExpression( '/next page-numbers videopack-pagination-button is-hidden/', $output );
 		$this->assertDoesNotMatchRegularExpression( '/prev page-numbers videopack-pagination-button is-hidden/', $output );
+	}
+
+	// -----------------------------------------------------------------
+	// render_watermark()
+	// -----------------------------------------------------------------
+
+	public function test_render_watermark_is_empty_without_a_watermark_value(): void {
+		$this->assertSame( '', Modular_Renderer::render_watermark( array() ) );
+	}
+
+	public function watermark_disabled_value_provider(): array {
+		return array( array( 'false' ), array( '0' ), array( '' ) );
+	}
+
+	/**
+	 * @dataProvider watermark_disabled_value_provider
+	 */
+	public function test_render_watermark_is_empty_for_explicit_disable_values( $value ): void {
+		$this->assertSame( '', Modular_Renderer::render_watermark( array( 'watermark' => $value ) ) );
+	}
+
+	public function test_render_watermark_is_empty_for_a_nonexistent_attachment_id(): void {
+		$this->assertSame( '', Modular_Renderer::render_watermark( array( 'watermark' => 999999999 ) ) );
+	}
+
+	public function test_render_watermark_resolves_a_numeric_attachment_id_to_its_url(): void {
+		$image_id = self::factory()->attachment->create_object(
+			array(
+				'file'           => 'watermark.png',
+				'post_mime_type' => 'image/png',
+			)
+		);
+
+		$output = Modular_Renderer::render_watermark( array( 'watermark' => $image_id ) );
+
+		$this->assertStringContainsString( esc_url( (string) wp_get_attachment_url( $image_id ) ), $output );
+	}
+
+	public function test_render_watermark_uses_a_plain_url_as_is(): void {
+		$output = Modular_Renderer::render_watermark( array( 'watermark' => 'https://example.test/logo.png' ) );
+
+		$this->assertStringContainsString( 'https://example.test/logo.png', $output );
+	}
+
+	/**
+	 * An alignment value that collides with player/container alignment
+	 * keywords (e.g. Gutenberg's "wide"/"full") must fall back to the
+	 * default rather than being used as a CSS position value.
+	 */
+	public function test_render_watermark_falls_back_to_default_alignment_for_an_invalid_value(): void {
+		$output = Modular_Renderer::render_watermark(
+			array(
+				'watermark'       => 'https://example.test/logo.png',
+				'watermark_align' => 'wide',
+			)
+		);
+
+		$this->assertStringNotContainsString( 'wide:', $output );
+		$this->assertStringContainsString( 'right:', $output );
+	}
+
+	public function test_render_watermark_links_home_when_link_to_is_home(): void {
+		$output = Modular_Renderer::render_watermark(
+			array(
+				'watermark'         => 'https://example.test/logo.png',
+				'watermark_link_to' => 'home',
+			)
+		);
+
+		$this->assertStringContainsString( esc_url( get_home_url() ), $output );
+	}
+
+	public function test_render_watermark_links_a_custom_url(): void {
+		$output = Modular_Renderer::render_watermark(
+			array(
+				'watermark'         => 'https://example.test/logo.png',
+				'watermark_link_to' => 'custom',
+				'watermark_url'     => 'https://example.test/custom-link',
+			)
+		);
+
+		$this->assertStringContainsString( 'https://example.test/custom-link', $output );
+	}
+
+	public function test_render_watermark_links_the_attachments_own_post_for_link_to_attachment(): void {
+		$post_id = self::factory()->post->create();
+
+		$output = Modular_Renderer::render_watermark(
+			array(
+				'watermark'         => 'https://example.test/logo.png',
+				'watermark_link_to' => 'attachment',
+				'postId'            => $post_id,
+			)
+		);
+
+		$this->assertStringContainsString( esc_url( (string) get_permalink( $post_id ) ), $output );
+	}
+
+	/**
+	 * watermark_link_to defaults to 'home' (Options::get_default()), so the
+	 * no-link case has to opt out of that default explicitly.
+	 */
+	public function test_render_watermark_has_no_pointer_events_disabled_style_without_a_link(): void {
+		$output = Modular_Renderer::render_watermark(
+			array(
+				'watermark'         => 'https://example.test/logo.png',
+				'watermark_link_to' => 'false',
+			)
+		);
+
+		$this->assertStringContainsString( 'pointer-events:none', $output );
+	}
+
+	public function test_render_watermark_omits_pointer_events_disabled_style_with_a_link(): void {
+		$output = Modular_Renderer::render_watermark(
+			array(
+				'watermark'         => 'https://example.test/logo.png',
+				'watermark_link_to' => 'home',
+			)
+		);
+
+		$this->assertStringNotContainsString( 'pointer-events:none', $output );
+	}
+
+	// -----------------------------------------------------------------
+	// format_download_resolution_label() (private)
+	// -----------------------------------------------------------------
+
+	protected function format_download_resolution_label( $resolution ): string {
+		$method = new ReflectionMethod( Modular_Renderer::class, 'format_download_resolution_label' );
+		$method->setAccessible( true );
+		return $method->invoke( null, $resolution );
+	}
+
+	public function test_format_download_resolution_label_appends_p_to_a_purely_numeric_value(): void {
+		$this->assertSame( '1080p', $this->format_download_resolution_label( '1080' ) );
+		$this->assertSame( '1080p', $this->format_download_resolution_label( 1080 ) );
+	}
+
+	public function test_format_download_resolution_label_leaves_a_non_numeric_value_unchanged(): void {
+		$this->assertSame( 'audio', $this->format_download_resolution_label( 'audio' ) );
+		$this->assertSame( '4k', $this->format_download_resolution_label( '4k' ) );
+	}
+
+	// -----------------------------------------------------------------
+	// render_download_menu_list() (private)
+	// -----------------------------------------------------------------
+
+	protected function render_download_menu_list( array $source_groups ): string {
+		$method = new ReflectionMethod( Modular_Renderer::class, 'render_download_menu_list' );
+		$method->setAccessible( true );
+		return $method->invoke( null, $source_groups );
+	}
+
+	public function test_render_download_menu_list_sorts_a_single_group_by_resolution_descending(): void {
+		$html = $this->render_download_menu_list(
+			array(
+				'mp4' => array(
+					'sources' => array(
+						array(
+							'resolution' => '360',
+							'src'        => 'https://example.test/360.mp4',
+						),
+						array(
+							'resolution' => '1080',
+							'src'        => 'https://example.test/1080.mp4',
+						),
+						array(
+							'resolution' => '720',
+							'src'        => 'https://example.test/720.mp4',
+						),
+					),
+				),
+			)
+		);
+
+		$this->assertSame(
+			array( '1080p', '720p', '360p' ),
+			array_values( $this->extract_ordered( $html, '/videopack-download-link[^>]*>([^<]+)</' ) )
+		);
+	}
+
+	public function test_render_download_menu_list_skips_entries_missing_a_resolution_or_url(): void {
+		$html = $this->render_download_menu_list(
+			array(
+				'mp4' => array(
+					'sources' => array(
+						array(
+							'resolution' => '720',
+							'src'        => '',
+						),
+						array(
+							'resolution' => '',
+							'src'        => 'https://example.test/720.mp4',
+						),
+						array(
+							'resolution' => '480',
+							'src'        => 'https://example.test/480.mp4',
+						),
+					),
+				),
+			)
+		);
+
+		$this->assertStringContainsString( '480p', $html );
+		$this->assertStringNotContainsString( '720p', $html );
+	}
+
+	public function test_render_download_menu_list_builds_submenus_for_multiple_groups(): void {
+		$html = $this->render_download_menu_list(
+			array(
+				'h264' => array(
+					'label'   => 'MP4',
+					'sources' => array(
+						array(
+							'resolution' => '1080',
+							'src'        => 'https://example.test/1080.mp4',
+						),
+					),
+				),
+				'vp9'  => array(
+					'label'   => 'WebM',
+					'sources' => array(
+						array(
+							'resolution' => '720',
+							'src'        => 'https://example.test/720.webm',
+						),
+					),
+				),
+			)
+		);
+
+		$this->assertStringContainsString( 'has-submenu', $html );
+		$this->assertStringContainsString( '>MP4<', $html );
+		$this->assertStringContainsString( '>WebM<', $html );
+	}
+
+	/**
+	 * Extracts, in document order, the text captured by the given regex's
+	 * single capture group across every match in $html.
+	 */
+	protected function extract_ordered( string $html, string $pattern ): array {
+		preg_match_all( $pattern, $html, $matches );
+		return $matches[1] ?? array();
+	}
+
+	// -----------------------------------------------------------------
+	// render_download() / render_share() -- null-source guard.
+	// -----------------------------------------------------------------
+
+	public function test_render_download_is_empty_without_a_source(): void {
+		$this->assertSame( '', Modular_Renderer::render_download( array(), null ) );
+	}
+
+	public function test_render_share_is_empty_without_a_source(): void {
+		$this->assertSame( '', Modular_Renderer::render_share( array(), null, 1 ) );
+	}
+
+	// -----------------------------------------------------------------
+	// render_thumbnail()
+	// -----------------------------------------------------------------
+
+	public function test_render_thumbnail_falls_back_to_the_default_image_without_a_poster(): void {
+		$post_id = self::factory()->post->create();
+
+		$output = Modular_Renderer::render_thumbnail( array(), '', $post_id );
+
+		$this->assertStringContainsString( 'nothumbnail.jpg', $output );
+	}
+
+	public function test_render_thumbnail_uses_the_given_poster(): void {
+		$post_id = self::factory()->post->create();
+
+		$output = Modular_Renderer::render_thumbnail( array( 'poster' => 'https://example.test/poster.jpg' ), '', $post_id );
+
+		$this->assertStringContainsString( 'https://example.test/poster.jpg', $output );
+	}
+
+	public function test_render_thumbnail_renders_no_link_wrapper_when_link_to_is_none(): void {
+		$post_id = self::factory()->post->create();
+
+		$output = Modular_Renderer::render_thumbnail( array( 'linkTo' => 'none' ), '', $post_id );
+
+		$this->assertStringNotContainsString( '<a ', $output );
+	}
+
+	public function test_render_thumbnail_links_to_the_lightbox_and_sets_the_trigger_flag(): void {
+		$post_id = self::factory()->post->create();
+		$this->assertFalse( Modular_Renderer::$rendered_lightbox_trigger );
+
+		$output = Modular_Renderer::render_thumbnail( array( 'linkTo' => 'lightbox' ), '', $post_id );
+
+		$this->assertStringContainsString( 'videopack-lightbox', $output );
+		$this->assertStringContainsString( 'href="#"', $output );
+		$this->assertTrue( Modular_Renderer::$rendered_lightbox_trigger );
+	}
+
+	public function test_render_thumbnail_links_to_the_parent_post_when_present(): void {
+		$parent_id = self::factory()->post->create();
+		$child_id  = self::factory()->post->create( array( 'post_parent' => $parent_id ) );
+
+		$output = Modular_Renderer::render_thumbnail( array( 'linkTo' => 'parent' ), '', $child_id );
+
+		$this->assertStringContainsString( esc_url( (string) get_permalink( $parent_id ) ), $output );
+	}
+
+	public function test_render_thumbnail_links_to_its_own_permalink_when_no_parent(): void {
+		$post_id = self::factory()->post->create();
+
+		$output = Modular_Renderer::render_thumbnail( array( 'linkTo' => 'parent' ), '', $post_id );
+
+		$this->assertStringContainsString( esc_url( (string) get_permalink( $post_id ) ), $output );
+	}
+
+	// -----------------------------------------------------------------
+	// render_play_button()
+	// -----------------------------------------------------------------
+
+	public function test_render_play_button_uses_the_mejs_overlay_for_wordpress_default(): void {
+		$output = Modular_Renderer::render_play_button( array(), array( 'embed_method' => 'WordPress Default' ) );
+
+		$this->assertStringContainsString( 'mejs-overlay-play', $output );
+	}
+
+	public function test_render_play_button_uses_the_video_js_big_play_button_by_default(): void {
+		$output = Modular_Renderer::render_play_button( array(), array( 'embed_method' => 'Video.js' ) );
+
+		$this->assertStringContainsString( 'vjs-big-play-button', $output );
+	}
+
+	public function test_render_play_button_applies_custom_colors(): void {
+		$output = Modular_Renderer::render_play_button( array( 'color' => '#ff0000' ), array( 'embed_method' => 'Video.js' ) );
+
+		$this->assertStringContainsString( '--videopack-play-button-color: #ff0000', $output );
+		$this->assertStringContainsString( 'videopack-has-play-button-color', $output );
+	}
+
+	public function test_render_play_button_respects_a_filter_override(): void {
+		add_filter(
+			'videopack_play_button_html',
+			static function () {
+				return '<div class="custom-play-button"></div>';
+			}
+		);
+
+		$output = Modular_Renderer::render_play_button( array(), array( 'embed_method' => 'Video.js' ) );
+
+		$this->assertSame( '<div class="custom-play-button"></div>', $output );
+	}
+
+	// -----------------------------------------------------------------
+	// format_duration() (private)
+	// -----------------------------------------------------------------
+
+	public function test_format_duration_of_zero_returns_zero_colon_double_zero(): void {
+		$method = new ReflectionMethod( Modular_Renderer::class, 'format_duration' );
+		$method->setAccessible( true );
+
+		$this->assertSame( '0:00', $method->invoke( null, 0 ) );
 	}
 }
