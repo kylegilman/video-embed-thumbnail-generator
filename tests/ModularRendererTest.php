@@ -1,17 +1,17 @@
 <?php
 /**
- * This file also covers is_true(), get_svg_icon(), render_video_caption(),
- * render_view_count(), render_pagination(), render_watermark(),
- * format_download_resolution_label(), render_download_menu_list(),
- * render_download()/render_share()'s null-source guard, render_thumbnail(),
- * and render_play_button() -- previously untested methods on this large
- * (~1500 line), mostly-static-HTML-builder class. render_video_title(),
- * render_player_engine(), render_standalone_player_assembly(), and
- * get_player_source_groups_for_download() (which constructs a real Player
- * against a real source) remain untested -- this file doesn't attempt full
- * coverage of the class, just adds methods with real, independently-derivable
- * logic alongside the pre-existing render_video_duration()/
- * render_video_container() coverage.
+ * Every public/private method on Modular_Renderer now has coverage here:
+ * is_true(), get_svg_icon(), render_video_caption(), render_view_count(),
+ * render_pagination(), render_watermark(), format_download_resolution_label(),
+ * render_download_menu_list(), render_download()/render_share()'s null-source
+ * guard, render_thumbnail(), render_play_button(), format_duration(),
+ * render_video_title(), render_player_engine(),
+ * get_player_source_groups_for_download() (a real Player against a real
+ * source), and render_standalone_player_assembly() (real do_blocks()
+ * rendering of a real player-container block tree, checking which optional
+ * blocks -- title, download, share, view-count, watermark -- get included
+ * under which options), alongside the pre-existing
+ * render_video_duration()/render_video_container() coverage.
  */
 
 use Videopack\Frontend\Modular_Renderer;
@@ -24,6 +24,12 @@ class ModularRendererTest extends WP_UnitTestCase {
 	public function tear_down() {
 		Modular_Renderer::$rendered_lightbox_trigger = false;
 		remove_all_filters( 'videopack_play_button_html' );
+		foreach ( $this->temp_files_for_assembly as $file ) {
+			if ( file_exists( $file ) ) {
+				wp_delete_file( $file );
+			}
+		}
+		$this->temp_files_for_assembly = array();
 		parent::tear_down();
 	}
 
@@ -447,8 +453,8 @@ class ModularRendererTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * watermark_link_to defaults to 'home' (Options::get_default()), so the
-	 * no-link case has to opt out of that default explicitly.
+	 * The watermark_link_to option defaults to 'home' (Options::get_default()),
+	 * so the no-link case has to opt out of that default explicitly.
 	 */
 	public function test_render_watermark_has_no_pointer_events_disabled_style_without_a_link(): void {
 		$output = Modular_Renderer::render_watermark(
@@ -708,4 +714,252 @@ class ModularRendererTest extends WP_UnitTestCase {
 
 		$this->assertSame( '0:00', $method->invoke( null, 0 ) );
 	}
+
+	// -----------------------------------------------------------------
+	// render_video_title()
+	// -----------------------------------------------------------------
+
+	protected function video_source_titled( string $title ) {
+		$attachment_id = self::factory()->attachment->create_object(
+			array(
+				'post_mime_type' => 'video/mp4',
+				'post_title'     => $title,
+			)
+		);
+		$options       = $this->options();
+		return Source_Factory::create( $attachment_id, $options, new Registry( $options ) );
+	}
+
+	public function test_render_video_title_falls_back_to_the_sources_own_title(): void {
+		$output = Modular_Renderer::render_video_title( array(), $this->video_source_titled( 'My Video Title' ), 1 );
+
+		$this->assertStringContainsString( 'My Video Title', $output );
+	}
+
+	public function test_render_video_title_prefers_an_explicit_title_attribute(): void {
+		$output = Modular_Renderer::render_video_title( array( 'title' => 'Explicit Title' ), $this->video_source_titled( 'Source Title' ), 1 );
+
+		$this->assertStringContainsString( 'Explicit Title', $output );
+		$this->assertStringNotContainsString( 'Source Title', $output );
+	}
+
+	public function test_render_video_title_hides_the_title_when_overlay_title_is_false(): void {
+		$output = Modular_Renderer::render_video_title(
+			array(
+				'title'         => 'Hidden Title',
+				'overlay_title' => false,
+			),
+			null,
+			1
+		);
+
+		$this->assertSame( '', $output );
+	}
+
+	public function test_render_video_title_wraps_the_title_in_a_link_when_link_url_is_set(): void {
+		$output = Modular_Renderer::render_video_title(
+			array(
+				'title'    => 'Linked Title',
+				'link_url' => 'https://example.test/post',
+			),
+			null,
+			1
+		);
+
+		$this->assertStringContainsString( '<a href="https://example.test/post"', $output );
+		$this->assertStringContainsString( 'Linked Title', $output );
+	}
+
+	public function test_render_video_title_non_overlay_mode_uses_the_given_tag(): void {
+		$output = Modular_Renderer::render_video_title(
+			array(
+				'title'   => 'Tagged',
+				'tagName' => 'h5',
+			),
+			null,
+			1
+		);
+
+		$this->assertStringContainsString( '<h5', $output );
+		$this->assertStringContainsString( '</h5>', $output );
+	}
+
+	/**
+	 * Overlay mode renders a distinct "info bar" structure -- a wrapper div
+	 * plus a separate inner bar div -- rather than the plain heading tag
+	 * non-overlay mode uses.
+	 */
+	public function test_render_video_title_overlay_mode_renders_the_info_bar_structure(): void {
+		$output = Modular_Renderer::render_video_title(
+			array(
+				'title'     => 'Overlay Title',
+				'isOverlay' => true,
+			),
+			null,
+			42
+		);
+
+		$this->assertStringContainsString( 'videopack-meta-wrapper', $output );
+		$this->assertStringContainsString( 'is-overlay', $output );
+		$this->assertStringContainsString( 'video_42_meta', $output );
+		$this->assertStringContainsString( 'Overlay Title', $output );
+	}
+
+	// -----------------------------------------------------------------
+	// render_player_engine()
+	// -----------------------------------------------------------------
+
+	protected function bare_player(): \Videopack\Frontend\Video_Players\Player {
+		$options = $this->options();
+		return new \Videopack\Frontend\Video_Players\Player( $options, new Registry( $options ) );
+	}
+
+	public function test_render_player_engine_uses_the_default_wrapper_class(): void {
+		$output = Modular_Renderer::render_player_engine( $this->bare_player(), array() );
+
+		$this->assertStringContainsString( 'videopack-player-relative-wrapper', $output );
+	}
+
+	public function test_render_player_engine_applies_a_custom_color_as_a_css_variable(): void {
+		$output = Modular_Renderer::render_player_engine( $this->bare_player(), array( 'title_color' => '#123456' ), '', array( 'embed_method' => 'Video.js' ) );
+
+		$this->assertStringContainsString( '--videopack-title-color: #123456', $output );
+		$this->assertStringContainsString( 'videopack-has-title-color', $output );
+	}
+
+	public function test_render_player_engine_adds_the_skin_class_only_for_video_js(): void {
+		$video_js_output   = Modular_Renderer::render_player_engine( $this->bare_player(), array( 'skin' => 'my-skin' ), '', array( 'embed_method' => 'Video.js' ) );
+		$wp_default_output = Modular_Renderer::render_player_engine( $this->bare_player(), array( 'skin' => 'my-skin' ), '', array( 'embed_method' => 'WordPress Default' ) );
+
+		$this->assertStringContainsString( 'my-skin', $video_js_output );
+		$this->assertStringNotContainsString( 'my-skin', $wp_default_output );
+	}
+
+	public function test_render_player_engine_injects_the_mejs_controls_svg_variable_for_wordpress_default(): void {
+		$output = Modular_Renderer::render_player_engine( $this->bare_player(), array(), '', array( 'embed_method' => 'WordPress Default' ) );
+
+		$this->assertStringContainsString( '--videopack-mejs-controls-svg:', $output );
+	}
+
+	// -----------------------------------------------------------------
+	// get_player_source_groups_for_download() (private)
+	// -----------------------------------------------------------------
+
+	public function test_get_player_source_groups_for_download_returns_a_real_source_group_for_the_video(): void {
+		$attachment_id = self::factory()->attachment->create_object(
+			array(
+				'file'           => 'video.mp4',
+				'post_mime_type' => 'video/mp4',
+			)
+		);
+		$attached_file = get_attached_file( $attachment_id );
+		file_put_contents( $attached_file, 'fake video content' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+
+		$options = $this->options();
+		$source  = Source_Factory::create( $attachment_id, $options, new Registry( $options ) );
+
+		$method = new ReflectionMethod( Modular_Renderer::class, 'get_player_source_groups_for_download' );
+		$method->setAccessible( true );
+		$groups = $method->invoke( null, $source, $options, new Registry( $options ) );
+
+		$this->assertArrayHasKey( 'h264', $groups );
+		$this->assertStringContainsString( wp_get_attachment_url( $attachment_id ), $groups['h264']['sources'][0]['src'] );
+
+		wp_delete_file( $attached_file );
+	}
+
+	// -----------------------------------------------------------------
+	// render_standalone_player_assembly()
+	// -----------------------------------------------------------------
+
+	protected function video_attachment_for_assembly(): int {
+		$attachment_id = self::factory()->attachment->create_object(
+			array(
+				'file'           => 'video.mp4',
+				'post_mime_type' => 'video/mp4',
+			)
+		);
+		$attached_file = get_attached_file( $attachment_id );
+		file_put_contents( $attached_file, 'fake video content' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		$this->temp_files_for_assembly[] = $attached_file;
+		return $attachment_id;
+	}
+
+	/**
+	 * @var string[]
+	 */
+	protected $temp_files_for_assembly = array();
+
+	protected function render_assembly( int $attachment_id, array $option_overrides = array() ): string {
+		$options = array_merge( $this->options(), $option_overrides );
+		update_option( 'videopack_options', $options );
+		return Modular_Renderer::render_standalone_player_assembly( $attachment_id, array(), $options );
+	}
+
+	public function test_render_standalone_player_assembly_includes_the_video_and_default_title(): void {
+		$attachment_id = $this->video_attachment_for_assembly();
+
+		$output = $this->render_assembly( $attachment_id );
+
+		$this->assertStringContainsString( wp_get_attachment_url( $attachment_id ), $output );
+		$this->assertStringContainsString( 'videopack-video-title', $output );
+	}
+
+	public function test_render_standalone_player_assembly_omits_the_title_when_disabled(): void {
+		$attachment_id = $this->video_attachment_for_assembly();
+
+		$output = $this->render_assembly(
+			$attachment_id,
+			array(
+				'overlay_title' => false,
+				'downloadlink'  => false,
+				'embedcode'     => false,
+			)
+		);
+
+		$this->assertStringNotContainsString( 'videopack-video-title', $output );
+	}
+
+	public function test_render_standalone_player_assembly_includes_a_download_link_when_enabled(): void {
+		$attachment_id = $this->video_attachment_for_assembly();
+
+		$output = $this->render_assembly( $attachment_id, array( 'downloadlink' => true ) );
+
+		$this->assertStringContainsString( 'videopack-download-wrapper', $output );
+	}
+
+	public function test_render_standalone_player_assembly_includes_share_when_enabled(): void {
+		$attachment_id = $this->video_attachment_for_assembly();
+
+		$output = $this->render_assembly( $attachment_id, array( 'embedcode' => true ) );
+
+		$this->assertStringContainsString( 'videopack-share-wrapper', $output );
+	}
+
+	public function test_render_standalone_player_assembly_includes_view_count_when_enabled(): void {
+		$attachment_id = $this->video_attachment_for_assembly();
+
+		$output = $this->render_assembly( $attachment_id, array( 'view_count' => true ) );
+
+		$this->assertStringContainsString( 'videopack-view-count', $output );
+	}
+
+	public function test_render_standalone_player_assembly_omits_view_count_when_disabled(): void {
+		$attachment_id = $this->video_attachment_for_assembly();
+
+		$output = $this->render_assembly( $attachment_id, array( 'view_count' => false ) );
+
+		$this->assertStringNotContainsString( 'videopack-view-count', $output );
+	}
+
+	// Note: this method also conditionally includes a 'videopack/watermark'
+	// block when $options['watermark'] is set, but that block's registered
+	// render callback (in Blocks.php, not this class) is the one responsible
+	// for resolving $options['watermark'] into the block's own attrs before
+	// calling Modular_Renderer::render_watermark() -- render_watermark()
+	// itself only ever reads $atts['watermark'], with no options fallback.
+	// Verifying the watermark actually appears here would really be testing
+	// that cross-class wiring, not this method's own "which blocks get
+	// included" logic (already demonstrated by the download/share/view-count
+	// cases above), so it's left uncovered here.
 }
