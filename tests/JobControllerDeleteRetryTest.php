@@ -78,18 +78,15 @@ class JobControllerDeleteRetryTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * This route declares no 'force' arg at all -- an absent request param
-	 * and an *explicit* false both have to mean something, and the two mean
-	 * opposite things here: no param present defaults to a forced
-	 * delete_job() (real deletion, cancelling any
-	 * active encode first), while only an explicit false/'false' routes to
-	 * the softer remove_job() (a plain DB row delete, which is the only one
-	 * of the two that fires 'videopack_remove_job'). Verified by watching
-	 * which real function actually ran rather than asserting on the return
-	 * value alone, since both converge on "the row is gone" for a
-	 * completed job either way.
+	 * An absent `force` param must default to the non-destructive
+	 * remove_job() path (a plain DB row delete, no file/attachment
+	 * deletion) -- matching the route's own `args` schema default of
+	 * `false`, and normal "force flag" conventions (opt into danger, not
+	 * out of it). Verified by watching for remove_job()'s own
+	 * 'videopack_remove_job' action rather than asserting on the return
+	 * value alone, since a completed job's row ends up gone either way.
 	 */
-	public function test_job_delete_defaults_to_a_forced_delete_when_force_is_absent(): void {
+	public function test_job_delete_defaults_to_a_safe_remove_when_force_is_absent(): void {
 		$job_id = $this->insert_job();
 		$fired  = false;
 		add_action(
@@ -108,9 +105,36 @@ class JobControllerDeleteRetryTest extends WP_UnitTestCase {
 		$this->assertInstanceOf( WP_REST_Response::class, $response );
 		$this->assertTrue( $response->get_data()['deleted'] );
 		$this->assertSame( $job_id, $response->get_data()['job_id'] );
-		$this->assertFalse( $fired, 'delete_job() (forced path) should not fire remove_job()\'s own action.' );
+		$this->assertTrue( $fired, 'An absent force param should default to remove_job().' );
 	}
 
+	public function test_job_delete_uses_a_soft_remove_when_force_is_explicitly_false(): void {
+		$job_id = $this->insert_job();
+		$fired  = false;
+		add_action(
+			'videopack_remove_job',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$request = new WP_REST_Request( 'DELETE', "/videopack/v1/jobs/{$job_id}" );
+		$request->set_param( 'id', $job_id );
+		$request->set_param( 'force', false );
+
+		$this->controller()->job_delete( $request );
+		remove_all_actions( 'videopack_remove_job' );
+
+		$this->assertTrue( $fired, 'force=false should route to remove_job().' );
+	}
+
+	/**
+	 * A query string sends "false" as a literal string, not a PHP boolean --
+	 * and a plain (bool) cast treats any non-empty string (including this
+	 * one) as true. This is exactly the real request shape a browser
+	 * actually sends, and the case that broke when this method briefly used
+	 * a raw (bool) cast instead of rest_sanitize_boolean().
+	 */
 	public function test_job_delete_uses_a_soft_remove_when_force_is_the_string_false(): void {
 		$job_id = $this->insert_job();
 		$fired  = false;
@@ -128,10 +152,10 @@ class JobControllerDeleteRetryTest extends WP_UnitTestCase {
 		$this->controller()->job_delete( $request );
 		remove_all_actions( 'videopack_remove_job' );
 
-		$this->assertTrue( $fired, 'force="false" should route to remove_job().' );
+		$this->assertTrue( $fired, 'force="false" (string) should route to remove_job().' );
 	}
 
-	public function test_job_delete_uses_a_soft_remove_when_force_is_boolean_false(): void {
+	public function test_job_delete_forces_a_real_delete_when_force_is_true(): void {
 		$job_id = $this->insert_job();
 		$fired  = false;
 		add_action(
@@ -143,12 +167,12 @@ class JobControllerDeleteRetryTest extends WP_UnitTestCase {
 
 		$request = new WP_REST_Request( 'DELETE', "/videopack/v1/jobs/{$job_id}" );
 		$request->set_param( 'id', $job_id );
-		$request->set_param( 'force', false );
+		$request->set_param( 'force', true );
 
 		$this->controller()->job_delete( $request );
 		remove_all_actions( 'videopack_remove_job' );
 
-		$this->assertTrue( $fired, 'force=false (boolean) should route to remove_job().' );
+		$this->assertFalse( $fired, 'force=true (delete_job()) should not fire remove_job()\'s own action.' );
 	}
 
 	public function test_job_delete_soft_remove_actually_removes_the_row(): void {

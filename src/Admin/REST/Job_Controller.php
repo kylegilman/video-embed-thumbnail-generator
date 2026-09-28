@@ -117,6 +117,13 @@ class Job_Controller extends Controller {
 					'methods'             => \WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'job_delete' ),
 					'permission_callback' => array( $this, 'can_encode_videos' ),
+					'args'                => array(
+						'force' => array(
+							'type'     => 'boolean',
+							'required' => false,
+							'default'  => false,
+						),
+					),
 				),
 				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
@@ -295,16 +302,23 @@ class Job_Controller extends Controller {
 	}
 
 	/**
-	 * REST callback to delete a job.
+	 * REST callback to delete a job. Defaults to a non-destructive queue
+	 * removal (no file/attachment deletion) unless `force` is explicitly
+	 * true, matching normal "force flag" conventions -- see the route's own
+	 * `args` schema for the default.
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
 	 */
 	public function job_delete( \WP_REST_Request $request ) {
-		$id               = (int) $request->get_param( 'id' );
-		$force            = $request->get_param( 'force' );
+		$id = (int) $request->get_param( 'id' );
+		// rest_sanitize_boolean() rather than a plain (bool) cast -- the
+		// route's own 'boolean' arg type already does this for a real HTTP
+		// request, but a raw (bool) cast would treat the string "false"
+		// (what a query string literally sends) as true.
+		$force            = rest_sanitize_boolean( $request->get_param( 'force' ) );
 		$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 
-		if ( 'false' !== $force && false !== $force ) {
+		if ( $force ) {
 			$result = $queue_controller->delete_job( $id, true );
 		} else {
 			$result = $queue_controller->remove_job( $id );
