@@ -890,10 +890,9 @@ class ModularRendererTest extends WP_UnitTestCase {
 	 */
 	protected $temp_files_for_assembly = array();
 
-	protected function render_assembly( int $attachment_id, array $option_overrides = array() ): string {
+	protected function render_assembly( int $attachment_id, array $option_overrides = array(), array $design_overrides = array() ): string {
 		$options = array_merge( $this->options(), $option_overrides );
-		update_option( 'videopack_options', $options );
-		return Modular_Renderer::render_standalone_player_assembly( $attachment_id, array(), $options );
+		return Modular_Renderer::render_standalone_player_assembly( $attachment_id, $design_overrides, $options );
 	}
 
 	public function test_render_standalone_player_assembly_includes_the_video_and_default_title(): void {
@@ -952,14 +951,38 @@ class ModularRendererTest extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( 'videopack-view-count', $output );
 	}
 
-	// Note: this method also conditionally includes a 'videopack/watermark'
-	// block when $options['watermark'] is set, but that block's registered
-	// render callback (in Blocks.php, not this class) is the one responsible
-	// for resolving $options['watermark'] into the block's own attrs before
-	// calling Modular_Renderer::render_watermark() -- render_watermark()
-	// itself only ever reads $atts['watermark'], with no options fallback.
-	// Verifying the watermark actually appears here would really be testing
-	// that cross-class wiring, not this method's own "which blocks get
-	// included" logic (already demonstrated by the download/share/view-count
-	// cases above), so it's left uncovered here.
+	/**
+	 * The watermark block's own value comes through a different channel
+	 * than title/download/share/view-count: Blocks::inject_videopack_context()
+	 * forwards every player-container attribute into its children's block
+	 * context verbatim (the same mechanism a real per-instance Collection
+	 * override uses -- see this method's own $design_overrides param), and
+	 * separately falls back to the live $options['watermark'] only when the
+	 * player-container attrs don't already carry it. Since $design_overrides
+	 * becomes exactly those player-container attrs, passing 'watermark'
+	 * there is the direct, reliable path -- going through $options instead
+	 * would depend on Blocks' own already-constructed options snapshot
+	 * (captured once, at plugin bootstrap) rather than anything this test
+	 * can influence mid-run.
+	 */
+	public function test_render_standalone_player_assembly_includes_the_watermark_when_configured(): void {
+		$attachment_id = $this->video_attachment_for_assembly();
+
+		$output = $this->render_assembly(
+			$attachment_id,
+			array( 'watermark' => true ),
+			array( 'watermark' => 'https://example.test/logo.png' )
+		);
+
+		$this->assertStringContainsString( 'videopack-video-watermark', $output );
+		$this->assertStringContainsString( 'https://example.test/logo.png', $output );
+	}
+
+	public function test_render_standalone_player_assembly_omits_the_watermark_when_not_configured(): void {
+		$attachment_id = $this->video_attachment_for_assembly();
+
+		$output = $this->render_assembly( $attachment_id, array( 'watermark' => false ) );
+
+		$this->assertStringNotContainsString( 'videopack-video-watermark', $output );
+	}
 }
