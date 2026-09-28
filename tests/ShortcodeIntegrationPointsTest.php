@@ -472,6 +472,34 @@ class ShortcodeIntegrationPointsTest extends WP_UnitTestCase {
 		$this->assertStringContainsString( '<figcaption class="wp-element-caption">A safe caption</figcaption>', $output );
 	}
 
+	/**
+	 * Regression test: the caption used to be interpolated into the
+	 * figcaption raw, with none of this method's other escaping (esc_attr
+	 * on the class, esc_url on... elsewhere in the file) applied to it. A
+	 * core/video block's caption is block-editor-authored rather than
+	 * arbitrary end-user input, but it's still stored post content --
+	 * wp_kses_post() is the same sanitization WordPress core, and this
+	 * plugin's own Modular_Renderer::render_video_caption(), already use
+	 * for caption text, so this brings the two into line.
+	 */
+	public function test_replace_video_block_sanitizes_the_caption_against_stored_xss(): void {
+		$attachment_id = $this->video_attachment();
+		$block         = array(
+			'blockName' => 'core/video',
+			'attrs'     => array(
+				'id'      => $attachment_id,
+				'caption' => '<script>alert(1)</script>Hello <strong>world</strong>',
+			),
+		);
+
+		$output = $this->shortcode( array( 'replace_video_block' => true ) )->replace_video_block( '', $block );
+
+		$this->assertStringNotContainsString( '<script>', $output );
+		// wp_kses_post() allows safe inline formatting through -- this isn't
+		// meant to strip all markup, only markup capable of executing script.
+		$this->assertStringContainsString( 'Hello <strong>world</strong>', $output );
+	}
+
 	public function test_replace_video_block_omits_the_caption_figure_wrapper_without_a_caption(): void {
 		// Modular_Renderer::render_video_container() always wraps its own
 		// output in a <figure class="videopack-wrapper ..."> -- that's not

@@ -1184,7 +1184,7 @@ class Shortcode implements Hook_Subscriber {
 					'<figure class="%1$s">%2$s<figcaption class="wp-element-caption">%3$s</figcaption></figure>',
 					esc_attr( $figure_classes ),
 					$player_code,
-					(string) $atts['caption']
+					wp_kses_post( (string) $atts['caption'] )
 				);
 			}
 
