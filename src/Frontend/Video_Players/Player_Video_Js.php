@@ -190,10 +190,11 @@ class Player_Video_Js extends Player {
 			$classes[] = $skin;
 		}
 
-		// Note: is_fixed_aspect() check removed here because it's an instance method.
-		// However, fixed aspect handling is already done in Player::get_wrapper_start_html()
-		// and Player::prepare_video_vars(). If vjs-fill is needed, it can be added here
-		// if we can determine fixed_aspect from $atts.
+		// Fixed-aspect sizing itself is decided client-side (video-js.js),
+		// which needs the real decoded video dimensions to tell a genuinely
+		// portrait video from a landscape one -- not available here. This
+		// just adds the CSS hook Video.js needs to size itself correctly
+		// once that decision is made, for any fixed_aspect mode.
 		if ( ! empty( $atts['fixed_aspect'] ) ) {
 			$classes[] = 'vjs-fill';
 		}

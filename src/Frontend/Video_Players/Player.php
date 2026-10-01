@@ -796,34 +796,6 @@ class Player {
 		return apply_filters( 'videopack_video_player_tracks', $track_elements, $this->atts );
 	}
 
-
-
-	/**
-	 * Checks if the player has a fixed aspect ratio.
-	 *
-	 * @return bool True if fixed aspect ratio is enabled, false otherwise.
-	 */
-	protected function is_fixed_aspect(): bool {
-		$fixed_aspect = (string) ( $this->atts['fixed_aspect'] ?? 'false' );
-
-		if ( 'false' === $fixed_aspect || 'none' === $fixed_aspect ) {
-			return false;
-		}
-
-		if ( 'true' === $fixed_aspect || true === ( $this->atts['fixed_aspect'] ?? false ) ) {
-			return true;
-		}
-
-		if ( 'vertical' === $fixed_aspect ) {
-			$source = $this->get_source();
-			if ( $source ) {
-				return $source->get_height() > $source->get_width();
-			}
-		}
-
-		return false;
-	}
-
 	/**
 	 * Returns the final resolved width for the video player.
 	 *

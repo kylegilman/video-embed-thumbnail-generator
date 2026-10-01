@@ -2,9 +2,9 @@
 /**
  * Tests for Player::get_final_width()/get_final_height() (the resolved
  * player dimensions embedded in data-player-vars and used for the actual
- * <video width/height> attributes) and the related is_fixed_aspect()/
- * get_fixed_aspect_ratio(). Previously completely untested despite being
- * the exact logic that decides what size a video actually renders at.
+ * <video width/height> attributes) and the related get_fixed_aspect_ratio().
+ * Previously completely untested despite being the exact logic that decides
+ * what size a video actually renders at.
  */
 
 use Videopack\Frontend\Video_Players\Player_Video_Js;
@@ -111,59 +111,6 @@ class PlayerDimensionsTest extends WP_UnitTestCase {
 
 		$this->assertSame( 1200, $width_method->invoke( $player ) );
 		$this->assertSame( 675, $height_method->invoke( $player ) );
-	}
-
-	// -----------------------------------------------------------------
-	// is_fixed_aspect()
-	// -----------------------------------------------------------------
-
-	protected function is_fixed_aspect( Player_Video_Js $player ): bool {
-		$method = new ReflectionMethod( $player, 'is_fixed_aspect' );
-		$method->setAccessible( true );
-		return $method->invoke( $player );
-	}
-
-	public function test_fixed_aspect_false_string_is_false(): void {
-		$player = new Player_Video_Js( $this->options() );
-		$player->get_player_code( array( 'fixed_aspect' => 'false' ) );
-
-		$this->assertFalse( $this->is_fixed_aspect( $player ) );
-	}
-
-	public function test_fixed_aspect_none_string_is_false(): void {
-		$player = new Player_Video_Js( $this->options() );
-		$player->get_player_code( array( 'fixed_aspect' => 'none' ) );
-
-		$this->assertFalse( $this->is_fixed_aspect( $player ) );
-	}
-
-	public function test_fixed_aspect_true_string_is_true(): void {
-		$player = new Player_Video_Js( $this->options() );
-		$player->get_player_code( array( 'fixed_aspect' => 'true' ) );
-
-		$this->assertTrue( $this->is_fixed_aspect( $player ) );
-	}
-
-	public function test_fixed_aspect_boolean_true_is_true(): void {
-		$player = new Player_Video_Js( $this->options() );
-		$player->get_player_code( array( 'fixed_aspect' => true ) );
-
-		$this->assertTrue( $this->is_fixed_aspect( $player ) );
-	}
-
-	public function test_fixed_aspect_vertical_with_landscape_source_is_false(): void {
-		// The real fixture is 4096x2304 -- landscape (width > height).
-		$player = new Player_Video_Js( $this->options() );
-		$player->get_player_code( array( 'id' => self::$video_id, 'fixed_aspect' => 'vertical' ) );
-
-		$this->assertFalse( $this->is_fixed_aspect( $player ) );
-	}
-
-	public function test_fixed_aspect_defaults_to_false_with_no_source(): void {
-		$player = new Player_Video_Js( $this->options() );
-		$player->get_player_code( array( 'fixed_aspect' => 'vertical' ) ); // No resolvable source.
-
-		$this->assertFalse( $this->is_fixed_aspect( $player ) );
 	}
 
 	// -----------------------------------------------------------------
