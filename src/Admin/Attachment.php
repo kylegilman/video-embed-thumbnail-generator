@@ -159,6 +159,8 @@ class Attachment implements Hook_Subscriber {
 						return true;
 					}
 				}
+				// Imagick decoded the file, so its frame count is authoritative.
+				return false;
 			} catch ( \Exception $e ) {
 				unset( $e ); // Imagick failed; fall back to manual GIF header check.
 			}
