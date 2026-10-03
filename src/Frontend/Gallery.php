@@ -399,11 +399,13 @@ class Gallery {
 		$width  = (int) ( $final_atts['width'] ?? 0 );
 		$height = (int) ( $final_atts['height'] ?? 0 );
 
-		// If dimensions are missing or at their global defaults, use the specific attachment dimensions if available.
-		if ( ( empty( $width ) || $width === (int) ( $this->options['width'] ?? 960 ) ) && (int) $source->get_width() > 0 ) {
+		// If no dimensions were requested, use the specific attachment dimensions if available.
+		// An explicit value, even one equal to the global default, is kept because the
+		// attributes reaching here no longer carry a pre-filled default.
+		if ( empty( $width ) && (int) $source->get_width() > 0 ) {
 			$width = (int) $source->get_width();
 		}
-		if ( ( empty( $height ) || $height === (int) ( $this->options['height'] ?? 540 ) ) && (int) $source->get_height() > 0 ) {
+		if ( empty( $height ) && (int) $source->get_height() > 0 ) {
 			$height = (int) $source->get_height();
 		}
 

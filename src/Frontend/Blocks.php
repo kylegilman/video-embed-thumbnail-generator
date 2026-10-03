@@ -205,6 +205,23 @@ class Blocks implements Hook_Subscriber {
 	}
 
 	/**
+	 * The plugin options without the global default width/height.
+	 *
+	 * Merged beneath a block's own attributes wherever options act as the
+	 * fallback layer, but width/height must stay absent unless explicitly
+	 * requested: Shortcode::get_final_atts() and Player::get_final_width()/
+	 * get_final_height() use "was one provided?" to decide whether to prefer
+	 * the video's native dimensions, so a pre-filled default would be
+	 * indistinguishable from (and override) a genuine request, and would
+	 * also be echoed into the pagination data-settings-cache as if it were one.
+	 *
+	 * @return array Options minus 'width' and 'height'.
+	 */
+	protected function options_without_default_dimensions(): array {
+		return array_diff_key( $this->options, array_flip( array( 'width', 'height' ) ) );
+	}
+
+	/**
 	 * Resolves the final attachment ID for a block, handling auto-discovery if needed.
 	 *
 	 * @param array $attributes Block attributes.
@@ -387,7 +404,7 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		$merged_attributes = array_merge(
-			$this->options,
+			$this->options_without_default_dimensions(),
 			$settings['resolved'],
 			$context_content,
 			$attributes,
@@ -521,7 +538,7 @@ class Blocks implements Hook_Subscriber {
 		}
 
 		$settings              = Context_Manager::resolve( $attributes, $block->context, $this->options, array( 'skin' ) );
-		$normalized_attributes = array_merge( $this->options, $attributes, $settings['resolved'] );
+		$normalized_attributes = array_merge( $this->options_without_default_dimensions(), $attributes, $settings['resolved'] );
 
 		// 1. Pre-fetch and cache metadata for all videos in this page of the
 		// collection — including a pre-built full_player_html for the
@@ -620,7 +637,7 @@ class Blocks implements Hook_Subscriber {
 
 		$output = Modular_Renderer::render_video_container(
 			array_merge(
-				$this->options,
+				$this->options_without_default_dimensions(),
 				$attributes,
 				array(
 					'align'                 => $attributes['align'] ?? ( $this->options['gallery_align'] ?? 'wide' ),
@@ -752,7 +769,7 @@ class Blocks implements Hook_Subscriber {
 			$this->options,
 			array( 'skin', 'play_button_color', 'play_button_secondary_color', 'aspect_ratio' )
 		);
-		$attributes = array_merge( $this->options, $attributes, $settings['resolved'] );
+		$attributes = array_merge( $this->options_without_default_dimensions(), $attributes, $settings['resolved'] );
 
 		$post_id = $this->get_effective_attachment_id( $attributes, $block->context );
 		if ( ! $post_id ) {

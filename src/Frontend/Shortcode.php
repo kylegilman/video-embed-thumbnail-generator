@@ -416,7 +416,15 @@ class Shortcode implements Hook_Subscriber {
 
 		$option_defaults = array();
 		foreach ( (array) $options_atts as $att ) {
-			if ( array_key_exists( (string) $att, $this->options ) ) {
+			if ( 'width' === $att || 'height' === $att ) {
+				// Deliberately not defaulted from options: whether a width/height
+				// was explicitly requested has to stay distinguishable from
+				// "never set one", so get_final_atts() can fall back to the
+				// video's native dimensions. An empty default keeps the key
+				// known to shortcode_atts() (which drops unknown keys); it's
+				// removed again below when nothing was provided.
+				$option_defaults[ (string) $att ] = '';
+			} elseif ( array_key_exists( (string) $att, $this->options ) ) {
 				$option_defaults[ (string) $att ] = $this->options[ $att ];
 			}
 		}
@@ -430,6 +438,12 @@ class Shortcode implements Hook_Subscriber {
 		$default_atts = (array) apply_filters( 'videopack_default_shortcode_atts', (array) $default_atts );
 
 		$query_atts = (array) shortcode_atts( (array) $default_atts, (array) $atts, 'videopack' );
+
+		foreach ( array( 'width', 'height' ) as $dimension ) {
+			if ( isset( $query_atts[ $dimension ] ) && '' === $query_atts[ $dimension ] ) {
+				unset( $query_atts[ $dimension ] );
+			}
+		}
 
 		$videopack_query_var = get_query_var( 'videopack' ); // Variables in URL.
 		if ( empty( $videopack_query_var ) ) {
@@ -624,15 +638,22 @@ class Shortcode implements Hook_Subscriber {
 			}
 		}
 
-		// Set default dimensions from source if not provided in shortcode or if using global defaults.
-		$width  = (int) ( $atts['width'] ?? 0 );
-		$height = (int) ( $atts['height'] ?? 0 );
-
-		if ( ( empty( $width ) || $width === (int) ( $this->options['width'] ?? 960 ) ) && (int) $source->get_width() > 0 ) {
+		// Resolve dimensions: an explicitly requested width/height always wins
+		// (even one that happens to equal the global default -- atts() no
+		// longer pre-fills the default, so a value here really was requested).
+		// Otherwise use the source's own size (its probed native dimensions,
+		// else the per-video saved size), then the global default.
+		if ( (int) ( $atts['width'] ?? 0 ) <= 0 ) {
 			$query_atts['width'] = (int) $source->get_width();
+			if ( $query_atts['width'] <= 0 ) {
+				$query_atts['width'] = (int) ( $this->options['width'] ?? 960 );
+			}
 		}
-		if ( ( empty( $height ) || $height === (int) ( $this->options['height'] ?? 540 ) ) && (int) $source->get_height() > 0 ) {
+		if ( (int) ( $atts['height'] ?? 0 ) <= 0 ) {
 			$query_atts['height'] = (int) $source->get_height();
+			if ( $query_atts['height'] <= 0 ) {
+				$query_atts['height'] = (int) ( $this->options['height'] ?? 540 );
+			}
 		}
 
 		// Auto-default gifmode to true if original source is a GIF.
