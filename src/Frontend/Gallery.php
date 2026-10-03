@@ -122,6 +122,15 @@ class Gallery {
 				if ( ! $args['post_parent'] && defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 					$args['post_parent'] = (int) ( $query_atts['id'] ?? 0 );
 				}
+
+				// Still no current post (e.g. a widget, footer or archive
+				// template): a falsy post_parent isn't numeric, so WP_Query
+				// would drop the parent filter and return every video on the
+				// site. Return nothing instead.
+				if ( ! $args['post_parent'] ) {
+					$args['post__in'] = array( 0 );
+					unset( $args['post_parent'] );
+				}
 			} else {
 				// If source is custom but no ID is provided, or current but still no ID (e.g. not on a post), return empty.
 				$args['post__in'] = array( 0 );
@@ -276,6 +285,12 @@ class Gallery {
 					$args['post__in'] = (array) array_slice( (array) $include_arr, $offset, $gallery_per_page );
 				} else {
 					$args['post__in'] = (array) $include_arr;
+
+					// Pagination is off: show every included ID rather than
+					// letting a leftover per-page value cap the list.
+					if ( $bypass_pagination ) {
+						$args['posts_per_page'] = -1;
+					}
 				}
 				unset( $args['paged'] );
 				if ( (string) $args['orderby'] === 'menu_order ID' || (string) $args['orderby'] === 'include' ) {

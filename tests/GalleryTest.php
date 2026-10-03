@@ -214,6 +214,46 @@ class GalleryTest extends WP_UnitTestCase {
 		$this->assertSame( array( $ids[4] ), $this->ids( $page3 ) );
 	}
 
+	public function test_current_source_with_no_post_context_does_not_return_every_video_on_the_site(): void {
+		$this->video( array( 'post_parent' => self::factory()->post->create() ) );
+		$this->video( array( 'post_parent' => self::factory()->post->create() ) );
+		// go_to() leaves a real global $post behind, so clear it to get a
+		// genuinely falsy get_the_ID().
+		$GLOBALS['post'] = null;
+
+		$query = $this->gallery()->get_gallery_videos( 1, array( 'gallery_source' => 'current', 'gallery_per_page' => -1 ) );
+
+		$this->assertSame( array(), $this->ids( $query ), 'a "current post" gallery with no current post should be empty, not site-wide' );
+	}
+
+	public function test_gallery_include_with_pagination_off_returns_everything_on_one_page(): void {
+		$ids  = array( $this->video(), $this->video(), $this->video() );
+		$atts = array(
+			'gallery_include'    => implode( ',', $ids ),
+			'gallery_orderby'    => 'menu_order',
+			'gallery_per_page'   => 2,
+			'gallery_pagination' => false,
+		);
+
+		$query = $this->gallery()->get_gallery_videos( 1, $atts );
+
+		$this->assertSame( $ids, $this->ids( $query ) );
+	}
+
+	public function test_gallery_include_treats_the_string_false_pagination_from_rest_as_off(): void {
+		$ids  = array( $this->video(), $this->video(), $this->video() );
+		$atts = array(
+			'gallery_include'    => implode( ',', $ids ),
+			'gallery_orderby'    => 'menu_order',
+			'gallery_per_page'   => 2,
+			'gallery_pagination' => 'false',
+		);
+
+		$query = $this->gallery()->get_gallery_videos( 1, $atts );
+
+		$this->assertSame( $ids, $this->ids( $query ) );
+	}
+
 	// -----------------------------------------------------------------
 	// get_gallery_videos() -- ordering / paging / limits.
 	// -----------------------------------------------------------------
