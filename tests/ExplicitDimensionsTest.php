@@ -102,17 +102,18 @@ class ExplicitDimensionsTest extends WP_UnitTestCase {
 		$this->assertSame( 2304, $final['height'] );
 	}
 
-	public function test_final_atts_resolve_width_and_height_independently(): void {
-		// fixed_aspect is passed explicitly (so a cached per-video meta default can't override it): with the default 'vertical' mode, a
-		// requested width smaller than the video's native height makes
-		// get_final_atts() treat the pair as portrait and recompute the height
-		// from the default ratio, which is a separate rule from this one.
-		$final = $this->shortcode()->get_final_atts( array( 'id' => self::$video_id, 'width' => 640, 'fixed_aspect' => 'false' ), $this->source() );
+	public function test_final_atts_derive_the_unrequested_dimension_from_the_videos_aspect_ratio(): void {
+		// fixed_aspect is passed explicitly, both so the rule under test isn't
+		// involved and so a cached per-video meta default can't override it.
+		$width_only  = $this->shortcode()->get_final_atts( array( 'id' => self::$video_id, 'width' => 640, 'fixed_aspect' => 'false' ), $this->source() );
+		$height_only = $this->shortcode()->get_final_atts( array( 'id' => self::$video_id, 'height' => 1152, 'fixed_aspect' => 'false' ), $this->source() );
 
-		$this->assertSame( '640', (string) $final['width'], 'the requested width is kept' );
-		$this->assertSame( 2304, $final['height'], 'the unrequested height still falls back to native' );
+		// 4096x2304 is 16:9, so 640 wide is 360 tall -- not the unscaled native 2304.
+		$this->assertSame( '640', (string) $width_only['width'], 'the requested width is kept' );
+		$this->assertSame( 360, $width_only['height'] );
+		$this->assertSame( 2048, $height_only['width'] );
+		$this->assertSame( '1152', (string) $height_only['height'], 'the requested height is kept' );
 	}
-
 	/**
 	 * Source::get_width()/get_height() themselves fall back from probed native
 	 * dimensions to the per-video saved size, so that is what an unrequested

@@ -169,7 +169,6 @@ const VideoPlayer = ( {
 		embed_method = 'Video.js',
 		duotone,
 		fixed_aspect,
-		fullwidth,
 		loopDuotoneId,
 		crossorigin,
 	} = resolved;
@@ -266,13 +265,12 @@ const VideoPlayer = ( {
 
 	const isFixedAspect = useMemo( () => {
 		const verticalFixed = fixed_aspect === 'vertical' && isVertical;
-		const alwaysFixed = fixed_aspect === 'always';
+		// "All" is the string 'true' (what both settings screens save); it
+		// frames every video in the default ratio, full width or not.
+		const alwaysFixed = fixed_aspect === 'true' || fixed_aspect === true;
 
-		return (
-			( alwaysFixed || verticalFixed ) &&
-			( fullwidth !== true || verticalFixed )
-		);
-	}, [ fixed_aspect, fullwidth, isVertical ] );
+		return alwaysFixed || verticalFixed;
+	}, [ fixed_aspect, isVertical ] );
 
 	const aspectRatio = useMemo( () => {
 		let ratio;

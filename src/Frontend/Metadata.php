@@ -112,6 +112,15 @@ class Metadata implements Hook_Subscriber {
 		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options );
 		$final_atts        = (array) $shortcode_handler->get_final_atts( (array) $atts, $source );
 
+		// Open Graph describes the video itself, so report its real display
+		// size rather than the player box get_final_atts() resolved (which a
+		// fixed-aspect setting reshapes to the default ratio). Falls back to
+		// the resolved size when the video's dimensions aren't known.
+		if ( $source->get_display_width() > 0 && $source->get_display_height() > 0 ) {
+			$final_atts['width']  = $source->get_display_width();
+			$final_atts['height'] = $source->get_display_height();
+		}
+
 		$final_atts['url']         = (string) $source->get_url();
 		$final_atts['id']          = (string) $source->get_id();
 		$final_atts['mime_type']   = (string) $source->get_mime_type();

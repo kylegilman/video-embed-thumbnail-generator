@@ -802,24 +802,27 @@ class Player {
 	 * @return int The resolved width.
 	 */
 	protected function get_final_width(): int {
-		$atts_width    = (int) ( $this->atts['width'] ?? 0 );
-		$width_was_set = $atts_width > 0;
-		$width         = $width_was_set ? $atts_width : (int) ( $this->options['width'] ?? 960 );
+		$atts_width = (int) ( $this->atts['width'] ?? 0 );
 
-		// Only fall through to the source's native width when the caller
-		// didn't explicitly request one -- checking whether $width merely
-		// *equals* the global default (rather than whether atts actually
-		// provided one) would also override an explicit request that
+		// An explicitly requested width always wins -- checking whether it
+		// merely *equals* the global default (rather than whether atts
+		// actually provided one) would also override an explicit request that
 		// happens to match that default.
+		if ( $atts_width > 0 ) {
+			return $atts_width;
+		}
+
 		$source = $this->get_source();
-		if ( $source && ! $width_was_set ) {
-			$native_width = (int) $source->get_width();
-			if ( $native_width > 0 ) {
-				$width = $native_width;
+		if ( $source ) {
+			// If only a height was requested the width follows the video's
+			// aspect ratio; otherwise it's the video's own display width.
+			$resolved = $source->resolve_display_dimensions( 0, max( 0, (int) ( $this->atts['height'] ?? 0 ) ) );
+			if ( $resolved['width'] > 0 ) {
+				return $resolved['width'];
 			}
 		}
 
-		return $width;
+		return (int) ( $this->options['width'] ?? 960 );
 	}
 
 	/**
@@ -828,25 +831,25 @@ class Player {
 	 * @return int The resolved height.
 	 */
 	protected function get_final_height(): int {
-		$atts_height    = (int) ( $this->atts['height'] ?? 0 );
-		$height_was_set = $atts_height > 0;
-		$height         = $height_was_set ? $atts_height : (int) ( $this->options['height'] ?? 540 );
+		$atts_height = (int) ( $this->atts['height'] ?? 0 );
 
-		// Only fall through to the source's native height when the caller
-		// didn't explicitly request one -- see get_final_width()'s comment
-		// for why value-equality with the global default isn't the right
-		// check here.
+		// See get_final_width() for why an explicit value always wins.
+		if ( $atts_height > 0 ) {
+			return $atts_height;
+		}
+
 		$source = $this->get_source();
-		if ( $source && ! $height_was_set ) {
-			$native_height = (int) $source->get_height();
-			if ( $native_height > 0 ) {
-				$height = $native_height;
+		if ( $source ) {
+			// If only a width was requested the height follows the video's
+			// aspect ratio rather than using its unscaled native height.
+			$resolved = $source->resolve_display_dimensions( max( 0, (int) ( $this->atts['width'] ?? 0 ) ), 0 );
+			if ( $resolved['height'] > 0 ) {
+				return $resolved['height'];
 			}
 		}
 
-		return $height;
+		return (int) ( $this->options['height'] ?? 540 );
 	}
-
 	/**
 	 * Returns the fixed aspect ratio string.
 	 *

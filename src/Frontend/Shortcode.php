@@ -641,18 +641,33 @@ class Shortcode implements Hook_Subscriber {
 		// Resolve dimensions: an explicitly requested width/height always wins
 		// (even one that happens to equal the global default -- atts() no
 		// longer pre-fills the default, so a value here really was requested).
-		// Otherwise use the source's own size (its probed native dimensions,
-		// else the per-video saved size), then the global default.
-		if ( (int) ( $atts['width'] ?? 0 ) <= 0 ) {
-			$query_atts['width'] = (int) $source->get_width();
-			if ( $query_atts['width'] <= 0 ) {
-				$query_atts['width'] = (int) ( $this->options['width'] ?? 960 );
+		// Otherwise take the source's own size as it displays (its probed
+		// dimensions, swapped when known rotation reverses them, else the
+		// per-video saved size). If only one dimension was requested the
+		// other follows the video's aspect ratio. Where the video's size isn't
+		// known, fall back to the global default size and ratio.
+		$requested_width  = (int) ( $atts['width'] ?? 0 );
+		$requested_height = (int) ( $atts['height'] ?? 0 );
+		$default_width    = (int) ( $this->options['width'] ?? 960 );
+		$default_height   = (int) ( $this->options['height'] ?? 540 );
+		$resolved         = $source->resolve_display_dimensions( max( 0, $requested_width ), max( 0, $requested_height ) );
+
+		if ( $requested_width <= 0 ) {
+			if ( $resolved['width'] > 0 ) {
+				$query_atts['width'] = $resolved['width'];
+			} elseif ( $requested_height > 0 ) {
+				$query_atts['width'] = (int) round( $requested_height * $default_width / max( 1, $default_height ) );
+			} else {
+				$query_atts['width'] = $default_width;
 			}
 		}
-		if ( (int) ( $atts['height'] ?? 0 ) <= 0 ) {
-			$query_atts['height'] = (int) $source->get_height();
-			if ( $query_atts['height'] <= 0 ) {
-				$query_atts['height'] = (int) ( $this->options['height'] ?? 540 );
+		if ( $requested_height <= 0 ) {
+			if ( $resolved['height'] > 0 ) {
+				$query_atts['height'] = $resolved['height'];
+			} elseif ( $requested_width > 0 ) {
+				$query_atts['height'] = (int) round( $requested_width * $default_height / max( 1, $default_width ) );
+			} else {
+				$query_atts['height'] = $default_height;
 			}
 		}
 
@@ -690,10 +705,23 @@ class Shortcode implements Hook_Subscriber {
 			$query_atts['endofvideooverlay'] = (string) ( $query_atts['poster'] ?? '' );
 		}
 
-		// Handle fixed_aspect logic.
-		if ( ( ! empty( $query_atts['fixed_aspect'] ) && 'vertical' === (string) $query_atts['fixed_aspect'] && (int) ( $query_atts['height'] ?? 0 ) > (int) ( $query_atts['width'] ?? 0 ) )
-		|| ( isset( $query_atts['fixed_aspect'] ) && true === $query_atts['fixed_aspect'] )
-		) {
+		// Handle fixed_aspect logic: "true" (All) puts every video in a box
+		// with the default ratio, "vertical" only portrait ones. Orientation
+		// comes from the video's own dimensions -- never from comparing a
+		// requested width against the native height, which can't tell the two
+		// apart -- and is only as reliable as the server's data: a rotation
+		// that FFmpeg never read isn't known here, so the player JS (which
+		// sees the decoded video) remains the authority for "vertical". An
+		// explicitly requested height always wins over this rule.
+		$fixed_aspect = $query_atts['fixed_aspect'] ?? false;
+		if ( true === $fixed_aspect || 'true' === $fixed_aspect ) {
+			$fixed_aspect_applies = true;
+		} elseif ( 'vertical' === $fixed_aspect ) {
+			$fixed_aspect_applies = $source->get_display_height() > $source->get_display_width();
+		} else {
+			$fixed_aspect_applies = false;
+		}
+		if ( $fixed_aspect_applies && (int) ( $atts['height'] ?? 0 ) <= 0 ) {
 			$default_aspect_ratio = (float) ( (int) ( $this->options['height'] ?? 360 ) / (int) ( $this->options['width'] ?? 640 ) );
 			$query_atts['height'] = (int) round( (int) ( $query_atts['width'] ?? 640 ) * $default_aspect_ratio );
 		}

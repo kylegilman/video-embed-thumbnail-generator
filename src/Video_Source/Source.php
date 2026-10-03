@@ -943,6 +943,83 @@ abstract class Source {
 	}
 
 	/**
+	 * Whether the stored dimensions are swapped relative to how the video plays.
+	 *
+	 * Phone videos are commonly saved landscape with 90/270 degree rotation
+	 * metadata, so get_width()/get_height() (the encoded size) come out
+	 * reversed. Only known when the rotation was read, which happens when
+	 * FFmpeg probed the file; dimensions from WordPress's own metadata or
+	 * reported by the browser carry no rotation, so this is false for them.
+	 *
+	 * @return bool True if width and height are reversed for display.
+	 */
+	public function has_swapped_dimensions(): bool {
+		return in_array( $this->get_rotate(), array( 90, 270 ), true );
+	}
+
+	/**
+	 * Returns the video width as it displays, accounting for known rotation.
+	 *
+	 * @return int The display width.
+	 */
+	public function get_display_width(): int {
+		return $this->has_swapped_dimensions() ? $this->get_height() : $this->get_width();
+	}
+
+	/**
+	 * Returns the video height as it displays, accounting for known rotation.
+	 *
+	 * @return int The display height.
+	 */
+	public function get_display_height(): int {
+		return $this->has_swapped_dimensions() ? $this->get_width() : $this->get_height();
+	}
+
+	/**
+	 * Resolves the display size for a requested width and/or height.
+	 *
+	 * Both requested: used as is. Only one requested: the other follows the
+	 * video's own aspect ratio, rather than pairing the requested value with
+	 * the video's unscaled native size (which gives a distorted size such as
+	 * 640x2304 for a 16:9 video). Neither: the video's own display size.
+	 * A zero in the result means it couldn't be determined from the video, so
+	 * the caller should apply its own default.
+	 *
+	 * @param int $requested_width  Explicitly requested width, or 0.
+	 * @param int $requested_height Explicitly requested height, or 0.
+	 * @return array{width: int, height: int} The resolved size, 0 where unknown.
+	 */
+	public function resolve_display_dimensions( int $requested_width = 0, int $requested_height = 0 ): array {
+		$native_width  = $this->get_display_width();
+		$native_height = $this->get_display_height();
+		$known         = $native_width > 0 && $native_height > 0;
+
+		if ( $requested_width > 0 && $requested_height > 0 ) {
+			return array(
+				'width'  => $requested_width,
+				'height' => $requested_height,
+			);
+		}
+		if ( $requested_width > 0 ) {
+			return array(
+				'width'  => $requested_width,
+				'height' => $known ? (int) round( $requested_width * $native_height / $native_width ) : 0,
+			);
+		}
+		if ( $requested_height > 0 ) {
+			return array(
+				'width'  => $known ? (int) round( $requested_height * $native_width / $native_height ) : 0,
+				'height' => $requested_height,
+			);
+		}
+
+		return array(
+			'width'  => $native_width,
+			'height' => $native_height,
+		);
+	}
+
+	/**
 	 * Sets the video aspect ratio.
 	 */
 	protected function set_aspect_ratio(): void {

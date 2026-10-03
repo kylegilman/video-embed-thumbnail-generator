@@ -190,13 +190,20 @@ export function setupVideo( playerWrapper, videoVars ) {
 		);
 	}
 
-	if ( 'vertical' === videoVars.fixed_aspect ) {
+	// "All" frames every video in the default ratio; "vertical" only portrait ones.
+	const forceDefaultRatio =
+		'true' === videoVars.fixed_aspect || true === videoVars.fixed_aspect;
+
+	if ( 'vertical' === videoVars.fixed_aspect || forceDefaultRatio ) {
 		const videoElement = playerWrapper.querySelector( 'video' );
 		if ( videoElement ) {
 			const checkVertical = () => {
 				let isVertical = false;
 
-				if (
+				if ( forceDefaultRatio ) {
+					// "All" doesn't depend on orientation, so don't wait for metadata.
+					isVertical = true;
+				} else if (
 					videoElement.videoWidth > 0 &&
 					videoElement.videoHeight > 0
 				) {

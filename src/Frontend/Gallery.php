@@ -399,14 +399,16 @@ class Gallery {
 		$width  = (int) ( $final_atts['width'] ?? 0 );
 		$height = (int) ( $final_atts['height'] ?? 0 );
 
-		// If no dimensions were requested, use the specific attachment dimensions if available.
-		// An explicit value, even one equal to the global default, is kept because the
-		// attributes reaching here no longer carry a pre-filled default.
-		if ( empty( $width ) && (int) $source->get_width() > 0 ) {
-			$width = (int) $source->get_width();
+		// Fill in whichever dimension wasn't requested from the video itself, keeping
+		// its aspect ratio if the other one was. An explicit value, even one equal to
+		// the global default, is kept because the attributes reaching here no longer
+		// carry a pre-filled default.
+		$resolved = $source->resolve_display_dimensions( max( 0, $width ), max( 0, $height ) );
+		if ( empty( $width ) && $resolved['width'] > 0 ) {
+			$width = $resolved['width'];
 		}
-		if ( empty( $height ) && (int) $source->get_height() > 0 ) {
-			$height = (int) $source->get_height();
+		if ( empty( $height ) && $resolved['height'] > 0 ) {
+			$height = $resolved['height'];
 		}
 
 		$data = array(

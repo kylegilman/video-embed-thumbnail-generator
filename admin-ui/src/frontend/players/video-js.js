@@ -206,9 +206,14 @@ export function setupVideoJSPlayer( playerWrapper, videoVars ) {
 			}
 		}
 
+		// "All" frames every video in the default ratio; "vertical" only portrait ones.
+		const forceDefaultRatio =
+			'true' === videoVars.fixed_aspect ||
+			true === videoVars.fixed_aspect;
 		if (
-			'vertical' === videoVars.fixed_aspect &&
-			player.videoHeight() > player.videoWidth()
+			forceDefaultRatio ||
+			( 'vertical' === videoVars.fixed_aspect &&
+				player.videoHeight() > player.videoWidth() )
 		) {
 			const ratio = videoVars.default_ratio
 				? videoVars.default_ratio.replace( /\s\/\s/g, ':' )
