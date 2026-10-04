@@ -10,6 +10,7 @@
 
 use Videopack\Frontend\Gallery;
 use Videopack\Frontend\Modular_Renderer;
+use Videopack\Frontend\Shortcode;
 use Videopack\Admin\Formats\Registry;
 
 class GalleryTest extends WP_UnitTestCase {
@@ -336,6 +337,166 @@ class GalleryTest extends WP_UnitTestCase {
 		$this->assertSame( $parent, $gallery->video_to_post_mapping[ $video ] );
 	}
 
+	// -----------------------------------------------------------------
+	// get_gallery_videos() -- pagination off shows everything unless a
+	// video limit is set.
+	//
+	// These resolve their attributes through Shortcode::atts() first, the
+	// way the shortcode and REST paths do: atts() always fills
+	// gallery_per_page from the options (6 by default), which is exactly
+	// what used to cap a gallery with pagination off.
+	// -----------------------------------------------------------------
+
+	protected function resolved_atts( array $atts ): array {
+		$options = $this->options();
+		return ( new Shortcode( $options, new Registry( $options ) ) )->atts(
+			array_merge(
+				array(
+					'gallery'         => 'true',
+					'gallery_source'  => 'all',
+					'gallery_orderby' => 'menu_order',
+				),
+				$atts
+			)
+		);
+	}
+
+	protected function make_videos( int $count ): array {
+		$ids = array();
+		for ( $i = 0; $i < $count; $i++ ) {
+			$ids[] = $this->video( array( 'menu_order' => $i ) );
+		}
+		return $ids;
+	}
+
+	public function test_pagination_off_shows_every_video_even_beyond_the_default_per_page(): void {
+		$ids = $this->make_videos( 8 ); // The default gallery_per_page is 6.
+
+		$query = $this->gallery()->get_gallery_videos( 1, $this->resolved_atts( array( 'gallery_pagination' => 'false' ) ) );
+
+		$this->assertSame( $ids, $this->ids( $query ) );
+	}
+
+	public function test_pagination_off_ignores_an_explicit_per_page(): void {
+		$ids = $this->make_videos( 5 );
+
+		$query = $this->gallery()->get_gallery_videos( 1, $this->resolved_atts( array( 'gallery_pagination' => 'false', 'gallery_per_page' => '2' ) ) );
+
+		$this->assertSame( $ids, $this->ids( $query ) );
+	}
+
+	public function test_pagination_off_applies_the_shortcode_videos_limit(): void {
+		$ids = $this->make_videos( 8 );
+
+		$query = $this->gallery()->get_gallery_videos( 1, $this->resolved_atts( array( 'gallery_pagination' => 'false', 'videos' => '3' ) ) );
+
+		$this->assertSame( array_slice( $ids, 0, 3 ), $this->ids( $query ) );
+	}
+
+	public function test_pagination_off_applies_an_enabled_collection_video_limit(): void {
+		$ids = $this->make_videos( 8 );
+		$atts = array(
+			'gallery_pagination'            => 'false',
+			'enable_collection_video_limit' => 'true',
+			'collection_video_limit'        => '4',
+		);
+
+		$query = $this->gallery()->get_gallery_videos( 1, $this->resolved_atts( $atts ) );
+
+		$this->assertSame( array_slice( $ids, 0, 4 ), $this->ids( $query ) );
+	}
+
+	public function test_pagination_off_ignores_a_collection_video_limit_whose_toggle_is_off(): void {
+		$ids = $this->make_videos( 8 );
+		$atts = array(
+			'gallery_pagination'            => 'false',
+			'enable_collection_video_limit' => 'false',
+			'collection_video_limit'        => '4',
+		);
+
+		$query = $this->gallery()->get_gallery_videos( 1, $this->resolved_atts( $atts ) );
+
+		$this->assertSame( $ids, $this->ids( $query ) );
+	}
+
+	/**
+	 * What an editor-authored Collection block hands over: the toggle and its
+	 * number, with `videos` being an array of preview data rather than a count.
+	 */
+	public function test_pagination_off_for_a_block_uses_the_toggle_not_the_preview_videos_array(): void {
+		$ids = $this->make_videos( 6 );
+
+		$limited   = $this->gallery()->get_gallery_videos(
+			1,
+			array(
+				'gallery_source'                => 'all',
+				'gallery_orderby'               => 'menu_order',
+				'gallery_order'                 => 'asc',
+				'gallery_pagination'            => false,
+				'gallery_per_page'              => 2,
+				'enable_collection_video_limit' => true,
+				'collection_video_limit'        => 3,
+				'videos'                        => array( array( 'id' => 1 ) ),
+			)
+		);
+		$unlimited = $this->gallery()->get_gallery_videos(
+			1,
+			array(
+				'gallery_source'     => 'all',
+				'gallery_orderby'    => 'menu_order',
+				'gallery_order'      => 'asc',
+				'gallery_pagination' => false,
+				'gallery_per_page'   => 2,
+				'videos'             => array( array( 'id' => 1 ) ),
+			)
+		);
+
+		$this->assertSame( array_slice( $ids, 0, 3 ), $this->ids( $limited ) );
+		$this->assertSame( $ids, $this->ids( $unlimited ) );
+	}
+
+	public function test_pagination_on_still_uses_per_page(): void {
+		$ids = $this->make_videos( 8 );
+
+		$page1 = $this->gallery()->get_gallery_videos( 1, $this->resolved_atts( array( 'gallery_pagination' => 'true', 'gallery_per_page' => '3' ) ) );
+
+		$this->assertSame( array_slice( $ids, 0, 3 ), $this->ids( $page1 ) );
+		$this->assertSame( 3, (int) $page1->max_num_pages );
+	}
+
+	public function test_pagination_off_applies_the_limit_to_an_include_list(): void {
+		$ids = $this->make_videos( 5 );
+
+		$query = $this->gallery()->get_gallery_videos(
+			1,
+			$this->resolved_atts(
+				array(
+					'gallery_pagination' => 'false',
+					'videos'             => '2',
+					'gallery_include'    => implode( ',', array_reverse( $ids ) ),
+				)
+			)
+		);
+
+		$this->assertSame( array( $ids[4], $ids[3] ), $this->ids( $query ), 'the first N of the include list, in its own order' );
+	}
+
+	public function test_a_raw_false_string_for_pagination_is_treated_as_off(): void {
+		$ids = $this->make_videos( 4 );
+
+		$query = $this->gallery()->get_gallery_videos(
+			1,
+			array(
+				'gallery_source'     => 'all',
+				'gallery_orderby'    => 'menu_order',
+				'gallery_order'      => 'asc',
+				'gallery_pagination' => 'false',
+				'videos'             => 2,
+			)
+		);
+
+		$this->assertSame( array_slice( $ids, 0, 2 ), $this->ids( $query ), 'a bare (bool) cast would read "false" as true and ignore the limit' );
+	}
 	// -----------------------------------------------------------------
 	// render_pagination_html()
 	// -----------------------------------------------------------------

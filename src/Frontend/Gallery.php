@@ -82,10 +82,12 @@ class Gallery {
 		if ( (string) ( $query_atts['gallery_orderby'] ?? '' ) === 'menu_order' ) {
 			$query_atts['gallery_orderby'] = 'menu_order ID';
 		}
-		if ( (bool) ( $query_atts['gallery_pagination'] ?? ( $this->options['gallery_pagination'] ?? false ) ) !== true ) {
-			if ( ! isset( $query_atts['gallery_per_page'] ) || -1 === (int) $query_atts['gallery_per_page'] ) {
-				$query_atts['gallery_per_page'] = (int) ( $query_atts['collection_video_limit'] ?? ( $query_atts['videos'] ?? -1 ) );
-			}
+		$pagination_enabled = $this->is_enabled_flag( $query_atts['gallery_pagination'] ?? ( $this->options['gallery_pagination'] ?? false ) );
+		if ( ! $pagination_enabled ) {
+			// With no pagination there are no further pages, so gallery_per_page
+			// doesn't apply -- honoring it would silently hide every video
+			// beyond it. Show everything unless a video limit is set.
+			$query_atts['gallery_per_page'] = $this->get_video_limit( $query_atts );
 		} elseif ( (string) ( $query_atts['gallery_per_page'] ?? '' ) === 'false' ) {
 			$query_atts['gallery_per_page'] = -1;
 		}
@@ -270,27 +272,16 @@ class Gallery {
 			if ( ! empty( $include_arr ) ) {
 				$gallery_per_page = (int) ( $query_atts['gallery_per_page'] ?? -1 );
 
-				// Ensure string 'false' from REST is evaluated as boolean false.
-				$gallery_pagination = $query_atts['gallery_pagination'] ?? true;
-				if ( is_string( $gallery_pagination ) && 'false' === strtolower( trim( $gallery_pagination ) ) ) {
-					$gallery_pagination = false;
-				} else {
-					$gallery_pagination = filter_var( $gallery_pagination, FILTER_VALIDATE_BOOLEAN );
-				}
-				$bypass_pagination = false === $gallery_pagination;
-
-				if ( ! $bypass_pagination && $gallery_per_page > 0 && count( (array) $include_arr ) > $gallery_per_page ) {
+				if ( ! $pagination_enabled ) {
+					// gallery_per_page already holds the video limit here, or -1
+					// for none, so show every included ID unless one is set.
+					$args['post__in'] = (array) ( $gallery_per_page > 0 ? array_slice( (array) $include_arr, 0, $gallery_per_page ) : $include_arr );
+				} elseif ( $gallery_per_page > 0 && count( (array) $include_arr ) > $gallery_per_page ) {
 					$total_pages      = (int) ceil( count( (array) $include_arr ) / $gallery_per_page );
 					$offset           = (int) ( ( (int) $page_number - 1 ) * $gallery_per_page );
 					$args['post__in'] = (array) array_slice( (array) $include_arr, $offset, $gallery_per_page );
 				} else {
 					$args['post__in'] = (array) $include_arr;
-
-					// Pagination is off: show every included ID rather than
-					// letting a leftover per-page value cap the list.
-					if ( $bypass_pagination ) {
-						$args['posts_per_page'] = -1;
-					}
 				}
 				unset( $args['paged'] );
 				if ( (string) $args['orderby'] === 'menu_order ID' || (string) $args['orderby'] === 'include' ) {
@@ -335,6 +326,41 @@ class Gallery {
 	}
 
 
+
+	/**
+	 * Interprets a boolean-ish flag, treating the string "false" (as REST and
+	 * shortcode values can arrive) as off rather than as a non-empty string.
+	 *
+	 * @param mixed $value The raw value.
+	 * @return bool Whether the flag is on.
+	 */
+	private function is_enabled_flag( $value ): bool {
+		if ( is_string( $value ) && 'false' === strtolower( trim( $value ) ) ) {
+			return false;
+		}
+		return filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+	}
+
+	/**
+	 * Resolves the maximum number of videos to show when pagination is off.
+	 *
+	 * Mirrors the block editor: an enabled limit toggle names its number in
+	 * collection_video_limit. Otherwise a shortcode's limit is whatever
+	 * Shortcode::atts() resolved into `videos` (-1 meaning none). `videos` is
+	 * an array of preview data in the block editor, so only a number counts.
+	 *
+	 * @param array $query_atts The gallery query attributes.
+	 * @return int The limit, or -1 for no limit.
+	 */
+	private function get_video_limit( array $query_atts ): int {
+		if ( $this->is_enabled_flag( $query_atts['enable_collection_video_limit'] ?? false ) ) {
+			$limit = $query_atts['collection_video_limit'] ?? -1;
+		} else {
+			$limit = $query_atts['videos'] ?? -1;
+		}
+
+		return ( is_numeric( $limit ) && (int) $limit > 0 ) ? (int) $limit : -1;
+	}
 
 	/**
 	 * Prepares video data for frontend JavaScript.
