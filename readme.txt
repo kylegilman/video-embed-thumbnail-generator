@@ -106,7 +106,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 == Changelog ==
 
 = 4.10.7 - October 12, 2026 =
-Updated Freemius SDK and Symfony
+* Updated Freemius SDK and Symfony
 
 = 4.10.6 - August 23, 2026 =
 * Security fix: restricted the kgvid_count_play AJAX handler to a play-counter allowlist to prevent unauthenticated overwriting of attachment metadata.
