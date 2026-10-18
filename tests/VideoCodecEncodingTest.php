@@ -17,6 +17,7 @@ use Videopack\Admin\Formats\Codecs\Video_Codec;
 use Videopack\Admin\Formats\Codecs\Video_Codec_AV1;
 use Videopack\Admin\Formats\Codecs\Video_Codec_H264;
 use Videopack\Admin\Formats\Codecs\Video_Codec_H265;
+use Videopack\Admin\Formats\Codecs\Video_Codec_VP8;
 use Videopack\Admin\Formats\Codecs\Video_Codec_VP9;
 
 class VideoCodecEncodingTest extends WP_UnitTestCase {
@@ -274,6 +275,36 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 			$vp9,
 			'a WebM output has no mp4-only flags'
 		);
+	}
+
+	/**
+	 * libvpx ignores -crf without -b:v (verified: CRF 4 and 30 gave identical
+	 * output on FFmpeg 5.1.2 and 8.0.1), so VP8 must always send a ceiling.
+	 * 1280x720: 18.9 * 0.0001 * 921600 + 469 = 2210.8 -> 2211.
+	 */
+	public function test_vp8_crf_flags_include_a_bitrate_ceiling(): void {
+		$options = array(
+			'rate_control' => 'crf',
+			'encode'       => array( 'vp8' => array( 'crf' => 12 ) ),
+		);
+
+		$flags = ( new Video_Codec_VP8() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'libvorbis' => true ) );
+
+		$this->assertSame(
+			array( '-acodec', 'libvorbis', '-vcodec', 'libvpx', '-crf', 12, '-b:v', '2211k', '-s', '1280x720' ),
+			$flags
+		);
+	}
+
+	public function test_vp8_crf_ceiling_is_independent_of_the_vbr_setting(): void {
+		$options = array(
+			'rate_control' => 'crf',
+			'encode'       => array( 'vp8' => array( 'crf' => 12, 'vbr' => 1 ) ),
+		);
+
+		$flags = ( new Video_Codec_VP8() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'libvorbis' => true ) );
+
+		$this->assertSame( '2211k', $flags[ array_search( '-b:v', $flags, true ) + 1 ] );
 	}
 
 	public function test_flags_use_the_available_audio_and_video_encoders(): void {

@@ -52,4 +52,30 @@ class Video_Codec_VP8 extends Video_Codec {
 	public function get_cmaf_codec_string() {
 		return 'vp08.00.10.08,mp4a.40.2';
 	}
+
+	/**
+	 * Returns CRF flags with the bitrate ceiling libvpx requires.
+	 *
+	 * The libvpx VP8 encoder ignores -crf unless -b:v is also given: without it every
+	 * CRF value produces byte-identical output. With it, -crf sets the quality
+	 * and -b:v acts as the maximum bitrate. The ceiling is the codec's default
+	 * bitrate for the output size, which is high enough not to constrain the
+	 * quality the CRF asks for at normal settings.
+	 *
+	 * @param array      $plugin_options The global plugin options.
+	 * @param array|null $dimensions     Optional. Associative array with 'width' and 'height'.
+	 * @return array An array of FFmpeg flags.
+	 */
+	protected function get_ffmpeg_crf_flags( array $plugin_options, array $dimensions = null ) {
+		$dimensions = $dimensions ?? array(
+			'width'  => 1920,
+			'height' => 1080,
+		);
+
+		$flags   = parent::get_ffmpeg_crf_flags( $plugin_options, $dimensions );
+		$flags[] = '-b:v';
+		$flags[] = max( 100, $this->get_bitrate( $dimensions ) ) . 'k';
+
+		return $flags;
+	}
 }

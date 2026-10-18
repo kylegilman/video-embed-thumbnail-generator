@@ -394,10 +394,11 @@ class Video_Codec {
 	/**
 	 * Get FFmpeg CRF flags for this codec.
 	 *
-	 * @param array $plugin_options The global plugin options.
+	 * @param array      $plugin_options The global plugin options.
+	 * @param array|null $dimensions     Optional. Associative array with 'width' and 'height'.
 	 * @return array An array of FFmpeg flags.
 	 */
-	protected function get_ffmpeg_crf_flags( array $plugin_options ) {
+	protected function get_ffmpeg_crf_flags( array $plugin_options, array $dimensions = null ) {
 			$crf_flags   = array();
 			$crf_flags[] = '-crf';
 			$crf_flags[] = $plugin_options['encode'][ $this->id ]['crf'];
@@ -428,7 +429,7 @@ class Video_Codec {
 	protected function get_ffmpeg_rate_control_flags( array $plugin_options, array $dimensions = null ) {
 		$rate_control = $plugin_options['encode'][ $this->id ]['rate_control'] ?? $plugin_options['rate_control'];
 		if ( 'crf' === $rate_control ) {
-			return $this->get_ffmpeg_crf_flags( $plugin_options );
+			return $this->get_ffmpeg_crf_flags( $plugin_options, $dimensions );
 		} elseif ( 'vbr' === $rate_control ) {
 			return $this->get_ffmpeg_vbr_flags( $plugin_options, $dimensions );
 		}
