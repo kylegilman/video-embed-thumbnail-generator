@@ -10,6 +10,7 @@ const fs = require('fs');
 const PLUGIN_PATH = 'wp-content/plugins/video-embed-thumbnail-generator';
 
 const METHOD_FILE = path.join(__dirname, '.embed-method');
+const FFMPEG_STATUS_FILE = path.join(__dirname, '.ffmpeg-status');
 
 /**
  * Switches the site's global embed_method option via WP-CLI, so a spec file
@@ -80,6 +81,26 @@ function prepareQualityFixture() {
 }
 
 /**
+ * Reports FFmpeg as available or unavailable in the plugin's settings, so a
+ * spec can check how the settings screen behaves in each state. The target is
+ * written to a file rather than passed as an argument, for the same
+ * shell-quoting reasons as setEmbedMethod().
+ *
+ * @param {'available'|'unavailable'} status The ffmpeg_exists value to store.
+ */
+function setFfmpegStatus(status) {
+	fs.writeFileSync(FFMPEG_STATUS_FILE, status, 'utf8');
+	execFileSync(
+		'npx',
+		[
+			'wp-env', 'run', 'cli',
+			'wp', 'eval-file', `${PLUGIN_PATH}/tests/e2e/set-ffmpeg-status.php`,
+		],
+		{ stdio: 'inherit', shell: true }
+	);
+}
+
+/**
  * Logs in to the wp-env site's admin. The credentials are the wp-env defaults
  * documented in tests/e2e/README.md for this disposable local site.
  *
@@ -95,4 +116,4 @@ async function loginAsAdmin(page) {
 	]);
 }
 
-module.exports = { setEmbedMethod, setPluginActive, prepareQualityFixture, loginAsAdmin };
+module.exports = { setEmbedMethod, setPluginActive, setFfmpegStatus, prepareQualityFixture, loginAsAdmin };

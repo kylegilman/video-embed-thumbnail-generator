@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { prepareQualityFixture, loginAsAdmin } = require('./helpers');
+const { prepareQualityFixture, setFfmpegStatus, loginAsAdmin } = require('./helpers');
 
 const SETTINGS_URL = '/wp-admin/options-general.php?page=video_embed_thumbnail_generator_settings';
 
@@ -20,7 +20,7 @@ async function expand(header) {
  * Opens the H.264 section of Settings > Videopack > Encoding > Video quality
  * and switches it to ABR, so the quality slider and bitrate preview show.
  */
-async function openH264Abr(page) {
+async function openH264Quality(page) {
 	await loginAsAdmin(page);
 	await page.goto(SETTINGS_URL);
 
@@ -34,6 +34,10 @@ async function openH264Abr(page) {
 	await page.getByRole('tab', { name: 'Encoding' }).click();
 	await expand(page.getByRole('button', { name: 'Video quality' }));
 	await expand(page.getByRole('button', { name: /^H\.264/ }));
+}
+
+async function openH264Abr(page) {
+	await openH264Quality(page);
 	await page.getByLabel('Average Bitrate (ABR)').check();
 }
 
@@ -70,5 +74,17 @@ test.describe('Settings: ABR quality slider and bitrate preview', () => {
 
 		// Quality scales the bitrate linearly: 1352.8 * 2 at 720p.
 		await expect(page.locator('.videopack-bitrate-grid')).toContainText('720p = 2706 kbps');
+	});
+
+	test('disables the rate control radios and the quality slider when no encoder is available', async ({ page }) => {
+		setFfmpegStatus('unavailable');
+		try {
+			await openH264Quality(page);
+
+			await expect(page.getByLabel('Average Bitrate (ABR)')).toBeDisabled();
+			await expect(page.getByLabel('Constant Rate Factor (CRF)')).toBeDisabled();
+		} finally {
+			setFfmpegStatus('available');
+		}
 	});
 });
