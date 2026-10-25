@@ -549,6 +549,10 @@ const PerCodecQualitySettings = ( {
 							onChange={ changeHandlerFactory.h265_level }
 							options={ h265LevelOptions }
 							disabled={ effectiveFfmpegExists !== true }
+							help={ __(
+								'The lowest level to declare. Videopack raises it automatically for videos too large or fast for it, which the encoder would otherwise refuse to encode.',
+								'video-embed-thumbnail-generator'
+							) }
 						/>
 					</div>
 				</>
