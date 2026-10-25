@@ -34,8 +34,9 @@ class Video_Codec_VP8 extends Video_Codec {
 					'default' => 10,
 				),
 				'vbr' => array(
-					'default'  => 18.9,
-					'constant' => 469,
+					'default'     => 1.0,
+					'coefficient' => 0.004404,
+					'exponent'    => 0.92,
 				),
 			),
 			'default_encode' => false,
@@ -58,9 +59,9 @@ class Video_Codec_VP8 extends Video_Codec {
 	 *
 	 * The libvpx VP8 encoder ignores -crf unless -b:v is also given: without it every
 	 * CRF value produces byte-identical output. With it, -crf sets the quality
-	 * and -b:v acts as the maximum bitrate. The ceiling is the codec's default
-	 * bitrate for the output size, which is high enough not to constrain the
-	 * quality the CRF asks for at normal settings.
+	 * and -b:v acts as the maximum bitrate. The ceiling is three times the
+	 * codec's default bitrate for the output size, so it stays out of the way of
+	 * the quality the CRF asks for and only stops a runaway.
 	 *
 	 * @param array      $plugin_options The global plugin options.
 	 * @param array|null $dimensions     Optional. Associative array with 'width' and 'height'.
@@ -74,7 +75,7 @@ class Video_Codec_VP8 extends Video_Codec {
 
 		$flags   = parent::get_ffmpeg_crf_flags( $plugin_options, $dimensions );
 		$flags[] = '-b:v';
-		$flags[] = max( 100, $this->get_bitrate( $dimensions ) ) . 'k';
+		$flags[] = round( $this->get_bitrate( $dimensions ) * 3 ) . 'k';
 
 		return $flags;
 	}

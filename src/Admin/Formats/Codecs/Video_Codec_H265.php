@@ -34,8 +34,9 @@ class Video_Codec_H265 extends Video_Codec {
 					'default' => 28,
 				),
 				'vbr' => array(
-					'default'  => 10.4,
-					'constant' => 258,
+					'default'     => 1.0,
+					'coefficient' => 0.027695,
+					'exponent'    => 0.744,
 				),
 			),
 			'default_encode' => false,

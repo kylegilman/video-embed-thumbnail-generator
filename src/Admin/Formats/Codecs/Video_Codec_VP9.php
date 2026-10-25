@@ -34,8 +34,9 @@ class Video_Codec_VP9 extends Video_Codec {
 					'default' => 31,
 				),
 				'vbr' => array(
-					'default'  => 14.7,
-					'constant' => -121.63,
+					'default'     => 1.0,
+					'coefficient' => 0.033981,
+					'exponent'    => 0.734,
 				),
 			),
 			'default_encode' => false,
@@ -52,7 +53,7 @@ class Video_Codec_VP9 extends Video_Codec {
 	 * @return array An array of FFmpeg flags.
 	 */
 	protected function get_ffmpeg_vbr_flags( $plugin_options, array $dimensions ) {
-		$average_bitrate = max( 100, $this->get_bitrate( $dimensions, $plugin_options['encode'][ $this->id ]['vbr'] ) );
+		$average_bitrate = $this->get_bitrate( $dimensions, $plugin_options['encode'][ $this->id ]['vbr'] );
 
 		$vbr_flags   = array();
 		$vbr_flags[] = '-b:v';

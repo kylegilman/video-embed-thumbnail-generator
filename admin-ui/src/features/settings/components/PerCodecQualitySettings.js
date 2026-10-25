@@ -17,6 +17,7 @@ import {
 } from '@wordpress/element';
 import VideopackTooltip from './VideopackTooltip';
 import { getEffectiveFfmpegExists } from '../../../utils/ffmpegCapability';
+import { calculateBitrate } from '../../../utils/bitrate';
 
 const PerCodecQualitySettings = ( {
 	codec,
@@ -150,54 +151,46 @@ const PerCodecQualitySettings = ( {
 			}
 
 			if ( type === 'vbr' ) {
+				const defaultQuality = rateControl.default ?? 1;
 				const marks = [
 					{
-						value: 0.1,
+						value: 0.25,
 						label: __(
-							'0.1: lower quality',
+							'0.25: lower quality',
 							'video-embed-thumbnail-generator'
 						),
 					},
 					{
-						value: 50,
+						value: 3,
 						label: __(
-							'50: higher quality',
+							'3: higher quality',
 							'video-embed-thumbnail-generator'
 						),
 					},
 				];
 
-				if ( rateControl.default ) {
-					const existingMark = marks.find(
-						( m ) => m.value === rateControl.default
-					);
-					const defaultLabel = sprintf(
-						/* translators: %s: VBR value. */
-						__( '%s: default', 'video-embed-thumbnail-generator' ),
-						rateControl.default
-					);
-
-					if ( existingMark ) {
-						existingMark.label = defaultLabel;
-					} else {
-						marks.push( {
-							value: rateControl.default,
-							label: defaultLabel,
-						} );
-					}
+				const defaultLabel = sprintf(
+					/* translators: %s: quality multiplier. */
+					__( '%s: default', 'video-embed-thumbnail-generator' ),
+					defaultQuality
+				);
+				const existingMark = marks.find(
+					( m ) => m.value === defaultQuality
+				);
+				if ( existingMark ) {
+					existingMark.label = defaultLabel;
+				} else {
+					marks.push( {
+						value: defaultQuality,
+						label: defaultLabel,
+					} );
 				}
 
-				for ( let i = 5; i < 50; i += 5 ) {
-					if ( marks.find( ( m ) => m.value === i ) ) {
-						continue;
+				[ 0.5, 2 ].forEach( ( value ) => {
+					if ( ! marks.find( ( m ) => m.value === value ) ) {
+						marks.push( { value, label: String( value ) } );
 					}
-					if ( rateControl.default ) {
-						if ( Math.abs( i - rateControl.default ) <= 2 ) {
-							continue;
-						}
-					}
-					marks.push( { value: i, label: String( i ) } );
-				}
+				} );
 
 				marks.sort( ( a, b ) => a.value - b.value );
 				return marks;
@@ -286,9 +279,11 @@ const PerCodecQualitySettings = ( {
 		'videopack.settings.qualityScale',
 		{
 			min:
-				currentRateControl === 'crf' ? codec.rate_control.crf.min : 0.1,
-			max: currentRateControl === 'crf' ? codec.rate_control.crf.max : 50,
-			step: currentRateControl === 'crf' ? 1 : 0.5,
+				currentRateControl === 'crf'
+					? codec.rate_control.crf.min
+					: 0.25,
+			max: currentRateControl === 'crf' ? codec.rate_control.crf.max : 3,
+			step: currentRateControl === 'crf' ? 1 : 0.05,
 			marks: marks || generateMarks( currentRateControl ),
 		},
 		{ codec, active_encoder, rateControl: currentRateControl }
@@ -360,8 +355,11 @@ const PerCodecQualitySettings = ( {
 			}
 
 			if ( width && height ) {
-				const bitrate = Math.round(
-					localVbr * 0.0001 * width * height + vbrSettings.constant
+				const bitrate = calculateBitrate(
+					vbrSettings,
+					width,
+					height,
+					localVbr
 				);
 				newBitrates.push( {
 					label: `${ height }`,
@@ -465,14 +463,27 @@ const PerCodecQualitySettings = ( {
 					marks={ qualityScale.marks }
 					disabled={ effectiveFfmpegExists !== true }
 					help={
-						<span className="videopack-bitrate-grid">
-							{ bitrates.map( ( item, index ) => (
-								<span key={ index }>
-									{ item.label }p ={ ' ' }
-									<strong>{ item.value }</strong> kbps
-								</span>
-							) ) }
-						</span>
+						<>
+							<span className="videopack-bitrate-grid">
+								{ bitrates.map( ( item, index ) => (
+									<span key={ index }>
+										{ item.label }p ={ ' ' }
+										<strong>{ item.value }</strong> kbps
+									</span>
+								) ) }
+							</span>
+							<span className="videopack-bitrate-note">
+								{ sprintf(
+									/* translators: 1: frame rate, 2: multiplier such as 1.5. */
+									__(
+										'For video at %1$s fps or faster, bitrates are multiplied by %2$s.',
+										'video-embed-thumbnail-generator'
+									),
+									codec.rate_control.vbr.high_fps,
+									codec.rate_control.vbr.high_fps_factor
+								) }
+							</span>
+						</>
 					}
 				/>
 			) }

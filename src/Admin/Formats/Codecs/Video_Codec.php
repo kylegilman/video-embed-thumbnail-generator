@@ -11,6 +11,24 @@ namespace Videopack\Admin\Formats\Codecs;
  * Base class for a video codec.
  */
 class Video_Codec {
+
+	/**
+	 * Lowest ABR bitrate (kbps) the formula will return. A sanity guard for extreme
+	 * quality settings or tiny sizes, not part of the codec's efficiency curve.
+	 */
+	const MIN_BITRATE = 50;
+
+	/**
+	 * Source frame rate (fps) at and above which ABR bitrates are scaled up.
+	 */
+	const HIGH_FPS = 48;
+
+	/**
+	 * Multiplier for sources at HIGH_FPS or above. YouTube and Google's VP9 VOD
+	 * guidance both put 48-60 fps at roughly 1.5x the bitrate of 24-30 fps.
+	 */
+	const HIGH_FPS_FACTOR = 1.5;
+
 	/**
 	 * Codec name.
 	 *
@@ -125,25 +143,36 @@ class Video_Codec {
 	 * @param array $properties Associative array of codec properties and values.
 	 */
 	public function __construct( array $properties ) {
-		$this->name                    = $properties['name'] ?? 'Video';
-		$this->label                   = $properties['label'] ?? 'Video';
-		$this->id                      = $properties['id'] ?? 'h264';
-		$this->container               = $properties['container'] ?? 'mp4';
-		$this->mime_type               = $properties['mime'] ?? 'video/mp4';
-		$this->codecs_att              = $properties['codecs_att'] ?? 'avc1';
-		$this->efficiency              = $properties['efficiency'] ?? 0;
-		$this->vcodec                  = $properties['vcodec'] ?? 'libx264';
-		$this->acodec                  = $properties['acodec'] ?? 'aac';
-		$this->rate_control            = $properties['rate_control'] ?? array(
+		$this->name         = $properties['name'] ?? 'Video';
+		$this->label        = $properties['label'] ?? 'Video';
+		$this->id           = $properties['id'] ?? 'h264';
+		$this->container    = $properties['container'] ?? 'mp4';
+		$this->mime_type    = $properties['mime'] ?? 'video/mp4';
+		$this->codecs_att   = $properties['codecs_att'] ?? 'avc1';
+		$this->efficiency   = $properties['efficiency'] ?? 0;
+		$this->vcodec       = $properties['vcodec'] ?? 'libx264';
+		$this->acodec       = $properties['acodec'] ?? 'aac';
+		$this->rate_control = $properties['rate_control'] ?? array(
 			'crf' => array(
 				'min'     => 0,
 				'max'     => 51,
 				'default' => 23,
 			),
 			'vbr' => array(
-				'default'  => 10.0,
-				'constant' => 0,
+				'default'     => 1.0,
+				'coefficient' => 0.004404,
+				'exponent'    => 0.92,
 			),
+		);
+
+		// The ABR bitrate for a given size is coefficient * pixels^exponent, scaled by
+		// the quality setting ('default' is 1.0) and by frame rate. These tuning values
+		// are sent to the settings screen with the rest of rate_control so its preview
+		// is calculated from the same numbers.
+		$this->rate_control['vbr']    += array(
+			'min_bitrate'     => self::MIN_BITRATE,
+			'high_fps'        => self::HIGH_FPS,
+			'high_fps_factor' => self::HIGH_FPS_FACTOR,
 		);
 		$this->supported_rate_controls = $properties['supported_rate_controls'] ?? array( 'crf', 'vbr' );
 		$this->default_encode          = $properties['default_encode'] ?? false;
@@ -349,9 +378,9 @@ class Video_Codec {
 	}
 
 	/**
-	 * Get the default VBR value.
+	 * Get the default ABR quality multiplier.
 	 *
-	 * @return float Rate control settings.
+	 * @return float The multiplier applied to the codec's baseline bitrate (1.0 is the default quality).
 	 */
 	public function get_default_vbr() {
 		return $this->rate_control['vbr']['default'];
@@ -376,18 +405,27 @@ class Video_Codec {
 	}
 
 	/**
-	 * Calculates and returns the bitrate based on width and height.
+	 * Calculates the ABR bitrate for a video size.
 	 *
-	 * @param array $dimensions    Associative array with 'width' and 'height'.
-	 * @param float $rate_control  Optional. The rate control value.
-	 * @return float The calculated bitrate.
+	 * The baseline is coefficient * pixels^exponent, fitted per codec to the bitrate
+	 * that holds roughly VMAF 90-93 on typical content, so each codec follows its
+	 * own efficiency curve. It is multiplied by the quality setting, and by
+	 * HIGH_FPS_FACTOR for sources at HIGH_FPS or above (48-60 fps needs about 1.5x
+	 * the bits of 24-30 fps). The result never drops below MIN_BITRATE.
+	 *
+	 * @param array      $dimensions Associative array with 'width' and 'height', and optionally the source's 'frame_rate'.
+	 * @param float|null $quality    Optional. The quality multiplier; the codec's default (1.0) when omitted.
+	 * @return float The bitrate in kbps.
 	 */
-	public function get_bitrate( array $dimensions, $rate_control = null ) {
-		return round(
-			( ( $rate_control ?? $this->rate_control['vbr']['default'] )
-			* 0.0001
-			* $dimensions['width'] * $dimensions['height'] )
-			+ $this->rate_control['vbr']['constant']
+	public function get_bitrate( array $dimensions, $quality = null ) {
+		$vbr       = $this->rate_control['vbr'];
+		$quality   = (float) ( $quality ?? $vbr['default'] );
+		$pixels    = (float) $dimensions['width'] * (float) $dimensions['height'];
+		$frame_fix = ( (float) ( $dimensions['frame_rate'] ?? 0 ) >= $vbr['high_fps'] ) ? $vbr['high_fps_factor'] : 1.0;
+
+		return (float) max(
+			$vbr['min_bitrate'],
+			round( $vbr['coefficient'] * pow( $pixels, $vbr['exponent'] ) * $frame_fix * $quality )
 		);
 	}
 
@@ -415,7 +453,7 @@ class Video_Codec {
 	protected function get_ffmpeg_vbr_flags( $plugin_options, array $dimensions ) {
 			$vbr_flags   = array();
 			$vbr_flags[] = '-b:v';
-			$vbr_flags[] = max( 100, $this->get_bitrate( $dimensions, $plugin_options['encode'][ $this->id ]['vbr'] ) ) . 'k';
+			$vbr_flags[] = $this->get_bitrate( $dimensions, $plugin_options['encode'][ $this->id ]['vbr'] ) . 'k';
 			return $vbr_flags;
 	}
 
@@ -482,7 +520,7 @@ class Video_Codec {
 		$vbr      = $plugin_options['encode'][ $codec_id ]['vbr'] ?? null;
 		$vbr      = apply_filters( 'videopack_video_codec_vbr', $vbr, $this, $dimensions, $plugin_options, $alternate );
 
-		return (int) max( 100, $this->get_bitrate( $dimensions, $vbr ) );
+		return (int) $this->get_bitrate( $dimensions, $vbr );
 	}
 
 	/**

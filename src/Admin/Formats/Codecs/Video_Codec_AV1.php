@@ -34,8 +34,9 @@ class Video_Codec_AV1 extends Video_Codec {
 					'default' => 35,
 				),
 				'vbr' => array(
-					'default'  => 12.3,
-					'constant' => -488.62,
+					'default'     => 1.0,
+					'coefficient' => 0.005214,
+					'exponent'    => 0.86,
 				),
 			),
 			'default_encode' => false,

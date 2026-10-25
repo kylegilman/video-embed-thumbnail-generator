@@ -8,9 +8,9 @@
  * This is what decides the quality flags on every encode, and none of it had
  * a direct test (the existing codec tests cover container/mime/identity and
  * Ogg's registry behavior). Expected values are derived by hand from the
- * codec definitions: bitrate = round( vbr * 0.0001 * width * height +
- * constant ), e.g. H.264 at 1280x720 is 18.9 * 0.0001 * 921600 + 469 =
- * 2210.824 -> 2211.
+ * codec definitions: bitrate = round( coefficient * pixels^exponent *
+ * frame rate factor * quality ), floored at 50 kbps, e.g. H.264 at 1280x720
+ * is 0.004404 * 921600^0.92 = 1352.8 -> 1353.
  */
 
 use Videopack\Admin\Formats\Codecs\Video_Codec;
@@ -30,11 +30,15 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		parent::tear_down();
 	}
 
-	protected function dims( int $width, int $height ): array {
-		return array(
+	protected function dims( int $width, int $height, float $frame_rate = 0.0 ): array {
+		$dims = array(
 			'width'  => $width,
 			'height' => $height,
 		);
+		if ( $frame_rate ) {
+			$dims['frame_rate'] = $frame_rate;
+		}
+		return $dims;
 	}
 
 	// -----------------------------------------------------------------
@@ -51,7 +55,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		$this->assertSame( 'aac', $codec->get_acodec() );
 		$this->assertSame( array( 'crf', 'vbr' ), $codec->get_supported_rate_controls() );
 		$this->assertSame( 23, $codec->get_default_crf() );
-		$this->assertSame( 10.0, $codec->get_default_vbr() );
+		$this->assertSame( 1.0, $codec->get_default_vbr() );
 		$this->assertFalse( $codec->is_default_encode() );
 		$this->assertTrue( $codec->is_video() );
 		$this->assertTrue( $codec->is_encodable() );
@@ -78,41 +82,83 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		$h265 = new Video_Codec_H265();
 
 		$this->assertSame( 23, $h264->get_default_crf() );
-		$this->assertSame( 18.9, $h264->get_default_vbr() );
+		$this->assertSame( 1.0, $h264->get_default_vbr() );
 		$this->assertTrue( $h264->is_default_encode(), 'H.264 is the one codec encoded by default' );
 		$this->assertSame( 28, $h265->get_default_crf() );
-		$this->assertSame( 10.4, $h265->get_default_vbr() );
+		$this->assertSame( 1.0, $h265->get_default_vbr() );
 		$this->assertFalse( $h265->is_default_encode() );
-		$this->assertSame( 258, $h265->get_rate_control()['vbr']['constant'] );
+		$this->assertSame( 0.027695, $h265->get_rate_control()['vbr']['coefficient'] );
+		$this->assertSame( 0.744, $h265->get_rate_control()['vbr']['exponent'] );
 	}
 
 	// -----------------------------------------------------------------
 	// get_bitrate()
 	// -----------------------------------------------------------------
 
-	public function test_bitrate_uses_the_codecs_default_vbr_when_none_is_given(): void {
-		$this->assertSame( 2211.0, ( new Video_Codec_H264() )->get_bitrate( $this->dims( 1280, 720 ) ) );
+	public function test_bitrate_uses_the_codecs_default_quality_when_none_is_given(): void {
+		// 0.004404 * 921600^0.92 = 1352.8.
+		$this->assertSame( 1353.0, ( new Video_Codec_H264() )->get_bitrate( $this->dims( 1280, 720 ) ) );
 	}
 
-	public function test_bitrate_uses_a_supplied_rate_control_value(): void {
-		// 10 * 0.0001 * 921600 + 469 = 1390.6.
-		$this->assertSame( 1391.0, ( new Video_Codec_H264() )->get_bitrate( $this->dims( 1280, 720 ), 10 ) );
+	public function test_bitrate_scales_linearly_with_the_quality_setting(): void {
+		$codec = new Video_Codec_H264();
+
+		// 1352.8 * 1.5 = 2029.2 and 1352.8 * 0.5 = 676.4.
+		$this->assertSame( 2029.0, $codec->get_bitrate( $this->dims( 1280, 720 ), 1.5 ) );
+		$this->assertSame( 676.0, $codec->get_bitrate( $this->dims( 1280, 720 ), 0.5 ) );
 	}
 
-	public function test_bitrate_scales_with_the_pixel_count(): void {
-		// 18.9 * 0.0001 * 230400 + 469 = 904.456.
-		$this->assertSame( 904.0, ( new Video_Codec_H264() )->get_bitrate( $this->dims( 640, 360 ) ) );
+	public function test_bitrate_grows_slower_than_the_pixel_count(): void {
+		$codec = new Video_Codec_H264();
+
+		// 0.004404 * 230400^0.92 = 377.7 and 0.004404 * 2073600^0.92 = 2852.6.
+		$this->assertSame( 378.0, $codec->get_bitrate( $this->dims( 640, 360 ) ) );
+		$this->assertSame( 2853.0, $codec->get_bitrate( $this->dims( 1920, 1080 ) ) );
 	}
 
-	public function test_bitrate_applies_a_negative_constant(): void {
-		// AV1: 12.3 * 0.0001 * 2073600 - 488.62 = 2061.908.
-		$this->assertSame( 2062.0, ( new Video_Codec_AV1() )->get_bitrate( $this->dims( 1920, 1080 ) ) );
+	public function test_each_codec_follows_its_own_efficiency_curve(): void {
+		$dims = $this->dims( 1920, 1080 );
+
+		// 0.027695 * px^0.744, 0.033981 * px^0.734 and 0.005214 * px^0.86.
+		$this->assertSame( 1387.0, ( new Video_Codec_H265() )->get_bitrate( $dims ) );
+		$this->assertSame( 1471.0, ( new Video_Codec_VP9() )->get_bitrate( $dims ) );
+		$this->assertSame( 1411.0, ( new Video_Codec_AV1() )->get_bitrate( $dims ) );
 	}
 
-	public function test_bitrate_for_a_small_video_with_a_negative_constant_is_itself_negative(): void {
-		// AV1: 12.3 * 0.0001 * 76800 - 488.62 = -394.156. get_bitrate() is the raw
-		// formula; the flag builders and get_configured_bitrate() clamp it.
-		$this->assertSame( -394.0, ( new Video_Codec_AV1() )->get_bitrate( $this->dims( 320, 240 ) ) );
+	public function test_small_videos_get_a_real_bitrate_not_a_clamped_one(): void {
+		// The old formula's negative constants pushed AV1 and VP9 to a 100 kbps
+		// floor at small sizes; the power law stays positive.
+		// AV1: 0.005214 * 76800^0.86 = 82.9. VP9: 0.033981 * 76800^0.734 = 130.9.
+		$this->assertSame( 83.0, ( new Video_Codec_AV1() )->get_bitrate( $this->dims( 320, 240 ) ) );
+		$this->assertSame( 131.0, ( new Video_Codec_VP9() )->get_bitrate( $this->dims( 320, 240 ) ) );
+	}
+
+	public function test_bitrate_never_drops_below_the_minimum(): void {
+		// 1352.8 * 0.01 = 13.5, raised to the 50 kbps guard.
+		$this->assertSame( 50.0, ( new Video_Codec_H264() )->get_bitrate( $this->dims( 1280, 720 ), 0.01 ) );
+	}
+
+	public function test_high_frame_rate_sources_get_one_and_a_half_times_the_bitrate(): void {
+		$codec = new Video_Codec_H264();
+
+		// 1352.8 * 1.5 = 2029.2.
+		$this->assertSame( 2029.0, $codec->get_bitrate( $this->dims( 1280, 720, 60 ) ) );
+		$this->assertSame( 2029.0, $codec->get_bitrate( $this->dims( 1280, 720, 50 ) ) );
+		$this->assertSame( 2029.0, $codec->get_bitrate( $this->dims( 1280, 720, 48 ) ), '48 fps is the first high frame rate' );
+	}
+
+	public function test_normal_and_unknown_frame_rates_get_the_base_bitrate(): void {
+		$codec = new Video_Codec_H264();
+
+		$this->assertSame( 1353.0, $codec->get_bitrate( $this->dims( 1280, 720, 47.9 ) ) );
+		$this->assertSame( 1353.0, $codec->get_bitrate( $this->dims( 1280, 720, 30 ) ) );
+		$this->assertSame( 1353.0, $codec->get_bitrate( $this->dims( 1280, 720, 24 ) ) );
+		$this->assertSame( 1353.0, $codec->get_bitrate( $this->dims( 1280, 720 ) ), 'no frame rate known' );
+	}
+
+	public function test_frame_rate_and_quality_multiply_together(): void {
+		// 0.004404 * 2073600^0.92 = 2852.6, times 2 for quality and 1.5 for frame rate = 8557.7.
+		$this->assertSame( 8558.0, ( new Video_Codec_H264() )->get_bitrate( $this->dims( 1920, 1080, 60 ), 2 ) );
 	}
 
 	// -----------------------------------------------------------------
@@ -196,7 +242,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 	public function test_h264_crf_flags_are_assembled_in_order(): void {
 		$options = array(
 			'rate_control' => 'crf',
-			'encode'       => array( 'h264' => array( 'crf' => 20, 'vbr' => 18.9 ) ),
+			'encode'       => array( 'h264' => array( 'crf' => 20, 'vbr' => 1.0 ) ),
 		);
 
 		$flags = ( new Video_Codec_H264() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'aac' => true ) );
@@ -210,13 +256,13 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 	public function test_h264_vbr_flags_use_the_computed_bitrate_in_kilobits(): void {
 		$options = array(
 			'rate_control' => 'vbr',
-			'encode'       => array( 'h264' => array( 'crf' => 23, 'vbr' => 18.9 ) ),
+			'encode'       => array( 'h264' => array( 'crf' => 23, 'vbr' => 1.0 ) ),
 		);
 
 		$flags = ( new Video_Codec_H264() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'aac' => true ) );
 
 		$this->assertSame(
-			array( '-acodec', 'aac', '-vcodec', 'libx264', '-b:v', '2211k', '-s', '1280x720', '-movflags', 'faststart', '-tag:v', 'avc1' ),
+			array( '-acodec', 'aac', '-vcodec', 'libx264', '-b:v', '1353k', '-s', '1280x720', '-movflags', 'faststart', '-tag:v', 'avc1' ),
 			$flags
 		);
 	}
@@ -224,7 +270,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 	public function test_a_codecs_own_rate_control_choice_overrides_the_global_one(): void {
 		$options = array(
 			'rate_control' => 'crf',
-			'encode'       => array( 'h264' => array( 'crf' => 23, 'vbr' => 18.9, 'rate_control' => 'vbr' ) ),
+			'encode'       => array( 'h264' => array( 'crf' => 23, 'vbr' => 1.0, 'rate_control' => 'vbr' ) ),
 		);
 
 		$flags = ( new Video_Codec_H264() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array() );
@@ -236,7 +282,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 	public function test_an_unrecognized_rate_control_mode_adds_no_rate_flags(): void {
 		$options = array(
 			'rate_control' => 'abr',
-			'encode'       => array( 'h264' => array( 'crf' => 23, 'vbr' => 18.9 ) ),
+			'encode'       => array( 'h264' => array( 'crf' => 23, 'vbr' => 1.0 ) ),
 		);
 
 		$flags = ( new Video_Codec_H264() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array() );
@@ -245,16 +291,42 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		$this->assertNotContains( '-b:v', $flags );
 	}
 
-	public function test_vbr_never_goes_below_100_kilobits_even_when_the_formula_is_negative(): void {
+	public function test_vbr_never_goes_below_the_minimum_bitrate(): void {
 		$options = array(
 			'rate_control' => 'vbr',
-			'encode'       => array( 'av1' => array( 'crf' => 35, 'vbr' => 12.3 ) ),
+			'encode'       => array( 'h264' => array( 'crf' => 23, 'vbr' => 0.01 ) ),
 		);
 
-		// 320x240 AV1 computes to -394; the flag is clamped to 100k.
-		$flags = ( new Video_Codec_AV1() )->get_codec_ffmpeg_flags( $options, $this->dims( 320, 240 ), array() );
+		// 1352.8 * 0.01 = 13.5, raised to the 50 kbps guard.
+		$flags = ( new Video_Codec_H264() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array() );
 
-		$this->assertSame( '100k', $flags[ array_search( '-b:v', $flags, true ) + 1 ] );
+		$this->assertSame( '50k', $flags[ array_search( '-b:v', $flags, true ) + 1 ] );
+	}
+
+	public function test_vbr_flags_use_a_high_frame_rate_sources_higher_bitrate(): void {
+		$options = array(
+			'rate_control' => 'vbr',
+			'encode'       => array( 'h264' => array( 'crf' => 23, 'vbr' => 1.0 ) ),
+		);
+
+		$flags = ( new Video_Codec_H264() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720, 59.94 ), array() );
+
+		$this->assertSame( '2029k', $flags[ array_search( '-b:v', $flags, true ) + 1 ] );
+	}
+
+	public function test_vp9_vbr_flags_add_min_and_max_rate_around_the_average(): void {
+		$options = array(
+			'rate_control' => 'vbr',
+			'encode'       => array( 'vp9' => array( 'crf' => 31, 'vbr' => 1.0 ) ),
+		);
+
+		$flags = ( new Video_Codec_VP9() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'libopus' => true ) );
+
+		// 0.033981 * 921600^0.734 = 811.4; min is half and max is 1.45x.
+		$this->assertSame(
+			array( '-acodec', 'libopus', '-vcodec', 'libvpx-vp9', '-b:v', '811k', '-minrate', '406k', '-maxrate', '1176k', '-s', '1280x720' ),
+			$flags
+		);
 	}
 
 	public function test_mp4_codecs_get_faststart_and_the_codec_tag_but_webm_does_not(): void {
@@ -280,7 +352,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 	/**
 	 * libvpx ignores -crf without -b:v (verified: CRF 4 and 30 gave identical
 	 * output on FFmpeg 5.1.2 and 8.0.1), so VP8 must always send a ceiling.
-	 * 1280x720: 18.9 * 0.0001 * 921600 + 469 = 2210.8 -> 2211.
+	 * The ceiling is 3x the codec's rounded bitrate: 3 * 1353 = 4059 at 1280x720.
 	 */
 	public function test_vp8_crf_flags_include_a_bitrate_ceiling(): void {
 		$options = array(
@@ -291,7 +363,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		$flags = ( new Video_Codec_VP8() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'libvorbis' => true ) );
 
 		$this->assertSame(
-			array( '-acodec', 'libvorbis', '-vcodec', 'libvpx', '-crf', 12, '-b:v', '2211k', '-s', '1280x720' ),
+			array( '-acodec', 'libvorbis', '-vcodec', 'libvpx', '-crf', 12, '-b:v', '4059k', '-s', '1280x720' ),
 			$flags
 		);
 	}
@@ -304,7 +376,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 
 		$flags = ( new Video_Codec_VP8() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'libvorbis' => true ) );
 
-		$this->assertSame( '2211k', $flags[ array_search( '-b:v', $flags, true ) + 1 ] );
+		$this->assertSame( '4059k', $flags[ array_search( '-b:v', $flags, true ) + 1 ] );
 	}
 
 	public function test_flags_use_the_available_audio_and_video_encoders(): void {
@@ -324,17 +396,23 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 	// -----------------------------------------------------------------
 
 	public function test_configured_bitrate_uses_the_codecs_option_and_returns_an_int(): void {
-		$options = array( 'encode' => array( 'h264' => array( 'vbr' => 10 ) ) );
+		$options = array( 'encode' => array( 'h264' => array( 'vbr' => 0.5 ) ) );
 
-		$this->assertSame( 1391, ( new Video_Codec_H264() )->get_configured_bitrate( $this->dims( 1280, 720 ), $options ) );
+		$this->assertSame( 676, ( new Video_Codec_H264() )->get_configured_bitrate( $this->dims( 1280, 720 ), $options ) );
 	}
 
 	public function test_configured_bitrate_falls_back_to_the_codec_default_without_an_option(): void {
-		$this->assertSame( 2211, ( new Video_Codec_H264() )->get_configured_bitrate( $this->dims( 1280, 720 ), array() ) );
+		$this->assertSame( 1353, ( new Video_Codec_H264() )->get_configured_bitrate( $this->dims( 1280, 720 ), array() ) );
 	}
 
-	public function test_configured_bitrate_is_clamped_to_at_least_100(): void {
-		$this->assertSame( 100, ( new Video_Codec_AV1() )->get_configured_bitrate( $this->dims( 320, 240 ), array() ) );
+	public function test_configured_bitrate_is_at_least_the_minimum(): void {
+		$options = array( 'encode' => array( 'h264' => array( 'vbr' => 0.01 ) ) );
+
+		$this->assertSame( 50, ( new Video_Codec_H264() )->get_configured_bitrate( $this->dims( 1280, 720 ), $options ) );
+	}
+
+	public function test_configured_bitrate_accounts_for_the_source_frame_rate(): void {
+		$this->assertSame( 2029, ( new Video_Codec_H264() )->get_configured_bitrate( $this->dims( 1280, 720, 60 ), array() ) );
 	}
 
 	public function test_configured_bitrate_vbr_is_filterable_and_receives_its_context(): void {
@@ -343,19 +421,19 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 			'videopack_video_codec_vbr',
 			static function ( $vbr, $codec, $dimensions, $options, $alternate ) use ( &$seen ) {
 				$seen = compact( 'vbr', 'codec', 'dimensions', 'options', 'alternate' );
-				return 5;
+				return 0.5;
 			},
 			10,
 			5
 		);
-		$options = array( 'encode' => array( 'h264' => array( 'vbr' => 10 ) ) );
+		$options = array( 'encode' => array( 'h264' => array( 'vbr' => 2.0 ) ) );
 		$codec   = new Video_Codec_H264();
 
-		// 5 * 0.0001 * 921600 + 469 = 929.8.
+		// The filter's 0.5 replaces the configured 2.0: 1352.8 * 0.5 = 676.4.
 		$bitrate = $codec->get_configured_bitrate( $this->dims( 1280, 720 ), $options, true );
 
-		$this->assertSame( 930, $bitrate );
-		$this->assertSame( 10, $seen['vbr'], 'the filter sees the configured value' );
+		$this->assertSame( 676, $bitrate );
+		$this->assertSame( 2.0, $seen['vbr'], 'the filter sees the configured value' );
 		$this->assertSame( $codec, $seen['codec'] );
 		$this->assertSame( $this->dims( 1280, 720 ), $seen['dimensions'] );
 		$this->assertSame( $options, $seen['options'] );

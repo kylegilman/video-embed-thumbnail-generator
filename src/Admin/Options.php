@@ -334,7 +334,7 @@ class Options implements Hook_Subscriber {
 			$default_options['encode'][ $codec_id ]['crf'] = (int) $codec->get_default_crf();
 			$supported_rate_controls                       = (array) $codec->get_supported_rate_controls();
 			$default_options['encode'][ $codec_id ]['rate_control'] = (string) ( $supported_rate_controls[0] ?? 'crf' );
-			$default_options['encode'][ $codec_id ]['vbr']          = (int) $codec->get_default_vbr();
+			$default_options['encode'][ $codec_id ]['vbr']          = (float) $codec->get_default_vbr();
 			$default_options['encode'][ $codec_id ]['enabled']      = (bool) $codec->is_default_encode();
 
 			foreach ( $resolutions as $resolution ) {

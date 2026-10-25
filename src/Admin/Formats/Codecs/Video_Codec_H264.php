@@ -37,8 +37,9 @@ class Video_Codec_H264 extends Video_Codec {
 					),
 				),
 				'vbr' => array(
-					'default'  => 18.9,
-					'constant' => 469,
+					'default'     => 1.0,
+					'coefficient' => 0.004404,
+					'exponent'    => 0.92,
 				),
 			),
 			'default_encode' => true,
