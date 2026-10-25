@@ -77,3 +77,24 @@ PHP/rendering-output level. Reserve [tests/e2e/](e2e/README.md) for
 behavior that genuinely needs a real browser (JS-driven interactivity) —
 most shortcode/attribute correctness is cheaper and more reliable to check
 here, against rendered HTML output directly.
+
+## JavaScript and React tests
+
+The admin UI's JavaScript has its own Jest suite, separate from PHPUnit and
+the Playwright E2E suite. It needs no Docker:
+
+```
+cd admin-ui
+npm test           # runs every *.test.js under admin-ui/src
+```
+
+Plain functions (for example `src/utils/bitrate.test.js`) test directly.
+React components render in jsdom with React Testing Library — see
+`src/features/settings/components/PerCodecQualitySettings.test.js` for the
+pattern: set the `videopack_config` global the component reads, render it
+with realistic props, then assert on what a user would see and on the
+callbacks it fires. `admin-ui/jest.config.js` makes Jest transform the
+`@wordpress/*` packages and `uuid`, which ship ES modules only. Anything that
+needs the real settings screen, a real browser, or the PHP-provided data goes
+in the E2E suite instead (`tests/e2e/settings-quality.spec.js` is an example).
+

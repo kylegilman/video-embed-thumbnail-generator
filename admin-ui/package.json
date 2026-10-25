@@ -30,6 +30,8 @@
 		"video.js": "^8.23.4"
 	},
 	"devDependencies": {
+		"@testing-library/dom": "^10.4.2",
+		"@testing-library/react": "^16.3.3",
 		"@wordpress/base-styles": "^12.1.0",
 		"@wordpress/eslint-plugin": "^25.9.0",
 		"@wordpress/scripts": "^34.1.0",

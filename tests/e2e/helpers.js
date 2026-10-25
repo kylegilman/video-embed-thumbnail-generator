@@ -61,4 +61,38 @@ function setPluginActive(slug, active) {
 	);
 }
 
-module.exports = { setEmbedMethod, setPluginActive };
+/**
+ * Puts the encoding quality settings into a known state (FFmpeg reported as
+ * available, ABR quality at each codec's default, H.264 on CRF) for specs that
+ * drive the settings screen. See set-quality-fixture.php for why FFmpeg has to
+ * be faked: the wp-env container has none, and the controls stay disabled
+ * without it.
+ */
+function prepareQualityFixture() {
+	execFileSync(
+		'npx',
+		[
+			'wp-env', 'run', 'cli',
+			'wp', 'eval-file', `${PLUGIN_PATH}/tests/e2e/set-quality-fixture.php`,
+		],
+		{ stdio: 'inherit', shell: true }
+	);
+}
+
+/**
+ * Logs in to the wp-env site's admin. The credentials are the wp-env defaults
+ * documented in tests/e2e/README.md for this disposable local site.
+ *
+ * @param {import('@playwright/test').Page} page The Playwright page.
+ */
+async function loginAsAdmin(page) {
+	await page.goto('/wp-login.php');
+	await page.fill('#user_login', 'admin');
+	await page.fill('#user_pass', 'password');
+	await Promise.all([
+		page.waitForURL(/wp-admin/),
+		page.click('#wp-submit'),
+	]);
+}
+
+module.exports = { setEmbedMethod, setPluginActive, prepareQualityFixture, loginAsAdmin };

@@ -37,6 +37,7 @@ Other useful commands:
 - `npm run test:e2e:ui` — Playwright's interactive UI mode.
 - `npm run env:stop` / `npm run env:destroy` — stop or fully tear down the WP site.
 - Site is reachable directly at `http://localhost:8888` (admin: `admin`/`password`).
+- If port 8888 is unavailable (on Windows it can fall in a reserved range), set `WP_ENV_PORT` for both `wp-env` and Playwright, e.g. `WP_ENV_PORT=8200 npm run env:start` then `WP_ENV_PORT=8200 npm run test:e2e`.
 
 ## What's covered
 
@@ -44,6 +45,10 @@ Other useful commands:
 - `mejs.spec.js` — WordPress Default (MediaElement.js), same coverage.
 - `gallery.spec.js` — lightbox open/navigate/close, AJAX pagination.
 - `shortcode-behavioral.spec.js` — autoplay/muted, loop, pauseothervideos, right_click attributes.
+- `settings-quality.spec.js` — the admin settings screen (the one spec that logs in): the ABR
+  quality slider's range and the per-resolution bitrate preview for H.264. The wp-env
+  container has no FFmpeg, so `set-quality-fixture.php` reports it as available (the quality
+  controls are disabled otherwise) via `prepareQualityFixture()`.
 - `videojs-v10-standalone.spec.js` — Video.js v10 (player-pro) with
   `videopack-cloud-streaming` deliberately deactivated, since it's the only
   listener for player-pro's adaptive-media-element filter; confirms the

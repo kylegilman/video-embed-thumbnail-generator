@@ -11,7 +11,9 @@ module.exports = defineConfig({
 	retries: 0,
 	reporter: [['list'], ['html', { open: 'never' }]],
 	use: {
-		baseURL: 'http://localhost:8888',
+		// wp-env honors WP_ENV_PORT; match it so a machine where 8888 is
+		// unavailable (e.g. a Windows reserved port range) can still run the suite.
+		baseURL: `http://localhost:${process.env.WP_ENV_PORT || 8888}`,
 		trace: 'retain-on-failure',
 		video: 'retain-on-failure',
 	},
