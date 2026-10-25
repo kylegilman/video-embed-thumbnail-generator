@@ -19,4 +19,3 @@ tests/e2e/.ffmpeg-status
 .claude/
 /phpunit.local.xml
 /phpunit-multisite.local.xml
-admin-ui/.wp-core/

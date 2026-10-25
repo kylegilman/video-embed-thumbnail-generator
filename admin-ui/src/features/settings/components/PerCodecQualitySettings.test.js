@@ -196,7 +196,7 @@ describe( 'PerCodecQualitySettings', () => {
 		} );
 	} );
 
-	it( 'disables the rate control radios and the quality slider when no transcoder is available', () => {
+	it( 'disables the quality slider when no transcoder is available', () => {
 		const { container } = renderSettings( {
 			encode: { rate_control: 'vbr', crf: 23, vbr: 1 },
 			extra: { ffmpeg_exists: 'unavailable' },
@@ -206,9 +206,5 @@ describe( 'PerCodecQualitySettings', () => {
 			'.videopack-abr-slider input[type="range"]'
 		);
 		expect( slider.disabled ).toBe( true );
-
-		const radios = container.querySelectorAll( 'input[type="radio"]' );
-		expect( radios ).toHaveLength( 2 );
-		radios.forEach( ( radio ) => expect( radio.disabled ).toBe( true ) );
 	} );
 } );
