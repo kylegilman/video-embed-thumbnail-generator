@@ -93,6 +93,20 @@ class Video_Metadata {
 	public $rotate;
 
 	/**
+	 * Average frame rate of the video in frames per second.
+	 *
+	 * @var float|null $frame_rate
+	 */
+	public $frame_rate;
+
+	/**
+	 * Raw stderr output of `ffmpeg -i`, cached so it only runs once per instance.
+	 *
+	 * @var string|null $ffmpeg_info_output
+	 */
+	protected $ffmpeg_info_output;
+
+	/**
 	 * Watermark URL for FFmpeg.
 	 *
 	 * @var string|null $ffmpeg_watermark_url
@@ -173,10 +187,12 @@ class Video_Metadata {
 					$this->actualheight = $wp_metadata['height'] ?? null;
 					$this->duration     = $wp_metadata['length'] ?? null;
 					$this->codec        = $wp_metadata['videocodec'] ?? $wp_metadata['codec'] ?? null;
+					$this->frame_rate   = self::normalize_frame_rate( $wp_metadata['frame_rate'] ?? null );
 
 					if ( $this->actualwidth && $this->actualheight && $this->codec ) {
 						$this->worked = true;
-						return; // Success, no need for FFmpeg.
+						$this->ensure_frame_rate( $attachment_meta_instance );
+						return; // Success, no need for the full FFmpeg probe.
 					}
 				}
 			}
@@ -188,33 +204,17 @@ class Video_Metadata {
 				$this->duration     = $videopack_postmeta['duration'] ?? ( $this->browser_metadata['duration'] ?? null );
 				$this->codec        = $videopack_postmeta['codec'] ?? null;
 				$this->rotate       = $videopack_postmeta['rotate'] ?? '';
+				$this->frame_rate   = self::normalize_frame_rate( $videopack_postmeta['frame_rate'] ?? null ) ?? $this->frame_rate;
 
 				if ( $this->actualwidth && $this->actualheight && $this->codec ) {
+					$this->ensure_frame_rate( $attachment_meta_instance );
 					return;
 				}
 			}
 		}
 
 		$result = null;
-
-		$get_info = new FFmpeg_Process(
-			array(
-				$this->ffmpeg_path,
-				'-i',
-				$this->encode_input,
-			),
-			null,
-			null,
-			null,
-			30
-		);
-
-		try {
-			$get_info->run();
-			$output = $get_info->getErrorOutput();
-		} catch ( \Exception $e ) {
-			$output = $e->getMessage();
-		}
+		$output = $this->get_ffmpeg_info_output();
 
 			$regex = '/([0-9]{2,4})x([0-9]{2,4})/';
 
@@ -240,7 +240,8 @@ class Video_Metadata {
 			$movie_duration_seconds = floatval( substr( $duration, -5 ) );
 			$this->duration         = ( $movie_duration_hours * 60 * 60 ) + ( $movie_duration_minutes * 60 ) + $movie_duration_seconds;
 
-			$this->rotate = self::parse_rotation( $output );
+			$this->rotate     = self::parse_rotation( $output );
+			$this->frame_rate = self::parse_frame_rate( $output ) ?? $this->frame_rate;
 		} else {
 			$this->worked = false;
 			if ( $this->is_attachment ) {
@@ -282,6 +283,7 @@ class Video_Metadata {
 				// This ensures we save it if FFmpeg found it and WP didn't, or if it's more specific.
 				'codec'        => ( ! empty( $this->codec ) && ( empty( $existing_postmeta['codec'] ) || $existing_postmeta['codec'] !== $this->codec ) ) ? $this->codec : $existing_postmeta['codec'],
 				'rotate'       => $this->rotate,
+				'frame_rate'   => $this->frame_rate ? (string) $this->frame_rate : ( $existing_postmeta['frame_rate'] ?? null ),
 			);
 
 			$merged_meta = array_merge( $existing_postmeta, $metadata_to_save );
@@ -291,6 +293,112 @@ class Video_Metadata {
 			}
 			$attachment_meta_instance->save( $merged_meta );
 		}
+	}
+
+	/**
+	 * Runs `ffmpeg -i` against the input and returns its stderr output, which
+	 * is where FFmpeg prints the stream summary. Cached for the instance.
+	 *
+	 * @return string The raw output, or the exception message if FFmpeg couldn't run.
+	 */
+	protected function get_ffmpeg_info_output(): string {
+		if ( null !== $this->ffmpeg_info_output ) {
+			return $this->ffmpeg_info_output;
+		}
+
+		$get_info = new FFmpeg_Process(
+			array(
+				$this->ffmpeg_path,
+				'-i',
+				$this->encode_input,
+			),
+			null,
+			null,
+			null,
+			30
+		);
+
+		try {
+			$get_info->run();
+			$this->ffmpeg_info_output = (string) $get_info->getErrorOutput();
+		} catch ( \Exception $e ) {
+			$this->ffmpeg_info_output = $e->getMessage();
+		}
+
+		return $this->ffmpeg_info_output;
+	}
+
+	/**
+	 * Fills in the frame rate with a lightweight FFmpeg probe when the saved
+	 * and WordPress metadata that let the constructor skip the full probe
+	 * didn't include one (older attachments, or formats getID3 can't report it
+	 * for). Only the frame rate is touched, so a failed probe (no FFmpeg, or an
+	 * unreadable file) leaves everything the cascade already resolved alone.
+	 *
+	 * @param \Videopack\Admin\Attachment_Meta|null $attachment_meta_instance The attachment's meta handler, if it is an attachment.
+	 */
+	protected function ensure_frame_rate( $attachment_meta_instance ) {
+		if ( $this->frame_rate || '' === $this->ffmpeg_path ) {
+			return;
+		}
+
+		$frame_rate = self::parse_frame_rate( $this->get_ffmpeg_info_output() );
+		if ( ! $frame_rate ) {
+			return;
+		}
+
+		$this->frame_rate = $frame_rate;
+
+		if ( $attachment_meta_instance ) {
+			$saved = (array) $attachment_meta_instance->get();
+			$attachment_meta_instance->save( array_merge( $saved, array( 'frame_rate' => (string) $frame_rate ) ) );
+		}
+	}
+
+	/**
+	 * Converts a stored or reported frame rate into a usable float.
+	 *
+	 * Saved metadata and getID3 hold it as a numeric string ("23.976").
+	 * Anything non-numeric, zero, or beyond any real video (240 fps) is treated
+	 * as unknown so a bad value can never change an encode's bitrate.
+	 *
+	 * @param mixed $value The raw frame rate.
+	 * @return float|null The frame rate, or null when unknown or implausible.
+	 */
+	public static function normalize_frame_rate( $value ) {
+		if ( ! is_numeric( $value ) ) {
+			return null;
+		}
+
+		$value = (float) $value;
+		return ( $value > 0 && $value <= 240 ) ? $value : null;
+	}
+
+	/**
+	 * Parses the average frame rate of the first video stream out of
+	 * `ffmpeg -i` stderr output.
+	 *
+	 * Reads the `NN fps` token FFmpeg prints on the video stream line, and falls
+	 * back to the `tbr` (guessed timebase rate) token only when that is absent.
+	 *
+	 * @param string $output Raw stderr output from `ffmpeg -i`.
+	 * @return float|null The frame rate, or null if none could be found.
+	 */
+	public static function parse_frame_rate( string $output ) {
+		if ( ! preg_match( '/Stream #\d+:\d+[^\n]*?: Video:([^\n]*)/', $output, $stream ) ) {
+			return null;
+		}
+
+		if ( preg_match( '/,\s*([0-9]+(?:\.[0-9]+)?)\s*fps\b/', $stream[1], $fps ) ) {
+			return self::normalize_frame_rate( $fps[1] );
+		}
+
+		if ( preg_match( '/,\s*([0-9]+(?:\.[0-9]+)?)(k?)\s*tbr\b/', $stream[1], $tbr ) ) {
+			$rate = (float) $tbr[1] * ( 'k' === $tbr[2] ? 1000 : 1 );
+			return self::normalize_frame_rate( $rate );
+		}
+
+		return null;
 	}
 
 	/**

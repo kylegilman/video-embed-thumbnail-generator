@@ -1290,6 +1290,13 @@ class Encode_Attachment {
 			return array();
 		}
 
+		// Bitrate depends on the source's frame rate. Omitted when unknown so
+		// the codec assumes a normal (30 fps or less) source.
+		$video_metadata = $this->get_video_metadata();
+		if ( $video_metadata instanceof Video_Metadata && $video_metadata->frame_rate ) {
+			$dimensions['frame_rate'] = (float) $video_metadata->frame_rate;
+		}
+
 		return (array) $video_format_config->get_codec()->get_codec_ffmpeg_flags( (array) $this->options, (array) $dimensions, (array) $this->get_codecs() );
 	}
 
