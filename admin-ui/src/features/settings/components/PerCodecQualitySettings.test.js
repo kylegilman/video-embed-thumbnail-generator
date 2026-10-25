@@ -207,13 +207,8 @@ describe( 'PerCodecQualitySettings', () => {
 		);
 		expect( slider.disabled ).toBe( true );
 
-		// The radios are disabled through their fieldset in this copy of the
-		// component, which reaches each input as :disabled rather than as its
-		// own disabled property.
 		const radios = container.querySelectorAll( 'input[type="radio"]' );
 		expect( radios ).toHaveLength( 2 );
-		radios.forEach( ( radio ) =>
-			expect( radio.matches( ':disabled' ) ).toBe( true )
-		);
+		radios.forEach( ( radio ) => expect( radio.disabled ).toBe( true ) );
 	} );
 } );

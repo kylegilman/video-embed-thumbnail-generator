@@ -11,6 +11,8 @@
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js src",
 		"check-context-keys": "node scripts/check-context-keys.js",
+		"fetch:wp-core": "node scripts/fetch-wp-core.js",
+		"pretest": "node scripts/fetch-wp-core.js --if-missing",
 		"test": "wp-scripts test-unit-js",
 		"start": "node scripts/generate-php-icons.js && node scripts/copy-videojs-assets.js && node scripts/check-context-keys.js && wp-scripts start",
 		"start:all": "wp-scripts start",

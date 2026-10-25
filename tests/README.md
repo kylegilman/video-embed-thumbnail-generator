@@ -81,11 +81,11 @@ here, against rendered HTML output directly.
 ## JavaScript and React tests
 
 The admin UI's JavaScript has its own Jest suite, separate from PHPUnit and
-the Playwright E2E suite. It needs no Docker:
+the Playwright E2E suite:
 
 ```
 cd admin-ui
-npm test           # runs every *.test.js under admin-ui/src
+npm test           # runs every *.test.js under admin-ui/src and admin-ui/test-support
 ```
 
 Plain functions (for example `src/utils/bitrate.test.js`) test directly.
@@ -93,8 +93,19 @@ React components render in jsdom with React Testing Library — see
 `src/features/settings/components/PerCodecQualitySettings.test.js` for the
 pattern: set the `videopack_config` global the component reads, render it
 with realistic props, then assert on what a user would see and on the
-callbacks it fires. `admin-ui/jest.config.js` makes Jest transform the
-`@wordpress/*` packages and `uuid`, which ship ES modules only. Anything that
-needs the real settings screen, a real browser, or the PHP-provided data goes
-in the E2E suite instead (`tests/e2e/settings-quality.spec.js` is an example).
+callbacks it fires.
 
+**Component tests run against WordPress's own controls.** The production
+build treats React and every `@wordpress/*` import (except the few it
+bundles, like `@wordpress/icons`) as externals that resolve to the copy
+WordPress core loads on the page. The Jest config maps those imports the same
+way, to WordPress core's real scripts, so a test never renders a control that
+differs from the one users get. Those files are copied out of the wp-env site
+(the same WordPress version the E2E suite uses) into the git-ignored
+`admin-ui/.wp-core`; `npm test` fetches them automatically the first time, so
+start Docker and `npm run env:start` before the first run, and run
+`npm run fetch:wp-core` after changing the WordPress version in `.wp-env.json`.
+`test-support/wp-runtime.test.js` fails if the setup ever falls back to the
+copies in `node_modules`. Anything that needs the real settings screen, a real
+browser, or the PHP-provided data goes in the E2E suite instead
+(`tests/e2e/settings-quality.spec.js` is an example).
