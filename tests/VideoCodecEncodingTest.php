@@ -125,6 +125,16 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		$this->assertSame( 1411.0, ( new Video_Codec_AV1() )->get_bitrate( $dims ) );
 	}
 
+	public function test_vp8_default_crf_gives_roughly_h264s_default_quality(): void {
+		// FFmpeg's guide suggests 10 as a starting point, but that spends about twice
+		// H.264's default bitrate. On real clips the CRF matching H.264's CRF 23
+		// quality was 31-34, so 30 is the default.
+		$vp8 = new Video_Codec_VP8();
+
+		$this->assertSame( 30, $vp8->get_default_crf() );
+		$this->assertSame( 30.0, $vp8->get_configured_quality( array() ) );
+	}
+
 	public function test_vp8_has_its_own_curve_rather_than_borrowing_h264s(): void {
 		// Measured on real footage, VP8 needs about as much bitrate as H.264 for the
 		// same quality but its cost grows more slowly with size (0.813 vs 0.92):

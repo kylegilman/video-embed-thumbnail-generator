@@ -31,7 +31,7 @@ class Video_Codec_VP8 extends Video_Codec {
 				'crf' => array(
 					'min'     => 4,
 					'max'     => 63,
-					'default' => 10,
+					'default' => 30,
 				),
 				'vbr' => array(
 					'default'     => 1.0,
