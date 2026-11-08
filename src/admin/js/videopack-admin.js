@@ -33,6 +33,14 @@ function kgvid_admin_page_ready() {
 
 		if ( pagenow !== 'attachment' ) {
 			if ( typeof wp.media != 'undefined' ) {
+				jQuery( document ).on(
+					'change',
+					'select[id$="[kgflashmediaplayer-embed]"]',
+					function() {
+						var postID = this.id.replace( /^attachments\[(\d+)\].*$/, '$1' );
+						kgvid_hide_standard_wordpress_display_settings( postID );
+					}
+				);
 				wp.media.view.Modal.prototype.on(
 					'open',
 					function() {
@@ -56,6 +64,7 @@ function kgvid_admin_page_ready() {
 									&& typeof wp.media.frame.state().get( 'selection' ).first() !== 'undefined'
 								) {
 									var attributes = wp.media.frame.state().get( 'selection' ).first().attributes;
+									kgvid_hide_standard_wordpress_display_settings( attributes.id );
 									var thumb_id   = jQuery( '#thumbnail-' + attributes.id ).data( 'thumb_id' );
 									if ( jQuery( '#thumbnail-' + attributes.id ).data( 'featuredchanged' ) == true
 										&& jQuery( '#attachments-' + attributes.id + '-featured' ).prop( 'checked' )
@@ -1151,9 +1160,10 @@ function kgvid_enqueue_video_encode(postID, blogID) {
 }
 
 function kgvid_hide_standard_wordpress_display_settings(postID) {
-	if ( jQuery( '#attachments[' + postID + '][kgflashmediaplayer-embed]' ).value != "WordPress Default" ) {
-		jQuery( '.attachment-display-settings' ).hide();
-	}
+	// The select's id contains square brackets, so look it up by id rather than with a jQuery selector.
+	var embed = document.getElementById( 'attachments[' + postID + '][kgflashmediaplayer-embed]' );
+	// Only hide the standard display settings when a video is set to insert a Videopack shortcode.
+	jQuery( '.attachment-display-settings' ).toggle( ! embed || embed.value === 'WordPress Default' );
 }
 
 function kgvid_change_singleurl(basename, oldbasename) {
