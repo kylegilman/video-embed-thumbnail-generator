@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, thumbnail, resolutions
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 4.10.7
+Stable tag: 4.10.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,8 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.10.8 - November 8, 2026 =
 
 = 4.10.7 - October 12, 2026 =
 * Updated Freemius SDK and Symfony
