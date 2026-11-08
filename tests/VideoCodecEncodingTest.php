@@ -125,6 +125,18 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		$this->assertSame( 1411.0, ( new Video_Codec_AV1() )->get_bitrate( $dims ) );
 	}
 
+	public function test_vp8_has_its_own_curve_rather_than_borrowing_h264s(): void {
+		// Measured on real footage, VP8 needs about as much bitrate as H.264 for the
+		// same quality but its cost grows more slowly with size (0.813 vs 0.92):
+		// 0.019742 * px^0.813 is 452 at 360p, 1395 at 720p and 2697 at 1080p.
+		$vp8 = new Video_Codec_VP8();
+
+		$this->assertSame( 452.0, $vp8->get_bitrate( $this->dims( 640, 360 ) ) );
+		$this->assertSame( 1395.0, $vp8->get_bitrate( $this->dims( 1280, 720 ) ) );
+		$this->assertSame( 2697.0, $vp8->get_bitrate( $this->dims( 1920, 1080 ) ) );
+		$this->assertSame( 2092.0, $vp8->get_bitrate( $this->dims( 1280, 720, 60 ) ), 'high frame rate: 1394.97 * 1.5' );
+	}
+
 	public function test_small_videos_get_a_real_bitrate_not_a_clamped_one(): void {
 		// The old formula's negative constants pushed AV1 and VP9 to a 100 kbps
 		// floor at small sizes; the power law stays positive.
@@ -352,7 +364,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 	/**
 	 * libvpx ignores -crf without -b:v (verified: CRF 4 and 30 gave identical
 	 * output on FFmpeg 5.1.2 and 8.0.1), so VP8 must always send a ceiling.
-	 * The ceiling is 3x the codec's rounded bitrate: 3 * 1353 = 4059 at 1280x720.
+	 * The ceiling is 3x the codec's rounded bitrate: 3 * 1395 = 4185 at 1280x720.
 	 */
 	public function test_vp8_crf_flags_include_a_bitrate_ceiling(): void {
 		$options = array(
@@ -363,7 +375,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		$flags = ( new Video_Codec_VP8() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'libvorbis' => true ) );
 
 		$this->assertSame(
-			array( '-acodec', 'libvorbis', '-vcodec', 'libvpx', '-crf', 12, '-b:v', '4059k', '-s', '1280x720' ),
+			array( '-acodec', 'libvorbis', '-vcodec', 'libvpx', '-crf', 12, '-b:v', '4185k', '-s', '1280x720' ),
 			$flags
 		);
 	}
@@ -376,7 +388,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 
 		$flags = ( new Video_Codec_VP8() )->get_codec_ffmpeg_flags( $options, $this->dims( 1280, 720 ), array( 'libvorbis' => true ) );
 
-		$this->assertSame( '4059k', $flags[ array_search( '-b:v', $flags, true ) + 1 ] );
+		$this->assertSame( '4185k', $flags[ array_search( '-b:v', $flags, true ) + 1 ] );
 	}
 
 	public function test_flags_use_the_available_audio_and_video_encoders(): void {

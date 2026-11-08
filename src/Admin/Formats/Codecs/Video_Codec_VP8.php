@@ -35,8 +35,8 @@ class Video_Codec_VP8 extends Video_Codec {
 				),
 				'vbr' => array(
 					'default'     => 1.0,
-					'coefficient' => 0.004404,
-					'exponent'    => 0.92,
+					'coefficient' => 0.019742,
+					'exponent'    => 0.813,
 				),
 			),
 			'default_encode' => false,
