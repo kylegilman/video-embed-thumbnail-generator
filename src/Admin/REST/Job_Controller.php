@@ -257,7 +257,7 @@ class Job_Controller extends Controller {
 			$queue_controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 
 			if ( 'play' === $action ) {
-				$queue_controller->play();
+				$queue_controller->start();
 			} else {
 				$queue_controller->pause();
 			}

@@ -94,7 +94,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 		return array(
 			array(
 				'hook'     => 'rest_api_init',
-				'callback' => 'start_queue',
+				'callback' => 'schedule_heartbeats',
 			),
 			array(
 				'hook'     => 'videopack_process_pending_jobs',
@@ -216,27 +216,18 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 	}
 
 	/**
-	 * Starts the encoding queue and schedules the heartbeat action.
+	 * Makes sure the queue's heartbeat actions are scheduled.
+	 *
+	 * Runs on every REST request, so it only schedules; it must not touch the
+	 * queue_control option, which would resume a paused queue.
 	 */
-	public function start_queue() {
-		global $wpdb;
-		$this->options['queue_control'] = 'play';
-		update_option( 'videopack_options', $this->options );
+	public function schedule_heartbeats() {
 		// Trigger a one-off action to process any 'queued' items with a short delay to allow batching.
 		$this->schedule_immediate_heartbeat();
 		// Ensure a recurring heartbeat is scheduled every 5 minutes.
 		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array( 'interval' => 300 ), 'videopack_queue_management' ) ) {
 			as_schedule_recurring_action( time() + 300, 300, 'videopack_process_pending_jobs', array( 'interval' => 300 ), 'videopack_queue_management' );
 		}
-	}
-
-	/**
-	 * Pauses the encoding queue.
-	 */
-	public function pause_queue() {
-		global $wpdb;
-		$this->options['queue_control'] = 'pause';
-		update_option( 'videopack_options', $this->options );
 	}
 
 	/**
@@ -686,7 +677,7 @@ class Encode_Queue_Controller implements Hook_Subscriber {
 	/**
 	 * Starts the queue and triggers the heartbeat processing.
 	 */
-	public function play() {
+	public function start() {
 		$this->options['queue_control'] = 'play';
 		update_option( 'videopack_options', $this->options );
 		$this->process_pending_jobs_action();
