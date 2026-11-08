@@ -84,7 +84,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 		$this->assertSame( 23, $h264->get_default_crf() );
 		$this->assertSame( 1.0, $h264->get_default_vbr() );
 		$this->assertTrue( $h264->is_default_encode(), 'H.264 is the one codec encoded by default' );
-		$this->assertSame( 28, $h265->get_default_crf() );
+		$this->assertSame( 26, $h265->get_default_crf() );
 		$this->assertSame( 1.0, $h265->get_default_vbr() );
 		$this->assertFalse( $h265->is_default_encode() );
 		$this->assertSame( 0.027695, $h265->get_rate_control()['vbr']['coefficient'] );
@@ -475,7 +475,7 @@ class VideoCodecEncodingTest extends WP_UnitTestCase {
 
 	public function test_configured_quality_falls_back_to_the_codec_default_crf(): void {
 		$this->assertSame( 23.0, ( new Video_Codec_H264() )->get_configured_quality( array() ) );
-		$this->assertSame( 28.0, ( new Video_Codec_H265() )->get_configured_quality( array() ) );
+		$this->assertSame( 26.0, ( new Video_Codec_H265() )->get_configured_quality( array() ) );
 	}
 
 	public function test_configured_quality_is_filterable(): void {

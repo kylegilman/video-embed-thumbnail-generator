@@ -31,7 +31,7 @@ class Video_Codec_H265 extends Video_Codec {
 				'crf' => array(
 					'min'     => 0,
 					'max'     => 51,
-					'default' => 28,
+					'default' => 26,
 				),
 				'vbr' => array(
 					'default'     => 1.0,
