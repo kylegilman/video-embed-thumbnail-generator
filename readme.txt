@@ -106,7 +106,12 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 == Changelog ==
 
 = 4.10.8 - November 8, 2026 =
-* Fixed bug that hid the standard WordPress image display settings (alignment, link, and size) in the Classic Editor's Add Media modal when inserting images or other non-video attachments.
+* Fixed bug that hid the standard WordPress image display settings (alignment, link, and size) in the Classic Editor's Add Media modal when inserting images.
+* Fixed bug that stopped responsive videos, and resize behavior from the theme and other plugins, from working after a video gallery popup was closed.
+* Fixed bug that could save the wrong value when two settings were changed in quick succession.
+* Fixed bug that downloaded the entire video file in the background when opening the thumbnail chooser.
+* Fixed bug that hid the "next" arrow in gallery popups on pages 2 through 9 of galleries with 10 or more pages.
+* Fixed several smaller bugs in the thumbnail chooser, the resolution menu, subtitle tracks, and the "Embed Video from URL" dialog.
 
 = 4.10.7 - October 12, 2026 =
 * Updated Freemius SDK and Symfony

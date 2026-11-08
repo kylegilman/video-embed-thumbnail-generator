@@ -247,9 +247,14 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 	var video = document.getElementById( 'thumb-video-' + postID );
 
 	if ( video != null ) {
-		var crossDomainTest = jQuery.get( video.currentSrc )
+		// Check that the browser is allowed to read the video (needed to draw thumbnails on a canvas).
+		// Use a HEAD request so this doesn't download the whole video file.
+		jQuery.ajax( { type: 'HEAD', url: video.currentSrc } )
 			.fail(
-				function(){
+				function( xhr ){
+					if ( xhr.status !== 0 ) {
+						return; // The server answered, so this isn't a cross-origin block (some servers just don't support HEAD).
+					}
 					jQuery( '#thumb-video-' + postID + '-container' ).hide();
 					jQuery( '#thumb-video-' + postID ).data( 'allowed', 'off' );
 					jQuery('#thumb-video-' + postID).remove();
@@ -266,13 +271,20 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 	if ( video != null && jQuery( video ).data( 'setup' ) != true ) {
 
 		if (typeof wp !== 'undefined' && wp.media && wp.media.frame) {
-			// Listen for the close event on the media frame
+			// Listen for the close event on the media frame. The thumbnail video is recreated often,
+			// so remove the previous listener (found by its context object) before adding a new one.
+			window.kgvid_thumb_close_contexts = window.kgvid_thumb_close_contexts || {};
+			if ( ! window.kgvid_thumb_close_contexts[ postID ] ) {
+				window.kgvid_thumb_close_contexts[ postID ] = {};
+			}
+			var close_context = window.kgvid_thumb_close_contexts[ postID ];
+			wp.media.frame.off( 'close', null, close_context );
 			wp.media.frame.on('close', function() {
 				if (jQuery('#show-thumb-video-' + postID + ' .kgvid-show-video').html() == kgvidL10n.hidevideo) {
 					kgvid_reveal_thumb_video(postID);
 				}
 				jQuery('#thumb-video-' + postID).remove();
-			});
+			}, close_context);
 		}
 
 		video.removeAttribute( 'height' ); // disables changes made by mejs
@@ -284,7 +296,8 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 		var playProgress = jQuery( ".kgvid-play-progress" );
 		var seekHandle   = jQuery( ".kgvid-seek-handle" );
 
-		playButton.on(
+		// These controls outlive the video element, so clear handlers left over from a previous video first.
+		playButton.off( 'click.kgvid' ).on(
 			"click.kgvid",
 			function() {
 				if (video.paused == true) {
@@ -325,8 +338,8 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 		);
 
 		var timeDrag = false;   // Drag status
-		seekBar.on(
-			'mousedown',
+		seekBar.off( 'mousedown.kgvid' ).on(
+			'mousedown.kgvid',
 			function(e) {
 				if ( video.paused == false ) {
 					video.pause();
@@ -336,8 +349,8 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 				updatebar( e.pageX );
 			}
 		);
-		jQuery( document ).on(
-			'mouseup',
+		jQuery( document ).off( 'mouseup.kgvid_thumb' ).on(
+			'mouseup.kgvid_thumb',
 			function(e) {
 				if (timeDrag) {
 					timeDrag = false;
@@ -345,8 +358,8 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 				}
 			}
 		);
-		jQuery( document ).on(
-			'mousemove',
+		jQuery( document ).off( 'mousemove.kgvid_thumb' ).on(
+			'mousemove.kgvid_thumb',
 			function(e) {
 				if (timeDrag) {
 					updatebar( e.pageX );
@@ -382,7 +395,7 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 			}
 		);
 
-		jQuery( '.kgvid-video-controls' ).on(
+		jQuery( '.kgvid-video-controls' ).off( 'keydown.kgvid' ).on(
 			'keydown.kgvid',
 			function(e) {
 
@@ -767,9 +780,11 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 					thumbnails[0] = 0;
 				}
 
-				if (specifictimecode) {
+				if (specifictimecode === 'firstframe') { // a thumbnail time of "0" is passed as "firstframe" for FFmpeg
+					thumbnails = [0];
+				} else if (specifictimecode) {
 					var thumbtimecode = kgvid_convert_from_timecode(specifictimecode);
-					thumbnails = [thumbtimecode];
+					thumbnails = [isFinite(thumbtimecode) ? thumbtimecode : 0];
 				}
 
 				jQuery(video).data('thumbnail_data', thumbnails);
@@ -946,8 +961,10 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 				if (total == 1) {
 					document.getElementsByName('attachments[' + postID + '][kgflashmediaplayer-autothumb-error]')[0].value = '';
 					jQuery('#attachments-' + postID + '-kgflashmediaplayer-numberofthumbs').val('1');
-					var time_display = kgvid_convert_to_timecode(canvas.dataset.movieoffset);
-					jQuery('#attachments-' + postID + '-kgflashmediaplayer-thumbtime').val(time_display);
+					if (typeof canvas.dataset.movieoffset !== 'undefined') {
+						var time_display = kgvid_convert_to_timecode(parseFloat(canvas.dataset.movieoffset));
+						jQuery('#attachments-' + postID + '-kgflashmediaplayer-thumbtime').val(time_display);
+					}
 					var objectURL = URL.createObjectURL(blob);
 					jQuery('#attachments-' + postID + '-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" data-featuredchanged="true" src="' + objectURL + '"></div>');
 					if ( thumb_info.thumb_url ) { jQuery('#attachments-' + postID + '-kgflashmediaplayer-poster').val(thumb_info.thumb_url).trigger('change'); }
@@ -1055,7 +1072,7 @@ function kgvid_thumb_video_manual(postID) {
 
 	document.getElementById( 'attachments-' + postID + '-kgflashmediaplayer-thumbtime' ).value = time_display;
 
-	jQuery( "#attachments-" + postID + "-thumbnailplaceholder" ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><canvas id="' + postID + '_thumb_' + time_id + '"></canvas></div>' );
+	jQuery( "#attachments-" + postID + "-thumbnailplaceholder" ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><canvas id="' + postID + '_thumb_' + time_id + '" data-movieoffset="' + video.currentTime + '"></canvas></div>' );
 
 	var canvas = document.getElementById( postID + '_thumb_' + time_id );
 	canvas     = kgvid_draw_thumb_canvas( canvas, video );
@@ -1282,24 +1299,7 @@ function kgvid_insert_shortcode() {
 
 	var shortcode = "";
 	if (document.getElementById( 'videotitle' ).value != "") {
-		var titlecode = decodeURIComponent( document.getElementsByName( 'attachments[' + basename + '][kgflashmediaplayer-titlecode]' )[0].value );
-		titlecode     = titlecode.replace( /\\'/g,'\'' );
-		titlecode     = titlecode.replace( /\\"/g,'"' );
-		titlecode     = titlecode.replace( /\\0/g,'\0' );
-		titlecode     = titlecode.replace( /\\\\/g,'\\' );
-		if ( titlecode.substring( 0, 1 ) != '<' ) {
-			titlecode = '<' + titlecode;
-		}
-		if ( titlecode.substring( -1, 1 ) != '>' ) {
-			titlecode = titlecode + '>';
-		}
-		var endtitlecode = titlecode.replace( '<', '</' );
-		endtitlecode     = endtitlecode.split( ' ' );
-		endtitlecode     = endtitlecode[0];
-		if ( endtitlecode.substring( -1, 1 ) != '>' ) {
-			endtitlecode = endtitlecode + '>';
-		}
-		shortcode += titlecode + '<span itemprop="name">' + document.getElementById( 'videotitle' ).value + '</span>' + endtitlecode + '<br />';
+		shortcode += '<strong><span itemprop="name">' + document.getElementById( 'videotitle' ).value + '</span></strong><br />';
 	}
 	if (url != "") {
 		shortcode += ' [videopack';
@@ -1321,7 +1321,7 @@ function kgvid_insert_shortcode() {
 			if (document.getElementById( 'attachments-' + basename + '-kgflashmediaplayer-track_label' ).value != "") {
 				shortcode += ' track_label="' + document.getElementById( 'attachments-' + basename + '-kgflashmediaplayer-track_label' ).value + '"';
 			}
-			if (document.getElementById( 'attachments-' + basename + '-kgflashmediaplayer-track_default' ).value == "default") {
+			if (document.getElementById( 'attachments-' + basename + '-kgflashmediaplayer-track_default' ).checked) {
 				shortcode += ' track_default="default"';
 			}
 		}
@@ -1813,12 +1813,21 @@ function kgvid_redraw_thumbnail_box(postID) {
 					jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + data.thumb_url + '?' + Math.floor( Math.random() * 10000 ) + '"></div>' );
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).val( data.thumb_url );
 					if ( data.thumbnail_size_url ) {
-						basename = data.thumb_url.substring( data.thumb_url.lastIndexOf( '/' ) + 1, data.thumb_url.indexOf( '_thumb' ) )
-						jQuery( '.attachment-preview.type-video:contains(' + basename + ')' ).parent().find( 'img' )
-						.attr( 'src', data.thumbnail_size_url + '?' + Math.floor( Math.random() * 10000 ) )
-						.css( 'width', '100%' )
-						.css( 'height', '100%' )
-						.css( 'padding-top', '0' );
+						var thumb_filename = data.thumb_url.substring( data.thumb_url.lastIndexOf( '/' ) + 1 );
+						var thumb_suffix   = thumb_filename.lastIndexOf( '_thumb' );
+						var basename       = thumb_suffix > 0 ? thumb_filename.substring( 0, thumb_suffix ) : '';
+						if ( basename ) {
+							// Match by text rather than :contains(), which breaks on filenames with characters like parentheses.
+							jQuery( '.attachment-preview.type-video' ).filter(
+								function() {
+									return jQuery( this ).text().indexOf( basename ) !== -1;
+								}
+							).parent().find( 'img' )
+							.attr( 'src', data.thumbnail_size_url + '?' + Math.floor( Math.random() * 10000 ) )
+							.css( 'width', '100%' )
+							.css( 'height', '100%' )
+							.css( 'padding-top', '0' );
+						}
 					}
 					if ( data.thumb_id
 						&& wp?.media?.view?.settings?.post?.id !== 0
@@ -2001,6 +2010,12 @@ function kgvid_save_plugin_settings(input_obj) {
 
 	function kgvid_ajax_save() {
 
+		// Always work on the setting at the front of the queue. This function is reused for queued saves,
+		// so it must not rely on the input or value captured when it was first created.
+		var save_queue = jQuery( '#wpbody-content' ).data( 'save_queue' );
+		var save_item  = save_queue[0];
+		var save_input = save_item.input;
+
 		var disabled_fields = jQuery( 'form :disabled' ); // temporarily enable disabled fields so they can be serialized
 		disabled_fields.prop( 'disabled', false );
 		var all_settings = jQuery( 'form' ).serialize();
@@ -2010,32 +2025,32 @@ function kgvid_save_plugin_settings(input_obj) {
 			ajaxurl,
 			{ action:"kgvid_save_settings",
 				security: kgflashmediaplayersecurity,
-				setting: save_queue[0].id,
-				name: save_queue[0].name,
-				value: setting_value,
+				setting: save_item.id,
+				name: save_item.name,
+				value: save_item.value,
 				all_settings: all_settings
 			},
 			function(data) {
 
 				if ( data != false ) {
 
-					if ( input_obj.type != "checkbox" ) {
-						jQuery( input_obj ).val( data.validated_value );
+					if ( save_input.type != "checkbox" ) {
+						jQuery( save_input ).val( data.validated_value );
 					}
 
 					if ( data.error_message != "" ) {
-						jQuery( input_obj ).parents( "td:first" ).append( '<div class="error settings-error"><p><strong>' + data.error_message + '</strong></p>' );
+						jQuery( save_input ).parents( "td:first" ).append( '<div class="error settings-error"><p><strong>' + data.error_message + '</strong></p>' );
 					}
-					if ( save_queue[0].id == "width" || save_queue[0].id == "height" ) {
+					if ( save_item.id == "width" || save_item.id == "height" ) {
 						jQuery( '.kgvid_setting_nearvid').css( 'max-width', jQuery( '#width' ).val() + 'px' );
 						jQuery( '#kgvid_samplevideo_container' ).css( 'padding-top', ( parseInt( jQuery( '#height' ).val() ) / parseInt( jQuery( '#width' ).val() ) * 100 ) + 4 + '%' );
 					}
-					if ( save_queue[0].id == "app_path" || save_queue[0].id == "video_app" ) {
+					if ( save_item.id == "app_path" || save_item.id == "video_app" ) {
 						jQuery( '#app_path' ).val( data.app_path );
 						jQuery( '#app_path' ).data( 'ffmpeg_exists', data.ffmpeg_exists );
 						kgvid_hide_plugin_settings();
 					}
-					if ( jQuery( input_obj ).hasClass( 'affects_player' ) == true ) {
+					if ( jQuery( save_input ).hasClass( 'affects_player' ) == true ) {
 						jQuery( '#kgvid_samplevideo' ).attr( 'src', function ( i, val ) { return val; } ); // reload the video iframe
 					}
 
@@ -2044,7 +2059,7 @@ function kgvid_save_plugin_settings(input_obj) {
 						jQuery( '#auto_thumb_label :input' ).on( 'change', function() { kgvid_save_plugin_settings( this ); } );
 					}
 
-					if ( jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on" && jQuery( input_obj ).hasClass( 'affects_ffmpeg' ) == true && jQuery( '#ffmpeg_output' ).length != 0 ) {
+					if ( jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on" && jQuery( save_input ).hasClass( 'affects_ffmpeg' ) == true && jQuery( '#ffmpeg_output' ).length != 0 ) {
 
 						if ( jQuery( '.kgvid_custom_format' ).filter( function() { return jQuery( this ).val(); } ).length == 0 ) { // if there's no custom format anymore
 							if ( jQuery( '#sample_format' ).val() == 'custom' ) {
@@ -2075,7 +2090,7 @@ function kgvid_save_plugin_settings(input_obj) {
 						);
 					}
 
-					if ( jQuery( '#ffmpeg_thumb_watermark_url' ).val() != '' && jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on" && jQuery( input_obj ).hasClass( 'affects_ffmpeg_thumb_watermark' ) == true && jQuery( '#ffmpeg_output' ).length != 0 ) {
+					if ( jQuery( '#ffmpeg_thumb_watermark_url' ).val() != '' && jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on" && jQuery( save_input ).hasClass( 'affects_ffmpeg_thumb_watermark' ) == true && jQuery( '#ffmpeg_output' ).length != 0 ) {
 						jQuery( '#browser_thumbnails' ).prop( 'checked', false ).prop( 'disabled', true ); // can't allow in-browser thumbnails with FFMPEG watermark
 						jQuery.post(
 							ajaxurl,
@@ -2094,7 +2109,7 @@ function kgvid_save_plugin_settings(input_obj) {
 						jQuery( '#browser_thumbnails' ).prop( 'disabled', false );
 					}
 
-					jQuery( '#save_' + save_queue[0].id ).toggleClass( 'save-waiting save-complete' ).delay( 1500 ).fadeOut( 1000, function(){ jQuery( this ).remove(); } );
+					jQuery( '#save_' + save_item.id ).toggleClass( 'save-waiting save-complete' ).delay( 1500 ).fadeOut( 1000, function(){ jQuery( this ).remove(); } );
 
 					save_queue = jQuery( '#wpbody-content' ).data( 'save_queue' );
 					save_queue.splice( 0,1 );
@@ -2104,8 +2119,8 @@ function kgvid_save_plugin_settings(input_obj) {
 					}
 
 				} else {
-					jQuery( '#save_' + save_queue[0].id ).remove();
-					jQuery( input_obj ).parents( "td:first" ).append( '<div class="error settings-error"><p><strong>' + kgvidL10n.not_saved + '</strong></p>' );
+					jQuery( '#save_' + save_item.id ).remove();
+					jQuery( save_input ).parents( "td:first" ).append( '<div class="error settings-error"><p><strong>' + kgvidL10n.not_saved + '</strong></p>' );
 				}
 
 			},
@@ -2116,9 +2131,9 @@ function kgvid_save_plugin_settings(input_obj) {
 
 	save_queue = jQuery( '#wpbody-content' ).data( 'save_queue' );
 	if ( save_queue == undefined || save_queue.length == 0 ) {
-		var save_queue = [ { 'id':input_obj.id, 'name':input_obj.name, 'value':setting_value } ];
+		var save_queue = [ { 'id':input_obj.id, 'name':input_obj.name, 'value':setting_value, 'input':input_obj } ];
 	} else {
-		save_queue.push( { 'id':input_obj.id, 'name':input_obj.name, 'value':setting_value } );
+		save_queue.push( { 'id':input_obj.id, 'name':input_obj.name, 'value':setting_value, 'input':input_obj } );
 	}
 	jQuery( '#wpbody-content' ).data( 'save_queue', save_queue );
 	if ( save_queue.length == 1 ) {
@@ -2709,7 +2724,15 @@ function kgvid_clear_video(movieurl, postID, video_id, blog_id) {
 function kgvid_add_subtitles(id) {
 
     var tracks = jQuery('#kgflashmediaplayer-' + id + '-trackdiv');
-    var track_number = tracks.children().length;
+    // Use one more than the highest existing track number. Counting the boxes on screen can reuse
+    // the number of a track that's still there after another one was removed.
+    var track_number = 0;
+    tracks.children( '[id^="kgflashmediaplayer-' + id + '-trackdiv-"]' ).each( function() {
+        var existing_number = parseInt( this.id.split( '-' ).pop(), 10 );
+        if ( ! isNaN( existing_number ) && existing_number >= track_number ) {
+            track_number = existing_number + 1;
+        }
+    } );
     var track_label = track_number + 1;
 
     // Create the container div
@@ -2723,7 +2746,7 @@ function kgvid_add_subtitles(id) {
     var closeButton = jQuery('<button/>', {
         type: 'button',
         title: kgvidL10n.close,
-        class: 'kgvid_track_box_removeable'
+        class: 'kgvid_track_box_removeable kgvid_track_box_new_removeable'
     }).append(jQuery('<span/>', { class: 'kgvid-icons kgvid-icon-cross' }));
 
     trackDiv.append(closeButton);
@@ -2805,7 +2828,9 @@ function kgvid_add_subtitles(id) {
     tracks.append(trackDiv);
 
     // Event Delegation for the removeable track box
-    jQuery(document).on('click', '.kgvid_track_box_removeable', function() {
+    // Bind the remove handler once, and only for tracks added here. Saved tracks have their own
+    // remove button that clears their fields so the deletion is saved.
+    jQuery(document).off('click.kgvid_track').on('click.kgvid_track', '.kgvid_track_box_new_removeable', function() {
         jQuery(this).parent().remove();
         jQuery('form.compat-item input').first().trigger('change');
     });

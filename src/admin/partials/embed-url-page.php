@@ -79,6 +79,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-maxwidth]' id='attachments-singleurl-kgflashmediaplayer-maxwidth' value='<?php echo esc_attr( $maxwidth ); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-maxheight]' id='attachments-singleurl-kgflashmediaplayer-maxheight' value='<?php echo esc_attr( $maxheight ); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-aspect]' id='attachments-singleurl-kgflashmediaplayer-aspect' value='<?php echo esc_attr( round( $maxheight / $maxwidth, 3 ) ); ?>' />
-<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-titlecode]' id='attachments-singleurl-kgflashmediaplayer-titlecode' value='<?php echo esc_attr( $options['titlecode'] ); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-ffmpegexists]' id='attachments-singleurl-kgflashmediaplayer-ffmpegexists' value='<?php echo esc_attr( $options['ffmpeg_exists'] ); ?>' />
 </form>

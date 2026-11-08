@@ -265,8 +265,13 @@ function kgvid_load_video_quality_selector() {
 					player.on(
 						'loadedmetadata',
 						function(){
-							if ( player.videoHeight() != NaN ) {
-								jQuery( '.vjs-res-button li:contains(' + kgvidL10n_frontend.fullres + ')' ).html( player.videoHeight() + 'p' );
+							if ( player.videoHeight() ) {
+								// Only relabel this player's menu, not every player on the page.
+								jQuery( player.el() ).find( '.vjs-res-button li' ).filter(
+									function() {
+										return jQuery( this ).text().indexOf( kgvidL10n_frontend.fullres ) !== -1;
+									}
+								).html( player.videoHeight() + 'p' );
 							}
 						}
 					);

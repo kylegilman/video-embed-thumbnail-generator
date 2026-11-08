@@ -18,7 +18,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable( 'edit_others_posts' );
 
 	$options = array(
-		'version'                 => '4.10.3',
+		'version'                 => '4.10.8',
 		'videojs_version'         => '8.24.0',
 		'embed_method'            => 'Video.js v8',
 		'template'                => false,
@@ -2516,7 +2516,6 @@ function kgvid_init_plugin() {
 			'encode_ogg'        => 'wp_FMP_encodeogg',
 			'encode_webm'       => 'wp_FMP_encodewebm',
 			'template'          => 'wp_FMP_template',
-			'titlecode'         => 'wp_FMP_titlecode',
 		);
 
 		foreach ( $old_setting_equivalents as $new_setting => $old_setting ) { // apply any old settings to the new database entry then delete them
@@ -2684,6 +2683,11 @@ function kgvid_init_plugin() {
 			if ( $options['embed_method'] === 'Video.js v7' ) {
 				$options['embed_method'] = 'Video.js v8';
 			}
+		}
+
+		if ( version_compare( $options['version'], '4.10.8', '<' ) ) {
+			$options['version'] = '4.10.8';
+			unset( $options['titlecode'] ); // obsolete setting carried over from versions before 3.0
 		}
 
 		if ( $options['version'] != $default_options['version'] ) {

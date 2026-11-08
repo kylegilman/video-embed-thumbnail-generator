@@ -83,8 +83,13 @@
 													media.addEventListener(
 														'loadedmetadata',
 														function () {
-															if ( player.media.originalNode.videoHeight != NaN ) {
-																jQuery( '.mejs-sourcechooser-button label:contains(' + kgvidL10n_frontend.fullres + ')' ).html( media.originalNode.videoHeight + 'p' );
+															if ( media.originalNode.videoHeight ) {
+																// Only relabel this player's menu, not every player on the page.
+																jQuery( player.sourcechooserButton ).find( 'label' ).filter(
+																	function () {
+																		return jQuery( this ).text() === kgvidL10n_frontend.fullres;
+																	}
+																).html( media.originalNode.videoHeight + 'p' );
 															}
 														}
 													);

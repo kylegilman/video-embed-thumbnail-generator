@@ -144,7 +144,7 @@ function kgvid_SetVideo(id) {
 	if ( jQuery( '#kgvid_video_gallery_thumb_' + id ).next( '#' + gallery_id + ' .kgvid_video_gallery_thumb' ).length > 0
 		|| (
 			is_paginated
-			&& jQuery( '#' + gallery_id + ' .kgvid_gallery_page_number' ).last().html() > jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination_selected' ).html()
+			&& parseInt( jQuery( '#' + gallery_id + ' .kgvid_gallery_page_number' ).last().html(), 10 ) > parseInt( jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination_selected' ).html(), 10 )
 		)
 	) {
 		nav_code += '<button type="button" class="kgvid_gallery_nav kgvid_gallery_next kgvid-icons kgvid-icon-right-arrow" title="' + kgvidL10n_frontend.next + '"></button>';
@@ -289,7 +289,10 @@ function kgvid_gallery_close() {
 		}
 	}
 
-	jQuery( window ).off( 'resize', kgvid_resize_video( video_vars.id ) );
+	if ( video_vars !== undefined ) {
+		// Only remove this video's own resize handler. Never call .off( 'resize' ) without a handler or namespace, which removes every resize handler on the page.
+		jQuery( window ).off( 'resize.kgvid_' + video_vars.id );
+	}
 	jQuery( document ).off( 'keydown.kgvid' ); // restore default keyboard actions
 	window.removeEventListener( 'wheel', kgvid_preventDefault );
 	window.removeEventListener( 'touchmove', kgvid_preventDefault );
@@ -833,8 +836,8 @@ function kgvid_setup_video(id) {
 	) {
 		kgvid_resize_video( id );
 		var resizeId;
-		jQuery( window ).on(
-			'resize',
+		jQuery( window ).off( 'resize.kgvid_' + id ).on(
+			'resize.kgvid_' + id,
 			function () {
 				clearTimeout( resizeId );
 				resizeId = setTimeout(
